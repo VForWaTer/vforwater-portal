@@ -1,0 +1,19 @@
+{% extends "vfwheron/base.html" %}
+
+{% block title %}- Heron {% endblock %}
+
+{% block primary_content %}
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h4>You are in the Heron home page!</h4>
+    <p>Click to one of the links bellow to explore our site.
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <a href="{% url 'heron_wps:home' %}">Heron WPS</a></br></br>
+    <a href="{% url 'admin:index' %}">Admin Console</a> 
+  </div>
+</div>
+{% endblock %}
