@@ -1,3 +1,10 @@
+# Local / temporary files
 db.sqlite3
 *.pyc
+
+# Project / IDE files
 .project
+.idea
+
+# Python virtual environment folder
+venv
