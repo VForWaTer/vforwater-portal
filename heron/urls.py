@@ -17,7 +17,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^$', include('vfwheron.urls')),
+    url(r'^', include('vfwheron.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^heron_wps/', include('heron_wps.urls', namespace='heron_wps')),
 ]
