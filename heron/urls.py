@@ -18,6 +18,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^', include('vfwheron.urls')),
+    url(r'^dashboard/', include('dashboard.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^heron_wps/', include('heron_wps.urls', namespace='heron_wps')),
 ]
