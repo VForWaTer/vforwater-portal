@@ -9,9 +9,11 @@ To run this on Debian-like systems with `virtualenv` you can apply the following
     # apt install python3-dev virtualenv
 
 For PostgreSQL and geolibs (https://docs.djangoproject.com/en/1.10/ref/contrib/gis/install/geolibs/)
+
     # apt install libpq-dev binutils libproj-dev gdal-bin
 
 For LDAP
+
     # apt install libldap-dev libsasl2-dev
 
 ## Python virtual environment
