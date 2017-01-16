@@ -1,22 +1,105 @@
-{% load staticfiles %}
+{% load static %}
+
 <html>
-    <head>
-        <title>Heron</title>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="{% static 'tethys_wps/css/tethys_wps.css' %}" rel="stylesheet" />
-    </head>
-    <body style="background-color:#e7f5fe;">
-        <div class="page-header">
-            <h1><a>V FOR WaTer Heron</a></h1>
-        </div>
-        <div class="container">
-            <div class="row">
-                {% block primary_content %}
-                {% endblock %}
-            </div>
-        </div>
-        <script src="{% static 'tethys_wps/js/tethys_wps.js' %}" type="text/javascript"></script>
-    </body>
+<title>VFORWaTer</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/respostyle.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+.respo-navbar li a {padding-top: 64px; padding-bottom: 12px;}
+.respo-navbar {padding-left: 300px;}
+.map {height:77%; width:100%;}
+#filterbox,#select_catchment {display: none;}
+</style>
+<script src="{% static 'vfwheron/js/ol.js' %}" type="text/javascript"></script>
+<script src="{% static 'vfwheron/js/vfw.js' %}" type="text/javascript"></script>
+
+<body class="respo-light-grey" onload="create_map()">
+
+    Top container
+	<div class="respo-container respo-top respo-black respo-large respo-padding" style="z-index:4">
+	  <button class="respo-btn respo-hide-large respo-padding-0 respo-hover-text-grey" onclick="respo_open();"><i class="fa fa-bars"></i>  Menu</button>
+	  <span class="respo-right"><strong>Virtual research environment for water and terrestrial environmental research</strong></span>
+	</div>
+	
+	Navbar
+	<div class="respo-top">
+	  <ul class="respo-navbar respo-light-turquoise respo-top respo-left-align respo-large">
+	    <li class="respo-opennav respo-right respo-hide-large">
+	      <a class="respo-hover-white respo-large respo-theme-d4" href="javascript:void(0)" onclick="respo_open()"><i class="fa fa-bars"></i></a>
+	    </li>
+	    <li class="respo-hide-small"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white"><i class="fa fa-home fa-fw"></i>  Home</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white"><i class="fa fa-eye fa-fw"></i>  Monitor</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'vfwheron:external_links' %}" class="respo-hover-white"><i class="fa fa-external-link fa-fw"></i>  External Links</a></li>
+	    <li class="respo-hide-small"><a href="#" class="respo-hover-white"><i class="fa fa-book fa-fw"></i>  Help</a></li>
+	    <li class="respo-hide-small"><a href="#" onclick="search_open()" id="srch_box" class="respo-hover-white"><i class="fa fa-search fa-fw"></i>  Search</a></li>
+	    <li class="respo-hide-small"><a id="srch_but" class="respo-hover-none"></a></li>
+	    <li class="respo-hide-small"><a id="srch_close_but" class="respo-hover-none"></a></li>
+	    <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i>  Sign In/Up</a></li>
+	  </ul>
+	</div>
+	
+	Sidenav/menu
+	<nav class="respo-sidenav respo-collapse respo-white respo-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br><br>
+	  <div class="respo-container respo-row">
+	    <div class="respo-col s4">
+	      <img src="{% static 'vfwheron/images/logo_main.png' %}" style="width:200px"><br>
+	    </div>
+	  </div>
+	  <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+	  <hr style="margin-bottom:0px;">
+	  <div class="respo-container respo-light-turquoise">
+	    <b>Database</b>
+	  </div>
+	  <i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i> <select class="respo-select" id="select_data" autocomplete="off" onchange="select_data()">
+	  	<option value="0" selected="selected">Select Data</option>
+	  	<option value="Rainfall">Rainfall</option>
+	  	<option value="River">River</option>
+	  	<option value="Soil">Soil</option>
+	  </select>
+	  <a class="respo-padding respo-hover-blue" href="javascript:void(0)" onclick="filterbox_open();draw_polygon()"><i class="fa fa-filter fa-fw"></i>  Filter Data</a>
+	  <hr style="margin-bottom:0px;">
+	  <div class="respo-container respo-light-turquoise">
+	    <b>Processes</b>
+	  </div>
+	  <i class="respo-padding fa fa-cog fa-fw"></i> <select class="respo-select" id="select_process" autocomplete="off">
+	  	<option value="0" selected="selected">Select Process</option>
+	  	<option value="Aggregate">Aggregate</option>
+	  	<option value="Interpolate">Interpolate</option>
+	  	<option value="Regression">Regression</option>
+	  	<option value="NA-Models">NA-Models</option>
+	  </select>
+	  <hr style="margin-bottom:0px;">
+	  <div class="respo-container respo-light-turquoise">
+	    <b>Visualization</b>
+	  </div>
+	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bullseye fa-fw"></i>  Map Viewer</a>
+	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-line-chart fa-fw"></i>  Time Series</a>
+	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bar-chart fa-fw"></i>  Scatter Plot</a>
+	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-table fa-fw"></i>  Statistical Report</a>
+	  <hr style="margin-bottom:0px;">
+	  <div class="respo-container respo-light-turquoise">
+	    <b>Workspace</b>
+	  </div>
+	  <ul class="respo-ul respo-card-4 respo-white" id="workspace">
+	  </ul>
+	</nav>
+
+	Overlay effect when opening sidenav on small screens
+	<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+	
+	!PAGE CONTENT!
+	<div class="respo-main" style="margin-left:300px;margin-top:103px;">
+	{% block content %}{% endblock %}
+	  
+	<footer class="respo-container respo-padding-16 respo-light-grey">
+	  <p style="text-align:center">Powered by <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> | Copyright &copy; 2016-2018</p>
+	</footer>
+	  
+	</div>
+</body>
 </html>

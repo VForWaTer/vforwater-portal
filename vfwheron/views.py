@@ -1,8 +1,12 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.views.generic import TemplateView
 
 # Create your views here.
 
-def index(request):
-#    return HttpResponse("Hello, world. You're at the heron index.")
-    return render(request, 'vfwheron/home.html')
+class HomeView(TemplateView):
+    template_name = 'vfwheron/home.html'
+    
+class LoginView(TemplateView):
+    template_name = 'vfwheron/login.html'    
+    
+class ExtlinksView(TemplateView):
+    template_name = 'vfwheron/extlinks.html'
