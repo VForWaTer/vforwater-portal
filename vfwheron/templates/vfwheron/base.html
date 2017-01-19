@@ -39,7 +39,13 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	    <li class="respo-hide-small"><a href="#" onclick="search_open()" id="srch_box" class="respo-hover-white"><i class="fa fa-search fa-fw"></i>  Search</a></li>
 	    <li class="respo-hide-small"><a id="srch_but" class="respo-hover-none"></a></li>
 	    <li class="respo-hide-small"><a id="srch_close_but" class="respo-hover-none"></a></li>
-	    <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i>  Sign In/Up</a></li>
+	    <li class="respo-hide-small respo-right">
+			{% if user.is_authenticated %}
+				<a href="#" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Hello, {{ user.first_name }}.</a>
+			{% else %}
+				<a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Sign In/Up</a>
+			{% endif %}
+	    </li>
 	  </ul>
 	</div>
 	
