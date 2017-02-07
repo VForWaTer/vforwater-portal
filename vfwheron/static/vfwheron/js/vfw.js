@@ -1,8 +1,26 @@
 
 // Create map layer
-function create_map() {
+/*function create_map() {
 		maplayer = new ol.layer.Tile({
 		  source: new ol.source.OSM()
+	});
+	    mapview = new ol.View({
+	    center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
+	    zoom: 6
+	});
+	    map_tar = document.getElementById("map");
+	    map = new ol.Map({
+	    renderer: 'canvas',
+	    target: map_tar,
+	    layers: [maplayer],
+	    view: mapview
+	});  
+}*/
+
+//Create own base layer
+function create_map() {
+		maplayer = new ol.layer.Tile({
+		  source: new ol.source.OSM("Default", "/osm/${z}/${x}/${y}.png")
 	});
 	    mapview = new ol.View({
 	    center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
