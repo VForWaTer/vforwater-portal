@@ -1,8 +1,8 @@
 
 // Create map layer
 /*function create_map() {
-		maplayer = new ol.layer.Tile({
-		  source: new ol.source.OSM()
+		maplayer = new ol.map({
+		  source: new ol.layer.OSM()
 	});
 	    mapview = new ol.View({
 	    center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
@@ -16,11 +16,10 @@
 	    view: mapview
 	});  
 }*/
-
 //Create own base layer
 function create_map() {
 		maplayer = new ol.layer.Tile({
-		  source: new ol.source.OSM("Default", "/osm/${z}/${x}/${y}.png")
+		  source: new ol.source.XYZ({url: "http://vforwater-gis.scc.kit.edu/osm/{z}/{x}/{y}.png"})
 	});
 	    mapview = new ol.View({
 	    center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
@@ -32,7 +31,7 @@ function create_map() {
 	    target: map_tar,
 	    layers: [maplayer],
 	    view: mapview
-	});  
+	}); 
 }
 
 // Draw polygon
