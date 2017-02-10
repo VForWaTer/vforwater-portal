@@ -2,46 +2,37 @@
 {% block content %}
 
 <header class="respo-container respo-padding-bottom respo-center" style="padding-top:22px">
-   <h5><b>Please login to your account or register freely!</b></h5>
+    {% if form.errors %}
+        <h5><b>Your login failed! Please try again.</b></h5>
+    {% elif user.is_authenticated %}
+        <h5><b>Your are already logged in as {{ user.username }}.</b></h5>
+    {% else %}
+        <h5><b>Welcome! Please log in.</b></h5>
+    {% endif %}
  </header>
 
-<div class="respo-row-padding respo-margin-bottom respo-center">  
- <div class="respo-half">
- 	<div class="respo-container respo-blue respo-padding-16 respo-third-n">
+<div class="respo-row-padding respo-margin-bottom respo-center">
+ 	<div class="respo-container respo-light-turquoise respo-padding-16 respo-third-n">
        <div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>Login</strong></div>
        <div class="respo-clear"></div>
-	<form role="form" action="" method="post">{% csrf_token %}
+	<form role="form" action="{% url 'vfwheron:login' %}" method="post">{% csrf_token %}
         <div class="form-group respo-padding-bottom">
-            <input id="id_username" name="username" value="Username" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input>
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            <!-- <input id="id_username" name="username" value="Username" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input> -->
         </div>
         <div class="form-group respo-padding-bottom">
-            <input id="id_password" name="password" value="Password" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input>
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            <!-- <input id="id_password" name="password" value="Password" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input> -->
         </div>
         <input class="btn btn-primary" type="submit" name="login_submit" value="Sign in" />
-   		<div style="padding-top:16px">
+        <input type="hidden" name="next" value="{{ next }}" />
+   		<!-- <div style="padding-top:16px">
    			<a href="#" class="respo-hover-none respo-hover-text-red respo-show-inline-block">Forgot your password?</a>
-   		</div>
+   		</div> -->
    	</form>
  	</div>
- </div>
- <div class="respo-half">
- 	<div class="respo-container respo-blue respo-padding-16 respo-third-n">
-       <div class="respo-left"><i class="fa fa-registered respo-xxxlarge"></i> <strong>Register</strong></div>
-       <div class="respo-clear"></div>
-	<form role="form" action="" method="post">{% csrf_token %}
-        <div class="form-group respo-padding-bottom">
-            <input id="id_username" name="username" value="Username" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input>
-        </div>
-        <div class="form-group respo-padding-bottom">
-            <input id="id_password" name="password" value="Password" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input>
-        </div>
-        <div class="form-group respo-padding-bottom">
-            <input id="id_repassword" name="repassword" value="Repeat Password" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input>
-        </div>
-        <input class="btn btn-primary" type="submit" name="register_submit" value="Register" />
-   	</form>
- 	</div>
- </div>
 </div>
 
 {% endblock %}

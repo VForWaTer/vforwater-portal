@@ -143,6 +143,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Default URLs for user authentication
+LOGIN_URL = 'vfwheron:login'
+LOGIN_REDIRECT_URL = 'vfwheron:home'
+LOGOUT_REDIRECT_URL = 'vfwheron:home'
+
 # LDAP authentication configuration
 AUTHENTICATION_BACKENDS = (
     'django_auth_ldap.backend.LDAPBackend',

@@ -43,7 +43,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 			<li class="respo-hide-small respo-right"><a href="#" class="respo-hover-white"> Sign Out</a></li>
 			<li class="respo-hide-small respo-right"><a class='respo-hover-none'><i class="fa fa-user fa-fw"></i> Hello, {{ user.first_name }}</a></li>
 		{% else %}
-			<li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Sign In/Up</a></li>
+			<li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Sign in</a></li>
 		{% endif %}
 	  </ul>
 	</div>

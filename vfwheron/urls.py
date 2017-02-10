@@ -1,10 +1,12 @@
 from django.conf.urls import url
+from django.contrib.auth import views as auth_views
 from . import views
+
 
 app_name = 'vfwheron'
 
 urlpatterns = [
     url(r'^$', views.HomeView.as_view(), name='home'),
-    url(r'^login$', views.LoginView.as_view(), name='login'),
+    url(r'^login$', auth_views.login, {'template_name': 'vfwheron/login.html'}, name='login'),
     url(r'^external_links$', views.ExtlinksView.as_view(), name='external_links'),
 ]
