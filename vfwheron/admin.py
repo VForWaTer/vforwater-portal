@@ -4,37 +4,37 @@ from django.forms import ModelForm
 
 # Register your models here.
 
-class TblCoreAdminForm(ModelForm):
+class TblMetaAdminForm(ModelForm):
     class Meta:
-        model = models.TblCore
-        fields = ['ts_start', 'ts_stop', 'geom', 'variable', 'source', 'license', 'author', 'publisher','srid', 'data_dimension', 'external_id', 'identifier_name', 'comment']
+        model = models.TblMeta
+        fields = ['ts_start', 'ts_stop','external_id', 'creator', 'publisher', 'geometry', 'license', 'quality','site', 'soil', 'variable', 'sensor', 'source', 'comment', 'created_on', 'updated_on']
  
-class TblCoreAdmin(admin.OSMGeoAdmin):
+class TblMetaAdmin(admin.OSMGeoAdmin):
 
-    form = TblCoreAdminForm
-    list_display = ['identifier_name', 'variable_full_name', 'author_last_name']
+    form = TblMetaAdminForm
+    list_display = ['id', 'variable_fname', 'creator_last_name']
     
-    def variable_full_name(self, obj):
-        return obj.variable.full_name
-    variable_full_name.admin_order_field = 'variable'
-    variable_full_name.short_description = 'Variable Name'
+    def variable_fname(self, obj):
+        return obj.variable.variable_name
+    variable_fname.admin_order_field = 'variable'
+    variable_fname.short_description = 'Variable Name'
     
-    def author_last_name(self, obj):
-        return obj.author.last_name
-    author_last_name.short_description = 'Author Name'
+    def creator_last_name(self, obj):
+        return obj.creator.last_name
+    creator_last_name.short_description = 'creator Name'
     
-admin.site.register(models.TblCore, TblCoreAdmin)
+admin.site.register(models.TblMeta, TblMetaAdmin)
 
 
 class TblVariableAdminForm(ModelForm):
     class Meta:
         model = models.TblVariable
-        fields = ['full_name', 'abbrev', 'unit', 'symbol']
+        fields = ['variable_name', 'variable_abbrev', 'unit', 'variable_symbol']
 
 class TblVariableAdmin(admin.ModelAdmin):
 
     form = TblVariableAdminForm
-    list_display = ['full_name', 'abbrev']
+    list_display = ['variable_name', 'variable_abbrev']
 
 admin.site.register(models.TblVariable, TblVariableAdmin)
 
@@ -42,26 +42,26 @@ admin.site.register(models.TblVariable, TblVariableAdmin)
 class LtLicenseAdminForm(ModelForm):
     class Meta:
         model = models.LtLicense
-        fields = ['abbrev', 'full_name', 'license_text', 'license_url', 'access', 'share', 'edit', 'commercial']
+        fields = ['license_abbrev', 'license_name', 'legal_text', 'text_url', 'access', 'share', 'edit', 'commercial']
 
 class LtLicenseAdmin(admin.ModelAdmin):
 
     form = LtLicenseAdminForm
-    list_display = ['abbrev', 'full_name']
+    list_display = ['license_abbrev', 'license_name']
     
 admin.site.register(models.LtLicense, LtLicenseAdmin)
 
 
-class LtAuthorAdminForm(ModelForm):
+class LtUserAdminForm(ModelForm):
     class Meta:
-        model = models.LtAuthor
-        fields = ['first_name', 'last_name', 'institution', 'email', 'url', 'institution_department']
+        model = models.LtUser
+        fields = ['first_name', 'last_name', 'institution_name', 'email', 'department']
 
-class LtAuthorAdmin(admin.ModelAdmin):
+class LtUserAdmin(admin.ModelAdmin):
 
-    form = LtAuthorAdminForm
+    form = LtUserAdminForm
     search_fields = ['first_name', 'last_name']
-    list_display = ['first_name', 'last_name', 'institution']
+    list_display = ['first_name', 'last_name', 'institution_name']
     list_filter = ['last_name']
 
-admin.site.register(models.LtAuthor, LtAuthorAdmin)
+admin.site.register(models.LtUser, LtUserAdmin)
