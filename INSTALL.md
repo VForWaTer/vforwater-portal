@@ -152,7 +152,7 @@ Download, build and install Mapnik.
 
 
 
-# <a name="sources"></a>Sources
+# Sources
 
  - https://switch2osm.org/
  - https://gcc.gnu.org/wiki/InstallingGCC
