@@ -10,128 +10,6 @@ from __future__ import unicode_literals
 from django.contrib.gis.db import models
 
 
-class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=80)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group'
-
-
-class AuthGroupPermissions(models.Model):
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group_permissions'
-        unique_together = (('group', 'permission'),)
-
-
-class AuthPermission(models.Model):
-    name = models.CharField(max_length=255)
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-    codename = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_permission'
-        unique_together = (('content_type', 'codename'),)
-
-
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField()
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    email = models.CharField(max_length=254)
-    is_staff = models.BooleanField()
-    is_active = models.BooleanField()
-    date_joined = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
-
-
-class AuthUserGroups(models.Model):
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_groups'
-        unique_together = (('user', 'group'),)
-
-
-class AuthUserUserPermissions(models.Model):
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_user_permissions'
-        unique_together = (('user', 'permission'),)
-
-
-class Cluster(models.Model):
-    ts = models.DateTimeField()
-    meta = models.ForeignKey('TblCore', models.DO_NOTHING)
-    val = models.FloatField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'cluster'
-        unique_together = (('ts', 'meta'),)
-
-
-class Dim1D(models.Model):
-    core = models.ForeignKey('TblCore', models.DO_NOTHING, primary_key=True)
-    index_variable = models.ForeignKey('TblVariable', models.DO_NOTHING, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'dim_1d'
-
-
-class DimTs(models.Model):
-    core = models.ForeignKey('TblCore', models.DO_NOTHING, primary_key=True)
-    spacing_in_sec = models.IntegerField(blank=True, null=True)
-    elevation = models.FloatField(blank=True, null=True)
-    relative_height = models.FloatField(blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'dim_ts'
-
-
-class DjangoAdminLog(models.Model):
-    action_time = models.DateTimeField()
-    object_id = models.TextField(blank=True, null=True)
-    object_repr = models.CharField(max_length=200)
-    action_flag = models.SmallIntegerField()
-    change_message = models.TextField()
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'django_admin_log'
-
-
-class DjangoContentType(models.Model):
-    app_label = models.CharField(max_length=100)
-    model = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'django_content_type'
-        unique_together = (('app_label', 'model'),)
-
-
 class DjangoMigrations(models.Model):
     app = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
@@ -142,82 +20,148 @@ class DjangoMigrations(models.Model):
         db_table = 'django_migrations'
 
 
-class DjangoSession(models.Model):
-    session_key = models.CharField(primary_key=True, max_length=40)
-    session_data = models.TextField()
-    expire_date = models.DateTimeField()
+class LtDomain(models.Model):
+    pid = models.ForeignKey('self', models.DO_NOTHING, db_column='pid', blank=True, null=True)
+    domain_name = models.CharField(max_length=65)
+    project = models.ForeignKey('LtProject', models.DO_NOTHING, blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'django_session'
-
-
-class LtAuthor(models.Model):
-    first_name = models.CharField(max_length=65, blank=True, null=True)
-    last_name = models.CharField(max_length=255, blank=True, null=True)
-    institution = models.BooleanField()
-    email = models.TextField(blank=True, null=True)  # This field type is a guess.
-    url = models.TextField(blank=True, null=True)  # This field type is a guess.
-    institution_0 = models.ForeignKey('LtInstitution', models.DO_NOTHING, db_column='institution_id', blank=True, null=True)  # Field renamed because of name conflict.
-    institution_department = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'lt_author'
-
-
-class LtInstitution(models.Model):
-    institution_name = models.CharField(max_length=255, blank=True, null=True)
-  
-    class Meta:
-        managed = False
-        db_table = 'lt_institution'
+        db_table = 'lt_domain'
 
 
 class LtLicense(models.Model):
-    abbrev = models.CharField(max_length=20)
-    full_name = models.TextField()
-    license_text = models.TextField(blank=True, null=True)
-    license_url = models.TextField(blank=True, null=True)  # This field type is a guess.
+    license_abbrev = models.CharField(max_length=20)
+    license_name = models.CharField(max_length=255)
+    legal_text = models.TextField(blank=True, null=True)
+    text_url = models.CharField(max_length=255, blank=True, null=True)
     access = models.BooleanField()
     share = models.BooleanField()
     edit = models.BooleanField()
     commercial = models.BooleanField()
-  
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         managed = False
         db_table = 'lt_license'
 
 
+class LtLocation(models.Model):
+    centroid_x = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    centroid_y = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid', blank=True, null=True)
+    geometry_type = models.CharField(max_length=15, blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+    geom = models.GeometryField(unique=True, srid=0)
+
+    class Meta:
+        managed = False
+        db_table = 'lt_location'
+
+
+class LtProject(models.Model):
+    project_name = models.CharField(unique=True, max_length=65)
+    user = models.ForeignKey('LtUser', models.DO_NOTHING, blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lt_project'
+
+
+class LtQuality(models.Model):
+    flag_name = models.CharField(max_length=25)
+    flag_weight = models.IntegerField(blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lt_quality'
+
+
+class LtSite(models.Model):
+    site_name = models.CharField(max_length=65, blank=True, null=True)
+    elevation = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    rel_height = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    orientation_degree = models.IntegerField(blank=True, null=True)
+    slope = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    landuse = models.CharField(max_length=65, blank=True, null=True)
+    site_comment = models.TextField(blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lt_site'
+
+
+class LtSoil(models.Model):
+    geology = models.CharField(max_length=65, blank=True, null=True)
+    soil_type = models.CharField(max_length=65, blank=True, null=True)
+    porosity = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    field_capacity = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    residual_moisture = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lt_soil'
+
+
 class LtSourceType(models.Model):
-    source_type = models.CharField(max_length=24, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    mime = models.TextField(blank=True, null=True)
- 
+    type_name = models.CharField(unique=True, max_length=65)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         managed = False
         db_table = 'lt_source_type'
 
 
 class LtUnit(models.Model):
-    full_name = models.CharField(max_length=255)
-    abbrev = models.CharField(max_length=20)
-    symbol = models.CharField(max_length=10)
-    si_base = models.CharField(max_length=255, blank=True, null=True)
-    si = models.BooleanField()
- 
+    unit_name = models.CharField(unique=True, max_length=65)
+    unit_abbrev = models.CharField(max_length=15)
+    unit_symbol = models.CharField(max_length=5)
+    derived_si = models.NullBooleanField()
+    to_derived_si = models.TextField(blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         managed = False
         db_table = 'lt_unit'
 
 
-class NmCoreAdditional(models.Model):
-    core = models.ForeignKey('TblCore', models.DO_NOTHING)
-    additional = models.ForeignKey('TblAdditional', models.DO_NOTHING)
+class LtUser(models.Model):
+    is_institution = models.BooleanField()
+    first_name = models.CharField(max_length=65, blank=True, null=True)
+    last_name = models.CharField(max_length=65, blank=True, null=True)
+    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    department = models.CharField(max_length=255, blank=True, null=True)
+    email = models.CharField(max_length=60, blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'nm_core_additional'
+        db_table = 'lt_user'
+
+
+class NmMetaDomain(models.Model):
+    meta = models.ForeignKey('TblMeta', models.DO_NOTHING, blank=True, null=True)
+    domain = models.ForeignKey(LtDomain, models.DO_NOTHING, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'nm_meta_domain'
 
 
 class SpatialRefSys(models.Model):
@@ -232,67 +176,77 @@ class SpatialRefSys(models.Model):
         db_table = 'spatial_ref_sys'
 
 
-class TblAdditional(models.Model):
-    meta_key = models.CharField(max_length=60)
-    meta_value_str = models.CharField(max_length=255, blank=True, null=True)
-    meta_value_real = models.FloatField(blank=True, null=True)
-    meta_value_text = models.TextField(blank=True, null=True)
+class TblData(models.Model):
+    tstamp = models.DateTimeField()
+    meta = models.ForeignKey('TblMeta', models.DO_NOTHING)
+    value = models.DecimalField(max_digits=65535, decimal_places=65535)
 
     class Meta:
         managed = False
-        db_table = 'tbl_additional'
+        db_table = 'tbl_data'
+        unique_together = (('tstamp', 'meta'),)
 
 
-class TblCore(models.Model):
+class TblDataSource(models.Model):
+    source_type = models.ForeignKey(LtSourceType, models.DO_NOTHING, blank=True, null=True)
+    source_path = models.TextField()
+    settings = models.TextField(blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tbl_data_source'
+
+
+class TblMeta(models.Model):
     ts_start = models.DateTimeField(blank=True, null=True)
     ts_stop = models.DateTimeField(blank=True, null=True)
-    geom = models.GeometryField()
-    variable = models.ForeignKey('TblVariable', models.DO_NOTHING, blank=True, null=True)
-    source = models.ForeignKey('TblSource', models.DO_NOTHING, blank=True, null=True)
-    license = models.ForeignKey('LtLicense', models.DO_NOTHING, blank=True, null=True)
-    author = models.ForeignKey('LtAuthor', models.DO_NOTHING, blank=True, null=True, related_name='Author')
-    publisher = models.ForeignKey('LtAuthor', models.DO_NOTHING, blank=True, null=True, related_name='Publisher')
-    srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid', blank=True, null=True)
-    data_dimension = models.CharField(max_length=3, blank=True, null=True)
-    external_id = models.IntegerField(blank=True, null=True)
-    identifier_name = models.CharField(max_length=255, blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
-    
-    class Meta:
-        managed = False
-        db_table = 'tbl_core'
-
-
-class TblSite(models.Model):
-    geom = models.GeometryField(blank=True, null=True)
-    srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid', blank=True, null=True, related_name='Srid')
-    site_name = models.CharField(max_length=255, blank=True, null=True)
     external_id = models.CharField(max_length=255, blank=True, null=True)
+    support = models.CharField(max_length=255, blank=True, null=True)
+    spacing = models.CharField(max_length=255, blank=True, null=True)
+    creator = models.ForeignKey(LtUser, models.DO_NOTHING, blank=True, null=True, related_name='creator')
+    publisher = models.ForeignKey(LtUser, models.DO_NOTHING, blank=True, null=True, related_name='Publisher')
+    geometry = models.ForeignKey(LtLocation, models.DO_NOTHING, blank=True, null=True)
+    license = models.ForeignKey(LtLicense, models.DO_NOTHING, blank=True, null=True)
+    quality = models.ForeignKey(LtQuality, models.DO_NOTHING, blank=True, null=True)
+    site = models.ForeignKey(LtSite, models.DO_NOTHING, blank=True, null=True)
+    soil = models.ForeignKey(LtSoil, models.DO_NOTHING, blank=True, null=True)
+    variable = models.ForeignKey('TblVariable', models.DO_NOTHING, blank=True, null=True)
+    sensor = models.ForeignKey('TblSensor', models.DO_NOTHING, blank=True, null=True)
+    source = models.ForeignKey(TblDataSource, models.DO_NOTHING, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
-    geom_local = models.GeometryField(blank=True, null=True)
-    srid_local = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid_local', blank=True, null=True, related_name='SridLocal')
-  
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         managed = False
-        db_table = 'tbl_site'
+        db_table = 'tbl_meta'
 
 
-class TblSource(models.Model):
-    type = models.ForeignKey('LtSourceType', models.DO_NOTHING)
-    cmd = models.TextField()
-    comment = models.TextField(blank=True, null=True)
-  
+class TblSensor(models.Model):
+    sensor_name = models.CharField(max_length=65, blank=True, null=True)
+    manufacturer = models.CharField(max_length=255, blank=True, null=True)
+    documentation_url = models.TextField(blank=True, null=True)
+    last_configured = models.DateTimeField(blank=True, null=True)
+    valid_until = models.DateTimeField(blank=True, null=True)
+    sensor_comment = models.TextField(blank=True, null=True)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         managed = False
-        db_table = 'tbl_source'
+        db_table = 'tbl_sensor'
 
 
 class TblVariable(models.Model):
-    full_name = models.CharField(max_length=255)
-    unit = models.ForeignKey('LtUnit', models.DO_NOTHING)
-    abbrev = models.CharField(max_length=20)
-    symbol = models.CharField(max_length=10)
-  
+    variable_name = models.CharField(unique=True, max_length=65)
+    variable_abbrev = models.CharField(max_length=15)
+    variable_symbol = models.CharField(max_length=5)
+    unit = models.ForeignKey(LtUnit, models.DO_NOTHING)
+    created_on = models.DateTimeField(blank=True, null=True)
+    updated_on = models.DateTimeField(blank=True, null=True)
+
     class Meta:
         managed = False
         db_table = 'tbl_variable'
