@@ -17,19 +17,6 @@ RUN service postgresql start && \
     service postgresql stop
 
 
-# Populate database
-RUN apt-get update && apt-get -y install \
-        wget osm2pgsql
-WORKDIR /var/lib/mod_tile
-RUN wget -q http://download.geofabrik.de/europe/germany/baden-wuerttemberg/karlsruhe-regbez-latest.osm.pbf
-RUN service postgresql start && \
-    su -l -c "osm2pgsql --slim -C ${OSM_BUILD_CACHE_MB} \
-        --number-processes ${OSM_BUILD_PROCESSES} \
-        -d gis --hstore karlsruhe-regbez-latest.osm.pbf" osm && \
-    service postgresql stop
-RUN rm -f karlsruhe-regbez-latest.osm.pbf
-
-
 # Install mapnik stylesheet
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
         openstreetmap-carto
@@ -43,8 +30,6 @@ RUN apt-get update && apt-get -y install \
 WORKDIR /root
 RUN git clone https://github.com/openstreetmap/mod_tile.git
 WORKDIR /root/mod_tile
-# FIXME: Dirty hack to prevent race with database.
-RUN sed -i "/^.*Rendering daemon started.*$/i sleep(10);" src/daemon.c
 RUN ./autogen.sh && \
     ./configure
 RUN make
@@ -53,6 +38,19 @@ RUN make install && \
     ldconfig
 WORKDIR /root
 RUN rm -rf mod_tile
+
+
+# Populate database
+RUN apt-get update && apt-get -y install \
+        wget osm2pgsql
+WORKDIR /var/lib/mod_tile
+RUN wget -q http://download.geofabrik.de/europe/germany/baden-wuerttemberg/karlsruhe-regbez-latest.osm.pbf
+RUN service postgresql start && \
+    su -l -c "osm2pgsql --slim -C ${OSM_BUILD_CACHE_MB} \
+        --number-processes ${OSM_BUILD_PROCESSES} \
+        -d gis --hstore karlsruhe-regbez-latest.osm.pbf" osm && \
+    service postgresql stop
+RUN rm -f karlsruhe-regbez-latest.osm.pbf
 
 
 # Renderd configuration
@@ -68,9 +66,9 @@ RUN apt-get update && apt-get -y install \
 WORKDIR /etc/apache2/mods-available
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" > mod_tile.load
 RUN a2enmod mod_tile
-COPY docker/tile_mod.conf /etc/apache2/sites-available/tile_mod.conf
+COPY docker/osm_tiles.conf /etc/apache2/sites-available/osm_tiles.conf
 RUN a2dissite 000-default.conf && \
-    a2ensite tile_mod.conf
+    a2ensite osm_tiles.conf
 
 
 # Install openlayers demo page
@@ -89,12 +87,12 @@ RUN apt-get update && apt-get -y install \
 COPY docker/services.conf /etc/supervisor/conf.d/services.conf
 
 
-# Cleanup
+# Cleanup, uninstall tools
 RUN apt-get -y remove \
-        wget osm2pgsql \
-        git autoconf libtool
-RUN apt-get -y autoremove && apt-get clean
-# TODO: Maybe libmapnik-dev and apache2-dev can be removed as well?
+        git autoconf libtool libmapnik-dev apache2-dev \
+        wget osm2pgsql
+RUN apt-get -y autoremove && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 
 EXPOSE 80
