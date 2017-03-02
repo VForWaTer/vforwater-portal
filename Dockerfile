@@ -1,9 +1,11 @@
 # Based on source: https://www.linuxbabe.com/linux-server/openstreetmap-tile-server-ubuntu-16-04
 FROM ubuntu:16.04
 
+
 # If you have enough RAM you can increase this value to speed up the build process.
 ARG OSM_BUILD_CACHE_MB=2000
 ARG OSM_BUILD_PROCESSES=4
+
 
 # Install and set up database
 RUN apt-get update && apt-get -y install \
@@ -15,6 +17,19 @@ RUN service postgresql start && \
     su -l -c "psql -d gis -c 'CREATE EXTENSION hstore;'" postgres && \
     su -l -c "psql -d gis -c 'CREATE EXTENSION postgis;'" postgres && \
     service postgresql stop
+
+
+# Populate database
+RUN apt-get update && apt-get -y install \
+        wget osm2pgsql
+WORKDIR /var/lib/mod_tile
+RUN wget -q http://download.geofabrik.de/europe/germany/baden-wuerttemberg/karlsruhe-regbez-latest.osm.pbf
+RUN service postgresql start && \
+    su -l -c "osm2pgsql --slim -C ${OSM_BUILD_CACHE_MB} \
+        --number-processes ${OSM_BUILD_PROCESSES} \
+        -d gis --hstore karlsruhe-regbez-latest.osm.pbf" osm && \
+    service postgresql stop
+RUN rm -f karlsruhe-regbez-latest.osm.pbf
 
 
 # Install mapnik stylesheet
@@ -38,19 +53,6 @@ RUN make install && \
     ldconfig
 WORKDIR /root
 RUN rm -rf mod_tile
-
-
-# Populate database
-RUN apt-get update && apt-get -y install \
-        wget osm2pgsql
-WORKDIR /var/lib/mod_tile
-RUN wget -q http://download.geofabrik.de/europe/germany/baden-wuerttemberg/karlsruhe-regbez-latest.osm.pbf
-RUN service postgresql start && \
-    su -l -c "osm2pgsql --slim -C ${OSM_BUILD_CACHE_MB} \
-        --number-processes ${OSM_BUILD_PROCESSES} \
-        -d gis --hstore karlsruhe-regbez-latest.osm.pbf" osm && \
-    service postgresql stop
-RUN rm -f karlsruhe-regbez-latest.osm.pbf
 
 
 # Renderd configuration
@@ -81,6 +83,16 @@ RUN wget -q https://github.com/openlayers/openlayers/releases/download/v4.0.1/v4
 COPY docker/index.html /var/www/osm/index.html
 
 
+# Prepare Django environment
+RUN apt-get update && apt-get -y install \
+        python3-dev python3-pip \
+        libpq-dev libldap-dev libsasl2-dev \
+        libapache2-mod-wsgi-py3
+RUN pip3 install django owslib psycopg2 django-auth-ldap
+RUN mkdir /var/www/django-app
+VOLUME /var/www/django-app
+
+
 # Supervisor configuration
 RUN apt-get update && apt-get -y install \
         supervisor
@@ -91,7 +103,8 @@ COPY docker/services.conf /etc/supervisor/conf.d/services.conf
 RUN apt-get -y remove \
         git autoconf libtool libmapnik-dev apache2-dev \
         wget osm2pgsql
-RUN apt-get -y autoremove && apt-get clean && \
+RUN apt-get -y autoremove && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 
