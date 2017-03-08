@@ -81,10 +81,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater',
-        'USER': 'postgres',
-        'PASSWORD': 'vforwater',
-        'HOST': 'vforwater-gis.scc.kit.edu',
-        'PORT': '5432',
     }
 }
 
