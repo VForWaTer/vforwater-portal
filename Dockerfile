@@ -7,7 +7,7 @@ ARG OSM_BUILD_CACHE_MB=2000
 ARG OSM_BUILD_PROCESSES=4
 
 
-# Install and set up database
+# Install and set up OSM database
 RUN apt-get update && apt-get -y install \
         postgresql postgis
 RUN useradd -d /var/lib/mod_tile -m osm
@@ -19,7 +19,7 @@ RUN service postgresql start && \
     service postgresql stop
 
 
-# Populate database
+# Populate OSM database
 RUN apt-get update && apt-get -y install \
         wget osm2pgsql
 WORKDIR /var/lib/mod_tile
@@ -68,29 +68,35 @@ RUN apt-get update && apt-get -y install \
 WORKDIR /etc/apache2/mods-available
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" > mod_tile.load
 RUN a2enmod mod_tile
-COPY docker/osm_tiles.conf /etc/apache2/sites-available/osm_tiles.conf
+COPY docker/mod_tile.conf /etc/apache2/conf-available/mod_tile.conf
+COPY docker/site.conf /etc/apache2/sites-available/site.conf
 RUN a2dissite 000-default.conf && \
-    a2ensite osm_tiles.conf
+    a2ensite site.conf
 
 
 # Install openlayers demo page
 WORKDIR /var/www
-RUN mkdir osm
-WORKDIR /var/www/osm
+RUN mkdir map
+WORKDIR /var/www/map
 RUN wget -q https://github.com/openlayers/openlayers/releases/download/v4.0.1/v4.0.1-dist.zip && \
     unzip v4.0.1-dist.zip && \
     rm v4.0.1-dist.zip
-COPY docker/index.html /var/www/osm/index.html
+COPY docker/map/index.html /var/www/map/index.html
 
 
-# Prepare Django environment
+# Set up django environment
 RUN apt-get update && apt-get -y install \
         python3-dev python3-pip \
         libpq-dev libldap-dev libsasl2-dev \
         libapache2-mod-wsgi-py3
 RUN pip3 install django owslib psycopg2 django-auth-ldap
-RUN mkdir /var/www/django-app
-VOLUME /var/www/django-app
+VOLUME /var/www/vfw
+COPY docker/wsgi.conf /etc/apache2/conf-available/wsgi.conf
+RUN service postgresql start && \
+    su -l -c "createuser www-data" postgres && \
+    su -l -c "createdb -T template0 -E UTF8 -O www-data vforwater" postgres && \
+    su -l -c "psql -d vforwater -c 'CREATE EXTENSION postgis;'" postgres && \
+    service postgresql stop
 
 
 # Supervisor configuration
@@ -106,6 +112,7 @@ RUN apt-get -y remove \
 RUN apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN rm -rf /root/.cache
 
 
 EXPOSE 80

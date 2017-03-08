@@ -1,14 +1,23 @@
 SHELL   := /bin/bash
 VFW_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-all:
+help:
+	@echo "Usage:"
+	@echo "  make setup - Prepares image and container for the first start."
+	@echo "  make start - Starts vforwater container."
+	@echo "  make stop  - Stops vforwater container."
+	@echo "  make logs  - Prints log information from the containers' supervisord."
+	@echo "  make bash  - Provides a bash shell into the vforwater container."
+	@echo "[Dev] make update - Rebuild image and container after Dockerfile/config change."
+
+setup:
 	# Check if vforwater image exists.
 	if [ ! "$$(docker images | grep vforwater)" ]; then \
 		docker build -t vforwater $(VFW_DIR); \
 	fi
 	# Check if vforwater container exists.
 	if [ ! "$$(docker ps -a | grep vforwater)" ]; then \
-		docker run --name vforwater -d -p 80:80 -v $(VFW_DIR) vforwater; \
+		docker create --name vforwater -p 80:80 -v $(VFW_DIR):/var/www/vfw vforwater; \
 	fi
 	@echo "Use make start/stop to manage the docker container. \"docker ps\" shows the status."
 
@@ -18,5 +27,15 @@ start:
 stop:
 	docker stop vforwater
 
+logs:
+	docker logs vforwater
+
 bash:
 	docker exec -it vforwater /bin/bash
+
+update:
+	if [ "$$(docker ps -a | grep vforwater)" ]; then \
+		docker rm vforwater; \
+	fi
+	docker build -t vforwater $(VFW_DIR)
+	docker create --name vforwater -p 80:80 -v $(VFW_DIR):/var/www/vfw vforwater
