@@ -19,7 +19,7 @@
 //Create own base layer
 function create_map() {
 		maplayer = new ol.layer.Tile({
-		  source: new ol.source.XYZ({url: "http://vforwater-gis.scc.kit.edu/osm/{z}/{x}/{y}.png"})
+		  source: new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	});
 	    mapview = new ol.View({
 	    center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
