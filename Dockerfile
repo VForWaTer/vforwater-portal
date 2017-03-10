@@ -10,10 +10,10 @@ ARG OSM_BUILD_PROCESSES=4
 # Install and set up OSM database
 RUN apt-get update && apt-get -y install \
         postgresql postgis
-RUN useradd -d /var/lib/mod_tile -m osm
+RUN useradd -d /var/lib/mod_tile -m renderd
 RUN service postgresql start && \
-    su -l -c "createuser osm" postgres && \
-    su -l -c "createdb -T template0 -E UTF8 -O osm gis" postgres && \
+    su -l -c "createuser renderd" postgres && \
+    su -l -c "createdb -T template0 -E UTF8 -O renderd gis" postgres && \
     su -l -c "psql -d gis -c 'CREATE EXTENSION hstore;'" postgres && \
     su -l -c "psql -d gis -c 'CREATE EXTENSION postgis;'" postgres && \
     service postgresql stop
@@ -27,7 +27,7 @@ RUN wget -q http://download.geofabrik.de/europe/germany/baden-wuerttemberg/karls
 RUN service postgresql start && \
     su -l -c "osm2pgsql --slim -C ${OSM_BUILD_CACHE_MB} \
         --number-processes ${OSM_BUILD_PROCESSES} \
-        -d gis --hstore karlsruhe-regbez-latest.osm.pbf" osm && \
+        -d gis --hstore karlsruhe-regbez-latest.osm.pbf" renderd && \
     service postgresql stop
 RUN rm -f karlsruhe-regbez-latest.osm.pbf
 
@@ -58,8 +58,8 @@ RUN rm -rf mod_tile
 # Renderd configuration
 COPY docker/renderd.conf /usr/local/etc/renderd.conf
 RUN mkdir -p /var/run/renderd && \
-    chown osm:osm /var/run/renderd
-RUN su -l -c "touch /var/lib/mod_tile/planet-import-complete" osm
+    chown renderd:renderd /var/run/renderd
+RUN su -l -c "touch /var/lib/mod_tile/planet-import-complete" renderd
 
 
 # Set up webserver
@@ -69,6 +69,8 @@ WORKDIR /etc/apache2/mods-available
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" > mod_tile.load
 RUN a2enmod mod_tile
 COPY docker/mod_tile.conf /etc/apache2/conf-available/mod_tile.conf
+#RUN a2enmod proxy && \
+#    a2enmod proxy_http
 COPY docker/site.conf /etc/apache2/sites-available/site.conf
 RUN a2dissite 000-default.conf && \
     a2ensite site.conf
@@ -81,7 +83,20 @@ WORKDIR /var/www/map
 RUN wget -q https://github.com/openlayers/openlayers/releases/download/v4.0.1/v4.0.1-dist.zip && \
     unzip v4.0.1-dist.zip && \
     rm v4.0.1-dist.zip
-COPY docker/map/index.html /var/www/map/index.html
+COPY docker/map/index.html index.html
+
+
+# Install tilemill/tileoven
+RUN apt-get update && apt-get -y install \
+        nodejs-legacy npm
+RUN useradd -m tilemill
+USER tilemill
+WORKDIR /home/tilemill
+RUN git clone https://github.com/florianf/tileoven.git
+WORKDIR /home/tilemill/tileoven
+RUN sed -i "s/127\.0\.0\.1/0\.0\.0\.0/g" lib/config.defaults.json
+RUN npm install
+USER root
 
 
 # Set up django environment
@@ -113,8 +128,10 @@ RUN apt-get -y autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 RUN rm -rf /root/.cache
+# Can/should we also remove python3-dev, npm?
 
 
 EXPOSE 80
+EXPOSE 20008 20009
 WORKDIR /root
 CMD ["/usr/bin/supervisord", "--nodaemon"]
