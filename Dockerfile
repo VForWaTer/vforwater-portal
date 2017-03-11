@@ -68,10 +68,9 @@ RUN apt-get update && apt-get -y install \
 WORKDIR /etc/apache2/mods-available
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" > mod_tile.load
 RUN a2enmod mod_tile
-COPY docker/mod_tile.conf /etc/apache2/conf-available/mod_tile.conf
-#RUN a2enmod proxy && \
-#    a2enmod proxy_http
-COPY docker/site.conf /etc/apache2/sites-available/site.conf
+COPY docker/apache/mod_tile.conf /etc/apache2/conf-available/mod_tile.conf
+COPY docker/apache/site.conf /etc/apache2/sites-available/site.conf
+COPY docker/html/index.html /var/www/html/index.html
 RUN a2dissite 000-default.conf && \
     a2ensite site.conf
 
@@ -106,7 +105,7 @@ RUN apt-get update && apt-get -y install \
         libapache2-mod-wsgi-py3
 RUN pip3 install django owslib psycopg2 django-auth-ldap
 VOLUME /var/www/vfw
-COPY docker/wsgi.conf /etc/apache2/conf-available/wsgi.conf
+COPY docker/apache/wsgi.conf /etc/apache2/conf-available/wsgi.conf
 RUN service postgresql start && \
     su -l -c "createuser www-data" postgres && \
     su -l -c "createdb -T template0 -E UTF8 -O www-data vforwater" postgres && \
