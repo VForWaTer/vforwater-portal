@@ -79,12 +79,12 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'django.db',
+    },
+    'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater',
-        'USER': 'postgres',
-        'PASSWORD': 'vforwater',
-        'HOST': 'vforwater-gis.scc.kit.edu',
-        'PORT': '5432',
     }
 }
 
