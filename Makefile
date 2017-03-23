@@ -22,7 +22,7 @@ setup:
 	        -p 80:80 -p 20008:20008 -p 20009:20009 \
 	        -v $(VFW_DIR):/var/www/vfw vforwater; \
 	fi
-	@echo "Use make start/stop to manage the docker container. \"docker ps\" shows the status."
+	@echo "Use \"make start/stop\" to manage the docker container. \"docker ps\" shows the status."
 
 start:
 	docker start vforwater
