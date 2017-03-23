@@ -1,10 +1,11 @@
 # Local / temporary files
-db.sqlite3
+vforwater.db
 *.pyc
 
 # Project / IDE files
 .project
 .idea
+.pydevproject
 
 # Python virtual environment folder
 venv
