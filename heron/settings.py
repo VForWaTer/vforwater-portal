@@ -15,6 +15,11 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# For now, place all data files in VFW_DIR and not into source directory.
+HOME_DIR = os.path.expanduser('~')
+VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
+if not os.path.exists(VFW_DIR):
+    os.makedirs(VFW_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -23,7 +28,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Generate secret on initial run. ("random" should be replaced with "secrets" for python >=3.6)
 import random, string
 
-secretFile = os.path.join(os.path.expanduser('~'), '.django_secret.txt')
+secretFile = os.path.join(VFW_DIR, 'secret.txt')
 if not os.path.isfile(secretFile):
     SECRET_KEY = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
     with open(secretFile, 'w+') as f:
@@ -90,7 +95,7 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'django.db',
+        'NAME': os.path.join(VFW_DIR, 'django.db'),
     },
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
