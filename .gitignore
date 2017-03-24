@@ -1,12 +1,11 @@
 # Local / temporary files
-vforwater.db
 *.pyc
 
 # Project / IDE files
-.project
 .idea
+.project
 .pydevproject
+.settings
 
 # Python virtual environment folder
 venv
-/.directory
