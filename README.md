@@ -43,3 +43,37 @@ Run built-in web server (for testing):
 
     $ python manage.py migrate
     $ python manage.py runserver
+
+
+# autopull.sh
+
+Since autopull.sh is not in any repository, I'll have a copy here for now.
+
+    #!/bin/bash
+    echo -e "---------- $(date) ----------"
+
+    VFW_PID=$(lsof -i :8000 -n -P -F p)
+    VFW_RUNNING=$?
+
+    if [ "$VFW_RUNNING" -eq "0" ]; then
+        echo "Vforwater is running. Shutting down..."
+        kill $(echo $VFW_PID | cut -c 2-)
+    else
+        echo "Vforwater is not running."
+    fi
+
+    echo "Pull new version from repository..."
+    cd "/home/vfwportal/vforwater-portal"
+    git pull origin master
+
+    echo "Migrate database..."
+    source "/opt/rh/rh-python35/enable"
+    source "/home/vfwportal/django-env/bin/activate"
+    python manage.py migrate
+
+    echo "Start vforwater server..."
+    python manage.py runserver 0.0.0.0:8000 &
+
+    echo -e "---------- End ----------\n"
+
+    exit 0
