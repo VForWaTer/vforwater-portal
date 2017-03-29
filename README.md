@@ -45,9 +45,9 @@ Run built-in web server (for testing):
     $ python manage.py runserver
 
 
-# autopull.sh
+# autoupdate.sh
 
-Since autopull.sh is not in any repository, I'll have a copy here for now.
+Since autoupdate.sh is not in any repository, I'll have a copy here for now.
 
     #!/bin/bash
     echo -e "---------- $(date) ----------"
@@ -72,8 +72,8 @@ Since autopull.sh is not in any repository, I'll have a copy here for now.
     python manage.py migrate
 
     echo "Start vforwater server..."
-    python manage.py runserver 0.0.0.0:8000 &
+    python manage.py runserver 0.0.0.0:8000 > "/home/vfwportal/django-log/$(date +%F).log" 2>&1 &
 
-    echo -e "---------- End ----------\n"
+    echo -e "---------- Done ----------\n"
 
     exit 0
