@@ -64,15 +64,18 @@ RUN su -l -c "touch /var/lib/mod_tile/planet-import-complete" renderd
 
 # Set up webserver
 RUN apt-get update && apt-get -y install \
-        apache2
+        apache2 libapache2-mod-shib2
 WORKDIR /etc/apache2/mods-available
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" > mod_tile.load
-RUN a2enmod mod_tile
+RUN a2enmod mod_tile && \
+    a2enmod ssl
 COPY docker/apache/mod_tile.conf /etc/apache2/conf-available/mod_tile.conf
-COPY docker/apache/site.conf /etc/apache2/sites-available/site.conf
+COPY docker/apache/http-site.conf /etc/apache2/sites-available/http-site.conf
+COPY docker/apache/https-site.conf /etc/apache2/sites-available/https-site.conf
 COPY docker/html/index.html /var/www/html/index.html
 RUN a2dissite 000-default.conf && \
-    a2ensite site.conf
+    a2ensite http-site.conf && \
+    a2ensite https-site.conf
 
 
 # Install openlayers demo page
@@ -105,7 +108,6 @@ RUN apt-get update && apt-get -y install \
         libapache2-mod-wsgi-py3
 RUN pip3 install django owslib psycopg2 django-auth-ldap
 VOLUME /var/www/vfw
-COPY docker/apache/wsgi.conf /etc/apache2/conf-available/wsgi.conf
 # Enable www-data to write to it's home directory.
 RUN chown www-data:www-data /var/www
 
@@ -127,7 +129,7 @@ RUN rm -rf /root/.cache
 # Can/should we also remove python3-dev, npm?
 
 
-EXPOSE 80
+EXPOSE 80 443
 EXPOSE 20008 20009
 WORKDIR /root
 CMD ["/usr/bin/supervisord", "--nodaemon"]
