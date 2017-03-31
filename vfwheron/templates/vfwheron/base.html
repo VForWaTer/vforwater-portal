@@ -62,9 +62,16 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	  </div>
 	  <i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i> <select class="respo-select" id="select_data" autocomplete="off" onchange="select_data()">
 	  	<option value="0" selected="selected">Select Data</option>
-	  	<option value="Rainfall">Rainfall</option>
-	  	<option value="River">River</option>
-	  	<option value="Soil">Soil</option>
+          {% if all_names %}
+	  
+	        {% for names in all_names %}
+	          <option value={{ names.variable_name }}>{{ names.variable_name }}</option>
+	        {% endfor %} 
+	      {% else %}
+            <option value="Rainfall">Rainfall</option>
+            <option value="River">River</option>
+            <option value="Soil">Soil</option>
+	      {% endif %}
 	  </select>
 	  <a class="respo-padding respo-hover-blue" href="javascript:void(0)" onclick="filterbox_open();draw_polygon()"><i class="fa fa-filter fa-fw"></i>  Filter Data</a>
 	  <hr style="margin-bottom:0px;">
