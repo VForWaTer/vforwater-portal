@@ -26,6 +26,9 @@ class LtDomain(models.Model):
     project = models.ForeignKey('LtProject', models.DO_NOTHING, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.domain_name
 
     class Meta:
         managed = False
@@ -43,6 +46,9 @@ class LtLicense(models.Model):
     commercial = models.BooleanField()
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.license_name
 
     class Meta:
         managed = False
@@ -69,6 +75,9 @@ class LtProject(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return self.project_name
+
     class Meta:
         managed = False
         db_table = 'lt_project'
@@ -79,6 +88,9 @@ class LtQuality(models.Model):
     flag_weight = models.IntegerField(blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.flag_name
 
     class Meta:
         managed = False
@@ -96,6 +108,9 @@ class LtSite(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return self.site_name # TODO: is this useful? At the moment there is no information in site_name 
+
     class Meta:
         managed = False
         db_table = 'lt_site'
@@ -109,6 +124,9 @@ class LtSoil(models.Model):
     residual_moisture = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.geology # TODO: at the moment only values in geology and nothing in soil_type. Check if geology is always filled
 
     class Meta:
         managed = False
@@ -120,6 +138,9 @@ class LtSourceType(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return self.type_name
+    
     class Meta:
         managed = False
         db_table = 'lt_source_type'
@@ -134,6 +155,9 @@ class LtUnit(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return self.unit_name
+    
     class Meta:
         managed = False
         db_table = 'lt_unit'
@@ -149,6 +173,9 @@ class LtUser(models.Model):
     comment = models.TextField(blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return '%s %s' % (self.first_name, self.last_name)
 
     class Meta:
         managed = False
@@ -170,6 +197,9 @@ class SpatialRefSys(models.Model):
     auth_srid = models.IntegerField(blank=True, null=True)
     srtext = models.TextField(blank=True, null=True)
     proj4text = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.auth_srid
   
     class Meta:
         managed = False
@@ -180,6 +210,9 @@ class TblData(models.Model):
     tstamp = models.DateTimeField()
     meta = models.ForeignKey('TblMeta', models.DO_NOTHING)
     value = models.DecimalField(max_digits=65535, decimal_places=65535)
+
+    def __str__(self):
+        return self.value # TODO: is that okay?
 
     class Meta:
         managed = False
@@ -193,6 +226,9 @@ class TblDataSource(models.Model):
     settings = models.TextField(blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.source_path
 
     class Meta:
         managed = False
@@ -234,6 +270,9 @@ class TblSensor(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return self.sensor_name
+
     class Meta:
         managed = False
         db_table = 'tbl_sensor'
@@ -246,6 +285,9 @@ class TblVariable(models.Model):
     unit = models.ForeignKey(LtUnit, models.DO_NOTHING)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.variable_name
 
     class Meta:
         managed = False
