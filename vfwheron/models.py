@@ -199,7 +199,7 @@ class SpatialRefSys(models.Model):
     proj4text = models.TextField(blank=True, null=True)
     
     def __str__(self):
-        return self.auth_srid
+        return '%s %s' % (self.auth_name, self.auth_srid)
   
     class Meta:
         managed = False
