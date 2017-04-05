@@ -63,7 +63,10 @@ class LtLocation(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
     geom = models.GeometryField(unique=True, srid=0)
-
+    
+    def __str__(self):
+        return '%s %s' % (self.centroid_x, self.centroid_y)
+    
     class Meta:
         managed = False
         db_table = 'lt_location'
