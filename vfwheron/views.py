@@ -1,14 +1,24 @@
 from django.views.generic import TemplateView
 from vfwheron.models import TblVariable
 
+from django.contrib.gis.db.models import Extent
+from vfwheron.models import LtLocation
+from vfwheron.models import LtUnit
+
+from vfwheron.models import TblMeta
 # Create your views here.
 
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
     def get_context_data(self, **kwargs):
-        all_variable_names = TblVariable.objects.using('vforwater').all()
+        get_unit_id = TblVariable.objects.using('vforwater').select_related('unit').values_list('variable_name', 'variable_symbol')
+        all_variable_names = get_unit_id.values('variable_name', 'variable_symbol','unit__unit_symbol')
         return {'all_names': all_variable_names} 
+    
+    def get_users_data_extent(self, **kwargs):
+        extent = LtLocation.objects.using('vforwater').filter().aggregate(Extent('geom'))
+        return {'start_extent':start_extent}         
     
 class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'
