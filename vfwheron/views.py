@@ -15,10 +15,7 @@ class HomeView(TemplateView):
         get_unit_id = TblVariable.objects.using('vforwater').select_related('unit').values_list('variable_name', 'variable_symbol')
         all_variable_names = get_unit_id.values('variable_name', 'variable_symbol','unit__unit_symbol')
         return {'all_names': all_variable_names} 
-    
-    def get_users_data_extent(self, **kwargs):
-        extent = LtLocation.objects.using('vforwater').filter().aggregate(Extent('geom'))
-        return {'start_extent':start_extent}         
+       
     
 class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'

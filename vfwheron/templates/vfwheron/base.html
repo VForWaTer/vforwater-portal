@@ -62,9 +62,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	  </div>
 	  <i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i> <select class="respo-select" id="select_data" autocomplete="off" onchange="select_data()">
 	  	<option value="0" selected="selected">Select Data</option>
-  		test
           {% if all_names %}
-          test2
             {% for names in all_names %}
 	          <option value={{ names.variable_name }}>{{ names.variable_name }}   ({{names.variable_symbol}} in {{names.unit__unit_symbol}})</option>
 	        {% endfor %} 
