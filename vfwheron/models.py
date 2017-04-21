@@ -8,6 +8,7 @@
 from __future__ import unicode_literals
 
 from django.contrib.gis.db import models
+from django.db.models.fields import IntegerField
 
 
 class DjangoMigrations(models.Model):
@@ -66,12 +67,12 @@ class LtLocation(models.Model):
     
     def __str__(self):
         return '%s %s' % (self.centroid_x, self.centroid_y)
-    
+     
     class Meta:
         managed = False
         db_table = 'lt_location'
-
-
+        
+        
 class LtProject(models.Model):
     project_name = models.CharField(unique=True, max_length=65)
     user = models.ForeignKey('LtUser', models.DO_NOTHING, blank=True, null=True)
@@ -258,6 +259,9 @@ class TblMeta(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return 'ID %s, %s' % (self.external_id, self.comment)
+    
     class Meta:
         managed = False
         db_table = 'tbl_meta'
@@ -295,3 +299,38 @@ class TblVariable(models.Model):
     class Meta:
         managed = False
         db_table = 'tbl_variable'
+        
+
+# build BW watershed table
+class Basiseinzugsgebiet(models.Model):
+    # Regular Django fields corresponding to the attributes in the
+    # Basiseinzugsgebiet shapefile.
+    langname = models.CharField(max_length=100)
+    area = models.FloatField()
+    objectid = models.BigIntegerField()
+    object_id = models.FloatField()
+    fg_id = models.BigIntegerField()
+    fgkz_nr = models.FloatField('flussgebietskennzahl')
+    einzugsgeb = models.IntegerField('einzugsgebietsordnung') # Einzugsgebiets Ordnung – eines Flusses, Baches
+    einzugsg00 = models.CharField('einzugsgebietsordnung in Worten', max_length = 80) # Quellgebiet – oberstes Teilgebiet eines Flusses, Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet – unterstes Teilgebiet eines Flusses, Baches
+    einzugsg01 = models.CharField( max_length = 1) 
+    einzugsg02 = models.CharField( max_length = 26) 
+    vor_fgkz_n = models.FloatField('flussgebietskennzahl des vorfluters')
+    vor_fg_id = models.FloatField()
+    vor_fg_lan = models.CharField('vorfluter_langname', max_length = 100)
+    wasserkoer = models.CharField('wasserkoerper_code', max_length = 10)
+    wasserko00 = models.CharField('wasserkoerper_name', max_length = 85)
+    aenderungs = models.CharField( max_length= 20)
+    aenderun00 = models.CharField( max_length= 20)
+    length = models.FloatField()
+    mod_by = models.CharField(max_length= 32)
+    last_mod = models.CharField(max_length= 20)
+    se_anno_ca = models.CharField(max_length = 254)
+    wasserko01 = models.BigIntegerField()
+    # GeoDjango-specific: a geometry field (MultiPolygonField)
+    mpoly = models.MultiPolygonField(srid=31467)
+
+    # Returns the string representation of the model.
+    def __str__(self):              # __unicode__ on Python 2
+        return self.langname
+    
