@@ -30,7 +30,7 @@ Basiseinzugsgebiet_mapping = {
 }
     # GeoDjango-specific: a geometry field (MultiPolygonField)
 Basiseinzugsgebiet_shp = os.path.abspath(
-    '/home/marcus/GIS/Basiseinzugsgebiete_LUBW/Basiseinzugsgebiet (AWGN)_polygon.shp'
+    '/tmp/Basiseinzugsgebiet (AWGN)_polygon.shp'
     )  
 
 def run(verbose=True):
