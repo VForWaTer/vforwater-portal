@@ -1,36 +1,82 @@
-
+// TODO: get layer from geoserver		
+/*		var testMarkers = new ol.layer.Tile({
+			source: new ol.source.TileWMS({
+				url: 'http://vforwater-gis.scc.kit.edu:8080/geoserver/ows',
+				//format: new ol.format.JSON()
+	              params: {LAYERS: 'CAOS:cluster'}
+			})
+		});
 // Create map layer
-/*function create_map() {
-		maplayer = new ol.map({
-		  source: new ol.layer.OSM()
+function create_map() {
+	testMarkers = new ol.layer.Tile({
+		source: new ol.source.TileWMS({
+			url: 'http://vforwater-gis.scc.kit.edu:8080/geoserver/ows',
+			//format: new ol.format.JSON()
+              params: {LAYERS: 'CAOS:lt_location'}
+		})
+	});
+	
+	maplayer = new ol.layer.Tile({
+		  preload: Infinity,
+		  source: new ol.source.OSM()
 	});
 	    mapview = new ol.View({
 	    center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
 	    zoom: 6
 	});
+//	    dataview = new ol.View({
+	//	    	viewer.olView.fit({{start_extent}})
+	  //  });	    	
 	    map_tar = document.getElementById("map");
 	    map = new ol.Map({
 	    renderer: 'canvas',
 	    target: map_tar,
-	    layers: [maplayer],
-	    view: mapview
+	    layers: [maplayer, testMarkers],
+	    controls: [
+	    	new ol.control.Zoom(),
+	    	new ol.control.Attribution(),
+	    	new ol.control.ZoomSlider(),
+	        new ol.control.MousePosition({
+	            projection: 'EPSG:4326',
+	            coordinateFormat: function(coord) {
+	              return ol.coordinate.format(coord, '{y}°, {x}°', 4);}
+	            }),
+	        new ol.control.ScaleLine(), 
+	    ],
+	    view: mapview//dataview
 	});  
 }*/
+
 //Create own base layer
 function create_map() {
 		maplayer = new ol.layer.Tile({
+		preload: Infinity,
 		  source: new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	});
 	    mapview = new ol.View({
 	    center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
 	    zoom: 6
 	});
+//	    dataview = new ol.View({
+	//    	viewer.olView.fit({{start_extent}})
+   // });
 	    map_tar = document.getElementById("map");
 	    map = new ol.Map({
 	    renderer: 'canvas',
 	    target: map_tar,
 	    layers: [maplayer],
-	    view: mapview
+	    controls: [
+	    	new ol.control.Zoom(),
+	    	new ol.control.Attribution(),
+	    	new ol.control.ZoomSlider(),
+	        new ol.control.MousePosition({
+	            projection: 'EPSG:4326',
+	            coordinateFormat: function(coord) {
+	              return ol.coordinate.format(coord, '{y}°, {x}°', 4);}
+	            }),
+	        new ol.control.ScaleLine(), 
+	    ],
+	    view: mapview//dataview
 	}); 
 }
 
