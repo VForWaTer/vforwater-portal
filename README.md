@@ -43,7 +43,22 @@ Run built-in web server (for testing):
 
     $ python manage.py migrate
     $ python manage.py runserver
+   
+# vforwater-portal on vforwater-gis
 
+Here are some info about vforwater-portal which is running at (https://vforwater-gis.scc.kit.edu/vfwheron/).
+The portal is being developed in Django using python35. 
+In order to enable python35:
+
+	$ source /opt/rh/rh-python35/enable
+
+Django (1.10.2) is already installed on a virtual environment named "django-env" at "/home/vfwportal".
+In order to activate Django environment use:
+
+	$ source /home/vfwportal/django-env/bin/activate
+	
+The vforwater-portal Django project is available at "/home/vfwportal/vforwater-portal".
+The updates that you push to git is being applied automatically everyday at 12:00 and its log file is available at "/home/vfwportal/autoupdate.log".
 
 # autoupdate.sh
 
