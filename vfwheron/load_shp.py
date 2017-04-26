@@ -33,9 +33,10 @@ Basiseinzugsgebiet_shp = os.path.abspath(
     '/tmp/Basiseinzugsgebiet (AWGN)_polygon.shp'
     )  
 
-def run(verbose=True):
+def run(path=Basiseinzugsgebiet_shp, verbose=True):
     lm = LayerMapping(
         Basiseinzugsgebiet, Basiseinzugsgebiet_shp, Basiseinzugsgebiet_mapping,
         transform=False, encoding='iso-8859-1',
     )
     lm.save(strict=True, verbose=verbose)
+    
