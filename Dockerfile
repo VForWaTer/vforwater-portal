@@ -6,7 +6,9 @@ FROM ubuntu:16.04
 ARG OSM_BUILD_CACHE_MB=2000
 ARG OSM_BUILD_PROCESSES=4
 
-
+# ------------------------------------
+# ----- Tile server installation -----
+# ------------------------------------
 # Install and set up OSM database
 RUN apt-get update && apt-get -y install \
         postgresql postgis
@@ -62,6 +64,9 @@ RUN mkdir -p /var/run/renderd && \
 RUN su -l -c "touch /var/lib/mod_tile/planet-import-complete" renderd
 
 
+# ------------------------------------
+# ----- Application installation -----
+# ------------------------------------
 # Set up webserver
 RUN apt-get update && apt-get -y install \
         apache2
@@ -108,6 +113,12 @@ RUN apt-get update && apt-get -y install \
         libapache2-mod-wsgi-py3
 RUN pip3 install django owslib psycopg2 django-auth-ldap
 VOLUME /var/www/vfw
+# Database for Django application
+RUN service postgresql start && \
+    su -l -c "createuser www-data" postgres && \
+    su -l -c "createdb -T template0 -E UTF8 -O www-data vforwater" postgres && \
+    su -l -c "psql -d vforwater -c 'CREATE EXTENSION postgis;'" postgres && \
+    service postgresql stop
 # Enable www-data to write to it's home directory.
 RUN chown www-data:www-data /var/www
 

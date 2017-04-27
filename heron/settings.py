@@ -93,11 +93,11 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
+#   'default': {
+#       'ENGINE': 'django.db.backends.sqlite3',
+#       'NAME': os.path.join(VFW_DIR, 'django.db'),
+#   },
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(VFW_DIR, 'django.db'),
-    },
-    'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater',
     }
