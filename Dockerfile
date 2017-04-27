@@ -64,7 +64,7 @@ RUN su -l -c "touch /var/lib/mod_tile/planet-import-complete" renderd
 
 # Set up webserver
 RUN apt-get update && apt-get -y install \
-        apache2 libapache2-mod-shib2
+        apache2
 WORKDIR /etc/apache2/mods-available
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" > mod_tile.load
 RUN a2enmod mod_tile && \
