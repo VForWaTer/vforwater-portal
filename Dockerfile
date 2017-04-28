@@ -121,6 +121,9 @@ RUN service postgresql start && \
     service postgresql stop
 # Enable www-data to write to it's home directory.
 RUN chown www-data:www-data /var/www
+# A little utility for development
+COPY docker/become_django_user.sh /root/become_django_user.sh
+RUN chmod +x /root/become_django_user.sh
 
 
 # Supervisor configuration
