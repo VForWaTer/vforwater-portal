@@ -11,16 +11,6 @@ from django.contrib.gis.db import models
 from django.db.models.fields import IntegerField
 
 
-class DjangoMigrations(models.Model):
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
 class LtDomain(models.Model):
     pid = models.ForeignKey('self', models.DO_NOTHING, db_column='pid', blank=True, null=True)
     domain_name = models.CharField(max_length=65)
@@ -32,7 +22,7 @@ class LtDomain(models.Model):
         return self.domain_name
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_domain'
 
 
@@ -52,7 +42,7 @@ class LtLicense(models.Model):
         return self.license_name
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_license'
 
 
@@ -69,7 +59,7 @@ class LtLocation(models.Model):
         return '%s %s' % (self.centroid_x, self.centroid_y)
      
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_location'
         
         
@@ -83,7 +73,7 @@ class LtProject(models.Model):
         return self.project_name
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_project'
 
 
@@ -97,7 +87,7 @@ class LtQuality(models.Model):
         return self.flag_name
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_quality'
 
 
@@ -116,7 +106,7 @@ class LtSite(models.Model):
         return self.site_name # TODO: is this useful? At the moment there is no information in site_name 
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_site'
 
 
@@ -133,7 +123,7 @@ class LtSoil(models.Model):
         return self.geology # TODO: at the moment only values in geology and nothing in soil_type. Check if geology is always filled
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_soil'
 
 
@@ -146,7 +136,7 @@ class LtSourceType(models.Model):
         return self.type_name
     
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_source_type'
 
 
@@ -163,7 +153,7 @@ class LtUnit(models.Model):
         return self.unit_name
     
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_unit'
 
 
@@ -182,7 +172,7 @@ class LtUser(models.Model):
         return '%s %s' % (self.first_name, self.last_name)
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'lt_user'
 
 
@@ -191,7 +181,7 @@ class NmMetaDomain(models.Model):
     domain = models.ForeignKey(LtDomain, models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'nm_meta_domain'
 
 
@@ -206,7 +196,7 @@ class SpatialRefSys(models.Model):
         return '%s %s' % (self.auth_name, self.auth_srid)
   
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'spatial_ref_sys'
 
 
@@ -219,7 +209,7 @@ class TblData(models.Model):
         return self.value # TODO: is that okay?
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'tbl_data'
         unique_together = (('tstamp', 'meta'),)
 
@@ -235,7 +225,7 @@ class TblDataSource(models.Model):
         return self.source_path
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'tbl_data_source'
 
 
@@ -263,7 +253,7 @@ class TblMeta(models.Model):
         return 'ID %s, %s' % (self.external_id, self.comment)
     
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'tbl_meta'
 
 
@@ -281,7 +271,7 @@ class TblSensor(models.Model):
         return self.sensor_name
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'tbl_sensor'
 
 
@@ -297,7 +287,7 @@ class TblVariable(models.Model):
         return self.variable_name
 
     class Meta:
-        managed = False
+        #managed = False
         db_table = 'tbl_variable'
         
 
@@ -333,4 +323,4 @@ class Basiseinzugsgebiet(models.Model):
     # Returns the string representation of the model.
     def __str__(self):              # __unicode__ on Python 2
         return self.langname
-    
+
