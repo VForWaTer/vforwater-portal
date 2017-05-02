@@ -91,6 +91,7 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+DATABASE_ROUTERS = ['vfwheron.router.DatabaseRouter']
 
 DATABASES = {
     'default': {
