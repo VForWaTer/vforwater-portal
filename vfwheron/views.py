@@ -1,12 +1,18 @@
 from django.views.generic import TemplateView
-from vfwheron.models import TblVariable
-
 from django.contrib.gis.db.models import Extent
+from django.contrib.auth import authenticate, login, logout
+
+from vfwheron.models import TblVariable
 from vfwheron.models import LtLocation
 from vfwheron.models import LtUnit
-
 from vfwheron.models import TblMeta
+
+from watts_rsp import auth
+import logging
+
 # Create your views here.
+
+logger = logging.getLogger(__name__)
 
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
@@ -19,3 +25,21 @@ class HomeView(TemplateView):
     
 class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'
+
+class LoginView(TemplateView):
+    def post(self, request):
+        return auth.WattsBackend.redirect(request)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            user = authenticate(request)
+            if user:
+                login(request, user)
+                logger.info('{} logged in'.format(user.username))
+            else:
+                logger.debug('A stranger passed by')
+        else:
+            logger.debug('{} passed by'.format(request.user.username))
+
+        return super().dispatch(request, *args, **kwargs)
+
