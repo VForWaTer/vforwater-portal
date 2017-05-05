@@ -46,19 +46,27 @@ Run built-in web server (for testing):
    
 # vforwater-portal on vforwater-gis
 
-Here are some info about vforwater-portal which is running at (https://vforwater-gis.scc.kit.edu/vfwheron/).
-The portal is being developed in Django using python35. 
+Here are some info about vforwater-portal which is running at (https://vforwater-gis.scc.kit.edu/vfwheron/). The portal is being developed in Django using python35. 
+
 In order to enable python35:
 
 	$ source /opt/rh/rh-python35/enable
 
 Django (1.10.2) is already installed on a virtual environment named "django-env" at "/home/vfwportal".
+
 In order to activate Django environment use:
 
 	$ source /home/vfwportal/django-env/bin/activate
 	
-The vforwater-portal Django project is available at "/home/vfwportal/vforwater-portal".
-The updates that you push to git is being applied automatically everyday at 12:00 and its log file is available at "/home/vfwportal/autoupdate.log".
+The vforwater-portal Django project is available at "/home/vfwportal/vforwater-portal". The updates that you push to git is being applied automatically everyday at 12:00 and its log file is available at "/home/vfwportal/autoupdate.log".
+
+# WaTTS, The INDIGO Token Translation Service
+
+WaTTS returns credentials after successful authentication. It offers an easy way to self service credentials by the users. Visit WaTTS documentation at (https://watts-dev.data.kit.edu/docs/index.html).
+
+The WaTTS implementation for vforwater is "watts_rsp" app which is added and connected to the "vfwheron" app in vforwater-portal. Currently watts_rsp is included in another git project named "watts-sample-rsp" and is located in "/home/vfwportal". vforwater-portal uses watts_rsp via a link connected to its git directory. The WaTTS login in available on sign in menu of the portal.
+
+For your test purpose, you need to have these settings in your version of vforwater-portal. In near future we will have the complete version of watts_rsp to add into our git repository as a submodule.
 
 # autoupdate.sh
 

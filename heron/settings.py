@@ -42,6 +42,41 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s %(module)s %(message)s'
+        }
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(VFW_DIR, 'debug.log'),
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'heron': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+             'propagate': True,
+        },
+        'vfwheron': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+             'propagate': True,
+        },    
+        'watts_rsp': {
+            'handlers': ['file'],
+            'level': 'DEBUG'
+        }
+    }
+
+}
 
 # Application definition
 
@@ -56,6 +91,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
+    'watts_rsp',
 ]
 
 MIDDLEWARE = [
@@ -91,6 +127,8 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+
+DATABASE_ROUTERS = ['router.DatabaseRouter', 'vfwheron.router.DatabaseRouter']
 
 DATABASES = {
     'default': {
@@ -149,6 +187,7 @@ LOGOUT_REDIRECT_URL = 'vfwheron:home'
 
 # LDAP authentication configuration
 AUTHENTICATION_BACKENDS = (
+    'watts_rsp.auth.WattsBackend',
     'django_auth_ldap.backend.LDAPBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
@@ -190,3 +229,11 @@ AUTH_LDAP_USER_FLAGS_BY_GROUP = {
 #logger = logging.getLogger('django_auth_ldap')
 #logger.addHandler(logging.StreamHandler())
 #logger.setLevel(logging.DEBUG)
+
+# WaTTS settings
+WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
+WATTS_SERVICE_NAME = 'rsp'
+WATTS_ISSUER_ID = 'vforwater'
+##WATTS_PROVIDER_ID = 'iam'
+WATTS_PROVIDER_ID = 'eudat'
+
