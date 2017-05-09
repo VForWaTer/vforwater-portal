@@ -7,12 +7,12 @@ class DatabaseRouter(object):
     
     def db_for_read(self, model, **hints):
         if model._meta.app_label == 'watts_rsp':
-            return 'vforwater'
+            return 'default'
         return None
 
     def db_for_write(self, model, **hints):
         if model._meta.app_label == 'watts_rsp':
-            return 'vforwater'
+            return 'default'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -28,11 +28,11 @@ class DatabaseRouter(object):
             return False
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
-        """Ensure that the vforwater app's models get created on the right database."""
+        """Ensure that the app's models get created on the right database."""
         if app_label == 'watts_rsp':
             # The Example app should be migrated only on the example_db database.
-            return db == 'vforwater'
-        elif db == 'vforwater':
+            return db == 'default'
+        elif db == 'default':
             # Ensure that all other apps don't get migrated on the example_db database.
             return False
 
