@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView
 from django.contrib.gis.db.models import Extent
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import logout
 
 from vfwheron.models import TblVariable
 from vfwheron.models import LtLocation
@@ -32,12 +32,7 @@ class LoginView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            user = authenticate(request)
-            if user:
-                login(request, user)
-                logger.info('{} logged in'.format(user.username))
-            else:
-                logger.debug('A stranger passed by')
+            logger.debug('A stranger passed by')
         else:
             logger.debug('{} passed by'.format(request.user.username))
 

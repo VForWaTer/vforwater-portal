@@ -184,6 +184,7 @@ STATIC_URL = '/static/'
 LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
+POST_LOGIN_URL = 'vfwheron:login'
 
 # LDAP authentication configuration
 AUTHENTICATION_BACKENDS = (
