@@ -92,12 +92,14 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+DATABASE_ROUTERS = ['router.VforwaterRouter']
+
 DATABASES = {
-#   'default': {
-#       'ENGINE': 'django.db.backends.sqlite3',
-#       'NAME': os.path.join(VFW_DIR, 'django.db'),
-#   },
     'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(VFW_DIR, 'django.db'),
+    },
+    'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater',
     }
