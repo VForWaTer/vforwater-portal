@@ -32,7 +32,7 @@ start:
 	docker start vforwater
 
 stop:
-	docker stop vforwater
+	docker stop --time 60 vforwater
 
 logs:
 	docker logs vforwater
