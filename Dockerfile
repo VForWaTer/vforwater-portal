@@ -113,12 +113,13 @@ RUN apt-get update && apt-get -y install \
         libapache2-mod-wsgi-py3
 RUN pip3 install django owslib psycopg2 django-auth-ldap
 VOLUME /var/www/vfw
-# Database for Django application
+# Database for Django application / V-FOR-WaTer
 RUN service postgresql start && \
     su -l -c "createuser www-data" postgres && \
     su -l -c "createdb -T template0 -E UTF8 -O www-data vforwater" postgres && \
     su -l -c "psql -d vforwater -c 'CREATE EXTENSION postgis;'" postgres && \
     service postgresql stop
+# TODO: Import tables / SQL dump!
 # Enable www-data to write to it's home directory.
 RUN chown www-data:www-data /var/www
 # A little utility for development
