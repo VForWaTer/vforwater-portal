@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from django.contrib.gis.db.models import Extent
 from django.contrib.auth import logout
+from django.shortcuts import  redirect
 
 from vfwheron.models import TblVariable
 from vfwheron.models import LtLocation
@@ -28,13 +29,13 @@ class ExtlinksView(TemplateView):
 
 class LoginView(TemplateView):
     def post(self, request):
-        return auth.WattsBackend.redirect(request)
+        return redirect('vfwheron:watts_rsp:login_init')
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
-            logger.debug('A stranger passed by')
+            logger.debug('The user is not authenticated!')
         else:
-            logger.debug('{} passed by'.format(request.user.username))
+            logger.debug('{} logged in as'.format(request.user.username))
 
         return super().dispatch(request, *args, **kwargs)
 

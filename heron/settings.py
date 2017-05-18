@@ -137,7 +137,7 @@ DATABASES = {
     },
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater',
+        'NAME': 'vforwater',       
     }
 }
 
@@ -184,7 +184,8 @@ STATIC_URL = '/static/'
 LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
-POST_LOGIN_URL = 'vfwheron:login'
+LOGIN_SUCCESS_VIEW = 'vfwheron:login'
+LOGIN_FAILURE_VIEW = 'vfwheron:login'
 
 # LDAP authentication configuration
 AUTHENTICATION_BACKENDS = (
