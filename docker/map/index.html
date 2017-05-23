@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OSM Demo</title>
-    <link rel="stylesheet" href="v4.0.1-dist/ol.css" type="text/css">
-    <script src="v4.0.1-dist/ol.js"></script>
+    <!-- Based on http://openlayers.org/en/latest/examples/full-screen.html -->
+    <title>OpenStreetMap Demo</title>
+    <link rel="stylesheet" href="v4.1.1-dist/ol.css" type="text/css">
+    <script src="v4.1.1-dist/ol.js"></script>
+    <style>
+      /* Make the OpenLayers map fill the page. */
+      html, body, .map {
+        margin: 0;
+        height: 100%;
+      }
+    </style>
 </head>
 <body>
-    <div id="map"></div>
+    <div id="map" class="map"></div>
     <script>
     var map = new ol.Map({
       layers: [
@@ -16,12 +24,8 @@
           })
         })
       ],
-      target: 'map',
-      controls: ol.control.defaults({
-        attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
-          collapsible: false
-        })
-      }),
+      controls: ol.control.defaults(),
+      target: 'map', // target div id
       view: new ol.View({
         center: ol.proj.fromLonLat([8.4325, 49.0957]),
         zoom: 15,

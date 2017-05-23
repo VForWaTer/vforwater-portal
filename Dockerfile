@@ -88,9 +88,9 @@ RUN a2dissite 000-default.conf && \
 WORKDIR /var/www
 RUN mkdir map
 WORKDIR /var/www/map
-RUN wget -q https://github.com/openlayers/openlayers/releases/download/v4.0.1/v4.0.1-dist.zip && \
-    unzip v4.0.1-dist.zip && \
-    rm v4.0.1-dist.zip
+RUN wget -q https://github.com/openlayers/openlayers/releases/download/v4.1.1/v4.1.1-dist.zip && \
+    unzip v4.1.1-dist.zip && \
+    rm v4.1.1-dist.zip
 COPY docker/map/index.html index.html
 
 
