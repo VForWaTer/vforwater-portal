@@ -6,6 +6,7 @@ FROM ubuntu:16.04
 ARG OSM_BUILD_CACHE_MB=2000
 ARG OSM_BUILD_PROCESSES=4
 
+
 # ------------------------------------
 # ----- Tile server installation -----
 # ------------------------------------
@@ -109,9 +110,9 @@ USER root
 # Set up django environment
 RUN apt-get update && apt-get -y install \
         python3-dev python3-pip \
-        libpq-dev libldap-dev libsasl2-dev \
+        libpq-dev \
         libapache2-mod-wsgi-py3
-RUN pip3 install django owslib psycopg2 django-auth-ldap
+RUN pip3 install django owslib psycopg2
 VOLUME /var/www/vfw
 # Database for Django application / V-FOR-WaTer
 RUN service postgresql start && \

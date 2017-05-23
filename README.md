@@ -13,7 +13,7 @@ Enable SCL repositories.
 
 Install Python3 and other dependencies.
 
-    # yum install rh-python35 gcc postgresql-devel openldap-devel
+    # yum install rh-python35 gcc postgresql-devel
 
 Enable Python3 environment.
 
@@ -29,15 +29,11 @@ Install dependencies for PostgreSQL and geolibs. (https://docs.djangoproject.com
 
     # apt install libpq-dev binutils libproj-dev gdal-bin
 
-Finally, install further dependencies for LDAP.
-
-    # apt install libldap-dev libsasl2-dev
-
 ## Python virtual environment
 
     $ virtualenv -p `which python3` venv
     $ source venv/bin/activate
-    $ pip install django owslib psycopg2 django-auth-ldap
+    $ pip install django owslib psycopg2
 
 Run built-in web server (for testing):
 
