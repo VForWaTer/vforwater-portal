@@ -63,16 +63,17 @@ LOGGING = {
         'heron': {
             'handlers': ['file'],
             'level': 'DEBUG',
-             'propagate': True,
+            'propagate': True,
         },
         'vfwheron': {
             'handlers': ['file'],
             'level': 'DEBUG',
-             'propagate': True,
+            'propagate': True,
         },    
         'watts_rsp': {
             'handlers': ['file'],
-            'level': 'DEBUG'
+            'level': 'DEBUG',
+            'propagate': True,
         }
     }
 
@@ -184,8 +185,8 @@ STATIC_URL = '/static/'
 LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
-LOGIN_SUCCESS_VIEW = 'vfwheron:login'
-LOGIN_FAILURE_VIEW = 'vfwheron:login'
+LOGIN_SUCCESS_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/rsp/login/success'
+LOGIN_FAILURE_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/login'
 
 # LDAP authentication configuration
 AUTHENTICATION_BACKENDS = (
@@ -236,6 +237,6 @@ AUTH_LDAP_USER_FLAGS_BY_GROUP = {
 WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
 WATTS_SERVICE_NAME = 'rsp'
 WATTS_ISSUER_ID = 'vforwater'
-##WATTS_PROVIDER_ID = 'iam'
+#WATTS_PROVIDER_ID = 'iam'
 WATTS_PROVIDER_ID = 'eudat'
 

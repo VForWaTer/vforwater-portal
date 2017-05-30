@@ -44,6 +44,7 @@ img{margin-bottom:-5px}a{color:inherit}
 .respo-centered tr th,.respo-centered tr td{text-align:center}
 .respo-table td,.respo-table th,.respo-table-all td,.respo-table-all th{padding:8px 8px;display:table-cell;text-align:left;vertical-align:top}
 .respo-table th:first-child,.respo-table td:first-child,.respo-table-all th:first-child,.respo-table-all td:first-child{padding-left:16px}
+.respo-btn-simple{border:none;display:inline-block;outline:none;padding:6px 16px;vertical-align:middle;overflow:hidden;text-decoration:none!important;color:transparent;background-color:transparent;text-align:center;cursor:pointer;white-space:nowrap}
 .respo-btn,.respo-btn-block{border:none;display:inline-block;outline:0;padding:6px 16px;vertical-align:middle;overflow:hidden;text-decoration:none!important;color:#fff;background-color:#000;text-align:center;cursor:pointer;white-space:nowrap}
 .respo-btn:hover,.respo-btn-block:hover,.respo-btn-floating:hover,.respo-btn-floating-large:hover{box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)}
 .respo-btn,.respo-btn-floating,.respo-btn-floating-large,.respo-closenav,.respo-opennav,.respo-btn-block{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}   

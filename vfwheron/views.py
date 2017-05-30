@@ -1,3 +1,4 @@
+from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.gis.db.models import Extent
 from django.contrib.auth import logout
@@ -8,7 +9,6 @@ from vfwheron.models import LtLocation
 from vfwheron.models import LtUnit
 from vfwheron.models import TblMeta
 
-from watts_rsp import auth
 import logging
 
 # Create your views here.
@@ -29,6 +29,7 @@ class ExtlinksView(TemplateView):
 
 class LoginView(TemplateView):
     def post(self, request):
+        logger.debug('Redirect to vfwheron/rsp/login/init...')
         return redirect('vfwheron:watts_rsp:login_init')
 
     def dispatch(self, request, *args, **kwargs):
@@ -38,4 +39,13 @@ class LoginView(TemplateView):
             logger.debug('{} logged in as'.format(request.user.username))
 
         return super().dispatch(request, *args, **kwargs)
+    
+class LogoutView(View):
+    def logout(self, request):
+        logger.debug('{} logged out'.format(request.user.username))
+        logout(request)
+
+    def post(self, request):
+        self.logout(request)
+        return redirect('vfwheron:login')
 

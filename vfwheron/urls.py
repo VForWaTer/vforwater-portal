@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^external_links$', views.ExtlinksView.as_view(), name='external_links'),
     url(r'^rsp/', include('watts_rsp.urls')),    
     url(r'^watts_login/', views.LoginView.as_view(), name='watts_login'),
+    url(r'^logout$', views.LogoutView.as_view(), name='logout')
 ]

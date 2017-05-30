@@ -5,7 +5,8 @@
     {% if form.errors %}
         <h5><b>Your login failed! Please try again.</b></h5>
     {% elif user.is_authenticated %}
-        <h5><b>Your are already logged in as {{ user.username }}.</b></h5>
+        <h5><b>Welcome {{ user.first_name }} {{ user.last_name }}</b></h5>
+        <h6><b>you are logged in as {{ user.username }}.</b></h6>
     {% else %}
         <h5><b>Welcome! Please log in.</b></h5>
     {% endif %}
