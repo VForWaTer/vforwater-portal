@@ -11,6 +11,7 @@ help:
 	@echo "  make stop                         - Stops vforwater container."
 	@echo "  make logs                         - Prints log information from the containers' supervisord."
 	@echo "  make bash                         - Provides a bash shell into the vforwater container."
+	@echo "  make superuser                    - Creates superuser account for the django application."
 	@echo "Development:"
 	@echo "  make update [HTTP=80] [HTTPS=443] - Rebuild image and container after Dockerfile/config change."
 
@@ -39,6 +40,9 @@ logs:
 
 bash:
 	docker exec -it vforwater /bin/bash
+
+superuser:
+	docker exec -it vforwater /root/create_django_superuser.sh
 
 update:
 	if [ "$$(docker ps -aqf 'name=vforwater')" ]; then \
