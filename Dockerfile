@@ -120,7 +120,11 @@ RUN service postgresql start && \
     su -l -c "createdb -T template0 -E UTF8 -O www-data vforwater" postgres && \
     su -l -c "psql -d vforwater -c 'CREATE EXTENSION postgis;'" postgres && \
     service postgresql stop
-# TODO: Import tables / SQL dump!
+# Import metacatalog SQL dump.
+COPY docker/metacatalog.sql /var/lib/postgresql/metacatalog.sql
+RUN service postgresql start && \
+    su -l -c "psql vforwater < metacatalog.sql" postgres && \
+    service postgresql stop
 # Enable www-data to write to it's home directory.
 RUN chown www-data:www-data /var/www
 # A little utility for development
