@@ -7,6 +7,9 @@ ARG OSM_BUILD_CACHE_MB=2000
 ARG OSM_BUILD_PROCESSES=4
 
 
+# ------------------------------------
+# ----- Tile server installation -----
+# ------------------------------------
 # Install and set up OSM database
 RUN apt-get update && apt-get -y install \
         postgresql postgis
@@ -62,6 +65,9 @@ RUN mkdir -p /var/run/renderd && \
 RUN su -l -c "touch /var/lib/mod_tile/planet-import-complete" renderd
 
 
+# ------------------------------------
+# ----- Application installation -----
+# ------------------------------------
 # Set up webserver
 RUN apt-get update && apt-get -y install \
         apache2
@@ -82,9 +88,9 @@ RUN a2dissite 000-default.conf && \
 WORKDIR /var/www
 RUN mkdir map
 WORKDIR /var/www/map
-RUN wget -q https://github.com/openlayers/openlayers/releases/download/v4.0.1/v4.0.1-dist.zip && \
-    unzip v4.0.1-dist.zip && \
-    rm v4.0.1-dist.zip
+RUN wget -q https://github.com/openlayers/openlayers/releases/download/v4.1.1/v4.1.1-dist.zip && \
+    unzip v4.1.1-dist.zip && \
+    rm v4.1.1-dist.zip
 COPY docker/map/index.html index.html
 
 
@@ -104,12 +110,28 @@ USER root
 # Set up django environment
 RUN apt-get update && apt-get -y install \
         python3-dev python3-pip \
-        libpq-dev libldap-dev libsasl2-dev \
+        libpq-dev \
         libapache2-mod-wsgi-py3
-RUN pip3 install django owslib psycopg2 django-auth-ldap
+RUN pip3 install django owslib psycopg2
 VOLUME /var/www/vfw
+# Database for Django application / V-FOR-WaTer
+RUN service postgresql start && \
+    su -l -c "createuser www-data" postgres && \
+    su -l -c "createdb -T template0 -E UTF8 -O www-data vforwater" postgres && \
+    su -l -c "psql -d vforwater -c 'CREATE EXTENSION postgis;'" postgres && \
+    service postgresql stop
+# Import metacatalog SQL dump.
+COPY docker/metacatalog.sql /var/lib/postgresql/metacatalog.sql
+RUN service postgresql start && \
+    su -l -c "psql vforwater < metacatalog.sql" postgres && \
+    service postgresql stop
 # Enable www-data to write to it's home directory.
 RUN chown www-data:www-data /var/www
+# Install utility scripts
+COPY docker/become_django_user.sh /root/become_django_user.sh
+COPY docker/create_django_superuser.sh /root/create_django_superuser.sh
+RUN chmod +x /root/become_django_user.sh
+RUN chmod +x /root/create_django_superuser.sh
 
 
 # Supervisor configuration

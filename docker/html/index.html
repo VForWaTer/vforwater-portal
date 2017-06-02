@@ -4,10 +4,12 @@
     Modified from the Debian original for Ubuntu
     Last updated: 2014-03-19
     See: https://launchpad.net/bugs/1288690
+
+    Further reused by V-FOR-WaTer to provide a simple landing page.
   -->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Apache2 Ubuntu Default Page: It works</title>
+    <title>V-FOR-WaTer Development Index Page</title>
     <style type="text/css" media="screen">
   * {
     margin: 0px 0px 0px 0px;
@@ -195,7 +197,7 @@
       <div class="page_header floating_element">
         <img src="static/vfwheron/images/logo_main.png" alt="V-FOR-WaTer Logo" class="floating_element"/>
         <span class="floating_element">
-          V-FOR-WaTer Dev. Index Page
+          Development Index Page
         </span>
       </div>
 
@@ -206,14 +208,24 @@
         </div>
         <div class="content_section_text">
           <p>
-            This is the default index page of the V-FOR-WaTer docker build.
+            This is the development index page of the V-FOR-WaTer docker build.
             Applications bundled in this package are listed below.
             Read more about V-FOR-WaTer on <a href="http://vforwater.de">vforwater.de</a>.
           </p>
           <ul>
-            <li><a href="vfw/vfwheron">V-FOR-WaTer</a> Django Application</li>
-            <li><a href="map">Openlayers</a> Demo Page</li>
-            <li><a href="#" onClick="location = 'http://' + location.hostname + ':20009'">Tilemill</a> Installation</li>
+            <li>
+              <a href="vfw/vfwheron">V-FOR-WaTer</a> Django Application &ndash;
+              This is the heart of the V-FOR-WaTer project and probably the link you want to click on.
+              Run <em>make superuser</em> on command line to create the initial account.
+            </li>
+            <li>
+              <a href="map">Openlayers</a> Demo Page &ndash;
+              A good way to test the functionality of the local tile server.
+            </li>
+            <li>
+              <a href="#" onClick="location = 'http://' + location.hostname + ':20009'">Tilemill</a> Installation &ndash;
+              Unused at the moment and likely to be removed in the near future.
+            </li>
           </ul>
         </div>
       </div>
