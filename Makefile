@@ -4,7 +4,7 @@ HTTP    ?= 80
 HTTPS   ?= 443
 
 help:
-	@echo "This Makefile helps setting up your V-FOR-WaTer environment."
+	@echo "This Makefile helps setting up your V-FOR-WaTer docker environment."
 	@echo "Usage:"
 	@echo "  make setup [HTTP=80] [HTTPS=443]  - Prepares image and container for the first start."
 	@echo "  make start                        - Starts vforwater container."
@@ -27,6 +27,7 @@ setup:
 	        -p 20008:20008 -p 20009:20009 \
 	        -v $(VFW_DIR):/var/www/vfw vforwater; \
 	fi
+	@echo "----------"
 	@echo "Use \"make start/stop\" to manage the docker container. \"docker ps\" shows the status."
 
 start:
