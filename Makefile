@@ -3,19 +3,21 @@ VFW_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 HTTP    ?= 80
 HTTPS   ?= 443
 
+.PHONY: help
 help:
 	@echo "This Makefile helps setting up your V-FOR-WaTer docker environment."
 	@echo "Usage:"
-	@echo "  make setup [HTTP=80] [HTTPS=443]  - Prepares image and container for the first start."
-	@echo "  make start                        - Starts vforwater container."
-	@echo "  make stop                         - Stops vforwater container."
-	@echo "  make logs                         - Prints log information from the containers' supervisord."
-	@echo "  make bash                         - Provides a bash shell into the vforwater container."
-	@echo "  make superuser                    - Creates superuser account for the django application."
+	@echo "  make install [HTTP=80] [HTTPS=443] - Builds image and container for the first start."
+	@echo "  make start                         - Starts vforwater container."
+	@echo "  make stop                          - Stops vforwater container."
+	@echo "  make log                           - Prints log information from the containers' supervisord."
+	@echo "  make bash                          - Provides a bash shell into the vforwater container."
+	@echo "  make superuser                     - Creates superuser account for the django application."
 	@echo "Development:"
-	@echo "  make update [HTTP=80] [HTTPS=443] - Rebuild image and container after Dockerfile/config change."
+	@echo "  make update [HTTP=80] [HTTPS=443]  - Rebuild image and container after Dockerfile/config change."
 
-setup:
+.PHONY: install
+install:
 	# Check if vforwater image exists.
 	if [ ! "$$(docker images -aqf 'reference=vforwater')" ]; then \
 	    docker build -t vforwater $(VFW_DIR); \
@@ -30,21 +32,30 @@ setup:
 	@echo "----------"
 	@echo "Use \"make start/stop\" to manage the docker container. \"docker ps\" shows the status."
 
+.PHONY: start
 start:
 	docker start vforwater
 
+.PHONY: stop
 stop:
 	docker stop --time 60 vforwater
 
-logs:
+.PHONY: restart
+restart: stop start
+
+.PHONY: log
+log:
 	docker logs vforwater
 
+.PHONY: bash
 bash:
 	docker exec -it vforwater /bin/bash
 
+.PHONY: superuser
 superuser:
 	docker exec -it vforwater /root/create_django_superuser.sh
 
+.PHONY: update
 update:
 	if [ "$$(docker ps -aqf 'name=vforwater')" ]; then \
 	    docker rm vforwater; \
