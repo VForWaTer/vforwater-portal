@@ -9,3 +9,6 @@
 
 # Python virtual environment folder
 venv
+
+# Log files from docker container
+log

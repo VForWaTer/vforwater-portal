@@ -1,5 +1,6 @@
 SHELL   := /bin/bash
 VFW_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+LOG_DIR ?= $(VFW_DIR)/log
 HTTP    ?= 80
 HTTPS   ?= 443
 
@@ -23,12 +24,18 @@ install:
 	if [ ! "$$(docker images -aqf 'reference=vforwater')" ]; then \
 	    docker build -t vforwater $(VFW_DIR); \
 	fi
+	# Check if log volume exists.
+	if [ ! "$$(docker volume ls -qf 'name=vforwater_log')" ]; then \
+	    docker volume create vforwater_log; \
+	fi
 	# Check if vforwater container exists.
 	if [ ! "$$(docker ps -aqf 'name=vforwater')" ]; then \
 	    docker create --name vforwater \
 	        -p $(HTTP):80 -p $(HTTPS):443 \
 	        -p 20008:20008 -p 20009:20009 \
-	        -v $(VFW_DIR):/var/www/vfw vforwater; \
+	        -v $(VFW_DIR):/var/www/vfw \
+	        -v vforwater_log:/var/log \
+	        vforwater; \
 	fi
 	@echo "----------"
 	@echo "Use \"make start/stop\" to manage the docker container. \"docker ps\" shows the status."
@@ -50,6 +57,8 @@ superuser:
 
 .PHONY: log
 log:
+	test -h $(LOG_DIR) || \
+	    ln -s "$$(docker volume inspect --format '{{ .Mountpoint }}' vforwater_log)" $(LOG_DIR)
 	docker logs vforwater
 
 .PHONY: bash
@@ -61,11 +70,17 @@ update:
 	if [ "$$(docker ps -aqf 'name=vforwater')" ]; then \
 	    docker rm vforwater; \
 	fi
+	if [ "$$(docker volume ls -qf 'name=vforwater_log')" ]; then \
+	    docker volume rm vforwater_log; \
+	fi
 	docker build -t vforwater $(VFW_DIR)
+	docker volume create vforwater_log
 	docker create --name vforwater \
 	    -p $(HTTP):80 -p $(HTTPS):443 \
 	    -p 20008:20008 -p 20009:20009 \
-	    -v $(VFW_DIR):/var/www/vfw vforwater
+	    -v $(VFW_DIR):/var/www/vfw \
+	    -v vforwater_log:/var/log \
+	    vforwater
 
 .PHONY: migrations
 migrations:

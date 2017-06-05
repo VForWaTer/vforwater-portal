@@ -146,6 +146,7 @@ COPY docker/services.conf /etc/supervisor/conf.d/services.conf
 
 
 # Footer
+VOLUME /var/log
 EXPOSE 80 443
 EXPOSE 20008 20009
 WORKDIR /root
