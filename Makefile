@@ -13,10 +13,10 @@ help:
 	@echo "  make stop                          - Stops vforwater container."
 	@echo "  make superuser                     - Creates superuser account for the django application."
 	@echo "Development:"
-	@echo "  make log                           - Prints log information from the containers' supervisord."
+	@echo "  make log                           - Prints log info and creates link to container's /var/log."
 	@echo "  make bash                          - Provides a bash shell into the vforwater container."
 	@echo "  make update [HTTP=80] [HTTPS=443]  - Rebuild image and container after Dockerfile/config change."
-	@echo "  make migrations                    - Run 'makemigrations' through the docker container."
+	@echo "  make migrations                    - Run django's 'makemigrations' through the docker container."
 
 .PHONY: install
 install:
