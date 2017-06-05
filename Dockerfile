@@ -114,6 +114,7 @@ RUN apt-get update && apt-get -y install \
         libapache2-mod-wsgi-py3
 RUN pip3 install django owslib psycopg2
 VOLUME /var/www/vfw
+
 # Database for Django application / V-FOR-WaTer
 RUN service postgresql start && \
     su -l -c "createuser www-data" postgres && \
@@ -125,13 +126,17 @@ COPY docker/metacatalog.sql /var/lib/postgresql/metacatalog.sql
 RUN service postgresql start && \
     su -l -c "psql vforwater < metacatalog.sql" postgres && \
     service postgresql stop
+
 # Enable www-data to write to it's home directory.
 RUN chown www-data:www-data /var/www
-# Install utility scripts
+
+# Install utility scripts (for Makefile)
 COPY docker/become_django_user.sh /root/become_django_user.sh
 COPY docker/create_django_superuser.sh /root/create_django_superuser.sh
-RUN chmod +x /root/become_django_user.sh
-RUN chmod +x /root/create_django_superuser.sh
+COPY docker/django_makemigrations.sh /root/django_makemigrations.sh
+RUN chmod +x /root/become_django_user.sh && \
+    chmod +x /root/create_django_superuser.sh && \
+    chmod +x /root/django_makemigrations.sh
 
 
 # Supervisor configuration

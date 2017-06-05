@@ -10,11 +10,12 @@ help:
 	@echo "  make install [HTTP=80] [HTTPS=443] - Builds image and container for the first start."
 	@echo "  make start                         - Starts vforwater container."
 	@echo "  make stop                          - Stops vforwater container."
-	@echo "  make log                           - Prints log information from the containers' supervisord."
-	@echo "  make bash                          - Provides a bash shell into the vforwater container."
 	@echo "  make superuser                     - Creates superuser account for the django application."
 	@echo "Development:"
+	@echo "  make log                           - Prints log information from the containers' supervisord."
+	@echo "  make bash                          - Provides a bash shell into the vforwater container."
 	@echo "  make update [HTTP=80] [HTTPS=443]  - Rebuild image and container after Dockerfile/config change."
+	@echo "  make migrations                    - Run 'makemigrations' through the docker container."
 
 .PHONY: install
 install:
@@ -43,6 +44,10 @@ stop:
 .PHONY: restart
 restart: stop start
 
+.PHONY: superuser
+superuser:
+	docker exec -it vforwater /root/create_django_superuser.sh
+
 .PHONY: log
 log:
 	docker logs vforwater
@@ -50,10 +55,6 @@ log:
 .PHONY: bash
 bash:
 	docker exec -it vforwater /bin/bash
-
-.PHONY: superuser
-superuser:
-	docker exec -it vforwater /root/create_django_superuser.sh
 
 .PHONY: update
 update:
@@ -65,3 +66,7 @@ update:
 	    -p $(HTTP):80 -p $(HTTPS):443 \
 	    -p 20008:20008 -p 20009:20009 \
 	    -v $(VFW_DIR):/var/www/vfw vforwater
+
+.PHONY: migrations
+migrations:
+	docker exec -it vforwater /root/django_makemigrations.sh
