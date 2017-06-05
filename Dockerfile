@@ -1,15 +1,15 @@
-# Based on source: https://www.linuxbabe.com/linux-server/openstreetmap-tile-server-ubuntu-16-04
+# Dockerfile to set up V-FOR-WaTer development environment.
 FROM ubuntu:16.04
 
+# ------------------------------------
+# ----- Tile server installation -----
+# ------------------------------------
+# Based on source: https://www.linuxbabe.com/linux-server/openstreetmap-tile-server-ubuntu-16-04
 
 # If you have enough RAM you can increase this value to speed up the build process.
 ARG OSM_BUILD_CACHE_MB=2000
 ARG OSM_BUILD_PROCESSES=4
 
-
-# ------------------------------------
-# ----- Tile server installation -----
-# ------------------------------------
 # Install and set up OSM database
 RUN apt-get update && apt-get -y install \
         postgresql postgis
@@ -140,17 +140,7 @@ RUN apt-get update && apt-get -y install \
 COPY docker/services.conf /etc/supervisor/conf.d/services.conf
 
 
-# Cleanup, uninstall tools
-RUN apt-get -y remove \
-        git autoconf libtool libmapnik-dev apache2-dev \
-        wget osm2pgsql
-RUN apt-get -y autoremove && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-RUN rm -rf /root/.cache
-# Can/should we also remove python3-dev, npm?
-
-
+# Footer
 EXPOSE 80 443
 EXPOSE 20008 20009
 WORKDIR /root
