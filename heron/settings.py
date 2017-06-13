@@ -92,7 +92,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
-    'watts_rsp',
 ]
 
 MIDDLEWARE = [
@@ -190,15 +189,25 @@ LOGOUT_REDIRECT_URL = 'vfwheron:home'
 LOGIN_SUCCESS_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/rsp/login/success'
 LOGIN_FAILURE_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/login'
 
-# Authentication configuration
-AUTHENTICATION_BACKENDS = (
-    'watts_rsp.auth.WattsBackend',
-    'django.contrib.auth.backends.ModelBackend',
-)
 
-# WaTTS settings
-WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
-WATTS_SERVICE_NAME = 'rsp'
-WATTS_ISSUER_ID = 'vforwater'
-##WATTS_PROVIDER_ID = 'iam'
-WATTS_PROVIDER_ID = 'eudat'
+# Figure out if we're on our development server...
+import socket
+
+ON_VFW_SERVER = socket.gethostname() == "vforwater-gis.scc.kit.edu"
+
+# ...if we are, enable Watts.
+if ON_VFW_SERVER:
+    INSTALLED_APPS.append('watts_rsp')
+
+    # Authentication configuration
+    AUTHENTICATION_BACKENDS = (
+        'watts_rsp.auth.WattsBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    # WaTTS settings
+    WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
+    WATTS_SERVICE_NAME = 'rsp'
+    WATTS_ISSUER_ID = 'vforwater'
+    ##WATTS_PROVIDER_ID = 'iam'
+    WATTS_PROVIDER_ID = 'eudat'
