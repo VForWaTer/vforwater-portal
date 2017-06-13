@@ -92,7 +92,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
-    #'watts_rsp',
+    'watts_rsp',
 ]
 
 MIDDLEWARE = [
