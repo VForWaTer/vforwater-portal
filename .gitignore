@@ -11,4 +11,4 @@
 venv
 
 # Log files from docker container
-log
+docker-log

@@ -1,6 +1,6 @@
 SHELL   := /bin/bash
 VFW_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-LOG_DIR ?= $(VFW_DIR)/log
+LOG_DIR ?= $(VFW_DIR)/docker-log
 HTTP    ?= 80
 HTTPS   ?= 443
 
