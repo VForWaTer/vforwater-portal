@@ -1,0 +1,26 @@
+FROM centos:7
+
+# ------------------------------------
+# ----- Tile server installation -----
+# ------------------------------------
+
+# If you have enough RAM you can increase this value to speed up the build process.
+ARG OSM_BUILD_CACHE_MB=2000
+ARG OSM_BUILD_PROCESSES=4
+
+# Install and set up OSM database
+RUN yum -y install epel-release
+RUN rpm -ivh https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+RUN yum -y install postgresql96-server postgis2_96
+RUN su -l -c "/usr/pgsql-9.6/bin/initdb" postgres
+RUN useradd -d /var/lib/mod_tile -m renderd
+#RUN su -l -c "/usr/pgsql-9.6/bin/pg_ctl start" postgres && \
+#    su -l -c "createuser renderd" postgres && \
+#    su -l -c "createdb -T template0 -E UTF8 -O renderd gis" postgres && \
+#    su -l -c "psql -d gis -c 'CREATE EXTENSION hstore;'" postgres && \
+#    su -l -c "psql -d gis -c 'CREATE EXTENSION postgis;'" postgres && \
+#    su -l -c "/usr/pgsql-9.6/bin/pg_ctl stop" postgres
+
+# ------------------------------------
+# ----- Application installation -----
+# ------------------------------------
