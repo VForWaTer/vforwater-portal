@@ -92,7 +92,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
-    'watts_rsp',
 ]
 
 MIDDLEWARE = [
@@ -190,55 +189,25 @@ LOGOUT_REDIRECT_URL = 'vfwheron:home'
 LOGIN_SUCCESS_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/rsp/login/success'
 LOGIN_FAILURE_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/login'
 
-# Authentication configuration
-AUTHENTICATION_BACKENDS = (
-    'watts_rsp.auth.WattsBackend',
-    'django_auth_ldap.backend.LDAPBackend',
-    'django.contrib.auth.backends.ModelBackend',
-)
 
-# import ldap
-# from django_auth_ldap.config import LDAPSearch, PosixGroupType
-# 
-# AUTH_LDAP_SERVER_URI = "ldap://bwidm.scc.kit.edu"
-# 
-# AUTH_LDAP_BIND_DN = "uid=fileservice-read,ou=admin,ou=sdmac,dc=bwlsdf,dc=de"
-# AUTH_LDAP_BIND_PASSWORD = "gk3gEniHdyWSerb" # TODO: hide/remove this information from repo
-# AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=sdmac,dc=bwlsdf,dc=de",
-#                                    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
-# 
-# AUTH_LDAP_START_TLS = True
-# 
-# # Definition of LDAP group is required for AUTH_LDAP_USER_FLAGS_BY_GROUP.
-# AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,ou=sdmac,dc=bwlsdf,dc=de",
-#     ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)"
-# )
-# AUTH_LDAP_GROUP_TYPE = PosixGroupType()
-# 
-# # Map some basic information from LDAP to the Django user.
-# AUTH_LDAP_USER_ATTR_MAP = {
-#     "first_name": "givenName",
-#     "last_name":  "sn",
-#     "email":      "mail",
-# }
-# 
-# # I found some groups on bwidm which should be fine to map with these simple privileges right now.
-# AUTH_LDAP_USER_FLAGS_BY_GROUP = {
-#     "is_active":    ["cn=sdmac-vforwater,ou=groups,ou=sdmac,dc=bwlsdf,dc=de"],
-#     "is_staff":     ["cn=sdmac-vforwater,ou=groups,ou=sdmac,dc=bwlsdf,dc=de"],
-#     "is_superuser": ["cn=sdmac-vforwater-admin,ou=groups,ou=sdmac,dc=bwlsdf,dc=de"],
-# }
-# 
-# # Logging for LDAP
-# #import logging
-# #logger = logging.getLogger('django_auth_ldap')
-# #logger.addHandler(logging.StreamHandler())
-# #logger.setLevel(logging.DEBUG)
+# Figure out if we're on our development server...
+import socket
 
-# WaTTS settings
-WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
-WATTS_SERVICE_NAME = 'rsp'
-WATTS_ISSUER_ID = 'vforwater'
-##WATTS_PROVIDER_ID = 'iam'
-WATTS_PROVIDER_ID = 'eudat'
+ON_VFW_SERVER = socket.gethostname() == "vforwater-gis.scc.kit.edu"
 
+# ...if we are, enable Watts.
+if ON_VFW_SERVER:
+    INSTALLED_APPS.append('watts_rsp')
+
+    # Authentication configuration
+    AUTHENTICATION_BACKENDS = (
+        'watts_rsp.auth.WattsBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    )
+
+    # WaTTS settings
+    WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
+    WATTS_SERVICE_NAME = 'rsp'
+    WATTS_ISSUER_ID = 'vforwater'
+    ##WATTS_PROVIDER_ID = 'iam'
+    WATTS_PROVIDER_ID = 'eudat'

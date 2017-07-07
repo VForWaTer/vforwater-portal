@@ -1,6 +1,6 @@
 # Based on http://diegobz.net/2011/02/10/django-database-router-using-settings/
 
-from heron import settings
+from . import settings
 
 class DatabaseRouter(object):
     """
