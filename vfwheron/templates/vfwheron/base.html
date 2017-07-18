@@ -12,11 +12,8 @@
 html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 .respo-navbar li a {padding-top: 64px; padding-bottom: 12px;}
 .respo-navbar {padding-left: 300px;}
-.map {height:77%; width:100%;}
 #filterbox,#select_catchment {display: none;}
 </style>
-<script src="{% static 'vfwheron/js/ol.js' %}" type="text/javascript"></script>
-<script src="{% static 'vfwheron/js/vfw.js' %}" type="text/javascript"></script>
 
 <body class="respo-light-grey" onload="create_map()">
 
@@ -122,7 +119,8 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	
 	!PAGE CONTENT!
 	<div class="respo-main" style="margin-left:300px;margin-top:103px;">
-	{% block content %}{% endblock %}
+	{# get map in the content block #}
+	{% block content %}{% endblock %} 
 	  
 	<footer class="respo-container respo-padding-16 respo-light-grey">
 	 <input type="button" onclick="toggleLayer(vectormap)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp;
