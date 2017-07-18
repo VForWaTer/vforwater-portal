@@ -15,7 +15,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 #filterbox,#select_catchment {display: none;}
 </style>
 
-<body class="respo-light-grey" onload="create_map()">
+<body class="respo-light-grey" >
 
     Top container
 	<div class="respo-container respo-top respo-black respo-large respo-padding" style="z-index:4">
@@ -29,8 +29,9 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	    <li class="respo-opennav respo-right respo-hide-large">
 	      <a class="respo-hover-white respo-large respo-theme-d4" href="javascript:void(0)" onclick="respo_open()"><i class="fa fa-bars"></i></a>
 	    </li>
-	    <li class="respo-hide-small"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white"><i class="fa fa-home fa-fw"></i>  Home</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white"><i class="fa fa-home fa-fw"></i>  Home</a></li>    <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white"><i class="fa fa-wrench fa-fw"></i>  Workbench</a></li>
 	    <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white"><i class="fa fa-eye fa-fw"></i>  Monitor</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white"><i class="fa fa-bar-chart fa-fw"></i>  Visualisation</a></li>
 	    <li class="respo-hide-small"><a href="{% url 'vfwheron:external_links' %}" class="respo-hover-white"><i class="fa fa-external-link fa-fw"></i>  External Links</a></li>
 	    <li class="respo-hide-small"><a href="#" class="respo-hover-white"><i class="fa fa-book fa-fw"></i>  Help</a></li>
 	    <li class="respo-hide-small"><a href="#" onclick="search_open()" id="srch_box" class="respo-hover-white"><i class="fa fa-search fa-fw"></i>  Search</a></li>
@@ -68,37 +69,19 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	  </div>
 	  <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
 	  <hr style="margin-bottom:0px;">
-	  <div class="respo-container respo-light-turquoise">
-	    <b>Database</b>
-	  </div>
-	  <i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i> <select class="respo-select" id="select_data" autocomplete="off" onchange="select_data()">
-	  	<option value="0" selected="selected">Select Data</option>
-          {% if all_names %}
-            {% for names in all_names %}
-	          <option value={{ names.variable_name }}>{{ names.variable_name }}   ({{names.variable_symbol}} in {{names.unit__unit_symbol}})</option>
-	        {% endfor %} 
-	      {% else %}
-            <option value="When you">When you</option>
-            <option value="see this">see this</option>
-            <option value="something">something</option>
-            <option value="is wrong">is wrong</option>
-            <option value="please contact">please contact</option>
-            <option value="the admin">the admin</option>
-	      {% endif %}
-	  </select>
-	  <a class="respo-padding respo-hover-blue" href="javascript:void(0)" onclick="filterbox_open();draw_polygon()"><i class="fa fa-filter fa-fw"></i>  Filter Data</a>
+
+  	{% block data %} 
+	  {% include 'vfwheron/select_data.html' %} 
+	{% endblock  %}
+	
+	  <hr style="margin-bottom:0px;">	
+	  
+  	{% block process %} 
+	  {% include 'vfwheron/select_process.html' %} 
+	{% endblock  %}
+	  
 	  <hr style="margin-bottom:0px;">
-	  <div class="respo-container respo-light-turquoise">
-	    <b>Processes</b>
-	  </div>
-	  <i class="respo-padding fa fa-cog fa-fw"></i> <select class="respo-select" id="select_process" autocomplete="off">
-	  	<option value="0" selected="selected">Select Process</option>
-	  	<option value="Aggregate">Aggregate</option>
-	  	<option value="Interpolate">Interpolate</option>
-	  	<option value="Regression">Regression</option>
-	  	<option value="NA-Models">NA-Models</option>
-	  </select>
-	  <hr style="margin-bottom:0px;">
+	  
 	  <div class="respo-container respo-light-turquoise">
 	    <b>Visualization</b>
 	  </div>

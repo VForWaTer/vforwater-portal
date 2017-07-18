@@ -1,0 +1,30 @@
+{% load static %}
+
+{% block javascript %}
+{% endblock %}
+
+<script src="{% static 'vfwheron/js/vfw.js' %}" type="text/javascript"></script>
+
+ <div class="respo-container respo-light-turquoise">
+   <b>Database</b>
+ </div>
+<i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i> 
+<select class="respo-select" id="select_data" autocomplete="off" onchange="select_data()">
+  <option value="0" selected="selected">Select Data</option>
+    {% if all_names %}
+      {% for names in all_names %}
+        <option value={{ names.variable_name }}>{{ names.variable_name }}   ({{names.variable_symbol}} in {{names.unit__unit_symbol}})</option>
+      {% endfor %} 
+    {% else %}
+        <option value="When you">When you</option>
+        <option value="see this">see this</option>
+        <option value="something">something</option>
+        <option value="is wrong">is wrong</option>
+        <option value="please contact">please contact</option>
+        <option value="the admin">the admin</option>
+    {% endif %}
+</select>
+<a class="respo-padding respo-hover-blue" href="javascript:void(0)" onclick="filterbox_open();draw_polygon()">
+  <i class="fa fa-filter fa-fw"></i>  Filter Data
+</a>
+
