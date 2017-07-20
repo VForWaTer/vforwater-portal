@@ -62,7 +62,7 @@ function create_map() {
 			new ol.control.MousePosition({
 				projection: 'EPSG:4326',
 				coordinateFormat: function(coord) {
-					return ol.coordinate.format(coord, '{y}°, {x}°', 4);}
+					return ol.coordinate.format(coord, ' {y}°N, {x}°E ', 4);}
 			}),
 			new ol.control.ScaleLine(),
 			],
