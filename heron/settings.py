@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'heron_wps',
     'heron_monitor',
+    'heron_visual',
 ]
 
 MIDDLEWARE = [
