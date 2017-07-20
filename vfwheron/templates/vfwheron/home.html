@@ -1,6 +1,10 @@
 {% extends "vfwheron/base.html" %}
 {% load static %}
 
+{% block sidebar %} 
+	{% include 'vfwheron/base_sidebar.html' %} 
+{% endblock sidebar %}
+
 {% block content %}
 	{% include 'vfwheron/map.html' %}
 {% endblock %}

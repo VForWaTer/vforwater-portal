@@ -8,6 +8,9 @@
 <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/font-awesome-4.7.0/css/font-awesome.min.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">
+
+<!--  style of top bar -->
+<!-- TODO: Do we access the font Raleway online? For more see base_app/vcss/css -->
 <style>
 html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 .respo-navbar li a {padding-top: 64px; padding-bottom: 12px;}
@@ -60,46 +63,9 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	  </ul>
 	</div>
 	
-	Sidenav/menu
-	<nav class="respo-sidenav respo-collapse respo-white respo-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br><br>
-	  <div class="respo-container respo-row">
-	    <div class="respo-col s4">
-	      <img src="{% static 'vfwheron/images/logo_main.png' %}" style="width:200px"><br>
-	    </div>
-	  </div>
-	  <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-	  <hr style="margin-bottom:0px;">
+	{% block sidebar %}
+	{% endblock %}	
 
-  	{% block data %} 
-	  {% include 'vfwheron/select_data.html' %} 
-	{% endblock  %}
-	
-	  <hr style="margin-bottom:0px;">	
-	  
-  	{% block process %} 
-	  {% include 'vfwheron/select_process.html' %} 
-	{% endblock  %}
-	  
-	  <hr style="margin-bottom:0px;">
-	  
-	  <div class="respo-container respo-light-turquoise">
-	    <b>Visualization</b>
-	  </div>
-	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bullseye fa-fw"></i>  Map Viewer</a>
-	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-line-chart fa-fw"></i>  Time Series</a>
-	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bar-chart fa-fw"></i>  Scatter Plot</a>
-	  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-table fa-fw"></i>  Statistical Report</a>
-	  <hr style="margin-bottom:0px;">
-	  <div class="respo-container respo-light-turquoise">
-	    <b>Workspace</b>
-	  </div>
-	  <ul class="respo-ul respo-card-4 respo-white" id="workspace">
-	  </ul>
-	</nav>
-
-	Overlay effect when opening sidenav on small screens
-	<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
-	
 	!PAGE CONTENT!
 	<div class="respo-main" style="margin-left:300px;margin-top:103px;">
 	{# get map in the content block #}
