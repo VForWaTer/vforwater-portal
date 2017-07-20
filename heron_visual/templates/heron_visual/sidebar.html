@@ -13,18 +13,14 @@ Sidenav/menu
   <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
   <hr style="margin-bottom:0px;">
 
- 	{% block data %} 
-  {% include 'vfwheron/select_data.html' %} 
-{% endblock  %}
-
-  <hr style="margin-bottom:0px;">	
-  
- 	{% block process %} 
-  {% include 'vfwheron/select_process.html' %} 
-{% endblock  %}
-  
+  <div class="respo-container respo-light-turquoise">
+    <b>Visualization</b>
+  </div>
+  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bullseye fa-fw"></i>  Map Viewer</a>
+  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-line-chart fa-fw"></i>  Time Series</a>
+  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bar-chart fa-fw"></i>  Scatter Plot</a>
+  <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-table fa-fw"></i>  Statistical Report</a>
   <hr style="margin-bottom:0px;">
-  
   <div class="respo-container respo-light-turquoise">
     <b>Workspace</b>
   </div>
@@ -34,4 +30,3 @@ Sidenav/menu
 
 Overlay effect when opening sidenav on small screens
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
-
