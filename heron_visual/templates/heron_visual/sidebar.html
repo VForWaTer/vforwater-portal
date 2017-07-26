@@ -5,11 +5,11 @@
 
 Sidenav/menu
 <nav class="respo-sidenav respo-collapse respo-white respo-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br><br>
-  <div class="respo-container respo-row">
-    <div class="respo-col s4">
-      <img src="{% static 'vfwheron/images/logo_main.png' %}" style="width:200px"><br>
-    </div>
-  </div>
+
+{% block logo %} 
+	{% include 'vfwheron/logo.html' %} 
+{% endblock %}
+
   <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
   <hr style="margin-bottom:0px;">
 
