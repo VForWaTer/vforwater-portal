@@ -92,9 +92,9 @@ def list_wps_service_engines(app_class=None):
             if activated_wps:
                 wps_services_list.append(activated_wps)
 
-    # If no wps_services are known yet check for birdhouse (from port 8090 to 8099)
+    # If no wps_services are known yet check for port 8090 to 8099
     if not WpsModel.objects.all():
-        find_birdhouse_wps_service_engines()
+        find_wps_service_engines()
         
     # If the wps engine cannot be found in the app_class, check settings for site-wide wps engines
     site_wps_services = WpsModel.objects.all()
@@ -174,21 +174,21 @@ def get_wps_service_engine(name, app_class=None):
     raise NameError('Could not find wps service with name "{0}". Please check that a wps service with that name '
                     'exists in the admin console or in your app.py.'.format(name))
 
-def find_birdhouse_wps_service_engines():
+def find_wps_service_engines():
 
     for test_port in range(8090, 8099):
         try:
-            WPS_Address = 'http://vforwater-devel:'+str(test_port)+'/wps'
+            WPS_Address = 'https://vforwater-gis.scc.kit.edu:'+str(test_port)+'/wps'
             
-            WPS_Bird = WebProcessingService(WPS_Address, 
+            WPS_Service = WebProcessingService(WPS_Address, 
                                             verbose=False, 
                                             skip_caps=True)
-            WPS_Bird.getcapabilities()
+            WPS_Service.getcapabilities()
             
-            NewData = WpsModel(name = WPS_Bird.identification.title, 
+            NewData = WpsModel(name = WPS_Service.identification.title, 
                      endpoint = WPS_Address)
             NewData.save()
 
         except:
-            print('--- No Bird at port '+str(test_port)+'. ---')
+            print('--- No WPS_Service at port '+str(test_port)+'. ---')
     
