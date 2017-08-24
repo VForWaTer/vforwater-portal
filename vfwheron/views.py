@@ -17,10 +17,12 @@ logger = logging.getLogger(__name__)
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
     
-    cursor = connections['vforwater'].cursor()
+    # get bbox for available data
+    cursor = connections['vforwater'].cursor() # connect to database
+    # request bbox in srid of openlayers
     cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857)) FROM lt_location;')
-    m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0])
-    dataExt = list(map(lambda x: float(x), m))
+    m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
+    dataExt = list(map(lambda x: float(x), m)) # change string to list of floats
 
     def get_context_data(self, **kwargs):
         get_unit_id = TblVariable.objects.select_related('unit').values_list('variable_name', 'variable_symbol')
