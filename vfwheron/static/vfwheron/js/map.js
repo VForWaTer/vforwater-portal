@@ -2,6 +2,8 @@
 function create_map() {
 	mapsource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	
+	var dataExt = JSON.parse(document.getElementById('dataExt').value);
+
 	maplayer = new ol.layer.Tile({
 		preload: Infinity,
 		source: mapsource,
@@ -65,6 +67,12 @@ function create_map() {
 					return ol.coordinate.format(coord, ' {y}°N, {x}°E ', 4);}
 			}),
 			new ol.control.ScaleLine(),
+			new ol.control.ZoomToExtent({
+				label: 'Z',
+				tipLabel: 'Zoom to your Data',
+				extent: dataExt
+
+			}),
 			],
 			view: mapview//dataview
 	});
