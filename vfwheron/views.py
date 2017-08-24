@@ -1,13 +1,12 @@
+import re
+
+from django.db import connections
 from django.views import View
 from django.views.generic import TemplateView
-from django.contrib.gis.db.models import Extent
 from django.contrib.auth import logout
 from django.shortcuts import  redirect
 
 from vfwheron.models import TblVariable
-from vfwheron.models import LtLocation
-from vfwheron.models import LtUnit
-from vfwheron.models import TblMeta
 
 import logging
 
