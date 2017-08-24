@@ -17,11 +17,16 @@ logger = logging.getLogger(__name__)
 
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
+    
+    cursor = connections['vforwater'].cursor()
+    cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857)) FROM lt_location;')
+    m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0])
+    dataExt = list(map(lambda x: float(x), m))
 
     def get_context_data(self, **kwargs):
         get_unit_id = TblVariable.objects.select_related('unit').values_list('variable_name', 'variable_symbol')
         all_variable_names = get_unit_id.values('variable_name', 'variable_symbol','unit__unit_symbol')
-        return {'all_names': all_variable_names}
+        return {'dataExt': self.dataExt, 'all_names': all_variable_names}
        
     
 class ExtlinksView(TemplateView):
