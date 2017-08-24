@@ -17,7 +17,8 @@ function create_map() {
 	
 	mapview = new ol.View({
 		center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
-		zoom: 6
+		zoom: 6,
+		maxZoom: 18,
 	});
 
 //	Access as wfs - not used now
