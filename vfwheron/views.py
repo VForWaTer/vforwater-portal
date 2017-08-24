@@ -17,6 +17,14 @@ logger = logging.getLogger(__name__)
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
+    myapp = apps.get_app_config('vfwheron')
+    myclasses = myapp.models.values()
+    print('classes: ',[m._meta.object_name for m in myclasses])
+    for m in myclasses:
+        print('sub_classes: ', m._meta.object_name)
+#     for s in LtLocation.objects.all():
+#         print('======',s.srid )
+    print (get_filter_values)
 
     def get_context_data(self, **kwargs):
         get_unit_id = TblVariable.objects.select_related('unit').values_list('variable_name', 'variable_symbol')
