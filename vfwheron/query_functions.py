@@ -2,6 +2,8 @@ import re
 
 from django.db import connections
 
+from vfwheron.models import TblVariable
+
 
 def get_bbox_from_data():
     # get bbox for available data
@@ -15,3 +17,12 @@ def get_bbox_from_data():
 def get_filter_values():
     start_values = 0
     return start_values
+
+def get_first_level():
+    first_level = level_one_tables = {'variable':'Datentyp', 'soil':'Boden', 'site':'Standort','publisher':'Besitzer',
+    'nmmetadomain':'Domäne'}
+    return first_level
+
+def second_filter_level():
+    variable = TblVariable.objects.select_related('unit').values('variable_name', 'variable_symbol', 'unit__unit_symbol')
+    return variable
