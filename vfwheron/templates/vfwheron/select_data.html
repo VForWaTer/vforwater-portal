@@ -14,7 +14,8 @@
     {% if all_names %}
       {% for names in all_names %}
         <option value={{ names.variable_name }}>{{ names.variable_name }}   ({{names.variable_symbol}} in {{names.unit__unit_symbol}})</option>
-      {% endfor %} 
+      {% endfor %}
+
     {% else %}
         <option value="When you">When you</option>
         <option value="see this">see this</option>
@@ -28,3 +29,64 @@
   <i class="fa fa-filter fa-fw"></i>  Filter Data
 </a>
 
+<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/filter.css' %}">
+
+<nav class="respo-select" id="select_data" onchange="select_data()">
+    {% if menue_list %}
+      {% for main_menue in menue_list %}
+        {% for value, key in main_menue.items %}
+            <strong><a href="{{ value }}" >{{ value }}
+                <i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i>
+            </a></strong>
+            {% for value3 in key %}
+                {% for value2, key in value3.items %}
+                    <a href="{{ value2 }}" >{{ value2 }}{{ key }}
+                    </a>
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+      {% endfor %}
+
+    {% else %}
+        <option value="When you see this">When you see this</option>
+        <option value="something is wrong">something is wrong</option>
+        <option value="please contact the admin">please contact the admin</option>
+    {% endif %}
+</nav>
+
+
+Simple Pure CSS Drop Down Menu
+<nav id="primary_nav_wrap">
+<ul>
+  <li class="current-menu-item"><a href="#">Home</a></li>
+  <li><a href="#">Menu 1</a>
+    <ul>
+      <li><a href="#">Sub Menu 1</a></li>
+      <li><a href="#">Sub Menu 2</a></li>
+      <li><a href="#">Sub Menu 3</a></li>
+      <li><a href="#">Sub Menu 4</a>
+        <ul>
+          <li><a href="#">Deep Menu 1</a>
+            <ul>
+              <li><a href="#">Sub Deep 1</a></li>
+              <li><a href="#">Sub Deep 2</a></li>
+              <li><a href="#">Sub Deep 3</a></li>
+                <li><a href="#">Sub Deep 4</a></li>
+            </ul>
+          </li>
+          <li><a href="#">Deep Menu 2</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Sub Menu 5</a></li>
+    </ul>
+  </li>
+  <li><a href="#">Menu 2</a>
+    <ul>
+      <li><a href="#">Sub Menu 1</a></li>
+      <li><a href="#">Sub Menu 2</a></li>
+      <li><a href="#">Sub Menu 3</a></li>
+    </ul>
+  </li>
+
+</ul>
+</nav>
