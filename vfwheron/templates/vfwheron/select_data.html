@@ -5,88 +5,94 @@
 
 <script src="{% static 'vfwheron/js/vfw.js' %}" type="text/javascript"></script>
 
- <div class="respo-container respo-light-turquoise">
-   <b>Database</b>
- </div>
-<i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i> 
+<div class="respo-container respo-light-turquoise">
+    <b>Database</b>
+</div>
+<i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i>
 <select class="respo-select" id="select_data" autocomplete="off" onchange="select_data()">
-  <option value="0" selected="selected">Select Data</option>
+    <option value="0" selected="selected">Select Data</option>
     {% if all_names %}
-      {% for names in all_names %}
-        <option value={{ names.variable_name }}>{{ names.variable_name }}   ({{names.variable_symbol}} in {{names.unit__unit_symbol}})</option>
-      {% endfor %}
+    {% for names in all_names %}
+    <option value={{ names.variable_name }}>{{ names.variable_name }} ({{names.variable_symbol}} in
+        {{names.unit__unit_symbol}})
+    </option>
+    {% endfor %}
 
     {% else %}
-        <option value="When you">When you</option>
-        <option value="see this">see this</option>
-        <option value="something">something</option>
-        <option value="is wrong">is wrong</option>
-        <option value="please contact">please contact</option>
-        <option value="the admin">the admin</option>
+    <option value="When you">When you</option>
+    <option value="see this">see this</option>
+    <option value="something">something</option>
+    <option value="is wrong">is wrong</option>
+    <option value="please contact">please contact</option>
+    <option value="the admin">the admin</option>
     {% endif %}
 </select>
 <a class="respo-padding respo-hover-blue" href="javascript:void(0)" onclick="filterbox_open();draw_polygon()">
-  <i class="fa fa-filter fa-fw"></i>  Filter Data
+    <i class="fa fa-filter fa-fw"></i> Filter Data
 </a>
 
 <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/filter.css' %}">
 
-<nav class="respo-select" id="select_data" onchange="select_data()">
-    {% if menue_list %}
-      {% for main_menue in menue_list %}
+<!--
+<div class="respo-dropdown">
+<button onclick="dropdownFunction()" class="dropbtn">Dropdown</button>
+  <div id="myDropdown" class="dropdown-content">
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+</div>style="display: none;"
+-->
+<!--
+<div class="respo-dropdown" id="menu" onchange="menu()" value={{menue_list}}>
+    {% for main_menue in menue_list %}
         {% for value, key in main_menue.items %}
-            <strong><a href="{{ value }}" >{{ value }}
-                <i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i>
-            </a></strong>
-            {% for value3 in key %}
-                {% for value2, key in value3.items %}
-                    <a href="{{ value2 }}" >{{ value2 }}{{ key }}
-                    </a>
+            <form id="menuForm" action="{% url 'vfwheron:home' %}" method="post">{% csrf_token %}
+                <p><i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i>
+                <a href="{% url 'vfwheron:home' %}" id="invisibleMenuButton" name="menu_variable" value={{ value }}
+                        class="respo-btn-simple respo-hover-blue"
+                    >&lt;!&ndash;TODO: Button is to big. Click on rim to see &ndash;&gt;
+                <strong><a class="respo-dropdown-click" onclick="dropdown('{{ value }}')">{{ value }}</a></strong>
+                </a></p>
+            </form>
+            <div id="{{ value }}" class="dropdown-content">
+                {% for value3 in key %}
+                    {% for value2, key in value3.items %}
+                        <a href="{{ value2 }}">{{ value2 }}: {{ key }} </a>
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
+            </div>
         {% endfor %}
-      {% endfor %}
-
-    {% else %}
+    {% empty %}
         <option value="When you see this">When you see this</option>
         <option value="something is wrong">something is wrong</option>
         <option value="please contact the admin">please contact the admin</option>
-    {% endif %}
-</nav>
+    {% endfor %}
+</div>
+-->
 
-
-Simple Pure CSS Drop Down Menu
-<nav id="primary_nav_wrap">
-<ul>
-  <li class="current-menu-item"><a href="#">Home</a></li>
-  <li><a href="#">Menu 1</a>
-    <ul>
-      <li><a href="#">Sub Menu 1</a></li>
-      <li><a href="#">Sub Menu 2</a></li>
-      <li><a href="#">Sub Menu 3</a></li>
-      <li><a href="#">Sub Menu 4</a>
-        <ul>
-          <li><a href="#">Deep Menu 1</a>
-            <ul>
-              <li><a href="#">Sub Deep 1</a></li>
-              <li><a href="#">Sub Deep 2</a></li>
-              <li><a href="#">Sub Deep 3</a></li>
-                <li><a href="#">Sub Deep 4</a></li>
-            </ul>
-          </li>
-          <li><a href="#">Deep Menu 2</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Sub Menu 5</a></li>
-    </ul>
-  </li>
-  <li><a href="#">Menu 2</a>
-    <ul>
-      <li><a href="#">Sub Menu 1</a></li>
-      <li><a href="#">Sub Menu 2</a></li>
-      <li><a href="#">Sub Menu 3</a></li>
-    </ul>
-  </li>
-
-</ul>
-</nav>
+<div class="respo-dropdown" id="menu" onchange="menu()" value={{menue_list}}>
+    {% for main_menue in menue_list %}
+        {% for value, key in main_menue.items %}
+            <form id="menuForm" action="{% url 'vfwheron:home' %}" method="post">{% csrf_token %}
+                <p><i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i>
+                <button id="invisibleMenuButton" name="menu_variable" value={{ value }}
+                        class="respo-btn-simple respo-hover-blue"
+                    ><!--TODO: Button is to big. Click on rim to see -->
+                <strong><a class="respo-dropdown-click" onclick="dropdown('{{ value }}')">{{ value }}</a></strong>
+                </button></p>
+            </form>
+            <div id="{{ value }}" class="dropdown-content">
+                {% for value3 in key %}
+                    {% for value2, key in value3.items %}
+                        <a href="{{ value2 }}">{{ value2 }}: {{ key }} </a>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% empty %}
+        <option value="When you see this">When you see this</option>
+        <option value="something is wrong">something is wrong</option>
+        <option value="please contact the admin">please contact the admin</option>
+    {% endfor %}
+</div>

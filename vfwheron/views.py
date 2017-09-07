@@ -1,7 +1,7 @@
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render_to_response
 
 from django.apps import apps
 from vfwheron.models import TblVariable, LtLocation, LtProject, LtDomain, LtLicense, TblMeta
@@ -82,6 +82,13 @@ class HomeView(TemplateView):
         all_variable_names = get_unit_id.values('variable_name', 'variable_symbol', 'unit__unit_symbol')
         return {'dataExt': get_bbox_from_data(), 'first_level':get_first_level(), 'menue_list':get_second_level(), 'all_names': all_variable_names}
 
+    def post(self, request):
+        menu_variable = request.POST['menu_variable']
+        print('post', menu_variable)
+        print('no value?')
+        # return redirect('vfwheron:home')
+        # return {'menue_list':menu_variable}
+        return render_to_response('vfwheron/home.html', {'data': menu_variable})
 
 class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'

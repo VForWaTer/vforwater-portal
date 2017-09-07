@@ -157,3 +157,38 @@ function select_data() {
 		document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 	}
 }
+
+function get_submenu() {
+    var selectedMenu = document.getElementById("menu").value;
+	if (!document.getElementById(selectedMenu) && selectedMenu!=0){
+		document.getElementById("select_menu").innerHTML += "<li class='respo-padding' id='"+selectedMenu+"'><span class='respo-medium'>"+selectedMenu+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+	}
+}
+
+function firstfilter() {
+    location.href = "http://www.cnn.com";
+}
+
+function dropdown(menuTitle) {
+    var actionVariable =  '"vfwheron:home"'
+    var menuID = document.getElementById(menuTitle);
+    document.getElementById(menuTitle).addEventListener("click", function () {
+  menuID.submit();
+});
+    document.getElementById(menuTitle).classList.toggle("show");
+}
+
+// Close dropdown if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.respo-dropdown-click')) {
+
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}

@@ -33,11 +33,11 @@ def get_second_level():
     vDatNam = 0
     # second_level = [{'Boden': ['Geologie', 'Bodentyp']}, {'Besitzer': ['Institution Name', 'Nachname', 'Department']},
     #     {'Domäne': ['Projekt', 'Name der Domäne']}, {'Standort': ['Standort Name']},{'Datentyp': ['Name der Variable']}]
-    second_level = [{'Boden': [{'Geologie':vBodGeo}, {'Bodentyp':vBodTyp}]}, {'Besitzer': [{'Institution Name':vBesIns},
-        {'Nachname':vBesNam},{'Department':vBesDep}]}]
-    # second_level = [{'Boden': [{'Geologie':vBodGeo}, {'Bodentyp':vBodTyp}]}, {'Besitzer': [{'Institution Name':vBesIns},
-    #     {'Nachname':vBesNam},{'Department':vBesDep}]},{'Domäne': [{'Projekt':vDomPrj},{'Name der Domäne':vDomDom}]},
-    #     {'Standort': [{'Standort Name':vStaNam}]},{'Datentyp': [{'Name der Variable':vDatNam}]}]
+    #second_level = [{'Boden': [{'Geologie':vBodGeo}, {'Bodentyp':vBodTyp}]}, {'Besitzer': [{'Institution Name':vBesIns},
+    #    {'Nachname':vBesNam},{'Department':vBesDep}]}]
+    second_level = [{'Boden': [{'Geologie':vBodGeo}, {'Bodentyp':vBodTyp}]}, {'Besitzer': [{'Institutsname':vBesIns},
+        {'Nachname':vBesNam},{'Department':vBesDep}]},{'Domäne': [{'Projekt':vDomPrj},{'Domänenname':vDomDom}]},
+        {'Standort': [{'Standortname':vStaNam}]},{'Datentyp': [{'Variablenname':vDatNam}]}]
     return second_level
 
 def get_menu_names():

@@ -1,76 +1,31 @@
-#primary_nav_wrap
-{
-	margin-top:15px
+.dropbtn:hover, .dropbtn:focus {
+    background-color: #3f8e41;
 }
 
-#primary_nav_wrap ul
-{
-	list-style:none;
-	position:relative;
-	float:left;
-	margin:0;
-	padding:0
+.dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-#primary_nav_wrap ul a
-{
-	display:block;
-	color:#333;
-	text-decoration:none;
-	font-weight:700;
-	font-size:12px;
-	line-height:32px;
-	padding:0 15px;
-	font-family:"HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif
+.dropdown-content {
+    display: none;
+    position: relative;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
 }
 
-#primary_nav_wrap ul li
-{
-	position:relative;
-	float:left;
-	margin:0;
-	padding:0
+.dropdown-content a {
+    padding: 10px 28px;
+    text-decoration: none;
+    display: block;
 }
 
-#primary_nav_wrap ul li.current-menu-item
-{
-	background:#ddd
-}
+.dropdown a:hover {background-color: #f1f1f1}
 
-#primary_nav_wrap ul li:hover
-{
-	background:#f6f6f6
-}
+.show {display:block;}
 
-#primary_nav_wrap ul ul
-{
-	display:none;
-	position:absolute;
-	top:100%;
-	left:0;
-	background:#fff;
-	padding:0
-}
 
-#primary_nav_wrap ul ul li
-{
-	float:none;
-	width:200px
-}
 
-#primary_nav_wrap ul ul a
-{
-	line-height:120%;
-	padding:10px 15px
-}
-
-#primary_nav_wrap ul ul ul
-{
-	top:0;
-	left:100%
-}
-
-#primary_nav_wrap ul li:hover > ul
-{
-	display:block
-}
