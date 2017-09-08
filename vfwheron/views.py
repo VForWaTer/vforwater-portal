@@ -80,7 +80,7 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         get_unit_id = TblVariable.objects.select_related('unit').values_list('variable_name', 'variable_symbol')
         all_variable_names = get_unit_id.values('variable_name', 'variable_symbol', 'unit__unit_symbol')
-        return {'dataExt': get_bbox_from_data(), 'first_level':get_first_level(), 'menue_list':get_second_level(), 'all_names': all_variable_names}
+        return {'dataExt': get_bbox_from_data(), 'first_level':get_first_level(), 'menu_list':get_second_level(), 'all_names': all_variable_names}
 
     def post(self, request):
         menu_variable = request.POST['menu_variable']

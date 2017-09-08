@@ -170,25 +170,68 @@ function firstfilter() {
 }
 
 function dropdown(menuTitle) {
-    var actionVariable =  '"vfwheron:home"'
-    var menuID = document.getElementById(menuTitle);
-    document.getElementById(menuTitle).addEventListener("click", function () {
-  menuID.submit();
-});
+    var actionVariable =  '"vfwheron:home"';
+//    var menuID = document.getElementById(menuTitle);
+//    document.getElementById(menuTitle).addEventListener("click", function () {
+//  menuID.submit();
+//});
+    var ajaxMenu = "\"#"+menuTitle+"\"";
+    $(ajaxMenu).bind('click', function(){
+//    alert(ajaxMenu);
+//    $("#Besitzer").click(function(){
+//    alert(menuTitle);
+////        console.log( $(this).val() );
+//        var href=$(this).attr('href');
+//        $.post('vfwheron:home', href, subMenu);
+//        return false;
+//    });
     document.getElementById(menuTitle).classList.toggle("show");
+    });
 }
+
+// TODO: Bekomme einfach keine click funktion ins menu
+$(document).ready(function(menuTitle) {
+  $('#accordion').accordion({
+    active: false,
+    collapsible: true,
+    icons: {
+        header: 'fa-plus-circle',
+        activeHeader: 'fa-minus-circle'
+    }
+  });
+  var ajaxMenu = "\"#"+menuTitle+"\"";
+  alert(menuTitle);
+  $(ajaxMenu).bind('click', function(){
+    alert(ajaxMenu);
+  });
+}); // end ready
+
+
+//function subMenu(data){
+//    newHTML = <p>New Value + data</p>;
+//    $('menu').html(newHTML)
+//}
+
+/*
+$('#post-form').on('submit', function(dropdown){
+    event.preventDefault();
+    console.log("form submitted!")  // sanity check
+    create_post();
+});
+*/
+
 
 // Close dropdown if the user clicks outside of it
-window.onclick = function(event) {
-  if (!event.target.matches('.respo-dropdown-click')) {
-
-    var dropdowns = document.getElementsByClassName("dropdown-content");
-    var i;
-    for (i = 0; i < dropdowns.length; i++) {
-      var openDropdown = dropdowns[i];
-      if (openDropdown.classList.contains('show')) {
-        openDropdown.classList.remove('show');
-      }
-    }
-  }
-}
+//window.onclick = function(event) {
+//  if (!event.target.matches('.respo-dropdown-click')) {
+//
+//    var dropdowns = document.getElementsByClassName("dropdown-content");
+//    var i;
+//    for (i = 0; i < dropdowns.length; i++) {
+//      var openDropdown = dropdowns[i];
+//      if (openDropdown.classList.contains('show')) {
+//        openDropdown.classList.remove('show');
+//      }
+//    }
+//  }
+//}
