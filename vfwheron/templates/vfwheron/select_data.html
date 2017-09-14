@@ -16,40 +16,26 @@
     <div class="respo-container respo-light-turquoise">
         <b>Database</b>
     </div>
-    <i class="respo-padding fa fa-arrow-circle-o-right fa-fw"></i>
-    <select class="respo-select" id="select_data" autocomplete="off" onchange="select_data()">
-        <option value="0" selected="selected">Select Data</option>
-        {% if all_names %}
-        {% for names in all_names %}
-        <option value={{ names.variable_name }}>{{ names.variable_name }} ({{names.variable_symbol}} in
-            {{names.unit__unit_symbol}})
-        </option>
-        {% endfor %}
-
-        {% else %}
-        <option value="When you">When you</option>
-        <option value="see this">see this</option>
-        <option value="something">something</option>
-        <option value="is wrong">is wrong</option>
-        <option value="please contact">please contact</option>
-        <option value="the admin">the admin</option>
-        {% endif %}
-    </select>
-    <a class="respo-padding respo-hover-blue" href="javascript:void(0)" onclick="filterbox_open();draw_polygon()">
-        <i class="fa fa-filter fa-fw"></i> Filter Data
-    </a>
-
 
     <div id="accordion"  >
         {% for main_menu in menu_list %}
             {% for value, key in main_menu.items %}
-                <h5 class="respo-hover-blue">{{ value }}</h5>
-                <div id="{{ value }}" class="dropdown-content">
-                    {% for value3 in key %}
-                        {% for value2, key in value3.items %}
-                            <a href="{{ value2 }}">{{ value2 }}: {{ key }} </a>
-                        {% endfor %}
-                    {% endfor %}
+                <h5 class="respo-hover-blue nav" value = "{{ value }}">{{ value }}</h5>
+                <div id="{{ value }}" >
+                <!--<div id="{{ value }}" class="dropdown-content">-->
+                    <!--{% for submenu in key %}-->
+                        <!--{% for value2, key2 in submenu.items %}-->
+                            <!--&lt;!&ndash;<a href="{{ value3 }}">{{ value3 }}: {{ key }} </a>&ndash;&gt;-->
+                            <!--<a class="sub-menu respo-hover-aqua" id="{{ value2 }}">{{ value2 }}</a>-->
+                            <!--<ul class="sub-sub-menu">-->
+                            <!--&lt;!&ndash;<a id="{{ value3 }}" class="dropdown-content">{{ value3 }}</a>&ndash;&gt;-->
+                                <!--{% for value4, key3 in key2.items %}-->
+                                    <!--<a class="respo-hover-amber" id="{{ value4 }}">{{ value4 }} ({{ key3 }})</a>-->
+                                <!--{% endfor %}-->
+                            <!--</ul>-->
+                        <!--{% endfor %}-->
+                    <!--{% endfor %}-->
+                    {% include 'vfwheron/filter_submenu.html' %}
                 </div>
             {% endfor %}
         {% empty %}
@@ -58,6 +44,26 @@
             <option value="please contact the admin">please contact the admin</option>
         {% endfor %}
     </div>
+
+
+    <!--<div id="accordion"  >-->
+        <!--{% for main_menu in menu_list %}-->
+            <!--{% for value, key in main_menu.items %}-->
+                <!--<h5 class="respo-hover-blue" value = "{{ value }}">{{ value }}</h5>-->
+                <!--<div id="{{ value }}" class="dropdown-content">-->
+                    <!--{% for value2 in key %}-->
+                        <!--{% for value3, key in value2.items %}-->
+                            <!--<a href="{{ value3 }}">{{ value3 }}: {{ key }} </a>-->
+                        <!--{% endfor %}-->
+                    <!--{% endfor %}-->
+                <!--</div>-->
+            <!--{% endfor %}-->
+        <!--{% empty %}-->
+            <!--<option value="When you see this">When you see this</option>-->
+            <!--<option value="something is wrong">something is wrong</option>-->
+            <!--<option value="please contact the admin">please contact the admin</option>-->
+        <!--{% endfor %}-->
+    <!--</div>-->
 
 
     <!--<div class="respo-dropdown" id="menu" onchange="menu()" value={{menue_list}}>-->
@@ -87,3 +93,8 @@
     <!--</div>-->
 
 </body>
+
+<script>
+ url_home = '{% url 'vfwheron:menu' %}';
+ csrf_token = '{{ csrf_token }}';
+</script>

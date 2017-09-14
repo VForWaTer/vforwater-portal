@@ -169,41 +169,82 @@ function firstfilter() {
     location.href = "http://www.cnn.com";
 }
 
-function dropdown(menuTitle) {
-    var actionVariable =  '"vfwheron:home"';
-//    var menuID = document.getElementById(menuTitle);
-//    document.getElementById(menuTitle).addEventListener("click", function () {
-//  menuID.submit();
-//});
-    var ajaxMenu = "\"#"+menuTitle+"\"";
-    $(ajaxMenu).bind('click', function(){
-//    alert(ajaxMenu);
-//    $("#Besitzer").click(function(){
-//    alert(menuTitle);
-////        console.log( $(this).val() );
-//        var href=$(this).attr('href');
-//        $.post('vfwheron:home', href, subMenu);
-//        return false;
+//function dropdown(menuTitle) {
+//    var actionVariable =  '"vfwheron:home"';
+////    var menuID = document.getElementById(menuTitle);
+////    document.getElementById(menuTitle).addEventListener("click", function () {
+////  menuID.submit();
+////});
+//    var ajaxMenu = "\"#"+menuTitle+"\"";
+//    $(ajaxMenu).bind('click', function(){
+////    alert(ajaxMenu);
+////    $("#Besitzer").click(function(){
+////    alert(menuTitle);
+//////        console.log( $(this).val() );
+////        return false;
+////    });
+//
+//    document.getElementById(menuTitle).classList.toggle("show");
 //    });
-    document.getElementById(menuTitle).classList.toggle("show");
-    });
-}
+//}
 
-// TODO: Bekomme einfach keine click funktion ins menu
-$(document).ready(function(menuTitle) {
-  $('#accordion').accordion({
-    active: false,
-    collapsible: true,
-    icons: {
-        header: 'fa-plus-circle',
-        activeHeader: 'fa-minus-circle'
+// TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
     }
-  });
-  var ajaxMenu = "\"#"+menuTitle+"\"";
-  alert(menuTitle);
-  $(ajaxMenu).bind('click', function(){
-    alert(ajaxMenu);
-  });
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+
+$(document).ready(function(menuTitle) {
+//  $('#accordion').accordion({
+//    active: false,
+//    collapsible: true,
+//    icons: {
+//        header: 'fa-plus-circle',
+//        activeHeader: 'fa-minus-circle'
+//    }
+//  });
+      $("h5.respo-hover-blue.nav").click(function () {
+        var menuValue = $(this).attr("value");
+        $.ajax({
+            url: url_home,
+            datatype: 'json',
+    //        type : "POST",
+            data: {
+                    menu: menuValue ,
+                    'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+            success : function(json) {
+    //            alert(JSON.stringify(json));
+    //            alert({json});
+                console.log(json); // log the returned json to the console
+                console.log("success"); // another sanity check
+    //            $("h6").html( '{% for value4 in key2 %} <h8 id="{{ value3 }}" >json</h8>')
+    //            $.each(json, function(i, val) {
+    //                $(id="value").empty().append(
+    //                    $('<a>').addClass('respo-hover-aqua ').text(i),
+    //                    $('<a>').addClass('respo-hover-amber').text(val)
+    //                )
+    //            });
+            },
+        })
+ //   url:
+//    $.post({
+//    });
+//    $.ajax('vfwheron:home', href, subMenu);
+    });
 }); // end ready
 
 
