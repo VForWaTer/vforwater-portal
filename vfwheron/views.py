@@ -46,11 +46,18 @@ class HomeView(TemplateView):
 class menuView(TemplateView):
 
     def get(self, request):
+        print(request)
         clicked_menu_value = request.GET
         print('*****: ', clicked_menu_value['menu'])
         new_values = get_submenu_values(clicked_menu_value['menu'])
         return JsonResponse(new_values)
 
+def update_menu(request):
+    print('update menu: ',request)
+    clicked_menu_value = request.GET
+    print('*** update **: ', clicked_menu_value['menu'])
+    new_values = get_submenu_values(clicked_menu_value['menu'])
+    return render(request, 'filter_submenu.html', {'key':get_submenu()})
 
 class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'

@@ -208,16 +208,19 @@ var csrftoken = getCookie('csrftoken');
 
 
 $(document).ready(function(menuTitle) {
-//  $('#accordion').accordion({
-//    active: false,
-//    collapsible: true,
-//    icons: {
-//        header: 'fa-plus-circle',
-//        activeHeader: 'fa-minus-circle'
-//    }
-//  });
-      $("h5.respo-hover-blue.nav").click(function () {
-        var menuValue = $(this).attr("value");
+  $('#accordion').accordion({
+    active: false,
+    collapsible: true,
+    icons: {
+        header: 'fa-plus-circle',
+        activeHeader: 'fa-minus-circle'
+    }
+  });
+    $("h5.respo-hover-blue.nav").click(function () {
+    var menuValue = $(this).attr("value");
+//    $('.filter_submenu').html('').load(
+//    url_home+"?menu=" + menuValue,)
+////    "{% url url_home %}?menu=" + menuValue,)
         $.ajax({
             url: url_home,
             datatype: 'json',
@@ -236,18 +239,25 @@ $(document).ready(function(menuTitle) {
     //                $(id="value").empty().append(
     //                    $('<a>').addClass('respo-hover-aqua ').text(i),
     //                    $('<a>').addClass('respo-hover-amber').text(val)
-    //                )
+//                    )
     //            });
-            },
-        })
+    },
+    });
+    });
  //   url:
 //    $.post({
 //    });
 //    $.ajax('vfwheron:home', href, subMenu);
-    });
+//    };
 }); // end ready
-
-
+//TODO: Aufruf dieser Funktion fehlt beim click
+function update_menu(menu_values){
+alert('bin da')
+    console.log(menu_values)
+    $('.vfwheron/filter_submenu.html').html('').load(
+    "{% url 'vfwheron:update_menu' %}?menu="+menu_values
+    )
+}
 //function subMenu(data){
 //    newHTML = <p>New Value + data</p>;
 //    $('menu').html(newHTML)
