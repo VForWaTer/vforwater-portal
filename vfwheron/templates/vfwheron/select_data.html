@@ -5,7 +5,7 @@
 <head>
     <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
     <script src="{% static 'vfwheron/js/vfw.js' %}" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/filter.css' %}">
+    <!--<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/filter.css' %}">-->
 
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/jquery-ui.min.css' %}">
     <script src="{% static 'vfwheron/js/jquery-ui.min.js' %}"></script>
@@ -17,11 +17,13 @@
         <b>Database</b>
     </div>
 
+
     <div id="accordion"  >
         {% for main_menu in menu_list %}
             {% for value, key in main_menu.items %}
                 <h5 class="respo-hover-blue nav" value = "{{ value }}">{{ value }}</h5>
                 <div id="{{ value }}" >
+                    <div id="subaccordion"  >
                 <!--<div id="{{ value }}" class="dropdown-content">-->
                     <!--{% for submenu in key %}-->
                         <!--{% for value2, key2 in submenu.items %}-->
@@ -35,7 +37,9 @@
                             <!--</ul>-->
                         <!--{% endfor %}-->
                     <!--{% endfor %}-->
-                    {% include 'vfwheron/filter_submenu.html' %}
+
+                        {% include 'vfwheron/filter_submenu.html' %}
+                    </div>
                 </div>
             {% endfor %}
         {% empty %}

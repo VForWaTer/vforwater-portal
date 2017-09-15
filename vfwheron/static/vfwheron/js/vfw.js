@@ -216,8 +216,19 @@ $(document).ready(function(menuTitle) {
         activeHeader: 'fa-minus-circle'
     }
   });
+
     $("h5.respo-hover-blue.nav").click(function () {
+
     var menuValue = $(this).attr("value");
+
+          $('div #subaccordion').accordion({
+    active: false,
+    collapsible: true,
+    icons: {
+        header: 'fa-plus-circle',
+        activeHeader: 'fa-minus-circle'
+    }
+  });
 //    $('.filter_submenu').html('').load(
 //    url_home+"?menu=" + menuValue,)
 ////    "{% url url_home %}?menu=" + menuValue,)
@@ -232,8 +243,29 @@ $(document).ready(function(menuTitle) {
             success : function(json) {
     //            alert(JSON.stringify(json));
     //            alert({json});
-                console.log(json); // log the returned json to the console
-                console.log("success"); // another sanity check
+                $.each(json, function(key1, value1){ // loop over top level menu
+                    var newMenuButton = ('#'+key1)
+//                    var id = this.id;
+                    console.log(newMenuButton)
+//                    $("#Bodentyp").text('"#'+key1+'"');
+//                    $('#'+key1).text('"#'+key1+'"');
+                    var newHTML = '';
+                    var newMenu = '';
+                    $.each(value1, function(key2, value2){ // loop over sub menu
+//                        $('#'+key1).html('<p>'+ value2+'</p>');
+                            newHTML = '<li class="respo-hover-amber" id="'+ value2 +'">'+ value2 +'</li>';
+                            newMenu = newMenu + newHTML;
+//                        $("name=" + this.name).text('"#'+value1+'"');
+//                        $("#"+this.id).html(key1);
+//                        $("#"+value).text(value);
+                        console.log(newHTML);
+                        console.log(key1, value2);
+                    });
+                    $('#'+key1).html(newMenu);
+                    console.log(newMenu);
+                });
+//                console.log(json); // log the returned json to the console
+//                console.log("success!"); // another sanity check
     //            $("h6").html( '{% for value4 in key2 %} <h8 id="{{ value3 }}" >json</h8>')
     //            $.each(json, function(i, val) {
     //                $(id="value").empty().append(

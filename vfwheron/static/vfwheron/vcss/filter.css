@@ -1,3 +1,5 @@
+/*TODO: This file isn't used now. Maybe a start to style the accordions of the filter menu*/
+
 .dropbtn:hover, .dropbtn:focus {
     background-color: #3f8e41;
 }
@@ -26,6 +28,5 @@
 .dropdown a:hover {background-color: #f1f1f1}
 
 .show {display:block;}
-
 
 
