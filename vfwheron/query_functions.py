@@ -24,15 +24,15 @@ def get_first_level():
 def get_submenu():
     # b[1].variable_name
     # print('****: ',list(b))
-    v_bod_geo = {'bal':'ta'}
-    v_bod_typ = {'def':'aul', 'ti':'ta'}
-    v_besitz_ins = []
-    v_besitz_nam = {'def':'aul', 'ti':'ta'}
-    v_besitz_dep = []
-    v_dom_prj = []
-    v_dom_dom = []
-    v_stand_nam = []
-    v_dat_nam = []
+    v_bod_geo = {'No Values':0}
+    v_bod_typ = {'No Values':0}
+    v_besitz_ins = {'No Values':0}
+    v_besitz_nam = {'No Values':0}
+    v_besitz_dep = {'No Values':0}
+    v_dom_prj = {'No Values':0}
+    v_dom_dom = {'No Values':0}
+    v_stand_nam = {'No Values':0}
+    v_dat_nam = {'No Values':0}
 
     # second_level = [{'Boden': ['Geologie', 'Bodentyp']}, {'Besitzer': ['Institution Name', 'Nachname', 'Department']},
     #     {'Domäne': ['Projekt', 'Name der Domäne']}, {'Standort': ['Standort Name']},{'Datentyp': ['Name der Variable']}]
@@ -59,8 +59,8 @@ def default_menu_dict():
     v_dom_prj = LtDomain.objects.select_related().values_list('project__project_name').distinct()
     v_dom_dom = LtDomain.objects.select_related().values_list('domain_name').distinct()
     v_stand_nam = LtSite.objects.select_related().values_list('site_name').distinct()
-    v_dat_nam = TblVariable.objects.select_related().values_list('variable_name').distinct()
-    # print('** ** **: ',list(v_dom_prj))
+    v_dat_nam = TblVariable.objects.select_related().values_list('variable_name', 'variable_symbol').distinct()
+    # print('** ** **: ',list(v_dat_nam))
     menu_dict = [{'Boden': [{'Geologie':v_bod_geo}, {'Bodentyp':v_bod_typ}]}, {'Besitzer': [{'Institutsname':v_besitz_ins},
         {'Nachname':v_besitz_nam},{'Department':v_besitz_dep}]},{'Domäne': [{'Projekt':v_dom_prj},{'Domänenname':v_dom_dom}]},
         {'Standort': [{'Standortname':v_stand_nam}]},{'Datentyp': [{'Variablenname':v_dat_nam}]}]

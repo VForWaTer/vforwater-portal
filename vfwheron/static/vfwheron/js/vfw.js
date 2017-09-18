@@ -209,6 +209,7 @@ var csrftoken = getCookie('csrftoken');
 
 $(document).ready(function(menuTitle) {
   $('#accordion').accordion({
+    heightStyle: "content",
     active: false,
     collapsible: true,
     icons: {
@@ -222,13 +223,14 @@ $(document).ready(function(menuTitle) {
     var menuValue = $(this).attr("value");
 
           $('div #subaccordion').accordion({
-    active: false,
-    collapsible: true,
-    icons: {
-        header: 'fa-plus-circle',
-        activeHeader: 'fa-minus-circle'
-    }
-  });
+            heightStyle: "content",
+            active: false,
+            collapsible: true,
+            icons: {
+                header: 'fa-plus-circle',
+                activeHeader: 'fa-minus-circle'
+            }
+          });
 //    $('.filter_submenu').html('').load(
 //    url_home+"?menu=" + menuValue,)
 ////    "{% url url_home %}?menu=" + menuValue,)
@@ -253,7 +255,7 @@ $(document).ready(function(menuTitle) {
                     var newMenu = '';
                     $.each(value1, function(key2, value2){ // loop over sub menu
 //                        $('#'+key1).html('<p>'+ value2+'</p>');
-                            newHTML = '<li class="respo-hover-amber" id="'+ value2 +'">'+ value2 +'</li>';
+                            newHTML = '<a class="respo-hover-blue" id="'+ value2 +'">'+ value2 +'</a>';
                             newMenu = newMenu + newHTML;
 //                        $("name=" + this.name).text('"#'+value1+'"');
 //                        $("#"+this.id).html(key1);
