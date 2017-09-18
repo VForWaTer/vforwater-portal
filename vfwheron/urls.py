@@ -12,7 +12,6 @@ urlpatterns = [
     url(r'^watts_login/', views.LoginView.as_view(), name='watts_login'),
     url(r'^logout$', views.LogoutView.as_view(), name='logout'),
     url(r'^menu$', views.menuView.as_view(), name='menu'),
-    url(r'^update_menu$', views.update_menu, name='update_menu'),
 ]
 
 if settings.ON_VFW_SERVER:

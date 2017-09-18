@@ -158,36 +158,6 @@ function select_data() {
 	}
 }
 
-function get_submenu() {
-    var selectedMenu = document.getElementById("menu").value;
-	if (!document.getElementById(selectedMenu) && selectedMenu!=0){
-		document.getElementById("select_menu").innerHTML += "<li class='respo-padding' id='"+selectedMenu+"'><span class='respo-medium'>"+selectedMenu+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
-	}
-}
-
-function firstfilter() {
-    location.href = "http://www.cnn.com";
-}
-
-//function dropdown(menuTitle) {
-//    var actionVariable =  '"vfwheron:home"';
-////    var menuID = document.getElementById(menuTitle);
-////    document.getElementById(menuTitle).addEventListener("click", function () {
-////  menuID.submit();
-////});
-//    var ajaxMenu = "\"#"+menuTitle+"\"";
-//    $(ajaxMenu).bind('click', function(){
-////    alert(ajaxMenu);
-////    $("#Besitzer").click(function(){
-////    alert(menuTitle);
-//////        console.log( $(this).val() );
-////        return false;
-////    });
-//
-//    document.getElementById(menuTitle).classList.toggle("show");
-//    });
-//}
-
 // TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
 function getCookie(name) {
     var cookieValue = null;
@@ -231,92 +201,29 @@ $(document).ready(function(menuTitle) {
                 activeHeader: 'fa-minus-circle'
             }
           });
-//    $('.filter_submenu').html('').load(
-//    url_home+"?menu=" + menuValue,)
-////    "{% url url_home %}?menu=" + menuValue,)
         $.ajax({
             url: url_home,
             datatype: 'json',
-    //        type : "POST",
             data: {
                     menu: menuValue ,
                     'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
             success : function(json) {
-    //            alert(JSON.stringify(json));
-    //            alert({json});
                 $.each(json, function(key1, value1){ // loop over top level menu
                     var newMenuButton = ('#'+key1)
-//                    var id = this.id;
-                    console.log(newMenuButton)
-//                    $("#Bodentyp").text('"#'+key1+'"');
-//                    $('#'+key1).text('"#'+key1+'"');
+//                    console.log(newMenuButton)
                     var newHTML = '';
                     var newMenu = '';
                     $.each(value1, function(key2, value2){ // loop over sub menu
-//                        $('#'+key1).html('<p>'+ value2+'</p>');
                             newHTML = '<a class="respo-hover-blue" id="'+ value2 +'">'+ value2 +'</a>';
                             newMenu = newMenu + newHTML;
-//                        $("name=" + this.name).text('"#'+value1+'"');
-//                        $("#"+this.id).html(key1);
-//                        $("#"+value).text(value);
-                        console.log(newHTML);
-                        console.log(key1, value2);
+//                        console.log(newHTML);
+//                        console.log(key1, value2);
                     });
                     $('#'+key1).html(newMenu);
                     console.log(newMenu);
                 });
-//                console.log(json); // log the returned json to the console
-//                console.log("success!"); // another sanity check
-    //            $("h6").html( '{% for value4 in key2 %} <h8 id="{{ value3 }}" >json</h8>')
-    //            $.each(json, function(i, val) {
-    //                $(id="value").empty().append(
-    //                    $('<a>').addClass('respo-hover-aqua ').text(i),
-    //                    $('<a>').addClass('respo-hover-amber').text(val)
-//                    )
-    //            });
     },
     });
     });
- //   url:
-//    $.post({
-//    });
-//    $.ajax('vfwheron:home', href, subMenu);
-//    };
 }); // end ready
-//TODO: Aufruf dieser Funktion fehlt beim click
-function update_menu(menu_values){
-alert('bin da')
-    console.log(menu_values)
-    $('.vfwheron/filter_submenu.html').html('').load(
-    "{% url 'vfwheron:update_menu' %}?menu="+menu_values
-    )
-}
-//function subMenu(data){
-//    newHTML = <p>New Value + data</p>;
-//    $('menu').html(newHTML)
-//}
-
-/*
-$('#post-form').on('submit', function(dropdown){
-    event.preventDefault();
-    console.log("form submitted!")  // sanity check
-    create_post();
-});
-*/
-
-
-// Close dropdown if the user clicks outside of it
-//window.onclick = function(event) {
-//  if (!event.target.matches('.respo-dropdown-click')) {
-//
-//    var dropdowns = document.getElementsByClassName("dropdown-content");
-//    var i;
-//    for (i = 0; i < dropdowns.length; i++) {
-//      var openDropdown = dropdowns[i];
-//      if (openDropdown.classList.contains('show')) {
-//        openDropdown.classList.remove('show');
-//      }
-//    }
-//  }
-//}
