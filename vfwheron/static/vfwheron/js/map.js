@@ -3,7 +3,36 @@ function create_map() {
 	mapsource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	
 	var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
+/*    var sample_locations = document.getElementById('sample_locations').value;
+    console.log(sample_locations);
 
+// Build a vector layer:
+    var image = new ol.style.Circle({
+        radius: 5,
+        fill: null,
+        stroke: new ol.style.Stroke({color: 'blue', width: 1})
+    });
+
+    var styles = {
+        'Point': new ol.style.Style({
+          image: image
+        }),
+    }
+
+    var styleFunction = function(feature) {
+        return styles[feature.getGeometry().getType()];
+      };
+
+    var vectorSource = new ol.source.Vector({
+        features: (new ol.format.GeoJSON()).readFeatures(sample_locations)
+      });
+
+    var vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        style: styleFunction
+      });*/
+
+// build the background map
 	maplayer = new ol.layer.Tile({
 		preload: Infinity,
 		source: mapsource,

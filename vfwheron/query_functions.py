@@ -1,8 +1,9 @@
 import re
 
+from django.core.serializers import serialize
 from django.db import connections
 
-from vfwheron.models import TblVariable, LtSite, LtSoil, TblMeta, LtDomain
+from vfwheron.models import TblVariable, LtSite, LtSoil, TblMeta, LtDomain, LtLocation
 
 
 def get_bbox_from_data(): # get bbox for available data
@@ -10,18 +11,28 @@ def get_bbox_from_data(): # get bbox for available data
     # request bbox in srid of openlayers:
     cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857)) FROM lt_location;')
     m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
-    return list(map(lambda x: float(x), m)) # change string to list of floats 
+    cursor.close()
+    return list(map(lambda x: float(x), m)) # change string to list of floats
+
+# def get_sample_locations():
+#     cursor = connections["vforwater"].cursor() # connect to database
+#     cursor.execute("SELECT ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857))::json FROM lt_location;")
+#     locations = cursor.fetchall()
+#
+#     # print(locations)
+#     # TODO: serialize kann gültiges json erstellen. --> model anpassen
+#     # a=serialize('geojson', cursor.fetchall(),
+#     #           geometry_field='point',
+#     #           fields=('name',))
+#     cursor.close()
+#     # print(a)
+#     print(LtLocation.objects.select_related().values_list('geom').distinct())
+#     return locations
 
 def get_submenu():
-    v_bod_geo = {'No Values':0}
-    v_bod_typ = {'No Values':0}
-    v_besitz_ins = {'No Values':0}
-    v_besitz_nam = {'No Values':0}
-    v_besitz_dep = {'No Values':0}
-    v_dom_prj = {'No Values':0}
-    v_dom_dom = {'No Values':0}
-    v_stand_nam = {'No Values':0}
-    v_dat_nam = {'No Values':0}
+    # set startvalues
+    v_bod_geo = v_bod_typ = v_besitz_ins = v_besitz_nam = v_besitz_dep = v_dom_prj = v_dom_dom = v_stand_nam = v_dat_nam = {'No Values': 0}
+
     submenu = [{'Boden': [{'Geologie':v_bod_geo}, {'Bodentyp':v_bod_typ}]}, {'Besitzer': [{'Institutsname':v_besitz_ins},
         {'Nachname':v_besitz_nam},{'Department':v_besitz_dep}]},{'Domäne': [{'Projekt':v_dom_prj},{'Domänenname':v_dom_dom}]},
         {'Standort': [{'Standortname':v_stand_nam}]},{'Datentyp': [{'Variablenname':v_dat_nam}]}]

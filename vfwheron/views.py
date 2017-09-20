@@ -16,7 +16,7 @@ class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
     def get_context_data(self, **kwargs):
-        return {'dataExt': get_bbox_from_data(), 'menu_list':get_submenu()}
+        return { 'dataExt': get_bbox_from_data(), 'menu_list':get_submenu()}
 
 class menuView(TemplateView):
 

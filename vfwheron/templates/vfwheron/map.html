@@ -15,7 +15,16 @@
 
 	<style>div.map {height: 76%; width: 100%;}</style>
 
+    <!--TODO: Was ist besser um Werte an js zu übergeben? <param> oder <script>? param muss direkt abgerufen werden, script ist für alle zugänglich)-->
 	<param id="dataExt" value ="{{ dataExt }}"></param> <!-- param to bridge data from view to js  -->
+    <!--<param id="sample_locations" value ="{{ sample_locations }}"></param>-->
+ <!--   {% for value in sample_locations %}
+        {% for bla in value %}
+			{% for tra in bla %}
+				<param id="sample_locations" value ="{{ bla }}"></param>
+			{% endfor %}
+		{% endfor %}
+    {% endfor %}-->
 
 	<div class="respo-main respo-black respo-icon-bar" id="filterbox">
 		  <a href="javascript:void(0)" id="draw_polygon" class="respo-hover-white respo-hide-small" title="Draw"><i class="fa fa-square-o fa-fw"></i></a>
@@ -35,3 +44,9 @@
 		 <input type="button" onclick="toggleLayer(vectormap)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp;
 
 </body>
+
+<!--
+<script>
+   sample_locations = '{{ sample_locations }}';
+</script>
+-->
