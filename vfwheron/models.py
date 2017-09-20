@@ -259,8 +259,8 @@ class TblMeta(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    def __str__(self):
-        return 'ID %s, %s' % (self.external_id, self.comment)
+    # def __str__(self):
+    #     return 'ID %s, %s' % (self.external_id, self.comment)
     
     class Meta:
         managed = False

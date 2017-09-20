@@ -1,37 +1,33 @@
-import re
-
-from django.db import connections
+from django.http.response import JsonResponse
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.auth import logout
-from django.shortcuts import  redirect
+from django.shortcuts import redirect
 
-from vfwheron.models import TblVariable
+from vfwheron.query_functions import get_bbox_from_data, get_submenu_values, get_submenu
 
 import logging
 
 # Create your views here.
-
 logger = logging.getLogger(__name__)
+
 
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
-    
-    # get bbox for available data
-    cursor = connections['vforwater'].cursor() # connect to database
-    # request bbox in srid of openlayers
-    cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857)) FROM lt_location;')
-    m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
-    dataExt = list(map(lambda x: float(x), m)) # change string to list of floats
 
     def get_context_data(self, **kwargs):
-        get_unit_id = TblVariable.objects.select_related('unit').values_list('variable_name', 'variable_symbol')
-        all_variable_names = get_unit_id.values('variable_name', 'variable_symbol','unit__unit_symbol')
-        return {'dataExt': self.dataExt, 'all_names': all_variable_names}
-       
-    
+        return { 'dataExt': get_bbox_from_data(), 'menu_list':get_submenu()}
+
+class menuView(TemplateView):
+
+    def get(self, request):
+        clicked_menu_value = request.GET
+        return JsonResponse(get_submenu_values(clicked_menu_value['menu']))
+
+
 class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'
+
 
 class LoginView(TemplateView):
     def post(self, request):
@@ -45,7 +41,8 @@ class LoginView(TemplateView):
             logger.debug('{} logged in as'.format(request.user.username))
 
         return super().dispatch(request, *args, **kwargs)
-    
+
+
 class LogoutView(View):
     def logout(self, request):
         logger.debug('{} logged out'.format(request.user.username))
@@ -54,4 +51,3 @@ class LogoutView(View):
     def post(self, request):
         self.logout(request)
         return redirect('vfwheron:login')
-
