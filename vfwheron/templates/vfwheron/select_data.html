@@ -23,7 +23,16 @@
                 <h5 class="respo-hover-blue nav" value = "{{ value }}">{{ value }}</h5>
                 <div id="{{ value }}" >
                     <div id="subaccordion"  >
-                        {% include 'vfwheron/filter_submenu.html' %}
+                        {% for submenu in key %}
+                            {% for value2, key2 in submenu.items %}
+                                <a class="sub-menu respo-hover-blue">{{ value2 }}</a>
+                                <ul class="sub-sub-menu" >
+                                    {% for value4, key3 in key2.items %}
+                                        <a  id="{{ value2 }}" >{{ value4 }} ({{ key3 }})</a>
+                                    {% endfor %}
+                                </ul>
+                            {% endfor %}
+                        {% endfor %}
                     </div>
                 </div>
             {% endfor %}
