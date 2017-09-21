@@ -16,22 +16,19 @@
         <b>Database</b>
     </div>
 
-
     <div id="accordion"  >
         {% for main_menu in menu_list %}
-            {% for value, key in main_menu.items %}
-                <h5 class="respo-hover-blue nav" value = "{{ value }}">{{ value }}</h5>
-                <div id="{{ value }}" >
+            {% for key, value in main_menu.items %}
+                <h5 class="respo-hover-blue nav" value = "{{ key }}">{{ key }} </h5>
+                <div id="{{ key }}" >
                     <div id="subaccordion"  >
-                        {% for submenu in key %}
-                            {% for value2, key2 in submenu.items %}
-                                <a class="sub-menu respo-hover-blue">{{ value2 }}</a>
-                                <ul class="sub-sub-menu" >
-                                    {% for value4, key3 in key2.items %}
-                                        <a  id="{{ value2 }}" >{{ value4 }} ({{ key3 }})</a>
-                                    {% endfor %}
-                                </ul>
-                            {% endfor %}
+                        {% for key2, value2 in value.items %}
+                            <a class="sub-menu respo-hover-blue">{{ key2 }}</a>
+                            <ul class="sub-sub-menu" >
+                                {% for key3, value3 in value2.items %}
+                                    <a  id="{{ key2 }}" >{{ key3 }} ({{ value3 }})</a>
+                                {% endfor %}
+                            </ul>
                         {% endfor %}
                     </div>
                 </div>
