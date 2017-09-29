@@ -25,6 +25,14 @@ class menuView(TemplateView):
         return JsonResponse(get_submenu_values(clicked_menu_value['menu']))
 
 
+class show_datasets(TemplateView):
+
+    def get(self, request):
+        print('Bin da! ** ** ** **')
+        clicked_menu_value = request.GET
+        return JsonResponse(get_submenu_values(clicked_menu_value['menu']))
+
+
 class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'
 
