@@ -1,51 +1,78 @@
 //Create own base layer
 function create_map() {
-	mapsource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
+	mapSource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	
 	var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
 
-
 // build the background map
-	maplayer = new ol.layer.Tile({
+	mapLayer = new ol.layer.Tile({
 		preload: Infinity,
-		source: mapsource,
+		source: mapSource,
 	});
-	
+
 	// get OSM in case local map is not loading:
-	maplayer.getSource().on('tileloaderror',function(event){
+	mapLayer.getSource().on('tileloaderror',function(event){
 		source = new ol.source.OSM();
-		maplayer.setSource(source) 
+		mapLayer.setSource(source)
     });
-	
-	mapview = new ol.View({
+
+	mapView = new ol.View({
 		center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
 		zoom: 6,
-		maxZoom: 20,
+		maxZoom: 18,
 	});
 
 
-    pointsource = new ol.source.TileWMS({
+    pointSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
-		params: {LAYERS: 'CAOS:lt_location'}
+		serverType:'geoserver',
+		params: {
+		    LAYERS: 'CAOS:lt_location',
+		    TILED: true,
+		    STYLES: 'Light Blue Circle',
+        }
 	});
-	pointmap = new ol.layer.Tile({
-		source: pointsource,
+	pointMap = new ol.layer.Tile({
+		source: pointSource,
 	});
+
+// Elements that make up the popup.
+  var container = document.getElementById('popup');
+  var content = document.getElementById('popup-content');
+  var closer = document.getElementById('popup-closer');
+
+// Create an overlay to anchor the popup to the map.
+  var overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+    element: container,
+    autoPan: true,
+    autoPanAnimation: {
+      duration: 250
+    }
+  }));
+
+  /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
+  closer.onclick = function() {
+    overlay.setPosition(undefined);
+    closer.blur();
+    return false;
+  };
+
 
 	vectorSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'}
 	});
-	vectormap = new ol.layer.Tile({
+
+	vectorMap = new ol.layer.Tile({
 		source: vectorSource,
 	});
-
 
 	map_tar = document.getElementById("map");
 	map = new ol.Map({
 		renderer: 'canvas',
+		overlays: [overlay],
 		target: map_tar,
-		layers: [maplayer, vectormap, pointmap],
+		layers: [mapLayer, vectorMap, pointMap],
 		controls: [
 			new ol.control.Zoom(),
 			new ol.control.Attribution(),
@@ -63,6 +90,22 @@ function create_map() {
 
 			}),
 			],
-			view: mapview//dataview
+        view: mapView//dataview
 	});
+
+
+// get information about your data in a popup when you click on a data point in the map
+  map.on('singleclick', function(evt) {
+    var viewResolution = /** @type {number} */ (mapView.getResolution());
+    var url = pointSource.getGetFeatureInfoUrl(
+        evt.coordinate, viewResolution, 'EPSG:3857',
+        {'INFO_FORMAT': 'text/html'});
+    if (url) {
+      document.getElementById('popup-content').innerHTML =
+      '<iframe seamless src=' + url + '></iframe>';
+      overlay.setPosition(evt.coordinate);
+    }
+  });
+
+
 }
