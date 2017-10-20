@@ -16,12 +16,12 @@
         <b>Database</b>
     </div>
 
-    <div id="accordion"  >
+    <div id="accordion"  > <!-- see vfw.js -->
         {% for main_menu in menu_list %}
-            {% for key, value in main_menu.items %}
-                <h5 class="respo-hover-blue nav" value = "{{ key }}">{{ key }} </h5>
+            {% for key, value in main_menu.items %} <!--key: Boden, value: Geologie -->
+                <h5 class="respo-hover-blue nav" value = "{{ key }}">{{ key }} </h5> <!-- onclick send value = {{key}} -->
                 <div id="{{ key }}" >
-                    <div id="subaccordion"  >
+                    <div id="subaccordion"  > <!-- see vfw.js -->
                         {% for key2, value2 in value.items %}
                             <a class="sub-menu respo-hover-blue">{{ key2 }}</a>
                             <ul class="sub-sub-menu" >
@@ -35,13 +35,15 @@
             {% endfor %}
         {% empty %}
             <option value="When you see this">When you see this</option>
-            <option value="something is wrong">something is wrong</option>
-            <option value="please contact the admin">please contact the admin</option>
+            <option value="something went terribly wrong.">something went terribly wrong.</option>
+            <option value="There is nothing you could do">There is nothing you could do</option>
+            <option value="except of contacting the admin.">except of contacting the admin.</option>
         {% endfor %}
     </div>
+    <a><b><input class="respo-btn-simple" type="submit" onclick="show_first_choice_func()" value="Zeige gewählte Datensätze"></b></a>
 </body>
 
 <script>
- url_home = '{% url 'vfwheron:menu' %}';
+<!--TODO: Do I need this, or can I just use the csrftoken in vfw.js?-->
  csrf_token = '{{ csrf_token }}';
 </script>

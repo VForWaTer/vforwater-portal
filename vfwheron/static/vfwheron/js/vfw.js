@@ -150,13 +150,6 @@ function search_open(){
 	}
 }
 
-//Select Data
-function select_data(selectedData) {
-    console.log(selectedData)
-
-    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
-}
-
 // TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
 function getCookie(name) {
     var cookieValue = null;
@@ -176,7 +169,7 @@ function getCookie(name) {
 var csrftoken = getCookie('csrftoken');
 
 
-//build menu at sidebar
+//build menu on sidebar
 $(document).ready(function(menuTitle) {
   $('#accordion').accordion({
     heightStyle: "content",
@@ -189,45 +182,81 @@ $(document).ready(function(menuTitle) {
     }
   });
 
-    $("h5.respo-hover-blue.nav").click(function () {
+  $("h5.respo-hover-blue.nav").click(function () { // two actions happen on click:
 
-    var menuValue = $(this).attr("value");
-
-    $('div #subaccordion').accordion({
-    heightStyle: "content",
-    active: false,
-    collapsible: true,
-//  TODO - very low priority: icons don't work
-    icons: {
-        header: 'fa-plus-circle',
-        activeHeader: 'fa-minus-circle'
-    }
-    });
-    $.ajax({
-        url: url_home,
-        datatype: 'json',
-        data: {
+        var menuValue = $(this).attr("value");
+// first action: open accordion
+        $('div #subaccordion').accordion({
+            heightStyle: "content",
+            active: false,
+            collapsible: true,
+        //  TODO - very low priority: icons don't work
+            icons: {
+                header: 'fa-plus-circle',
+                activeHeader: 'fa-minus-circle'
+            }
+        });
+// second action: request menu values
+        $.ajax({
+            url: "/vfwheron/menu",
+            datatype: 'json',
+            data: {
                 menu: menuValue ,
                 'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-        success : function(json) {
-            $.each(json, function(key1, value1){ // loop over top level menu
-//                    var newMenuButton = ('#'+key1)
-                var newHTML = '';
-                var newMenu = '';
-                $.each(value1, function(key2, value2){ // loop over sub menu
-                    console.log(value2)
-                    var selectedData = "'"+ value2 +"'"
-                    if (value2 != ''){
-                        newHTML = '<input type="checkbox" class="respo-check respo-hover-blue" id="'+ value2 +'" onclick="select_data('+selectedData+')"> '+ value2 +'</input><br>';
-                    } else {
-                        newHTML = '<a>keine Auswahl verfügbar</a>';
-                    }
-                    newMenu = newMenu + newHTML;
+            }, // data sent with the post request
+            success : function(json) {
+                $.each(json, function(key1, value1){ // loop over top level menu
+    //                    var newMenuButton = ('#'+key1)
+                    var newHTML = '';
+                    var newMenu = '';
+                    $.each(value1, function(key2, value2){ // loop over sub menu
+                        if (key2 != 'null'){
+                            var selectedData = "'"+ key2+"'"
+//                            var selectedData = "'"+ key2 +"'"
+                            var bool = ''
+                            if (value2){bool = 'checked'}
+                            newHTML = '<input type="checkbox" class="respo-check respo-hover-blue" id="'+ key2 +'" '+ bool +'  onclick="select_data('+selectedData+')"> '+ key2 +'</input><br>';
+                        } else {
+                            newHTML = '<a>keine Auswahl verfügbar</a>';
+                        }
+                        newMenu = newMenu + newHTML;
+                    });
+                    $('#'+key1).html(newMenu);
                 });
-                $('#'+key1).html(newMenu);
-            });
-        },
-    });
+            },
+        });
     });
 }); // end ready
+
+// Select Data / build elements, in workspace
+function select_data(selectedData) {
+    console.log(selectedData)
+
+    $.ajax({
+        url: "/vfwheron/menu",
+        datatype: 'json',
+        data: {
+            selection: selectedData ,
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success : function(json) {
+            console.log('bin zurück!',json)
+        },
+    });
+    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+}
+
+function show_first_choice_func() {
+    $.ajax({
+        url: "/vfwheron/menu",
+        datatype: 'json',
+        data: {
+            show_first_choice: 'True',
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success : function(json) {
+            console.log('bin zurück von first choice!',json)
+        },
+    });
+//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+}

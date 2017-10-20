@@ -3,6 +3,34 @@ function create_map() {
 	mapSource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	
 	var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
+/*    var sample_locations = document.getElementById('sample_locations').value;
+    console.log(sample_locations);
+
+// Build a vector layer:
+    var image = new ol.style.Circle({
+        radius: 5,
+        fill: null,
+        stroke: new ol.style.Stroke({color: 'blue', width: 1})
+    });
+
+    var styles = {
+        'Point': new ol.style.Style({
+          image: image
+        }),
+    }
+
+    var styleFunction = function(feature) {
+        return styles[feature.getGeometry().getType()];
+      };
+
+    var vectorSource = new ol.source.Vector({
+        features: (new ol.format.GeoJSON()).readFeatures(sample_locations)
+      });
+
+    var vectorLayer = new ol.layer.Vector({
+        source: vectorSource,
+        style: styleFunction
+      });*/
 
 // build the background map
 	mapLayer = new ol.layer.Tile({
@@ -23,6 +51,28 @@ function create_map() {
 	});
 
 
+//	Access as wfs - not used now
+/*		vectorSource = new ol.source.Vector({
+              format: new ol.format.GeoJSON({defaultDataProjection:"ESPG:4326"}),
+                url: function(extent) {
+              return 'https://vforwater-gis.scc.kit.edu/geoserver/wfs?service=WFS&' +
+              'version=2.0.0&request=GetFeature&typename=LUBW:vfwheron_basiseinzugsgebiet&' +
+              'outputFormat=application/json&' +
+              'bbox=' + extent.join(',') + ',EPSG:4326';
+        },
+        strategy: ol.loadingstrategy.bbox
+                });
+
+                  vectorMap = new ol.layer.Vector({
+                  source: vectorSource,
+                  style: new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                      color: 'rgba(0, 100, 255, 1.0)',
+                      width: 1.5
+                    })
+                  })
+                });
+ */
     pointSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		serverType:'geoserver',
@@ -35,6 +85,48 @@ function create_map() {
 	pointMap = new ol.layer.Tile({
 		source: pointSource,
 	});
+
+/*  pointMap = new ol.layer.Vector({
+        source: new ol.source.Cluster({
+          distance: 40,
+          source: new ol.source.Vector({
+            url: 'https://vforwater-gis.scc.kit.edu/geoserver/kml',
+            format: new ol.format.KML({
+              extractStyles: true
+            })
+          })
+        }),
+//        style: styleFunction
+      });*/
+    /*pointSource = new ol.source.Vector({
+      format: new ol.format.GeoJSON({defaultDataProjection:"ESPG:4326"}),
+        url: function(extent) {
+      return 'https://vforwater-gis.scc.kit.edu/geoserver/ows?service=WFS&' +
+      'version=1.0.0&request=GetFeature&typename=CAOS:lt_location&' +
+      'outputFormat=text/javascript';
+*//*      'outputFormat=application/json&' +
+      'bbox=' + extent.join(',') + ',EPSG:2169';*//*
+    },
+    strategy: ol.loadingstrategy.bbox
+            });
+
+    pointMap = new ol.layer.Vector({
+      source: pointSource,
+      style: new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'rgba(0, 100, 255, 1.0)',
+          width: 1.5
+        })
+      })
+    });*/
+ /*   pointSource = new ol.source.WFS({
+//        url: 'http://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=CAOS:lt_location&maxFeatures=50&outputFormat=text%2Fjavascript'
+        url: 'https://vforwater-gis.scc.kit.edu/geoserver/wfs',
+        params: {LAYERS: 'CAOS:lt_location'}
+    });
+    pointMap = new.ol.source.Tile({
+        source: pointSource,
+    })*/
 
 // Elements that make up the popup.
   var container = document.getElementById('popup');
