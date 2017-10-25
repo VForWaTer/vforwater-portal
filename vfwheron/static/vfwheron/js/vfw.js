@@ -201,7 +201,8 @@ $(document).ready(function(menuTitle) {
             url: "/vfwheron/menu",
             datatype: 'json',
             data: {
-                menu: menuValue ,
+                menu: menuValue,
+
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
             success : function(json) {
@@ -211,7 +212,9 @@ $(document).ready(function(menuTitle) {
                     var newMenu = '';
                     $.each(value1, function(key2, value2){ // loop over sub menu
                         if (key2 != 'null'){
-                            var selectedData = "'"+ key2+"'"
+//                            console.log('key1 ist jetzt:', key1) // z.B. Geologie
+//                            console.log('key2 ist jetzt:', key2) // z.B. Sandstone
+                            var selectedData = "['"+ key2+"', '"+ key1 +"']"
 //                            var selectedData = "'"+ key2 +"'"
                             var bool = ''
                             if (value2){bool = 'checked'}
@@ -230,13 +233,14 @@ $(document).ready(function(menuTitle) {
 
 // Select Data / build elements, in workspace
 function select_data(selectedData) {
-    console.log(selectedData)
-
+//    console.log('selectedData 0: ', selectedData[0])
+//    console.log('selectedData 1: ', selectedData[1])
     $.ajax({
         url: "/vfwheron/menu",
         datatype: 'json',
         data: {
-            selection: selectedData ,
+            selection: selectedData[0],
+            submenu: selectedData[1],
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success : function(json) {

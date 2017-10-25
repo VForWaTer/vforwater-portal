@@ -29,38 +29,42 @@ class menuView(TemplateView):
 
         # TODO: mix of session and cache looks terribly wrong. Possible to make consistent?
         # querydata = TblSelection.objects.filter(user=self.user).all()
-        request.session.set_expiry(30)  # expire after 20 seconds
-        menu = request.GET.get('menu')
-        selection = request.GET.get('selection')
+        request.session.set_expiry(20)  # expire after 20 seconds
 
+        # bring last used menu to session
+        menu = request.GET.get('menu')
         if menu:
             request.session['menu'] = menu
         else:
             menu = request.session.get('menu')
 
+        # save your selections in cache
+        selection = request.GET.get('selection')
+        submenu = request.GET.get('submenu')
         if selection:
             if cache.get(menu):
                 edit_cache = cache.get(menu)
-                if selection in cache.get(menu):
-                    edit_cache.remove(selection)
-                    cache.set(menu, edit_cache)
+                if selection in edit_cache[submenu]:
+                    edit_cache[submenu].remove(selection)
+                    cache.set(menu, {submenu: edit_cache[submenu]})
                 else:
-                    edit_cache.append(selection)
-                    cache.set(menu, edit_cache)
+                    edit_cache[submenu].append(selection)
+                    cache.set(menu, {submenu: edit_cache[submenu]})
             else:
-                cache.set(menu, [selection])
-        print('cache.get(menu):', cache.get(menu))
+                cache.set(menu, {submenu: [selection]})
+
+        selection_list = []
         if cache.get(menu):
-# TODO: Build a list with menu_keys like for selection
-            cache.set('menu_keys', menu)
-        else:
-            cache.delete('menu_keys', menu)
-        print(cache.get('menu_keys'))
+            if cache.get(menu).values():
+                selection_list = list(cache.get(menu).values())
+                selection_list = [item for sublist in selection_list for item in sublist]
+            else:
+                cache.set(menu, [])
+
         if request.GET.get('show_first_choice'):
-            print(' Y E A H ! ', menu)
+            print(' Y E A H ! Request from "Zeige gewählte Datensätze"', menu)
 
-
-        return JsonResponse(get_submenu_values(menu, cache.get(menu)))
+        return JsonResponse(get_submenu_values(menu, selection_list))
 
 
 class show_datasets(TemplateView):
