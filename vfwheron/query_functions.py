@@ -5,7 +5,7 @@ from functools import reduce
 from django.db import connections
 from django.core.serializers import serialize
 
-from vfwheron.models import TblVariable, LtSite, LtSoil, TblMeta, LtDomain, LtLocation, TblData
+from vfwheron.models import TblVariable, LtSite, LtSoil, TblMeta, LtDomain, LtLocation, TblData, NmMetaDomain
 
 
 def get_bbox_from_data(): # get bbox for available data
@@ -111,44 +111,59 @@ def get_submenu_values(top_menu_value, selection):
 
 # TODO: models.py should care for the following! Rebuild models to make them useful!
 def build_topquery(cache_obj):
-    top_menu = {'Boden': 'LtSoil', 'Besitzer': 'TblMeta__creator', 'Domäne': 'creator', 'Standort': 'LtSite',
-                'Datentyp': 'TblVariable'}
-    raw_menu = {'Boden': 'lt_soil', 'Besitzer': 'lt_user', 'Domäne': 'lt_domain', 'Standort': 'lt_site',
-                'Datentyp': 'tbl_variable'}
     menu = {'Boden': {'Geologie': 'geology', 'Bodentyp': 'soil_type'}, 'Besitzer': {'Institutsname': 'institution_name',
             'Nachname': 'last_name', 'Department': 'department'}, 'Domäne': {'Projekt': 'lt_project.project_name',
-            'Domänenname': 'name'}, 'Datantyp': {'Variablenname': 'variable_name'},
+            'Domänenname': 'name'}, 'Datentyp': {'Variablenname': 'variable_name'},
             'Standort': {'Standortname': 'site_name'}}
 
-    for menu_key, menu_value in raw_menu.items():
+    top_menu = {'Boden': 'soil', 'Besitzer': 'creator', 'Domäne': 'domain', 'Standort': 'site',
+                'Datentyp': 'variable'}
+
+    for menu_key, menu_value in top_menu.items():  # e.g. Boden: soil
         if menu_key in cache_obj:
-            for cache_key, cache_value in cache_obj.get(menu_key).items():
-                # print(' cache_key, cache_value :', cache_key, cache_value)
+            if menu_key == 'Domäne':
+                pre_text = 'domain__' + menu_value + "_"
+            else:
+                pre_text = 'meta__' + menu_value + "__"
+            for cache_key, cache_value in cache_obj.get(menu_key).items():  # e.g. Geologie: Sandstone
+                filter_string = pre_text + menu[menu_key][cache_key]  # e.g. soil +__+ geology
                 for value in cache_value:
-                    # filter_string1 = 'meta__' + menu_value + '__' + menu[menu_key][cache_key] + '=' + value
-                    # filter_string = 'meta__' + menu_value + '__' + menu[menu_key][cache_key]
-                    menu_value_id = menu_value.partition("_")[2]+"_id"
+                    print("NmMetaDomain.objects.filter("+filter_string+"='"+value+"').values('meta_id')")
+                    django_data = eval("NmMetaDomain.objects.filter("+filter_string+"='"+value+"').values('meta_id')")
+                    print(' * * * * * : ', len(django_data), django_data)
 
-                    select_prefix = "SELECT "
-                    select_string = "tbl_meta.id "
-
-                    from_prefix = "FROM public.tbl_meta"
-                    from_string = ", public." + menu_value
-
-                    where_prefix = " WHERE "
-                    where_string = "tbl_meta." + menu_value_id + "="+menu_value+".id AND " + menu_value + "."\
-                                   + menu[menu_key][cache_key]+ "='" + value + "'"
-
-                    filter_string = select_prefix + select_string + from_prefix + from_string + where_prefix + where_string
-                    # print('filter_string: ', filter_string)
 
     # data = TblData.objects.filter( reduce(filter_string1)).values('value')
-    cursor = connections['vforwater'].cursor() # connect to database
-    # # request bbox in srid of openlayers:
-    cursor.execute(filter_string)
-    data = cursor.fetchall()
-    data_dict = dictfetchall(cursor)
+
+    # raw_menu = {'Boden': 'lt_soil', 'Besitzer': 'lt_user', 'Domäne': 'lt_domain', 'Standort': 'lt_site',
+    #             'Datentyp': 'tbl_variable'}
     #
+    # for menu_key, menu_value in raw_menu.items():
+    #     if menu_key in cache_obj:
+    #         for cache_key, cache_value in cache_obj.get(menu_key).items():
+    #             # print(' cache_key, cache_value :', cache_key, cache_value)
+    #             for value in cache_value:
+    #                 # filter_string1 = 'meta__' + menu_value + '__' + menu[menu_key][cache_key] + '=' + value
+    #                 filter_string2 = 'meta__' + menu_value + '__' + menu[menu_key][cache_key]
+    #                 menu_value_id = menu_value.partition("_")[2]+"_id"
+    #
+    #                 select_prefix = "SELECT "
+    #                 select_string = "tbl_meta.id "
+    #
+    #                 from_prefix = "FROM public.tbl_meta"
+    #                 from_string = ", public." + menu_value
+    #
+    #                 where_prefix = " WHERE "
+    #                 where_string = "tbl_meta." + menu_value_id + "="+menu_value+".id AND " + menu_value + "."\
+    #                                + menu[menu_key][cache_key]+ "='" + value + "'"
+    #
+    #                 filter_string = select_prefix + select_string + from_prefix + from_string + where_prefix + where_string
+    #                 # print('filter_string: ', filter_string)
+    # cursor = connections['vforwater'].cursor()  # connect to database
+    # cursor.execute(filter_string)
+    # data = cursor.fetchall()
+    # data_dict = dictfetchall(cursor)
+
 #     SELECT
 #     tbl_meta.id,
 #
@@ -160,10 +175,9 @@ def build_topquery(cache_obj):
 # tbl_data.meta_id = tbl_meta.id
 # AND
 # tbl_meta.id = 92
-    # m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
-    cursor.close()
-    print(len(data))
-    return {'results':len(data)}
+#     cursor.close()
+    print(len(django_data))
+    return {'results':len(django_data)}
 
 
 def dictfetchall(cursor):
