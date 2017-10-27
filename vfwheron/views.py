@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 
 from django.core.cache import cache
 
-from .query_functions import get_bbox_from_data, get_submenu_values, get_submenu
+from .query_functions import get_bbox_from_data, get_submenu_values, get_submenu, build_topquery
 
 import logging
 
@@ -61,8 +61,8 @@ class menuView(TemplateView):
             else:
                 cache.set(menu, [])
 
-        if request.GET.get('show_first_choice'):
-            print(' Y E A H ! Request from "Zeige gewählte Datensätze"', menu)
+        if request.GET.get('onclick_show_datasets'):
+            return JsonResponse(build_topquery(cache))
 
         return JsonResponse(get_submenu_values(menu, selection_list))
 

@@ -1,10 +1,11 @@
 import re
 from collections import defaultdict
+from functools import reduce
 
 from django.db import connections
 from django.core.serializers import serialize
 
-from vfwheron.models import TblVariable, LtSite, LtSoil, TblMeta, LtDomain, LtLocation
+from vfwheron.models import TblVariable, LtSite, LtSoil, TblMeta, LtDomain, LtLocation, TblData
 
 
 def get_bbox_from_data(): # get bbox for available data
@@ -15,11 +16,12 @@ def get_bbox_from_data(): # get bbox for available data
     cursor.close()
     return list(map(lambda x: float(x), m)) # change string to list of floats
 
+
 def get_sample_locations():
     sample_location = LtLocation.objects.select_related().values_list('geom').distinct()
     a = LtLocation.objects.select_related().all()
     # a = Basiseinzugsgebiet.objects.select_related().all()
-    sample_location = serialize('geojson', a, fields=('srid', 'geometry_type', 'centroid_x','centroid_y',))
+    sample_location = serialize('geojson', a, fields=('srid', 'geometry_type', 'centroid_x', 'centroid_y',))
 #     cursor = connections["vforwater"].cursor() # connect to database
 #     cursor.execute("SELECT ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857))::json FROM lt_location;")
 #     locations = cursor.fetchall()
@@ -35,7 +37,7 @@ def get_sample_locations():
     return sample_location
 
 
-
+# TODO: models.py should care about the following! Rebuild models to make them useful!
 def default_menu_list():
 
     def build_dict(table, *column):
@@ -57,33 +59,36 @@ def default_menu_list():
     q_dom_prj = build_dict(LtDomain, 'project__project_name')
     q_dom_dom = build_dict(LtDomain, 'domain_name')
     q_stand_nam = build_dict(LtSite, 'site_name')
-    q_dat_nam = build_dict(TblVariable, 'variable_name')#, TODO: 'variable_symbol') # kann Json nicht; muss EIN String werden
+    q_dat_nam = build_dict(TblVariable, 'variable_name')  # TODO: 'variable_symbol') # kann Json nicht; muss EIN String
 
     boden_dict = {'Boden': {'Geologie': q_bod_geo, 'Bodentyp': q_bod_typ}}
     # boden_dict = {'Boden': {'Geologie': q_bod_geo, 'Bodentyp': q_bod_typ, 'Porosität': q_bod_poro,
     #                         'Residuale Feuchtigkeit': q_bod_resmoi, 'field capacity': q_bod_fielcap}}
-    besitzer_dict = {'Besitzer': {'Institutsname':q_besitz_ins,'Nachname':q_besitz_nam,'Department':q_besitz_dep}}
-    domain_dict = {'Domäne': {'Projekt':q_dom_prj,'Domänenname':q_dom_dom}}
+    besitzer_dict = {'Besitzer': {'Institutsname': q_besitz_ins, 'Nachname': q_besitz_nam, 'Department': q_besitz_dep}}
+    domain_dict = {'Domäne': {'Projekt':q_dom_prj, 'Domänenname':q_dom_dom}}
     datentyp_dict = {'Datentyp': {'Variablenname':q_dat_nam}}
-    standort_dict = {'Standort': {'Standortname':q_stand_nam}}
+    standort_dict = {'Standort': {'Standortname': q_stand_nam}}
 
     # TODO: Check how often database is accessed just to build the menu_list!
     menu_list = [boden_dict, besitzer_dict, domain_dict, datentyp_dict, standort_dict]
 
     return menu_list
 
+
 def get_submenu():
     # set startvalues
-    q_bod_fielcap = q_bod_resmoi = q_bod_poro = q_bod_geo = q_bod_typ = q_besitz_ins = q_besitz_nam = q_besitz_dep = q_dom_prj = q_dom_dom = q_stand_nam = q_dat_nam = {'No Values': 0}
+    q_bod_fielcap = q_bod_resmoi = q_bod_poro = q_bod_geo = q_bod_typ = q_besitz_ins = q_besitz_nam = q_besitz_dep \
+        = q_dom_prj = q_dom_dom = q_stand_nam = q_dat_nam = {'No Values': 0}
 
-    submenu = [{'Boden': {'Geologie':q_bod_geo, 'Bodentyp':q_bod_typ}, 'Besitzer': {'Institutsname':q_besitz_ins,
-        'Nachname':q_besitz_nam,'Department':q_besitz_dep}, 'Domäne': {'Projekt':q_dom_prj,'Domänenname':q_dom_dom},
-        'Standort': {'Standortname':q_stand_nam}, 'Datentyp': {'Variablenname':q_dat_nam}}]
+    submenu = [{'Boden': {'Geologie': q_bod_geo, 'Bodentyp': q_bod_typ}, 'Besitzer': {'Institutsname': q_besitz_ins,
+        'Nachname': q_besitz_nam, 'Department': q_besitz_dep}, 'Domäne': {'Projekt': q_dom_prj, 'Domänenname':
+        q_dom_dom}, 'Standort': {'Standortname': q_stand_nam}, 'Datentyp': {'Variablenname': q_dat_nam}}]
     # submenu = [{'Boden': {'Geologie':q_bod_geo, 'Bodentyp':q_bod_typ, 'Porosität':q_bod_poro,
     #     'Residuale Feuchtigkeit':q_bod_resmoi, 'field capacity': q_bod_fielcap}, 'Besitzer': {'Institutsname':q_besitz_ins,
     #     'Nachname':q_besitz_nam,'Department':q_besitz_dep}, 'Domäne': {'Projekt':q_dom_prj,'Domänenname':q_dom_dom},
-    #     'Standort': {'Standortname':q_stand_nam}, 'Datentyp': {'Variablenname':q_dat_nam}}]
+    #     'Standort': {'Standortname': q_stand_nam}, 'Datentyp': {'Variablenname': q_dat_nam}}]
     return submenu
+
 
 def get_submenu_values(top_menu_value, selection):
     sub_menu_dict = {}
@@ -95,17 +100,76 @@ def get_submenu_values(top_menu_value, selection):
                     # print('top_level_dict: ', top_level_dict)
                     # print('top_key: ', top_key)               # (top_key = Boden, Besitzer...)
                     # print('sub_key: ', sub_key)               # (sub_key = Geologie, Bodentyp...)
-                    sub_menu_dict[sub_key] = dict(top_level_dict[top_key][sub_key]) # all values to choose from and Boolea if chosen
-# set checked keys as True:
+                    sub_menu_dict[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
+                    # set checked keys as True:
                     if selection:
                         for get_key, get_value in sub_menu_dict[sub_key].items():
                             if get_key in selection:
                                 sub_menu_dict[sub_key][get_key] = True;
     return sub_menu_dict
 
+
+# TODO: models.py should care for the following! Rebuild models to make them useful!
+def build_topquery(cache_obj):
+    top_menu = {'Boden': 'LtSoil', 'Besitzer': 'TblMeta__creator', 'Domäne': 'creator', 'Standort': 'LtSite',
+                'Datentyp': 'TblVariable'}
+    raw_menu = {'Boden': 'lt_soil', 'Besitzer': 'lt_user', 'Domäne': 'lt_domain', 'Standort': 'lt_site',
+                'Datentyp': 'tbl_variable'}
+    menu = {'Boden': {'Geologie': 'geology', 'Bodentyp': 'soil_type'}, 'Besitzer': {'Institutsname': 'institution_name',
+            'Nachname': 'last_name', 'Department': 'department'}, 'Domäne': {'Projekt': 'lt_project.project_name',
+            'Domänenname': 'name'}, 'Datantyp': {'Variablenname': 'variable_name'},
+            'Standort': {'Standortname': 'site_name'}}
+
+    for menu_key, menu_value in raw_menu.items():
+        if menu_key in cache_obj:
+            for cache_key, cache_value in cache_obj.get(menu_key).items():
+                # print(' cache_key, cache_value :', cache_key, cache_value)
+                for value in cache_value:
+                    # filter_string1 = 'meta__' + menu_value + '__' + menu[menu_key][cache_key] + '=' + value
+                    # filter_string = 'meta__' + menu_value + '__' + menu[menu_key][cache_key]
+                    menu_value_id = menu_value.partition("_")[2]+"_id"
+
+                    select_prefix = "SELECT "
+                    select_string = "tbl_meta.id "
+
+                    from_prefix = "FROM public.tbl_meta"
+                    from_string = ", public." + menu_value
+
+                    where_prefix = " WHERE "
+                    where_string = "tbl_meta." + menu_value_id + "="+menu_value+".id AND " + menu_value + "."\
+                                   + menu[menu_key][cache_key]+ "='" + value + "'"
+
+                    filter_string = select_prefix + select_string + from_prefix + from_string + where_prefix + where_string
+                    # print('filter_string: ', filter_string)
+
+    # data = TblData.objects.filter( reduce(filter_string1)).values('value')
+    cursor = connections['vforwater'].cursor() # connect to database
+    # # request bbox in srid of openlayers:
+    cursor.execute(filter_string)
+    data = cursor.fetchall()
+    data_dict = dictfetchall(cursor)
+    #
+#     SELECT
+#     tbl_meta.id,
 #
-# class menu_map(object):
-#     def __init__(self, top_level, sub_level, sub_level_value):
-#         self.top_level = top_level
-#         self.sub_level = sub_level
-#         self.sub_level_value = sub_level_value
+# < tbl_data.value
+# FROM
+# public.tbl_data,
+# public.tbl_meta
+# WHERE
+# tbl_data.meta_id = tbl_meta.id
+# AND
+# tbl_meta.id = 92
+    # m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
+    cursor.close()
+    print(len(data))
+    return {'results':len(data)}
+
+
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dict"
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]

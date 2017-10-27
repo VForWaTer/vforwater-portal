@@ -247,20 +247,22 @@ function select_data(selectedData) {
             console.log('bin zurück!',json)
         },
     });
-    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
-function show_first_choice_func() {
+function onclick_show_datasets_func() {
     $.ajax({
         url: "/vfwheron/menu",
         datatype: 'json',
         data: {
-            show_first_choice: 'True',
+            onclick_show_datasets: 'True',
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success : function(json) {
-            console.log('bin zurück von first choice!',json)
+            console.log(json)
+            $.each(json, function(key1, value1){
+                document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+key1+"'><span class='respo-medium'>You got "+value1+" Datasets</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+                })
         },
     });
-//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
