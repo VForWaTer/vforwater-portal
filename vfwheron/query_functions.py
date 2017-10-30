@@ -1,3 +1,5 @@
+# TODO @Marcus: this file should work as manager in models.py
+
 import re
 from collections import defaultdict
 from functools import reduce
@@ -119,6 +121,7 @@ def build_topquery(cache_obj):
     top_menu = {'Boden': 'soil', 'Besitzer': 'creator', 'Domäne': 'domain', 'Standort': 'site',
                 'Datentyp': 'variable'}
 
+    filter_list = ''
     for menu_key, menu_value in top_menu.items():  # e.g. Boden: soil
         if menu_key in cache_obj:
             if menu_key == 'Domäne':
@@ -126,56 +129,14 @@ def build_topquery(cache_obj):
             else:
                 pre_text = 'meta__' + menu_value + "__"
             for cache_key, cache_value in cache_obj.get(menu_key).items():  # e.g. Geologie: Sandstone
-                filter_string = pre_text + menu[menu_key][cache_key]  # e.g. soil +__+ geology
+                filter_aswellas = pre_text + menu[menu_key][cache_key]  # e.g. soil +__+ geology
                 for value in cache_value:
-                    print("NmMetaDomain.objects.filter("+filter_string+"='"+value+"').values('meta_id')")
-                    django_data = eval("NmMetaDomain.objects.filter("+filter_string+"='"+value+"').values('meta_id')")
-                    print(' * * * * * : ', len(django_data), django_data)
+                    filter_list = filter_list + ".filter(" + filter_aswellas +"='"+value+"')"
+            print("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
+            django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
 
+            print(' * * * * * : ', len(django_data), django_data)
 
-    # data = TblData.objects.filter( reduce(filter_string1)).values('value')
-
-    # raw_menu = {'Boden': 'lt_soil', 'Besitzer': 'lt_user', 'Domäne': 'lt_domain', 'Standort': 'lt_site',
-    #             'Datentyp': 'tbl_variable'}
-    #
-    # for menu_key, menu_value in raw_menu.items():
-    #     if menu_key in cache_obj:
-    #         for cache_key, cache_value in cache_obj.get(menu_key).items():
-    #             # print(' cache_key, cache_value :', cache_key, cache_value)
-    #             for value in cache_value:
-    #                 # filter_string1 = 'meta__' + menu_value + '__' + menu[menu_key][cache_key] + '=' + value
-    #                 filter_string2 = 'meta__' + menu_value + '__' + menu[menu_key][cache_key]
-    #                 menu_value_id = menu_value.partition("_")[2]+"_id"
-    #
-    #                 select_prefix = "SELECT "
-    #                 select_string = "tbl_meta.id "
-    #
-    #                 from_prefix = "FROM public.tbl_meta"
-    #                 from_string = ", public." + menu_value
-    #
-    #                 where_prefix = " WHERE "
-    #                 where_string = "tbl_meta." + menu_value_id + "="+menu_value+".id AND " + menu_value + "."\
-    #                                + menu[menu_key][cache_key]+ "='" + value + "'"
-    #
-    #                 filter_string = select_prefix + select_string + from_prefix + from_string + where_prefix + where_string
-    #                 # print('filter_string: ', filter_string)
-    # cursor = connections['vforwater'].cursor()  # connect to database
-    # cursor.execute(filter_string)
-    # data = cursor.fetchall()
-    # data_dict = dictfetchall(cursor)
-
-#     SELECT
-#     tbl_meta.id,
-#
-# < tbl_data.value
-# FROM
-# public.tbl_data,
-# public.tbl_meta
-# WHERE
-# tbl_data.meta_id = tbl_meta.id
-# AND
-# tbl_meta.id = 92
-#     cursor.close()
     print(len(django_data))
     return {'results': len(django_data)}
 
