@@ -112,8 +112,8 @@ def get_submenu_values(top_menu_value, selection):
 # TODO: models.py should care for the following! Rebuild models to make them useful!
 def build_topquery(cache_obj):
     menu = {'Boden': {'Geologie': 'geology', 'Bodentyp': 'soil_type'}, 'Besitzer': {'Institutsname': 'institution_name',
-            'Nachname': 'last_name', 'Department': 'department'}, 'Domäne': {'Projekt': 'lt_project.project_name',
-            'Domänenname': 'name'}, 'Datentyp': {'Variablenname': 'variable_name'},
+            'Nachname': 'last_name', 'Department': 'department'}, 'Domäne': {'Projekt': 'lt_project__project_name',
+            'Domänenname': 'domain_name'}, 'Datentyp': {'Variablenname': 'variable_name'},
             'Standort': {'Standortname': 'site_name'}}
 
     top_menu = {'Boden': 'soil', 'Besitzer': 'creator', 'Domäne': 'domain', 'Standort': 'site',
@@ -122,7 +122,7 @@ def build_topquery(cache_obj):
     for menu_key, menu_value in top_menu.items():  # e.g. Boden: soil
         if menu_key in cache_obj:
             if menu_key == 'Domäne':
-                pre_text = 'domain__' + menu_value + "_"
+                pre_text = 'domain__'
             else:
                 pre_text = 'meta__' + menu_value + "__"
             for cache_key, cache_value in cache_obj.get(menu_key).items():  # e.g. Geologie: Sandstone
@@ -177,7 +177,7 @@ def build_topquery(cache_obj):
 # tbl_meta.id = 92
 #     cursor.close()
     print(len(django_data))
-    return {'results':len(django_data)}
+    return {'results': len(django_data)}
 
 
 def dictfetchall(cursor):
