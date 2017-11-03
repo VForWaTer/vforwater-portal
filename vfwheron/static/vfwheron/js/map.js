@@ -205,7 +205,7 @@ function create_map() {
       return;
     }
     var pixel = map.getEventPixel(evt.originalEvent);
-    var hit = map.forEachLayerAtPixel(pixel, function() {
+    var hit = map.forEachLayerAtPixel(pixel, function(layer) {
       return layer.get('name') === 'WMSpointSource';;
     });
     map.getTargetElement().style.cursor = hit ? 'pointer' : '';
