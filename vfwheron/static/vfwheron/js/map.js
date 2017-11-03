@@ -73,7 +73,7 @@ function create_map() {
                   })
                 });
  */
-    pointSource = new ol.source.TileWMS({
+    WMSpointSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		serverType:'geoserver',
 		params: {
@@ -83,7 +83,7 @@ function create_map() {
         }
 	});
 	pointMap = new ol.layer.Tile({
-		source: pointSource,
+		source: WMSpointSource,
 	});
 
 /*  pointMap = new ol.layer.Vector({
@@ -98,7 +98,7 @@ function create_map() {
         }),
 //        style: styleFunction
       });*/
-    /*pointSource = new ol.source.Vector({
+    /*WMSpointSource = new ol.source.Vector({
       format: new ol.format.GeoJSON({defaultDataProjection:"ESPG:4326"}),
         url: function(extent) {
       return 'https://vforwater-gis.scc.kit.edu/geoserver/ows?service=WFS&' +
@@ -111,7 +111,7 @@ function create_map() {
             });
 
     pointMap = new ol.layer.Vector({
-      source: pointSource,
+      source: WMSpointSource,
       style: new ol.style.Style({
         stroke: new ol.style.Stroke({
           color: 'rgba(0, 100, 255, 1.0)',
@@ -119,13 +119,13 @@ function create_map() {
         })
       })
     });*/
- /*   pointSource = new ol.source.WFS({
+ /*   WMSpointSource = new ol.source.WFS({
 //        url: 'http://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=CAOS:lt_location&maxFeatures=50&outputFormat=text%2Fjavascript'
         url: 'https://vforwater-gis.scc.kit.edu/geoserver/wfs',
         params: {LAYERS: 'CAOS:lt_location'}
     });
     pointMap = new.ol.source.Tile({
-        source: pointSource,
+        source: WMSpointSource,
     })*/
 
 // Elements that make up the popup.
@@ -189,7 +189,7 @@ function create_map() {
 // get information about your data in a popup when you click on a data point in the map
   map.on('singleclick', function(evt) {
     var viewResolution = /** @type {number} */ (mapView.getResolution());
-    var url = pointSource.getGetFeatureInfoUrl(
+    var url = WMSpointSource.getGetFeatureInfoUrl(
         evt.coordinate, viewResolution, 'EPSG:3857',
         {'INFO_FORMAT': 'text/html'});
     if (url) {
@@ -197,6 +197,17 @@ function create_map() {
       '<iframe seamless src=' + url + '></iframe>';
       overlay.setPosition(evt.coordinate);
     }
+  });
+/* The following (change mouse pointer) causes a CORS Error*/
+  map.on('pointermove', function(evt) {
+    if (evt.dragging) {
+      return;
+    }
+    var pixel = map.getEventPixel(evt.originalEvent);
+    var hit = map.forEachLayerAtPixel(pixel, function() {
+      return true;
+    });
+    map.getTargetElement().style.cursor = hit ? 'pointer' : '';
   });
 
 
