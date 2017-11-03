@@ -80,7 +80,8 @@ function create_map() {
 		    LAYERS: 'CAOS:lt_location',
 		    TILED: true,
 		    STYLES: 'Light Blue Circle',
-        }
+        },
+        name: 'WMSpointSource'
 	});
 	pointMap = new ol.layer.Tile({
 		source: WMSpointSource,
@@ -198,14 +199,14 @@ function create_map() {
       overlay.setPosition(evt.coordinate);
     }
   });
-/* The following (change mouse pointer) causes a CORS Error*/
+
   map.on('pointermove', function(evt) {
     if (evt.dragging) {
       return;
     }
     var pixel = map.getEventPixel(evt.originalEvent);
     var hit = map.forEachLayerAtPixel(pixel, function() {
-      return true;
+      return layer.get('name') === 'WMSpointSource';;
     });
     map.getTargetElement().style.cursor = hit ? 'pointer' : '';
   });
