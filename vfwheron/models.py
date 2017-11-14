@@ -119,7 +119,7 @@ class LtSite(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'site_name': 'Standortname', 'elevation': 'Höhe NN', 'landuse': 'Landnutzung', 'site_comment': 'Kommentar'}
+    column_dict = {'site_name': 'Standortname', 'elevation': 'Hohe', 'landuse': 'Landnutzung', 'site_comment': 'Kommentar'}
     menu_name = 'Standort'
     path = 'meta__site'
 
@@ -355,6 +355,7 @@ class FilterMenu(models.Manager):
                         sub_struct.update({value: {str(key): False for key in query_set}})
             if sub_struct:
                 general_struct.append({menu.menu_name: sub_struct})
+        # print('general_struct: ', general_struct)
         return general_struct
 
     # TODO: Can this be integrated in get_menu ? Might become confusing...
@@ -371,9 +372,11 @@ class FilterMenu(models.Manager):
                             for get_key, get_value in submenu[sub_key].items():
                                 if get_key in selection:
                                     submenu[sub_key][get_key] = True;
+        print('submenu: ', submenu)
         return submenu
 
     def build_query(cache_obj):
+        print('cache_obj: ', cache_obj)
         m_map = {}
         for menu in FilterMenu.menu_tables:
             m_map.update({menu.menu_name: {value: key for key, value in menu.column_dict.items()}})
@@ -386,7 +389,7 @@ class FilterMenu(models.Manager):
                     for value in cache_value:
                         filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
                 django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-
+        print('query: ', "NmMetaDomain.objects" + filter_list + ".values('meta_id')")
         return {'results': len(django_data)}
 
 

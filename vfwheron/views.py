@@ -65,6 +65,7 @@ class menuView(TemplateView):
         # available_datasets = build_topquery(cache)['results'] if selection_list else len(TblMeta.objects.all())
 
         if request.GET.get('onclick_show_datasets'):
+            print('selection_list : ', selection_list)
             return JsonResponse(FilterMenu.build_query(cache))
 
         # --- playing with geoserver:
@@ -87,8 +88,8 @@ class menuView(TemplateView):
         s = requests.put("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/new_point", data=data, auth=('admin', 'vforwater'), headers={'content-type': 'application/vnd.ogc.sld+xml'})
         # print('s: ', s.content, s.status_code)
 
-        with open('vfwheron/point_style.xml', 'r') as myfile:
-            data = myfile.read().replace('\n', '')
+        # with open('vfwheron/point_style.xml', 'r') as myfile:
+        #     data = myfile.read().replace('\n', '')
         # --- end of playing with geoserver
 
         return JsonResponse(FilterMenu.tick_submenu(menu, selection_list))
