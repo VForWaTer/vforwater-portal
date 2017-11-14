@@ -359,19 +359,19 @@ class FilterMenu(models.Manager):
 
     # TODO: Can this be integrated in get_menu ? Might become confusing...
     def tick_submenu(top_menu_value, selection):
-        selection = {}
+        submenu = {}
 
         for top_level_dict in FilterMenu.get_menu('complete_menu'):  # complete top_level_dict in function object
             for top_key in top_level_dict:  # all top_level names (top_key = Boden, Besitzer...)
                 if top_key == top_menu_value:  # check which menu has been clicked / Boden, Besitzer...
                     for sub_key in top_level_dict[top_key]:  # all sub_level_names (sub_key = Geologie, Bodentyp...)
-                        selection[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
+                        submenu[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
                         # set checked keys as True:
                         if selection:
-                            for get_key, get_value in selection[sub_key].items():
+                            for get_key, get_value in submenu[sub_key].items():
                                 if get_key in selection:
-                                    selection[sub_key][get_key] = True;
-        return selection
+                                    submenu[sub_key][get_key] = True;
+        return submenu
 
     def build_query(cache_obj):
         m_map = {}
