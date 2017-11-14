@@ -1,13 +1,11 @@
 # TODO @Marcus: this file should work as manager in models.py
 
 import re
-from collections import defaultdict
-from functools import reduce
 
 from django.db import connections
 from django.core.serializers import serialize
 
-from vfwheron.models import TblVariable, LtSite, LtSoil, TblMeta, LtDomain, LtLocation, TblData, NmMetaDomain
+from vfwheron.models import LtLocation, FilterMenu
 
 
 def get_bbox_from_data(): # get bbox for available data
@@ -39,63 +37,11 @@ def get_sample_locations():
     return sample_location
 
 
-# TODO: models.py should care about the following! Rebuild models to make them useful!
-def default_menu_list():
-
-    def build_dict(table, *column):
-        num_flat = True # flat = True removes brackets around result of query - use False for a list of fields
-        if len([*column]) > 1: num_flat = False
-        my_query_set = table.objects.select_related().values_list(*column, flat=num_flat).distinct()
-        return {key: False for key in my_query_set}
-
-    # some unused values
-    q_bod_poro = build_dict(LtSoil, 'porosity')
-    q_bod_resmoi = build_dict(LtSoil, 'residual_moisture')
-    q_bod_fielcap = build_dict(LtSoil, 'field_capacity')
-
-    q_bod_geo = build_dict(LtSoil, 'geology')
-    q_bod_typ = build_dict(LtSoil, 'soil_type')
-    q_besitz_ins = build_dict(TblMeta, 'creator__institution_name')
-    q_besitz_nam = build_dict(TblMeta, 'creator__last_name')
-    q_besitz_dep = build_dict(TblMeta, 'creator__department')
-    q_dom_prj = build_dict(LtDomain, 'project__project_name')
-    q_dom_dom = build_dict(LtDomain, 'domain_name')
-    q_stand_nam = build_dict(LtSite, 'site_name')
-    q_dat_nam = build_dict(TblVariable, 'variable_name')  # TODO: 'variable_symbol') # kann Json nicht; muss EIN String
-
-    boden_dict = {'Boden': {'Geologie': q_bod_geo, 'Bodentyp': q_bod_typ}}
-    # boden_dict = {'Boden': {'Geologie': q_bod_geo, 'Bodentyp': q_bod_typ, 'Porosität': q_bod_poro,
-    #                         'Residuale Feuchtigkeit': q_bod_resmoi, 'field capacity': q_bod_fielcap}}
-    besitzer_dict = {'Besitzer': {'Institutsname': q_besitz_ins, 'Nachname': q_besitz_nam, 'Department': q_besitz_dep}}
-    domain_dict = {'Domäne': {'Projekt':q_dom_prj, 'Domänenname':q_dom_dom}}
-    datentyp_dict = {'Datentyp': {'Variablenname':q_dat_nam}}
-    standort_dict = {'Standort': {'Standortname': q_stand_nam}}
-
-    # TODO: Check how often database is accessed just to build the menu_list!
-    menu_list = [boden_dict, besitzer_dict, domain_dict, datentyp_dict, standort_dict]
-
-    return menu_list
-
-
-def get_submenu():
-    # set startvalues
-    q_bod_fielcap = q_bod_resmoi = q_bod_poro = q_bod_geo = q_bod_typ = q_besitz_ins = q_besitz_nam = q_besitz_dep \
-        = q_dom_prj = q_dom_dom = q_stand_nam = q_dat_nam = {'No Values': 0}
-
-    submenu = [{'Boden': {'Geologie': q_bod_geo, 'Bodentyp': q_bod_typ}, 'Besitzer': {'Institutsname': q_besitz_ins,
-        'Nachname': q_besitz_nam, 'Department': q_besitz_dep}, 'Domäne': {'Projekt': q_dom_prj, 'Domänenname':
-        q_dom_dom}, 'Standort': {'Standortname': q_stand_nam}, 'Datentyp': {'Variablenname': q_dat_nam}}]
-    # submenu = [{'Boden': {'Geologie':q_bod_geo, 'Bodentyp':q_bod_typ, 'Porosität':q_bod_poro,
-    #     'Residuale Feuchtigkeit':q_bod_resmoi, 'field capacity': q_bod_fielcap}, 'Besitzer': {'Institutsname':q_besitz_ins,
-    #     'Nachname':q_besitz_nam,'Department':q_besitz_dep}, 'Domäne': {'Projekt':q_dom_prj,'Domänenname':q_dom_dom},
-    #     'Standort': {'Standortname': q_stand_nam}, 'Datentyp': {'Variablenname': q_dat_nam}}]
-    return submenu
-
-
-def get_submenu_values(top_menu_value, selection):
+def get_submenu_with_count(top_menu_value, selection, cache):
     sub_menu_dict = {}
-    # print('default_menu_list(): ', default_menu_list())
-    for top_level_dict in default_menu_list(): # complete top_level_dict in function object
+    # print('complete_menu_list(): ', complete_menu_list())
+    complete_menu_list = FilterMenu.get_menu('complete_menu')
+    for top_level_dict in complete_menu_list: # complete top_level_dict in function object
         for top_key in top_level_dict: # all top_level names (top_key = Boden, Besitzer...)
             if top_key == top_menu_value: # check which menu has been clicked
                 for sub_key in top_level_dict[top_key]: # all sub_level_names (sub_key = Geologie, Bodentyp...)
@@ -109,36 +55,6 @@ def get_submenu_values(top_menu_value, selection):
                             if get_key in selection:
                                 sub_menu_dict[sub_key][get_key] = True;
     return sub_menu_dict
-
-
-# TODO: models.py should care for the following! Rebuild models to make them useful!
-def build_topquery(cache_obj):
-    menu = {'Boden': {'Geologie': 'geology', 'Bodentyp': 'soil_type'}, 'Besitzer': {'Institutsname': 'institution_name',
-            'Nachname': 'last_name', 'Department': 'department'}, 'Domäne': {'Projekt': 'lt_project__project_name',
-            'Domänenname': 'domain_name'}, 'Datentyp': {'Variablenname': 'variable_name'},
-            'Standort': {'Standortname': 'site_name'}}
-
-    top_menu = {'Boden': 'soil', 'Besitzer': 'creator', 'Domäne': 'domain', 'Standort': 'site',
-                'Datentyp': 'variable'}
-
-    filter_list = ''
-    for menu_key, menu_value in top_menu.items():  # e.g. Boden: soil
-        if menu_key in cache_obj:
-            if menu_key == 'Domäne':
-                pre_text = 'domain__'
-            else:
-                pre_text = 'meta__' + menu_value + "__"
-            for cache_key, cache_value in cache_obj.get(menu_key).items():  # e.g. Geologie: Sandstone
-                filter_aswellas = pre_text + menu[menu_key][cache_key]  # e.g. soil +__+ geology
-                for value in cache_value:
-                    filter_list = filter_list + ".filter(" + filter_aswellas +"='"+value+"')"
-            print("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-            django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-
-            print(' * * * * * : ', len(django_data), django_data)
-
-    print(len(django_data))
-    return {'results': len(django_data)}
 
 
 def dictfetchall(cursor):

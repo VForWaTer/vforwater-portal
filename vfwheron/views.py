@@ -6,8 +6,10 @@ from django.shortcuts import redirect
 
 from django.core.cache import cache
 
-from .query_functions import get_bbox_from_data, get_submenu_values, get_submenu, build_topquery
+from .query_functions import get_bbox_from_data
+from vfwheron.models import FilterMenu
 
+import requests
 import logging
 
 # Create your views here.
@@ -18,17 +20,16 @@ class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
     def get_context_data(self, **kwargs):
-        return {'dataExt': get_bbox_from_data(), 'menu_list': get_submenu()}
+        return {'dataExt': get_bbox_from_data(), 'menu_list': FilterMenu.get_menu('submenu')}
 
 
 class menuView(TemplateView):
     # TODO: each time you click a new top menu the database is accessed --> implement cache!
-    user = 'default'
+    # user = 'default'
 
     def get(self, request):
 
         # TODO: mix of session and cache looks terribly wrong. Possible to make consistent?
-        # querydata = TblSelection.objects.filter(user=self.user).all()
         request.session.set_expiry(20)  # expire after 20 seconds
 
         # bring last used menu to session
@@ -61,17 +62,43 @@ class menuView(TemplateView):
             else:
                 cache.set(menu, [])
 
-        if request.GET.get('onclick_show_datasets'):
-            return JsonResponse(build_topquery(cache))
+        # available_datasets = build_topquery(cache)['results'] if selection_list else len(TblMeta.objects.all())
 
-        return JsonResponse(get_submenu_values(menu, selection_list))
+        if request.GET.get('onclick_show_datasets'):
+            return JsonResponse(FilterMenu.build_query(cache))
+
+        # --- playing with geoserver:
+        # get all styles on geoserver:
+        # curl - u admin: geoserver - XGET http: // localhost: 8080 / geoserver / rest / cite / styles.xml
+        r = requests.get("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/styles.json", auth=('admin', 'vforwater'))
+        # print('geoserver: ', r)
+        # for i in r:
+        #     print(i)
+
+        # get one style from geoserver:
+        # curl - u admin: geoserver - XGET http: // localhost: 8080 / geoserver / rest / cite / styles.xml
+        r = requests.get("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/styles/new_point.sld", auth=('admin', 'vforwater'))
+        # print('one style:: ', r.content, r.status_code)
+
+        # Edit / reupload the content of an existing style on the server when the style is in a workspace:
+        selected_data = '<ogc:Literal>192</ogc:Literal>'
+        chosen_data = '<ogc:Literal>716</ogc:Literal>'
+        data = '<?xml version="1.0" encoding="ISO-8859-1"?><StyledLayerDescriptor version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><NamedLayer><Name>Attribute-based point</Name><UserStyle><Title>Attribute-based point</Title><FeatureTypeStyle><Rule><Name>AllData</Name><Title>All avaiable Datensets</Title><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#00DDFF</CssParameter></Fill></Mark><Size>3</Size></Graphic></PointSymbolizer></Rule><Rule><Name>SelectedData</Name><Title>Selected Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName>' + selected_data + '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#0088EE</CssParameter></Fill></Mark><Size>12</Size></Graphic></PointSymbolizer></Rule><Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName>' + chosen_data + '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#0033CC</CssParameter></Fill></Mark><Size>16</Size></Graphic></PointSymbolizer></Rule></FeatureTypeStyle></UserStyle>  </NamedLayer></StyledLayerDescriptor>'
+        s = requests.put("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/new_point", data=data, auth=('admin', 'vforwater'), headers={'content-type': 'application/vnd.ogc.sld+xml'})
+        # print('s: ', s.content, s.status_code)
+
+        with open('vfwheron/point_style.xml', 'r') as myfile:
+            data = myfile.read().replace('\n', '')
+        # --- end of playing with geoserver
+
+        return JsonResponse(FilterMenu.tick_submenu(menu, selection_list))
 
 
 class show_datasets(TemplateView):
     def get(self, request):
         print('Bin da! ** ** ** **', request)
         clicked_menu_value = request.GET
-        return JsonResponse(get_submenu_values(clicked_menu_value['menu']))
+        return JsonResponse(FilterMenu.tick_submenu(clicked_menu_value['menu']))
 
 
 class ExtlinksView(TemplateView):

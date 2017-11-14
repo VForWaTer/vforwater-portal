@@ -8,8 +8,6 @@
 from __future__ import unicode_literals
 
 from django.contrib.gis.db import models
-from django.db.models.fields import IntegerField
-
 
 class DjangoMigrations(models.Model):
     app = models.CharField(max_length=255)
@@ -27,7 +25,11 @@ class LtDomain(models.Model):
     project = models.ForeignKey('LtProject', models.DO_NOTHING, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
-    
+
+    column_dict = {'domain_name': 'Domänenname', 'project__project_name': 'Projekt'}
+    menu_name = 'Domäne'
+    path = 'domain'
+
     def __str__(self):
         return self.domain_name
 
@@ -47,7 +49,11 @@ class LtLicense(models.Model):
     commercial = models.BooleanField()
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
-    
+
+    column_dict = {'license_name': 'Lizenzname', 'commercial': 'Kommerziell'}
+    menu_name = 'Lizenz'
+    path = 'meta__license'
+
     def __str__(self):
         return self.license_name
 
@@ -64,10 +70,11 @@ class LtLocation(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
     geom = models.GeometryField(unique=True, srid=0)
-    
+
     def __str__(self):
-        return '%s %s' % (self.centroid_x, self.centroid_y)
-     
+        # return '%s %s' % (self.centroid_x, self.centroid_y)
+        return '{"type": %s , "coordinates": [%s %s], "srid": %s}' % (self.geometry_type, self.centroid_x, self.centroid_y, self.srid )
+
     class Meta:
         managed = False
         db_table = 'lt_location'
@@ -112,6 +119,10 @@ class LtSite(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    column_dict = {'site_name': 'Standortname', 'elevation': 'Höhe NN', 'landuse': 'Landnutzung', 'site_comment': 'Kommentar'}
+    menu_name = 'Standort'
+    path = 'meta__site'
+
     def __str__(self):
         return self.site_name # TODO: is this useful? At the moment there is no information in site_name 
 
@@ -128,7 +139,11 @@ class LtSoil(models.Model):
     residual_moisture = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
-    
+
+    column_dict = {'geology': 'Geologie', 'soil_type': 'Bodentyp', 'porosity': 'Porosität', 'residual_moisture': 'Restfeuchte'}
+    menu_name = 'Boden'
+    path = 'meta__soil'
+
     def __str__(self):
         return self.geology # TODO: at the moment only values in geology and nothing in soil_type. Check if geology is always filled
 
@@ -159,6 +174,8 @@ class LtUnit(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    column_dict = {'unit_name': 'Einheit'}
+
     def __str__(self):
         return self.unit_name
     
@@ -177,6 +194,10 @@ class LtUser(models.Model):
     comment = models.TextField(blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
+
+    column_dict = {'first_name': 'Vorname', 'last_name': 'Nachname', 'institution_name': 'Institut', 'department': 'Abteilung'}
+    menu_name = 'Besitzer bzw Ersteller'
+    path = 'meta__creator'
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
@@ -259,6 +280,10 @@ class TblMeta(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    column_dict = {'ts_start': 'Messbeginn', 'ts_stop': 'Messende', 'support': 'Support???', 'spacing': 'Schrittweite', 'comment': 'Kommentar'}
+    menu_name = 'Messung'
+    path = 'meta'
+
     # def __str__(self):
     #     return 'ID %s, %s' % (self.external_id, self.comment)
     
@@ -277,6 +302,10 @@ class TblSensor(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    column_dict = {'sensor_name': 'Name', 'manufacturer': 'Hersteller', 'sensor_comment': 'Kommentar'}
+    menu_name = 'Sensor'
+    path = 'meta__sensor'
+
     def __str__(self):
         return self.sensor_name
 
@@ -286,6 +315,7 @@ class TblSensor(models.Model):
 
 
 class TblVariable(models.Model):
+
     variable_name = models.CharField(unique=True, max_length=65)
     variable_abbrev = models.CharField(max_length=15)
     variable_symbol = models.CharField(max_length=5)
@@ -293,18 +323,77 @@ class TblVariable(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    column_dict = {'variable_name': 'Variablenname'}
+    menu_name = 'Datentyp'
+    path = 'meta__variable'
+
     def __str__(self):
         return self.variable_name
 
     class Meta:
         managed = False
         db_table = 'tbl_variable'
-        
+
+
+
+# TODO: There is no need to have this as models.Manager. Find a better place for class
+class FilterMenu(models.Manager):
+    # Define here which tables to use; which columns are used is defined in the respective table
+    menu_tables = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
+
+    def get_menu(detail_of_menu):
+        general_struct = []
+
+        for menu in FilterMenu.menu_tables:  # LtSoil,...
+            sub_struct = {}
+            for key, value in menu.column_dict.items():   # key: geology value: Geologie ...
+                query_set = menu.objects.select_related().values_list(key, flat=True).distinct()  # marls, schist, ...
+                if len(query_set) >= 1 and query_set[0] is not None:
+        # TODO: some query_sets give numbers --> other menu (from ... to ... instead of tick selection)
+                    if detail_of_menu == 'submenu':
+                        sub_struct.update({value: {'No Values': 0}})
+                    elif detail_of_menu == 'complete_menu':
+                        sub_struct.update({value: {str(key): False for key in query_set}})
+            if sub_struct:
+                general_struct.append({menu.menu_name: sub_struct})
+        return general_struct
+
+    # TODO: Can this be integrated in get_menu ? Might become confusing...
+    def tick_submenu(top_menu_value, selection):
+        selection = {}
+
+        for top_level_dict in FilterMenu.get_menu('complete_menu'):  # complete top_level_dict in function object
+            for top_key in top_level_dict:  # all top_level names (top_key = Boden, Besitzer...)
+                if top_key == top_menu_value:  # check which menu has been clicked / Boden, Besitzer...
+                    for sub_key in top_level_dict[top_key]:  # all sub_level_names (sub_key = Geologie, Bodentyp...)
+                        selection[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
+                        # set checked keys as True:
+                        if selection:
+                            for get_key, get_value in selection[sub_key].items():
+                                if get_key in selection:
+                                    selection[sub_key][get_key] = True;
+        return selection
+
+    def build_query(cache_obj):
+        m_map = {}
+        for menu in FilterMenu.menu_tables:
+            m_map.update({menu.menu_name: {value: key for key, value in menu.column_dict.items()}})
+
+        filter_list = ''
+        for m_key in FilterMenu.menu_tables:
+            if m_key.menu_name in cache_obj:
+                for cache_key, cache_value in cache_obj.get(m_key.menu_name).items():  # e.g. Geologie: Sandstone
+                    filter_aswellas = m_key.path + "__" + m_map[m_key.menu_name][cache_key]  # e.g. soil +__+ geology
+                    for value in cache_value:
+                        filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
+                django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
+
+        return {'results': len(django_data)}
+
 
 # build BW watershed table
 class Basiseinzugsgebiet(models.Model):
-    # Regular Django fields corresponding to the attributes in the
-    # Basiseinzugsgebiet shapefile.
+    # Regular Django fields corresponding to the attributes in the Basiseinzugsgebiet shapefile.
     langname = models.CharField(max_length=100)
     area = models.FloatField()
     objectid = models.BigIntegerField()
@@ -333,4 +422,5 @@ class Basiseinzugsgebiet(models.Model):
     # Returns the string representation of the model.
     def __str__(self):              # __unicode__ on Python 2
         return self.langname
-    
+
+

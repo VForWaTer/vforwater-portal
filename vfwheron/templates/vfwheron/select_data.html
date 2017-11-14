@@ -23,7 +23,7 @@
                 <div id="{{ key }}" >
                     <div id="subaccordion"  > <!-- see vfw.js -->
                         {% for key2, value2 in value.items %}
-                            <a class="sub-menu respo-hover-blue">{{ key2 }}</a>
+                            <a class="sub-menu respo-hover-blue">{{ key2 }}</a> <!--Geologie-->
                             <ul class="sub-sub-menu" >
                                 {% for key3, value3 in value2.items %}
                                     <a  id="{{ key2 }}" >{{ key3 }} ({{ value3 }})</a>
@@ -40,10 +40,13 @@
             <option value="except of contacting the admin.">except of contacting the admin.</option>
         {% endfor %}
     </div>
-    <a><b><input class="respo-btn-simple" type="submit" onclick="onclick_show_datasets_func()" value="Zeige gewählte Datensätze"></b></a>
+    <!--<a><b><input id="delete_choice" class="respo-btn-simple respo-text-light-grey" type="submit" onclick="clear_selection_func()"
+                 value="Lösche Auswahl" data-toggle="tooltip" title="Löscht die bisherige Auswahl"></b></a>-->
+    <a><b><input id="show_metafiltered_data" class="respo-btn-simple" type="submit" onclick="onclick_show_datasets_func()"
+                 value="Zeige gewählte Datensätze" data-toggle="tooltip" title="Setzt Filter aus den Metadaten"></b></a>
 </body>
 
 <script>
-<!--TODO: Do I need this, or can I just use the csrftoken in vfw.js?-->
+<!-- TODO: Do I need this, or can I just use the csrftoken in vfw.js?-->
  csrf_token = '{{ csrf_token }}';
 </script>
