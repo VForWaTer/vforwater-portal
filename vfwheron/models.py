@@ -50,7 +50,7 @@ class LtLicense(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'license_name': 'Lizenzname', 'commercial': 'Kommerziell'}
+    column_dict = {'license_abbrev': 'Lizenz', 'commercial': 'Kommerziell'}
     menu_name = 'Lizenz'
     path = 'meta__license'
 
@@ -73,7 +73,7 @@ class LtLocation(models.Model):
 
     def __str__(self):
         # return '%s %s' % (self.centroid_x, self.centroid_y)
-        return '{"type": %s , "coordinates": [%s %s], "srid": %s}' % (self.geometry_type, self.centroid_x, self.centroid_y, self.srid )
+        return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (self.geometry_type, self.centroid_x, self.centroid_y, self.srid )
 
     class Meta:
         managed = False
@@ -335,8 +335,7 @@ class TblVariable(models.Model):
         db_table = 'tbl_variable'
 
 
-
-# TODO: There is no need to have this as models.Manager. Find a better place for class
+# TODO: There is no need to have this as models.Manager (Didn't use self). Find a better place for class
 class FilterMenu(models.Manager):
     # Define here which tables to use; which columns are used is defined in the respective table
     menu_tables = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
@@ -379,7 +378,7 @@ class FilterMenu(models.Manager):
         for menu in FilterMenu.menu_tables:
             m_map.update({menu.menu_name: {value: key for key, value in menu.column_dict.items()}})
 
-        filter_list = ''
+        filter_list = django_data = ''
         for m_key in FilterMenu.menu_tables:
             if m_key.menu_name in cache_obj:
                 for cache_key, cache_value in cache_obj.get(m_key.menu_name).items():  # e.g. Geologie: Sandstone
@@ -401,20 +400,20 @@ class Basiseinzugsgebiet(models.Model):
     fg_id = models.BigIntegerField()
     fgkz_nr = models.FloatField('flussgebietskennzahl')
     einzugsgeb = models.IntegerField('einzugsgebietsordnung') # Einzugsgebiets Ordnung – eines Flusses, Baches
-    einzugsg00 = models.CharField('einzugsgebietsordnung in Worten', max_length = 80) # Quellgebiet – oberstes Teilgebiet eines Flusses, Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet – unterstes Teilgebiet eines Flusses, Baches
-    einzugsg01 = models.CharField( max_length = 1) 
-    einzugsg02 = models.CharField( max_length = 26) 
+    einzugsg00 = models.CharField('einzugsgebietsordnung in Worten', max_length=80) # Quellgebiet – oberstes Teilgebiet eines Flusses, Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet – unterstes Teilgebiet eines Flusses, Baches
+    einzugsg01 = models.CharField(max_length=1)
+    einzugsg02 = models.CharField(max_length=26)
     vor_fgkz_n = models.FloatField('flussgebietskennzahl des vorfluters')
     vor_fg_id = models.FloatField()
-    vor_fg_lan = models.CharField('vorfluter_langname', max_length = 100)
-    wasserkoer = models.CharField('wasserkoerper_code', max_length = 10)
-    wasserko00 = models.CharField('wasserkoerper_name', max_length = 85)
-    aenderungs = models.CharField( max_length= 20)
-    aenderun00 = models.CharField( max_length= 20)
+    vor_fg_lan = models.CharField('vorfluter_langname', max_length=100)
+    wasserkoer = models.CharField('wasserkoerper_code', max_length=10)
+    wasserko00 = models.CharField('wasserkoerper_name', max_length=85)
+    aenderungs = models.CharField(max_length=20)
+    aenderun00 = models.CharField(max_length=20)
     length = models.FloatField()
-    mod_by = models.CharField(max_length= 32)
-    last_mod = models.CharField(max_length= 20)
-    se_anno_ca = models.CharField(max_length = 254)
+    mod_by = models.CharField(max_length=32)
+    last_mod = models.CharField(max_length=20)
+    se_anno_ca = models.CharField(max_length=254)
     wasserko01 = models.BigIntegerField()
     # GeoDjango-specific: a geometry field (MultiPolygonField)
     mpoly = models.MultiPolygonField(srid=31467)
@@ -422,5 +421,3 @@ class Basiseinzugsgebiet(models.Model):
     # Returns the string representation of the model.
     def __str__(self):              # __unicode__ on Python 2
         return self.langname
-
-
