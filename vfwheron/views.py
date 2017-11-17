@@ -66,7 +66,7 @@ class menuView(TemplateView):
 
         if request.GET.get('onclick_show_datasets'):
             print('selection_list : ', selection_list)
-            return JsonResponse(FilterMenu.build_query(cache))
+            return JsonResponse(FilterMenu.build_queryset(cache))
 
         # --- playing with geoserver:
         # get all styles on geoserver:
@@ -92,7 +92,7 @@ class menuView(TemplateView):
         #     data = myfile.read().replace('\n', '')
         # --- end of playing with geoserver
 
-        return JsonResponse(FilterMenu.tick_submenu(menu, selection_list))
+        return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
 
 
 class show_datasets(TemplateView):

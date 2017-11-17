@@ -196,7 +196,7 @@ class LtUser(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'first_name': 'Vorname', 'last_name': 'Nachname', 'institution_name': 'Institut', 'department': 'Abteilung'}
-    menu_name = 'Besitzer bzw Ersteller'
+    menu_name = 'Besitzer? (Ersteller)'
     path = 'meta__creator'
 
     def __str__(self):
@@ -284,9 +284,6 @@ class TblMeta(models.Model):
     menu_name = 'Messung'
     path = 'meta'
 
-    # def __str__(self):
-    #     return 'ID %s, %s' % (self.external_id, self.comment)
-    
     class Meta:
         managed = False
         db_table = 'tbl_meta'
@@ -339,6 +336,7 @@ class TblVariable(models.Model):
 class FilterMenu(models.Manager):
     # Define here which tables to use; which columns are used is defined in the respective table
     menu_tables = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
+    menu_dict = {tables.menu_name: tables for tables in menu_tables}
 
     def get_menu(detail_of_menu):
         general_struct = []
@@ -355,28 +353,58 @@ class FilterMenu(models.Manager):
                         sub_struct.update({value: {str(key): False for key in query_set}})
             if sub_struct:
                 general_struct.append({menu.menu_name: sub_struct})
-        # print('general_struct: ', general_struct)
         return general_struct
 
     # TODO: Can this be integrated in get_menu ? Might become confusing...
-    def tick_submenu(top_menu_value, selection):
+    # TODO: check if FilterMenu.menu_dict can be used to eliminate a loop or if
+    def tick_submenu(top_menu_value, selection, cache):
         submenu = {}
 
-        for top_level_dict in FilterMenu.get_menu('complete_menu'):  # complete top_level_dict in function object
-            for top_key in top_level_dict:  # all top_level names (top_key = Boden, Besitzer...)
-                if top_key == top_menu_value:  # check which menu has been clicked / Boden, Besitzer...
-                    for sub_key in top_level_dict[top_key]:  # all sub_level_names (sub_key = Geologie, Bodentyp...)
-                        submenu[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
+        for menu_dict in FilterMenu.get_menu('complete_menu'):  # complete menu in function object
+            for key_1, value_1 in menu_dict.items():  # all top_level names (key_1 = Boden, Besitzer...)
+                if key_1 == top_menu_value:  # check which menu has been clicked / Boden, Besitzer...
+                    for key_2 in menu_dict[key_1]:  # all sub_level_names (key_2 = Geologie, Bodentyp...)
+                        submenu[key_2] = dict(menu_dict[key_1][key_2])  # all values to choose from / Boolean if chosen
                         # set checked keys as True:
+                        counts = FilterMenu.count_query(cache, key_1, key_2, submenu[key_2].items())
+                        for add_numbers, org_value in menu_dict[key_1][key_2].items():
+                            submenu[key_2].update({add_numbers: [org_value, counts[add_numbers]]})
                         if selection:
-                            for get_key, get_value in submenu[sub_key].items():
-                                if get_key in selection:
-                                    submenu[sub_key][get_key] = True;
-        print('submenu: ', submenu)
+                            for tick_key, tick_value in submenu[key_2].items():  # marls True
+                                if tick_key in selection:
+                                    submenu[key_2][tick_key][0] = True;
+
         return submenu
 
-    def build_query(cache_obj):
-        print('cache_obj: ', cache_obj)
+    def count_query(cache_obj, active_m_key=False, active_key=False, submenu_key=False): #, active_value=False):  # Boden Geologie Sandstone
+    # def build_sub_query(cache_obj, active_m_key=False, active_key=False, active_value=False): # Boden Geologie Sandstone
+        m_map = {}
+        paths = {}
+        dataset_count = {}
+        for menu in FilterMenu.menu_tables:
+            m_map.update({menu.menu_name: {value: key for key, value in menu.column_dict.items()}})
+            paths.update({value: key for key, value in menu.column_dict.items()})
+
+        for values_3 in submenu_key:
+            filter_list = django_data =  ''
+            if active_m_key and active_key:  #and active_value:
+                active_filter_aswellas = FilterMenu.menu_dict[active_m_key].path + "__" + m_map[active_m_key][active_key]  # meta__soil__geology
+                filter_list=".filter(" + active_filter_aswellas + "='" + values_3[0] + "')"
+
+            for m_key in FilterMenu.menu_tables:
+
+                if m_key.menu_name in cache_obj and m_key.menu_name is not active_m_key:
+                    for cache_key, cache_value in cache_obj.get(m_key.menu_name).items():  # e.g. Geologie: Sandstone
+                        filter_aswellas = m_key.path + "__" + m_map[m_key.menu_name][cache_key]  # e.g. soil +__+ geology
+                        for value in cache_value:
+                            filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
+                    django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id').count()")
+                else:
+                    django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id').count()")
+            dataset_count.update({values_3[0]: django_data})
+        return dataset_count
+
+    def build_queryset(cache_obj):
         m_map = {}
         for menu in FilterMenu.menu_tables:
             m_map.update({menu.menu_name: {value: key for key, value in menu.column_dict.items()}})
@@ -389,7 +417,6 @@ class FilterMenu(models.Manager):
                     for value in cache_value:
                         filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
                 django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-        print('query: ', "NmMetaDomain.objects" + filter_list + ".values('meta_id')")
         return {'results': len(django_data)}
 
 

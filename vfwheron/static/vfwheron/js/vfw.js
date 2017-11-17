@@ -216,9 +216,12 @@ $(document).ready(function(menuTitle) {
 //                            console.log('key2 ist jetzt:', key2) // z.B. Sandstone
                             var selectedData = "['"+ key2+"', '"+ key1 +"']"
 //                            var selectedData = "'"+ key2 +"'"
+//                            console.log('value 2 ist: ', value2[1])
                             var bool = ''
-                            if (value2){bool = 'checked'}
-                            newHTML = '<input type="checkbox" class="respo-check respo-hover-blue" id="'+ key2 +'" '+ bool +'  onclick="select_data('+selectedData+')"> '+ key2 +'</input><br>';
+                            if (value2[0]){
+                              bool = 'checked'
+                            }
+                            newHTML = '<input type="checkbox" class="respo-check respo-hover-blue" id="'+ key2 +'" '+ bool +'  onclick="select_data('+selectedData+')"> '+ key2 + ' <i>(' + value2[1] + ')</i></input><br>';
                         } else {
                             newHTML = '<a>keine Auswahl verfügbar</a>';
                         }
