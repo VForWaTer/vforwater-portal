@@ -332,7 +332,7 @@ class TblVariable(models.Model):
         db_table = 'tbl_variable'
 
 
-# TODO: There is no need to have this as models.Manager (Didn't use self). Find a better place for class
+# TODO: There is no need to have this as models.Manager (Didn't use it). Find a better place for class
 class FilterMenu(models.Manager):
     # Define here which tables to use; which columns are used is defined in the respective table
     menu_tables = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
@@ -370,7 +370,7 @@ class FilterMenu(models.Manager):
                         for add_numbers, org_value in menu_dict[key_1][key_2].items():
                             submenu[key_2].update({add_numbers: [org_value, counts[add_numbers]]})
                         if selection:
-                            for tick_key, tick_value in submenu[key_2].items():  # marls True
+                            for tick_key, tick_value in submenu[key_2].items():  # marls [True 651]
                                 if tick_key in selection:
                                     submenu[key_2][tick_key][0] = True;
 
@@ -392,15 +392,15 @@ class FilterMenu(models.Manager):
                 filter_list=".filter(" + active_filter_aswellas + "='" + values_3[0] + "')"
 
             for m_key in FilterMenu.menu_tables:
-
+                # print('FilterMenu.menu_tables: ', FilterMenu.menu_tables)
                 if m_key.menu_name in cache_obj and m_key.menu_name is not active_m_key:
                     for cache_key, cache_value in cache_obj.get(m_key.menu_name).items():  # e.g. Geologie: Sandstone
                         filter_aswellas = m_key.path + "__" + m_map[m_key.menu_name][cache_key]  # e.g. soil +__+ geology
                         for value in cache_value:
                             filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
-                    django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id').count()")
-                else:
-                    django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id').count()")
+
+            django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id').count()")
+
             dataset_count.update({values_3[0]: django_data})
         return dataset_count
 
