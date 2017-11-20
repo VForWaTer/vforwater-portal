@@ -6,12 +6,12 @@ from django.shortcuts import redirect
 
 from django.core.cache import cache
 
-from .query_functions import get_bbox_from_data
-from vfwheron.models import FilterMenu
+from .query_functions import get_bbox_from_data, build_point_sld
+from vfwheron.models import FilterMenu, TblMeta
 
 import requests
 import logging
-
+import os
 # Create your views here.
 logger = logging.getLogger(__name__)
 
@@ -65,28 +65,10 @@ class menuView(TemplateView):
         # available_datasets = build_topquery(cache)['results'] if selection_list else len(TblMeta.objects.all())
 
         if request.GET.get('onclick_show_datasets'):
-            print('selection_list : ', selection_list)
-            return JsonResponse(FilterMenu.build_queryset(cache))
-
-        # --- playing with geoserver:
-        # get all styles on geoserver:
-        # curl - u admin: geoserver - XGET http: // localhost: 8080 / geoserver / rest / cite / styles.xml
-        r = requests.get("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/styles.json", auth=('admin', 'vforwater'))
-        # print('geoserver: ', r)
-        # for i in r:
-        #     print(i)
-
-        # get one style from geoserver:
-        # curl - u admin: geoserver - XGET http: // localhost: 8080 / geoserver / rest / cite / styles.xml
-        r = requests.get("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/styles/new_point.sld", auth=('admin', 'vforwater'))
-        # print('one style:: ', r.content, r.status_code)
-
-        # Edit / reupload the content of an existing style on the server when the style is in a workspace:
-        selected_data = '<ogc:Literal>192</ogc:Literal>'
-        chosen_data = '<ogc:Literal>716</ogc:Literal>'
-        data = '<?xml version="1.0" encoding="ISO-8859-1"?><StyledLayerDescriptor version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><NamedLayer><Name>Attribute-based point</Name><UserStyle><Title>Attribute-based point</Title><FeatureTypeStyle><Rule><Name>AllData</Name><Title>All avaiable Datensets</Title><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#00DDFF</CssParameter></Fill></Mark><Size>3</Size></Graphic></PointSymbolizer></Rule><Rule><Name>SelectedData</Name><Title>Selected Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName>' + selected_data + '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#0088EE</CssParameter></Fill></Mark><Size>12</Size></Graphic></PointSymbolizer></Rule><Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName>' + chosen_data + '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#0033CC</CssParameter></Fill></Mark><Size>16</Size></Graphic></PointSymbolizer></Rule></FeatureTypeStyle></UserStyle>  </NamedLayer></StyledLayerDescriptor>'
-        s = requests.put("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/new_point", data=data, auth=('admin', 'vforwater'), headers={'content-type': 'application/vnd.ogc.sld+xml'})
-        # print('s: ', s.content, s.status_code)
+            result = FilterMenu.build_queryset(cache)
+            locations = result.values('meta__geometry__id').distinct()
+            build_point_sld(locations)
+            return JsonResponse({'results': len(result)})
 
         # with open('vfwheron/point_style.xml', 'r') as myfile:
         #     data = myfile.read().replace('\n', '')
