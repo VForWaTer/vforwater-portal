@@ -77,9 +77,11 @@ function create_map() {
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		serverType:'geoserver',
 		params: {
-		    LAYERS: 'CAOS:lt_location',
+		    LAYERS: 'CAOS:get_important_info',
+//		    LAYERS: 'CAOS:get_important_info',
 		    TILED: true,
-		    STYLES: 'Light Blue Circle',
+		    STYLES: 'CAOS:new_point',
+//		    STYLES: 'Light Blue Circle',
         },
         name: 'WMSpointSource'
 	});
@@ -120,12 +122,12 @@ function create_map() {
         })
       })
     });*/
- /*   WMSpointSource = new ol.source.WFS({
+/*    WMSpointSource = new ol.source.WFS({
 //        url: 'http://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=CAOS:lt_location&maxFeatures=50&outputFormat=text%2Fjavascript'
         url: 'https://vforwater-gis.scc.kit.edu/geoserver/wfs',
         params: {LAYERS: 'CAOS:lt_location'}
     });
-    pointMap = new.ol.source.Tile({
+    pointMap = new ol.source.Tile({
         source: WMSpointSource,
     })*/
 
@@ -200,6 +202,7 @@ function create_map() {
     }
   });
 
+/*comment the following in your development environment to avoid error messages*/
   map.on('pointermove', function(evt) {
     if (evt.dragging) {
       return;

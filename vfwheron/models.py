@@ -7,6 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
+from django.core.cache import cache
 from django.contrib.gis.db import models
 
 class DjangoMigrations(models.Model):
@@ -303,6 +304,7 @@ class TblSensor(models.Model):
     menu_name = 'Sensor'
     path = 'meta__sensor'
 
+
     def __str__(self):
         return self.sensor_name
 
@@ -323,6 +325,7 @@ class TblVariable(models.Model):
     column_dict = {'variable_name': 'Variablenname'}
     menu_name = 'Datentyp'
     path = 'meta__variable'
+
 
     def __str__(self):
         return self.variable_name
@@ -357,7 +360,7 @@ class FilterMenu(models.Manager):
 
     # TODO: Can this be integrated in get_menu ? Might become confusing...
     # TODO: check if FilterMenu.menu_dict can be used to eliminate a loop or if
-    def tick_submenu(top_menu_value, selection, cache):
+    def tick_submenu(top_menu_value, selection, cache_obj):
         submenu = {}
 
         for menu_dict in FilterMenu.get_menu('complete_menu'):  # complete menu in function object
@@ -366,9 +369,9 @@ class FilterMenu(models.Manager):
                     for key_2 in menu_dict[key_1]:  # all sub_level_names (key_2 = Geologie, Bodentyp...)
                         submenu[key_2] = dict(menu_dict[key_1][key_2])  # all values to choose from / Boolean if chosen
                         # set checked keys as True:
-                        counts = FilterMenu.count_query(cache, key_1, key_2, submenu[key_2].items())
+                        counts = FilterMenu.count_query(cache_obj, key_1, key_2, submenu[key_2].items())
                         for add_numbers, org_value in menu_dict[key_1][key_2].items():
-                            submenu[key_2].update({add_numbers: [org_value, counts[add_numbers]]})
+                            submenu[key_2].update({add_numbers: [org_value, counts[add_numbers][0]]})
                         if selection:
                             for tick_key, tick_value in submenu[key_2].items():  # marls [True 651]
                                 if tick_key in selection:
@@ -399,9 +402,14 @@ class FilterMenu(models.Manager):
                         for value in cache_value:
                             filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
 
-            django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id').count()")
-
-            dataset_count.update({values_3[0]: django_data})
+            django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
+            locations = django_data.values('meta__geometry__id').distinct()
+            # bla = TblMeta.objects.filter(id=django_data)
+            # print('django_data: ', bla)
+            # selected_coords = (django_data.objects.filter(meta_id__geometry = LtLocation).distinct())
+            # print('len: ', len(selected_coords))
+            dataset_count.update({values_3[0]: [len(django_data), django_data]})
+        # print('{values_3[0]: django_data}: ', {values_3[0]: [len(django_data), django_data]})
         return dataset_count
 
     def build_queryset(cache_obj):
@@ -417,7 +425,7 @@ class FilterMenu(models.Manager):
                     for value in cache_value:
                         filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
                 django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-        return {'results': len(django_data)}
+        return django_data
 
 
 # build BW watershed table

@@ -1,7 +1,8 @@
 # TODO @Marcus: this file should work as manager in models.py
 
 import re
-
+import os
+import requests
 from django.db import connections
 from django.core.serializers import serialize
 
@@ -37,24 +38,65 @@ def get_sample_locations():
     return sample_location
 
 
-def get_submenu_with_count(top_menu_value, selection, cache):
-    sub_menu_dict = {}
-    # print('complete_menu_list(): ', complete_menu_list())
-    complete_menu_list = FilterMenu.get_menu('complete_menu')
-    for top_level_dict in complete_menu_list: # complete top_level_dict in function object
-        for top_key in top_level_dict: # all top_level names (top_key = Boden, Besitzer...)
-            if top_key == top_menu_value: # check which menu has been clicked
-                for sub_key in top_level_dict[top_key]: # all sub_level_names (sub_key = Geologie, Bodentyp...)
-                    # print('top_level_dict: ', top_level_dict)
-                    # print('top_key: ', top_key)               # (top_key = Boden, Besitzer...)
-                    # print('sub_key: ', sub_key)               # (sub_key = Geologie, Bodentyp...)
-                    sub_menu_dict[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
-                    # set checked keys as True:
-                    if selection:
-                        for get_key, get_value in sub_menu_dict[sub_key].items():
-                            if get_key in selection:
-                                sub_menu_dict[sub_key][get_key] = True;
-    return sub_menu_dict
+def build_point_sld(ids):
+    url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/new_point"
+    # url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/styles/new_point2"
+    content = 'content-type'
+    application = 'application / vnd.ogc.sld + xml'
+    with open(os.path.join(os.path.join(os.path.expanduser('~'), '.vforwater'), 'secret_geoserver.txt')) as f:
+        secret = f.read().strip()
+
+    print('1')
+    old_list = ''
+    for h in ids:
+        for i in h.values():
+            chosen_ids = str(i) + old_list
+            old_list = ','+chosen_ids
+    print('2: ', chosen_ids)
+    choice = '<Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo>' \
+             '<ogc:PropertyName>id</ogc:PropertyName><ogc:Literal>' + chosen_ids + '</ogc:Literal>' \
+             '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle' \
+             '</WellKnownName><Fill><CssParameter name="fill">#0033CC</CssParameter></Fill></Mark><Size>16</Size>' \
+             '</Graphic></PointSymbolizer></Rule>'
+
+    data = '<?xml version="1.0" encoding="ISO-8859-1"?><StyledLayerDescriptor version="1.0.0" ' \
+           'xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd" ' \
+           'xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" ' \
+           'xmlns:xlink="http://www.w3.org/1999/xlink" ' \
+           'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><NamedLayer><Name>Attribute-based ' \
+           'point</Name><UserStyle><Title>Attribute-based ' \
+           'point</Title><FeatureTypeStyle><Rule><Name>AllData</Name><Title>All avaiable ' \
+           'Datensets</Title><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter ' \
+           'name="fill">#00DDFF</CssParameter></Fill></Mark><Size>3</Size></Graphic></PointSymbolizer></Rule>' + \
+           choice + '</FeatureTypeStyle></UserStyle>  </NamedLayer></StyledLayerDescriptor>'
+    print('3')
+    # s = requests.put("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/chosen_point", data=data,
+    #                  auth=(secret), headers={'content-type': 'application/vnd.ogc.sld+xml'})
+    print('4')
+    s = eval("requests.put('"+url+"', data='"+data+"', auth=("+secret+"), headers={'"+content+"': '"+application+"'})")
+
+    print('send request: ', s.content, s.status_code)
+    return 0
+
+
+# def get_submenu_with_count(top_menu_value, selection, cache):
+#     sub_menu_dict = {}
+#     # print('complete_menu_list(): ', complete_menu_list())
+#     complete_menu_list = FilterMenu.get_menu('complete_menu')
+#     for top_level_dict in complete_menu_list: # complete top_level_dict in function object
+#         for top_key in top_level_dict: # all top_level names (top_key = Boden, Besitzer...)
+#             if top_key == top_menu_value: # check which menu has been clicked
+#                 for sub_key in top_level_dict[top_key]: # all sub_level_names (sub_key = Geologie, Bodentyp...)
+#                     # print('top_level_dict: ', top_level_dict)
+#                     # print('top_key: ', top_key)               # (top_key = Boden, Besitzer...)
+#                     # print('sub_key: ', sub_key)               # (sub_key = Geologie, Bodentyp...)
+#                     sub_menu_dict[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
+#                     # set checked keys as True:
+#                     if selection:
+#                         for get_key, get_value in sub_menu_dict[sub_key].items():
+#                             if get_key in selection:
+#                                 sub_menu_dict[sub_key][get_key] = True;
+#     return sub_menu_dict
 
 
 def dictfetchall(cursor):
