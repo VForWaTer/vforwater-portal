@@ -47,6 +47,7 @@ def build_point_sld(ids):
         secret = f.read().strip()
 
     print('1')
+    chosen_ids = ''
     for h in ids:
         for i in h.values():
             chosen_ids = chosen_ids+'<ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName><ogc:Literal>' \
