@@ -47,15 +47,14 @@ def build_point_sld(ids):
         secret = f.read().strip()
 
     print('1')
-    old_list = ''
     for h in ids:
         for i in h.values():
-            chosen_ids = str(i) + old_list
-            old_list = ','+chosen_ids
-    print('2: ', chosen_ids)
-    choice = '<Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo>' \
-             '<ogc:PropertyName>id</ogc:PropertyName><ogc:Literal>' + chosen_ids + '</ogc:Literal>' \
-             '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle' \
+            chosen_ids = chosen_ids+'<ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName><ogc:Literal>' \
+                                    '' + str(i) + '</ogc:Literal></ogc:PropertyIsEqualTo>'
+
+    # print('2: ', chosen_ids)
+    choice = '<Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:Or>' + chosen_ids + \
+             '</ogc:Or> </ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle' \
              '</WellKnownName><Fill><CssParameter name="fill">#0033CC</CssParameter></Fill></Mark><Size>16</Size>' \
              '</Graphic></PointSymbolizer></Rule>'
 
@@ -72,7 +71,7 @@ def build_point_sld(ids):
     print('3')
     # s = requests.put("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/chosen_point", data=data,
     #                  auth=(secret), headers={'content-type': 'application/vnd.ogc.sld+xml'})
-    print('4')
+    print('4: ', data)
     s = eval("requests.put('"+url+"', data='"+data+"', auth=("+secret+"), headers={'"+content+"': '"+application+"'})")
 
     print('send request: ', s.content, s.status_code)
