@@ -3,34 +3,8 @@ function create_map() {
 	mapSource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	
 	var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
-/*    var sample_locations = document.getElementById('sample_locations').value;
-    console.log(sample_locations);
-
-// Build a vector layer:
-    var image = new ol.style.Circle({
-        radius: 5,
-        fill: null,
-        stroke: new ol.style.Stroke({color: 'blue', width: 1})
-    });
-
-    var styles = {
-        'Point': new ol.style.Style({
-          image: image
-        }),
-    }
-
-    var styleFunction = function(feature) {
-        return styles[feature.getGeometry().getType()];
-      };
-
-    var vectorSource = new ol.source.Vector({
-        features: (new ol.format.GeoJSON()).readFeatures(sample_locations)
-      });
-
-    var vectorLayer = new ol.layer.Vector({
-        source: vectorSource,
-        style: styleFunction
-      });*/
+	var data_style = JSON.parse(document.getElementById('data_style').value);
+    data_style = data_style['data_style']
 
 // build the background map
 	mapLayer = new ol.layer.Tile({
@@ -48,88 +22,25 @@ function create_map() {
 		center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
 		zoom: 6,
 		maxZoom: 18,
+        minZoom: 2
 	});
 
-
-//	Access as wfs - not used now
-/*		vectorSource = new ol.source.Vector({
-              format: new ol.format.GeoJSON({defaultDataProjection:"ESPG:4326"}),
-                url: function(extent) {
-              return 'https://vforwater-gis.scc.kit.edu/geoserver/wfs?service=WFS&' +
-              'version=2.0.0&request=GetFeature&typename=LUBW:vfwheron_basiseinzugsgebiet&' +
-              'outputFormat=application/json&' +
-              'bbox=' + extent.join(',') + ',EPSG:4326';
-        },
-        strategy: ol.loadingstrategy.bbox
-                });
-
-                  vectorMap = new ol.layer.Vector({
-                  source: vectorSource,
-                  style: new ol.style.Style({
-                    stroke: new ol.style.Stroke({
-                      color: 'rgba(0, 100, 255, 1.0)',
-                      width: 1.5
-                    })
-                  })
-                });
- */
     WMSpointSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		serverType:'geoserver',
 		params: {
-		    LAYERS: 'CAOS:get_important_info',
+		    LAYERS: 'CAOS:get_pointinfo',
 //		    LAYERS: 'CAOS:get_important_info',
 		    TILED: true,
-		    STYLES: 'CAOS:new_point',
-//		    STYLES: 'Light Blue Circle',
+		    //STYLES: 'CAOS:new_point',
+           // STYLES: 'Light Blue Circle',
+		    STYLES: data_style,
         },
         name: 'WMSpointSource'
 	});
 	pointMap = new ol.layer.Tile({
 		source: WMSpointSource,
 	});
-
-/*  pointMap = new ol.layer.Vector({
-        source: new ol.source.Cluster({
-          distance: 40,
-          source: new ol.source.Vector({
-            url: 'https://vforwater-gis.scc.kit.edu/geoserver/kml',
-            format: new ol.format.KML({
-              extractStyles: true
-            })
-          })
-        }),
-//        style: styleFunction
-      });*/
-    /*WMSpointSource = new ol.source.Vector({
-      format: new ol.format.GeoJSON({defaultDataProjection:"ESPG:4326"}),
-        url: function(extent) {
-      return 'https://vforwater-gis.scc.kit.edu/geoserver/ows?service=WFS&' +
-      'version=1.0.0&request=GetFeature&typename=CAOS:lt_location&' +
-      'outputFormat=text/javascript';
-*//*      'outputFormat=application/json&' +
-      'bbox=' + extent.join(',') + ',EPSG:2169';*//*
-    },
-    strategy: ol.loadingstrategy.bbox
-            });
-
-    pointMap = new ol.layer.Vector({
-      source: WMSpointSource,
-      style: new ol.style.Style({
-        stroke: new ol.style.Stroke({
-          color: 'rgba(0, 100, 255, 1.0)',
-          width: 1.5
-        })
-      })
-    });*/
-/*    WMSpointSource = new ol.source.WFS({
-//        url: 'http://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=CAOS:lt_location&maxFeatures=50&outputFormat=text%2Fjavascript'
-        url: 'https://vforwater-gis.scc.kit.edu/geoserver/wfs',
-        params: {LAYERS: 'CAOS:lt_location'}
-    });
-    pointMap = new ol.source.Tile({
-        source: WMSpointSource,
-    })*/
 
 // Elements that make up the popup.
   var container = document.getElementById('popup');
@@ -151,7 +62,6 @@ function create_map() {
     closer.blur();
     return false;
   };
-
 
 	vectorSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
@@ -190,20 +100,21 @@ function create_map() {
 
 
 // get information about your data in a popup when you click on a data point in the map
-  map.on('singleclick', function(evt) {
-    var viewResolution = /** @type {number} */ (mapView.getResolution());
-    var url = WMSpointSource.getGetFeatureInfoUrl(
-        evt.coordinate, viewResolution, 'EPSG:3857',
-        {'INFO_FORMAT': 'text/html'});
-    if (url) {
-      document.getElementById('popup-content').innerHTML =
-      '<iframe seamless src=' + url + '></iframe>';
-      overlay.setPosition(evt.coordinate);
-    }
-  });
+	map.on('singleclick', function(evt) {
+		var viewResolution = /** @type {number} */ (mapView.getResolution());
+		var url = WMSpointSource.getGetFeatureInfoUrl(
+			evt.coordinate, viewResolution, 'EPSG:3857',
+			{'INFO_FORMAT': 'text/html'});
+		// supported formats are [text/plain, text/html, application/vnd.ogc.gml]
+		if (url) {
+			document.getElementById('popup-content').innerHTML =
+			'<iframe seamless src=' + url + ' style="border: none; allowtransparency:true"></iframe>';
+			overlay.setPosition(evt.coordinate);
+		}
+	});
 
 /*comment the following in your development environment to avoid error messages*/
-  map.on('pointermove', function(evt) {
+/*  map.on('pointermove', function(evt) {
     if (evt.dragging) {
       return;
     }
@@ -213,7 +124,6 @@ function create_map() {
     }, null, function(layer){return layer === pointMap}
     );
     map.getTargetElement().style.cursor = hit ? 'pointer' : '';
-  });
-
+  });*/
 
 }

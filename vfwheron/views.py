@@ -20,8 +20,8 @@ class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
     def get_context_data(self, **kwargs):
-        return {'dataExt': get_bbox_from_data(), 'menu_list': FilterMenu.get_menu('submenu')}
-
+        data_style = 'Light Blue Circle'
+        return {'dataExt': get_bbox_from_data(), 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style}
 
 class menuView(TemplateView):
     # TODO: each time you click a new top menu the database is accessed --> implement cache!
@@ -66,9 +66,29 @@ class menuView(TemplateView):
 
         if request.GET.get('onclick_show_datasets'):
             result = FilterMenu.build_queryset(cache)
-            locations = result.values('meta__geometry__id').distinct()
+            locations = result.values('meta__geometry__id').distinct()  # location id for map
+            # locations = result  # meta id for map
             build_point_sld(locations)
-            return JsonResponse({'results': len(result)})
+            data_style = 'CAOS:selection'
+            return JsonResponse({'results': len(result), 'data_style': data_style})
+
+        HOME_DIR = os.path.expanduser('~')
+        VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
+        secret = os.path.join(VFW_DIR, 'secret_geoserver.txt')
+        with open(secret) as f:
+            secret = f.read().strip()
+
+        # Edit / reupload the content of an existing style on the server when the style is in a workspace:
+        style_name = "selection"
+        selected_data = '<ogc:Literal>444</ogc:Literal><ogc:Literal>450</ogc:Literal>'
+        chosen_data = '<ogc:Literal>192</ogc:Literal>'
+        data = '<?xml version="1.0" encoding="ISO-8859-1"?><StyledLayerDescriptor version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><NamedLayer><Name>Attribute-based point</Name><UserStyle><Title>Attribute-based point</Title><FeatureTypeStyle><Rule><Name>AllData</Name><Title>All avaiable Datensets</Title><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#00DDFF</CssParameter></Fill></Mark><Size>3</Size></Graphic></PointSymbolizer></Rule><Rule><Name>SelectedData</Name><Title>Selected Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName>' + selected_data + '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#0088EE</CssParameter></Fill></Mark><Size>12</Size></Graphic></PointSymbolizer></Rule><Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName>' + chosen_data + '</ogc:PropertyIsEqualTo></ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter name="fill">#0033CC</CssParameter></Fill></Mark><Size>16</Size></Graphic></PointSymbolizer></Rule></FeatureTypeStyle></UserStyle>  </NamedLayer></StyledLayerDescriptor>'
+        url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/"+style_name
+        content = 'content-type'
+        application = 'application / vnd.ogc.sld + xml'
+        s = eval("requests.put('"+url+"', data='"+data+"', auth=("+secret+"), headers={'"+content+"': '"+application+"'})")
+
+        print('*** *** ** s: ', s.content, s.status_code)
 
         # with open('vfwheron/point_style.xml', 'r') as myfile:
         #     data = myfile.read().replace('\n', '')

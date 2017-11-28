@@ -6,7 +6,7 @@ import requests
 from django.db import connections
 from django.core.serializers import serialize
 
-from vfwheron.models import LtLocation, FilterMenu
+from vfwheron.models import LtLocation
 
 
 def get_bbox_from_data(): # get bbox for available data
@@ -39,7 +39,7 @@ def get_sample_locations():
 
 
 def build_point_sld(ids):
-    url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/new_point"
+    url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/selection"
     # url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/styles/new_point2"
     content = 'content-type'
     application = 'application / vnd.ogc.sld + xml'
@@ -50,10 +50,9 @@ def build_point_sld(ids):
     chosen_ids = ''
     for h in ids:
         for i in h.values():
-            chosen_ids = chosen_ids+'<ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName><ogc:Literal>' \
-                                    '' + str(i) + '</ogc:Literal></ogc:PropertyIsEqualTo>'
+            chosen_ids = chosen_ids+'<ogc:PropertyIsEqualTo><ogc:PropertyName>id</ogc:PropertyName>' \
+                                    '<ogc:Literal>' + str(i) + '</ogc:Literal></ogc:PropertyIsEqualTo>'
 
-    # print('2: ', chosen_ids)
     choice = '<Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:Or>' + chosen_ids + \
              '</ogc:Or> </ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle' \
              '</WellKnownName><Fill><CssParameter name="fill">#0033CC</CssParameter></Fill></Mark><Size>16</Size>' \
@@ -69,10 +68,8 @@ def build_point_sld(ids):
            'Datensets</Title><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter ' \
            'name="fill">#00DDFF</CssParameter></Fill></Mark><Size>3</Size></Graphic></PointSymbolizer></Rule>' + \
            choice + '</FeatureTypeStyle></UserStyle>  </NamedLayer></StyledLayerDescriptor>'
-    print('3')
     # s = requests.put("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/chosen_point", data=data,
     #                  auth=(secret), headers={'content-type': 'application/vnd.ogc.sld+xml'})
-    print('4: ', data)
     s = eval("requests.put('"+url+"', data='"+data+"', auth=("+secret+"), headers={'"+content+"': '"+application+"'})")
 
     print('send request: ', s.content, s.status_code)

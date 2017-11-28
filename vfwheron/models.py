@@ -28,7 +28,7 @@ class LtDomain(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'domain_name': 'Domänenname', 'project__project_name': 'Projekt'}
-    menu_name = 'Domäne'
+    menu_name = 'Projekt/Domäne'
     path = 'domain'
 
     def __str__(self):
@@ -304,7 +304,6 @@ class TblSensor(models.Model):
     menu_name = 'Sensor'
     path = 'meta__sensor'
 
-
     def __str__(self):
         return self.sensor_name
 
@@ -325,7 +324,8 @@ class TblVariable(models.Model):
     column_dict = {'variable_name': 'Variablenname'}
     menu_name = 'Datentyp'
     path = 'meta__variable'
-
+    struct = {'menu1':variable_name}
+    struct_name = {'menu1': menu_name}
 
     def __str__(self):
         return self.variable_name
@@ -425,6 +425,8 @@ class FilterMenu(models.Manager):
                     for value in cache_value:
                         filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
                 django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
+        print(' + + + ++ ++ :  ', LtDomain.objects.filter(pid = None).all())
+
         return django_data
 
 

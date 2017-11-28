@@ -206,14 +206,12 @@ $(document).ready(function(menuTitle) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
             success : function(json) {
-                $.each(json, function(key1, value1){ // loop over top level menu
+                $.each(json, function(key1, value1){ // loop over top level menu z.B. key1 = Geologie
     //                    var newMenuButton = ('#'+key1)
                     var newHTML = '';
                     var newMenu = '';
-                    $.each(value1, function(key2, value2){ // loop over sub menu
+                    $.each(value1, function(key2, value2){ // loop over sub menu z.B. key2 = Sandstone
                         if (key2 != 'null'){
-//                            console.log('key1 ist jetzt:', key1) // z.B. Geologie
-//                            console.log('key2 ist jetzt:', key2) // z.B. Sandstone
                             var selectedData = "['"+ key2+"', '"+ key1 +"']"
 //                            var selectedData = "'"+ key2 +"'"
 //                            console.log('value 2 ist: ', value2[1])
@@ -236,8 +234,6 @@ $(document).ready(function(menuTitle) {
 
 // Select Data / build elements, in workspace
 function select_data(selectedData) {
-//    console.log('selectedData 0: ', selectedData[0])
-//    console.log('selectedData 1: ', selectedData[1])
     $.ajax({
         url: "/vfwheron/menu",
         datatype: 'json',
@@ -247,7 +243,6 @@ function select_data(selectedData) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success : function(json) {
-            console.log('bin zurück!',json)
         },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
@@ -263,9 +258,15 @@ function onclick_show_datasets_func() {
         }, // data sent with the post request
         success : function(json) {
             console.log(json)
-            $.each(json, function(key1, value1){
-                document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+key1+"'><span class='respo-medium'>You got "+value1+" Datasets</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+            $.each(json, function(key1, value1) {
+                if (key1 == "results") {
+                    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + key1 + "'><span class='respo-medium'>You got " + value1 + " Datasets</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+                } else if (key1 == "data_style") {
+                    console.log(WMSpointSource.getParams())
+                    WMSpointSource.updateParams({STYLES: value1}),
+                    WMSpointSource.refresh()
+                }
                 })
-        },
+        }
     });
 }
