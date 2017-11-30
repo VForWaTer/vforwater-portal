@@ -15,21 +15,21 @@
 	<!-- TODO: Do we access the font Raleway online? For more see base_app/vcss/css -->
 	<style>
 	html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
-	.respo-navbar li a {padding-top: 64px; padding-bottom: 12px;}
-	.respo-navbar {padding-left: 300px;}
+	.respo-navbar li a {padding-top: 22px; padding-bottom: 14px;}
+	.respo-navbar {padding-left: 300px; margin-top: 42px; height: 61px;} 
 	#filterbox,#select_catchment {display: none;}
 	</style>
 </head>
 
 <body class="respo-light-grey" >
 
-    Top container
+<!--    Top container -->
 	<div class="respo-container respo-top respo-black respo-large respo-padding" style="z-index:4">
 	  <button class="respo-btn respo-hide-large respo-padding-0 respo-hover-text-grey" onclick="respo_open();"><i class="fa fa-bars"></i>  Menu</button>
 	  <span class="respo-right"><strong>Virtual research environment for environmental research</strong></span>
 	</div>
 
-	Navbar
+<!--	Navbar -->
 	<div class="respo-top">
 	  <ul class="respo-navbar respo-light-turquoise respo-top respo-left-align respo-large">
 	    <li class="respo-opennav respo-right respo-hide-large">
@@ -70,7 +70,7 @@
 	{% block sidebar %}
 	{% endblock %}	
 
-	!PAGE CONTENT!
+<!-- 	!PAGE CONTENT! -->
 	<div class="respo-main" style="margin-left:300px;margin-top:103px;">
 	{# get map in the content block #}
 	{% block content %}{% endblock %} 

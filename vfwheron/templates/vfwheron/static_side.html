@@ -1,7 +1,18 @@
 {% load static %}
 
-<nav class="respo-sidenav respo-transparent" style="z-index:3;width:300px;" id="mySidelogo"><br><br>
-{% block logo %} 
-	{% include 'vfwheron/logo.html' %} 
-{% endblock %}
-</nav>
+<head>
+  <style>
+  .respo-sidenav {margin-top: 42px;}
+  </style>
+</head>
+
+<body>
+	<nav class="respo-sidenav respo-transparent" style="z-index:3;width:300px;" id="mySidelogo"><br>
+	{% block logo %} 
+		{% include 'vfwheron/logo.html' %} 
+	{% endblock %}
+	</nav>
+	
+	Overlay effect when opening sidenav on small screens
+	<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+</body>

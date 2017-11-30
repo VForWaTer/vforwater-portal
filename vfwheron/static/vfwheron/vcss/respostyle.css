@@ -63,7 +63,7 @@ ul.respo-ul{list-style-type:none;padding:0;margin:0}ul.respo-ul li{padding:6px 2
 .respo-navbar{list-style-type:none;margin:0;padding:0;overflow:hidden}
 .respo-navbar li{float:left}.respo-navbar li a,.respo-navitem,.respo-navbar li .respo-btn,.respo-navbar li .respo-input{display:block;padding:8px 16px}.respo-navbar li .respo-btn,.respo-navbar li .respo-input{border:none;outline:none;width:100%}
 .respo-navbar li a:hover{color:#000;background-color:#ccc}
-.respo-navbar .respo-dropdown-hover,.respo-navbar .respo-dropdown-click{position:static}
+.respo-navbar .respo-dropdown-hover,.respo-navbar .respo-dropdown-click{position:relative}
 .respo-navbar .respo-dropdown-hover:hover,.respo-navbar .respo-dropdown-hover:first-child,.respo-navbar .respo-dropdown-click:hover{background-color:#ccc;color:#000}
 .respo-navbar a,.respo-topnav a,.respo-sidenav a,.respo-dropdown-content a,.respo-accordion-content a,.respo-dropnav a{text-decoration:none!important}
 .respo-navbar .respo-opennav.respo-right{float:right!important}.respo-topnav{padding:8px 8px}
