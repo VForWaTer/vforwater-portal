@@ -130,3 +130,7 @@ class LogoutView(View):
     def post(self, request):
         self.logout(request)
         return redirect('vfwheron:login')
+    
+class HelpView(TemplateView):
+    template_name = 'vfwheron/help.html'
+    

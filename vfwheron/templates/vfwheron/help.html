@@ -1,0 +1,20 @@
+{% extends "vfwheron/base.html" %}
+
+{% block sidebar %} 
+	{% include 'vfwheron/static_sidebar.html' %} 
+{% endblock sidebar %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h1>Hilfe</h1>
+    <p>Willkommen! Webseite ist noch im Bau!
+  </div>
+</div>
+<div class="row">
+    <a class='respo-hover-none' style='height:103px' id='search_box'><input type='search' value='' placeholder='Search ...' style='height:26px; font-size:70%;'></a>
+    <a href='#' class='respo-hover-white' style='height:103px' id='search_but' onclick='search_close()'><i class='fa fa-search fa-fw'></i></a>
+
+</div>
+{% endblock %}
