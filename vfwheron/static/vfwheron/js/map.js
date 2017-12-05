@@ -5,7 +5,6 @@ function create_map() {
 	var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
 	var data_style = JSON.parse(document.getElementById('data_style').value);
     data_style = data_style['data_style']
-
 // build the background map
 	mapLayer = new ol.layer.Tile({
 		preload: Infinity,
@@ -29,8 +28,9 @@ function create_map() {
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		serverType:'geoserver',
 		params: {
-		    LAYERS: 'CAOS:get_pointinfo',
-//		    LAYERS: 'CAOS:get_important_info',
+		    // LAYERS: 'CAOS:get_pointinfo',
+		    LAYERS: 'CAOS:ID_as_identifier',
+		    // LAYERS: 'CAOS:pointdata',
 		    TILED: true,
 		    //STYLES: 'CAOS:new_point',
            // STYLES: 'Light Blue Circle',
@@ -41,6 +41,15 @@ function create_map() {
 	pointMap = new ol.layer.Tile({
 		source: WMSpointSource,
 	});
+
+    wfsPointLayer = new ol.source.Vector({
+        format: new ol.format.GeoJSON(),
+        url: 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=CAOS:ID_as_identifier&maxFeatures=50&outputFormat=application%2Fjson',
+    })
+    wfsPointMap = new ol.layer.Vector({
+        source: wfsPointLayer,
+    })
+
 
 // Elements that make up the popup.
   var container = document.getElementById('popup');
@@ -67,8 +76,7 @@ function create_map() {
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'}
 	});
-
-	vectorMap = new ol.layer.Tile({
+    vectorMap = new ol.layer.Tile({
 		source: vectorSource,
 	});
 
@@ -77,7 +85,7 @@ function create_map() {
 		renderer: 'canvas',
 		overlays: [overlay],
 		target: map_tar,
-		layers: [mapLayer, vectorMap, pointMap],
+		layers: [mapLayer, vectorMap, pointMap, wfsPointMap],
 		controls: [
 			new ol.control.Zoom(),
 			new ol.control.Attribution(),
@@ -90,7 +98,7 @@ function create_map() {
 			new ol.control.ScaleLine(),
 			new ol.control.ZoomToExtent({ // zoom button
 				label: 'Z',
-				tipLabel: 'Zoom to your Data',
+				tipLabel: 'Auf die verfügbaren Daten zoomen',
 				extent: dataExt
 
 			}),

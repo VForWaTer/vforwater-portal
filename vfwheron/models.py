@@ -403,7 +403,7 @@ class FilterMenu(models.Manager):
                             filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
 
             django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-            locations = django_data.values('meta__geometry__id').distinct()
+            locations = django_data.values('meta__site__id').distinct()
             # bla = TblMeta.objects.filter(id=django_data)
             # print('django_data: ', bla)
             # selected_coords = (django_data.objects.filter(meta_id__geometry = LtLocation).distinct())
@@ -425,7 +425,7 @@ class FilterMenu(models.Manager):
                     for value in cache_value:
                         filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
                 django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-        print(' + + + ++ ++ :  ', LtDomain.objects.filter(pid = None).all())
+        # print(' + + + ++ ++ :  ', LtDomain.objects.filter(pid = None).all())
 
         return django_data
 
