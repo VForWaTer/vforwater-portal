@@ -1,18 +1,18 @@
 {% extends "vfwheron/base.html" %}
 
 {% block sidebar %} 
-	{% include 'vfwheron/static_side.html' %} 
+	{% include 'vfwheron/static_sidebar.html' %} 
 {% endblock sidebar %}
 
 {% block content %}
 
 <header class="respo-container respo-padding-bottom respo-center" style="padding-top:22px">
     {% if form.errors %}
-        <h5><b>Your login failed! Please try again.</b></h5>
+        <h5><b>Ihr Login ist fehlgeschlagen! Bitte versuchen Sie es erneut.</b></h5>
     {% elif user.is_authenticated %}
-        <h5><b>Welcome, you are logged in as {{ user.email }}.</b></h6>
+        <h5><b>Willkommen, Sie sind eingeloggt als {{ user.email }}.</b></h6>
     {% else %}
-        <h5><b>Welcome, please log in.</b></h5>
+        <h5><b>Willkommen, bitte loggen Sie sich ein.</b></h5>
     {% endif %}
  </header>
 
@@ -20,7 +20,7 @@
 
 <div class="respo-half">
   <div class="respo-container respo-light-turquoise respo-padding-16 respo-third-n">
-	<div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>LDAP Login</strong></div>
+	<div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>Admin Login</strong></div>
        <div class="respo-clear"></div>
         <form role="form" action="{% url 'vfwheron:login' %}" method="post">{% csrf_token %}
         <div class="form-group respo-padding-bottom">
@@ -33,7 +33,7 @@
             {{ form.password }}
             <!-- <input id="id_password" name="password" value="Password" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input> -->
         </div>
-        <input class="btn btn-primary" type="submit" name="login_submit" value="Sign in" />
+        <input class="btn btn-primary" type="submit" name="login_submit" value="Admin Login" />
         <input type="hidden" name="next" value="{{ next }}" />
                 <!-- <div style="padding-top:16px">
                         <a href="#" class="respo-hover-none respo-hover-text-red respo-show-inline-block">Forgot your password?</a>
