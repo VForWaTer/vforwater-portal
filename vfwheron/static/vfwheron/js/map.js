@@ -42,12 +42,28 @@ function create_map() {
 		source: WMSpointSource,
 	});
 
-    wfsPointLayer = new ol.source.Vector({
+    wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
-        url: 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=CAOS:ID_as_identifier&maxFeatures=50&outputFormat=application%2Fjson',
+        url: function(extent){return 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=2.0.0' +
+            '&request=GetFeature&typeName=CAOS:ID_as_identifier&outputFormat=application/json&srsname=EPSG:3857&' +
+                        'bbox=' + extent.join(',') + ',EPSG:3857';},
+        strategy: ol.loadingstrategy.tile(ol.tilegrid.createXYZ())
     })
     wfsPointMap = new ol.layer.Vector({
-        source: wfsPointLayer,
+        source: wfsPointSource,
+        renderMode: 'image',
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                    color: 'blue'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'black',
+                    width: 0.5
+                })
+            })
+        })
     })
 
 
@@ -74,7 +90,8 @@ function create_map() {
 
 	vectorSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
-		params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'}
+		params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'},
+		// visible: False,
 	});
     vectorMap = new ol.layer.Tile({
 		source: vectorSource,
@@ -85,7 +102,8 @@ function create_map() {
 		renderer: 'canvas',
 		overlays: [overlay],
 		target: map_tar,
-		layers: [mapLayer, vectorMap, pointMap, wfsPointMap],
+		layers: [mapLayer, vectorMap, wfsPointMap], // works only on the server
+		// layers: [mapLayer, vectorMap, pointMap], // use that one on your local machine
 		controls: [
 			new ol.control.Zoom(),
 			new ol.control.Attribution(),
@@ -122,7 +140,7 @@ function create_map() {
 	});
 
 /*comment the following in your development environment to avoid error messages*/
-/*  map.on('pointermove', function(evt) {
+  map.on('pointermove', function(evt) {
     if (evt.dragging) {
       return;
     }
@@ -132,6 +150,6 @@ function create_map() {
     }, null, function(layer){return layer === pointMap}
     );
     map.getTargetElement().style.cursor = hit ? 'pointer' : '';
-  });*/
+  });
 
 }
