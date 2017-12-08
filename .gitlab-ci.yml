@@ -1,5 +1,6 @@
-# Use a docker image that comes with python
-image: python:3
+# Usually a image like "python:3" should be sufficient
+# but we need some extra libraries to enable GIS features.
+image: ubuntu:16.04
 
 # Pipeline
 stages:
@@ -10,10 +11,18 @@ stages:
 vforwater-portal-test:
     stage: test
     before_script:
-        - pip install django owslib psycopg2
+        - apt-get update -qq
+        # Install python3 and pip3
+        - apt-get install -y -qq python3 python3-pip
+        # Install geospatial libraries (https://docs.djangoproject.com/en/1.11/ref/contrib/gis/install/geolibs/)
+        - apt-get install -y -qq binutils libproj-dev gdal-bin
+        # Install PostgreSQL dependency TODO: needed?
+    #   - apt-get install -y -qq libpq-dev
+        # Install required python packages
+        - pip3 install django owslib psycopg2
     script:
-        - python manage.py migrate
-        - python manage.py test
+        - python3 manage.py migrate
+        - python3 manage.py test
 
 # Deploy vforwater-portal
 vforwater-portal-deploy:
