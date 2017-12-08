@@ -1,0 +1,28 @@
+# Use a docker image that comes with python
+image: python:3
+
+# Pipeline
+stages:
+    - test
+    - deploy
+
+# Test vforwater-portal
+vforwater-portal-test:
+    stage: test
+    before_script:
+        - pip install django owslib psycopg2
+    script:
+        # TODO: Run tests
+        - echo "Tests..."
+
+# Deploy vforwater-portal
+vforwater-portal-deploy:
+    stage: deploy
+    script:
+        # TODO: Deploy somehow
+        - echo "Deploy..."
+    environment:
+        name: production
+        url: https://vforwater-gis.scc.kit.edu/vfwheron/
+    only:
+        - master
