@@ -1,4 +1,4 @@
-# Usually a image like "python:3" should be sufficient
+# Usually an image like "python:3" should be sufficient
 # but we need some extra libraries to enable GIS features.
 image: ubuntu:16.04
 
@@ -22,6 +22,7 @@ vforwater-portal-test:
         - pip3 install django owslib psycopg2
     script:
         - python3 manage.py migrate
+        # TODO: Somehow provide DB connection!? Or just use TCP...
         - python3 manage.py test
 
 # Deploy vforwater-portal
