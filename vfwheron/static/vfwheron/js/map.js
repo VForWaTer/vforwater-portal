@@ -1,12 +1,12 @@
 //Create own base layer
 function create_map() {
-	mapSource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
+	var mapSource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"})
 	
 	var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
 	var data_style = JSON.parse(document.getElementById('data_style').value);
     data_style = data_style['data_style']
 // build the background map
-	mapLayer = new ol.layer.Tile({
+	var mapLayer = new ol.layer.Tile({
 		preload: Infinity,
 		source: mapSource,
 	});
@@ -17,14 +17,14 @@ function create_map() {
 		mapLayer.setSource(source)
     });
 
-	mapView = new ol.View({
+	var mapView = new ol.View({
 		center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
 		zoom: 6,
 		maxZoom: 18,
         minZoom: 2
 	});
 
-    WMSpointSource = new ol.source.TileWMS({
+    var wmsPointSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		serverType:'geoserver',
 		params: {
@@ -36,20 +36,45 @@ function create_map() {
            // STYLES: 'Light Blue Circle',
 		    STYLES: data_style,
         },
-        name: 'WMSpointSource'
+        name: 'wmsPointSource'
 	});
-	pointMap = new ol.layer.Tile({
-		source: WMSpointSource,
+	var wmsPointLayer = new ol.layer.Tile({
+		source: wmsPointSource,
 	});
 
-    wfsPointSource = new ol.source.Vector({
+    var wfsPointSource = new ol.source.Vector({
+      format: new ol.format.GeoJSON(),
+      loader: function(extent, resolution, projection) {
+         var proj = projection.getCode();
+         var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
+             'request=GetFeature&typename=CAOS:ID_as_identifier&outputFormat=application/json&srsname=EPSG:3857' +
+             '&bbox=' + extent.join(',') + ',EPSG:3857';
+         var xhr = new XMLHttpRequest();
+         xhr.open('GET', url);
+         var onError = function() {
+           vectorSource.removeLoadedExtent(extent);
+         }
+         xhr.onerror = onError;
+         xhr.onload = function() {
+           if (xhr.status == 200) {
+             vectorSource.addFeatures(
+                 vectorSource.getFormat().readFeatures(xhr.responseText));
+           } else {
+             onError();
+           }
+         }
+         xhr.send();
+       },
+       strategy: ol.loadingstrategy.bbox
+     });
+/*    var wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         url: function(extent){return 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=2.0.0' +
             '&request=GetFeature&typeName=CAOS:ID_as_identifier&outputFormat=application/json&srsname=EPSG:3857&' +
                         'bbox=' + extent.join(',') + ',EPSG:3857';},
         strategy: ol.loadingstrategy.tile(ol.tilegrid.createXYZ())
-    })
-    wfsPointMap = new ol.layer.Vector({
+    })*/
+    var wfsPointLayer = new ol.layer.Vector({
         source: wfsPointSource,
         renderMode: 'image',
         style: new ol.style.Style({
@@ -67,6 +92,10 @@ function create_map() {
     })
 
 
+/*    var featureSource = new ol.source.Vector({
+        features: (new ol.format.GeoJSON()).readFeatures('https://vforwater-gis.scc.kit.edu/geoserver/CAOS/ows?service=WFS&version=2.0.0' +
+            '&request=GetFeature&typeName=CAOS:ID_as_identifier&outputFormat=application/json&srsname=EPSG:3857'
+    )})*/
 // Elements that make up the popup.
   var container = document.getElementById('popup');
   var content = document.getElementById('popup-content');
@@ -88,22 +117,22 @@ function create_map() {
     return false;
   };
 
-	vectorSource = new ol.source.TileWMS({
+	var vectorSource = new ol.source.TileWMS({
 		url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
 		params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'},
 		// visible: False,
 	});
-    vectorMap = new ol.layer.Tile({
+    var vectorLayer = new ol.layer.Tile({
 		source: vectorSource,
 	});
 
-	map_tar = document.getElementById("map");
-	map = new ol.Map({
-		renderer: 'canvas',
+	var map_tar = document.getElementById("map");
+	var map = new ol.Map({
+		// renderer: 'canvas',
 		overlays: [overlay],
 		target: map_tar,
-		layers: [mapLayer, vectorMap, wfsPointMap], // works only on the server
-		// layers: [mapLayer, vectorMap, pointMap], // use that one on your local machine
+		// layers: [mapLayer, vectorLayer, wfsPointLayer], // *works only on the server
+		layers: [mapLayer, vectorLayer, wmsPointLayer], // *use that one on your local machine
 		controls: [
 			new ol.control.Zoom(),
 			new ol.control.Attribution(),
@@ -117,27 +146,62 @@ function create_map() {
 			new ol.control.ZoomToExtent({ // zoom button
 				label: 'Z',
 				tipLabel: 'Auf die verfügbaren Daten zoomen',
-				extent: dataExt
-
+				extent: dataExt,
 			}),
 			],
         view: mapView//dataview
 	});
 
-
+/* function download_file(url) { // unused/deleteable
+   window.location.assign(url);
+ }*/
+/* function httpGet(theUrl)
+{
+    if (window.XMLHttpRequest)
+    {// code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp=new XMLHttpRequest();
+    }
+    else
+    {// code for IE6, IE5
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange=function()
+    {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+        {
+            return xmlhttp.responseText;
+        }
+    }
+    xmlhttp.open("GET", theUrl, false );
+    xmlhttp.send();
+}*/
 // get information about your data in a popup when you click on a data point in the map
-	map.on('singleclick', function(evt) {
+	map.on('singleclick', showinfo);
+
+    function showinfo(evt) {
+        var pixel = map.getEventPixel(evt.originalEvent);
 		var viewResolution = /** @type {number} */ (mapView.getResolution());
-		var url = WMSpointSource.getGetFeatureInfoUrl(
+		var url = wmsPointSource.getGetFeatureInfoUrl(
 			evt.coordinate, viewResolution, 'EPSG:3857',
 			{'INFO_FORMAT': 'text/html'});
 		// supported formats are [text/plain, text/html, application/vnd.ogc.gml]
+        // console.log(evt.coordinate)
+  /*      var features = map.getFeaturesAtPixel(evt.pixel);
+        console.log(map.forEachLayerAtPixel(pixel));
+        console.log(map.forEachLayerAtPixel(map.getEventPixel(evt.originalEvent)));
+        if (!features) {
+          // info.innerText = '';
+          // info.style.opacity = 0;
+          return;
+        }*/
+        // var properties = features[0].getProperties();
+        // console.log(properties)
 		if (url) {
 			document.getElementById('popup-content').innerHTML =
 			'<iframe seamless src=' + url + ' style="border: none; allowtransparency:true"></iframe>';
 			overlay.setPosition(evt.coordinate);
 		}
-	});
+	};
 
 /*comment the following in your development environment to avoid error messages*/
   map.on('pointermove', function(evt) {
@@ -147,7 +211,7 @@ function create_map() {
     var pixel = map.getEventPixel(evt.originalEvent);
     var hit = map.forEachLayerAtPixel(pixel, function (feature, layer) {
       return feature;
-    }, null, function(layer){return layer === pointMap}
+    }, null, function(layer){return layer === wfsPointLayer}
     );
     map.getTargetElement().style.cursor = hit ? 'pointer' : '';
   });
