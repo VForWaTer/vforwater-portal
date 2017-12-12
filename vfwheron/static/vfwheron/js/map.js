@@ -52,13 +52,13 @@ function create_map() {
          var xhr = new XMLHttpRequest();
          xhr.open('GET', url);
          var onError = function() {
-           vectorSource.removeLoadedExtent(extent);
+           wfsPointSource.removeLoadedExtent(extent);
          }
          xhr.onerror = onError;
          xhr.onload = function() {
            if (xhr.status == 200) {
-             vectorSource.addFeatures(
-                 vectorSource.getFormat().readFeatures(xhr.responseText));
+             wfsPointSource.addFeatures(
+                 wfsPointSource.getFormat().readFeatures(xhr.responseText));
            } else {
              onError();
            }
