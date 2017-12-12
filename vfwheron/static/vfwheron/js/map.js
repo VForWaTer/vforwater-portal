@@ -131,8 +131,8 @@ function create_map() {
 		// renderer: 'canvas',
 		overlays: [overlay],
 		target: map_tar,
-		// layers: [mapLayer, vectorLayer, wfsPointLayer], // *works only on the server
-		layers: [mapLayer, vectorLayer, wmsPointLayer], // *use that one on your local machine
+		layers: [mapLayer, vectorLayer, wfsPointLayer], // *works only on the server
+		// layers: [mapLayer, vectorLayer, wmsPointLayer], // *use that one on your local machine
 		controls: [
 			new ol.control.Zoom(),
 			new ol.control.Attribution(),
