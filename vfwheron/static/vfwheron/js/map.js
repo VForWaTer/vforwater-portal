@@ -44,15 +44,15 @@ function create_map() {
 
     var wfsPointSource = new ol.source.Vector({
       format: new ol.format.GeoJSON(),
-      loader: function(extent, resolution, projection) {
-         var proj = projection.getCode();
+      loader: function(extent) {
          var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
              'request=GetFeature&typename=CAOS:ID_as_identifier&outputFormat=application/json&srsname=EPSG:3857' +
              '&bbox=' + extent.join(',') + ',EPSG:3857';
          var xhr = new XMLHttpRequest();
          xhr.open('GET', url);
          var onError = function() {
-           wfsPointSource.removeLoadedExtent(extent);
+             console.log('Error in builing vector wfsPointSource');
+             wfsPointSource.removeLoadedExtent(extent);
          }
          xhr.onerror = onError;
          xhr.onload = function() {
@@ -179,21 +179,20 @@ function create_map() {
 	map.on('singleclick', showinfo);
 
     function showinfo(evt) {
-        var pixel = map.getEventPixel(evt.originalEvent);
 		var viewResolution = /** @type {number} */ (mapView.getResolution());
 		var url = wmsPointSource.getGetFeatureInfoUrl(
 			evt.coordinate, viewResolution, 'EPSG:3857',
 			{'INFO_FORMAT': 'text/html'});
 		// supported formats are [text/plain, text/html, application/vnd.ogc.gml]
         // console.log(evt.coordinate)
-  /*      var features = map.getFeaturesAtPixel(evt.pixel);
-        console.log(map.forEachLayerAtPixel(pixel));
-        console.log(map.forEachLayerAtPixel(map.getEventPixel(evt.originalEvent)));
+        var features = map.getFeaturesAtPixel(evt.pixel);
+        console.log(map.getFeaturesAtPixel(evt.pixel));
+        // console.log(map.forEachLayerAtPixel(map.getEventPixel(evt.originalEvent)));
         if (!features) {
           // info.innerText = '';
           // info.style.opacity = 0;
           return;
-        }*/
+        }
         // var properties = features[0].getProperties();
         // console.log(properties)
 		if (url) {
