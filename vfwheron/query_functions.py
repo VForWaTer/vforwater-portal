@@ -38,44 +38,12 @@ def get_sample_locations():
     return sample_location
 
 
-def build_point_sld(ids):
-    url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/selection"
-    # url = "http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/styles/new_point_style"
-    content = 'Content-type'
-    application = 'application/vnd.ogc.sld+xml'
-    with open(os.path.join(os.path.join(os.path.expanduser('~'), '.vforwater'), 'secret_geoserver.txt')) as f:
-        secret = f.read().strip()
-
-    print('1')
-    chosen_ids = ''
-    a = []
+def build_id_list(ids):
+    id_list = []
     for h in ids:
         for i in h.values():
-            a.append(i)
-            chosen_ids = chosen_ids+'<ogc:PropertyIsEqualTo><ogc:PropertyName>site_id</ogc:PropertyName>' \
-                                    '<ogc:Literal>' + str(i) + '</ogc:Literal></ogc:PropertyIsEqualTo>'
-    print(' ', a)
-
-    choice = '<Rule><Name>ChosenData</Name><Title>Chosen Datasets</Title><ogc:Filter><ogc:Or>' + chosen_ids + \
-             '</ogc:Or> </ogc:Filter><PointSymbolizer><Graphic><Mark><WellKnownName>circle' \
-             '</WellKnownName><Fill><CssParameter name="fill">#0033CC</CssParameter></Fill></Mark><Size>16</Size>' \
-             '</Graphic></PointSymbolizer></Rule>'
-
-    data = '<?xml version="1.0" encoding="ISO-8859-1"?><StyledLayerDescriptor version="1.0.0" ' \
-           'xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd" ' \
-           'xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc" ' \
-           'xmlns:xlink="http://www.w3.org/1999/xlink" ' \
-           'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><NamedLayer><Name>Attribute-based ' \
-           'point</Name><UserStyle><Title>Attribute-based ' \
-           'point</Title><FeatureTypeStyle><Rule><Name>AllData</Name><Title>All avaiable ' \
-           'Datensets</Title><PointSymbolizer><Graphic><Mark><WellKnownName>circle</WellKnownName><Fill><CssParameter ' \
-           'name="fill">#00DDFF</CssParameter></Fill></Mark><Size>5</Size></Graphic></PointSymbolizer></Rule>' + \
-           choice + '</FeatureTypeStyle></UserStyle>  </NamedLayer></StyledLayerDescriptor>'
-    # s = requests.put("http://vforwater-gis.scc.kit.edu:8080/geoserver/rest/workspaces/CAOS/styles/chosen_point", data=data,
-    #                  auth=(secret), headers={'content-type': 'application/vnd.ogc.sld+xml'})
-    s = eval("requests.put('"+url+"', data='"+data+"', auth=("+secret+"), headers={'"+content+"': '"+application+"'})")
-    print('send request: ', s.content, s.status_code)
-    return 0
+            id_list.append(i)
+    return id_list
 
 
 # def get_submenu_with_count(top_menu_value, selection, cache):

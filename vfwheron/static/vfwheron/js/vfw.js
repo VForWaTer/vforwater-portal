@@ -255,16 +255,15 @@ function onclick_show_datasets_func() {
         data: {
             onclick_show_datasets: 'True',
             'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
+        }, // data sent with post request
         success : function(json) {
-            console.log(json)
-            $.each(json, function(key1, value1) {
-                if (key1 == "results") {
-                    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + key1 + "'><span class='respo-medium'>You got " + value1 + " Datasets</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
-                } else if (key1 == "data_style") {
-                    console.log(WMSpointSource.getParams())
-                    WMSpointSource.updateParams({STYLES: value1}),
-                    WMSpointSource.refresh()
+            console.log('onclick_show_datasets_func: ',json)
+            $.each(json, function(key, value) {
+                if (key == "results") {
+                    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + key + "'><span class='respo-medium'>You got " + value + " Datasets</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+                } else if (key == "data_style") {
+                    selectedIds = value
+                    wfsPointLayer.changed()
                 }
                 })
         }
