@@ -38,7 +38,7 @@ def get_sample_locations():
     return sample_location
 
 
-def build_id_list(ids): 
+def build_id_list(ids):
     id_list = []
     for h in ids:
         for i in h.values():
