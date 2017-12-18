@@ -113,7 +113,7 @@ function create_map() {
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
             var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
-            //var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
+            // var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
                 'request=GetFeature&typename=CAOS:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
                 '&bbox=' + extent.join(',') + ',EPSG:3857';
             var xhr = new XMLHttpRequest();
@@ -200,10 +200,40 @@ function create_map() {
     });
 
 // get information about your data in a popup when you click on a data point in the map
-    map.on('singleclick', showinfo);
+      map.on('singleclick', showInfo);
 
-    function showinfo(evt) {
-        var viewResolution = /** @type {number} */ (mapView.getResolution());
+      function showInfo (evt) {
+        var coordinate = evt.coordinate;
+        var clickedFeatures = map.getFeaturesAtPixel(evt.pixel);
+        var properties = clickedFeatures[0].getProperties();
+        var clickedKeys = clickedFeatures[0].getKeys();
+        // TODO: kleinere Schrift und Table durch CSS stylen
+        var popupTextStyle = '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' /*+
+            '<span style="font-size: x-small; "/>>'*/
+        var popUpText = popupTextStyle+'<table>';
+        for (var i = 0; i < clickedKeys.length; i++) {
+            if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
+                clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
+                clickedKeys[i] != 'geometry') {
+                if (clickedKeys[i] == 'Vorname') {
+                    var name = properties[clickedKeys[i]]
+                }
+                else if (clickedKeys[i] == 'Nachname') {
+                    popUpText = popUpText + '<tr><td><b>Name</b></td><td>' + name + ' ' + properties[clickedKeys[i]] + '</td></tr>'
+                } else {
+                    popUpText = popUpText + '<tr><td><b>' + clickedKeys[i] + '</b></td><td>' + properties[clickedKeys[i]] + '</td></tr>'
+                }
+            }
+        }
+        // var buttons = ' <a> <input type="button" onclick="toggleLayer(vectorMap)" value="Vorschau">' +
+        //     ' '+'<input type="button" onclick="toggleLayer(vectorMap)" value="Datensatz übernehmen"></a>'
+        //
+        popUpText = popUpText + '</table>' /*+ buttons*/
+        content.innerHTML = popUpText;
+        overlay.setPosition(coordinate);
+      };
+    /*function showinfo(evt) {
+        var viewResolution = /** @type {number} *//* (mapView.getResolution());
         var url = wmsPointSource.getGetFeatureInfoUrl(
             evt.coordinate, viewResolution, 'EPSG:3857',
             {'INFO_FORMAT': 'text/html'});
@@ -222,7 +252,10 @@ function create_map() {
                 '<iframe seamless src=' + url + ' style="border: none; allowtransparency:true"></iframe>';
             overlay.setPosition(evt.coordinate);
         }
-    }
+    }*/
+
+    // select data with doubleclick
+    //map.on('doubleclick', selectDataset);
 
     /*comment the following in your development environment to avoid error messages*/
     map.on('pointermove', function (evt) {
