@@ -205,32 +205,37 @@ function create_map() {
       function showInfo (evt) {
         var coordinate = evt.coordinate;
         var clickedFeatures = map.getFeaturesAtPixel(evt.pixel);
-        var properties = clickedFeatures[0].getProperties();
-        var clickedKeys = clickedFeatures[0].getKeys();
-        // TODO: kleinere Schrift und Table durch CSS stylen
-        var popupTextStyle = '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' /*+
-            '<span style="font-size: x-small; "/>>'*/
-        var popUpText = popupTextStyle+'<table>';
-        for (var i = 0; i < clickedKeys.length; i++) {
-            if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
-                clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
-                clickedKeys[i] != 'geometry') {
-                if (clickedKeys[i] == 'Vorname') {
-                    var name = properties[clickedKeys[i]]
-                }
-                else if (clickedKeys[i] == 'Nachname') {
-                    popUpText = popUpText + '<tr><td><b>Name</b></td><td>' + name + ' ' + properties[clickedKeys[i]] + '</td></tr>'
-                } else {
-                    popUpText = popUpText + '<tr><td><b>' + clickedKeys[i] + '</b></td><td>' + properties[clickedKeys[i]] + '</td></tr>'
+        if (clickedFeatures != null) {
+            var properties = clickedFeatures[0].getProperties();
+            var clickedKeys = clickedFeatures[0].getKeys();
+            // TODO: kleinere Schrift und Table durch CSS stylen
+            var popupTextStyle = '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>'
+            /*+
+                       '<span style="font-size: x-small; "/>>'*/
+            var popUpText = popupTextStyle + '<table>';
+            for (var i = 0; i < clickedKeys.length; i++) {
+                if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
+                    clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
+                    clickedKeys[i] != 'geometry') {
+                    if (clickedKeys[i] == 'Vorname') {
+                        var name = properties[clickedKeys[i]]
+                    }
+                    else if (clickedKeys[i] == 'Nachname') {
+                        popUpText = popUpText + '<tr><td><b>Name</b></td><td>' + name + ' ' + properties[clickedKeys[i]] + '</td></tr>'
+                    } else {
+                        popUpText = popUpText + '<tr><td><b>' + clickedKeys[i] + '</b></td><td>' + properties[clickedKeys[i]] + '</td></tr>'
+                    }
                 }
             }
+            var buttons = ' <a> <input type="button" onclick="toggleLayer(vectorMap)" value="Vorschau">' +
+                ' ' + '<input type="button" onclick="toggleLayer(vectorMap)" value="Datensatz übernehmen"></a>'
+
+            popUpText = popUpText + '</table>' + buttons
+            content.innerHTML = popUpText;
+            overlay.setPosition(coordinate);
+        } else {
+            overlay.setPosition(undefined)
         }
-        // var buttons = ' <a> <input type="button" onclick="toggleLayer(vectorMap)" value="Vorschau">' +
-        //     ' '+'<input type="button" onclick="toggleLayer(vectorMap)" value="Datensatz übernehmen"></a>'
-        //
-        popUpText = popUpText + '</table>' /*+ buttons*/
-        content.innerHTML = popUpText;
-        overlay.setPosition(coordinate);
       };
     /*function showinfo(evt) {
         var viewResolution = /** @type {number} *//* (mapView.getResolution());
