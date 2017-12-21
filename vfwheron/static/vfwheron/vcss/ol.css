@@ -310,7 +310,8 @@
     border: 0.1px solid #e9f2f2;
     bottom: 12px;
     left: -50px;
-    min-width: 280px;
+    min-width: 400px;
+    opacity: inherit;
 }
 
 .ol-popup:after, .ol-popup:before {
@@ -341,7 +342,7 @@
     text-decoration: none;
     position: absolute;
     top: 2px;
-    right: 20px;
+    right: 10px;
 }
 
 .ol-popup-closer:after {

@@ -51,3 +51,10 @@ function Sidemenu_close() {
 	mySidemenu.style.display = "none";
 	overlaymenu.style.display = "none";
 }
+
+//Get the User Selection in Workspace
+function show_data() {
+    var workspaceData = document.getElementById('workdata').value;
+    console.log('startdata = ', workspaceData);
+    workspace_button.call(workspaceData)
+}

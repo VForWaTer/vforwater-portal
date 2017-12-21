@@ -1,6 +1,6 @@
 var data_style = null;
 var wfsPointLayer = null;
-var createSelectStyle = null;
+var createStyle = null;
 var wfsLayerName = 'ID_as_identifier';
 // var feature = null;
 var selectedIds = null;
@@ -79,7 +79,7 @@ function create_map() {
            }
            return style
          }*/
-    function createSelectStyle(feature) {
+    function createStyle(feature) {
         var style;
         if (selectedIds) {
             var name = feature.getId();
@@ -98,11 +98,11 @@ function create_map() {
                         })
                     })
                 })
-            }else {
+            } else {
                 // defaultStyle.getImage().setRadius(3)
                 // style = defaultStyle
             }
-        }else {
+        } else {
             style = defaultStyle
         }
 
@@ -112,8 +112,8 @@ function create_map() {
     var wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
-            // var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
+            // var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
+            var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
                 'request=GetFeature&typename=CAOS:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
                 '&bbox=' + extent.join(',') + ',EPSG:3857';
             var xhr = new XMLHttpRequest();
@@ -138,7 +138,7 @@ function create_map() {
     wfsPointLayer = new ol.layer.Vector({
         source: wfsPointSource,
         renderMode: 'image',
-        style: createSelectStyle //defaultStyle
+        style: createStyle //defaultStyle
     });
     // console.log('wfsPointLayer.getStyle(): ', wfsPointLayer.getStyle());
 
@@ -200,19 +200,20 @@ function create_map() {
     });
 
 // get information about your data in a popup when you click on a data point in the map
-      map.on('singleclick', showInfo);
+    map.on('singleclick', showInfo);
 
-      function showInfo (evt) {
+    function showInfo(evt) {
         var coordinate = evt.coordinate;
         var clickedFeatures = map.getFeaturesAtPixel(evt.pixel);
         if (clickedFeatures != null) {
+            var name = clickedFeatures[0].getId();
+            var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
             var properties = clickedFeatures[0].getProperties();
             var clickedKeys = clickedFeatures[0].getKeys();
-            // TODO: kleinere Schrift und Table durch CSS stylen
+            // TODO: CSS style überarbeiten
             var popupTextStyle = '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>'
-            /*+
-                       '<span style="font-size: x-small; "/>>'*/
-            var popUpText = popupTextStyle + '<table>';
+            var popUpText = popupTextStyle + '<table id="metaTable">';
+            // var popUpText = '<table class="respo-table">';
             for (var i = 0; i < clickedKeys.length; i++) {
                 if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
                     clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
@@ -227,37 +228,22 @@ function create_map() {
                     }
                 }
             }
-            var buttons = ' <a> <input type="button" onclick="toggleLayer(vectorMap)" value="Vorschau">' +
-                ' ' + '<input type="button" onclick="toggleLayer(vectorMap)" value="Datensatz übernehmen"></a>'
-
-            popUpText = popUpText + '</table>' + buttons
-            content.innerHTML = popUpText;
+            console.log('evt: ', clickedKeys)
+            var buttons = /*' <a> <input type="button" class="button " onclick="toggleLayer(vectorMap)" value="Vorschau">'+*/
+                '<a><b><input id="show_metafiltered_data" class="respo-btn-block" type="submit" ' +
+                'onclick="onclick_show_datasets_func()" value="Vorschau" data-toggle="tooltip" ' +
+                'title="Achtung! Das Laden der Vorschau kann lange dauern."></b></a>' +
+                '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
+                'onclick=\"workspace_dataset(\''+id+'\')\" value="Datensatz übernehmen" data-toggle="tooltip" ' +
+                'title="Den Datensatz in den Workspace übernehmen"></b></a>'
+            content.innerHTML = popUpText + '</table>' + buttons;
             overlay.setPosition(coordinate);
+
+            // '<tr onclick=\"getClickedUserObject(\'' + dict["value"][key].Initials + '\')\">';
         } else {
-            overlay.setPosition(undefined)
+            overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
-      };
-    /*function showinfo(evt) {
-        var viewResolution = /** @type {number} *//* (mapView.getResolution());
-        var url = wmsPointSource.getGetFeatureInfoUrl(
-            evt.coordinate, viewResolution, 'EPSG:3857',
-            {'INFO_FORMAT': 'text/html'});
-        // supported formats are [text/plain, text/html, application/vnd.ogc.gml]
-        var clickedFeatures = map.getFeaturesAtPixel(evt.pixel);
-        console.log('map.getFeaturesAtPixel: ', map.getFeaturesAtPixel(evt.pixel));
-        if (!clickedFeatures) {
-            // info.innerText = '';
-            // info.style.opacity = 0;
-            return;
-        }
-        // var properties = clickedFeatures[0].getProperties();
-        // console.log(properties)
-        if (url) {
-            document.getElementById('popup-content').innerHTML =
-                '<iframe seamless src=' + url + ' style="border: none; allowtransparency:true"></iframe>';
-            overlay.setPosition(evt.coordinate);
-        }
-    }*/
+    };
 
     // select data with doubleclick
     //map.on('doubleclick', selectDataset);

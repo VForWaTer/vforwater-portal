@@ -1,28 +1,41 @@
+import re
+
 from django.http.response import JsonResponse
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.auth import logout
 from django.shortcuts import redirect
-
 from django.core.cache import cache
 
 from .query_functions import get_bbox_from_data, build_id_list
 from vfwheron.models import FilterMenu
 
-import requests
 import logging
 import os
+
 # Create your views here.
 logger = logging.getLogger(__name__)
 
-
+# from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
+# cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
+# every time they open a browser.
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
+    # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
-        # data_style = 'Light Blue Circle'
         data_style = 'default'
-        return {'dataExt': get_bbox_from_data(), 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style}
+        print('+++ items: ', cache.get('workspaceData'))
+        print("+++ FilterMenu.get_menu('submenu'): ", FilterMenu.get_menu('submenu'))
+        print("+++ get_bbox_from_data(): ", get_bbox_from_data())
+        print("+++data_style: ", data_style)
+        # data_style = 'Light Blue Circle'
+        if cache.get('workspaceData') == None:
+            workspaceData = []
+        else:
+            workspaceData = cache.get('workspaceData')
+        return {'dataExt': get_bbox_from_data(), 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style,
+                'workspaceData': workspaceData}
 
 class menuView(TemplateView):
     # TODO: each time you click a new top menu the database is accessed --> implement cache!
@@ -65,12 +78,45 @@ class menuView(TemplateView):
 
         # available_datasets = build_topquery(cache)['results'] if selection_list else len(TblMeta.objects.all())
 
+        work_dataset = request.GET.get('workspaceData')
+        min_time = request.GET.get('minTime')
+        max_time = request.GET.get('maxTime')
+        if work_dataset:
+            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
+                         work_dataset
+            if min_time:
+                work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
+            if max_time:
+                work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
+            if 'work_dataset_list' in request.session:
+                if 'dataset' + work_dataset in request.session['work_dataset_list']:
+                    # TODO: Need timestamp in name to see if different selection
+                    print('A C H T U N G :  gibts schon!')
+                    return
+                else:
+                    request.session['work_dataset_list'].append('dataset' + work_dataset)
+            else:
+                request.session['work_dataset_list'] = ['dataset' + work_dataset]
+
+            request.session['dataset' + work_dataset] = work_query
+            cache.set('workspaceData', request.session['work_dataset_list'])
+            return JsonResponse({'workspaceData': request.session['work_dataset_list']})
+            #     print('** ** items : ** ** : ', request.session.items())
+            #     print('*****', request.session['dataset' + work_dataset])
+            # session_items = request.session.items()
+            # print('session_items: ', session_items)
+            # p = re.compile('\bdataset[\d]{0,5}\b')
+            # print('++***++****', p.match(session_items));
+            # print('+++ + ++ + + + ', request.session);
+            print('#+#+#+##+ ', request.session['work_dataset_list']);
+            # return work_dataset
+
         if request.GET.get('onclick_show_datasets'):
             # if cache.get('point_style_name'):
             #     cache.set({'point_style_name': False})
             # else:
             #     cache.set({'point_style_name': True})
-            result = FilterMenu.build_queryset(cache)
+            result = FilterMenu.build_queryset(cache);
             meta_ids = build_id_list(result)
             # locations = result.values('meta__site__id').distinct()  # location id for map
             # TODO: läuft nur wenn ich den Stylenamen ändere
@@ -83,7 +129,6 @@ class menuView(TemplateView):
 
 class show_datasets(TemplateView):
     def get(self, request):
-        print('Bin da! ** ** ** **', request)
         clicked_menu_value = request.GET
         return JsonResponse(FilterMenu.tick_submenu(clicked_menu_value['menu']))
 
@@ -115,7 +160,6 @@ class LogoutView(View):
         self.logout(request)
         return redirect('vfwheron:login')
 
-    
+
 class HelpView(TemplateView):
     template_name = 'vfwheron/help.html'
-    
