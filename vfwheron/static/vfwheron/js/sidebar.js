@@ -55,6 +55,22 @@ function Sidemenu_close() {
 //Get the User Selection in Workspace
 function show_data() {
     var workspaceData = document.getElementById('workdata').value;
-    console.log('startdata = ', workspaceData);
-    workspace_button.call(workspaceData)
+	if (workspaceData !== "[]"){
+		workspaceData = workspaceData.slice(workspaceData.indexOf("'"), workspaceData.lastIndexOf("'"));
+		workspaceData = workspaceData.replace(/'/g, "");
+	    workspace_button({'workspaceData': workspaceData.split(", ")})}
+}
+
+function workspace_button(json) {
+    if (json !== undefined) {
+        $.each(json['workspaceData'], function (key, value) {
+            // check which buttons already exist before creating a new one:
+            if (document.getElementById(value) === null) {
+                document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + value + "'>" +
+                    "<span class='respo-medium'>" + value + "</span><a href='javascript:void(0)'" +
+                    "onclick=this.parentElement.remove(); class='espo-hover-white respo-right'><i " +
+                    "class='fa fa-remove fa-fw'></i></a><br></li>";
+            }
+        })
+    }
 }

@@ -109,11 +109,93 @@ function create_map() {
         return style
     };
 
+  //  next thing to try: cluster data:
+  /*var maxFeatureCount, wfsPointLayer;
+      function calculateClusterInfo(resolution) {
+        maxFeatureCount = 0;
+        var features = wfsPointLayer.getSource().getFeatures();
+        console.log('features: ', features.length)
+        var feature, radius;
+        for (var i = features.length - 1; i >= 0; --i) {
+          feature = features[i];
+          var originalFeatures = feature.get('features');
+          console.log('originalFeatures: ', originalFeatures)
+          var extent = ol.extent.createEmpty();
+          var j, jj;
+          for (j = 0, jj = originalFeatures.length; j < jj; ++j) {
+            ol.extent.extend(extent, originalFeatures[j].getGeometry().getExtent());
+          }
+          maxFeatureCount = Math.max(maxFeatureCount, jj);
+          radius = 0.25 * (ol.extent.getWidth(extent) + ol.extent.getHeight(extent)) /
+              resolution;
+          feature.set('radius', radius);
+        }
+      }
+
+    var currentResolution;
+    function styleFunction(feature, resolution) {
+        if (resolution != currentResolution) {
+          calculateClusterInfo(resolution);
+          currentResolution = resolution;
+        }
+        var style;
+        var size = feature.get('features').length;
+        if (size > 1) {
+          style = new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: feature.get('radius'),
+              fill: new ol.style.Fill({
+                color: [255, 153, 0, Math.min(0.8, 0.4 + (size / maxFeatureCount))]
+              })
+            }),
+            text: new ol.style.Text({
+              text: size.toString(),
+              fill: textFill,
+              stroke: textStroke
+            })
+          });
+        } else {
+          var originalFeature = feature.get('features')[0];
+          style = createStyle(originalFeature);
+        }
+        return style;
+      }
+*/
+
+  // works more or less... but first fix sidebar
+    /*var styleCache = {};
+    function clusterStyle (feature) {
+          var size = feature.get('features').length;
+          var style = styleCache[size];
+          if (!style) {
+            style = new ol.style.Style({
+              image: new ol.style.Circle({
+                radius: 10,
+                stroke: new ol.style.Stroke({
+                  color: 'black',
+                  width: 0.5
+                }),
+                fill: new ol.style.Fill({
+                  color: 'blue'
+                })
+              }),
+              text: new ol.style.Text({
+                text: size.toString(),
+                fill: new ol.style.Fill({
+                  color: 'white'
+                })
+              })
+            });
+            styleCache[size] = style;
+          }
+          return style;
+        }*/
+
     var wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
             var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
-            // var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
+            //var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
                 'request=GetFeature&typename=CAOS:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
                 '&bbox=' + extent.join(',') + ',EPSG:3857';
             var xhr = new XMLHttpRequest();
@@ -136,10 +218,16 @@ function create_map() {
         },
         strategy: ol.loadingstrategy.bbox
     });
+// works more or less 2; first fix sidebar
+/*    var clusterSource = new ol.source.Cluster({
+        distance: 10,   //parseInt(distance.value, 10),
+        source: wfsPointSource
+    });*/
+
     wfsPointLayer = new ol.layer.Vector({
-        source: wfsPointSource,
+        source: wfsPointSource, //clusterSource,//wfsPointSource,
         renderMode: 'image',
-        style: createStyle //defaultStyle
+        style: createStyle//clusterStyle//styleFunction//defaultStyle
     });
     // console.log('wfsPointLayer.getStyle(): ', wfsPointLayer.getStyle());
 

@@ -299,16 +299,3 @@ function workspace_dataset(id) {
         "class='fa fa-remove fa-fw'></i></a><br></li>";
 */
 }
-
-function workspace_button(json) {
-    console.log('workspace_button: ', json)
-        $.each(json['workspaceData'], function (key, value) {
-            // check which buttons already exist before creating a new one:
-            if  (document.getElementById(value) === null) {
-                document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + value + "'>" +
-                    "<span class='respo-medium'>" + value + "</span><a href='javascript:void(0)'" +
-                    "onclick=this.parentElement.remove(); class='espo-hover-white respo-right'><i " +
-                    "class='fa fa-remove fa-fw'></i></a><br></li>";
-            }
-            })
-}
