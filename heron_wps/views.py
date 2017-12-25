@@ -1,6 +1,7 @@
 #from inspect import getmembers
 
 from django.shortcuts import render
+from django.core.cache import cache
 
 from heron_wps.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 #from heron_wps.forms import InputForm
@@ -11,8 +12,12 @@ def home(request):
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
     wps_services = list_wps_service_engines()
+    if cache.get('workspaceData') == None:
+        workspaceData = []
+    else:
+        workspaceData = cache.get('workspaceData')
 
-    context = {'wps_services': wps_services}
+    context = {'wps_services': wps_services, 'workspaceData': workspaceData}
 
     return render(request, 'heron_wps/home.html', context)
 
