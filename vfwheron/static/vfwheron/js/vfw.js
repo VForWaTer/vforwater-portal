@@ -270,10 +270,10 @@ function onclick_show_datasets_func() {
             console.log('onclick_show_datasets_func: ', json)
             $.each(json, function (key, value) {
                 if (key == "results") {
-                    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + key + "'>" +
+                    /*document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + key + "'>" +
                         "<span class='respo-medium'>You got " + value + " Datasets</span><a href='javascript:void(0)'" +
                         "onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i " +
-                        "class='fa fa-remove fa-fw'></i></a><br></li>";
+                        "class='fa fa-remove fa-fw'></i></a><br></li>";*/
                 } else if (key == "data_style") {
                     selectedIds = value
                     wfsPointLayer.changed()
@@ -291,11 +291,28 @@ function workspace_dataset(id) {
             workspaceData: id,
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function(json) {workspace_button(json)}
+        success: function(json) {workspace_button(json)} // function in sidebar.js
     });/*
     document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + id + "'>" +
         "<span class='respo-medium' data-toggle=\"tooltip\" title="+metaTable+">You got Dataset #" + id + " </span><a href='javascript:void(0)'" +
         "onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i " +
         "class='fa fa-remove fa-fw'></i></a><br></li>";
 */
+}
+
+function show_preview(id) {
+    console.log('you clicked preview: ', id)
+    $.ajax({
+        url: "/vfwheron/menu",
+        datatype: 'image/png;base64',
+        data: {
+            preview: id,
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function(json) {
+            $.each(json, function (key, value) {
+                document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value;
+            });
+        }
+    });
 }

@@ -26,9 +26,9 @@ function create_map() {
         center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
         zoom: 6,
         maxZoom: 18,
-        minZoom: 2
+        minZoom: 2,
     });
-
+    mapView.animate({duration: 5000}, {easing: 'elastic'});
     // wms layer for use on a local machine
     var wmsPointSource = new ol.source.TileWMS({
         url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
@@ -194,8 +194,8 @@ function create_map() {
     var wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
-            //var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
+            //var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
+            var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
                 'request=GetFeature&typename=CAOS:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
                 '&bbox=' + extent.join(',') + ',EPSG:3857';
             var xhr = new XMLHttpRequest();
@@ -236,8 +236,8 @@ function create_map() {
     var content = document.getElementById('popup-content');
     var closer = document.getElementById('popup-closer');
 
-// Create an overlay to anchor the popup to the map.
-    var overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+// Create an metaData_Overlay to anchor the popup to the map.
+    var metaData_Overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
         element: container,
         autoPan: true,
         autoPanAnimation: {
@@ -247,7 +247,7 @@ function create_map() {
 
     /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
     closer.onclick = function () {
-        overlay.setPosition(undefined);
+        metaData_Overlay.setPosition(undefined);
         closer.blur();
         return false;
     };
@@ -264,12 +264,12 @@ function create_map() {
     var map_tar = document.getElementById("map");
     var map = new ol.Map({
         // renderer: 'canvas',
-        overlays: [overlay],
+        overlays: [metaData_Overlay],
         target: map_tar,
         layers: [mapLayer, vectorLayer, wfsPointLayer], // *works only your local geoserver
         // layers: [mapLayer, vectorLayer, wmsPointLayer], // *datapoints on a local machine
         controls: [
-            new ol.control.Zoom(),
+            new ol.control.Zoom({duration: 300}),
             new ol.control.Attribution(),
             new ol.control.ZoomSlider(),
             new ol.control.MousePosition({
@@ -282,12 +282,14 @@ function create_map() {
             new ol.control.ZoomToExtent({ // zoom button
                 label: 'Z',
                 tipLabel: 'Auf die verfügbaren Daten zoomen',
-                extent: dataExt
+                extent: dataExt,
+                duration: 2500,
+                animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
             })
         ],
         view: mapView//dataview
     });
-
+    //mapView.fit(dataExt, {duration: 15000});
 // get information about your data in a popup when you click on a data point in the map
     map.on('singleclick', showInfo);
 
@@ -300,9 +302,9 @@ function create_map() {
             var properties = clickedFeatures[0].getProperties();
             var clickedKeys = clickedFeatures[0].getKeys();
             // TODO: CSS style überarbeiten
-            var popupTextStyle = '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>'
-            var popUpText = popupTextStyle + '<table id="metaTable">';
-            // var popUpText = '<table class="respo-table">';
+            var popupTableBeforeMeta = '<table id="popupTable"><td>'
+            var popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>'
+            var popUpText = popupTableBeforeMeta + popupTextStyle + '<table id="metaTable">';
             for (var i = 0; i < clickedKeys.length; i++) {
                 if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
                     clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
@@ -317,23 +319,20 @@ function create_map() {
                     }
                 }
             }
-            console.log('evt: ', clickedKeys)
-            var buttons = /*' <a> <input type="button" class="button " onclick="toggleLayer(vectorMap)" value="Vorschau">'+*/
-                '<a><b><input id="show_metafiltered_data" class="respo-btn-block" type="submit" ' +
-                'onclick="onclick_show_datasets_func()" value="Vorschau" data-toggle="tooltip" ' +
+            var buttons = '<a><b><input id="show_metafiltered_data" class="respo-btn-block" type="submit" ' +
+                'onclick=\"show_preview(\''+id+'\')\" value="Vorschau" data-toggle="tooltip" ' +
                 'title="Achtung! Das Laden der Vorschau kann lange dauern."></b></a>' +
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
                 'onclick=\"workspace_dataset(\''+id+'\')\" value="Datensatz übernehmen" data-toggle="tooltip" ' +
-                'title="Den Datensatz in den Workspace übernehmen"></b></a>'
-            content.innerHTML = popUpText + '</table>' + buttons;
-            overlay.setPosition(coordinate);
-
-            // '<tr onclick=\"getClickedUserObject(\'' + dict["value"][key].Initials + '\')\">';
+                'title="Den Datensatz in den Workspace übernehmen"></b></a>';
+            var popupTableAfterMeta = popUpText + '</table>' + buttons
+            var img_preview = '</td><td><p id = "preview_img" ></p></td></table>'
+            content.innerHTML =  popupTableAfterMeta + img_preview;
+            metaData_Overlay.setPosition(coordinate);
         } else {
-            overlay.setPosition(undefined) // removes popup from map when clicked on map
+            metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
     };
-
 
     // select data with doubleclick
     //map.on('doubleclick', selectDataset);
@@ -354,3 +353,5 @@ function create_map() {
     });
 
 }
+
+

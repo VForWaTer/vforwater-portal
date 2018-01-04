@@ -33,11 +33,13 @@
 			<option value="Soil">Luxembourg</option>
 		  </select>
 	</div>
-		<input type="button" onclick="toggleLayer(vectorMap)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp;
+		<input type="button" onclick="toggleLayer(vectorLayer)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp;
 
     	<div id="popup" class="ol-popup">
-      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-      <div id="popup-content"></div>
+            <div id="popup-content">
+            </div>
+{#            <img id="preview_img" src="" alt="Keine Vorschau verfügbar"/>#}
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
     </div>
 </body>
 

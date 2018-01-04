@@ -1,15 +1,24 @@
+import base64
 import re
 
-from django.http.response import JsonResponse
+from io import StringIO, BytesIO
+
+from django.db import connections
+from django.http.response import JsonResponse, HttpResponse
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.core.cache import cache
+from matplotlib import pylab
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib.dates import DateFormatter
+from matplotlib.figure import Figure
 
 from .query_functions import get_bbox_from_data, build_id_list
-from vfwheron.models import FilterMenu
+from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
 
+import matplotlib.pyplot as plt
 import logging
 import os
 
@@ -25,10 +34,10 @@ class HomeView(TemplateView):
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
         data_style = 'default'
-        print('+++ items: ', cache.get('workspaceData'))
-        print("+++ FilterMenu.get_menu('submenu'): ", FilterMenu.get_menu('submenu'))
-        print("+++ get_bbox_from_data(): ", get_bbox_from_data())
-        print("+++data_style: ", data_style)
+        #print('+++ items: ', cache.get('workspaceData'))
+        #print("+++ FilterMenu.get_menu('submenu'): ", FilterMenu.get_menu('submenu'))
+        #print("+++ get_bbox_from_data(): ", get_bbox_from_data())
+        #print("+++data_style: ", data_style)
         # data_style = 'Light Blue Circle'
         if cache.get('workspaceData') == None:
             workspaceData = []
@@ -101,15 +110,38 @@ class menuView(TemplateView):
             request.session['dataset' + work_dataset] = work_query
             cache.set('workspaceData', request.session['work_dataset_list'])
             return JsonResponse({'workspaceData': request.session['work_dataset_list']})
-            #     print('** ** items : ** ** : ', request.session.items())
-            #     print('*****', request.session['dataset' + work_dataset])
-            # session_items = request.session.items()
-            # print('session_items: ', session_items)
-            # p = re.compile('\bdataset[\d]{0,5}\b')
-            # print('++***++****', p.match(session_items));
-            # print('+++ + ++ + + + ', request.session);
-            print('#+#+#+##+ ', request.session['work_dataset_list']);
-            # return work_dataset
+
+        if 'preview' in request.GET:
+            preview = request.GET.get('preview')
+            label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name', 'variable__variable_symbol',
+                                                                   'variable__unit__unit_abbrev')
+            ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
+            cursor = connections['vforwater'].cursor()  # connect to database
+            cursor.execute(
+                'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = %s' % preview)
+            m = cursor.fetchall()
+            cursor.close()
+            plt.plot([row[0] for row in m], [row[1] for row in m])
+            plt.tight_layout()
+            # plt.autofmt_xdate()
+            plt.xlabel('Date')
+            plt.ylabel(ylabel)
+            plt.title('Preview Dataset')
+            plt.grid(True)
+
+            F = plt.gcf()
+            DPI = F.get_size_inches()
+            print('DPI: ', DPI)
+            imgSize = [4.8, 3.6]
+            print('size: ', imgSize)
+            F.set_size_inches(imgSize)
+            print(F)
+
+            figstring = StringIO()
+            plt.savefig(figstring, dpi=50, format='svg')
+            figstring.seek(0)
+            plt.close()
+            return JsonResponse({'get': figstring.getvalue()})
 
         if request.GET.get('onclick_show_datasets'):
             # if cache.get('point_style_name'):
