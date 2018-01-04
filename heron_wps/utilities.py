@@ -1,7 +1,5 @@
 from urllib.error import HTTPError, URLError
 
-#from tethys_apps.base.app_base import TethysAppBase
-
 from owslib.wps import WebProcessingService
 from .models import WebProcessingService as WpsModel
 
