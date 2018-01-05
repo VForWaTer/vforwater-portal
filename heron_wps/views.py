@@ -12,13 +12,9 @@ def home(request):
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
     wps_services = list_wps_service_engines()
-    if cache.get('workspaceData') == None:
-        workspaceData = []
-    else:
-        workspaceData = cache.get('workspaceData')
 
     context = {'wps_services': wps_services,
-               'workspaceData': workspaceData}
+               'workspaceData': getworkspacedata()}
 
     return render(request, 'heron_wps/home.html', context)
 
@@ -27,16 +23,9 @@ def service(request, service):
     """
     View that lists the processes for a given service.
     """
-
-    wps = get_wps_service_engine(service)
-    if cache.get('workspaceData') == None:
-        workspaceData = []
-    else:
-        workspaceData = cache.get('workspaceData')
-
     context = {'wps': wps,
                'service': service,
-               'workspaceData': workspaceData}
+               'workspaceData': getworkspacedata()}
 
     return render(request, 'heron_wps/service.html', context)
 
@@ -49,15 +38,10 @@ def process(request, service, identifier):
     wps = get_wps_service_engine(service)
     wps_process = wps.describeprocess(identifier)
 
-    if cache.get('workspaceData') == None:
-        workspaceData = []
-    else:
-        workspaceData = cache.get('workspaceData')
-
     context = {'process': wps_process,
                'service': service,
                'is_link': abstract_is_link(wps_process),
-               'workspaceData': workspaceData}
+               'workspaceData': getworkspacedata()}
 
     if request.method == 'POST': # If the form has been submitted...
 #        form = form_class(request.POST) # A form bound to the POST data        
@@ -93,10 +77,17 @@ def process(request, service, identifier):
                      'outputs': outputs,
                      'output_reference': output_reference,
                      'execution_status': execution_status,
-                     'workspaceData': workspaceData
+                     'workspaceData': getworkspacedata()
                     }
     
         return render(request, 'heron_wps/result.html', context_p)
     
     return render(request, 'heron_wps/process.html', context)
 
+
+def getworkspacedata():
+    if cache.get('workspaceData') == None:
+        workspaceData = []
+    else:
+        workspaceData = cache.get('workspaceData')
+    return workspaceData
