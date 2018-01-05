@@ -10,17 +10,18 @@
 <div class="respo-container respo-light-turquoise">
     <b title="Sammlung von Werkzeugen/Methoden zur Datenverarbeitung.">Werkzeugkiste </b>
 </div>
-
-<i class="respo-padding fa fa-cog fa-fw"></i>
-<select class="respo-select" id="select_process" autocomplete="off">
-    <option value="0" selected="selected">Wählen Sie ein Werkzeug</option>
-    {% for process in wps.processes %}
-        <option value="{% url 'wps:process' service=service identifier=process.identifier %}">{{ process.title }}
-        </option>
-    {% empty %}
-        <option value="Aggregate">Aggregate</option>
-        <option value="Interpolate">Interpolate</option>
-        <option value="Regression">Regression</option>
-        <option value="NA-Models">NA-Models</option>
-    {% endfor %}
-</select>
+<p>
+<div class="respo-container respo-dropdown-hover">
+    <div class="nav respo-dropdown-click"><b>Wählen Sie hier Ihr Werkzeug</b></div>
+    <div class="respo-dropdown-content">
+        {% for process in wps.processes %}
+            <a class="respo-hover-blue nav" href="{% url 'wps:process' service=service identifier=process.identifier %}">{{ process.title }}</a>
+        {% empty %}
+            <option class="respo-hover-blue nav" value="Aggregate">Aggregate</option>
+            <option class="respo-hover-blue nav" value="Interpolate">Interpolate</option>
+            <option class="respo-hover-blue nav" value="Regression">Regression</option>
+            <option class="respo-hover-blue nav" value="NA-Models">NA-Models</option>
+        {% endfor %}
+    </div>
+</div>
+</p>
