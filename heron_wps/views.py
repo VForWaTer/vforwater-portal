@@ -12,8 +12,14 @@ def home(request):
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
     wps_services = list_wps_service_engines()
-    service = 'PyWPS_vforwater'
-    wps = get_wps_service_engine(service)
+
+    try:
+        service = 'PyWPS_vforwater'
+        wps = get_wps_service_engine(service)
+    except:
+        print('--- No PyWPS_vforwater available')
+        service = ''
+        wps = []
 
     context = {'wps_services': wps_services,
                'wps': wps,
