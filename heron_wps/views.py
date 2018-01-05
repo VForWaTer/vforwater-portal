@@ -12,10 +12,12 @@ def home(request):
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
     wps_services = list_wps_service_engines()
+    service = 'PyWPS_vforwater'
+    wps = get_wps_service_engine(service)
 
     context = {'wps_services': wps_services,
                'wps': wps,
-               'service': 'PyWPS_vforwater',
+               'service': service,
                'workspaceData': getworkspacedata()}
 
     return render(request, 'heron_wps/home.html', context)
@@ -25,6 +27,8 @@ def service(request, service):
     """
     View that lists the processes for a given service.
     """
+    wps = get_wps_service_engine(service)
+
     context = {'wps': wps,
                'service': service,
                'workspaceData': getworkspacedata()}
