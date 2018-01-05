@@ -14,6 +14,8 @@ def home(request):
     wps_services = list_wps_service_engines()
 
     context = {'wps_services': wps_services,
+               'wps': wps,
+               'service': 'PyWPS_vforwater',
                'workspaceData': getworkspacedata()}
 
     return render(request, 'heron_wps/home.html', context)
