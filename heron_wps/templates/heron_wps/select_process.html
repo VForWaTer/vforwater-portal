@@ -15,8 +15,8 @@
 <select class="respo-select" id="select_process" autocomplete="off">
     <option value="0" selected="selected">Wählen Sie ein Werkzeug</option>
     {% for process in wps.processes %}
-        <option title={{ process.abstract }}>{{ process.title }}
-            <a href="#">{% url 'wps:process' service=service identifier=process.identifier %}</a>
+        <option value="{% url 'wps:process' service=service identifier=process.identifier %}"
+                        title={{ process.abstract }}>{{ process.title }}
         </option>
     {% empty %}
         <option value="Aggregate">Aggregate</option>
