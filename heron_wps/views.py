@@ -53,7 +53,9 @@ def process(request, service, identifier):
     context = {'process': wps_process,
                'service': service,
                'is_link': abstract_is_link(wps_process),
-               'workspaceData': getworkspacedata()}
+               'workspaceData': getworkspacedata(),
+               'wps': wps,
+               }
 
     if request.method == 'POST': # If the form has been submitted...
 #        form = form_class(request.POST) # A form bound to the POST data        
