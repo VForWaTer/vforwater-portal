@@ -17,7 +17,8 @@ def home(request):
     else:
         workspaceData = cache.get('workspaceData')
 
-    context = {'wps_services': wps_services, 'workspaceData': workspaceData}
+    context = {'wps_services': wps_services,
+               'workspaceData': workspaceData}
 
     return render(request, 'heron_wps/home.html', context)
 
@@ -28,9 +29,14 @@ def service(request, service):
     """
 
     wps = get_wps_service_engine(service)
+    if cache.get('workspaceData') == None:
+        workspaceData = []
+    else:
+        workspaceData = cache.get('workspaceData')
 
     context = {'wps': wps,
-               'service': service}
+               'service': service,
+               'workspaceData': workspaceData}
 
     return render(request, 'heron_wps/service.html', context)
 
@@ -46,7 +52,12 @@ def process(request, service, identifier):
     context = {'process': wps_process,
                'service': service,
                'is_link': abstract_is_link(wps_process)}
-    
+
+    if cache.get('workspaceData') == None:
+        workspaceData = []
+    else:
+        workspaceData = cache.get('workspaceData')
+
     if request.method == 'POST': # If the form has been submitted...
 #        form = form_class(request.POST) # A form bound to the POST data        
 #        if form.is_valid(): # All validation rules pass
@@ -80,7 +91,8 @@ def process(request, service, identifier):
                      'processid': processid,
                      'outputs': outputs,
                      'output_reference': output_reference,
-                     'execution_status': execution_status
+                     'execution_status': execution_status,
+                     'workspaceData': workspaceData
                     }
     
         return render(request, 'heron_wps/result.html', context_p)
