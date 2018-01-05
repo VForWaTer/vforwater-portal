@@ -49,14 +49,15 @@ def process(request, service, identifier):
     wps = get_wps_service_engine(service)
     wps_process = wps.describeprocess(identifier)
 
-    context = {'process': wps_process,
-               'service': service,
-               'is_link': abstract_is_link(wps_process)}
-
     if cache.get('workspaceData') == None:
         workspaceData = []
     else:
         workspaceData = cache.get('workspaceData')
+
+    context = {'process': wps_process,
+               'service': service,
+               'is_link': abstract_is_link(wps_process),
+               'workspaceData': workspaceData}
 
     if request.method == 'POST': # If the form has been submitted...
 #        form = form_class(request.POST) # A form bound to the POST data        
