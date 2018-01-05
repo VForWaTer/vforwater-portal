@@ -356,6 +356,7 @@ class FilterMenu(models.Manager):
                         sub_struct.update({value: {str(key): False for key in query_set}})
             if sub_struct:
                 general_struct.append({menu.menu_name: sub_struct})
+        #print ('menu to send: ', general_struct)
         return general_struct
 
     # TODO: Can this be integrated in get_menu ? Might become confusing...
