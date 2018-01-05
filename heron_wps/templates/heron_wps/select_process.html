@@ -15,19 +15,15 @@
     <div class="nav respo-dropdown-click"><b>Wählen Sie hier Ihr Werkzeug</b></div>
     <div class="respo-dropdown-content">
         {% for process in wps.processes %}
-            {% spaceless %}
             <a class="respo-hover-blue nav"
                href="{% url 'wps:process' service=service identifier=process.identifier %}"
-               title="{{ process.abstract }}">{{ process.title }}
+               title="{{ process.abstract|cut:"  " }}">{{ process.title }}
             </a>
-            {% endspaceless %}
         {% empty %}
-            {% spaceless %}
             <option class="respo-hover-blue nav" value="Aggregate" title="Aggregates Data">Aggregate</option>
             <option class="respo-hover-blue nav" value="Interpolate" title="Interpolates Datasets">Interpolate</option>
             <option class="respo-hover-blue nav" value="Regression" title="Makes an obsession of your regression">Regression</option>
             <option class="respo-hover-blue nav" value="NA-Models" title="Na na na na, na na na na, hey hey, goodbye">NA-Models</option>
-            {% endspaceless %}
         {% endfor %}
     </div>
 </div>
