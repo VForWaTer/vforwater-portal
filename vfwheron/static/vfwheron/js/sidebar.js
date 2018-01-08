@@ -66,11 +66,31 @@ function workspace_button(json) {
         $.each(json['workspaceData'], function (key, value) {
             // check which buttons already exist before creating a new one:
             if (document.getElementById(value) === null) {
-                document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + value + "'>" +
-                    "<span class='respo-medium'>" + value + "</span><a href='javascript:void(0)'" +
-                    "onclick=this.parentElement.remove(); class='espo-hover-white respo-right'><i " +
-                    "class='fa fa-remove fa-fw'></i></a><br></li>";
+            	var removeValues = "'" + value + "'"
+				document.getElementById("workspace").innerHTML += '<li class="respo-padding" id="' + value + '">' +
+					'<span class="respo-medium">' + value + '</span><a href="javascript:void(0)"' +
+					'onclick="remove_data('+removeValues+')"; class="respo-hover-white respo-right"><i ' +
+					'class="fa fa-remove fa-fw"></i></a><br></li>';
             }
         })
     }
+}
+
+var csrf_token = getCookie('csrftoken');
+// Remove data / elements from workspace
+function remove_data(removeData) {
+    // remove data from portal:
+    document.getElementById(removeData).remove()
+    // remove data from session:
+    $.ajax({
+        url: "/vfwheron/menu",
+        datatype: 'json',
+        data: {
+            remover: removeData,
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (json) {
+        },
+    });
+//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }

@@ -111,6 +111,13 @@ class menuView(TemplateView):
             cache.set('workspaceData', request.session['work_dataset_list'])
             return JsonResponse({'workspaceData': request.session['work_dataset_list']})
 
+        remove_dataset = request.GET.get('remover')
+        if remove_dataset:
+            request.session['work_dataset_list'].remove(remove_dataset)
+            cache.set('workspaceData', request.session['work_dataset_list'])
+
+        return JsonResponse({'workspaceData': request.session['work_dataset_list']})
+
         if 'preview' in request.GET:
             preview = request.GET.get('preview')
             label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name', 'variable__variable_symbol',

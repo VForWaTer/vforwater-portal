@@ -174,6 +174,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// TODO: not used in this file. So from where comes the used token? Which one is better?
 var csrftoken = getCookie('csrftoken');
 
 
@@ -215,14 +216,11 @@ $(document).ready(function (menuTitle) {
             }, // data sent with the post request
             success: function (json) {
                 $.each(json, function (key1, value1) { // loop over top level menu z.B. key1 = Geologie
-                    //                    var newMenuButton = ('#'+key1)
                     var newHTML = '';
                     var newMenu = '';
                     $.each(value1, function (key2, value2) { // loop over sub menu z.B. key2 = Sandstone
                         if (key2 != 'null') {
                             var selectedData = "['" + key2 + "', '" + key1 + "']"
-//                            var selectedData = "'"+ key2 +"'"
-//                            console.log('value 2 ist: ', value2[1])
                             var bool = ''
                             if (value2[0]) {
                                 bool = 'checked'
