@@ -101,15 +101,13 @@ class menuView(TemplateView):
             request.session['dataset' + work_dataset] = work_query
             cache.set('workspaceData', request.session['work_dataset_list'])
             return JsonResponse({'workspaceData': request.session['work_dataset_list']})
-            #     print('** ** items : ** ** : ', request.session.items())
-            #     print('*****', request.session['dataset' + work_dataset])
-            # session_items = request.session.items()
-            # print('session_items: ', session_items)
-            # p = re.compile('\bdataset[\d]{0,5}\b')
-            # print('++***++****', p.match(session_items));
-            # print('+++ + ++ + + + ', request.session);
-            print('#+#+#+##+ ', request.session['work_dataset_list']);
-            # return work_dataset
+
+        remove_dataset = request.GET.get('remover')
+        if remove_dataset:
+            request.session['work_dataset_list'].remove(remove_dataset)
+            cache.set('workspaceData', request.session['work_dataset_list'])
+
+        return JsonResponse({'workspaceData': request.session['work_dataset_list']})
 
         if request.GET.get('onclick_show_datasets'):
             # if cache.get('point_style_name'):
