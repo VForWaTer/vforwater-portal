@@ -122,52 +122,22 @@ class menuView(TemplateView):
             return JsonResponse({'workspaceData': request.session['work_dataset_list']})
 
         if 'preview' in request.GET:
-            # plot svg the Strobl way:
-            # preview = request.GET.get('preview')
-            # label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name', 'variable__variable_symbol',
-            #                                                        'variable__unit__unit_abbrev')
-            # ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
-            # cursor = connections['vforwater'].cursor()  # connect to database
-            # cursor.execute(
-            #     'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = %s' % preview)
-            # m = cursor.fetchall()
-            # cursor.close()
-            # plt.plot([row[0] for row in m], [row[1] for row in m])
-            # plt.tight_layout()
-            # # plt.autofmt_xdate()
-            # plt.xlabel('Date')
-            # plt.ylabel(ylabel)
-            # plt.title('Preview Dataset')
-            # plt.grid(True)
-            #
-            # F = plt.gcf()
-            # DPI = F.get_size_inches()
-            # print('DPI: ', DPI)
-            # imgSize = [4.8, 3.6]
-            # print('size: ', imgSize)
-            # F.set_size_inches(imgSize)
-            # print(F)
-            #
-            # figstring = StringIO()
-            # plt.savefig(figstring, dpi=50, format='svg')
-            # figstring.seek(0)
-            # plt.close()
-            # return JsonResponse({'get': figstring.getvalue()})
-
             # plot png the mälicke way:
             preview = request.GET.get('preview')
             label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name',
                                                                    'variable__variable_symbol',
                                                                    'variable__unit__unit_abbrev')
             ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
-            cursor = connections['vforwater'].cursor()  # connect to database
+
+            # connect to database
+            cursor = connections['vforwater'].cursor()
             cursor.execute(
                 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = %s' % preview)
             m = cursor.fetchall()
             cursor.close()
+
+            # create image
             fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-            # ax.plot(range(12), regime.values, '-b', lw=2)
-            # ax.set_xticks(range(12))
             ax.plot([row[0] for row in m], [row[1] for row in m], '-b', lw=2)
             fig.autofmt_xdate(),
             ax.set_xlabel('Date')

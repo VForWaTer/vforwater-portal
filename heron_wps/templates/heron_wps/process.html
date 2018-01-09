@@ -23,7 +23,7 @@
   <!-- INPUT DATA DESCRIPTION -->
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
-      <h2>Input</h2>                             
+      <h2>Input</h2>
 	  <form role="form" action="" method="post">{% csrf_token %}
       <div class="list-group">
         {% for input in process.dataInputs %}
@@ -43,6 +43,9 @@
 
 	        <div class="form-group">
 	            <label for="input">{{ input.title }}</label>
+                {%  if "sql" in input.title  %}
+                    <p> Here is something with sql</p>
+                {%  endif %}
 	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>
 	        </div>
             <p class="list-group-item-text attribute">Min. Occurrences: {{ input.minOccurs }}</p>
