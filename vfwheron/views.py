@@ -150,6 +150,13 @@ class menuView(TemplateView):
             plt.close()
             return JsonResponse({'get': figstring.getvalue()})
 
+        remove_dataset = request.GET.get('remover')
+        if remove_dataset:
+            request.session['work_dataset_list'].remove(remove_dataset)
+            cache.set('workspaceData', request.session['work_dataset_list'])
+
+        return JsonResponse({'workspaceData': request.session['work_dataset_list']})
+
         if request.GET.get('onclick_show_datasets'):
             # if cache.get('point_style_name'):
             #     cache.set({'point_style_name': False})
