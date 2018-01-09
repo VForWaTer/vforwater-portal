@@ -330,7 +330,8 @@ function show_preview(id) {
         success: function(json) {
             // console.log('back from preview', json)
             $.each(json, function (key, value) {
-                document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value;
+                // document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value; // Strobl svg
+                document.getElementById("preview_img").innerHTML = value; // Mälicke  png
             });
         }
     });
