@@ -328,6 +328,7 @@ function show_preview(id) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function(json) {
+            // console.log('back from preview', json)
             $.each(json, function (key, value) {
                 document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value;
             });

@@ -113,10 +113,10 @@ class menuView(TemplateView):
 
         remove_dataset = request.GET.get('remover')
         if remove_dataset:
-            request.session['work_dataset_list'].remove(remove_dataset)
-            cache.set('workspaceData', request.session['work_dataset_list'])
-
-        return JsonResponse({'workspaceData': request.session['work_dataset_list']})
+            if 'work_dataset_list' in request.session:
+                request.session['work_dataset_list'].remove(remove_dataset)
+                cache.set('workspaceData', request.session['work_dataset_list'])
+            return JsonResponse({'workspaceData': request.session['work_dataset_list']})
 
         if 'preview' in request.GET:
             preview = request.GET.get('preview')
@@ -149,13 +149,6 @@ class menuView(TemplateView):
             figstring.seek(0)
             plt.close()
             return JsonResponse({'get': figstring.getvalue()})
-
-        remove_dataset = request.GET.get('remover')
-        if remove_dataset:
-            request.session['work_dataset_list'].remove(remove_dataset)
-            cache.set('workspaceData', request.session['work_dataset_list'])
-
-        return JsonResponse({'workspaceData': request.session['work_dataset_list']})
 
         if request.GET.get('onclick_show_datasets'):
             # if cache.get('point_style_name'):
