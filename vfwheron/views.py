@@ -10,8 +10,10 @@ from django.views.generic import TemplateView
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.core.cache import cache
-from matplotlib import pylab
+import matplotlib as mpl
+mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
+from matplotlib import pylab
 from matplotlib.dates import DateFormatter
 from matplotlib.figure import Figure
 
