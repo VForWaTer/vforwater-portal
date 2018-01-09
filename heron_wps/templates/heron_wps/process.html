@@ -43,7 +43,7 @@
 
 	        <div class="form-group">
 	            <label for="input">{{ input.title }}</label>
-                {%  if "sql" in input.title  %}
+                {%  if "sql" in input.title|lower  %}
                     <p> Here is something with sql</p>
                 {%  endif %}
 	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>
