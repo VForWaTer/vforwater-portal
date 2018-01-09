@@ -76,7 +76,6 @@ function workspace_button(json) {
     }
 }
 
-var csrf_token = getCookie('csrftoken');
 // Remove data / elements from workspace
 function remove_data(removeData) {
     // remove data from portal:

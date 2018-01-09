@@ -175,7 +175,7 @@ function getCookie(name) {
 }
 
 // TODO: not used in this file. So from where comes the used token? Which one is better?
-var csrftoken = getCookie('csrftoken');
+var csrf_token = getCookie('csrftoken');
 
 
 //build menu on sidebar
@@ -216,11 +216,14 @@ $(document).ready(function (menuTitle) {
             }, // data sent with the post request
             success: function (json) {
                 $.each(json, function (key1, value1) { // loop over top level menu z.B. key1 = Geologie
+                    //                    var newMenuButton = ('#'+key1)
                     var newHTML = '';
                     var newMenu = '';
                     $.each(value1, function (key2, value2) { // loop over sub menu z.B. key2 = Sandstone
                         if (key2 != 'null') {
                             var selectedData = "['" + key2 + "', '" + key1 + "']"
+//                            var selectedData = "'"+ key2 +"'"
+//                            console.log('value 2 ist: ', value2[1])
                             var bool = ''
                             if (value2[0]) {
                                 bool = 'checked'
@@ -254,6 +257,23 @@ function select_data(selectedData) {
         },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+}
+
+// TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 function onclick_show_datasets_func() {
