@@ -141,7 +141,7 @@ DATABASES = {
     },
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater',
+        'NAME': 'vforwater_update',
     }
 }
 
