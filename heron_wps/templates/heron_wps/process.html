@@ -1,5 +1,9 @@
 {% extends "vfwheron/base.html" %}
 
+<head>
+    <script src="{% static 'heron_wps/js/process.js' %}" type="text/javascript"></script>
+</head>
+
 {% block title %}- Heron WPS{% endblock %}
 
 {% block sidebar %}
@@ -10,12 +14,14 @@
   <!-- Process Overview -->
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
-      <h1>{{ process.identifier }}</h1>
-      <p>{{ process.title }}</p>
+      <h1>{{ process.title }}</h1>
+      <p>{{ process.identifier }}</p>
       {% if is_link %}
         <p><a href="{{ process.abstract }}">{{ process.abstract }}</a></p>
       {% else %}
-        <p>{{ process.abstract }}</p>
+          {%  if process.abstract %}
+            <p>{{ process.abstract }}</p>
+          {% endif %}
       {% endif %}
     </div>
   </div>
@@ -44,22 +50,21 @@
 	        <div class="form-group">
 	            <label for="input">{{ input.title }}</label>
                 {%  if "sql" in input.identifier|lower  %}
-                  <div class="respo-container respo-dropdown-hover">
-                        <div class="nav respo-dropdown-click"><b>Wählen Sie hier einen Datensatz</b></div>
-                        <div class="respo-dropdown-content">
+                    <div class="nav respo-dropdown-click"><b>Wählen Sie hier einen Datensatz</b></div>
+                            <select id = "{{ input.identifier }}" name="input" title="Auswählbare Datensätze" class="form-control">
+                            <option value="Datensatz auswählen">None</option>
                             {% for datasets in workspaceData %}
-                                <a class="respo-hover-blue nav" title="Auswählbarer Datensatz">{{ datasets }}</a>
+                                <option value = {{ datasets }}> {{ datasets }}</option>
                             {% empty %}
                                 <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>
                             {% endfor %}
-                        </div>
-                  </div>
+                            </select>
                 {%  endif %}
                 {%  if "boolean" in input.dataType|lower  %}
 {#                    <input id="{{ input.identifier }}" name="input" type="checkbox" class="form-control" value="False"></input>#}
-                    <input name="input" type="checkbox" class="form-control" value="False">Erstmal Verhalten testen</input>
+                    <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" value="False">Erstmal Verhalten testen</input>
                 {%  endif %}
-	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>
+{#	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>#}
 	        </div>
             <p class="list-group-item-text attribute">Min. Occurrences: {{ input.minOccurs }}</p>
             <p class="list-group-item-text attribute">Max. Occurrences: {{ input.maxOccurs }}</p>
