@@ -46,11 +46,11 @@
 	        <div class="form-group">
 	            <label for="input">{{ input.title }}</label>
                 {%  if "sql" in input.identifier|lower  %}
-                    <div class="nav respo-dropdown-click"><b>Wählen Sie hier einen Datensatz</b></div>
+                    <div ><p><b>Wählen Sie hier einen Datensatz</b></p></div>
                             <select id = "{{ input.identifier }}" name="input" title="Auswählbare Datensätze" class="form-control">
                             <option value="Datensatz auswählen">None</option>
                             {% for datasets in workspaceData %}
-                                <option value = {{ datasets }}> {{ datasets }}</option>
+                                <option value = "select tstamp, value as colpach from tbl_data where meta_id="+{{ datasets }}> {{ datasets }}</option>
                             {% empty %}
                                 <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>
                             {% endfor %}
@@ -58,7 +58,7 @@
                 {%  endif %}
                 {%  if "boolean" in input.dataType|lower  %}
 {#                    <input id="{{ input.identifier }}" name="input" type="checkbox" class="form-control" value="False"></input>#}
-                    <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" value="False">Erstmal Verhalten testen</input>
+                    <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" value="False">Default ist True(?)</input>
                 {%  endif %}
 {#	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>#}
 	        </div>

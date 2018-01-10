@@ -106,9 +106,11 @@ class menuView(TemplateView):
                     print('A C H T U N G :  gibts schon!')
                     return
                 else:
-                    request.session['work_dataset_list'].append('dataset' + work_dataset)
+                    # request.session['work_dataset_list'].append('dataset' + work_dataset)
+                    request.session['work_dataset_list'].append(work_dataset)
             else:
-                request.session['work_dataset_list'] = ['dataset' + work_dataset]
+                # request.session['work_dataset_list'] = ['dataset' + work_dataset]
+                request.session['work_dataset_list'] = [work_dataset]
 
             request.session['dataset' + work_dataset] = work_query
             cache.set('workspaceData', request.session['work_dataset_list'])
@@ -125,8 +127,7 @@ class menuView(TemplateView):
             # plot png the mälicke way:
             preview = request.GET.get('preview')
             label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name',
-                                                                   'variable__variable_symbol',
-                                                                   'variable__unit__unit_abbrev')
+                                       'variable__variable_symbol', 'variable__unit__unit_abbrev')
             ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
 
             # connect to database

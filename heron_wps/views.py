@@ -83,8 +83,8 @@ def process(request, service, identifier):
             output_reference = output.reference
             
         if output_reference: 
-            output_reference = output_reference.replace('localhost','vforwater-devel') 
-        
+            output_reference = output_reference.replace('localhost','vforwater-devel')
+
         context_p = {'process': wps_process,
                      'inputs': inputs,
                      'processid': processid,
