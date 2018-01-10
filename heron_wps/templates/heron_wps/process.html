@@ -46,6 +46,10 @@
                 {%  if "sql" in input.title|lower  %}
                     <p> Here is something with sql</p>
                 {%  endif %}
+                {%  if "boolean" in input.title|lower  %}
+{#                    <input id="{{ input.identifier }}" name="input" type="checkbox" class="form-control" value="False"></input>#}
+                    <input name="input" type="checkbox" class="form-control" value="False">Erstmal Verhalten testen</input>
+                {%  endif %}
 	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>
 	        </div>
             <p class="list-group-item-text attribute">Min. Occurrences: {{ input.minOccurs }}</p>
