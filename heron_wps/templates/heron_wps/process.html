@@ -44,15 +44,16 @@
 	        <div class="form-group">
 	            <label for="input">{{ input.title }}</label>
                 {%  if "sql" in input.identifier|lower  %}
-                    <div class="respo-dropdown-content">
-                        {% for datasets in workspaceData %}
-                            <a class="respo-hover-blue nav"
-                               title="{{ datasets }}">{{ datasets }}
-                            </a>
-                        {% empty %}
-                            <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>
-                        {% endfor %}
-                    </div>
+                  <div class="respo-container respo-dropdown-hover">
+                        <div class="nav respo-dropdown-click"><b>Wählen Sie hier einen Datensatz</b></div>
+                        <div class="respo-dropdown-content">
+                            {% for datasets in workspaceData %}
+                                <a class="respo-hover-blue nav" title="Auswählbarer Datensatz">{{ datasets }}</a>
+                            {% empty %}
+                                <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>
+                            {% endfor %}
+                        </div>
+                  </div>
                 {%  endif %}
                 {%  if "boolean" in input.dataType|lower  %}
 {#                    <input id="{{ input.identifier }}" name="input" type="checkbox" class="form-control" value="False"></input>#}
