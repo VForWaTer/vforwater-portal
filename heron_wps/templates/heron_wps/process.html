@@ -50,7 +50,8 @@
 	        <div class="form-group">
 	            <label for="input">{{ input.title }}</label>
                 {%  if "sql" in input.identifier|lower  %}
-                    <div ><p><b>Wählen Sie hier einen Datensatz</b></p></div>
+                    {%  if "reduce time" not in process.title %}
+                        <div ><p><b>Wählen Sie hier einen Datensatz</b></p></div>
                             <select multiple id = "{{ input.identifier }}" name="input" title="Auswählbare Datensätze" class="form-control">
                             <option value="Datensatz auswählen">None</option>
                             {% for datasets in workspaceData %}
@@ -67,6 +68,7 @@
                                 <option value = "select tstamp, value from tbl_data where meta_id=2558"> Weierbach</option>
                                 <option value = "select tstamp, value from tbl_data where meta_id=2562"> Wollefsbach</option>
                             </select>
+                    {% endif %}
                 {%  elif "boolean" in input.dataType|lower  %}
                     <select id = "{{ input.identifier }}" name="input" class="form-control">
 						<option value = "True"> True</option>

@@ -64,7 +64,9 @@
 
   <div>
   {%  for selection in outputs %}
+    <p>im Loop</p>
     {%  if "img" in selection %}
+        <p>Sollte das img haben</p>
         <img src="{{ outputs }}" alt="Here you should see a plot of your result">
     {% endif %}
   {%  endfor %}
