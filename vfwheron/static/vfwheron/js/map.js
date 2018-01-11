@@ -266,7 +266,8 @@ function create_map() {
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
-        layers: [mapLayer, vectorLayer, wfsPointLayer], // *works only your local geoserver
+        layers: [mapLayer, wfsPointLayer], // *works only your local geoserver
+        // layers: [mapLayer, vectorLayer, wfsPointLayer], // *works only your local geoserver
         // layers: [mapLayer, vectorLayer, wmsPointLayer], // *datapoints on a local machine
         controls: [
             new ol.control.Zoom({duration: 300}),
