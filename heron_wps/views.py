@@ -77,6 +77,15 @@ def process(request, service, identifier):
         
         execution = wps.execute(processid, inputs)
         execution_status = execution.status
+
+        i = 1
+        image = []
+        for output in execution.processOutputs:
+            outputs.append(output.data)
+            output_reference = output.reference
+            if i == 4:
+                image = output.data
+            i=i+1
         
         for output in execution.processOutputs:
             outputs.append(output.data)
@@ -89,6 +98,7 @@ def process(request, service, identifier):
                      'inputs': inputs,
                      'processid': processid,
                      'outputs': outputs,
+                     'image': image,
                      'output_reference': output_reference,
                      'execution_status': execution_status,
                      'workspaceData': getworkspacedata()
