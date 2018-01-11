@@ -67,7 +67,7 @@
                                 <option value = "select tstamp, value from tbl_data where meta_id=2558"> Weierbach</option>
                                 <option value = "select tstamp, value from tbl_data where meta_id=2562"> Wollefsbach</option>
                             </select>
-                {%  else if "boolean" in input.dataType|lower  %}
+                {%  elif "boolean" in input.dataType|lower  %}
                     <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" onclick='handleCheck();' value="False">  Check for True.</input>
                 {%  else %}
 	                <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>
