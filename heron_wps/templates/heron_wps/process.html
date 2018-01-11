@@ -47,7 +47,7 @@
 	            <label for="input">{{ input.title }}</label>
                 {%  if "sql" in input.identifier|lower  %}
                     <div ><p><b>Wählen Sie hier einen Datensatz</b></p></div>
-                            <select id = "{{ input.identifier }}" name="input" title="Auswählbare Datensätze" class="form-control">
+                            <select multiple id = "{{ input.identifier }}" name="input" title="Auswählbare Datensätze" class="form-control">
                             <option value="Datensatz auswählen">None</option>
                             {% for datasets in workspaceData %}
                                 <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
