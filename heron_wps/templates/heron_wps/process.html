@@ -1,5 +1,7 @@
 {% extends "vfwheron/base.html" %}
 
+<link rel="stylesheet" type="text/css" href="{% static 'heron_wps/js/process.js' %}">
+
 {% block title %}- Heron WPS{% endblock %}
 
 {% block sidebar %}
@@ -57,8 +59,7 @@
                             </select>
                 {%  endif %}
                 {%  if "boolean" in input.dataType|lower  %}
-{#                    <input id="{{ input.identifier }}" name="input" type="checkbox" class="form-control" value="False"></input>#}
-                    <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" value="False">Default ist True.</input>
+                    <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" onclick='handleCheck();' value="False">  Check for True.</input>
                 {%  endif %}
 {#	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>#}
 	        </div>
