@@ -84,7 +84,7 @@ def process(request, service, identifier):
             outputs.append(output.data)
             output_reference = output.reference
             if i == 4:
-                image = output.data
+                image = output.data[0]
             i=i+1
         
         for output in execution.processOutputs:
