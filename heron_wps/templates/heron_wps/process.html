@@ -53,19 +53,24 @@
                             <option value="Datensatz auswählen">None</option>
                             {% for datasets in workspaceData %}
                                 <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
-                            {% empty %}
-                                <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>
+                            {% comment %}{% empty %}
+                                <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>{% endcomment %}
                             {% endfor %}
-                                <option value = "select tstamp, value from tbl_data where meta_id=2557"> 2557</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> 2558</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> 2562</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2557"> Colpach</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> Huewelerbach</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> Niederpallen</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2557"> Platen</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> Schwebich</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> Useldange</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> Weierbach</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> Wollefsbach</option>
                             </select>
-                {%  endif %}
-                {%  if "boolean" in input.dataType|lower  %}
+                {%  else if "boolean" in input.dataType|lower  %}
                     <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" onclick='handleCheck();' value="False">  Check for True.</input>
+                {%  else %}
+	                <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>
                 {%  endif %}
-{#	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>#}
-	        </div>
+            </div>
             <p class="list-group-item-text attribute">Min. Occurrences: {{ input.minOccurs }}</p>
             <p class="list-group-item-text attribute">Max. Occurrences: {{ input.maxOccurs }}</p>
 
