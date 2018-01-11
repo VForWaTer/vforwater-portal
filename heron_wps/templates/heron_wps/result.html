@@ -61,7 +61,15 @@
       </div>
     </div>
   </div>
-            
+
+  <div>
+  {%  for selection in outputs %}
+    {%  if "img" in selection %}
+        <img src="{{ outputs }}" alt="Here you should see a plot of your result">
+    {% endif %}
+  {%  endfor %}
+  </div>
+
   <li style="color:#8A2BE2">Process Outputs: {{ outputs }}</li>
   {% if output_reference %}<li style="color:#8A2BE2">Process Output Reference: <a href="{{ output_reference }}">{{ output_reference }}</a></li>{% endif %}
   <li style="color:#8A2BE2">Process Execution Status: {{ execution_status }}</li>
