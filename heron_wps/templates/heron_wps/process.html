@@ -50,7 +50,7 @@
                             <select id = "{{ input.identifier }}" name="input" title="Auswählbare Datensätze" class="form-control">
                             <option value="Datensatz auswählen">None</option>
                             {% for datasets in workspaceData %}
-                                <option value = "select tstamp, value as colpach from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
                             {% empty %}
                                 <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>
                             {% endfor %}
@@ -58,7 +58,7 @@
                 {%  endif %}
                 {%  if "boolean" in input.dataType|lower  %}
 {#                    <input id="{{ input.identifier }}" name="input" type="checkbox" class="form-control" value="False"></input>#}
-                    <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" value="False">Default ist True(?)</input>
+                    <input name="input" id="{{ input.identifier }}" type="checkbox" class="form-control" value="False">Default ist True.</input>
                 {%  endif %}
 {#	            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>#}
 	        </div>
