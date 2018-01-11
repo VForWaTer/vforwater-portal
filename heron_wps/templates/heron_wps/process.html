@@ -56,6 +56,9 @@
                             {% empty %}
                                 <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>
                             {% endfor %}
+                                <option value = "select tstamp, value from tbl_data where meta_id=2557"> 2557</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> 2558</option>
+                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> 2562</option>
                             </select>
                 {%  endif %}
                 {%  if "boolean" in input.dataType|lower  %}
