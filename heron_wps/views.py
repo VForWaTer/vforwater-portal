@@ -78,14 +78,14 @@ def process(request, service, identifier):
         execution = wps.execute(processid, inputs)
         execution_status = execution.status
 
-        i = 1
         image = []
         for output in execution.processOutputs:
             outputs.append(output.data)
             output_reference = output.reference
-            if i == 4:
+            substring = output.data[0][:10]
+            if "img" in substring:
                 image = output.data[0]
-            i=i+1
+
         
         for output in execution.processOutputs:
             outputs.append(output.data)

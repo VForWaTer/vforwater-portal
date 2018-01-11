@@ -285,7 +285,7 @@ function onclick_show_datasets_func() {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with post request
         success: function (json) {
-            console.log('onclick_show_datasets_func: ', json)
+            // console.log('onclick_show_datasets_func: ', json)
             $.each(json, function (key, value) {
                 if (key == "results") {
                     /*document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + key + "'>" +
@@ -319,7 +319,7 @@ function workspace_dataset(id) {
 }
 
 function show_preview(id) {
-    console.log('you clicked preview: ', id)
+    // console.log('you clicked preview: ', id)
     $.ajax({
         url: "/vfwheron/menu",
         datatype: 'image/png;base64',

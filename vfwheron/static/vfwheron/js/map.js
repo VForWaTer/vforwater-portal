@@ -85,7 +85,7 @@ function create_map() {
             var name = feature.getId();
             var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
             if (selectedIds.includes(id)) {
-                console.log('found: ', id);
+                // console.log('found: ', id);
                 var style = new ol.style.Style({
                     image: new ol.style.Circle({
                         radius: 8,
