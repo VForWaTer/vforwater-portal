@@ -82,9 +82,11 @@ def process(request, service, identifier):
         for output in execution.processOutputs:
             outputs.append(output.data)
             output_reference = output.reference
-            substring = output.data[0][:10]
-            if "img" in substring:
-                image = output.data[0]
+            if type(output.data[0] is str):
+                if len(output.data[0] > 10):
+                    substring = output.data[0][:10]
+                    if "img" in substring:
+                        image = output.data[0]
 
         
         for output in execution.processOutputs:
