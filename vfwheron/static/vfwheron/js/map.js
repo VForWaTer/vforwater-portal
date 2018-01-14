@@ -1,7 +1,7 @@
 var data_style = null;
 var wfsPointLayer = null;
 var createStyle = null;
-var wfsLayerName = 'ID_as_identifier';
+var wfsLayerName = 'ID_as_identifier_update';
 // var feature = null;
 var selectedIds = null;
 
@@ -34,7 +34,7 @@ function create_map() {
         url: 'https://vforwater-gis.scc.kit.edu/geoserver/wms',
         serverType: 'geoserver',
         params: {
-            LAYERS: 'CAOS:ID_as_identifier', // 'CAOS:get_pointinfo' 'CAOS:pointdata'
+            LAYERS: 'CAOS_update:ID_as_identifier_update', // 'CAOS:get_pointinfo' 'CAOS:pointdata'
             TILED: true,
             STYLES: data_style //STYLES: Light Blue Circle', 'CAOS:new_point',
         },
@@ -194,9 +194,9 @@ function create_map() {
     var wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' +
+            var url = 'https://vforwater-gis.scc.kit.edu/geoserver/CAOS_update/wfs?service=WFS&version=2.0.0&' +
             // var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
-                'request=GetFeature&typename=CAOS:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
+                'request=GetFeature&typename=CAOS_update:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
                 '&bbox=' + extent.join(',') + ',EPSG:3857';
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url);
@@ -309,7 +309,7 @@ function create_map() {
             for (var i = 0; i < clickedKeys.length; i++) {
                 if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
                     clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
-                    clickedKeys[i] != 'geometry') {
+                    clickedKeys[i] != 'geometry' && clickedKeys[i] != 'id') {
                     if (clickedKeys[i] == 'Vorname') {
                         var name = properties[clickedKeys[i]]
                     }
