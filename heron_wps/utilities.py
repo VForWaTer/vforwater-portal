@@ -72,7 +72,7 @@ def list_wps_service_engines(app_class=None):
     app_wps_services = None
 
     if app_class and issubclass(app_class):
-#         Instantiate app class and retrieve wps services list
+        #         Instantiate app class and retrieve wps services list
         app = app_class()
         app_wps_services = app.wps_services()
 
@@ -93,10 +93,10 @@ def list_wps_service_engines(app_class=None):
     # If no wps_services are known yet check for port 8090 to 8099
     if not WpsModel.objects.all():
         find_wps_service_engines()
-        
+
     # If the wps engine cannot be found in the app_class, check settings for site-wide wps engines
     site_wps_services = WpsModel.objects.all()
-  
+
     for site_wps_service in site_wps_services:
 
         # Create OWSLib WebProcessingService engine object
@@ -107,8 +107,8 @@ def list_wps_service_engines(app_class=None):
                                    skip_caps=True)
 
         # Initialize the object with get capabilities call
-        activated_wps = activate_wps(wps=wps, 
-                                     endpoint=site_wps_service.endpoint, 
+        activated_wps = activate_wps(wps=wps,
+                                     endpoint=site_wps_service.endpoint,
                                      name=site_wps_service.name)
 
         if activated_wps:
@@ -172,20 +172,21 @@ def get_wps_service_engine(name, app_class=None):
     raise NameError('Could not find wps service with name "{0}". Please check that a wps service with that name '
                     'exists in the admin console or in your app.py.'.format(name))
 
+
 def find_wps_service_engines():
 
     try:
         WPS_Address = 'http://vforwater-devel.scc.kit.edu:8094/wps'
 
         WPS_Service = WebProcessingService(WPS_Address,
-                                        verbose=False,
-                                        skip_caps=True)
+                                           verbose=False,
+                                           skip_caps=True)
         WPS_Service.getcapabilities()
 
-        NewData = WpsModel(name = WPS_Service.identification.title,
-                 endpoint = WPS_Address)
+        NewData = WpsModel(name=WPS_Service.identification.title,
+                           endpoint=WPS_Address)
         NewData.save()
 
     except:
         print('--- No WPS_Service at port 8094. ---')
-    
+

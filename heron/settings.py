@@ -188,14 +188,14 @@ STATIC_URL = '/static/'
 LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
-LOGIN_SUCCESS_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = 'https://vforwater-gis.scc.kit.edu/vfwheron/login'
+LOGIN_SUCCESS_VIEW = 'https://vforwater-devel.scc.kit.edu/vfwheron/rsp/login/success'
+LOGIN_FAILURE_VIEW = 'https://vforwater-devel.scc.kit.edu/vfwheron/login'
 
 
 # Figure out if we're on our development server...
 import socket
 
-ON_VFW_SERVER = socket.gethostname() == "vforwater-gis.scc.kit.edu"
+ON_VFW_SERVER = socket.gethostname() == "vforwater-devel.scc.kit.edu"
 
 # ...if we are, enable Watts.
 if ON_VFW_SERVER:
