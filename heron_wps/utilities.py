@@ -174,19 +174,18 @@ def get_wps_service_engine(name, app_class=None):
 
 def find_wps_service_engines():
 
-    for test_port in range(8090, 8099):
-        try:
-            WPS_Address = 'https://vforwater-gis.scc.kit.edu:'+str(test_port)+'/wps'
-            
-            WPS_Service = WebProcessingService(WPS_Address, 
-                                            verbose=False, 
-                                            skip_caps=True)
-            WPS_Service.getcapabilities()
-            
-            NewData = WpsModel(name = WPS_Service.identification.title, 
-                     endpoint = WPS_Address)
-            NewData.save()
+    try:
+        WPS_Address = 'http://vforwater-devel.scc.kit.edu:8094/wps'
 
-        except:
-            print('--- No WPS_Service at port '+str(test_port)+'. ---')
+        WPS_Service = WebProcessingService(WPS_Address,
+                                        verbose=False,
+                                        skip_caps=True)
+        WPS_Service.getcapabilities()
+
+        NewData = WpsModel(name = WPS_Service.identification.title,
+                 endpoint = WPS_Address)
+        NewData.save()
+
+    except:
+        print('--- No WPS_Service at port 8094. ---')
     
