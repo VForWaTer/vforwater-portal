@@ -2,6 +2,7 @@ from urllib.error import HTTPError, URLError
 
 from owslib.wps import WebProcessingService
 from .models import WebProcessingService as WpsModel
+from heron.settings import VFW_SERVER
 
 
 def abstract_is_link(process):
@@ -176,7 +177,7 @@ def get_wps_service_engine(name, app_class=None):
 def find_wps_service_engines():
 
     try:
-        WPS_Address = 'http://vforwater-devel.scc.kit.edu:8094/wps'
+        WPS_Address = 'https://' + VFW_SERVER + ':8094/wps'
 
         WPS_Service = WebProcessingService(WPS_Address,
                                            verbose=False,
