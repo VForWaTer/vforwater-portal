@@ -122,7 +122,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'app.context_processors.global_settings',
+                'heron.context_processors.global_settings',
             ],
         },
     },
