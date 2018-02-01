@@ -31,7 +31,7 @@ function create_map() {
     mapView.animate({duration: 5000}, {easing: 'elastic'});
     // wms layer for use on a local machine
     var wmsPointSource = new ol.source.TileWMS({
-        url: 'https://' + SERVER + '/geoserver/wms',
+        url: SERVER + '/geoserver/wms',
         serverType: 'geoserver',
         params: {
             LAYERS: 'CAOS_update:ID_as_identifier_update', // 'CAOS:get_pointinfo' 'CAOS:pointdata'
@@ -194,7 +194,7 @@ function create_map() {
     var wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            var url = 'https://' + SERVER + '/geoserver/CAOS_update/wfs?service=WFS&version=2.0.0&' +
+            var url = SERVER + '/geoserver/CAOS_update/wfs?service=WFS&version=2.0.0&' +
             // var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
                 'request=GetFeature&typename=CAOS_update:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
                 '&bbox=' + extent.join(',') + ',EPSG:3857';
@@ -253,7 +253,7 @@ function create_map() {
     };
 
     var vectorSource = new ol.source.TileWMS({
-        url: 'https://' + SERVER + '/geoserver/wms',
+        url: SERVER + '/geoserver/wms',
         params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'}
         // visible: False,
     });

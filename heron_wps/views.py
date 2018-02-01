@@ -3,7 +3,7 @@
 from django.shortcuts import render
 from django.core.cache import cache
 
-from heron.settings import VFW_SERVER
+from heron.settings import VFW_SERVER, HOST_NAME
 from heron_wps.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 #from heron_wps.forms import InputForm
 
@@ -95,7 +95,7 @@ def process(request, service, identifier):
             output_reference = output.reference
             
         if output_reference: 
-            output_reference = output_reference.replace('localhost', VFW_SERVER)
+            output_reference = output_reference.replace('localhost', HOST_NAME)
             # output_reference = output_reference.replace('localhost','vforwater-devel')
 
         context_p = {'process': wps_process,

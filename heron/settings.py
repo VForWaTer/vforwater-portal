@@ -22,7 +22,8 @@ if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
 # Set where the server is running on
-VFW_SERVER = "vforwater-devel.scc.kit.edu"
+HOST_NAME = "vforwater-devel.scc.kit.edu"
+VFW_SERVER = 'https://' + HOST_NAME
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -192,14 +193,14 @@ STATIC_URL = '/static/'
 LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
-LOGIN_SUCCESS_VIEW = 'https://' + VFW_SERVER + '/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = 'https://' + VFW_SERVER + '/vfwheron/login'
+LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron/login'
 
 
 # Figure out if we're on our development server...
 import socket
 
-ON_VFW_SERVER = socket.gethostname() == VFW_SERVER
+ON_VFW_SERVER = socket.gethostname() == HOST_NAME
 
 # ...if we are, enable Watts.
 if ON_VFW_SERVER:
