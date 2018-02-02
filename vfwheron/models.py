@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from django.core.cache import cache
 from django.contrib.gis.db import models
 
+
 class DjangoMigrations(models.Model):
     app = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
@@ -28,8 +29,11 @@ class LtDomain(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'domain_name': 'Domänenname', 'project__project_name': 'Projekt'}
+    newcolumn_dict = {'domain_name': {'DE': 'Domänenname', 'EN': 'Domain Name'},
+                   'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
     menu_name = 'Projekt/Domäne'
     path = 'domain'
+    filter_type = {'domain_name': 'recursive'}
 
     def __str__(self):
         return self.domain_name
@@ -52,6 +56,8 @@ class LtLicense(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'license_abbrev': 'Lizenz', 'commercial': 'Kommerziell'}
+    newcolumn_dict = {'license_abbrev': {'DE': 'Lizenz', 'EN': 'License'},
+                   'commercial': {'DE': 'Kommerziell', 'EN': 'Commercial'}}
     menu_name = 'Lizenz'
     path = 'meta__license'
 
@@ -72,15 +78,23 @@ class LtLocation(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
     geom = models.GeometryField(unique=True, srid=0)
 
+    column_dict = {'centroid_x': 'X Koordinaten', 'centroid_y': 'Y Koordinaten', 'geometry_type': 'Geometrie'}
+    newcolumn_dict = {'centroid_x': {'DE': 'X-Koordinaten', 'EN': 'X-Coordinate'},
+                      'centroid_y': {'DE': 'Y Koordinaten', 'EN': 'Y-Coordinate'},
+                      'geometry_type': {'DE': 'Geometrie', 'EN': 'Geometry'}}
+    menu_name = 'Position'
+    path = 'meta__location'
+
     def __str__(self):
         # return '%s %s' % (self.centroid_x, self.centroid_y)
-        return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (self.geometry_type, self.centroid_x, self.centroid_y, self.srid )
+        return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (
+        self.geometry_type, self.centroid_x, self.centroid_y, self.srid)
 
     class Meta:
         managed = False
         db_table = 'lt_location'
-        
-        
+
+
 class LtProject(models.Model):
     project_name = models.CharField(unique=True, max_length=65)
     user = models.ForeignKey('LtUser', models.DO_NOTHING, blank=True, null=True)
@@ -101,6 +115,12 @@ class LtQuality(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    column_dict = {'flag_name': 'Qualität', 'flag_weight': 'Gewichtung'}
+    newcolumn_dict = {'flag_name': {'DE': 'Qualität', 'EN': 'Quality'},
+                       'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
+    menu_name = 'Qualität'
+    path = 'meta__quality'
+
     def __str__(self):
         return self.flag_name
 
@@ -120,12 +140,22 @@ class LtSite(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'site_name': 'Standortname', 'elevation': 'Hohe', 'landuse': 'Landnutzung', 'site_comment': 'Kommentar'}
+    column_dict = {'site_name': 'Standortname', 'elevation': 'Hohe', 'landuse': 'Landnutzung',
+                   'site_comment': 'Kommentar'}
+    newcolumn_dict = {'site_name': {'DE': 'Standortname', 'EN': 'Site name'},
+                      'elevation': {'DE': 'Hohe', 'EN': 'Elevation'},
+                      'rel_height': {'DE': 'Relative Höhe', 'EN': 'Relative height'},
+                      'orientation_degree': {'DE': 'Richtung', 'EN': 'Orientation'},
+                      'slope': {'DE': 'Hangneigung', 'EN': 'Slope'},
+                      'landuse': {'DE': 'Landnutzung', 'EN': 'Landuse'},
+                      'site_comment': {'DE': 'Kommentar', 'EN': 'Site comment'}}
     menu_name = 'Standort'
     path = 'meta__site'
+    filter_type = {'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
+                   'slope': 'slider'}
 
     def __str__(self):
-        return self.site_name # TODO: is this useful? At the moment there is no information in site_name 
+        return self.site_name  # TODO: is this useful? At the moment there is no information in site_name
 
     class Meta:
         managed = False
@@ -141,12 +171,17 @@ class LtSoil(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'geology': 'Geologie', 'soil_type': 'Bodentyp', 'porosity': 'Porosität', 'residual_moisture': 'Restfeuchte'}
+    column_dict = {'geology': 'Geologie', 'soil_type': 'Bodentyp', 'porosity': 'Porosität',
+                   'residual_moisture': 'Restfeuchte'}
+    newcolumn_dict = {'geology': {'DE': 'Geologie', 'EN': 'Geology'},
+                      'soil_type': {'DE': 'Bodentyp', 'EN': 'Soil Type'},
+                      'porosity': {'DE': 'Porosität', 'EN': 'Porosity'},
+                      'residual_moisture': {'DE': 'Restfeuchte', 'EN': 'Residual Moisture'}}
     menu_name = 'Boden'
     path = 'meta__soil'
 
     def __str__(self):
-        return self.geology # TODO: at the moment only values in geology and nothing in soil_type. Check if geology is always filled
+        return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology is always filled
 
     class Meta:
         managed = False
@@ -160,7 +195,7 @@ class LtSourceType(models.Model):
 
     def __str__(self):
         return self.type_name
-    
+
     class Meta:
         managed = False
         db_table = 'lt_source_type'
@@ -175,11 +210,12 @@ class LtUnit(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    newcolumn_dict = {'unit_name': {'DE': 'Einheit', 'EN': 'Unit'}}
     column_dict = {'unit_name': 'Einheit'}
 
     def __str__(self):
         return self.unit_name
-    
+
     class Meta:
         managed = False
         db_table = 'lt_unit'
@@ -196,7 +232,13 @@ class LtUser(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'first_name': 'Vorname', 'last_name': 'Nachname', 'institution_name': 'Institut', 'department': 'Abteilung'}
+    newcolumn_dict = {'first_name': {'DE': 'Vorname', 'EN': 'First name'},
+                   'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
+                   'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
+                   'department': {'DE': 'Abteilung', 'EN': 'Department'},
+                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+    column_dict = {'first_name': 'Vorname', 'last_name': 'Nachname', 'institution_name': 'Institut',
+                   'department': 'Abteilung', 'comment': 'Kommentar'}
     menu_name = 'Besitzer? (Ersteller)'
     path = 'meta__creator'
 
@@ -223,10 +265,10 @@ class SpatialRefSys(models.Model):
     auth_srid = models.IntegerField(blank=True, null=True)
     srtext = models.TextField(blank=True, null=True)
     proj4text = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return '%s %s' % (self.auth_name, self.auth_srid)
-  
+
     class Meta:
         managed = False
         db_table = 'spatial_ref_sys'
@@ -238,7 +280,7 @@ class TblData(models.Model):
     value = models.DecimalField(max_digits=65535, decimal_places=65535)
 
     def __str__(self):
-        return self.value # TODO: is that okay?
+        return self.value  # TODO: is that okay?
 
     class Meta:
         managed = False
@@ -281,7 +323,13 @@ class TblMeta(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'ts_start': 'Messbeginn', 'ts_stop': 'Messende', 'support': 'Support???', 'spacing': 'Schrittweite', 'comment': 'Kommentar'}
+    newcolumn_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
+                   'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
+                   'support': {'DE': 'Auflage???', 'EN': 'Support'},
+                   'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
+                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+    column_dict = {'ts_start': 'Messbeginn', 'ts_stop': 'Messende', 'support': 'Support???', 'spacing': 'Schrittweite',
+                   'comment': 'Kommentar'}
     menu_name = 'Messung'
     path = 'meta'
 
@@ -300,6 +348,9 @@ class TblSensor(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    newcolumn_dict = {'sensor_name': {'DE':'Name', 'EN': 'Name'},
+                   'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufactorer'},
+                   'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
     column_dict = {'sensor_name': 'Name', 'manufacturer': 'Hersteller', 'sensor_comment': 'Kommentar'}
     menu_name = 'Sensor'
     path = 'meta__sensor'
@@ -313,7 +364,6 @@ class TblSensor(models.Model):
 
 
 class TblVariable(models.Model):
-
     variable_name = models.CharField(unique=True, max_length=65)
     variable_abbrev = models.CharField(max_length=15)
     variable_symbol = models.CharField(max_length=5)
@@ -321,10 +371,11 @@ class TblVariable(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    newcolumn_dict = {'variable_name': {'DE': 'Variablenname', 'EN': 'Variable Name'}}
     column_dict = {'variable_name': 'Variablenname'}
     menu_name = 'Datentyp'
     path = 'meta__variable'
-    struct = {'menu1':variable_name}
+    struct = {'menu1': variable_name}
     struct_name = {'menu1': menu_name}
 
     def __str__(self):
@@ -346,17 +397,17 @@ class FilterMenu(models.Manager):
 
         for menu in FilterMenu.menu_tables:  # LtSoil,...
             sub_struct = {}
-            for key, value in menu.column_dict.items():   # key: geology value: Geologie ...
+            for key, value in menu.column_dict.items():  # key: geology value: Geologie ...
                 query_set = menu.objects.select_related().values_list(key, flat=True).distinct()  # marls, schist, ...
                 if len(query_set) >= 1 and query_set[0] is not None:
-        # TODO: some query_sets give numbers --> other menu (from ... to ... instead of tick selection)
+                    # TODO: some query_sets give numbers --> other menu (from ... to ... instead of tick selection)
                     if detail_of_menu == 'submenu':
                         sub_struct.update({value: {'No Values': 0}})
                     elif detail_of_menu == 'complete_menu':
                         sub_struct.update({value: {str(key): False for key in query_set}})
             if sub_struct:
                 general_struct.append({menu.menu_name: sub_struct})
-        #print ('menu to send: ', general_struct)
+        # print ('menu to send: ', general_struct)
         return general_struct
 
     # TODO: Can this be integrated in get_menu ? Might become confusing...
@@ -380,8 +431,9 @@ class FilterMenu(models.Manager):
 
         return submenu
 
-    def count_query(cache_obj, active_m_key=False, active_key=False, submenu_key=False): #, active_value=False):  # Boden Geologie Sandstone
-    # def build_sub_query(cache_obj, active_m_key=False, active_key=False, active_value=False): # Boden Geologie Sandstone
+    def count_query(cache_obj, active_m_key=False, active_key=False,
+                    submenu_key=False):  # , active_value=False):  # Boden Geologie Sandstone
+        # def build_sub_query(cache_obj, active_m_key=False, active_key=False, active_value=False): # Boden Geologie Sandstone
         m_map = {}
         paths = {}
         dataset_count = {}
@@ -390,16 +442,18 @@ class FilterMenu(models.Manager):
             paths.update({value: key for key, value in menu.column_dict.items()})
 
         for values_3 in submenu_key:
-            filter_list = django_data =  ''
-            if active_m_key and active_key:  #and active_value:
-                active_filter_aswellas = FilterMenu.menu_dict[active_m_key].path + "__" + m_map[active_m_key][active_key]  # meta__soil__geology
-                filter_list=".filter(" + active_filter_aswellas + "='" + values_3[0] + "')"
+            filter_list = django_data = ''
+            if active_m_key and active_key:  # and active_value:
+                active_filter_aswellas = FilterMenu.menu_dict[active_m_key].path + "__" + m_map[active_m_key][
+                    active_key]  # meta__soil__geology
+                filter_list = ".filter(" + active_filter_aswellas + "='" + values_3[0] + "')"
 
             for m_key in FilterMenu.menu_tables:
                 # print('FilterMenu.menu_tables: ', FilterMenu.menu_tables)
                 if m_key.menu_name in cache_obj and m_key.menu_name is not active_m_key:
                     for cache_key, cache_value in cache_obj.get(m_key.menu_name).items():  # e.g. Geologie: Sandstone
-                        filter_aswellas = m_key.path + "__" + m_map[m_key.menu_name][cache_key]  # e.g. soil +__+ geology
+                        filter_aswellas = m_key.path + "__" + m_map[m_key.menu_name][
+                            cache_key]  # e.g. soil +__+ geology
                         for value in cache_value:
                             filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
 
@@ -440,8 +494,9 @@ class Basiseinzugsgebiet(models.Model):
     object_id = models.FloatField()
     fg_id = models.BigIntegerField()
     fgkz_nr = models.FloatField('flussgebietskennzahl')
-    einzugsgeb = models.IntegerField('einzugsgebietsordnung') # Einzugsgebiets Ordnung – eines Flusses, Baches
-    einzugsg00 = models.CharField('einzugsgebietsordnung in Worten', max_length=80) # Quellgebiet – oberstes Teilgebiet eines Flusses, Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet – unterstes Teilgebiet eines Flusses, Baches
+    einzugsgeb = models.IntegerField('einzugsgebietsordnung')  # Einzugsgebiets Ordnung – eines Flusses, Baches
+    einzugsg00 = models.CharField('einzugsgebietsordnung in Worten',
+                                  max_length=80)  # Quellgebiet – oberstes Teilgebiet eines Flusses, Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet – unterstes Teilgebiet eines Flusses, Baches
     einzugsg01 = models.CharField(max_length=1)
     einzugsg02 = models.CharField(max_length=26)
     vor_fgkz_n = models.FloatField('flussgebietskennzahl des vorfluters')
@@ -460,5 +515,5 @@ class Basiseinzugsgebiet(models.Model):
     mpoly = models.MultiPolygonField(srid=31467)
 
     # Returns the string representation of the model.
-    def __str__(self):              # __unicode__ on Python 2
+    def __str__(self):  # __unicode__ on Python 2
         return self.langname
