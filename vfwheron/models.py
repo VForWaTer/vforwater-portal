@@ -32,7 +32,9 @@ class LtDomain(models.Model):
     newcolumn_dict = {'domain_name': {'DE': 'Domänenname', 'EN': 'Domain Name'},
                    'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
     menu_name = 'Projekt/Domäne'
+    newmenu_name = {'DE': 'Projekt/Domäne', 'EN': 'Project/domain'}
     path = 'domain'
+    newpath = 'nmmetadomain__domain'
     filter_type = {'domain_name': 'recursive'}
 
     def __str__(self):
@@ -56,10 +58,11 @@ class LtLicense(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'license_abbrev': 'Lizenz', 'commercial': 'Kommerziell'}
-    newcolumn_dict = {'license_abbrev': {'DE': 'Lizenz', 'EN': 'License'},
-                   'commercial': {'DE': 'Kommerziell', 'EN': 'Commercial'}}
+    newcolumn_dict = {'license_abbrev': {'DE': 'Lizenzname', 'EN': 'License name'}}
     menu_name = 'Lizenz'
+    newmenu_name = {'DE': 'Lizenz', 'EN': 'License'}
     path = 'meta__license'
+    newpath = 'license'
 
     def __str__(self):
         return self.license_name
@@ -83,7 +86,10 @@ class LtLocation(models.Model):
                       'centroid_y': {'DE': 'Y Koordinaten', 'EN': 'Y-Coordinate'},
                       'geometry_type': {'DE': 'Geometrie', 'EN': 'Geometry'}}
     menu_name = 'Position'
+    newmenu_name = {'DE': 'Position', 'EN': 'Location'}
     path = 'meta__location'
+    newpath = 'location'
+    filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider'}
 
     def __str__(self):
         # return '%s %s' % (self.centroid_x, self.centroid_y)
@@ -119,7 +125,9 @@ class LtQuality(models.Model):
     newcolumn_dict = {'flag_name': {'DE': 'Qualität', 'EN': 'Quality'},
                        'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
     menu_name = 'Qualität'
+    newmenu_name = {'DE': 'Qualität', 'EN': 'Quality'}
     path = 'meta__quality'
+    newpath = 'quality'
 
     def __str__(self):
         return self.flag_name
@@ -140,7 +148,7 @@ class LtSite(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'site_name': 'Standortname', 'elevation': 'Hohe', 'landuse': 'Landnutzung',
+    column_dict = {'site_name': 'Standortname', 'elevation': 'Höhe', 'landuse': 'Landnutzung',
                    'site_comment': 'Kommentar'}
     newcolumn_dict = {'site_name': {'DE': 'Standortname', 'EN': 'Site name'},
                       'elevation': {'DE': 'Hohe', 'EN': 'Elevation'},
@@ -150,7 +158,9 @@ class LtSite(models.Model):
                       'landuse': {'DE': 'Landnutzung', 'EN': 'Landuse'},
                       'site_comment': {'DE': 'Kommentar', 'EN': 'Site comment'}}
     menu_name = 'Standort'
+    newmenu_name = {'DE': 'Standort', 'EN': 'Site'}
     path = 'meta__site'
+    newpath = 'site'
     filter_type = {'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
                    'slope': 'slider'}
 
@@ -176,9 +186,12 @@ class LtSoil(models.Model):
     newcolumn_dict = {'geology': {'DE': 'Geologie', 'EN': 'Geology'},
                       'soil_type': {'DE': 'Bodentyp', 'EN': 'Soil Type'},
                       'porosity': {'DE': 'Porosität', 'EN': 'Porosity'},
+                      'field_capacity': {'DE': 'Feldkapazität', 'EN': 'Field Capacity'},
                       'residual_moisture': {'DE': 'Restfeuchte', 'EN': 'Residual Moisture'}}
     menu_name = 'Boden'
+    newmenu_name = {'DE': 'Boden', 'EN': 'Soil'}
     path = 'meta__soil'
+    newpath = 'soil'
 
     def __str__(self):
         return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology is always filled
@@ -239,8 +252,10 @@ class LtUser(models.Model):
                    'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
     column_dict = {'first_name': 'Vorname', 'last_name': 'Nachname', 'institution_name': 'Institut',
                    'department': 'Abteilung', 'comment': 'Kommentar'}
-    menu_name = 'Besitzer? (Ersteller)'
+    menu_name = 'Nutzer'
+    newmenu_name = {'DE': 'Nutzer', 'EN': 'User'}
     path = 'meta__creator'
+    newpath = 'creator'
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
@@ -323,15 +338,29 @@ class TblMeta(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    # newcolumn_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
+    #                'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
+    #                'support': {'DE': 'Auflage???', 'EN': 'Support'},
+    #                'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
+    #                'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+
+    # TODO: ussed because users are creator and publisher. Improve this!
     newcolumn_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
                    'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
                    'support': {'DE': 'Auflage???', 'EN': 'Support'},
                    'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
-                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'},
+                   # 'creator__LtUser': {'DE': 'Ersteller', 'EN': 'Creator'},
+                   # 'publisher__LtUser': {'DE': 'Veröffentlicher', 'EN': 'Publisher'}
+                      }
+
     column_dict = {'ts_start': 'Messbeginn', 'ts_stop': 'Messende', 'support': 'Support???', 'spacing': 'Schrittweite',
                    'comment': 'Kommentar'}
     menu_name = 'Messung'
+    newmenu_name = {'DE': 'Messung', 'EN': 'Sampling'}
     path = 'meta'
+    newpath = ''
+    filter_type = {'ts_start': 'date', 'ts_stop': 'date'}
 
     class Meta:
         managed = False
@@ -353,7 +382,9 @@ class TblSensor(models.Model):
                    'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
     column_dict = {'sensor_name': 'Name', 'manufacturer': 'Hersteller', 'sensor_comment': 'Kommentar'}
     menu_name = 'Sensor'
+    newmenu_name = {'DE': 'Sensor', 'EN': 'Sensor'}
     path = 'meta__sensor'
+    newpath = 'sensor'
 
     def __str__(self):
         return self.sensor_name
@@ -374,7 +405,9 @@ class TblVariable(models.Model):
     newcolumn_dict = {'variable_name': {'DE': 'Variablenname', 'EN': 'Variable Name'}}
     column_dict = {'variable_name': 'Variablenname'}
     menu_name = 'Datentyp'
+    newmenu_name = {'DE': 'Datentyp', 'EN': 'Data type'}
     path = 'meta__variable'
+    newpath = 'variable'
     struct = {'menu1': variable_name}
     struct_name = {'menu1': menu_name}
 
