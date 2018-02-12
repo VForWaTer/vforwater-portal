@@ -22,7 +22,7 @@ if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
 # Set where the server is running on
-HOST_NAME = "vforwater-devel.scc.kit.edu"
+HOST_NAME = "vforwater-gis.scc.kit.edu"
 VFW_SERVER = 'https://' + HOST_NAME
 
 # Quick-start development settings - unsuitable for production
@@ -147,6 +147,9 @@ DATABASES = {
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater_update',
+        'HOST': 'portal.vforwater.de',
+        'PORT': '5433',
+        'USER': 'vfwportal',
     }
 }
 
