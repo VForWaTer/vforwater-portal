@@ -1,7 +1,7 @@
 var data_style = null;
 var wfsPointLayer = null;
 var createStyle = null;
-var wfsLayerName = 'ID_as_identifier_update';
+var wfsLayerName = 'new_ID_as_identifier_update';
 // var feature = null;
 var selectedIds = null;
 
@@ -34,7 +34,7 @@ function create_map() {
         url: SERVER + '/geoserver/wms',
         serverType: 'geoserver',
         params: {
-            LAYERS: 'CAOS_update:ID_as_identifier_update', // 'CAOS:get_pointinfo' 'CAOS:pointdata'
+            LAYERS: 'CAOS_update:new_ID_as_identifier_update', // 'CAOS:get_pointinfo' 'CAOS:pointdata'
             TILED: true,
             STYLES: data_style //STYLES: Light Blue Circle', 'CAOS:new_point',
         },
