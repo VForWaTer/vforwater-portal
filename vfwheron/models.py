@@ -107,6 +107,10 @@ class LtProject(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    newcolumn_dict = {'project_name': {'DE': 'Projektname', 'EN': 'Project name'}}
+    newmenu_name = {'DE': 'Projekt', 'EN': 'project'}
+    newpath = 'nmmetadomain__domain__project'
+
     def __str__(self):
         return self.project_name
 
@@ -122,7 +126,7 @@ class LtQuality(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'flag_name': 'Qualität', 'flag_weight': 'Gewichtung'}
-    newcolumn_dict = {'flag_name': {'DE': 'Qualität', 'EN': 'Quality'},
+    newcolumn_dict = {'flag_name': {'DE': 'Kennzeichen', 'EN': 'Flag'},
                        'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
     menu_name = 'Qualität'
     newmenu_name = {'DE': 'Qualität', 'EN': 'Quality'}
@@ -419,6 +423,7 @@ class TblVariable(models.Model):
         db_table = 'tbl_variable'
 
 
+# TODO: Following Code will be removed soon (by Marcus)
 # TODO: There is no need to have this as models.Manager (Didn't use it). Find a better place for class
 class FilterMenu(models.Manager):
     # Define here which tables to use; which columns are used is defined in the respective table

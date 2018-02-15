@@ -13,8 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import include, url
+from django.conf.urls.static import static
 from django.contrib import admin
+
 
 urlpatterns = [
     url(r'^vfwheron/', include('vfwheron.urls')),
@@ -23,4 +26,10 @@ urlpatterns = [
     url(r'^heron_wps/', include('heron_wps.urls', namespace='heron_wps')),
     url(r'^heron_monitor/', include('heron_monitor.urls', namespace='heron_monitor')),    
     url(r'^heron_visual/', include('heron_visual.urls', namespace='heron_visual')),    
+    url(r'^heron_upload/', include('heron_upload.urls', namespace='heron_upload')),
 ]
+
+
+# This is just to test the upload in the development environment
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
