@@ -182,7 +182,7 @@ class ExtlinksView(TemplateView):
     template_name = 'vfwheron/extlinks.html'
 
 
-class LoginView(TemplateView):
+class LoginView(View):
     def post(self, request):
         logger.debug('Redirect to vfwheron/rsp/login/init...')
         return redirect('vfwheron:watts_rsp:login_init')
