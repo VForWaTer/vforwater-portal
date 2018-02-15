@@ -203,7 +203,7 @@ class LogoutView(View):
 
     def post(self, request):
         self.logout(request)
-        return redirect('vfwheron:login')
+        return redirect('vfwheron:home')
 
 
 class HelpView(TemplateView):
