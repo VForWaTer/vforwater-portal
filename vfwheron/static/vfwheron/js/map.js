@@ -7,7 +7,7 @@ var selectedIds = null;
 
 //Create own base layer
 function create_map() {
-    var mapSource = new ol.source.XYZ({url: window.location.origin + "/osm/{z}/{x}/{y}.png"});
+    var mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
     var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
     // var data_style = JSON.parse(document.getElementById('data_style').value); // style for wms layer
     data_style = JSON.parse(document.getElementById('data_style').value)['data_style'];

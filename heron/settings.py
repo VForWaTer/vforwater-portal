@@ -24,6 +24,7 @@ if not os.path.exists(VFW_DIR):
 # Set where the server is running on
 HOST_NAME = "vforwater-gis.scc.kit.edu"
 VFW_SERVER = 'https://' + HOST_NAME
+MAP_SERVER = "https://portal.vforwater.de"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
