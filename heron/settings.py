@@ -203,7 +203,7 @@ LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
 LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron/home'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
 
 
 # Figure out if we're on our development server...
