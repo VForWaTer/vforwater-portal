@@ -76,9 +76,8 @@
             <!--          <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> -->
           <li class="respo-hide-small respo-right">
           	<a href="#" class="respo-hover-white"></a>
-          	<!-- <i class="fa fa-user fa-fw"></i>{% trans "  Log in"  %} -->
-                <form action="{% url 'vfwheron:watts_login' %}" method="post"> {% csrf_token %}
-                <input class="respo-btn-simple" type="submit" name="login" value="Login Out" />
+               <form action="{% url 'vfwheron:watts_login' %}" method="post"> {% csrf_token %}
+                <input class="respo-btn-simple" type="submit" name="login" value="<i class="fa fa-user fa-fw"></i>{% trans "  Log in"  %}" />
               </form>
               </li>
         {% endif %}
