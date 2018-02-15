@@ -1,5 +1,7 @@
 {% load static %}
 <!--  ol.css is OpenLayers which is to render geo data in a webbrowser -->
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 <head>
 	<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">

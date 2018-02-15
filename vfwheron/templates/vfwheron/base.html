@@ -1,4 +1,6 @@
 {% load static %}<!DOCTYPE html>
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 <html>
 <head>
@@ -13,34 +15,42 @@
 
 	<!--  style of top bar -->
 	<!-- TODO: Do we access the font Raleway online? For more see base_app/vcss/css -->
+
 	<style>
 	html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 	.respo-navbar li a {padding-top: 22px; padding-bottom: 14px;}
-	.respo-navbar {padding-left: 300px; margin-top: 42px; height: 61px;} 
+	.respo-navbar {padding-left: 300px; margin-top: 42px; height: 61px;}
 	#filterbox,#select_catchment {display: none;}
-	
+
 	</style>
 </head>
 <param id="workdata" value ="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
 
 <body class="respo-light-grey" >
-
+    <!-- Current language: {{ LANGUAGE_CODE }} -->
 <!--    Top container -->
 	<div class="respo-container respo-top respo-black respo-large respo-padding" style="z-index:4">
 	  <button class="respo-btn respo-hide-large respo-padding-0 respo-hover-text-grey" onclick="respo_open();"><i class="fa fa-bars"></i></button>
-	  <span class="respo-right"><strong>Virtuelle Forschungsumgebung für die Wasser- und terrestrische Umweltforschung</strong></span>
+{#	  <span class="respo-right"><strong>Virtuelle Forschungsumgebung für die Wasser- und terrestrische Umweltforschung</strong></span>#}
+	  <span class="respo-right"><strong>{%  trans "Virtual research environment for water and terrestrial environmental research"  %}</strong></span>
 	</div>
 
 <!--	Navbar -->
 	<div class="respo-top">
 	  <ul class="respo-navbar respo-light-turquoise respo-top respo-left-align respo-large">
 	    <li class="respo-opennav respo-right respo-hide-large"><a href="javascript:void(0)" class="respo-hover-white respo-large respo-theme-d4" onclick="Sidemenu_open()"><i class="fa fa-bars"></i></a></li>
-	    <li class="respo-hide-small"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white"><i class="fa fa-home fa-fw"></i>  Startseite</a></li>
-        <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white"><i class="fa fa-wrench fa-fw"></i>  Arbeitsplatz</a></li>
-	    <li class="respo-hide-small"><a href="{% url 'heron_monitor:home' %}" class="respo-hover-white"><i class="fa fa-eye fa-fw"></i>  Monitor</a></li>
-	    <li class="respo-hide-small"><a href="{% url 'heron_visual:home' %}" class="respo-hover-white"><i class="fa fa-bar-chart fa-fw"></i>  Visualisierung</a></li>
-	    <li class="respo-hide-small"><a href="{% url 'vfwheron:external_links' %}" class="respo-hover-white"><i class="fa fa-external-link fa-fw"></i>  Externe Links</a></li>
-	    <li class="respo-hide-small"><a href="{% url 'vfwheron:help' %}" class="respo-hover-white"><i class="fa fa-book fa-fw"></i>  Hilfe</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white"><i class="fa fa-map-o fa-fw"></i>{% trans "  Home" %}</a></li>
+        <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white"><i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'heron_monitor:home' %}" class="respo-hover-white"><i class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'heron_visual:home' %}" class="respo-hover-white"><i class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a></li>
+	    <li class="respo-hide-small"><a href="{% url 'vfwheron:external_links' %}" class="respo-hover-white"><i class="fa fa-external-link fa-fw"></i>{% trans "  External Links" %}</a></li>
+          	    <li class="respo-hide-small"><a href="{% url 'vfwheron:help' %}" class="respo-hover-white"><i class="fa fa-book fa-fw"></i>{% trans "  Help" %}</a></li>
+          {#	    <li class="resppo-hide-small"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white"><i class="fa fa-map-o fa-fw"></i>  Startseite</a></li>#}
+          {#        <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white"><i class="fa fa-wrench fa-fw"></i>  Arbeitsplatz</a></li>#}
+          {#	    <li class="respo-hide-small"><a href="{% url 'heron_monitor:home' %}" class="respo-hover-white"><i class="fa fa-eye fa-fw"></i>  Monitor</a></li>#}
+          {#	    <li class="respo-hide-small"><a href="{% url 'heron_visual:home' %}" class="respo-hover-white"><i class="fa fa-bar-chart fa-fw"></i>  Visualisierung</a></li>#}
+          {#	    <li class="respo-hide-small"><a href="{% url 'vfwheron:external_links' %}" class="respo-hover-white"><i class="fa fa-external-link fa-fw"></i>  Externe Links</a></li>#}
+          {#	    <li class="respo-hide-small"><a href="{% url 'vfwheron:help' %}" class="respo-hover-white"><i class="fa fa-book fa-fw"></i>  Hilfe</a></li>#}
 {#	    <li class="respo-hide-small"><a href="{% url 'heron_upload:home' %}" class="respo-hover-white"><i class="fa fa-upload fa-fw"></i>  Upload</a></li>#}
 <!--	    <li class="respo-hide-small"><a href="#" onclick="search_open()" id="srch_box" class="respo-hover-white"><i class="fa fa-search fa-fw"></i>  Suche</a></li>
 	    <li class="respo-hide-small"><a id="srch_but" class="respo-hover-none"></a></li>
@@ -54,7 +64,7 @@
             </a>
           </li>
           <li class="respo-hide-small respo-right">
-            <a class='respo-hover-none'><i class="fa fa-user fa-fw"></i> Hallo,
+            <a class='respo-hover-none'><i class="fa fa-user fa-fw"></i>{% trans "Hallo," %}
               {% if user.first_name %}
                 {{ user.first_name }}
               {% else %}
@@ -63,8 +73,8 @@
             </a>
           </li>
         {% else %}
-<!--          <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> -->
-          <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:watts_login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li>
+            <!--          <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> -->
+          <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:watts_login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i>{% trans "  Log in"  %} </a></li>
         {% endif %}
 	  </ul>
 	</div>

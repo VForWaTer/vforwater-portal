@@ -1,4 +1,6 @@
 {% extends "vfwheron/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}- Heron WPS{% endblock %}
 
@@ -11,8 +13,7 @@
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
     <h1>Web Processing Services</h1>
-    <p>This tool can be used to browse the available processing capabilities of any Web Processing Services (WPS) that are
-      linked with this instance.
+    <p>{%  trans "This tool can be used to browse the available processing capabilities of any Web Processing Services (WPS) that are linked with this instance." %}
   </div>
 </div>
 <div class="row">

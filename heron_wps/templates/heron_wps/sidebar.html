@@ -1,4 +1,6 @@
 {% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 <head>
     <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>
@@ -25,7 +27,7 @@ Sidenav/menu
     <hr style="margin-bottom:0px;">
 
     <div class="respo-container respo-light-turquoise">
-        <b title="Bereich um die von Ihnen ausgewählten Datensätze zur weiteren Nutzung zur Verfügung zu stellen.">Ablage</b>
+        <b title="Area to make the data you have selected available for further use.">{%  trans "Data store" %}</b>
     </div>
     <ul class="respo-ul respo-card-4 respo-white" id="workspace">
     </ul>

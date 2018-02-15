@@ -1,4 +1,6 @@
 {% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% block javascript %}
 {% endblock %}
@@ -13,7 +15,7 @@
 
 <body>
     <div class="respo-container respo-light-turquoise">
-        <b title="Bitte grenzen Sie hier die auf der Karte angezeigten Datensätze ein.">Datenfilter</b>
+        <b title="Please choose here the data shown on the map.">{%  trans "Filter menu" %}</b>
     </div>
 
     <div id="accordion"  > <!-- see vfw.js -->
@@ -43,7 +45,7 @@
     <!--<a><b><input id="delete_choice" class="respo-btn-simple respo-text-light-grey" type="submit" onclick="clear_selection_func()"
                  value="Lösche Auswahl" data-toggle="tooltip" title="Löscht die bisherige Auswahl"></b></a>-->
     <a><b><input id="show_metafiltered_data" class="respo-btn-simple" type="submit" onclick="onclick_show_datasets_func()"
-                 value="Auswahl auf Karte anzeigen" data-toggle="tooltip" title="Setzt Filter aus den Metadaten"></b></a>
+                 value="Show selection on map" data-toggle="tooltip" title="Apply filter on metadata"></b></a>
 </body>
 
 <script>

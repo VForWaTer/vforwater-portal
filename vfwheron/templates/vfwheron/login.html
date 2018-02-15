@@ -1,4 +1,6 @@
 {% extends "vfwheron/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% block sidebar %} 
 	{% include 'vfwheron/static_sidebar.html' %} 
@@ -8,11 +10,11 @@
 
 <header class="respo-container respo-padding-bottom respo-center" style="padding-top:22px">
     {% if form.errors %}
-        <h5><b>Ihr Login ist fehlgeschlagen! Bitte versuchen Sie es erneut.</b></h5>
+        <h5><b>{%  trans "Your login failed! Please try again." %}</b></h5>
     {% elif user.is_authenticated %}
-        <h5><b>Willkommen, Sie sind eingeloggt als {{ user.email }}.</b></h6>
+        <h5><b>{%  trans "Welcome, you are logged in as " %} {{ user.email }}.</b></h6>
     {% else %}
-        <h5><b>Willkommen, bitte loggen Sie sich ein.</b></h5>
+        <h5><b>{% trans "Welcome, please log in." %}</b></h5>
     {% endif %}
  </header>
 

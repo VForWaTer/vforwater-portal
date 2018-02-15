@@ -1,5 +1,6 @@
 {% load static %}
-
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
 
@@ -8,11 +9,11 @@
 {% endblock %}
 
 <div class="respo-container respo-light-turquoise">
-    <b title="Sammlung von Werkzeugen/Methoden zur Datenverarbeitung.">Werkzeugkiste </b>
+    <b title="Collection of methods for data processing.">{% trans "Toolbox" %}</b>
 </div>
 <p>
 <div class="respo-container respo-dropdown-hover">
-    <div class="nav respo-dropdown-click"><b>Wählen Sie hier Ihr Werkzeug</b></div>
+    <div class="nav respo-dropdown-click"><b>{%  trans "Select your method" %}</b></div>
     <div class="respo-dropdown-content">
         {% for process in wps.processes %}
             <a class="respo-hover-blue nav"
@@ -23,7 +24,7 @@
             <option class="respo-hover-blue nav" value="Aggregate" title="Aggregates Data">Aggregate</option>
             <option class="respo-hover-blue nav" value="Interpolate" title="Interpolates Datasets">Interpolate</option>
             <option class="respo-hover-blue nav" value="Regression" title="Makes an obsession of your regression">Regression</option>
-            <option class="respo-hover-blue nav" value="NA-Models" title="Na na na na, na na na na, hey hey, goodbye">NA-Models</option>
+            <option class="respo-hover-blue nav" value="NA-Models" title="Na na na na na na na na na na na na na na na na... BATMAN!">NA-Models</option>
         {% endfor %}
     </div>
 </div>

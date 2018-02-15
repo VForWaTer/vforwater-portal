@@ -1,4 +1,6 @@
 {% extends "vfwheron/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% block sidebar %} 
 	{% include 'heron_visual/sidebar.html' %} 
@@ -10,14 +12,14 @@
 
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
-    <h1>Visualisierung</h1>
-      <p>Diese Seite befindet sich noch im Aufbau</p>
+    <h1>{%  trans "Visualisation" %}</h1>
+      <p>{%  trans "This page is still under construction." %}</p>
   </div>
 </div>
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
 
-    <h4>Bisher ist noch keine Visualisierung verfügbar.</h4>
+    <h4>{%  trans "No visualization is available yet." %}</h4>
 
   </div>
 </div>

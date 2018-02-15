@@ -1,4 +1,6 @@
 {% extends "vfwheron/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% block sidebar %} 
 	{% include 'vfwheron/static_sidebar.html' %} 
@@ -8,8 +10,8 @@
 
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
-    <h1>Hilfe</h1>
-    <p>Willkommen! Webseite ist noch im Bau!
+    <h1>{% trans "Help" %}</h1>
+      <p>{% trans "Welcome! This site is still under construction" %}</p>
   </div>
 </div>
 <div class="row">

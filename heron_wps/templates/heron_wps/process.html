@@ -1,4 +1,6 @@
 {% extends "vfwheron/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 {% load static %}
 
@@ -51,9 +53,9 @@
 	            <label for="input">{{ input.title }}</label>
                 {%  if "sql" in input.identifier|lower  %}
                     {%  if "reduce time" not in process.title|lower %}
-                        <div ><p><b>Wählen Sie hier einen Datensatz</b></p></div>
-                            <select multiple id = "{{ input.identifier }}" name="input" title="Auswählbare Datensätze" class="form-control">
-                            <option value="Datensatz auswählen">None</option>
+                        <div ><p><b>{%  trans "Please select you dataset" %}</b></p></div>
+                            <select multiple id = "{{ input.identifier }}" name="input" title="Available datasets" class="form-control">
+                            <option value="Select dataset">None</option>
                             {% for datasets in workspaceData %}
                                 <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
                             {% comment %}{% empty %}

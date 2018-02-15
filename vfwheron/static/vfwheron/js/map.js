@@ -282,7 +282,7 @@ function create_map() {
             new ol.control.ScaleLine(),
             new ol.control.ZoomToExtent({ // zoom button
                 label: 'Z',
-                tipLabel: 'Auf die verfügbaren Daten zoomen',
+                tipLabel: 'Zoom to your available data',
                 extent: dataExt,
                 duration: 2500,
                 animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
