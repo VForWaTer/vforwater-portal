@@ -66,9 +66,9 @@
           <li class="respo-hide-small respo-right">
             <a class='respo-hover-none'><i class="fa fa-user fa-fw"></i>{% trans "Hallo," %}
               {% if user.first_name %}
-                {{ user.first_name }}
+                {{ user.first_name | capfirst }}
               {% else %}
-                {{ user.username }}
+                {{ user.username | capfirst }}
               {% endif %}
             </a>
           </li>
