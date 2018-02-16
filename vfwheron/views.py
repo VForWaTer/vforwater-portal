@@ -8,8 +8,10 @@ from django.http.response import JsonResponse, HttpResponse
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.core.cache import cache
+from django.conf import settings
+
 import matplotlib as mpl
 mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
