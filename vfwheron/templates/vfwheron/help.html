@@ -1,6 +1,7 @@
 {% extends "vfwheron/base.html" %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
+{% load markdown_filter %}
 
 {% block sidebar %} 
 	{% include 'vfwheron/static_sidebar.html' %} 
@@ -19,4 +20,10 @@
     <a href='#' class='respo-hover-white' style='height:103px' id='search_but' onclick='search_close()'><i class='fa fa-search fa-fw'></i></a>
 
 </div>
+<div class="row">
+  {% for key,value in context.items %}
+  <p>{{ value|markdownify|safe }}<p>
+  {% endfor %}
+</div>
+
 {% endblock %}

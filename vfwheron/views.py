@@ -207,4 +207,13 @@ class LogoutView(View):
 
 
 class HelpView(TemplateView):
-    template_name = 'vfwheron/help.html'
+#     template_name = 'vfwheron/help.html'
+    def get(self, request):
+        f = open(os.path.join(settings.BASE_DIR, 'USERHELP.md'), 'r')
+        context = {}
+        i = 0
+        for line in f:
+            context[i] = line
+            i += 1
+        f.close()
+        return render(request, 'vfwheron/help.html', {'context':context})
