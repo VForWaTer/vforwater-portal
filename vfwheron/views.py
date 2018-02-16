@@ -20,7 +20,8 @@ from matplotlib.dates import DateFormatter
 from matplotlib.figure import Figure
 
 from .query_functions import get_bbox_from_data, build_id_list
-from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
+from vfwheron.models import TblData, TblMeta, TblVariable
+from vfwheron.filter import FilterMenu
 from datetime import datetime
 
 import matplotlib.pyplot as plt
