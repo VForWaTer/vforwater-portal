@@ -13,6 +13,9 @@ from django.core.cache import cache
 from django.conf import settings
 
 import matplotlib as mpl
+
+from vfwheron.previewplot import maelicke_plot
+
 mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib import pylab
@@ -158,6 +161,7 @@ class menuView(TemplateView):
 
             # create the image-tag
             imgtag = "<img alt='data image' src='data:image/png;base64,%s'>" % b64.decode('utf8')
+            # imgtag = maelicke_plot()
             return JsonResponse({'get': imgtag}) # requested from vfw.js show_preview
 
         if request.GET.get('onclick_show_datasets'):
