@@ -320,12 +320,12 @@ function create_map() {
                     }
                 }
             }
-            var buttons = '<a><b><input id="show_metafiltered_data" class="respo-btn-block" type="submit" ' +
-                'onclick=\"show_preview(\''+id+'\')\" value="Vorschau" data-toggle="tooltip" ' +
-                'title="Achtung! Das Laden der Vorschau kann lange dauern."></b></a>' +
+            var buttons = '<a><b><input id="show_data_preview" class="respo-btn-block" type="submit" ' +
+                'onclick=\"show_preview(\''+id+'\')\" value="Preview" data-toggle="tooltip" ' +
+                'title="Attention! Loading the preview might take a while."></b></a>' +
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
-                'onclick=\"workspace_dataset(\''+id+'\')\" value="Datensatz übernehmen" data-toggle="tooltip" ' +
-                'title="Den Datensatz in den Workspace übernehmen"></b></a>';
+                'onclick=\"workspace_dataset(\''+id+'\')\" value="Select dataset" data-toggle="tooltip" ' +
+                'title="Put dataset to session datastore"></b></a>';
             var popupTableAfterMeta = popUpText + '</table>' + buttons
             var img_preview = '</td><td><p id = "preview_img" ></p></td></table>'
             content.innerHTML =  popupTableAfterMeta + img_preview;
