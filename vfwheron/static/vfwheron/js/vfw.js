@@ -319,6 +319,7 @@ function workspace_dataset(id) {
 }
 
 function show_preview(id) {
+    document.getElementById("show_data_preview").value = "Loading Preview"
     // console.log('you clicked preview: ', id)
     $.ajax({
         url: "/vfwheron/menu",
@@ -332,6 +333,7 @@ function show_preview(id) {
             $.each(json, function (key, value) {
                 // document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value; // Strobl svg
                 document.getElementById("preview_img").innerHTML = value; // Mälicke  png
+                document.getElementById("show_data_preview").value = "Load Preview again"
             });
         }
     });
