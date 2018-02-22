@@ -320,7 +320,6 @@ function workspace_dataset(id) {
 
 function show_preview(id) {
     document.getElementById("show_data_preview").value = "Loading Preview"
-    // console.log('you clicked preview: ', id)
     $.ajax({
         url: "/vfwheron/menu",
         datatype: 'image/png;base64',

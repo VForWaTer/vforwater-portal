@@ -22,7 +22,7 @@ from matplotlib import pylab
 from matplotlib.dates import DateFormatter
 from matplotlib.figure import Figure
 
-from .query_functions import get_bbox_from_data, build_id_list
+from .query_functions import build_id_list, get_bbox_from_data
 from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
 # from vfwheron.models import TblData, TblMeta, TblVariable
 # from vfwheron.filter import FilterMenu
@@ -44,25 +44,24 @@ class HomeView(TemplateView):
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
         data_style = 'default'
-        #print('+++ items: ', cache.get('workspaceData'))
-        #print("+++ FilterMenu.get_menu('submenu'): ", FilterMenu.get_menu('submenu'))
-        #print("+++ get_bbox_from_data(): ", get_bbox_from_data())
-        #print("+++data_style: ", data_style)
         # data_style = 'Light Blue Circle'
         if cache.get('workspaceData') == None:
             workspaceData = []
         else:
             workspaceData = cache.get('workspaceData')
-        return {'dataExt': get_bbox_from_data(), 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style,
+        try:
+            dataExt = get_bbox_from_data()
+        except:
+            dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+        return {'dataExt': dataExt, 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style,
                 'workspaceData': workspaceData}
 
 class menuView(TemplateView):
     # TODO: each time you click a new top menu the database is accessed --> implement cache!
     # user = 'default'
-
     def get(self, request):
 
-        # TODO: mix of session and cache looks terribly wrong. Possible to make consistent?
+        # maelicke_plot()
         request.session.set_expiry(20)  # expire after 20 seconds
 
         # bring last used menu to session
@@ -134,7 +133,7 @@ class menuView(TemplateView):
             # plot png the mälicke way:
             preview = request.GET.get('preview')
             label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name',
-                                       'variable__variable_symbol', 'variable__unit__unit_abbrev')
+                                                                   'variable__variable_symbol', 'variable__unit__unit_abbrev')
             ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
 
             # connect to database

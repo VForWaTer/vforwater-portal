@@ -10,11 +10,14 @@ from vfwheron.models import LtLocation
 
 
 def get_bbox_from_data(): # get bbox for available data
-    cursor = connections['vforwater'].cursor() # connect to database
-    # request bbox in srid of openlayers:
-    cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857)) FROM lt_location;')
-    m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
-    cursor.close()
+    try:
+        cursor = connections['vforwater'].cursor() # connect to database
+        # request bbox in srid of openlayers:
+        cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857)) FROM lt_location;')
+        m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
+        cursor.close()
+    except:
+        m = ['645336.034469495', '6395474.75106861', '666358.204722283', '6416613.20733359']
     return list(map(lambda x: float(x), m)) # change string to list of floats
 
 
