@@ -6,19 +6,16 @@ from io import BytesIO
 # import plotly.graph_objs as go
 
 from django.db import connections
-from django.http import request
-from django.db.models import Max, Min, Avg
-from django.db.models.functions import datetime, Trunc, TruncDay
 
-from vfwheron.models import TblMeta, TblData
+from vfwheron.models import TblMeta
 
 import matplotlib as mpl
+
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 
-def maelicke_plot():
-    preview = request.GET.get('preview')
+def maelicke_plot(preview):
     # preview = 1157
     label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name',
                                                            'variable__variable_symbol', 'variable__unit__unit_abbrev')
@@ -26,10 +23,8 @@ def maelicke_plot():
     # connect to database
     cursor = connections['vforwater'].cursor()
     cursor.execute(
-        # 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = %s' % preview)
         "SELECT date_trunc('day', tstamp) as date, avg(value) as avg, "
         "min(value) as min, max(value) as max "
-        # "stddev(value) as stddev "
         "FROM tbl_data WHERE meta_id = %s GROUP BY date_trunc('day', tstamp);" % preview)
     m = cursor.fetchall()
     cursor.close()
@@ -39,18 +34,9 @@ def maelicke_plot():
     ymin = [row[2] for row in m]
     ymax = [row[3] for row in m]
 
-    # django queryset seems to be fast, but query is executed when data is accessed. And that is very slow
-    # dataset_query = TblData.objects.filter(meta_id=preview).annotate(day=TruncDay('tstamp')).values_list('day').\
-    #     annotate(avg=Avg('value')).annotate(max=Max('value')).annotate(min=Min('value')) #  .order_by('tstamp')
-    # the following is slow, because there is the access to the database
-    # x = [row[0] for row in dataset_query]
-    # yavg = [row[1] for row in dataset_query]
-    # ymin = [row[2] for row in dataset_query]
-    # ymax = [row[3] for row in dataset_query]
-
     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-    ax.plot(x, yavg, '-b', lw=2, label = "Daily average")
-    ax.plot(x, ymin, 'c--', x, ymax, 'c--', label = 'Daily Min/Max')
+    ax.plot(x, yavg, '-b', lw=2, label="Daily average")
+    ax.plot(x, ymin, '-c', x, ymax, '-c', lw=0.5, label='Daily min/max')
     fig.autofmt_xdate(),
     ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     ax.set_xlabel('Date')
@@ -66,7 +52,6 @@ def maelicke_plot():
     # create the image-tag
     imgtag = "<img alt='data image' src='data:image/png;base64,%s'>" % b64.decode('utf8')
     return imgtag
-
 
 # class DataDisplayDownsampler(object):
 #     def __init__(self, xdata, ydata):
