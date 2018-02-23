@@ -35,8 +35,8 @@ def maelicke_plot(preview):
     ymax = [row[3] for row in m]
 
     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-    ax.plot(x, yavg, '-b', lw=2, label="Daily average")
-    ax.plot(x, ymin, '-c', x, ymax, '-c', lw=0.5, label='Daily min/max')
+    ax.plot(x, ymin, '-c', x, ymax, '-c', lw=0.3, label='Daily min/max')
+    ax.plot(x, yavg, '-b', lw=1, label="Daily average")
     fig.autofmt_xdate(),
     ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
     ax.set_xlabel('Date')
