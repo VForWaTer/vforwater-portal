@@ -207,7 +207,7 @@ $(document).ready(function (menuTitle) {
         });
 // second action: request menu values
         $.ajax({
-            url: "/vfwheron/menu",
+            url: DEMO_VAR+"/vfwheron/menu",
             datatype: 'json',
             data: {
                 menu: menuValue,
@@ -246,7 +246,7 @@ $(document).ready(function (menuTitle) {
 // Select Data / build elements, in workspace
 function select_data(selectedData) {
     $.ajax({
-        url: "/vfwheron/menu",
+        url: DEMO_VAR+"/vfwheron/menu",
         datatype: 'json',
         data: {
             selection: selectedData[0],
@@ -278,7 +278,7 @@ function getCookie(name) {
 
 function onclick_show_datasets_func() {
     $.ajax({
-        url: "/vfwheron/menu",
+        url: DEMO_VAR+"/vfwheron/menu",
         datatype: 'json',
         data: {
             onclick_show_datasets: 'True',
@@ -303,7 +303,7 @@ function onclick_show_datasets_func() {
 
 function workspace_dataset(id) {
     $.ajax({
-        url: "/vfwheron/menu",
+        url: DEMO_VAR+"/vfwheron/menu",
         datatype: 'json',
         data: {
             workspaceData: id,
@@ -321,7 +321,7 @@ function workspace_dataset(id) {
 function show_preview(id) {
     document.getElementById("show_data_preview").value = "Loading Preview"
     $.ajax({
-        url: "/vfwheron/menu",
+        url: DEMO_VAR+"/vfwheron/menu",
         datatype: 'image/png;base64',
         data: {
             preview: id,

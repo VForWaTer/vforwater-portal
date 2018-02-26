@@ -13,6 +13,12 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from django.utils.translation import ugettext
+
+##PATH_INFO = '/'
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # For now, place all data files in VFW_DIR and not into source directory.
@@ -25,6 +31,9 @@ if not os.path.exists(VFW_DIR):
 HOST_NAME = "vforwater-gis.scc.kit.edu"
 VFW_SERVER = 'https://' + HOST_NAME
 MAP_SERVER = "https://portal.vforwater.de"
+
+# Variable to set the demo path in static files
+DEMO_VAR = ''
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -74,7 +83,7 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
-        },    
+        },
         'watts_rsp': {
             'handlers': ['file'],
             'level': 'DEBUG',
@@ -105,6 +114,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+# For automatic translations see:
+# https://docs.djangoproject.com/en/1.11/topics/i18n/translation/#how-django-discovers-language-preference
+# Also see: https://djangobook.com/internationalization-template-code/ or https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Home_page
+    # 'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -180,6 +193,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
+
+# LANGUAGES = [
+#   ('de', _('German')),
+#   ('en', _('English')),
+# ]
 
 TIME_ZONE = 'Europe/Berlin'
 
