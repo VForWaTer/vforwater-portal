@@ -177,7 +177,6 @@ function getCookie(name) {
 // TODO: not used in this file. So from where comes the used token? Which one is better?
 var csrf_token = getCookie('csrftoken');
 
-
 //build menu on sidebar
 $(document).ready(function (menuTitle) {
     $('#accordion').accordion({
@@ -193,7 +192,7 @@ $(document).ready(function (menuTitle) {
 
     $("h5.respo-hover-blue.nav").click(function () { // two actions happen on click:
 
-        var menuValue = $(this).attr("value");
+        // var menuValue = $(this).attr("value");
 // first action: open accordion
         $('div #subaccordion').accordion({
             heightStyle: "content",
@@ -206,40 +205,40 @@ $(document).ready(function (menuTitle) {
             }
         });
 // second action: request menu values
-        $.ajax({
-            url: DEMO_VAR+"/vfwheron/menu",
-            datatype: 'json',
-            data: {
-                menu: menuValue,
-
-                'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
-            success: function (json) {
-                $.each(json, function (key1, value1) { // loop over top level menu z.B. key1 = Geologie
-                    //                    var newMenuButton = ('#'+key1)
-                    var newHTML = '';
-                    var newMenu = '';
-                    $.each(value1, function (key2, value2) { // loop over sub menu z.B. key2 = Sandstone
-                        if (key2 != 'null') {
-                            var selectedData = "['" + key2 + "', '" + key1 + "']"
-//                            var selectedData = "'"+ key2 +"'"
-//                            console.log('value 2 ist: ', value2[1])
-                            var bool = ''
-                            if (value2[0]) {
-                                bool = 'checked'
-                            }
-                            newHTML = '<input type="checkbox" class="respo-check respo-hover-blue" id="' + key2 + '" ' +
-                                bool + '  onclick="select_data(' + selectedData + ')"> ' + key2 + ' <i>(' + value2[1] +
-                                ')</i></input><br>';
-                        } else {
-                            newHTML = '<a>keine Auswahl verfügbar</a>';
-                        }
-                        newMenu = newMenu + newHTML;
-                    });
-                    $('#' + key1).html(newMenu);
-                });
-            },
-        });
+//         $.ajax({
+//             url: DEMO_VAR+"/vfwheron/menu",
+//             datatype: 'json',
+//             data: {
+//                 menu: menuValue,
+//
+//                 'csrfmiddlewaretoken': csrf_token,
+//             }, // data sent with the post request
+//             success: function (json) {
+//                 $.each(json, function (key1, value1) { // loop over top level menu z.B. key1 = Geologie
+//                     //                    var newMenuButton = ('#'+key1)
+//                     var newHTML = '';
+//                     var newMenu = '';
+//                     $.each(value1, function (key2, value2) { // loop over sub menu z.B. key2 = Sandstone
+//                         if (key2 != 'null') {
+//                             var selectedData = "['" + key2 + "', '" + key1 + "']"
+// //                            var selectedData = "'"+ key2 +"'"
+// //                            console.log('value 2 ist: ', value2[1])
+//                             var bool = ''
+//                             if (value2[0]) {
+//                                 bool = 'checked'
+//                             }
+//                             newHTML = '<input type="checkbox" class="respo-check respo-hover-blue" id="' + key2 + '" ' +
+//                                 bool + '  onclick="select_data(' + selectedData + ')"> ' + key2 + ' <i>(' + value2[1] +
+//                                 ')</i></input><br>';
+//                         } else {
+//                             newHTML = '<a>keine Auswahl verfügbar</a>';
+//                         }
+//                         newMenu = newMenu + newHTML;
+//                     });
+//                     $('#' + key1).html(newMenu);
+//                 });
+//             },
+//         });
     });
 }); // end ready
 
@@ -337,3 +336,25 @@ function show_preview(id) {
         }
     });
 }
+
+
+
+// // from here build the new accordion
+// var acc = document.getElementsByClassName("new_accord");
+// var i;
+//
+// for (i = 0; i < acc.length; i++) {
+//     acc[i].addEventListener("click", function() {
+//         /* Toggle between adding and removing the "active" class,
+//         to highlight the button that controls the panel */
+//         this.classList.toggle("active");
+//
+//         /* Toggle between hiding and showing the active panel */
+//         var panel = this.nextElementSibling;
+//         if (panel.style.display === "block") {
+//             panel.style.display = "none";
+//         } else {
+//             panel.style.display = "block";
+//         }
+//     });
+// }
