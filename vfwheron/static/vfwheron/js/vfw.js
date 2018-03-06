@@ -183,26 +183,16 @@ $(document).ready(function (menuTitle) {
         heightStyle: "content",
         active: false,
         collapsible: true,
-//  TODO - very low priority: icons don't work
-        icons: {
-            header: 'fa-plus-circle',
-            activeHeader: 'fa-minus-circle'
-        }
     });
 
-    $("h5.respo-hover-blue.nav").click(function () { // two actions happen on click:
+    $("h5.respo-hover-blue.nav").click(function () { // action happens on click:
 
         // var menuValue = $(this).attr("value");
-// first action: open accordion
+// open accordion
         $('div #subaccordion').accordion({
             heightStyle: "content",
             active: false,
             collapsible: true,
-            //  TODO - very low priority: icons don't work
-            icons: {
-                header: 'fa-plus-circle',
-                activeHeader: 'fa-minus-circle'
-            }
         });
 // second action: request menu values
 //         $.ajax({
@@ -241,6 +231,21 @@ $(document).ready(function (menuTitle) {
 //         });
     });
 }); // end ready
+
+// build range slider after http://jqueryui.com/slider/#range:
+//   $( function() {
+//       $( "#slider-range" ).rangeselector({
+//       range: true,
+//       min: 0,
+//       max: 500,
+//       values: [ 75, 300 ],
+//       slide: function( event, ui ) {
+//         $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+//       }
+//     });
+//       $( "#amount" ).val( "$" + $( "#slider-range" ).rangeselector( "values", 0 ) +
+//       " - $" + $( "#slider-range" ).rangeselector( "values", 1 ) );
+//   } );
 
 // Select Data / build elements, in workspace
 function select_data(selectedData) {
@@ -358,3 +363,4 @@ function show_preview(id) {
 //         }
 //     });
 // }
+
