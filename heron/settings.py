@@ -162,9 +162,13 @@ DATABASES = {
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater_update',
-        'HOST': 'portal.vforwater.de',
-        'PORT': '5433',
+        # 'HOST': 'portal.vforwater.de',
+        # 'PORT': '5433',
         'USER': 'vfwportal',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        # 'USER': 'postgres',
+        # 'PASSWORD': 'vforwater',
     }
 
 }

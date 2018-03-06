@@ -73,10 +73,13 @@ function childBuilder(child) {
     }
     else if (child.hasOwnProperty("type")) {
         if (child.type == "slider") {
-            itemHTML = sliderDiv(child)
+            itemHTML = sliderBuilder(child)
             childHTML=
-            "<a >"+child.name+"</a>" +
-                "<a> "+itemHTML +"</a>"
+            "<h6 class='respo-hover-blue nav'>" + child.name+ "&emsp;<i>(" + child.total + ")</i>" + "</h6>" +
+            "<div id='" + child.name + "'>" +
+                "<div id='sliderwildcard'> "+itemHTML+
+            "   </div>" +
+            "</div>"
         }
         else if (child.type == "date") {
             itemHTML = dateBuilder(child)
@@ -88,30 +91,28 @@ function childBuilder(child) {
         // itemHTML = checkBoxBuilder(child)
         childHTML =
             "<div>" +
-                "<b> "+child.name +": </b>"+itemHTML+"" +
+                "<b> "+child.name +": </b>"+itemHTML+
             "</div>"
     }
     return childHTML
 }
 
 function dateBuilder(child) {
-    console.log(child.name)
+    console.log('child.name: ', child.name)
     var minD = child.selectable_min.toString();
     var maxD = child.selectable_max.toString();
     var itemHTML =
-        // "<div class='slidecontainer'>" +
-        // "<input type='range' min="+child.selectable_min+" max="+child.selectable_max+" min_value="+child.selectable_min+" class='slider' id='myRange'>" +
-        // "</div>"
-        "<p>Date: <input type='text' id='datepicker'></p>"
+        // "<p>"+child.name+"</p><input class='date' type='text' id='"+child.name+"'>"
 
-  $( function() {
-    $( "#datepicker" ).datepicker();
-  } );
+        "<p>Date: <input type='text' id='datepicker'></p>"
+    $( function() {
+      $( "#datepicker" ).datepicker();
+    } );
 
     return itemHTML;
 }
 
-function sliderDiv(child) {
+function sliderBuilder(child) {
     console.log(child.name)
     var minV = child.selectable_min.toString();
     var maxV = child.selectable_max.toString();
@@ -131,43 +132,6 @@ function sliderDiv(child) {
             // "<button onclick='onclick_slider("+child.name+","+minV+","+maxV+")' class='filter-btn-block respo-hover-blue nav'>"+child.name+"</button>" +
         "<div class='slider' name='" + child.name + "' minV='"+minV+"' maxv='"+maxV+"'>" +
         "</div>"
-    // Append the option elements
-    // var select = document.getElementById('input-select');
-    // for ( var i = minV; i <= maxV; i++ ){
-    //     var option = document.createElement("option");
-    //     option.text = i;
-		// option.value = i;
-    //     select.appendChild(option);
-    // };
-    // // Initializing the slider
-    // var html5Slider = document.getElementById('html5');
-    // noUiSlider.create(html5Slider, {
-    //     start: [ minV, maxV ],
-    //     connect: true,
-    //     range: {
-    //         'min': minV,
-    //         'max': maxV
-    //     }
-    // });
-
-    // // Updating the <select> and <input>
-    // var inputNumber = document.getElementById('input-number');
-    // html5Slider.noUiSlider.on('update', function( values, handle ) {
-    //     var value = values[handle];
-    //     if ( handle ) {
-    //         inputNumber.value = value;
-    //     } else {
-    //         select.value = Math.round(value);
-    //     }
-    // });
-    // select.addEventListener('change', function(){
-    //     html5Slider.noUiSlider.set([this.value, null]);
-    // });
-    // inputNumber.addEventListener('change', function(){
-    //     html5Slider.noUiSlider.set([null, this.value]);
-    // });
-
-
     // Two Textfields for numbers:
     // var itemHTML =
     //     "<div >(min/max: "+minV+"/"+maxV+")" +
@@ -175,19 +139,7 @@ function sliderDiv(child) {
     //     "<input type='number' name='price-max' id='price-max' value='"+maxV+"' min='"+minV+"' max='"+maxV+"'>" +
     //     "<input type='submit' data-inline='true' value='Submit'>"+
     //     "</div>"
-
-    // TODO: find a working from-to slider
-    // This builds only two separate sliders
-    // var itemHTML =
-    //     "<div class='container' data-role='rangeslider'>"+child.name+"" +
-    //     "<div data-role='rangeslider'>" +
-    //     "<label for='price-min'>Price:</label>" +
-    //     "<input type='range' name='price-min' id='price-min' value='200' min='"+minV+"' max='"+maxV+"'>" +
-    //     "<input type='range' name='price-max' id='price-max' value='800' min='"+minV+"' max='"+maxV+"'>" +
-    //     "</div>" +
-    //     "<input type='submit' data-inline='true' value='Submit'>"+
-    //     "</div>"
-
+    $(document).ready(addSlider);
     return itemHTML;
 }
 
@@ -197,7 +149,7 @@ function itemBuilder(child) {
         var cItem = eval("child.item" + i.toString());
         var listHTML =
             "<div>" +
-                "<a value='" + child.item1 + "' class='respo-hover-blue'>" + cItem.name + "" +
+                "<a value='" + cItem.chosen + "' class='respo-hover-blue'>" + cItem.name + "&emsp;<i>(" + cItem.total + ")</i>" +
                 "</a>" +
             "</div>";
         itemHTML = itemHTML + listHTML;
@@ -237,14 +189,11 @@ function dDMFilterFunction(dropDownName, inputName) {
     }
 }
 
-
-$(document).ready(sliderBuilder);
-
-function sliderBuilder(){
+function addSlider(){
     var handlesSlider =  document.getElementsByClassName('slider');
     for (var i = 0; i < handlesSlider.length; i++){
-        var maxv = parseInt(handlesSlider[i].attributes.maxv.value);
-        var minv = parseInt(handlesSlider[i].attributes.minv.value);
+        var maxv = parseFloat(handlesSlider[i].attributes.maxv.value);
+        var minv = parseFloat(handlesSlider[i].attributes.minv.value);
         noUiSlider.create(handlesSlider[i], {
             start: [minv, maxv],
             tooltips:  true ,
@@ -254,12 +203,23 @@ function sliderBuilder(){
                 'min': [ minv ],
                 'max': [ maxv ]
             },
-            pips: { // Show a scale with the slider
-		mode: 'steps',
-		stepped: true,
-		density: 4
-	}
+            // pips: { // Show a scale with the slider
+		// mode: 'steps',
+		// stepped: true,
+		// density: 4
+	// }
         });
 
     }
 }
+
+// $(document).ready(addDatePicker);
+// function addDatePicker() {
+//     var handlesDate =  document.getElementsByClassName('date');
+//     for (var i = 0; i < handlesDate.length; i++) {
+//         console.log('date: ', handlesDate[i])
+//         console.log("document."+handlesDate[i].id+".datepicker()")
+//         eval("document."+handlesDate[i].id+".datepicker()");
+//         // $( "#handlesDate[i].name" ).datepicker();
+//     }
+//   } ;

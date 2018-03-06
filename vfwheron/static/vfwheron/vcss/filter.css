@@ -161,6 +161,13 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
         width: 70px;
     }
 
+    #sliderwildcard{
+	/*height: auto;*/
+	/*width: auto;*/
+	/*margin: 0 auto;*/
+	padding: 28px 0px 0px 0px;
+	/*border: 1px solid #BFBFBF;*/
+}
 /*style from https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css*/
 .ui-rangeslider {
     margin: .5em 0

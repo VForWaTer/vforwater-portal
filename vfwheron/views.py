@@ -28,7 +28,8 @@ from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
 # from vfwheron.filter import FilterMenu
 from datetime import datetime
 
-import matplotlib.pyplot as plt
+from .filter import newFiltermenu, Menu
+
 import logging
 import os
 
@@ -40,6 +41,8 @@ logger = logging.getLogger(__name__)
 # every time they open a browser.
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
+    newMenu = Menu().json_menu()
+    # newMenu = JsonResponse({"Name": "Harry", "Age": 2})
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
@@ -54,7 +57,7 @@ class HomeView(TemplateView):
         except:
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
         return {'dataExt': dataExt, 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style,
-                'workspaceData': workspaceData}
+                'workspaceData': workspaceData, 'newMenu': self.newMenu}
 
 class menuView(TemplateView):
     # TODO: each time you click a new top menu the database is accessed --> implement cache!

@@ -29,13 +29,23 @@ class LtDomain(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'domain_name': 'Domänenname', 'project__project_name': 'Projekt'}
-    newcolumn_dict = {'domain_name': {'DE': 'Domänenname', 'EN': 'Domain Name'},
-                   'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
+    # newcolumn_dict = {'domain_name': {'DE': 'Domänenname', 'EN': 'Domain Name'},
+    #                'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
+    newcolumn_dict = {'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
+    child_column_dict = {'domain_name': {'DE': 'Domänenname', 'EN': 'Domain Name'}}
+
     menu_name = 'Projekt/Domäne'
-    newmenu_name = {'DE': 'Projekt/Domäne', 'EN': 'Project/domain'}
+    newmenu_name = {'DE': 'Projekt/Domäne', 'EN': 'Project/Domain'}
+    submenu_names = {'project': {'DE': 'Projekt', 'EN': 'Project'},
+                     'domain': {'DE': 'Domäne', 'EN': 'Domain'},
+                     'subdomain': {'DE': 'Subdomäne', 'EN': 'Subdomain'}}
     path = 'domain'
     newpath = 'nmmetadomain__domain'
-    filter_type = {'domain_name': 'recursive'}
+    # filter_type = {'domain_name': 'recursive'}
+
+    # Recursive exists only in that table, so the build process is highly customized to that one
+    filter_type = {'project__project_name': 'recursive'}
+    mother = 'LtProject'
 
     def __str__(self):
         return self.domain_name
@@ -94,7 +104,7 @@ class LtLocation(models.Model):
     def __str__(self):
         # return '%s %s' % (self.centroid_x, self.centroid_y)
         return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (
-        self.geometry_type, self.centroid_x, self.centroid_y, self.srid)
+            self.geometry_type, self.centroid_x, self.centroid_y, self.srid)
 
     class Meta:
         managed = False
@@ -107,6 +117,8 @@ class LtProject(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
+    menu_name = 'Project & Domain'
+    column_dict = {'project_name': 'Projektname'}
     newcolumn_dict = {'project_name': {'DE': 'Projektname', 'EN': 'Project name'}}
     newmenu_name = {'DE': 'Projekt', 'EN': 'project'}
     newpath = 'nmmetadomain__domain__project'
@@ -127,7 +139,7 @@ class LtQuality(models.Model):
 
     column_dict = {'flag_name': 'Qualität', 'flag_weight': 'Gewichtung'}
     newcolumn_dict = {'flag_name': {'DE': 'Kennzeichen', 'EN': 'Flag'},
-                       'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
+                      'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
     menu_name = 'Qualität'
     newmenu_name = {'DE': 'Qualität', 'EN': 'Quality'}
     path = 'meta__quality'
@@ -198,7 +210,8 @@ class LtSoil(models.Model):
     newpath = 'soil'
 
     def __str__(self):
-        return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology is always filled
+        return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology
+        # is always filled
 
     class Meta:
         managed = False
@@ -250,10 +263,10 @@ class LtUser(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     newcolumn_dict = {'first_name': {'DE': 'Vorname', 'EN': 'First name'},
-                   'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
-                   'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
-                   'department': {'DE': 'Abteilung', 'EN': 'Department'},
-                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+                      'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
+                      'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
+                      'department': {'DE': 'Abteilung', 'EN': 'Department'},
+                      'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
     column_dict = {'first_name': 'Vorname', 'last_name': 'Nachname', 'institution_name': 'Institut',
                    'department': 'Abteilung', 'comment': 'Kommentar'}
     menu_name = 'Nutzer'
@@ -350,12 +363,12 @@ class TblMeta(models.Model):
 
     # TODO: ussed because users are creator and publisher. Improve this!
     newcolumn_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
-                   'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
-                   'support': {'DE': 'Auflage???', 'EN': 'Support'},
-                   'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
-                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'},
-                   # 'creator__LtUser': {'DE': 'Ersteller', 'EN': 'Creator'},
-                   # 'publisher__LtUser': {'DE': 'Veröffentlicher', 'EN': 'Publisher'}
+                      'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
+                      'support': {'DE': 'Auflage???', 'EN': 'Support'},
+                      'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
+                      'comment': {'DE': 'Kommentar', 'EN': 'Comment'},
+                      # 'creator__LtUser': {'DE': 'Ersteller', 'EN': 'Creator'},
+                      # 'publisher__LtUser': {'DE': 'Veröffentlicher', 'EN': 'Publisher'}
                       }
 
     column_dict = {'ts_start': 'Messbeginn', 'ts_stop': 'Messende', 'support': 'Support???', 'spacing': 'Schrittweite',
@@ -381,9 +394,9 @@ class TblSensor(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    newcolumn_dict = {'sensor_name': {'DE':'Name', 'EN': 'Name'},
-                   'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufactorer'},
-                   'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+    newcolumn_dict = {'sensor_name': {'DE': 'Name', 'EN': 'Name'},
+                      'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufactorer'},
+                      'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
     column_dict = {'sensor_name': 'Name', 'manufacturer': 'Hersteller', 'sensor_comment': 'Kommentar'}
     menu_name = 'Sensor'
     newmenu_name = {'DE': 'Sensor', 'EN': 'Sensor'}
@@ -471,7 +484,8 @@ class FilterMenu(models.Manager):
 
     def count_query(cache_obj, active_m_key=False, active_key=False,
                     submenu_key=False):  # , active_value=False):  # Boden Geologie Sandstone
-        # def build_sub_query(cache_obj, active_m_key=False, active_key=False, active_value=False): # Boden Geologie Sandstone
+        # def build_sub_query(cache_obj, active_m_key=False, active_key=False, active_value=False): # Boden Geologie
+        # Sandstone
         m_map = {}
         paths = {}
         dataset_count = {}
@@ -534,7 +548,9 @@ class Basiseinzugsgebiet(models.Model):
     fgkz_nr = models.FloatField('flussgebietskennzahl')
     einzugsgeb = models.IntegerField('einzugsgebietsordnung')  # Einzugsgebiets Ordnung – eines Flusses, Baches
     einzugsg00 = models.CharField('einzugsgebietsordnung in Worten',
-                                  max_length=80)  # Quellgebiet – oberstes Teilgebiet eines Flusses, Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet – unterstes Teilgebiet eines Flusses, Baches
+                                  max_length=80)  # Quellgebiet – oberstes Teilgebiet eines Flusses,
+    # Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet
+    #  – unterstes Teilgebiet eines Flusses, Baches
     einzugsg01 = models.CharField(max_length=1)
     einzugsg02 = models.CharField(max_length=26)
     vor_fgkz_n = models.FloatField('flussgebietskennzahl des vorfluters')
