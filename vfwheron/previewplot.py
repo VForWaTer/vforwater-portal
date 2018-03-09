@@ -21,17 +21,17 @@ def maelicke_plot(preview):
     use_redis=True
     in_cache=False
     try:
-        r = redis.StrictRedis()
+        r = redis.StrictRedis() 
+        b64 = r.get("preview_{}".format(preview))
     except:
         use_redis=False
     if use_redis:
-        try:
-            b64 = r.get("preview_{}".format(preview))
-            if b64 is not None:
-                b64 = str(b64,'utf-8')
-                in_cache=True
-        except:
+        if b64 is None: 
             in_cache=False
+        else:
+            b64 = str(b64,'utf-8')
+            in_cache=True
+
     if not in_cache:
         # preview = 1157
         label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name',
