@@ -5,7 +5,7 @@ var filterMenu
 menues.forEach(menuBuilder,jsMenu)
 
 function menuBuilder(item, index) {
-    if (jsMenu[item].total > 1) {  // check how many entries are in menu
+    if (jsMenu[item].total > 0) {  // check how many entries are in menu TODO: No Accordion when only one value
         var parentHTML ="";
         var i;
         for (i = 1; i <= jsMenu[item].total; i++) {  // build child menu
@@ -15,8 +15,9 @@ function menuBuilder(item, index) {
             parentHTML = parentHTML + childHTML
         }
         filterMenu = document.getElementById("accordion").innerHTML +=
-            "<h5 class='respo-hover-blue nav'>" + jsMenu[item].name + "</h5>" +
+            "<h5 class='respo-hover-blue nav topmenu'>" + jsMenu[item].name + "</h5>" +
             "<div id='" + jsMenu[item].name + "'>" +
+        // TODO: subaccordion works only in first menu. FIX IT!
                 "<div id='subaccordion'> "+parentHTML+"" +
             "   </div>" +
             "</div>"
@@ -50,7 +51,7 @@ function childBuilder(child) {
     if (child.total > 1 && child.total <= dDL && !child.hasOwnProperty("type")) {
         itemHTML = itemBuilder(child)
         childHTML =
-            "<h6 class='respo-hover-blue nav'>" + child.name + "</h6>" +
+            "<h6 class='respo-hover-blue nav childmenu'>" + child.name + "</h6>" +
             "<div id='" + child.name + "'>" +
                 "<div> "+itemHTML+"" +
             "   </div>" +
@@ -90,7 +91,7 @@ function childBuilder(child) {
         itemHTML = itemBuilder(child)
         // itemHTML = checkBoxBuilder(child)
         childHTML =
-            "<div>" +
+            "<div id='"+child.name+"'>" +
                 "<b> "+child.name +": </b>"+itemHTML+
             "</div>"
     }
@@ -139,20 +140,31 @@ function sliderBuilder(child) {
     //     "<input type='number' name='price-max' id='price-max' value='"+maxV+"' min='"+minV+"' max='"+maxV+"'>" +
     //     "<input type='submit' data-inline='true' value='Submit'>"+
     //     "</div>"
-    $(document).ready(addSlider);
+
     return itemHTML;
 }
 
 function itemBuilder(child) {
-    var i, itemHTML = "";
+    var i, active, itemHTML = "";
+    // console.log('now me jsMenu[item].name: ', jsMenu[item].name)
     for (i = 1; i <= child.total; i++) {
         var cItem = eval("child.item" + i.toString());
+        if (cItem.chosen){
+            active = 'active'
+        } else {
+            active = ''
+        }
         var listHTML =
-            "<div>" +
-                "<a value='" + cItem.chosen + "' class='respo-hover-blue'>" + cItem.name + "&emsp;<i>(" + cItem.total + ")</i>" +
-                "</a>" +
-            "</div>";
+            // "<div>" +
+                // "<label class='container'>"+
+                // "<input type='radio' checked='checked' name='radio'>" +
+                "<a class='respo-hover-blue btn "+active+"' onclick='activateFunc(this)'>" + cItem.name + "&emsp;" +
+            "       <i>(" + cItem.total + ")</i>"+
+                "</a>"
+            // "   </label>" +
+            // "</div>";
         itemHTML = itemHTML + listHTML;
+        // console.log('haha!: ', listHTML.getElementsByClassName("btn"))
     }
     return itemHTML
 }
@@ -189,7 +201,7 @@ function dDMFilterFunction(dropDownName, inputName) {
     }
 }
 
-function addSlider(){
+$(document).ready(function (){
     var handlesSlider =  document.getElementsByClassName('slider');
     for (var i = 0; i < handlesSlider.length; i++){
         var maxv = parseFloat(handlesSlider[i].attributes.maxv.value);
@@ -211,7 +223,7 @@ function addSlider(){
         });
 
     }
-}
+});
 
 // $(document).ready(addDatePicker);
 // function addDatePicker() {
@@ -223,3 +235,13 @@ function addSlider(){
 //         // $( "#handlesDate[i].name" ).datepicker();
 //     }
 //   } ;
+
+function activateFunc(item) {
+    if (item.classList.contains('active')) {
+        item.classList.remove('active');
+    } else {
+        itemList = item.parentElement.getElementsByClassName("active")
+        $(item).addClass('active').siblings().removeClass('active');
+        // item.classList.add('active');
+    }
+}

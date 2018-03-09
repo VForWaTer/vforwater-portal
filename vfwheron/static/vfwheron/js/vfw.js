@@ -189,7 +189,7 @@ $(document).ready(function (menuTitle) {
 
         // var menuValue = $(this).attr("value");
 // open accordion
-        $('div #subaccordion').accordion({
+        $('#subaccordion').accordion({
             heightStyle: "content",
             active: false,
             collapsible: true,
@@ -231,21 +231,6 @@ $(document).ready(function (menuTitle) {
 //         });
     });
 }); // end ready
-
-// build range slider after http://jqueryui.com/slider/#range:
-//   $( function() {
-//       $( "#slider-range" ).rangeselector({
-//       range: true,
-//       min: 0,
-//       max: 500,
-//       values: [ 75, 300 ],
-//       slide: function( event, ui ) {
-//         $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
-//       }
-//     });
-//       $( "#amount" ).val( "$" + $( "#slider-range" ).rangeselector( "values", 0 ) +
-//       " - $" + $( "#slider-range" ).rangeselector( "values", 1 ) );
-//   } );
 
 // Select Data / build elements, in workspace
 function select_data(selectedData) {
