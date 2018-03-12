@@ -185,11 +185,10 @@ $(document).ready(function (menuTitle) {
         collapsible: true,
     });
 
-    $("h5.respo-hover-blue.nav").click(function () { // action happens on click:
-
+    $("h5.respo-hover-blue.nav").click(function () {
         // var menuValue = $(this).attr("value");
 // open accordion
-        $('#subaccordion').accordion({
+        $('div #subaccordion').accordion({
             heightStyle: "content",
             active: false,
             collapsible: true,

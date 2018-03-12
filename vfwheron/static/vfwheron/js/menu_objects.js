@@ -1,28 +1,34 @@
-var jsMenu = JSON.parse(jsonMenu)
-var menues = Object.keys(jsMenu)
-var filterMenu
+// This function builds the whole menu structure. For interaction with Server the menus have a short class in the style:
+// First top menu (Parent): P1
+// First child: C1
+// Second child: C2
+// First Item: I1...
 
-menues.forEach(menuBuilder,jsMenu)
+const jsMenu = JSON.parse(jsonMenu);
+const menues = Object.keys(jsMenu);
+let filterMenu;
+let parent;
+let selection = {};
 
-function menuBuilder(item, index) {
-    if (jsMenu[item].total > 0) {  // check how many entries are in menu TODO: No Accordion when only one value
-        var parentHTML ="";
-        var i;
-        for (i = 1; i <= jsMenu[item].total; i++) {  // build child menu
-            var child = eval("jsMenu[item]."+['child'+i.toString()])
-            var childHTML = childBuilder(child)
-            // console.log('  *** ** *' + itemHTML)
+menues.forEach(menuBuilder,jsMenu);
+
+function menuBuilder(parent) {
+    console.log('parent: ', parent)
+    if (jsMenu[parent].total > 0) {  // check how many entries are in menu
+        let parentHTML ="";
+        for (let i = 1; i <= jsMenu[parent].total; i++) {  // build child menu
+            let child = 'C'+i.toString()
+            let childHTML = childBuilder(eval("jsMenu[parent]."+[child]), child, parent);
+            // console.log('  *** ** *' + parentHTML)
             parentHTML = parentHTML + childHTML
         }
         filterMenu = document.getElementById("accordion").innerHTML +=
-            "<h5 class='respo-hover-blue nav topmenu'>" + jsMenu[item].name + "</h5>" +
-            "<div id='" + jsMenu[item].name + "'>" +
-        // TODO: subaccordion works only in first menu. FIX IT!
+            "<h5 class='respo-hover-blue nav parent "+parent+"'>" + jsMenu[parent].name + "</h5>" +
+            "<div id='" + jsMenu[parent].name + "'>" +
                 "<div id='subaccordion'> "+parentHTML+"" +
             "   </div>" +
-            "</div>"
-            // +"<div><a>HaHa!</a></div>";
-        console.log('jsMenu[item].name: ', jsMenu[item].name)
+            "</div>";
+        console.log('jsMenu[parent].name: ', jsMenu[parent].name)
         // document.getElementById("accordion").innerHTML +=
         //     "<button class='new_accord'>" + jsMenu[item].name + "</button>" +
         //     "<div class='panel'>" +
@@ -43,27 +49,27 @@ function menuBuilder(item, index) {
     //
 }
 
-function childBuilder(child) {
-    var childHTML = "";
-    var itemHTML = "";
-    var dDL = 8;  // dropDownLimit
-
+function childBuilder(child, shortChild, shortParent) {
+    let childHTML = "";
+    let itemHTML = "";
+    let dDL = 8;  // dropDownLimit
+    // console.log('child in childbuilder: ', shortChild)
     if (child.total > 1 && child.total <= dDL && !child.hasOwnProperty("type")) {
-        itemHTML = itemBuilder(child)
+        itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
-            "<h6 class='respo-hover-blue nav childmenu'>" + child.name + "</h6>" +
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+" childmenu'>" + child.name + "</h6>" +
             "<div id='" + child.name + "'>" +
                 "<div> "+itemHTML+"" +
             "   </div>" +
             "</div>"
     }
     else if (child.total > dDL && !child.hasOwnProperty("type")){
-        itemHTML = itemBuilder(child)
-        inputName = "Input"+child.name
+        itemHTML = itemBuilder(child, shortChild, shortParent);
+        inputName = "Input"+child.name;
         childHTML =
             "<div class='dropdown'>" +
-                "<button onclick='dDMFunction(\""+child.name+"\")' class='filter-btn-block respo-hover-blue nav'>"+child.name+"" +
-                "</button>" +
+                "<button onclick='dDMFunction(\""+child.name+"\")' class='filter-btn-block respo-hover-blue nav child "+
+                shortParent+" "+shortChild+"'>" + child.name + "</button>" +
                 "<div id='" + child.name + "' class='dropdown-content'>" +
                     "<input type='text' placeholder='Search...' id = '"+inputName+"'" +
                         "onkeyup='dDMFilterFunction(\""+child.name+"\", \""+inputName+"\")' >" +
@@ -73,23 +79,22 @@ function childBuilder(child) {
             "</div>"
     }
     else if (child.hasOwnProperty("type")) {
-        if (child.type == "slider") {
-            itemHTML = sliderBuilder(child)
+        if (child.type === "slider") {
+            itemHTML = sliderBuilder(child, shortChild, shortParent);
             childHTML=
-            "<h6 class='respo-hover-blue nav'>" + child.name+ "&emsp;<i>(" + child.total + ")</i>" + "</h6>" +
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i>(" + child.total + ")</i>" + "</h6>" +
             "<div id='" + child.name + "'>" +
                 "<div id='sliderwildcard'> "+itemHTML+
-            "   </div>" +
+            " </div>" +
             "</div>"
         }
-        else if (child.type == "date") {
-            itemHTML = dateBuilder(child)
+        else if (child.type === "date") {
+            itemHTML = dateBuilder(child, shortChild, shortParent);
             childHTML = itemHTML
         }
     }
-    else if (child.total == 1) {
-        itemHTML = itemBuilder(child)
-        // itemHTML = checkBoxBuilder(child)
+    else if (child.total === 1) {
+        itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
             "<div id='"+child.name+"'>" +
                 "<b> "+child.name +": </b>"+itemHTML+
@@ -98,14 +103,12 @@ function childBuilder(child) {
     return childHTML
 }
 
-function dateBuilder(child) {
-    console.log('child.name: ', child.name)
-    var minD = child.selectable_min.toString();
-    var maxD = child.selectable_max.toString();
-    var itemHTML =
-        // "<p>"+child.name+"</p><input class='date' type='text' id='"+child.name+"'>"
+function dateBuilder(child, shortChild, shortParent) {
+    let minD = child.selectable_min.toString();
+    let maxD = child.selectable_max.toString();
+    let itemHTML =
+        "<p>Date: <input type='text' id='datepicker "+shortParent+" "+shortChild+"'></p>";
 
-        "<p>Date: <input type='text' id='datepicker'></p>"
     $( function() {
       $( "#datepicker" ).datepicker();
     } );
@@ -113,11 +116,9 @@ function dateBuilder(child) {
     return itemHTML;
 }
 
-function sliderBuilder(child) {
-    console.log(child.name)
-    var minV = child.selectable_min.toString();
-    var maxV = child.selectable_max.toString();
-    // onclick_slider(child.name,minV,maxV)
+function sliderBuilder(child, shortChild, shortParent) {
+    let minV = child.selectable_min.toString();
+    let maxV = child.selectable_max.toString();
 
     // var handlesSlider = document.getElementById('slider-handles');
     // // var document.getElementById(child.name).addEventListener("click", function(){
@@ -128,11 +129,11 @@ function sliderBuilder(child) {
     //     "<div class='container' data-role='rangeslider'>"+child.name+"" +
     //      // "<button onclick="+onclick_slider()+">Click me</button>"+
     //     "</div>"
-    var itemHTML =
+    return itemHTML =
                 // "<h6 class='respo-hover-blue nav'>" + child.name + "</h6>" +
             // "<button onclick='onclick_slider("+child.name+","+minV+","+maxV+")' class='filter-btn-block respo-hover-blue nav'>"+child.name+"</button>" +
-        "<div class='slider' name='" + child.name + "' minV='"+minV+"' maxv='"+maxV+"'>" +
-        "</div>"
+        "<div class='slider "+shortParent+" "+shortChild+"' name='" + child.name + "' minV='"+minV+"' maxv='"+maxV+"'>" +
+        "</div>";
     // Two Textfields for numbers:
     // var itemHTML =
     //     "<div >(min/max: "+minV+"/"+maxV+")" +
@@ -141,26 +142,28 @@ function sliderBuilder(child) {
     //     "<input type='submit' data-inline='true' value='Submit'>"+
     //     "</div>"
 
-    return itemHTML;
 }
 
-function itemBuilder(child) {
-    var i, active, itemHTML = "";
-    // console.log('now me jsMenu[item].name: ', jsMenu[item].name)
+function itemBuilder(child, shortChild, shortParent) {
+    let i, itemHTML = "";
     for (i = 1; i <= child.total; i++) {
-        var cItem = eval("child.item" + i.toString());
-        if (cItem.chosen){
-            active = 'active'
-        } else {
-            active = ''
-        }
-        var listHTML =
+        let shortItem = 'I'+ i.toString()
+        let cItem = eval("child." + shortItem);
+        // console.log('itemBuilder child:', child)
+        // console.log(' + + + + kaljsgdlagafhg ', cItem, shortItem, shortChild, shortParent)
+        // if (cItem.chosen){
+        //     active = 'active'
+        // } else {
+        //     active = ''
+        // }
+        let listHTML =
             // "<div>" +
                 // "<label class='container'>"+
                 // "<input type='radio' checked='checked' name='radio'>" +
-                "<a class='respo-hover-blue btn "+active+"' onclick='activateFunc(this)'>" + cItem.name + "&emsp;" +
-            "       <i>(" + cItem.total + ")</i>"+
-                "</a>"
+                "<a class='respo-hover-blue btn "+shortParent+" "+shortChild+" "+shortItem+"' " +
+                    "onclick='buttonFunction(this,\""+ shortParent+"\",\""+ shortChild+"\",\""+ shortItem+"\")'>" +
+                    cItem.name + "&emsp;" +"<i>(" + cItem.total + ")</i>"+
+                "</a>";
             // "   </label>" +
             // "</div>";
         itemHTML = itemHTML + listHTML;
@@ -169,16 +172,16 @@ function itemBuilder(child) {
     return itemHTML
 }
 
-function checkBoxBuilder(child) {
-    var cItem = eval("child.item");
-    var listHTML =
-        "<a class='respo-hover-blue'>" + cItem.name + "" +
-        "</a>"
+function checkBoxBuilder(child, shortChild, shortParent) {
+    let cItem = eval("child.I");
+    let listHTML =
+        "<a class='respo-hover-blue'>" + cItem.name +
+        "</a>";
 //     <label class="container">One
 //   <input type="checkbox" checked="checked">
 //   <span class="checkmark"></span>
 // </label>;
-    return itemHTML
+    return listHTML
 }
 
 
@@ -187,12 +190,12 @@ function dDMFunction(dropDownName) {
 }
 
 function dDMFilterFunction(dropDownName, inputName) {
-    var input, filter, ul, li, a, i;
+    let input, filter, div, a;
     input = document.getElementById(inputName);
     filter = input.value.toUpperCase();
     div = document.getElementById(dropDownName);
     a = div.getElementsByTagName("a");
-    for (i = 0; i < a.length; i++) {
+    for (var i = 0; i < a.length; i++) {
         if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
             a[i].style.display = "";
         } else {
@@ -202,10 +205,10 @@ function dDMFilterFunction(dropDownName, inputName) {
 }
 
 $(document).ready(function (){
-    var handlesSlider =  document.getElementsByClassName('slider');
+    let handlesSlider =  document.getElementsByClassName('slider');
     for (var i = 0; i < handlesSlider.length; i++){
-        var maxv = parseFloat(handlesSlider[i].attributes.maxv.value);
-        var minv = parseFloat(handlesSlider[i].attributes.minv.value);
+        let maxv = parseFloat(handlesSlider[i].attributes.maxv.value);
+        let minv = parseFloat(handlesSlider[i].attributes.minv.value);
         noUiSlider.create(handlesSlider[i], {
             start: [minv, maxv],
             tooltips:  true ,
@@ -236,12 +239,45 @@ $(document).ready(function (){
 //     }
 //   } ;
 
-function activateFunc(item) {
-    if (item.classList.contains('active')) {
-        item.classList.remove('active');
+function buttonFunction(item, shortParent, shortChild, shortItem) {
+    let activeSibling = checkSiblings(item);
+    selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
+}
+
+function checkSiblings(item) {
+    let activeSibling;
+    if (item.classList.contains('activeI')) {
+        item.classList.remove('activeI');
+        activeSibling = false;
     } else {
-        itemList = item.parentElement.getElementsByClassName("active")
-        $(item).addClass('active').siblings().removeClass('active');
+        // itemList = item.parentElement.getElementsByClassName("active");
+        $(item).addClass('activeI').siblings().removeClass('activeI');
         // item.classList.add('active');
+        activeSibling = true;
     }
+    return activeSibling;
+}
+
+function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
+    let nodeListC = document.querySelectorAll(".child."+shortChild+"."+shortParent);
+    let nodeListP = document.querySelectorAll(".parent."+shortParent);
+
+    if (activeSibling) {
+        try {
+            eval('selection.' + shortParent + '.' + shortChild + ' = shortItem');
+        } catch (TypeError) {
+            selection[shortParent] = {[shortChild]: shortItem};
+        }
+        nodeListC[0].classList += " activeC";
+        nodeListP[0].classList += " activeP";
+    }
+    else {
+        nodeListC[0].classList.remove("activeC");
+        delete selection[shortParent][shortChild];
+        if (jQuery.isEmptyObject(selection[shortParent])) {
+            nodeListP[0].classList.remove("activeP");
+            delete selection[shortParent]
+        }
+    }
+    return selection;
 }
