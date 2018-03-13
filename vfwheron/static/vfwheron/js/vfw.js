@@ -175,7 +175,7 @@ function getCookie(name) {
 }
 
 // TODO: not used in this file. So from where comes the used token? Which one is better?
-var csrf_token = getCookie('csrftoken');
+let csrf_token = getCookie('csrftoken');
 
 //build menu on sidebar
 $(document).ready(function (menuTitle) {

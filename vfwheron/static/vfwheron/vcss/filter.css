@@ -41,7 +41,7 @@
     background-color: #f9f9f9;
     min-width: 8px;
     overflow: auto;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
     z-index: 1;
 }
 
@@ -65,15 +65,15 @@
 
 /* Style the active class, and buttons on mouse-over */
 .activeI, .btn:hover {
-    background-color: rgba(25, 186, 238, 0.7);
+    background-color: #00BAEE;
     color: black;
     /*border: 1px solid #1f2e38;*/
 }
 .activeC{
-    background-color: rgba(170, 221, 248, .7);
+    background-color: #AADDF9;
 }
 .activeP {
-    background-color: rgba(217, 239, 253, .7);
+    background-color: #D9EFFD;
 }
 
 /*TODO: This is an alternate version for a popup
@@ -114,9 +114,9 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
     top: 100%;
     left: 50%;
     margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #555 transparent transparent transparent;
+    /*border-width: 5px;*/
+    /*border-style: solid;*/
+    /*border-color: #555 transparent transparent transparent;*/
 }
 
 /* Toggle this class - hide and show the popup */
@@ -155,7 +155,6 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
 .active, .new_accord:hover {
-    background-color: white;
     background-color:  dodgerblue;
     color: white;
 }
@@ -185,7 +184,7 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 	/*height: auto;*/
 	/*width: auto;*/
 	/*margin: 0 auto;*/
-	padding: 28px 0px 0px 0px;
+	padding: 28px 0 0 0;
 	/*border: 1px solid #BFBFBF;*/
 }
 /*style from https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css*/
@@ -230,7 +229,7 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 }
 
 .ui-rangeslider .ui-rangeslider-sliders .ui-slider-track:first-child {
-    background-color: transparent;
+    /*background-color: transparent;*/
     background: 0;
     border-width: 0;
     height: 0

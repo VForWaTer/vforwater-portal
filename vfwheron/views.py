@@ -1,4 +1,5 @@
 import base64
+import json
 import re
 
 from io import StringIO, BytesIO
@@ -36,12 +37,14 @@ import os
 # Create your views here.
 logger = logging.getLogger(__name__)
 
+
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
     newMenu = Menu().json_menu()
+
     # newMenu = JsonResponse({"Name": "Harry", "Age": 2})
 
     # Put here everything you need at startup and for refresh
@@ -52,19 +55,22 @@ class HomeView(TemplateView):
             workspaceData = []
         else:
             workspaceData = cache.get('workspaceData')
+
         try:
             dataExt = get_bbox_from_data()
         except:
+            print("ERROR: Data Extend cannot be loaded in views.py")  # TODO: How to write this to a log file?
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+
         return {'dataExt': dataExt, 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style,
                 'workspaceData': workspaceData, 'newMenu': self.newMenu}
+
 
 class menuView(TemplateView):
     # TODO: each time you click a new top menu the database is accessed --> implement cache!
     # user = 'default'
     def get(self, request):
 
-        # maelicke_plot()
         request.session.set_expiry(20)  # expire after 20 seconds
 
         # bring last used menu to session
@@ -96,8 +102,6 @@ class menuView(TemplateView):
                 selection_list = [item for sublist in selection_list for item in sublist]
             else:
                 cache.set(menu, [])
-
-        # available_datasets = build_topquery(cache)['results'] if selection_list else len(TblMeta.objects.all())
 
         work_dataset = request.GET.get('workspaceData')
         min_time = request.GET.get('minTime')
@@ -138,17 +142,20 @@ class menuView(TemplateView):
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
         if request.GET.get('onclick_show_datasets'):
-            # if cache.get('point_style_name'):
-            #     cache.set({'point_style_name': False})
-            # else:
-            #     cache.set({'point_style_name': True})
             result = FilterMenu.build_queryset(cache);
             meta_ids = build_id_list(result)
-            # locations = result.values('meta__site__id').distinct()  # location id for map
-            # TODO: läuft nur wenn ich den Stylenamen ändere
-            # id_list = build_id_list(locations)
-            # data_style = 'CAOS:selection'
             return JsonResponse({'results': len(result), 'data_style': meta_ids})
+
+        # if request.GET.get('filter_selection'):
+        filter_selection = request.GET.get('filter_selection')
+        if filter_selection:
+            print('D+  +  + + + + +  Da')
+            a = json.loads(filter_selection)
+            print('bla: ', a)
+            print('*** select: ', request.GET.get('filter_selection'))
+            # result = FilterMenu.build_queryset(cache);
+            # meta_ids = build_id_list(result)
+            return JsonResponse({'results': 'back', 'data_style': 'yes'})
 
         return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
 
@@ -188,7 +195,7 @@ class LogoutView(View):
 
 
 class HelpView(TemplateView):
-#     template_name = 'vfwheron/help.html'
+    #     template_name = 'vfwheron/help.html'
     def get(self, request):
         f = open(os.path.join(settings.BASE_DIR, 'USERHELP.md'), 'r')
         context = {}
@@ -197,4 +204,4 @@ class HelpView(TemplateView):
             context[i] = line
             i += 1
         f.close()
-        return render(request, 'vfwheron/help.html', {'context':context})
+        return render(request, 'vfwheron/help.html', {'context': context})

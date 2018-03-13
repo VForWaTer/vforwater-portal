@@ -13,11 +13,10 @@ let selection = {};
 menues.forEach(menuBuilder,jsMenu);
 
 function menuBuilder(parent) {
-    console.log('parent: ', parent)
     if (jsMenu[parent].total > 0) {  // check how many entries are in menu
         let parentHTML ="";
         for (let i = 1; i <= jsMenu[parent].total; i++) {  // build child menu
-            let child = 'C'+i.toString()
+            let child = 'C'+i.toString();
             let childHTML = childBuilder(eval("jsMenu[parent]."+[child]), child, parent);
             // console.log('  *** ** *' + parentHTML)
             parentHTML = parentHTML + childHTML
@@ -129,11 +128,7 @@ function sliderBuilder(child, shortChild, shortParent) {
     //     "<div class='container' data-role='rangeslider'>"+child.name+"" +
     //      // "<button onclick="+onclick_slider()+">Click me</button>"+
     //     "</div>"
-    return itemHTML =
-                // "<h6 class='respo-hover-blue nav'>" + child.name + "</h6>" +
-            // "<button onclick='onclick_slider("+child.name+","+minV+","+maxV+")' class='filter-btn-block respo-hover-blue nav'>"+child.name+"</button>" +
-        "<div class='slider "+shortParent+" "+shortChild+"' name='" + child.name + "' minV='"+minV+"' maxv='"+maxV+"'>" +
-        "</div>";
+    return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}' minV='${minV}' maxv='${maxV}'></div>`;
     // Two Textfields for numbers:
     // var itemHTML =
     //     "<div >(min/max: "+minV+"/"+maxV+")" +
@@ -147,7 +142,7 @@ function sliderBuilder(child, shortChild, shortParent) {
 function itemBuilder(child, shortChild, shortParent) {
     let i, itemHTML = "";
     for (i = 1; i <= child.total; i++) {
-        let shortItem = 'I'+ i.toString()
+        let shortItem = 'I'+ i.toString();
         let cItem = eval("child." + shortItem);
         // console.log('itemBuilder child:', child)
         // console.log(' + + + + kaljsgdlagafhg ', cItem, shortItem, shortChild, shortParent)
@@ -181,7 +176,7 @@ function checkBoxBuilder(child, shortChild, shortParent) {
 //   <input type="checkbox" checked="checked">
 //   <span class="checkmark"></span>
 // </label>;
-    return listHTML
+    return listHTML;
 }
 
 
@@ -195,7 +190,7 @@ function dDMFilterFunction(dropDownName, inputName) {
     filter = input.value.toUpperCase();
     div = document.getElementById(dropDownName);
     a = div.getElementsByTagName("a");
-    for (var i = 0; i < a.length; i++) {
+    for (let i = 0; i < a.length; i++) {
         if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
             a[i].style.display = "";
         } else {
@@ -206,7 +201,7 @@ function dDMFilterFunction(dropDownName, inputName) {
 
 $(document).ready(function (){
     let handlesSlider =  document.getElementsByClassName('slider');
-    for (var i = 0; i < handlesSlider.length; i++){
+    for (let i = 0; i < handlesSlider.length; i++){
         let maxv = parseFloat(handlesSlider[i].attributes.maxv.value);
         let minv = parseFloat(handlesSlider[i].attributes.minv.value);
         noUiSlider.create(handlesSlider[i], {
@@ -242,8 +237,23 @@ $(document).ready(function (){
 function buttonFunction(item, shortParent, shortChild, shortItem) {
     let activeSibling = checkSiblings(item);
     selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
+    sendSelectionToServer(selection);
 }
 
+function sendSelectionToServer(selection) {
+    $.ajax({
+        url: DEMO_VAR+"/vfwheron/menu",
+        dataType   : 'json',
+        data: {
+            filter_selection: JSON.stringify(selection),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (json) {
+            console.log('BACK! : ', json)
+        },
+    });
+//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+}
 function checkSiblings(item) {
     let activeSibling;
     if (item.classList.contains('activeI')) {
@@ -279,5 +289,6 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
             delete selection[shortParent]
         }
     }
+
     return selection;
 }
