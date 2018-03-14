@@ -3,6 +3,7 @@ import json
 import os.path
 
 from builtins import all
+from collections import Mapping
 
 from django.core import serializers
 from django.db.models import Max, Min
@@ -13,6 +14,7 @@ from heron.settings import DEBUG
 from vfwheron.models import TblMeta, TblVariable, LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblSensor, LtProject, \
     NmMetaDomain
 from django.contrib.gis.db import models
+
 
 class newFiltermenu():
     menu_tables = [LtProject, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
@@ -249,6 +251,22 @@ class newFiltermenu():
         return result
 
 
+def selection_counts(menu, filter_selection):
+    for parent in filter_selection.keys():
+
+        parent_name = menu.get(parent).get("name")
+        print('*** parent name: ', parent_name)
+        for child in filter_selection.get(parent):
+            child_name = menu.get(parent).get(child).get("name")
+            print('** child name: ', child_name)
+            item = filter_selection.get(parent).get(child)
+            item_name = menu.get(parent).get(child).get(item).get("name")
+            print('* item_name: ', item_name)
+            # total = TblMeta.objects.filter(self.query_paths[grand_child]='values').count()
+            # total = eval("TblMeta.objects.filter(" + self.query_paths[grand_child] + "='" + values + "').count()")
+    return 0
+
+
 class Menu():
     def __init__(self, lang='EN'):
         """
@@ -261,14 +279,38 @@ class Menu():
         # self.menu_list = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
         self.menu_list = [LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
         # self.menu_list = [LtDomain]
-        self.json_menu()
+        # self.menu()
+        # self.json_menu()
+        self.menu_map()
 
-    def json_menu(self):
-        json_menu = {}
-        count = 0
+    # TODO: Here is a complete map of the menu is build. Better: Build it only with elements that are used in the menu
+    def menu_map(self):
+        print(' - - -- - - NEVER HERE *** ***')
+        maped_menu = {}
         for table in self.menu_list:
-            Menu = Table(table, self.min_amount, self.lang)
-            json_table = Menu.json_child
+            # print('table: ', table)
+            # print('name: ', table.newmenu_name[self.lang])
+            # print('path: ', table.newpath)
+            print('*** column: ', table.newcolumn_dict)
+            for child in table.newcolumn_dict.keys():
+                print('* child: ', child)
+                print('** child: ', table.newcolumn_dict[child][self.lang])
+                # TblMeta.objects.filter(variable__variable_name='Lufttemperatur')
+                path = table.newpath+"__"+child if table.newpath != '' else child
+                print('***: ', TblMeta.objects.values_list(path).distinct())
+                # total = eval("TblMeta.objects.filter(" + path + "='" + values + "').count()")
+            maped_menu[table.newmenu_name[self.lang]] = table.newpath
+        print('maped_menu: ', maped_menu)
+        return maped_menu
+
+    def menu(self):
+        print('ACHTUNG!!! DU BAUST EIN MENU!!!')
+        count = 0
+        json_menu = {}
+        # menu_map = {}
+        for table in self.menu_list:
+            whole_menu = Table(table, self.min_amount, self.lang)
+            json_table = whole_menu.json_child
             if json_table['total'] >= self.min_amount:
                 count = count + 1
                 menu_dict = {
@@ -279,15 +321,18 @@ class Menu():
                 menu_dict.update(json_table['C'])
                 json_menu.update({'P' + str(count): menu_dict})
 
-        json_menu = json.dumps(json_menu)
-
-        if DEBUG:  # write the json menu for the web-site to file in DEBUG mode
-            save_path = '/home/marcus/git/vforwater-portal/vfwheron/test.json'
-            file = open(save_path, "w")
-            file.write(json_menu)
-            file.close()
-
         return json_menu
+
+    # def json_menu(self):
+    #     json_menu = json.dumps(self.menu())
+    #
+    #     if DEBUG:  # write the json menu for the web-site to file in DEBUG mode
+    #         save_path = '/home/marcus/git/vforwater-portal/vfwheron/test.json'
+    #         file = open(save_path, "w")
+    #         file.write(json_menu)
+    #         file.close()
+    #
+    #     return json_menu
 
 
 class Table():

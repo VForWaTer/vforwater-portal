@@ -29,7 +29,7 @@ from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
 # from vfwheron.filter import FilterMenu
 from datetime import datetime
 
-from .filter import newFiltermenu, Menu
+from .filter import selection_counts, Menu
 
 import logging
 import os
@@ -43,7 +43,9 @@ logger = logging.getLogger(__name__)
 # every time they open a browser.
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
-    newMenu = Menu().json_menu()
+    newMenu = Menu().menu()
+    JSON_Menu = json.dumps(newMenu)
+    # JSON_Menu = Menu().json_menu()
 
     # newMenu = JsonResponse({"Name": "Harry", "Age": 2})
 
@@ -63,12 +65,13 @@ class HomeView(TemplateView):
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
         return {'dataExt': dataExt, 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style,
-                'workspaceData': workspaceData, 'newMenu': self.newMenu}
+                'workspaceData': workspaceData, 'newMenu': self.JSON_Menu}
 
 
 class menuView(TemplateView):
     # TODO: each time you click a new top menu the database is accessed --> implement cache!
     # user = 'default'
+
     def get(self, request):
 
         request.session.set_expiry(20)  # expire after 20 seconds
@@ -149,12 +152,9 @@ class menuView(TemplateView):
         # if request.GET.get('filter_selection'):
         filter_selection = request.GET.get('filter_selection')
         if filter_selection:
-            print('D+  +  + + + + +  Da')
-            a = json.loads(filter_selection)
-            print('bla: ', a)
-            print('*** select: ', request.GET.get('filter_selection'))
-            # result = FilterMenu.build_queryset(cache);
-            # meta_ids = build_id_list(result)
+
+            selection_counts(HomeView.newMenu, json.loads(filter_selection))
+
             return JsonResponse({'results': 'back', 'data_style': 'yes'})
 
         return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
