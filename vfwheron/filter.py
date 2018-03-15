@@ -252,19 +252,47 @@ class newFiltermenu():
 
 
 def selection_counts(menu, filter_selection):
-    for parent in filter_selection.keys():
+    query_filter = ''
+    result = {}
 
-        parent_name = menu.get(parent).get("name")
-        print('*** parent name: ', parent_name)
-        for child in filter_selection.get(parent):
-            child_name = menu.get(parent).get(child).get("name")
-            print('** child name: ', child_name)
-            item = filter_selection.get(parent).get(child)
-            item_name = menu.get(parent).get(child).get(item).get("name")
-            print('* item_name: ', item_name)
-            # total = TblMeta.objects.filter(self.query_paths[grand_child]='values').count()
-            # total = eval("TblMeta.objects.filter(" + self.query_paths[grand_child] + "='" + values + "').count()")
-    return 0
+    for parent in filter_selection:
+        for child in filter_selection[parent]:
+            item = filter_selection[parent][child]
+
+            path = menu[parent]['path']+"__"+menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
+            value = menu[parent][child][item]['name']
+
+            # TODO: maybe use intersection to store previous queries (compare performance of both)
+            # TODO: also compare .filter(x).filter(y) vs .filter(x,y). Result seems to be equal (But shouldn't!?). Time?
+            query_filter += path+"='"+value+"',"
+
+    query1 = "TblMeta.objects.filter("+query_filter+")"
+    # print('* query: ', query1)
+    # print('* query: ', eval(query))
+    # TODO: Nice to have: for active menues don't use the query of the respective menu - on client side you can
+    # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user
+    for parent in menu:
+        c = 1
+        child_result = {}
+        while "C" + str(c) in menu[parent]:
+            path = menu[parent]['path'] + "__" + menu[parent]["C" + str(c)]['column'] if menu[parent]['path'] != '' else menu[parent]["C" + str(c)]['column']
+            # for child in menu[parent]:
+            child = menu[parent]["C" + str(c)]
+            item_result = {}
+            i = 1
+            while "I"+str(i) in child:
+                value = child["I"+str(i)]['name']
+                # print('Familie: ', parent, "C" + str(c), child["I"+str(i)]['name'])
+                # print(query1 + ".filter(" + path+"='"+value + ").count()")
+                # print(eval(query1 + ".filter(" + path+"='"+value + "').count()"))
+                item_result.update({"I"+str(i): eval(query1 + ".filter(" + path+"='"+value + "').count()")})
+                i += 1
+            child_result.update({"C" + str(c): item_result})
+            c += 1
+            # path = menu[parent]['path'] + "__" + menu[parent][child]['column']
+            # value = menu[parent][child][item]['name']
+        result.update({parent: child_result})
+    return result
 
 
 class Menu():
@@ -281,50 +309,38 @@ class Menu():
         # self.menu_list = [LtDomain]
         # self.menu()
         # self.json_menu()
-        self.menu_map()
-
-    # TODO: Here is a complete map of the menu is build. Better: Build it only with elements that are used in the menu
-    def menu_map(self):
-        print(' - - -- - - NEVER HERE *** ***')
-        maped_menu = {}
-        for table in self.menu_list:
-            # print('table: ', table)
-            # print('name: ', table.newmenu_name[self.lang])
-            # print('path: ', table.newpath)
-            print('*** column: ', table.newcolumn_dict)
-            for child in table.newcolumn_dict.keys():
-                print('* child: ', child)
-                print('** child: ', table.newcolumn_dict[child][self.lang])
-                # TblMeta.objects.filter(variable__variable_name='Lufttemperatur')
-                path = table.newpath+"__"+child if table.newpath != '' else child
-                print('***: ', TblMeta.objects.values_list(path).distinct())
-                # total = eval("TblMeta.objects.filter(" + path + "='" + values + "').count()")
-            maped_menu[table.newmenu_name[self.lang]] = table.newpath
-        print('maped_menu: ', maped_menu)
-        return maped_menu
 
     def menu(self):
         print('ACHTUNG!!! DU BAUST EIN MENU!!!')
         count = 0
-        json_menu = {}
-        # menu_map = {}
+        json_menu = {}  # menu for client
+        menu_map = {}  # menu for server
         for table in self.menu_list:
             whole_menu = Table(table, self.min_amount, self.lang)
-            json_table = whole_menu.json_child
+            json_table = whole_menu.json_child['client']
+            map_table = whole_menu.json_child['server']
+            # map_table = whole_menu.map_child
             if json_table['total'] >= self.min_amount:
                 count = count + 1
                 menu_dict = {
                     'name': table.newmenu_name[self.lang],
-                    # 'chosen': False,
                     'total': json_table['total'],
                 }
                 menu_dict.update(json_table['C'])
                 json_menu.update({'P' + str(count): menu_dict})
 
-        return json_menu
+                map_dict = {
+                    'name': table.newmenu_name[self.lang],
+                    'path': table.newpath,
+                }
+                map_dict.update(map_table['C'])
+                menu_map.update({'P' + str(count): map_dict})
+
+        return {'client': json_menu, 'server': menu_map}
 
     # def json_menu(self):
-    #     json_menu = json.dumps(self.menu())
+    #     json_menu = json.dumps(self.menu()['client'])
+    #     menu_map = json.dumps(self.menu()['server'])
     #
     #     if DEBUG:  # write the json menu for the web-site to file in DEBUG mode
     #         save_path = '/home/marcus/git/vforwater-portal/vfwheron/test.json'
@@ -332,9 +348,14 @@ class Menu():
     #         file.write(json_menu)
     #         file.close()
     #
+    #         save_path = '/home/marcus/git/vforwater-portal/vfwheron/test_map.json'
+    #         file = open(save_path, "w")
+    #         file.write(menu_map)
+    #         file.close()
+    #
     #     return json_menu
 
-
+# TODO: Check how often 'get_filter_type' and the others are called; Shall they be properties?
 class Table():
     def __init__(self, table, min_amount, lang='EN'):
         """
@@ -378,10 +399,12 @@ class Table():
     def build_json_child(self):
         counter = 0
         json_all_childs = {}
+        map_all_childs = {}
         result = {}
 
         for grand_child in self.child_columns:
             grandchilds = {}
+            map_grandchilds = {}
             recursive = False
             if grand_child in self.child and grand_child is not None:
                 # build different menus according to the type defined in the model:
@@ -393,6 +416,7 @@ class Table():
                         result = self.build_date_json(grand_child)
                     # Recursive is one single table, so the build process is highly customized to that single table
                     elif switch == 'recursive':
+            # TODO: Check if https://docs.djangoproject.com/en/2.0/ref/models/querysets/#prefetch-related can help
                         result = self.build_recursive_json(grand_child)
                         recursive = True
                 else:
@@ -401,21 +425,32 @@ class Table():
                 if recursive:
                     counter = result['total']
                     json_all_childs = result['json']
+                    map_all_childs = result['server']
                 else:
                     grandchilds.update({'name': self.table_name.newcolumn_dict[grand_child][self.lang],
                                         'total': result['total'],
                                         # 'chosen': False
                                         })
+                    map_grandchilds.update({'name': self.table_name.newcolumn_dict[grand_child][self.lang],
+                                            'column': grand_child,
+                                        })
+
                     grandchilds.update(result['json'])
+                    map_grandchilds.update(result['server'])
+
                     if result['total'] >= self.min_amount:
                         counter = counter + 1
                         json_all_childs.update({'C' + str(counter): grandchilds})
+                        map_all_childs.update({'C' + str(counter): map_grandchilds})
 
         result = {'total': counter, 'C': json_all_childs}
-        return result
+        map_result = {'C': map_all_childs}
+
+        return {'client': result, 'server': map_result}
 
     def build_default_json(self, grand_child):
         all_grandchilds = {}
+        map_grandchilds = {}
         counter = 0
         for values in self.child[grand_child]:
             if values is not None:
@@ -425,12 +460,16 @@ class Table():
                     'total': total,
                     # 'chosen': False,
                 }
+                map_grandchild_dict = {
+                    'name': values,
+                }
+
                 if total >= self.min_amount:
                     counter = counter + 1
                     all_grandchilds.update({'I' + str(counter) : grandchild_dict})
+                    map_grandchilds.update({'I' + str(counter) : map_grandchild_dict})
         # if there are no values for the submenu, return nothing
-        result = {'json': all_grandchilds, 'total': counter}
-        return result
+        return {'json': all_grandchilds, 'total': counter, 'server': map_grandchilds}
 
     def build_slider_json(self, grand_child):
         counter = 0
@@ -451,10 +490,15 @@ class Table():
             'selectable_min': str(min_max['min_value']),
             'selectable_max': str(min_max['max_value']),
         }
+
+        map_grandchild_dict = {
+            'type': 'slider',
+            'selectable_min': str(min_max['min_value']),
+            'selectable_max': str(min_max['max_value']),
+        }
         if total >= self.min_amount:
             counter = counter + 1
-        result = {'json': grandchild_dict, 'total': counter}
-        return result
+        return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
 
     def build_date_json(self, grand_child):
         counter = 0
@@ -469,10 +513,15 @@ class Table():
                 'selectable_min': str(min_max['min_value']),
                 'selectable_max': str(min_max['max_value']),
             }
+
+        map_grandchild_dict = {
+            'type': 'date',
+            'selectable_min': str(min_max['min_value']),
+            'selectable_max': str(min_max['max_value']),
+        }
         if total >= self.min_amount:
             counter = counter + 1
-        result = {'json': grandchild_dict, 'total': counter}
-        return result
+        return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
 
     def build_recursive_json(self, grand_child):
         # Recursive is one single table, so the build process is highly customized to that single table
@@ -480,6 +529,7 @@ class Table():
         project_values = parent_queryset.values("project_name", "id")
 
         all_childs = {}
+        map_childs = {}
         child_counter = 0
         for project in project_values:
             project_name = project['project_name']
@@ -504,6 +554,8 @@ class Table():
                     grandchild_name = grandchild['ltdomain__domain_name']
 
                     # build the innermost selectables:
+                    # TODO: IMPORTANT! Check which result is right. Maybe all three cases in one Filter?
+                    # grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id, nmmetadomain__domain__pid_id=child_id, nmmetadomain__domain__domain_name=grandchild_name).count()
                     grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id).filter(nmmetadomain__domain__pid_id=child_id).filter(nmmetadomain__domain__domain_name=grandchild_name).count()
                     if grandchild_total >= self.min_amount:
                         grandchild_json = {
@@ -512,7 +564,7 @@ class Table():
                             # 'chosen': False,
                         }
                         grandchild_counter = grandchild_counter + 1
-                        inner_grandchild.update({'I'+str(grandchild_counter):grandchild_json})
+                        inner_grandchild.update({'I'+str(grandchild_counter): grandchild_json})
 
                 grandchild_dict = {
                     'name': child_name,
@@ -542,9 +594,7 @@ class Table():
                 all_childs.update({'C'+str(child_counter):child_dict})
 
         # if there are no values for the submenu, return nothing
-        result = {'json': all_childs, 'total': child_counter}
-
-        return result
+        return {'json': all_childs, 'total': child_counter, 'server': map_childs}
 
 
     def print_properties(self):

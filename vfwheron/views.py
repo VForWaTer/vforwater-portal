@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
     newMenu = Menu().menu()
-    JSON_Menu = json.dumps(newMenu)
+    JSON_Menu = json.dumps(newMenu['client'])
     # JSON_Menu = Menu().json_menu()
 
     # newMenu = JsonResponse({"Name": "Harry", "Age": 2})
@@ -153,9 +153,9 @@ class menuView(TemplateView):
         filter_selection = request.GET.get('filter_selection')
         if filter_selection:
 
-            selection_counts(HomeView.newMenu, json.loads(filter_selection))
+            result = selection_counts(HomeView.newMenu['server'], json.loads(filter_selection))
 
-            return JsonResponse({'results': 'back', 'data_style': 'yes'})
+            return JsonResponse(result)
 
         return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
 

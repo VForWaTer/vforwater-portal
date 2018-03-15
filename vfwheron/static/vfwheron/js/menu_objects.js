@@ -249,11 +249,44 @@ function sendSelectionToServer(selection) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            console.log('BACK! : ', json)
+            updateCounts(json);
         },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
+
+function updateCounts(json) {
+    let parent, child, item;
+    console.log('BACK ONE ! : ', Object.keys(json))
+    for (parent in json) {
+        console.log('BACK json[parent] ! : ', parent, json[parent])
+        child = '';
+        for (child in json[parent]) {
+            // console.log('bla ', json[parent][child])
+            item = '';
+            for (item in json[parent][child]) {
+                // console.log('tem: ', item, json[parent][child][item]);
+                newValue = json[parent][child][item];
+
+                // searchClass = "."+parent+"."+ child+ "."+ item;
+                searchClass = parent+" "+ child+ " "+ item;
+                // searchClass = parent+" "+ child;
+                // searchClass = parent;
+                // console.log(searchClass);
+                // itemHTML = eval("document.getElementsByClassName('"+searchClass+"')");
+                // console.log(itemHTML[0].innerHTML);
+                // console.log(itemHTML[0].innerHTML.replace(/<i>\((\d{1,})\)<\/i>/i, "HaHa"));
+                itemHTML = eval("document.getElementsByClassName('"+searchClass+"')[0].innerHTML." +
+                    "replace("+/<i>\((\d{1,})\)<\/i>/i+", '<i>("+newValue+")<\/i>')");
+                eval("document.getElementsByClassName('"+searchClass+"')[0].innerHTML = itemHTML");
+                // console.log(itemHTML.getElementsByTagName('I'));
+
+                // console.log('Tag: ', itemHTML.getElementsByTagName("I"));
+            }
+        }
+    }
+}
+
 function checkSiblings(item) {
     let activeSibling;
     if (item.classList.contains('activeI')) {
@@ -269,8 +302,11 @@ function checkSiblings(item) {
 }
 
 function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
-    let nodeListC = document.querySelectorAll(".child."+shortChild+"."+shortParent);
-    let nodeListP = document.querySelectorAll(".parent."+shortParent);
+    // getElementsByClassName should be faster than QuerySelectAll
+    let nodeListC = eval("document.getElementsByClassName('child "+shortChild+" "+shortParent+"')");
+    let nodeListP = eval("document.getElementsByClassName('parent "+shortParent+"')");
+    // let nodeListC = document.querySelectorAll(".child."+shortChild+"."+shortParent);
+    // let nodeListP = document.querySelectorAll(".parent."+shortParent);
 
     if (activeSibling) {
         try {
