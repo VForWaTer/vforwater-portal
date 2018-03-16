@@ -10,6 +10,21 @@ let filterMenu;
 let parent;
 let selection = {};
 
+// TODO: To improve performance onclick try to build variables P1C1I1, P1C1I2,... here and assign an id to the
+// TODO: respective value. In 'updateCounts' you can access the values then directly with the ID
+// Predefine variables to assign IDs for the filter elements that will be changed on every filter selection:
+for (let p in jsMenu){
+    for (let m = 1; m <= jsMenu[p].total; m++) {
+        let c = 'C'+m.toString()
+        for (let n = 1; n <= jsMenu[p][c].total; n++) {
+            let i = 'I'+n.toString()
+            eval("let "+p+c+i)
+        }
+    }
+}
+
+// menues.forEach(console.log('jsMenu: ', jsMenu));
+
 menues.forEach(menuBuilder,jsMenu);
 
 function menuBuilder(parent) {
@@ -81,7 +96,7 @@ function childBuilder(child, shortChild, shortParent) {
         if (child.type === "slider") {
             itemHTML = sliderBuilder(child, shortChild, shortParent);
             childHTML=
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i>(" + child.total + ")</i>" + "</h6>" +
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count s'>(" + child.total + ")</div></i></h6>" +
             "<div id='" + child.name + "'>" +
                 "<div id='sliderwildcard'> "+itemHTML+
             " </div>" +
@@ -143,6 +158,7 @@ function itemBuilder(child, shortChild, shortParent) {
     let i, itemHTML = "";
     for (i = 1; i <= child.total; i++) {
         let shortItem = 'I'+ i.toString();
+        let id = shortParent+shortChild+shortItem;
         let cItem = eval("child." + shortItem);
         // console.log('itemBuilder child:', child)
         // console.log(' + + + + kaljsgdlagafhg ', cItem, shortItem, shortChild, shortParent)
@@ -157,10 +173,11 @@ function itemBuilder(child, shortChild, shortParent) {
                 // "<input type='radio' checked='checked' name='radio'>" +
                 "<a class='respo-hover-blue btn "+shortParent+" "+shortChild+" "+shortItem+"' " +
                     "onclick='buttonFunction(this,\""+ shortParent+"\",\""+ shortChild+"\",\""+ shortItem+"\")'>" +
-                    cItem.name + "&emsp;" +"<i>(" + cItem.total + ")</i>"+
+                    cItem.name + "&emsp;" +"<i><div id='"+id+"'>(" + cItem.total + ")</div></i>"+
                 "</a>";
             // "   </label>" +
             // "</div>";
+        eval(id+"=document.getElementById('"+id+"')");
         itemHTML = itemHTML + listHTML;
         // console.log('haha!: ', listHTML.getElementsByClassName("btn"))
     }
@@ -273,12 +290,15 @@ function updateCounts(json) {
                 // searchClass = parent+" "+ child;
                 // searchClass = parent;
                 // console.log(searchClass);
-                // itemHTML = eval("document.getElementsByClassName('"+searchClass+"')");
-                // console.log(itemHTML[0].innerHTML);
+                itemHTML = eval("document.getElementsByClassName('"+searchClass+"')");
+                console.log(itemHTML[0].getElementsByClassName('count')[0].innerHTML);
+                console.log(itemHTML[0].innerHTML);
                 // console.log(itemHTML[0].innerHTML.replace(/<i>\((\d{1,})\)<\/i>/i, "HaHa"));
                 itemHTML = eval("document.getElementsByClassName('"+searchClass+"')[0].innerHTML." +
                     "replace("+/<i>\((\d{1,})\)<\/i>/i+", '<i>("+newValue+")<\/i>')");
                 eval("document.getElementsByClassName('"+searchClass+"')[0].innerHTML = itemHTML");
+                eval("document.getElementsByClassName('"+searchClass+"')[0].getElementsByClassName('count')[0].innerHTML." +
+                    "replace("+/<i>\((\d{1,})\)<\/i>/i+", '<i>("+newValue+")<\/i>')");
                 // console.log(itemHTML.getElementsByTagName('I'));
 
                 // console.log('Tag: ', itemHTML.getElementsByTagName("I"));
