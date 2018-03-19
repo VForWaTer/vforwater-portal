@@ -251,49 +251,72 @@ class newFiltermenu():
         return result
 
 
-def selection_counts(menu, filter_selection):
-    query_filter = ''
-    result = {}
-
+def build_select_filters(menu, filter_selection ):
+    # build queries for the filter values
+    # old_query_filter = ''
+    all = ''
+    single_filters = {}
+    query_filters = {}
+    # build the django filter for every selection separately
     for parent in filter_selection:
         for child in filter_selection[parent]:
             item = filter_selection[parent][child]
 
-            path = menu[parent]['path']+"__"+menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
+            path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else \
+            menu[parent][child]['column']
             value = menu[parent][child][item]['name']
 
             # TODO: maybe use intersection to store previous queries (compare performance of both)
             # TODO: also compare .filter(x).filter(y) vs .filter(x,y). Result seems to be equal (But shouldn't!?). Time?
-            query_filter += path+"='"+value+"',"
+            single_filters.update({parent+child:path+"='"+value+"'"})
+            # print("query_filter = {" +parent+child+":\""+path+"='"+value+"',\"}")
+            # print("query_filter = {", query_filters)
+            # old_query_filter += path + "='" + value + "',"
 
-    query1 = "TblMeta.objects.filter("+query_filter+")"
-    # print('* query: ', query1)
-    # print('* query: ', eval(query))
-    # TODO: Nice to have: for active menues don't use the query of the respective menu - on client side you can
-    # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user
-    for parent in menu:
-        c = 1
-        child_result = {}
-        while "C" + str(c) in menu[parent]:
-            path = menu[parent]['path'] + "__" + menu[parent]["C" + str(c)]['column'] if menu[parent]['path'] != '' else menu[parent]["C" + str(c)]['column']
-            # for child in menu[parent]:
-            child = menu[parent]["C" + str(c)]
-            item_result = {}
-            i = 1
-            while "I"+str(i) in child:
-                value = child["I"+str(i)]['name']
-                # print('Familie: ', parent, "C" + str(c), child["I"+str(i)]['name'])
-                # print(query1 + ".filter(" + path+"='"+value + ").count()")
-                # print(eval(query1 + ".filter(" + path+"='"+value + "').count()"))
-                item_result.update({"I"+str(i): eval(query1 + ".filter(" + path+"='"+value + "').count()")})
-                i += 1
-            child_result.update({"C" + str(c): item_result})
-            c += 1
-            # path = menu[parent]['path'] + "__" + menu[parent][child]['column']
-            # value = menu[parent][child][item]['name']
-        result.update({parent: child_result})
-    return result
+    # build filters for the menu with all selections, and filters with the selection missing where the user selected it
+    # (to prevent zero values where the user made a selection)
+    for key in single_filters:
+        all += single_filters[key]+','
+        spec_filter = ''
+        for k in single_filters:
+            if k != key:
+                spec_filter += single_filters[k]+','
+        query_filters.update({key: spec_filter})
+    return {'all_filters': all, 'one_excluded': query_filters}
 
+
+class filterMethods():
+
+    @staticmethod
+    def selection_counts(menu, filter_selection):
+        result = {}
+
+        query_filter = build_select_filters(menu, filter_selection)
+        std_query = "TblMeta.objects.filter("+query_filter['all_filters']+")"
+        # TODO: Nice to have: for active menues don't use the query of the respective menu - on client side you can
+        # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user
+        for parent in menu:
+            c = 1
+            child_result = {}
+            while "C" + str(c) in menu[parent]:
+                path = menu[parent]['path'] + "__" + menu[parent]["C" + str(c)]['column'] if menu[parent]['path'] != '' else menu[parent]["C" + str(c)]['column']
+                child = menu[parent]["C" + str(c)]
+                query1 = "TblMeta.objects.filter("+query_filter['one_excluded'][parent + "C" + str(c)]+")" if parent+"C" + str(c) in query_filter['one_excluded'] else std_query
+                item_result = {}
+                i = 1
+                while "I"+str(i) in child:
+                    value = child["I"+str(i)]['name']
+                    item_result.update({"I"+str(i): eval(query1 + ".filter(" + path+"='"+value + "').count()")})
+                    i += 1
+                child_result.update({"C" + str(c): item_result})
+                c += 1
+            result.update({parent: child_result})
+        return result
+
+    @staticmethod
+    def select_data_points(menu, filter_selection):
+        data_points = []
+        return data_points
 
 class Menu():
     def __init__(self, lang='EN'):

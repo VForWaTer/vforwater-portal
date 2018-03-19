@@ -28,8 +28,9 @@ from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
 # from vfwheron.models import TblData, TblMeta, TblVariable
 # from vfwheron.filter import FilterMenu
 from datetime import datetime
+import time
 
-from .filter import selection_counts, Menu
+from .filter import filterMethods, Menu
 
 import logging
 import os
@@ -152,10 +153,11 @@ class menuView(TemplateView):
         # if request.GET.get('filter_selection'):
         filter_selection = request.GET.get('filter_selection')
         if filter_selection:
-
-            result = selection_counts(HomeView.newMenu['server'], json.loads(filter_selection))
-
-            return JsonResponse(result)
+            start_time = time.time()
+            filter_menu = filterMethods.selection_counts(HomeView.newMenu['server'], json.loads(filter_selection))
+            map_points = 0
+            print('time: ', time.time() - start_time)
+            return JsonResponse(filter_menu)
 
         return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
 

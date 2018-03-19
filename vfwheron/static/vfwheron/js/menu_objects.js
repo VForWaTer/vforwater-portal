@@ -13,15 +13,15 @@ let selection = {};
 // TODO: To improve performance onclick try to build variables P1C1I1, P1C1T2,... here and assign an id to the
 // TODO: respective value. In 'updateCounts' you can access the values then directly with the ID; But the following isn't working
 // Predefine variables to assign IDs for the filter elements that will be changed on every filter selection:
-for (let p in jsMenu){
-    for (let m = 1; m <= jsMenu[p].total; m++) {
-        let c = 'C'+m.toString()
-        for (let n = 1; n <= jsMenu[p][c].total; n++) {
-            let i = 'I'+n.toString()
-            eval("let "+p+c+i)
-        }
-    }
-}
+// for (let p in jsMenu){
+//     for (let m = 1; m <= jsMenu[p].total; m++) {
+//         let c = 'C'+m.toString()
+//         for (let n = 1; n <= jsMenu[p][c].total; n++) {
+//             let i = 'I'+n.toString()
+//             eval("let "+p+c+i)
+//         }
+//     }
+// }
 
 // menues.forEach(console.log('jsMenu: ', jsMenu));
 
@@ -272,34 +272,13 @@ function sendSelectionToServer(selection) {
 
 function updateCounts(json) {
     let parent, child, item;
-    console.log('BACK ONE ! : ', Object.keys(json))
     for (parent in json) {
-        console.log('BACK json[parent] ! : ', parent, json[parent])
         child = '';
         for (child in json[parent]) {
-            // console.log('bla ', json[parent][child])
             item = '';
             for (item in json[parent][child]) {
-                // console.log('tem: ', item, json[parent][child][item]);
-                newValue = json[parent][child][item];
-
-                // searchClass = "."+parent+"."+ child+ "."+ item;
-                searchClass = parent+" "+ child+ " "+ item;
-                // searchClass = parent+" "+ child;
-                // searchClass = parent;
-                // console.log(searchClass);
-                itemHTML = eval("document.getElementsByClassName('"+searchClass+"')");
-                console.log(itemHTML[0].getElementsByClassName('count')[0].innerHTML);
-                console.log(itemHTML[0].innerHTML);
-                // console.log(itemHTML[0].innerHTML.replace(/<i>\((\d{1,})\)<\/i>/i, "HaHa"));
-                itemHTML = eval("document.getElementsByClassName('"+searchClass+"')[0].innerHTML." +
-                    "replace("+/<i>\((\d{1,})\)<\/i>/i+", '<i>("+newValue+")<\/i>')");
-                eval("document.getElementsByClassName('"+searchClass+"')[0].innerHTML = itemHTML");
-                eval("document.getElementsByClassName('"+searchClass+"')[0].getElementsByClassName('count')[0].innerHTML." +
-                    "replace("+/<i>\((\d{1,})\)<\/i>/i+", '<i>("+newValue+")<\/i>')");
-                // console.log(itemHTML.getElementsByTagName('I'));
-
-                // console.log('Tag: ', itemHTML.getElementsByTagName("I"));
+                itemHTML = eval("document.getElementsByClassName('"+parent+" "+ child+ " "+ item+"')");
+                itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+json[parent][child][item]+")"
             }
         }
     }
