@@ -66,6 +66,7 @@ function menuBuilder(parent) {
 function childBuilder(child, shortChild, shortParent) {
     let childHTML = "";
     let itemHTML = "";
+    let inputName = "";
     let dDL = 8;  // dropDownLimit
     // console.log('child in childbuilder: ', shortChild)
     if (child.total > 1 && child.total <= dDL && !child.hasOwnProperty("type")) {
