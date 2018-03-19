@@ -193,41 +193,6 @@ $(document).ready(function (menuTitle) {
             active: false,
             collapsible: true,
         });
-// second action: request menu values
-//         $.ajax({
-//             url: DEMO_VAR+"/vfwheron/menu",
-//             datatype: 'json',
-//             data: {
-//                 menu: menuValue,
-//
-//                 'csrfmiddlewaretoken': csrf_token,
-//             }, // data sent with the post request
-//             success: function (json) {
-//                 $.each(json, function (key1, value1) { // loop over top level menu z.B. key1 = Geologie
-//                     //                    var newMenuButton = ('#'+key1)
-//                     var newHTML = '';
-//                     var newMenu = '';
-//                     $.each(value1, function (key2, value2) { // loop over sub menu z.B. key2 = Sandstone
-//                         if (key2 != 'null') {
-//                             var selectedData = "['" + key2 + "', '" + key1 + "']"
-// //                            var selectedData = "'"+ key2 +"'"
-// //                            console.log('value 2 ist: ', value2[1])
-//                             var bool = ''
-//                             if (value2[0]) {
-//                                 bool = 'checked'
-//                             }
-//                             newHTML = '<input type="checkbox" class="respo-check respo-hover-blue" id="' + key2 + '" ' +
-//                                 bool + '  onclick="select_data(' + selectedData + ')"> ' + key2 + ' <i>(' + value2[1] +
-//                                 ')</i></input><br>';
-//                         } else {
-//                             newHTML = '<a>keine Auswahl verfügbar</a>';
-//                         }
-//                         newMenu = newMenu + newHTML;
-//                     });
-//                     $('#' + key1).html(newMenu);
-//                 });
-//             },
-//         });
     });
 }); // end ready
 
@@ -264,31 +229,6 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function onclick_show_datasets_func() {
-    $.ajax({
-        url: DEMO_VAR+"/vfwheron/menu",
-        datatype: 'json',
-        data: {
-            onclick_show_datasets: 'True',
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with post request
-        success: function (json) {
-            // console.log('onclick_show_datasets_func: ', json)
-            $.each(json, function (key, value) {
-                if (key == "results") {
-                    /*document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + key + "'>" +
-                        "<span class='respo-medium'>You got " + value + " Datasets</span><a href='javascript:void(0)'" +
-                        "onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i " +
-                        "class='fa fa-remove fa-fw'></i></a><br></li>";*/
-                } else if (key == "data_style") {
-                    selectedIds = value;
-                    wfsPointLayer.changed()
-                }
-            })
-        }
-    });
-}
-
 function workspace_dataset(id) {
     $.ajax({
         url: DEMO_VAR+"/vfwheron/menu",
@@ -298,12 +238,7 @@ function workspace_dataset(id) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function(json) {workspace_button(json)} // function in sidebar.js
-    });/*
-    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='" + id + "'>" +
-        "<span class='respo-medium' data-toggle=\"tooltip\" title="+metaTable+">You got Dataset #" + id + " </span><a href='javascript:void(0)'" +
-        "onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i " +
-        "class='fa fa-remove fa-fw'></i></a><br></li>";
-*/
+    });
 }
 
 function show_preview(id) {

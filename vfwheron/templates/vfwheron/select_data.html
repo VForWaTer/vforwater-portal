@@ -33,44 +33,17 @@
         <b title="Please choose here the data shown on the map.">{%  trans "Filter menu" %}</b>
     </div>
 
-{#    <div id="accordion"  > <!-- see vfw.js -->#}
-{#        {% for main_menu in menu_list %}#}
-{#            {% for key, value in main_menu.items %} <!--key: Boden, value: Geologie -->#}
-{#                <h5 class="respo-hover-blue nav" value = "{{ key }}">{{ key }} </h5> <!-- onclick send value = {{key}} -->#}
-{#                <div id="{{ key }}" >#}
-{#                    <div id="subaccordion"  > <!-- see vfw.js -->#}
-{#                        {% for key2, value2 in value.items %}#}
-{#                            <a class="sub-menu respo-hover-blue">{{ key2 }}</a> <!--Geologie-->#}
-{#                            <ul class="sub-sub-menu" >#}
-{#                                {% for key3, value3 in value2.items %}#}
-{#                                    <a  id="{{ key2 }}" >{{ key3 }} ({{ value3 }})</a>#}
-{#                                {% endfor %}#}
-{#                            </ul>#}
-{#                        {% endfor %}#}
-{#                    </div>#}
-{#                </div>#}
-{#            {% endfor %}#}
-{#        {% empty %}#}
-{#            <option value="There is no open data available yet.">There is no open data available yet.</option>#}
-{#            <option value="Please check VFORWaTer.de for more.">Please check VFORWaTer.de for more.</option>#}
-{#            <option value="Please come back later.">Please come back later.</option>#}
-{#            <option value="You find contact details on VFORWaTer.de.">You find contact details on VFORWaTer.de.</option>#}
-{#        {% endfor %}#}
-{#    </div>#}
 {#    new accordion#}
     <div class="container">
     <div class="panel-group" id="accordion">
-{#    <div class="accordion" id="jsMenu"></div>#}
     </div>
     </div>
-    <!--<a><b><input id="delete_choice" class="respo-btn-simple respo-text-light-grey" type="submit" onclick="clear_selection_func()"
-                 value="Lösche Auswahl" data-toggle="tooltip" title="Löscht die bisherige Auswahl"></b></a>-->
-    <a><b><input id="show_data_on_map" class="respo-btn-simple" type="submit" onclick="onclick_show_datasets_func()"
-                 value="Show selection on map" data-toggle="tooltip" title="Apply filter on metadata"></b></a>
+    <a><b><input id="unselect_all" class="respo-btn-simple" type="submit" onclick="unselect_all_func()"
+                 value="Unselect all" data-toggle="tooltip" title="Apply filter on metadata"></b></a>
 </body>
 
 <script>
 {#TODO: Do I need this, or can I just use the csrftoken in vfw.js?#}
  csrf_token = '{{ csrf_token }}';
-var jsonMenu = "{{ newMenu|escapejs }}";
+var jsonMenu = "{{ Menu|escapejs }}";
 </script>

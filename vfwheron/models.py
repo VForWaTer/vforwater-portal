@@ -7,7 +7,6 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
-from django.core.cache import cache
 from django.contrib.gis.db import models
 
 
@@ -28,20 +27,12 @@ class LtDomain(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'domain_name': 'Domänenname', 'project__project_name': 'Projekt'}
-    # newcolumn_dict = {'domain_name': {'DE': 'Domänenname', 'EN': 'Domain Name'},
-    #                'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
-    newcolumn_dict = {'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
-    child_column_dict = {'domain_name': {'DE': 'Domänenname', 'EN': 'Domain Name'}}
-
-    menu_name = 'Projekt/Domäne'
-    newmenu_name = {'DE': 'Projekt/Domäne', 'EN': 'Project/Domain'}
+    column_dict = {'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
+    menu_name = {'DE': 'Projekt/Domäne', 'EN': 'Project/Domain'}
     submenu_names = {'project': {'DE': 'Projekt', 'EN': 'Project'},
                      'domain': {'DE': 'Domäne', 'EN': 'Domain'},
                      'subdomain': {'DE': 'Subdomäne', 'EN': 'Subdomain'}}
-    path = 'domain'
-    newpath = 'nmmetadomain__domain'
-    # filter_type = {'domain_name': 'recursive'}
+    path = 'nmmetadomain__domain'
 
     # Recursive exists only in that table, so the build process is highly customized to that one
     filter_type = {'project__project_name': 'recursive'}
@@ -67,12 +58,9 @@ class LtLicense(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'license_abbrev': 'Lizenz', 'commercial': 'Kommerziell'}
-    newcolumn_dict = {'license_abbrev': {'DE': 'Lizenzname', 'EN': 'License name'}}
-    menu_name = 'Lizenz'
-    newmenu_name = {'DE': 'Lizenz', 'EN': 'License'}
-    path = 'meta__license'
-    newpath = 'license'
+    column_dict = {'license_abbrev': {'DE': 'Lizenzname', 'EN': 'License name'}}
+    menu_name = {'DE': 'Lizenz', 'EN': 'License'}
+    path = 'license'
 
     def __str__(self):
         return self.license_name
@@ -91,14 +79,11 @@ class LtLocation(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
     geom = models.GeometryField(unique=True, srid=0)
 
-    column_dict = {'centroid_x': 'X Koordinaten', 'centroid_y': 'Y Koordinaten', 'geometry_type': 'Geometrie'}
-    newcolumn_dict = {'centroid_x': {'DE': 'X-Koordinaten', 'EN': 'X-Coordinate'},
+    column_dict = {'centroid_x': {'DE': 'X-Koordinaten', 'EN': 'X-Coordinate'},
                       'centroid_y': {'DE': 'Y Koordinaten', 'EN': 'Y-Coordinate'},
                       'geometry_type': {'DE': 'Geometrie', 'EN': 'Geometry'}}
-    menu_name = 'Position'
-    newmenu_name = {'DE': 'Position', 'EN': 'Location'}
-    path = 'meta__location'
-    newpath = 'location'
+    menu_name = {'DE': 'Position', 'EN': 'Location'}
+    path = 'location'
     filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider'}
 
     def __str__(self):
@@ -117,11 +102,9 @@ class LtProject(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    menu_name = 'Project & Domain'
-    column_dict = {'project_name': 'Projektname'}
-    newcolumn_dict = {'project_name': {'DE': 'Projektname', 'EN': 'Project name'}}
-    newmenu_name = {'DE': 'Projekt', 'EN': 'project'}
-    newpath = 'nmmetadomain__domain__project'
+    column_dict = {'project_name': {'DE': 'Projektname', 'EN': 'Project name'}}
+    menu_name = {'DE': 'Projekt', 'EN': 'project'}
+    path = 'nmmetadomain__domain__project'
 
     def __str__(self):
         return self.project_name
@@ -137,13 +120,10 @@ class LtQuality(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'flag_name': 'Qualität', 'flag_weight': 'Gewichtung'}
-    newcolumn_dict = {'flag_name': {'DE': 'Kennzeichen', 'EN': 'Flag'},
+    column_dict = {'flag_name': {'DE': 'Kennzeichen', 'EN': 'Flag'},
                       'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
-    menu_name = 'Qualität'
-    newmenu_name = {'DE': 'Qualität', 'EN': 'Quality'}
-    path = 'meta__quality'
-    newpath = 'quality'
+    menu_name = {'DE': 'Qualität', 'EN': 'Quality'}
+    path = 'quality'
 
     def __str__(self):
         return self.flag_name
@@ -164,19 +144,15 @@ class LtSite(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'site_name': 'Standortname', 'elevation': 'Höhe', 'landuse': 'Landnutzung',
-                   'site_comment': 'Kommentar'}
-    newcolumn_dict = {'site_name': {'DE': 'Standortname', 'EN': 'Site name'},
+    column_dict = {'site_name': {'DE': 'Standortname', 'EN': 'Site name'},
                       'elevation': {'DE': 'Hohe', 'EN': 'Elevation'},
                       'rel_height': {'DE': 'Relative Höhe', 'EN': 'Relative height'},
                       'orientation_degree': {'DE': 'Richtung', 'EN': 'Orientation'},
                       'slope': {'DE': 'Hangneigung', 'EN': 'Slope'},
                       'landuse': {'DE': 'Landnutzung', 'EN': 'Landuse'},
                       'site_comment': {'DE': 'Kommentar', 'EN': 'Site comment'}}
-    menu_name = 'Standort'
-    newmenu_name = {'DE': 'Standort', 'EN': 'Site'}
-    path = 'meta__site'
-    newpath = 'site'
+    menu_name = {'DE': 'Standort', 'EN': 'Site'}
+    path = 'site'
     filter_type = {'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
                    'slope': 'slider'}
 
@@ -197,17 +173,13 @@ class LtSoil(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'geology': 'Geologie', 'soil_type': 'Bodentyp', 'porosity': 'Porosität',
-                   'residual_moisture': 'Restfeuchte'}
-    newcolumn_dict = {'geology': {'DE': 'Geologie', 'EN': 'Geology'},
+    column_dict = {'geology': {'DE': 'Geologie', 'EN': 'Geology'},
                       'soil_type': {'DE': 'Bodentyp', 'EN': 'Soil Type'},
                       'porosity': {'DE': 'Porosität', 'EN': 'Porosity'},
                       'field_capacity': {'DE': 'Feldkapazität', 'EN': 'Field Capacity'},
                       'residual_moisture': {'DE': 'Restfeuchte', 'EN': 'Residual Moisture'}}
-    menu_name = 'Boden'
-    newmenu_name = {'DE': 'Boden', 'EN': 'Soil'}
-    path = 'meta__soil'
-    newpath = 'soil'
+    menu_name = {'DE': 'Boden', 'EN': 'Soil'}
+    path = 'soil'
 
     def __str__(self):
         return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology
@@ -240,8 +212,7 @@ class LtUnit(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    newcolumn_dict = {'unit_name': {'DE': 'Einheit', 'EN': 'Unit'}}
-    column_dict = {'unit_name': 'Einheit'}
+    column_dict = {'unit_name': {'DE': 'Einheit', 'EN': 'Unit'}}
 
     def __str__(self):
         return self.unit_name
@@ -262,17 +233,13 @@ class LtUser(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    newcolumn_dict = {'first_name': {'DE': 'Vorname', 'EN': 'First name'},
+    column_dict = {'first_name': {'DE': 'Vorname', 'EN': 'First name'},
                       'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
                       'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
                       'department': {'DE': 'Abteilung', 'EN': 'Department'},
                       'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
-    column_dict = {'first_name': 'Vorname', 'last_name': 'Nachname', 'institution_name': 'Institut',
-                   'department': 'Abteilung', 'comment': 'Kommentar'}
-    menu_name = 'Nutzer'
-    newmenu_name = {'DE': 'Nutzer', 'EN': 'User'}
-    path = 'meta__creator'
-    newpath = 'creator'
+    menu_name = {'DE': 'Nutzer', 'EN': 'User'}
+    path = 'creator'
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
@@ -355,14 +322,14 @@ class TblMeta(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    # newcolumn_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
+    # column_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
     #                'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
     #                'support': {'DE': 'Auflage???', 'EN': 'Support'},
     #                'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
     #                'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
 
     # TODO: ussed because users are creator and publisher. Improve this!
-    newcolumn_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
+    column_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
                       'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
                       'support': {'DE': 'Auflage???', 'EN': 'Support'},
                       'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
@@ -371,12 +338,8 @@ class TblMeta(models.Model):
                       # 'publisher__LtUser': {'DE': 'Veröffentlicher', 'EN': 'Publisher'}
                       }
 
-    column_dict = {'ts_start': 'Messbeginn', 'ts_stop': 'Messende', 'support': 'Support???', 'spacing': 'Schrittweite',
-                   'comment': 'Kommentar'}
-    menu_name = 'Messung'
-    newmenu_name = {'DE': 'Messung', 'EN': 'Sampling'}
-    path = 'meta'
-    newpath = ''
+    menu_name = {'DE': 'Messung', 'EN': 'Sampling'}
+    path = ''
     filter_type = {'ts_start': 'date', 'ts_stop': 'date'}
 
     class Meta:
@@ -394,14 +357,11 @@ class TblSensor(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    newcolumn_dict = {'sensor_name': {'DE': 'Name', 'EN': 'Name'},
+    column_dict = {'sensor_name': {'DE': 'Name', 'EN': 'Name'},
                       'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufactorer'},
                       'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
-    column_dict = {'sensor_name': 'Name', 'manufacturer': 'Hersteller', 'sensor_comment': 'Kommentar'}
-    menu_name = 'Sensor'
-    newmenu_name = {'DE': 'Sensor', 'EN': 'Sensor'}
-    path = 'meta__sensor'
-    newpath = 'sensor'
+    menu_name = {'DE': 'Sensor', 'EN': 'Sensor'}
+    path = 'sensor'
 
     def __str__(self):
         return self.sensor_name
@@ -419,14 +379,9 @@ class TblVariable(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    newcolumn_dict = {'variable_name': {'DE': 'Variablenname', 'EN': 'Variable Name'}}
-    column_dict = {'variable_name': 'Variablenname'}
-    menu_name = 'Datentyp'
-    newmenu_name = {'DE': 'Datentyp', 'EN': 'Data type'}
-    path = 'meta__variable'
-    newpath = 'variable'
-    struct = {'menu1': variable_name}
-    struct_name = {'menu1': menu_name}
+    column_dict = {'variable_name': {'DE': 'Variablenname', 'EN': 'Variable Name'}}
+    menu_name = {'DE': 'Datentyp', 'EN': 'Data type'}
+    path = 'variable'
 
     def __str__(self):
         return self.variable_name
@@ -434,107 +389,6 @@ class TblVariable(models.Model):
     class Meta:
         managed = False
         db_table = 'tbl_variable'
-
-
-# TODO: Following Code will be removed soon (by Marcus)
-# TODO: There is no need to have this as models.Manager (Didn't use it). Find a better place for class
-class FilterMenu(models.Manager):
-    # Define here which tables to use; which columns are used is defined in the respective table
-    menu_tables = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
-    menu_dict = {tables.menu_name: tables for tables in menu_tables}
-
-    def get_menu(detail_of_menu):
-        general_struct = []
-
-        for menu in FilterMenu.menu_tables:  # LtSoil,...
-            sub_struct = {}
-            for key, value in menu.column_dict.items():  # key: geology value: Geologie ...
-                query_set = menu.objects.select_related().values_list(key, flat=True).distinct()  # marls, schist, ...
-                if len(query_set) >= 1 and query_set[0] is not None:
-                    # TODO: some query_sets give numbers --> other menu (from ... to ... instead of tick selection)
-                    if detail_of_menu == 'submenu':
-                        sub_struct.update({value: {'No Values': 0}})
-                    elif detail_of_menu == 'complete_menu':
-                        sub_struct.update({value: {str(key): False for key in query_set}})
-            if sub_struct:
-                general_struct.append({menu.menu_name: sub_struct})
-        # print ('menu to send: ', general_struct)
-        return general_struct
-
-    # TODO: Can this be integrated in get_menu ? Might become confusing...
-    # TODO: check if FilterMenu.menu_dict can be used to eliminate a loop or if
-    def tick_submenu(top_menu_value, selection, cache_obj):
-        submenu = {}
-
-        for menu_dict in FilterMenu.get_menu('complete_menu'):  # complete menu in function object
-            for key_1, value_1 in menu_dict.items():  # all top_level names (key_1 = Boden, Besitzer...)
-                if key_1 == top_menu_value:  # check which menu has been clicked / Boden, Besitzer...
-                    for key_2 in menu_dict[key_1]:  # all sub_level_names (key_2 = Geologie, Bodentyp...)
-                        submenu[key_2] = dict(menu_dict[key_1][key_2])  # all values to choose from / Boolean if chosen
-                        # set checked keys as True:
-                        counts = FilterMenu.count_query(cache_obj, key_1, key_2, submenu[key_2].items())
-                        for add_numbers, org_value in menu_dict[key_1][key_2].items():
-                            submenu[key_2].update({add_numbers: [org_value, counts[add_numbers][0]]})
-                        if selection:
-                            for tick_key, tick_value in submenu[key_2].items():  # marls [True 651]
-                                if tick_key in selection:
-                                    submenu[key_2][tick_key][0] = True;
-
-        return submenu
-
-    def count_query(cache_obj, active_m_key=False, active_key=False,
-                    submenu_key=False):  # , active_value=False):  # Boden Geologie Sandstone
-        # def build_sub_query(cache_obj, active_m_key=False, active_key=False, active_value=False): # Boden Geologie
-        # Sandstone
-        m_map = {}
-        paths = {}
-        dataset_count = {}
-        for menu in FilterMenu.menu_tables:
-            m_map.update({menu.menu_name: {value: key for key, value in menu.column_dict.items()}})
-            paths.update({value: key for key, value in menu.column_dict.items()})
-
-        for values_3 in submenu_key:
-            filter_list = django_data = ''
-            if active_m_key and active_key:  # and active_value:
-                active_filter_aswellas = FilterMenu.menu_dict[active_m_key].path + "__" + m_map[active_m_key][
-                    active_key]  # meta__soil__geology
-                filter_list = ".filter(" + active_filter_aswellas + "='" + values_3[0] + "')"
-
-            for m_key in FilterMenu.menu_tables:
-                # print('FilterMenu.menu_tables: ', FilterMenu.menu_tables)
-                if m_key.menu_name in cache_obj and m_key.menu_name is not active_m_key:
-                    for cache_key, cache_value in cache_obj.get(m_key.menu_name).items():  # e.g. Geologie: Sandstone
-                        filter_aswellas = m_key.path + "__" + m_map[m_key.menu_name][
-                            cache_key]  # e.g. soil +__+ geology
-                        for value in cache_value:
-                            filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
-
-            django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-            locations = django_data.values('meta__site__id').distinct()
-            # bla = TblMeta.objects.filter(id=django_data)
-            # print('django_data: ', bla)
-            # selected_coords = (django_data.objects.filter(meta_id__geometry = LtLocation).distinct())
-            # print('len: ', len(selected_coords))
-            dataset_count.update({values_3[0]: [len(django_data), django_data]})
-        # print('{values_3[0]: django_data}: ', {values_3[0]: [len(django_data), django_data]})
-        return dataset_count
-
-    def build_queryset(cache_obj):
-        m_map = {}
-        for menu in FilterMenu.menu_tables:
-            m_map.update({menu.menu_name: {value: key for key, value in menu.column_dict.items()}})
-
-        filter_list = django_data = ''
-        for m_key in FilterMenu.menu_tables:
-            if m_key.menu_name in cache_obj:
-                for cache_key, cache_value in cache_obj.get(m_key.menu_name).items():  # e.g. Geologie: Sandstone
-                    filter_aswellas = m_key.path + "__" + m_map[m_key.menu_name][cache_key]  # e.g. soil +__+ geology
-                    for value in cache_value:
-                        filter_list = filter_list + ".filter(" + filter_aswellas + "='" + value + "')"
-                django_data = eval("NmMetaDomain.objects" + filter_list + ".values('meta_id')")
-        # print(' + + + ++ ++ :  ', LtDomain.objects.filter(pid = None).all())
-
-        return django_data
 
 
 # build BW watershed table

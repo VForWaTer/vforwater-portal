@@ -41,34 +41,6 @@ def get_sample_locations():
     return sample_location
 
 
-def build_id_list(ids):
-    id_list = []
-    for h in ids:
-        for i in h.values():
-            id_list.append(i)
-    return id_list
-
-
-# def get_submenu_with_count(top_menu_value, selection, cache):
-#     sub_menu_dict = {}
-#     # print('complete_menu_list(): ', complete_menu_list())
-#     complete_menu_list = FilterMenu.get_menu('complete_menu')
-#     for top_level_dict in complete_menu_list: # complete top_level_dict in function object
-#         for top_key in top_level_dict: # all top_level names (top_key = Boden, Besitzer...)
-#             if top_key == top_menu_value: # check which menu has been clicked
-#                 for sub_key in top_level_dict[top_key]: # all sub_level_names (sub_key = Geologie, Bodentyp...)
-#                     # print('top_level_dict: ', top_level_dict)
-#                     # print('top_key: ', top_key)               # (top_key = Boden, Besitzer...)
-#                     # print('sub_key: ', sub_key)               # (sub_key = Geologie, Bodentyp...)
-#                     sub_menu_dict[sub_key] = dict(top_level_dict[top_key][sub_key])  # all values to choose from / Boolean if chosen
-#                     # set checked keys as True:
-#                     if selection:
-#                         for get_key, get_value in sub_menu_dict[sub_key].items():
-#                             if get_key in selection:
-#                                 sub_menu_dict[sub_key][get_key] = True;
-#     return sub_menu_dict
-
-
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]

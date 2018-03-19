@@ -23,10 +23,7 @@ from matplotlib import pylab
 from matplotlib.dates import DateFormatter
 from matplotlib.figure import Figure
 
-from .query_functions import build_id_list, get_bbox_from_data
-from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
-# from vfwheron.models import TblData, TblMeta, TblVariable
-# from vfwheron.filter import FilterMenu
+from .query_functions import get_bbox_from_data
 from datetime import datetime
 import time
 
@@ -44,11 +41,11 @@ logger = logging.getLogger(__name__)
 # every time they open a browser.
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
-    newMenu = Menu().menu()
-    JSON_Menu = json.dumps(newMenu['client'])
+    Menu = Menu().menu()
+    JSON_Menu = json.dumps(Menu['client'])
     # JSON_Menu = Menu().json_menu()
 
-    # newMenu = JsonResponse({"Name": "Harry", "Age": 2})
+    # Menu = JsonResponse({"Name": "Harry", "Age": 2})
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
@@ -65,8 +62,8 @@ class HomeView(TemplateView):
             print("ERROR: Data Extend cannot be loaded in views.py")  # TODO: How to write this to a log file?
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-        return {'dataExt': dataExt, 'menu_list': FilterMenu.get_menu('submenu'), 'data_style': data_style,
-                'workspaceData': workspaceData, 'newMenu': self.JSON_Menu}
+        return {'dataExt': dataExt, 'data_style': data_style,
+                'workspaceData': workspaceData, 'Menu': self.JSON_Menu}
 
 
 class menuView(TemplateView):
@@ -144,34 +141,18 @@ class menuView(TemplateView):
             imgtag = maelicke_plot(request.GET.get('preview'))
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
-        if request.GET.get('onclick_show_datasets'):
-            result = FilterMenu.build_queryset(cache);
-            meta_ids = build_id_list(result)
-            return JsonResponse({'results': len(result), 'data_style': meta_ids})
-
         # if request.GET.get('filter_selection'):
         filter_selection = request.GET.get('filter_selection')
         if filter_selection:
-            start_time = time.time()
-            filter_menu = FilterMethods.selection_counts(HomeView.newMenu['server'], json.loads(filter_selection))
-            map_points = 0
-            print('time: ', time.time() - start_time)
-            print('_______________________2', filter_selection)
+            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(filter_selection))
             return JsonResponse(filter_menu)
 
         filter_selection_map = request.GET.get('filter_selection_map')
         if filter_selection_map:
-            meta_ids = newbuild_id_list(HomeView.newMenu['server'], json.loads(filter_selection_map))
-            print('_______________________1', meta_ids['all_filters'])
+            meta_ids = newbuild_id_list(HomeView.Menu['server'], json.loads(filter_selection_map))
             return JsonResponse(meta_ids)
 
-        return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
-
-
-class show_datasets(TemplateView):
-    def get(self, request):
-        clicked_menu_value = request.GET
-        return JsonResponse(FilterMenu.tick_submenu(clicked_menu_value['menu']))
+        return JsonResponse({'Error': 'Something is missing. Check views.py'})
 
 
 class ExtlinksView(TemplateView):
