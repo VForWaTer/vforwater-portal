@@ -281,7 +281,7 @@ function onclick_show_datasets_func() {
                         "onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i " +
                         "class='fa fa-remove fa-fw'></i></a><br></li>";*/
                 } else if (key == "data_style") {
-                    selectedIds = value
+                    selectedIds = value;
                     wfsPointLayer.changed()
                 }
             })

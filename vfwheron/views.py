@@ -30,7 +30,7 @@ from vfwheron.models import FilterMenu, TblData, TblMeta, TblVariable
 from datetime import datetime
 import time
 
-from .filter import filterMethods, Menu
+from .filter import FilterMethods, Menu, newbuild_id_list
 
 import logging
 import os
@@ -70,7 +70,6 @@ class HomeView(TemplateView):
 
 
 class menuView(TemplateView):
-    # TODO: each time you click a new top menu the database is accessed --> implement cache!
     # user = 'default'
 
     def get(self, request):
@@ -154,10 +153,17 @@ class menuView(TemplateView):
         filter_selection = request.GET.get('filter_selection')
         if filter_selection:
             start_time = time.time()
-            filter_menu = filterMethods.selection_counts(HomeView.newMenu['server'], json.loads(filter_selection))
+            filter_menu = FilterMethods.selection_counts(HomeView.newMenu['server'], json.loads(filter_selection))
             map_points = 0
             print('time: ', time.time() - start_time)
+            print('_______________________2', filter_selection)
             return JsonResponse(filter_menu)
+
+        filter_selection_map = request.GET.get('filter_selection_map')
+        if filter_selection_map:
+            print('_______________________1', filter_selection_map)
+            meta_ids = newbuild_id_list(HomeView.newMenu['server'], json.loads(filter_selection_map))
+            return JsonResponse({'data_style': meta_ids})
 
         return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
 

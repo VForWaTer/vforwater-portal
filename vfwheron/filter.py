@@ -253,8 +253,7 @@ class newFiltermenu():
 
 def build_select_filters(menu, filter_selection ):
     # build queries for the filter values
-    # old_query_filter = ''
-    all = ''
+    all_filters = ''
     single_filters = {}
     query_filters = {}
     # build the django filter for every selection separately
@@ -269,23 +268,36 @@ def build_select_filters(menu, filter_selection ):
             # TODO: maybe use intersection to store previous queries (compare performance of both)
             # TODO: also compare .filter(x).filter(y) vs .filter(x,y). Result seems to be equal (But shouldn't!?). Time?
             single_filters.update({parent+child:path+"='"+value+"'"})
-            # print("query_filter = {" +parent+child+":\""+path+"='"+value+"',\"}")
-            # print("query_filter = {", query_filters)
-            # old_query_filter += path + "='" + value + "',"
 
     # build filters for the menu with all selections, and filters with the selection missing where the user selected it
     # (to prevent zero values where the user made a selection)
     for key in single_filters:
-        all += single_filters[key]+','
+        all_filters += single_filters[key]+','
         spec_filter = ''
         for k in single_filters:
             if k != key:
                 spec_filter += single_filters[k]+','
         query_filters.update({key: spec_filter})
-    return {'all_filters': all, 'one_excluded': query_filters}
+    return {'all_filters': all_filters, 'one_excluded': query_filters}
 
 
-class filterMethods():
+def newbuild_id_list(menu, filter_selection):
+    # build queries for the filter values
+    query_filters = ''
+    # build the django filter for every selection separately
+    for parent in filter_selection:
+        for child in filter_selection[parent]:
+            item = filter_selection[parent][child]
+
+            path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
+            value = menu[parent][child][item]['name']
+            query_filters += path+"='"+value+"', "
+
+    std_query = "TblMeta.objects.filter(" + query_filters + ").values_list('id', flat=True)"
+    return {'all_filters':  list(eval(std_query))}
+
+
+class FilterMethods():
 
     @staticmethod
     def selection_counts(menu, filter_selection):
@@ -293,7 +305,6 @@ class filterMethods():
 
         query_filter = build_select_filters(menu, filter_selection)
         std_query = "TblMeta.objects.filter("+query_filter['all_filters']+")"
-        # TODO: Nice to have: for active menues don't use the query of the respective menu - on client side you can
         # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user
         for parent in menu:
             c = 1

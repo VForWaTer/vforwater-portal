@@ -252,10 +252,27 @@ $(document).ready(function (){
 function buttonFunction(item, shortParent, shortChild, shortItem) {
     let activeSibling = checkSiblings(item);
     selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
-    sendSelectionToServer(selection);
+    showSelectionOnMap(selection);
+    updatedMenuToServer(selection);
 }
 
-function sendSelectionToServer(selection) {
+function showSelectionOnMap(selection) {
+    $.ajax({
+        url: DEMO_VAR + "/vfwheron/menu",
+        dataType: 'json',
+        data: {
+            filter_selection_map: JSON.stringify(selection),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (json) {
+            selectedIds = json['values'];
+            wfsPointLayer.changed()
+        },
+    });
+//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+}
+
+function updatedMenuToServer(selection) {
     $.ajax({
         url: DEMO_VAR+"/vfwheron/menu",
         dataType   : 'json',
