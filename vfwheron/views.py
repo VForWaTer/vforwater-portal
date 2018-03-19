@@ -161,9 +161,9 @@ class menuView(TemplateView):
 
         filter_selection_map = request.GET.get('filter_selection_map')
         if filter_selection_map:
-            print('_______________________1', filter_selection_map)
             meta_ids = newbuild_id_list(HomeView.newMenu['server'], json.loads(filter_selection_map))
-            return JsonResponse({'data_style': meta_ids})
+            print('_______________________1', meta_ids['all_filters'])
+            return JsonResponse(meta_ids)
 
         return JsonResponse(FilterMenu.tick_submenu(menu, selection_list, cache))
 

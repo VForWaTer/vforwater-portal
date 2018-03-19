@@ -266,7 +266,7 @@ function showSelectionOnMap(selection) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            selectedIds = json['values'];
+            selectedIds = json['all_filters'];
             wfsPointLayer.changed()
         },
     });
