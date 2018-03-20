@@ -94,7 +94,8 @@ function childBuilder(child, shortChild, shortParent) {
         itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
             "<div id='"+child.name+"'>" +
-                "<b> "+child.name +": </b>"+itemHTML+
+            "<h6 class='respo-hover-blue child "+shortParent+" "+shortChild+"'></h6>" +
+                ""+child.name +": "+itemHTML+
             "</div>"
     }
     return childHTML
@@ -235,7 +236,7 @@ function showAllPointsOnMap(){
            'csrfmiddlewaretoken': csrf_token,
        }, // data sent with the post request
        success: function (json) {
-           console.log('resonse of showAllPointsOnMap: ', json)
+           console.log('response of showAllPointsOnMap: ', json)
        },
    });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
@@ -312,7 +313,7 @@ function updateCounts(json) {
                 itemHTML = eval("document.getElementsByClassName('"+parent+" "+ child+ " "+ item+"')");
                 itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+json[parent][child][item]+")"
                 if (json[parent][child][item] == '0'){
-                console.log('candidate for a "disable" option? itemHTML[0]', itemHTML[0], json[parent][child][item])
+                // console.log('candidate for a "disable" option? itemHTML[0]', itemHTML[0], json[parent][child][item])
                 //  respo-disabled classList.add
                     itemHTML[0].classList.add('respo-disabled')
                 }
