@@ -138,7 +138,7 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 }
 
 
-/*from here devinitions for the new menu*/
+/*from here definitions for the new menu*/
 /**** Accordion ****/
  /* Style the buttons that are used to open and close the accordion panel */
 .new_accord {
@@ -181,6 +181,14 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
     }
 
     #sliderwildcard{
+	/*height: auto;*/
+	/*width: auto;*/
+	/*margin: 0 auto;*/
+	padding: 28px 0 0 0;
+	/*border: 1px solid #BFBFBF;*/
+}
+
+    #datewildcard{
 	/*height: auto;*/
 	/*width: auto;*/
 	/*margin: 0 auto;*/

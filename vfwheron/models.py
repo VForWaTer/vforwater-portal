@@ -124,6 +124,7 @@ class LtQuality(models.Model):
                       'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
     menu_name = {'DE': 'Qualität', 'EN': 'Quality'}
     path = 'quality'
+    filter_type = {'flag_weight': 'slider'}
 
     def __str__(self):
         return self.flag_name
@@ -329,8 +330,8 @@ class TblMeta(models.Model):
     #                'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
 
     # TODO: ussed because users are creator and publisher. Improve this!
-    column_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
-                      'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
+    column_dict = {'ts_start': {'DE': 'Zeige Daten nach dem', 'EN': 'Show data after'},
+                      'ts_stop': {'DE': 'Zeige Daten vor dem', 'EN': 'Show data before'},
                       'support': {'DE': 'Auflage???', 'EN': 'Support'},
                       'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
                       'comment': {'DE': 'Kommentar', 'EN': 'Comment'},
@@ -358,7 +359,7 @@ class TblSensor(models.Model):
     updated_on = models.DateTimeField(blank=True, null=True)
 
     column_dict = {'sensor_name': {'DE': 'Name', 'EN': 'Name'},
-                      'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufactorer'},
+                      'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufacturer'},
                       'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
     menu_name = {'DE': 'Sensor', 'EN': 'Sensor'}
     path = 'sensor'

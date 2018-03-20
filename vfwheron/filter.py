@@ -1,8 +1,10 @@
+import json
+
 from heron.settings import DEBUG
 from django.db.models import Max, Min
 
 from vfwheron.models import TblMeta, TblVariable, LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblSensor, LtProject, \
-    NmMetaDomain
+    NmMetaDomain, LtQuality
 
 
 def build_select_filters(menu, filter_selection):
@@ -93,11 +95,12 @@ class Menu:
         # self.min_amount = 0 if DEBUG else 1
         self.min_amount = 1
         self.lang = lang
+        # The order here will be used as order for the menu at the server
         # self.menu_list = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
-        self.menu_list = [LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
+        self.menu_list = [LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
         # self.menu_list = [LtDomain]
         # self.menu()
-        # self.json_menu()
+        # self.write_json_menu()
 
     def menu(self):
         # print('ACHTUNG!!! DU BAUST EIN MENU!!!')  # One line to check how often this is accessed        count = 0
@@ -127,23 +130,23 @@ class Menu:
 
         return {'client': json_menu, 'server': menu_map}
 
-    # use this method to write an example of the json menu to disk
-    # def json_menu(self):
-    #     json_menu = json.dumps(self.menu()['client'])
-    #     menu_map = json.dumps(self.menu()['server'])
-    #
-    #     if DEBUG:  # write the json menu for the web-site to file in DEBUG mode
-    #         save_path = '/home/marcus/git/vforwater-portal/vfwheron/test.json'
-    #         file = open(save_path, "w")
-    #         file.write(json_menu)
-    #         file.close()
-    #
-    #         save_path = '/home/marcus/git/vforwater-portal/vfwheron/test_map.json'
-    #         file = open(save_path, "w")
-    #         file.write(menu_map)
-    #         file.close()
-    #
-    #     return json_menu
+# use this method to write an example of the json menu to disk
+#     def write_json_menu(self):
+#         json_menu = json.dumps(self.menu()['client'])
+#         menu_map = json.dumps(self.menu()['server'])
+#
+#         if DEBUG:  # write the json menu for the web-site to file in DEBUG mode
+#             save_path = '/home/marcus/git/vforwater-portal/vfwheron/test.json'
+#             file = open(save_path, "w")
+#             file.write(json_menu)
+#             file.close()
+#
+#             save_path = '/home/marcus/git/vforwater-portal/vfwheron/test_map.json'
+#             file = open(save_path, "w")
+#             file.write(menu_map)
+#             file.close()
+#
+#         return json_menu
 
 
 # TODO: Check how often 'get_filter_type' and the others are called; Shall they be properties?
@@ -267,9 +270,11 @@ class Table:
             min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
                            "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
                            self.query_paths[grand_child] + "'))")
+
         except ValueError:
             min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] +
                            "'), max_value=Max('" + self.query_paths[grand_child] + "'))")
+            return {'json': '', 'total': 0, 'server': ''}
         grandchild_dict = {
             'type': 'slider',
             'total': total,

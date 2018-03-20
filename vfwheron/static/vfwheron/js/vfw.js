@@ -196,21 +196,22 @@ $(document).ready(function (menuTitle) {
     });
 }); // end ready
 
-// Select Data / build elements, in workspace
-function select_data(selectedData) {
-    $.ajax({
-        url: DEMO_VAR+"/vfwheron/menu",
-        datatype: 'json',
-        data: {
-            selection: selectedData[0],
-            submenu: selectedData[1],
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-        success: function (json) {
-        },
-    });
-//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
-}
+// seems to be unused / delete with next commit
+// Select Data / build elements, in workspace /
+// function select_data(selectedData) {
+//     $.ajax({
+//         url: DEMO_VAR+"/vfwheron/menu",
+//         datatype: 'json',
+//         data: {
+//             selection: selectedData[0],
+//             submenu: selectedData[1],
+//             'csrfmiddlewaretoken': csrf_token,
+//         }, // data sent with the post request
+//         success: function (json) {
+//         },
+//     });
+// //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+// }
 
 // TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
 function getCookie(name) {
@@ -241,6 +242,7 @@ function workspace_dataset(id) {
     });
 }
 
+/* Send ID to server to build preview and add preview image to html */
 function show_preview(id) {
     document.getElementById("show_data_preview").value = "Loading Preview"
     $.ajax({
@@ -263,7 +265,7 @@ function show_preview(id) {
 
 
 
-// // from here build the new accordion
+// // another accordion/ didn't work for me (Marcus)
 // var acc = document.getElementsByClassName("new_accord");
 // var i;
 //

@@ -22,7 +22,7 @@ let selection = {};
 //         }
 //     }
 // }
-
+/* Loop through menues after load and build menu objects */
 menues.forEach(menuBuilder,jsMenu);
 
 /* build the parents of the menu*/
@@ -51,6 +51,7 @@ function childBuilder(child, shortChild, shortParent) {
     let inputName = "";
     let dDL = 8;  // dropDownLimit
     // console.log('child in childbuilder: ', shortChild)
+/* build child with items for amount of items between 1 and dropDownLimit (dDL) */
     if (child.total > 1 && child.total <= dDL && !child.hasOwnProperty("type")) {
         itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
@@ -60,6 +61,7 @@ function childBuilder(child, shortChild, shortParent) {
             "   </div>" +
             "</div>"
     }
+/* build a dropdown list for childs with many items */
     else if (child.total > dDL && !child.hasOwnProperty("type")){
         itemHTML = itemBuilder(child, shortChild, shortParent);
         inputName = "Input"+child.name;
@@ -75,7 +77,9 @@ function childBuilder(child, shortChild, shortParent) {
                 "</div>" +
             "</div>"
     }
+/* build special childs if type is defined */
     else if (child.hasOwnProperty("type")) {
+        /* build slider if type is slider */
         if (child.type === "slider") {
             itemHTML = sliderBuilder(child, shortChild, shortParent);
             childHTML=
@@ -85,9 +89,17 @@ function childBuilder(child, shortChild, shortParent) {
             " </div>" +
             "</div>"
         }
+/* build calender if type is date */
         else if (child.type === "date") {
             itemHTML = dateBuilder(child, shortChild, shortParent);
-            childHTML = itemHTML
+            // childHTML = itemHTML
+            childHTML =
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count d'>(" + child.total + ")</div></i></h6>" +
+            "<div id='" + child.name + "'>" +
+                "<div> "+itemHTML+
+                // "<div id='datewildcard'> "+itemHTML+
+            " </div>" +
+            "</div>"
         }
     }
     else if (child.total === 1) {
@@ -106,11 +118,14 @@ function dateBuilder(child, shortChild, shortParent) {
     let minD = child.selectable_min.toString();
     let maxD = child.selectable_max.toString();
     let itemHTML =
-        "<p>Date: <input type='text' id='datepicker "+shortParent+" "+shortChild+"'></p>";
+        "<div class='date'></div>" +
+        "<p>Date: <input type='date' id='datepicker "+shortParent+" "+shortChild+"'></p>";
 
-    $( function() {
-      $( "#datepicker" ).datepicker();
-    } );
+    // $( function() {
+    //   $( "#datepicker" ).datepicker(
+    //       console.log('Datepicker')
+    //   );
+    // } );
 
     return itemHTML;
 }
@@ -180,10 +195,10 @@ function dDMFilterFunction(dropDownName, inputName) {
 /* build sliders at the respective locations after the menu has loaded*/
 $(document).ready(function (){
     let handlesSlider =  document.getElementsByClassName('slider');
-    for (let i = 0; i < handlesSlider.length; i++){
-        let maxv = parseFloat(handlesSlider[i].attributes.maxv.value);
-        let minv = parseFloat(handlesSlider[i].attributes.minv.value);
-        noUiSlider.create(handlesSlider[i], {
+    for (let s = 0; s < handlesSlider.length; s++){
+        let maxv = parseFloat(handlesSlider[s].attributes.maxv.value);
+        let minv = parseFloat(handlesSlider[s].attributes.minv.value);
+        noUiSlider.create(handlesSlider[s], {
             start: [minv, maxv],
             tooltips:  true ,
             // behaviour: 'tap-drag',
@@ -205,10 +220,11 @@ $(document).ready(function (){
 // $(document).ready(addDatePicker);
 // function addDatePicker() {
 //     var handlesDate =  document.getElementsByClassName('date');
-//     for (var i = 0; i < handlesDate.length; i++) {
-//         console.log('date: ', handlesDate[i])
-//         console.log("document."+handlesDate[i].id+".datepicker()")
-//         eval("document."+handlesDate[i].id+".datepicker()");
+//     console.log('handlesDate: ', handlesDate)
+//     for (let d = 0; d < handlesDate.length; d++) {
+//         console.log('date: ', handlesDate[d])
+//         console.log("document."+handlesDate[d].id+".datepicker()")
+//         eval("document."+handlesDate[d].id+".datepicker()");
 //         // $( "#handlesDate[i].name" ).datepicker();
 //     }
 //   } ;

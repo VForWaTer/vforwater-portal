@@ -5,14 +5,19 @@
 {% block javascript %}
 {% endblock %}
 <head>
+{#  our standard jquery for most of the portal  #}
     <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
     <script src="{% static 'vfwheron/js/vfw.js' %}" type="text/javascript"></script>
 
+{#  used to add styles for filter menu  #}
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/filter.css' %}">
+{#  used to style filter menu    #}
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/jquery-ui.min.css' %}">
+{#    nouislider.css needed for slider:  #}
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/nouislider.css' %}">
-{#    needed for accordion:  #}
+{#    jquery-ui.min.js needed for accordion:  #}
     <script src="{% static 'vfwheron/js/jquery-ui.min.js' %}"></script>
+{#    nouislider.min.js needed for slider:  #}
     <script src="{%  static 'vfwheron/js/nouislider.min.js' %}"></script>
 
 {#    TODO: Download the following files when you want to use : http://www.daterangepicker.com/#}
