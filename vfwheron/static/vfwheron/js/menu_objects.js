@@ -23,15 +23,14 @@ let selection = {};
 //     }
 // }
 
-// menues.forEach(console.log('jsMenu: ', jsMenu));
-
 menues.forEach(menuBuilder,jsMenu);
 
+/* build the parents of the menu*/
 function menuBuilder(parent) {
     if (jsMenu[parent].total > 0) {  // check how many entries are in menu
         let parentHTML ="";
-        for (let i = 1; i <= jsMenu[parent].total; i++) {  // build child menu
-            let child = 'C'+i.toString();
+        for (let c = 1; c <= jsMenu[parent].total; c++) {  // build child menu
+            let child = 'C'+c.toString();
             let childHTML = childBuilder(eval("jsMenu[parent]."+[child]), child, parent);
             // console.log('  *** ** *' + parentHTML)
             parentHTML = parentHTML + childHTML
@@ -42,27 +41,10 @@ function menuBuilder(parent) {
                 "<div id='subaccordion'> "+parentHTML+"" +
             "   </div>" +
             "</div>";
-        console.log('jsMenu[parent].name: ', jsMenu[parent].name)
-        // document.getElementById("accordion").innerHTML +=
-        //     "<button class='new_accord'>" + jsMenu[item].name + "</button>" +
-        //     "<div class='panel'>" +
-        //     "<div> "+childHTML+"</div>" +
-        //     "</div>"
-        //            "<button class='new_accord'>" + jsMenu[item].name + "</button>" +
-            // "<div class='panel'>" +
-            // "<div> "+childHTML+"</div>" +
-            // "</div>"
     }
-        // "ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons'" +
-        // "id='fm"+index+"' value="+jsMenu[item].chosen +">" + jsMenu[item].name + "
-
-    // document.getElementById("jsMenu").innerHTML += "<h5 " +
-    //     "class='respo-hover-blue nav ui-accordion-header " +
-    //     "ui-corner-top ui-accordion-header-collapsed ui-corner-all ui-state-default ui-accordion-icons'" +
-    //     "id='fm"+index+"' value="+jsMenu[item].chosen +">" + jsMenu[item].name + "</h5>"
-    //
 }
 
+/* build the childs of the menu / distinguishes the types of possible inputs*/
 function childBuilder(child, shortChild, shortParent) {
     let childHTML = "";
     let itemHTML = "";
@@ -118,6 +100,7 @@ function childBuilder(child, shortChild, shortParent) {
     return childHTML
 }
 
+/* Builds a calender to select dates*/
 function dateBuilder(child, shortChild, shortParent) {
     let minD = child.selectable_min.toString();
     let maxD = child.selectable_max.toString();
@@ -131,6 +114,7 @@ function dateBuilder(child, shortChild, shortParent) {
     return itemHTML;
 }
 
+/* Prepair location in web site to build there a slider to select num values after loading of web site */
 function sliderBuilder(child, shortChild, shortParent) {
     let minV = child.selectable_min.toString();
     let maxV = child.selectable_max.toString();
@@ -155,51 +139,28 @@ function sliderBuilder(child, shortChild, shortParent) {
 
 }
 
+/* build items to click on in the Filter Menu*/
 function itemBuilder(child, shortChild, shortParent) {
     let i, itemHTML = "";
     for (i = 1; i <= child.total; i++) {
         let shortItem = 'I'+ i.toString();
         let cItem = eval("child." + shortItem);
-        // console.log('itemBuilder child:', child)
-        // console.log(' + + + + kaljsgdlagafhg ', cItem, shortItem, shortChild, shortParent)
-        // if (cItem.chosen){
-        //     active = 'active'
-        // } else {
-        //     active = ''
-        // }
         let listHTML =
-            // "<div>" +
-                // "<label class='container'>"+
-                // "<input type='radio' checked='checked' name='radio'>" +
                 "<a class='respo-hover-blue btn "+shortParent+" "+shortChild+" "+shortItem+"' " +
-                    "onclick='buttonFunction(this,\""+ shortParent+"\",\""+ shortChild+"\",\""+ shortItem+"\")'>" +
+                    "onclick='itemButtonFunction(this,\""+ shortParent+"\",\""+ shortChild+"\",\""+ shortItem+"\")'>" +
                     cItem.name + "&emsp;" +"<i><div class='count'>(" + cItem.total + ")</div></i>"+
                 "</a>";
-            // "   </label>" +
-            // "</div>";
         itemHTML = itemHTML + listHTML;
-        // console.log('haha!: ', listHTML.getElementsByClassName("btn"))
     }
     return itemHTML
 }
 
-function checkBoxBuilder(child, shortChild, shortParent) {
-    let cItem = eval("child.I");
-    let listHTML =
-        "<a class='respo-hover-blue'>" + cItem.name +
-        "</a>";
-//     <label class="container">One
-//   <input type="checkbox" checked="checked">
-//   <span class="checkmark"></span>
-// </label>;
-    return listHTML;
-}
-
-
+/* Drop Down Menu Button Function to toggle what is shown in it*/
 function dDMFunction(dropDownName) {
     document.getElementById(dropDownName).classList.toggle("show");
 }
 
+/* Drop Down Menu Filter Function - Search functionality */
 function dDMFilterFunction(dropDownName, inputName) {
     let input, filter, div, a;
     input = document.getElementById(inputName);
@@ -215,6 +176,7 @@ function dDMFilterFunction(dropDownName, inputName) {
     }
 }
 
+/* build sliders at the respective locations after the menu has loaded*/
 $(document).ready(function (){
     let handlesSlider =  document.getElementsByClassName('slider');
     for (let i = 0; i < handlesSlider.length; i++){
@@ -250,13 +212,63 @@ $(document).ready(function (){
 //     }
 //   } ;
 
-function buttonFunction(item, shortParent, shortChild, shortItem) {
+/* Add onclick functionality to the items in the menu to update menu and show selection on map */
+function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     let activeSibling = checkSiblings(item);
     selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
-    showSelectionOnMap(selection);
-    updatedMenuToServer(selection);
+    if (!jQuery.isEmptyObject(selection)) {
+        showSelectionOnMap(selection);
+        updatedMenuToServer(selection);
+    }
+    // else {
+    //     console.log
+    //     showAllPointsOnMap();
+    // }
 }
 
+function showAllPointsOnMap(){
+   $.ajax({
+       url: DEMO_VAR + "/vfwheron/menu",
+       dataType: 'json',
+       data: {
+           all_datasets: 'True',
+           'csrfmiddlewaretoken': csrf_token,
+       }, // data sent with the post request
+       success: function (json) {
+           console.log('resonse of showAllPointsOnMap: ', json)
+       },
+   });
+//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+}
+
+/* button to remove the selection in the filter menu, reset values on items, and show all points on map */
+// function unselect_all_func(){
+//     console.log('Na dann viel Spaß!');
+//     // menues.forEach(menuBuilder,jsMenu);
+//     console.log(menues, menues.length);
+//     // document.classList.remove('activeP')
+//     // document.classList.remove('activeC')
+//     // document.classList.remove('activeI')
+//     // document.classList.remove('respo-disabled')
+//     for (let p = 1; p <= menues.length; p++){
+//         // let nodeListC = eval("document.getElementsByClassName('child "+shortChild+" "+shortParent+"')");
+//         let nodeListP = document.getElementsByClassName('parent P' + p.toString());
+//         if (nodeListP.contains('activeP')){
+//
+//
+//
+//         console.log('nodeListP: ', nodeListP);
+//         console.log('Loop p: '+ 'P'+p.toString())
+//         parent = document.getElementsByClassName('P'+p.toString());
+//         parent[0].getElementsByClassName('activeP')
+//             }
+//         // console.log('Parent: ', parent)
+//     }
+//     selectedIds = null;
+//     wfsPointLayer.changed()
+// }
+
+/* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
 function showSelectionOnMap(selection) {
     $.ajax({
         url: DEMO_VAR + "/vfwheron/menu",
@@ -273,6 +285,7 @@ function showSelectionOnMap(selection) {
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
+/* send json Object with selection to server and get int(in a json) with amount of items back */
 function updatedMenuToServer(selection) {
     $.ajax({
         url: DEMO_VAR+"/vfwheron/menu",
@@ -288,6 +301,7 @@ function updatedMenuToServer(selection) {
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
+/* updates the numbers for each item */
 function updateCounts(json) {
     let parent, child, item;
     for (parent in json) {
@@ -297,11 +311,20 @@ function updateCounts(json) {
             for (item in json[parent][child]) {
                 itemHTML = eval("document.getElementsByClassName('"+parent+" "+ child+ " "+ item+"')");
                 itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+json[parent][child][item]+")"
+                if (json[parent][child][item] == '0'){
+                console.log('candidate for a "disable" option? itemHTML[0]', itemHTML[0], json[parent][child][item])
+                //  respo-disabled classList.add
+                    itemHTML[0].classList.add('respo-disabled')
+                }
+                else if (itemHTML[0].classList.contains('respo-disabled')) {
+                    itemHTML[0].classList.remove('respo-disabled')
+                }
             }
         }
     }
 }
 
+/* checks if one of the siblings of the clicked item is active */
 function checkSiblings(item) {
     let activeSibling;
     if (item.classList.contains('activeI')) {
@@ -316,12 +339,11 @@ function checkSiblings(item) {
     return activeSibling;
 }
 
+/* checks if selected item is already activated, toggles the item as well as child and parent */
 function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
     // getElementsByClassName should be faster than QuerySelectAll
     let nodeListC = eval("document.getElementsByClassName('child "+shortChild+" "+shortParent+"')");
     let nodeListP = eval("document.getElementsByClassName('parent "+shortParent+"')");
-    // let nodeListC = document.querySelectorAll(".child."+shortChild+"."+shortParent);
-    // let nodeListP = document.querySelectorAll(".parent."+shortParent);
 
     if (activeSibling) {
         try {
