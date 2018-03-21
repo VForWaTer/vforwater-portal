@@ -177,7 +177,7 @@ def get_wps_service_engine(name, app_class=None):
 def find_wps_service_engines():
 
     try:
-        WPS_Address = 'https://' + VFW_SERVER + ':8094/wps'
+        WPS_Address = VFW_SERVER + '/wps'
 
         WPS_Service = WebProcessingService(WPS_Address,
                                            verbose=False,
