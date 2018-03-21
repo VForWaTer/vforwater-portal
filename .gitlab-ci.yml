@@ -11,7 +11,7 @@ vforwater-portal-test:
     before_script:
         # For debugging
         - pwd
-        - ls -la
+        - export
     script:
         # TODO: Run test script...
         - echo "Testing..."
