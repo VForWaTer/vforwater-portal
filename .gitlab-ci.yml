@@ -24,8 +24,9 @@ vforwater-portal-deploy:
         - sudo systemctl stop vfwportal
         # Move current installation to "vforwater-portal_old"
         - rm -rf /home/vfwportal/vforwater-portal_old
-        - mv /home/vfwportal/vforwater-portal \
-             /home/vfwportal/vforwater-portal_old
+        - test ! -d /home/vfwportal/vforwater-portal || \
+            mv /home/vfwportal/vforwater-portal \
+               /home/vfwportal/vforwater-portal_old
         # Copy new files and prepared "settings.py"
         - cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
         - cp /home/vfwportal/settings.py-prod \
