@@ -31,6 +31,9 @@ vforwater-portal-deploy:
         - cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
         - cp /home/vfwportal/settings.py-prod
              /home/vfwportal/vforwater-portal/heron/settings.py
+        # FIXME What is this for? Needed?
+        - cp /home/vfwportal/setup_python.sh
+             /home/vfwportal/vforwater-portal/setup_python.sh
         # Start web server
         - sudo systemctl start vfwportal
     environment:
