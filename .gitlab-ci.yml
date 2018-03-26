@@ -13,15 +13,27 @@ vforwater-portal-test:
         - pwd
         - export
     script:
-        # TODO: Run test script...
+        # TODO Run test script...
         - echo "Testing..."
 
 # Deploy vforwater-portal
 vforwater-portal-deploy:
     stage: deploy
+    before_script:
+        # Stop web server
+        - sudo systemctl stop vfwportal
     script:
-        # TODO: Deploy somehow
-        - echo "Deploy..."
+        # Move current installation to "vforwater-portal_old"
+        - rm -rf /home/vfwportal/vforwater-portal_old
+        - mv /home/vfwportal/vforwater-portal \
+             /home/vfwportal/vforwater-portal_old
+        # Copy new files and prepared "settings.py"
+        - cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
+        - cp /home/vfwportal/settings.py-prod \
+             /home/vfwportal/vforwater-portal/heron/settings.py
+    after_script:
+        # Start web server
+        - sudo systemctl start vfwportal
     environment:
         name: production
         url: https://portal.vforwater.de/vfwheron/
