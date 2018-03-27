@@ -32,6 +32,7 @@ vforwater-portal-deploy:
         - cp /home/vfwportal/settings.py-prod
              /home/vfwportal/vforwater-portal/heron/settings.py
         - cd /home/vfwportal/vforwater-portal
+        #- python36 manage.py migrate
         - python36 manage.py collectstatic --noinput
         # Start web server
         - sudo systemctl start vfwportal
