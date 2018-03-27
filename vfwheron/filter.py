@@ -176,8 +176,10 @@ class Table:
         self.child = {}
         for columns in self.child_columns:
             query_set = self.table_name.objects.select_related().values_list(columns, flat=True).distinct()
-            if not (len(query_set) <= 1 and query_set[0] is None):
-                self.child[columns] = query_set
+            # if not (len(query_set) <= 1 and query_set[0] is None):
+            if (len(query_set) > 0):
+                if not (len(query_set) == 1 and query_set[0] is None):
+                    self.child[columns] = query_set
 
     def get_query_path(self):
         self.query_paths = {}
