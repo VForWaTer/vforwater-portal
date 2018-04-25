@@ -59,7 +59,7 @@ img{margin-bottom:-5px}a{color:inherit}
 .respo-badge,.respo-tag,.respo-sign{background-color:#000;color:#fff;display:inline-block;padding-left:8px;padding-right:8px;text-align:center}
 .respo-badge{border-radius:50%}
 ul.respo-ul{list-style-type:none;padding:0;margin:0}ul.respo-ul li{padding:6px 2px 6px 16px;border-bottom:1px solid #ddd}ul.respo-ul li:last-child{border-bottom:none}
-.respo-tooltip,.respo-display-container{position:relative}.respo-tooltip .respo-text{display:nonez}.respo-tooltip:hover .respo-text{display:inline-block}
+.respo-tooltip,.respo-display-container{position:relative}.respo-tooltip .respo-text{display:none}.respo-tooltip:hover .respo-text{display:inline-block}
 .respo-navbar{list-style-type:none;margin:0;padding:0;overflow:hidden}
 .respo-navbar li{float:left}.respo-navbar li a,.respo-navitem,.respo-navbar li .respo-btn,.respo-navbar li .respo-input{display:block;padding:8px 16px}.respo-navbar li .respo-btn,.respo-navbar li .respo-input{border:none;outline:none;width:100%}
 .respo-navbar li a:hover{color:#000;background-color:#ccc}

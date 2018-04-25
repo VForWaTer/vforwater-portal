@@ -1,0 +1,436 @@
+<!-- PyWPS 4.0.0 -->
+<wps:ProcessDescriptions xmlns:ows="http://www.opengis.net/ows/1.1"
+                         xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsDescribeProcess_response.xsd"
+                         service="WPS" version="1.0.0" xml:lang="en-US">
+    <ProcessDescription wps:processVersion="None" storeSupported="true" statusSupported="true">
+        <ows:Identifier>feature_count</ows:Identifier>
+        <ows:Title>Feature count</ows:Title>
+        <ows:Abstract>This process counts the number of features in an uploaded GML</ows:Abstract>
+        <ows:Metadata xlink:title="Feature" xlink:type="simple"/>
+        <ows:Metadata xlink:title="Count" xlink:type="simple"/>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>layer</ows:Identifier>
+                <ows:Title>Layer</ows:Title>
+                <ComplexData>
+                    <Default>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Default>
+                    <Supported>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Supported>
+                </ComplexData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>count</ows:Identifier>
+                <ows:Title>Count</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="1.3.3.7" storeSupported="true" statusSupported="true">
+        <ows:Identifier>say_hello</ows:Identifier>
+        <ows:Title>Process Say Hello</ows:Title>
+        <ows:Abstract>Returns a literal string output with Hello plus the inputed name</ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>name</ows:Identifier>
+                <ows:Title>Input name</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:string">string</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>response</ows:Identifier>
+                <ows:Title>Output response</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:string">string</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="None" storeSupported="true" statusSupported="true">
+        <ows:Identifier>centroids</ows:Identifier>
+        <ows:Title>Process Centroids</ows:Title>
+        <ows:Abstract>Returns a GeoJSON with centroids of features from an uploaded GML.</ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>layer</ows:Identifier>
+                <ows:Title>Layer</ows:Title>
+                <ComplexData>
+                    <Default>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Default>
+                    <Supported>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Supported>
+                </ComplexData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>out</ows:Identifier>
+                <ows:Title>Referenced Output</ows:Title>
+                <ComplexOutput>
+                    <Default>
+                        <Format>
+                            <MimeType>application/json</MimeType>
+                        </Format>
+                    </Default>
+                    <Supported>
+                        <Format>
+                            <MimeType>application/json</MimeType>
+                        </Format>
+                    </Supported>
+                </ComplexOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="1.3.3.7">
+        <ows:Identifier>ultimate_question</ows:Identifier>
+        <ows:Title>Answer to the ultimate question</ows:Title>
+        <ows:Abstract>The process gives the answer to the ultimate question of "What is the meaning of life?
+        </ows:Abstract>
+        <ows:Metadata xlink:title="Ultimate Question" xlink:type="simple"/>
+        <ows:Metadata xlink:title="What is the meaning of life" xlink:type="simple"/>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>answer</ows:Identifier>
+                <ows:Title>Answer to Ultimate Question</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:string">string</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="None" storeSupported="true" statusSupported="true">
+        <ows:Identifier>sleep</ows:Identifier>
+        <ows:Title>Sleep Process</ows:Title>
+        <ows:Abstract>The process will sleep for a given delay or 10 seconds if not a valid value</ows:Abstract>
+        <ows:Metadata xlink:title="Sleep" xlink:type="simple"/>
+        <ows:Metadata xlink:title="Wait" xlink:type="simple"/>
+        <ows:Metadata xlink:title="Delay" xlink:type="simple"/>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>delay</ows:Identifier>
+                <ows:Title>Delay between every update</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:float">float</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>sleep_output</ows:Identifier>
+                <ows:Title>Sleep Output</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:string">string</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="0.1" storeSupported="true" statusSupported="true">
+        <ows:Identifier>buffer</ows:Identifier>
+        <ows:Title>GDAL Buffer process</ows:Title>
+        <ows:Abstract>The process returns buffers around the input features,
+            using the GDAL library
+        </ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>poly_in</ows:Identifier>
+                <ows:Title>Input vector file</ows:Title>
+                <ComplexData>
+                    <Default>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Default>
+                    <Supported>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Supported>
+                </ComplexData>
+            </Input>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>buffer</ows:Identifier>
+                <ows:Title>Buffer size</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:float">float</ows:DataType>
+                    <ows:AllowedValues>
+                        <ows:Value>0</ows:Value>
+                        <ows:Value>1</ows:Value>
+                        <ows:Value>10</ows:Value>
+                        <ows:Range ows:rangeClosure="closed">
+                            <ows:MinimumValue>10</ows:MinimumValue>
+                            <ows:MaximumValue>100</ows:MaximumValue>
+                            <ows:Spacing>10</ows:Spacing>
+                        </ows:Range>
+                        <ows:Range ows:rangeClosure="closed">
+                            <ows:MinimumValue>100</ows:MinimumValue>
+                            <ows:MaximumValue>1000</ows:MaximumValue>
+                            <ows:Spacing>100</ows:Spacing>
+                        </ows:Range>
+                    </ows:AllowedValues>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>buff_out</ows:Identifier>
+                <ows:Title>Buffered file</ows:Title>
+                <ComplexOutput>
+                    <Default>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Default>
+                    <Supported>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Supported>
+                </ComplexOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="None" storeSupported="true" statusSupported="true">
+        <ows:Identifier>area</ows:Identifier>
+        <ows:Title>Process Area</ows:Title>
+        <ows:Abstract>Process returns the area of each
+            feature from a submitted GML file
+        </ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>layer</ows:Identifier>
+                <ows:Title>Layer</ows:Title>
+                <ComplexData>
+                    <Default>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Default>
+                    <Supported>
+                        <Format>
+                            <MimeType>application/gml+xml</MimeType>
+                        </Format>
+                    </Supported>
+                </ComplexData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>area</ows:Identifier>
+                <ows:Title>Area</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:string">string</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="0.1" storeSupported="true" statusSupported="true">
+        <ows:Identifier>boundingbox</ows:Identifier>
+        <ows:Title>Bounding box in- and out</ows:Title>
+        <ows:Abstract>Given a bounding box, it
+            returns the same bounding box
+        </ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>bboxin</ows:Identifier>
+                <ows:Title>box in</ows:Title>
+                <BoundingBoxData>
+                    <Default>
+                        <CRS>epsg:4326</CRS>
+                    </Default>
+                    <Supported>
+                        <CRS>epsg:4326</CRS>
+                        <CRS>epsg:3035</CRS>
+                    </Supported>
+                </BoundingBoxData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>bboxout</ows:Identifier>
+                <ows:Title>box out</ows:Title>
+                <BoundingBoxOutput>
+                    <Default>
+                        <CRS>epsg:4326</CRS>
+                    </Default>
+                    <Supported>
+                        <CRS>epsg:4326</CRS>
+                    </Supported>
+                </BoundingBoxOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="1.0.0.0" storeSupported="true" statusSupported="true">
+        <ows:Identifier>testjson</ows:Identifier>
+        <ows:Title>Process Test</ows:Title>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>name</ows:Identifier>
+                <ows:Title>Input name</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:string">string</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>out</ows:Identifier>
+                <ows:Title>Referenced Output</ows:Title>
+                <ComplexOutput>
+                    <Default>
+                        <Format>
+                            <MimeType>application/geojson</MimeType>
+                        </Format>
+                    </Default>
+                    <Supported>
+                        <Format>
+                            <MimeType>application/geojson</MimeType>
+                        </Format>
+                    </Supported>
+                </ComplexOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="1.0.0" storeSupported="true" statusSupported="true">
+        <ows:Identifier>addition</ows:Identifier>
+        <ows:Title>Addition Process</ows:Title>
+        <ows:Abstract>Addiert zwei Input Zahlen (integers)</ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>first_arg</ows:Identifier>
+                <ows:Title>first Input</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>second_arg</ows:Identifier>
+                <ows:Title>second Input</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>response</ows:Identifier>
+                <ows:Title>Output response</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="1.0.0" storeSupported="true" statusSupported="true">
+        <ows:Identifier>division</ows:Identifier>
+        <ows:Title>Division Process</ows:Title>
+        <ows:Abstract>Dividiert zwei Zahlen. Liefert sowohl den Quotient, als auch den Rest der Division</ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>dividend</ows:Identifier>
+                <ows:Title>First Input: Dividend</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>divisor</ows:Identifier>
+                <ows:Title>Second Input: Divisor</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>quotient</ows:Identifier>
+                <ows:Title>First Output: Quotient</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                </LiteralOutput>
+            </Output>
+            <Output>
+                <ows:Identifier>rest</ows:Identifier>
+                <ows:Title>Second Output: Rest</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="1.0.0" storeSupported="true" statusSupported="true">
+        <ows:Identifier>square</ows:Identifier>
+        <ows:Title>Square Process</ows:Title>
+        <ows:Abstract>Quadriert den Input</ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>arg</ows:Identifier>
+                <ows:Title>Input number</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>response</ows:Identifier>
+                <ows:Title>Output response</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+    <ProcessDescription wps:processVersion="1.0.0" storeSupported="true" statusSupported="true">
+        <ows:Identifier>increment</ows:Identifier>
+        <ows:Title>Increment Process</ows:Title>
+        <ows:Abstract>Inkrementiert den Input</ows:Abstract>
+        <DataInputs>
+            <Input minOccurs="1" maxOccurs="1">
+                <ows:Identifier>arg</ows:Identifier>
+                <ows:Title>Input number</ows:Title>
+                <LiteralData>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                    <ows:AnyValue/>
+                </LiteralData>
+            </Input>
+        </DataInputs>
+        <ProcessOutputs>
+            <Output>
+                <ows:Identifier>response</ows:Identifier>
+                <ows:Title>Output response</ows:Title>
+                <LiteralOutput>
+                    <ows:DataType ows:reference="urn:ogc:def:dataType:OGC:1.1:integer">integer</ows:DataType>
+                </LiteralOutput>
+            </Output>
+        </ProcessOutputs>
+    </ProcessDescription>
+</wps:ProcessDescriptions>

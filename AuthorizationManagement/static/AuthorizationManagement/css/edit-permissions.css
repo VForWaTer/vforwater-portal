@@ -1,0 +1,139 @@
+.container-edit-permissions {
+	text-align: center;
+	font-family: "Roboto", sans-serif;
+	font-size: 17px;
+	color: #173e43;
+	margin-top: 80px;
+	width: 15%;
+	height: auto;
+	margin-left: 42%;
+}
+
+.username {
+	color: #173e43;
+	font-size:20px;
+	background: white;
+	width: 205px;
+	padding-top: 19px;	
+	padding-bottom: 19px;
+	margin-top: -50px;
+	border-radius: 5px;
+}
+
+input[type=checkbox] {
+	visibility: hidden;
+} 
+
+/* checkbox for reader */
+.checkbox-rd1 {
+	width: 125px;
+	height: 30px;
+	background: #173e43;
+	margin: 5px 20%;
+
+	border-radius: 50px;
+	position: relative;
+}
+
+.checkbox-rd1:before {
+	content: 'READER';
+	position: absolute;
+	top: 8px;
+	left: 10px;
+	height: 2px;
+	color: #fae596;
+	font-size: 12px;
+}
+
+.checkbox-rd1:after {
+	content: 'READER';
+	position: absolute;
+	top: 8px;
+	left: 65px;
+	height: 2px;
+	color: #757575;
+	font-size: 12px;
+}
+.checkbox-rd1 label {
+	display: block;
+	width: 55px;
+	height: 22px;
+	border-radius: 50px;
+
+	transition: all .5s ease;
+	cursor: pointer;
+	position: absolute;
+	top: 4px;
+	z-index: 1;
+	left: 5px;
+	background: #dddfd4;
+}
+.checkbox-rd1 input[type=checkbox]:checked + label{
+	left: 65px;
+	background: #3fb0ac;
+}
+
+
+/* checkbox for owner */
+.checkbox-ow1 {
+	width: 125px;
+	height: 30px;
+	background: #173e43;
+	margin: 0px 20%;
+
+	border-radius: 50px;
+	position: relative;
+}
+
+.checkbox-ow1:before {
+	content: 'OWNER';
+	position: absolute;
+	top: 8px;
+	left: 10px;
+	height: 2px;
+	color: #fae596;
+	font-size: 12px;
+}
+
+.checkbox-ow1:after {
+	content: 'OWNER';
+	position: absolute;
+	top: 8px;
+	left: 65px;
+	height: 2px;
+	color: #757575;
+	font-size: 12px;
+}
+.checkbox-ow1 label {
+	display: block;
+	width: 55px;
+	height: 22px;
+	border-radius: 50px;
+
+	transition: all .5s ease;
+	cursor: pointer;
+	position: absolute;
+	top: 4px;
+	z-index: 1;
+	left: 5px;
+	background: #dddfd4;
+}
+.checkbox-ow1 input[type=checkbox]:checked + label{
+	left: 65px;
+	background: #3fb0ac;
+}
+
+.confirm {
+	background-color: #173e43; /* dark-blue */
+    border: none;
+	height: 39px;
+	width: 90px;
+	font-size: 16px;
+    color: white;
+    text-align: center;
+	margin-right: 15px;	
+	border-radius: 4px;
+}
+.confirm:hover {
+	color: #fae596;
+}
