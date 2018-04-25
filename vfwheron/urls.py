@@ -9,7 +9,6 @@ print('   *   vfwheron urls.py')
 urlpatterns = [
     url(r'^$', views.HomeView.as_view(), name='home'),
     url(r'^login$', auth_views.login, {'template_name': 'vfwheron/login.html'}, name='login'),
-    url(r'^external_links$', views.ExtlinksView.as_view(), name='external_links'),
     url(r'^watts_login$', views.LoginView.as_view(), name='watts_login'),
     url(r'^help$', views.HelpView.as_view(), name='help'),
     url(r'^logout$', views.LogoutView.as_view(), name='logout'),

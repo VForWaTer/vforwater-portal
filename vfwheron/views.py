@@ -155,10 +155,6 @@ class menuView(TemplateView):
         return JsonResponse({'Error': 'Something is missing. Check views.py'})
 
 
-class ExtlinksView(TemplateView):
-    template_name = 'vfwheron/extlinks.html'
-
-
 class LoginView(View):
     def post(self, request):
         logger.debug('Redirect to vfwheron/rsp/login/init...')
