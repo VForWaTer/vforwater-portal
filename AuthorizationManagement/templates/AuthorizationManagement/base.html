@@ -1,61 +1,8 @@
-<!-- base template for the portal (displayed in every page) -->
-<html>
-   <head>
-      <title>VFORWaTer Authorization Management</title>
+<meta charset="UTF-8">
+{% extends "vfwheron/base.html" %}
 
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-	  
-      {% load static %}	
-      <link rel="stylesheet" type="text/css" href="{% static 'AuthorizationManagement/css/fonts.css' %}" />
-      <link rel="stylesheet" type="text/css" href="{% static 'AuthorizationManagement/css/base.css' %}" />
+{% block content %}
 
-        <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/respostyle.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/font-awesome-4.7.0/css/font-awesome.min.css' %}">
-        <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">
-        <link rel="icon" href="{% static 'vfwheron/images/Favicon.ico' %}">
-
-       <style>
-        html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
-        .respo-navbar li a {padding-top: 22px; padding-bottom: 14px;}
-        .respo-navbar {padding-left: 300px; margin-top: 42px; height: 61px;}
-        #filterbox,#select_catchment {display: none;}
-
-        </style>
--      {% block styles %}{% endblock %}
-	  
-   </head>
-   <body class="respo-light-grey">
-      <header>
-
-<!--       <div class="respo-container respo-top respo-black respo-large respo-padding" style="z-index:4">
-          <button class="respo-btn respo-hide-large respo-padding-0 respo-hover-text-grey" onclick="respo_open();"><i class="fa fa-bars"></i></button>
-          <span class="respo-right"><strong><small>Virtual research environment for water and terrestrial environmental research</small></strong></span>
-        </div> -->
-
-      <div class="respo-top>
-
-       <div class "row">
-            <!-- <div class="logo">
-               <img src="{% static 'AuthorizationManagement/images/logo.png' %}">
-            </div> --> 
-            <ul id="main-nav" class="respo-navbar respo-light-turquoise respo-top respo-left-align respo-large">
-               <li><a class="respo-hover-white" href="/"><i class="fa fa-map-o fa-fw"></i> Home</a></li>
-               <li><a {% block profile%}{% endblock %} href="{% url 'AuthorizationManagement:profile' %}"><i class="fa fa-address-card fa-fw"></i> Profile</a></li>
-               <li><a {% block overview%}{% endblock %} href="{% url 'AuthorizationManagement:resource-overview' %}"><i class="fa fa-database fa-fw"></i> Resources Overview</a></li>
-               {% if is_admin %}
-               <li><a {% block resource-manager%}{% endblock %} href="/resource-manager/">Manage Resources</a></li>
-               <li><a {% block user-manager%}{% endblock %} href="/user-manager/">Manage Users</a></li>
-               {% endif %}
-               <li><a {% block logout%}{% endblock %} href="/authentification/logout">Log out</a></li>
-            </ul>
-         <!-- </div> -->
-
-      </div>
-
-      </header>
       {% block body %}
       {% endblock %}
-   </body>
-</html>
+{% endblock %}

@@ -1,13 +1,15 @@
 {% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 <head>
   <style>
-  .respo-sidenav {margin-top: 42px;}
+  .respo-sidenav {margin-top: 37px;}
   </style>
 </head>
 
 <body>
-	<nav class="respo-sidenav respo-transparent" style="z-index:3;width:300px;" id="mySidelogo"><br>
+	<nav class="respo-sidenav respo-collapse respo-transparent" style="z-index:3;width:300px;" id="mySidelogo"><br>
 	{% block logo %} 
 		{% include 'vfwheron/logo.html' %} 
 	{% endblock %}

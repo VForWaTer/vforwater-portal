@@ -11,22 +11,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/font-awesome-4.7.0/css/font-awesome.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/base.css' %}">
     <link rel="icon" href="{% static 'vfwheron/images/Favicon.ico' %}">
 
-    <!--  style of top bar -->
-    <!-- TODO: Do we access the font Raleway online? For more see base_app/vcss/css -->
-
-    <style>
-        html, body, h1, h2, h3, h4, h5 {font-family: "Raleway", sans-serif}
-        #respo-navbar li a {padding-top: 50px;padding-bottom: 10px;}
-        #respo-navbar {margin-top: 37px;padding-left: 300px;overflow: visible}
-        .respo-navbar {margin-top: 37px;height: 43px;overflow: visible}
-        form.respo-hover-white {margin: 0px}
-        @media screen and (min-width: 993px) {.respo-navbar {padding-left: 300px;overflow: visible}}
-        @media screen and (max-width: 992px) {.respo-navbar {padding-left: 0px;overflow: visible}}
-        #filterbox, #select_catchment {display: none;}
-        .respo-dropdown-content {min-width: 190px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
-    </style>
 </head>
 <param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
 
@@ -42,7 +29,7 @@
 </div>
 
 <!--	Navbar -->
-<div class="respo-top">
+<div id="navbar" class="respo-top">
     <ul class="respo-navbar respo-light-turquoise respo-top respo-left-align respo-large">
         <li class="respo-opennav respo-right respo-hide-large">
             <a href="javascript:void(0)" class="respo-hover-white respo-large respo-theme-d4" onclick="Sidemenu_open()">

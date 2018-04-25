@@ -1,5 +1,9 @@
 # User Instructions
 
+## Log in
+
+For the login process your browser has to accept cookies. 
+
 ## Access your Data
 
 You can filter data in the `Home` page, which can be accessed from the top bar. First you should restrict the datasets 

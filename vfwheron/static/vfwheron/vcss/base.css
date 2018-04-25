@@ -1,0 +1,14 @@
+
+/* style of top bar*/
+/* TODO: Do we access the font Raleway online? For more see base_app/vcss/css*/
+
+html, body, h1, h2, h3, h4, h5 {font-family: "Raleway", sans-serif}
+/*#respo-navbar li a {padding-top: 50px;padding-bottom: 10px;}*/
+/*#respo-navbar {margin-top: 37px;padding-left: 300px;overflow: visible}*/
+.respo-navbar {margin-top: 37px;height: 43px;overflow: visible}
+form.respo-hover-white {margin: 0px}
+a.respo-hover-blue{padding: 0px}
+@media screen and (min-width: 993px) {.respo-navbar {padding-left: 300px;overflow: visible}}
+@media screen and (max-width: 992px) {.respo-navbar {padding-left: 0px;overflow: visible}}
+#filterbox, #select_catchment {display: none;}
+.respo-dropdown-content {min-width: 200px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
