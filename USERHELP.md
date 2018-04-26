@@ -2,7 +2,7 @@
 
 ## Log in
 
-For the login process your browser has to accept cookies. 
+Your browser has to accept cookies to log in. 
 
 ## Access your Data
 
