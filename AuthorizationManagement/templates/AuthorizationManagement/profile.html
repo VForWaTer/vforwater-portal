@@ -1,7 +1,8 @@
 <!-- template for the profile page (handling of requests) -->
 
 {% extends "AuthorizationManagement/base.html" %}
-
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 {% block profile %}
 class="active";
 {% endblock %}
@@ -26,7 +27,7 @@ class="active";
 
 <!-- edit first and/or last name form -->
 <div class="body">
-   <button onclick="showEditForm()" class="name" id="name"><strong>{{ user.first_name }} {{user.last_name}}</strong></button>
+   <button onclick="showEditForm()" class="name respo-btn respo-blue" id="name"><strong>{{ user.first_name | capfirst}} {{user.last_name| capfirst}}</strong></button>
    <form action="{% url 'AuthorizationManagement:profile' %}edit-name/" id="editName" style="display:none;" method="post">
       {% csrf_token %}
       <input class="firstname" type=text placeholder="{{user.first_name}}" name="firstName">
@@ -38,22 +39,22 @@ class="active";
 
 {% block requests_or_resources %}
 <div class="mini-nav">
-   <a href="{% url 'AuthorizationManagement:profile' %}" class="current">Requests</a></li>
-   <a href="{% url 'AuthorizationManagement:profile' %}my-resources" class="noncurrent">My Resources</a></li>
+   <a href="{% url 'AuthorizationManagement:profile' %}" class="current respo-btn respo-blue">{% trans "  Requests" %}</a></li>
+   <a href="{% url 'AuthorizationManagement:profile' %}my-resources" class="noncurrent respo-btn respo-blue">{% trans "  My Resources" %}</a></li>
 </div>
 
 <!-- in case the user does not have any current requests -->
 {% if not requests_list %}
-<p class="body"> Currently no requests. </p>
+<p class="body">{% trans "  Currently no requests." %}</p>
 {% endif %}
 
 <!-- requests for admin user -->
-{% if is_admin %}	 
+{% if is_admin %}
 <div class="admin-container">
    <p class="access-request"> Access Requests </p>
    <p class="deletion-request"> Deletion Requests </p>
    {% for request in requests_list %}
-   
+
    <!-- access requests -->
    {% if request.type == 'access' %}
    <div class="info-access-req-adm">
@@ -63,7 +64,7 @@ class="active";
       <p> Created on: <strong>{{request.creationDate}}</strong></p>
    </div>
    <!-- approving access requests (admin) -->
-   <a href="#approve-request-{{request.id}}" class="admin-acc-accept-btn"> Accept </a>								
+   <a href="#approve-request-{{request.id}}" class="admin-acc-accept-btn"> Accept </a>
    <div id="approve-request-{{request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
@@ -71,12 +72,12 @@ class="active";
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>approve</strong> the access request for resource:
-                  <strong>{{request.resource.name}}</strong>? 
+                  <strong>{{request.resource.name}}</strong>?
                </p>
                <br>
             </div>
             <div class="row">
-               <label for="desc">Message: </label><br>									
+               <label for="desc">Message: </label><br>
                <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
                <input id="yes" type="submit" value="Yes, allow permission">
                <a href="" title="close" id="close"> Close </a>
@@ -84,7 +85,7 @@ class="active";
          </form>
       </div>
    </div>
-   
+
    <!-- denying access requests (admin)-->
    <a href="#deny-request-{{request.id}}" class="admin-acc-deny-btn"> Deny </a>
    <div id="deny-request-{{request.id}}" class="modalDialog">
@@ -94,12 +95,12 @@ class="active";
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>deny</strong> the access request for resource:
-                  <strong>{{request.resource.name}}</strong>? 
+                  <strong>{{request.resource.name}}</strong>?
                </p>
-               <br>			
+               <br>
             </div>
             <div class="row">
-               <label for="descr">Message: </label><br>									
+               <label for="descr">Message: </label><br>
                <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
             </div>
             <input id="no" type="submit" value="Yes, deny permission">
@@ -107,7 +108,7 @@ class="active";
          </form>
       </div>
    </div>
-   
+
    <!-- deletion requests -->
    {% elif request.type == 'deletion' %}
    <div class="info-deletion-req-adm">
@@ -116,46 +117,46 @@ class="active";
       <p> Description: <strong>{{request.description}} </strong></p>
       <p> Created on: <strong>{{request.creationDate}} </strong></p>
    </div>
-   
+
    <!-- approving deletion requests -->
    <a href="#approve-request-{{request.id}}" class="admin-del-accept-btn"> Accept </a>
    <div id="approve-request-{{request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
          <form action="/approve-deletion-request/{{request.id}}" method="post">
-            {% csrf_token %}							
+            {% csrf_token %}
             <div class="row">
-               <p> Are you sure you want to <strong>delete</strong> resource: 
-                  <strong>{{request.resource.name}}</strong>? 
+               <p> Are you sure you want to <strong>delete</strong> resource:
+                  <strong>{{request.resource.name}}</strong>?
                </p>
                <br>
             </div>
             <div class="row">
-               <label for="descr">Message: </label><br>									
+               <label for="descr">Message: </label><br>
                <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
             </div>
-            <input id="yes" type="submit" value="Yes, delete resource">	
+            <input id="yes" type="submit" value="Yes, delete resource">
             <a href="" title="close" id="close"> Close </a>
          </form>
       </div>
    </div>
-   
+
    <!-- denying deletion requests -->
    <a href="#deny-request-{{request.id}}" class="admin-del-deny-btn"> Deny </a>
    <div id="deny-request-{{request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
          <form action="/deny-deletion-request/{{request.id}}" method="post">
-            {% csrf_token %}							
-            <div class "row">
-               <p> Are you sure you want to <strong>deny</strong> the deletion request for resource: 
-                  <strong>{{request.resource.name}}</strong>? 
+            {% csrf_token %}
+            <div class ="row">
+               <p> Are you sure you want to <strong>deny</strong> the deletion request for resource:
+                  <strong>{{request.resource.name}}</strong>?
                </p>
                <br>
             </div>
-            <div class="row">									
-               <label for="descr">Message: </label><br>		                                    
-               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>                                    
+            <div class="row">
+               <label for="descr">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
             </div>
             <input id="no" type="submit" value="Yes, deny deletion">
             <a href="" title="close" id="close"> Close </a>
@@ -176,9 +177,9 @@ class="active";
       <p> Description: <strong>{{access_request.description}} </strong></p>
       <p> Created on: <strong>{{access_request.creationDate}} </strong></p>
    </div>
-   
+
    <!--approving access requests -->
-   <a href="#approve-request-{{access_request.id}}" class="accept-btn"> Accept </a>								
+   <a href="#approve-request-{{access_request.id}}" class="accept-btn"> Accept </a>
    <div id="approve-request-{{access_request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
@@ -186,12 +187,12 @@ class="active";
             {% csrf_token %}
             <div class="row" id="are-you-sure">
                <p> Are you sure you want to <strong>approve</strong> the access request for resource:
-                  <strong>{{access_request.resource.name}}</strong>? 
+                  <strong>{{access_request.resource.name}}</strong>?
                </p>
-               <br>			
+               <br>
             </div>
             <div class="row">
-               <label for="descr">Message: </label><br>									
+               <label for="descr">Message: </label><br>
                <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
             </div>
             <input id="yes" type="submit" value="Yes, allow permission">
@@ -199,7 +200,7 @@ class="active";
          </form>
       </div>
    </div>
-   
+
    <!--denying access requests -->
    <a href="#deny-request-{{access_request.id}}" class="deny-btn"> Deny </a>
    <div id="deny-request-{{access_request.id}}" class="modalDialog">
@@ -209,12 +210,12 @@ class="active";
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>deny</strong> the access request for resource:
-                  <strong>{{access_request.resource.name}}</strong>? 
+                  <strong>{{access_request.resource.name}}</strong>?
                </p>
-               <br>			
+               <br>
             </div>
             <div class="row">
-               <label for="descr">Message: </label><br>									
+               <label for="descr">Message: </label><br>
                <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
             </div>
             <input id="no" type="submit" value="Yes, deny permission">
@@ -222,9 +223,9 @@ class="active";
          </form>
       </div>
    </div>
-   {% endfor %}		 
+   {% endfor %}
 </div>
-{% endif %}	
+{% endif %}
 
 <!--  pagination functionality for the requests-->
 {% if is_paginated %}
@@ -248,5 +249,5 @@ class="active";
    {% endif %}
 </ul>
 {% endif %}
-{% endblock %}		
+{% endblock %}
 {% endblock %}
