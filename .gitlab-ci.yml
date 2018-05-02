@@ -23,20 +23,20 @@ vforwater-portal-deploy:
         # Stop web server
         - sudo systemctl stop vfwportal
         # Move current installation to "vforwater-portal_old"
-        - sudo rm -rf /home/vfwportal/vforwater-portal_old
+        - sudo -u vfwportal rm -rf /home/vfwportal/vforwater-portal_old
         - test ! -d /home/vfwportal/vforwater-portal ||
-            mv /home/vfwportal/vforwater-portal
+            sudo -u vfwportal mv /home/vfwportal/vforwater-portal
                /home/vfwportal/vforwater-portal_old
         # Copy new files and prepared "settings.py"
-        - cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
-        - cp /home/vfwportal/settings.py-prod
+        - sudo -u vfwportal cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
+        - sudo -u vfwportal cp /home/vfwportal/settings.py-prod
              /home/vfwportal/vforwater-portal/heron/settings.py
-        - cd /home/vfwportal/vforwater-portal
+        - sudo -u vfwportal cd /home/vfwportal/vforwater-portal
         #- python36 manage.py migrate
-        - python36 manage.py collectstatic --noinput
+        - sudo -u vfwportal python36 manage.py collectstatic --noinput
         # fix ownership
-        - cd /home/vfwportal
-        - sudo chown -R vfwportal:vfwportal vforwater-portal
+        #- cd /home/vfwportal
+        #- sudo chown -R vfwportal:vfwportal vforwater-portal
         # Start web server
         - sudo systemctl start vfwportal
     environment:
