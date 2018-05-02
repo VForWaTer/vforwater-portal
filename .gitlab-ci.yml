@@ -28,7 +28,8 @@ vforwater-portal-deploy:
             sudo -u vfwportal mv /home/vfwportal/vforwater-portal
                /home/vfwportal/vforwater-portal_old
         # Copy new files and prepared "settings.py"
-        - sudo -u vfwportal cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
+        - sudo cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
+        - sudo chown -R vfwportal:vfwportal /home/vfwportal/vforwater-portal
         - sudo -u vfwportal cp /home/vfwportal/settings.py-prod
              /home/vfwportal/vforwater-portal/heron/settings.py
         - sudo -u vfwportal cd /home/vfwportal/vforwater-portal
