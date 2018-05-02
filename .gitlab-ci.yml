@@ -34,7 +34,7 @@ vforwater-portal-deploy:
              /home/vfwportal/vforwater-portal/heron/settings.py
         - sudo -u vfwportal cd /home/vfwportal/vforwater-portal
         #- python36 manage.py migrate
-        - sudo -u vfwportal python36 manage.py collectstatic --noinput
+        - sudo PYTHONPATH=/usr/local/lib64/python3.6/site-packages:/usr/local/lib/python3.6/site-packages -u vfwportal python36 manage.py collectstatic --noinput
         # fix ownership
         #- cd /home/vfwportal
         #- sudo chown -R vfwportal:vfwportal vforwater-portal
