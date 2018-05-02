@@ -23,7 +23,7 @@ vforwater-portal-deploy:
         # Stop web server
         - sudo systemctl stop vfwportal
         # Move current installation to "vforwater-portal_old"
-        - rm -rf /home/vfwportal/vforwater-portal_old
+        - sudo rm -rf /home/vfwportal/vforwater-portal_old
         - test ! -d /home/vfwportal/vforwater-portal ||
             mv /home/vfwportal/vforwater-portal
                /home/vfwportal/vforwater-portal_old
