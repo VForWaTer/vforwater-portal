@@ -34,6 +34,9 @@ vforwater-portal-deploy:
         - cd /home/vfwportal/vforwater-portal
         #- python36 manage.py migrate
         - python36 manage.py collectstatic --noinput
+        # fix ownership
+        - cd /home/vfwportal
+        - sudo chown -R vfwportal:vfwportal vforwater-portal
         # Start web server
         - sudo systemctl start vfwportal
     environment:
