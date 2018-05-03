@@ -382,3 +382,15 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
 
     return selection;
 }
+
+function many_datasets() {
+    workspace_dataset(JSON.stringify(selectedIds))
+    // for (let id in selectedIds) {
+    //     workspace_dataset(selectedIds[id])
+    // }
+
+}
+
+function reset_filter() {
+
+}
