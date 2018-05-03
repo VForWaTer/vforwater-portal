@@ -3,8 +3,8 @@
 # Pipeline
 stages:
     - test
-#   - deploy-prod
-    - deploy-demo
+    - deploy
+    - deploy
 
 # Test vforwater-portal
 vforwater-portal-test:
@@ -19,7 +19,7 @@ vforwater-portal-test:
 
 # Deploy vforwater-portal (production version)
 vforwater-portal-deploy-prod:
-    stage: deploy-prod
+    stage: deploy
     script:
         # Stop web server
         - sudo systemctl stop vfwportal
@@ -42,12 +42,12 @@ vforwater-portal-deploy-prod:
         name: production
         url: https://portal.vforwater.de/vfwheron/
     only:
-        - master
+        - production
         
         
 # Deploy vforwater-portal (demo version)
 vforwater-portal-deploy-demo:
-    stage: deploy-demo
+    stage: deploy
     script:
         # Stop web server
         - sudo systemctl stop vfwportal-demo
