@@ -107,25 +107,28 @@ class menuView(TemplateView):
         min_time = request.GET.get('minTime')
         max_time = request.GET.get('maxTime')
         if work_dataset:
-            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
-                         work_dataset
-            if min_time:
-                work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
-            if max_time:
-                work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
-            if 'work_dataset_list' in request.session:
-                if 'dataset' + work_dataset in request.session['work_dataset_list']:
-                    # TODO: Need timestamp in name to see if different selection
-                    print('A C H T U N G :  gibts schon!')
-                    return
+            conv_work_dataset = json.loads(work_dataset)
+            for id in conv_work_dataset:
+                work_dataset = str(id)
+                work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
+                             work_dataset
+                if min_time:
+                    work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
+                if max_time:
+                    work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
+                if 'work_dataset_list' in request.session:
+                    if 'dataset' + work_dataset in request.session['work_dataset_list']:
+                        # TODO: Need timestamp in name to see if different selection
+                        print('A C H T U N G :  gibts schon!')
+                        return
+                    else:
+                        # request.session['work_dataset_list'].append('dataset' + work_dataset)
+                        request.session['work_dataset_list'].append(work_dataset)
                 else:
-                    # request.session['work_dataset_list'].append('dataset' + work_dataset)
-                    request.session['work_dataset_list'].append(work_dataset)
-            else:
-                # request.session['work_dataset_list'] = ['dataset' + work_dataset]
-                request.session['work_dataset_list'] = [work_dataset]
+                    # request.session['work_dataset_list'] = ['dataset' + work_dataset]
+                    request.session['work_dataset_list'] = [work_dataset]
 
-            request.session['dataset' + work_dataset] = work_query
+                request.session['dataset' + work_dataset] = work_query
             cache.set('workspaceData', request.session['work_dataset_list'])
             return JsonResponse({'workspaceData': request.session['work_dataset_list']})
 
