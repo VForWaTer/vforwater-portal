@@ -69,4 +69,4 @@ vforwater-portal-deploy-demo:
         name: development
         url: https://portal.vforwater.de/demo/vfwheron/
     only:
-        - master
+        - demo
