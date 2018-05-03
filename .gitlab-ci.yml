@@ -30,7 +30,7 @@ vforwater-portal-deploy-prod:
         # Copy new files and prepared "settings.py"
         - sudo cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
         - sudo chown -R vfwportal:vfwportal /home/vfwportal/vforwater-portal
-        - sudo -u vfwportal ln -s /home/vfwportal/heron/settings.py-prod
+        - sudo -u vfwportal ln -s /home/vfwportal/vforwater-portal/heron/settings.py-prod
              /home/vfwportal/vforwater-portal/heron/settings.py
         - sudo -u vfwportal cd /home/vfwportal/vforwater-portal
         #- python36 manage.py migrate
@@ -58,7 +58,7 @@ vforwater-portal-deploy-demo:
         # Copy new files and prepared "settings.py"
         - sudo cp -r ${CI_PROJECT_DIR} /home/vfwdemo/vforwater-portal
         - sudo chown -R vfwdemo:vfwdemo /home/vfwdemo/vforwater-portal
-        - sudo -u vfwdemo ln -s /home/vfwdemo/heron/settings.py-demo
+        - sudo -u vfwdemo ln -s /home/vfwdemo/vforwater-portal/heron/settings.py-demo
              /home/vfwdemo/vforwater-portal/heron/settings.py
         - sudo -u vfwdemo cd /home/vfwdemo/vforwater-portal
         #- python36 manage.py migrate

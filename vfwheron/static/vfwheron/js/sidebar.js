@@ -66,7 +66,7 @@ function workspace_button(json) {
         $.each(json['workspaceData'], function (key, value) {
             // check which buttons already exist before creating a new one:
             if (document.getElementById(value) === null) {
-            	var removeValues = "'" + value + "'"
+            	var removeValues = "'" + value + "'";
 				document.getElementById("workspace").innerHTML += '<li class="respo-padding" id="' + value + '">' +
 					'<span class="respo-medium">' + value + '</span><a href="javascript:void(0)"' +
 					'onclick="remove_data('+removeValues+')"; class="respo-hover-white respo-right"><i ' +
