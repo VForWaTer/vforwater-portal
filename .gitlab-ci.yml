@@ -3,7 +3,8 @@
 # Pipeline
 stages:
     - test
-    - deploy
+#   - deploy-prod
+    - deploy-demo
 
 # Test vforwater-portal
 vforwater-portal-test:
@@ -16,9 +17,9 @@ vforwater-portal-test:
         # TODO Run test script...
         - echo "Testing..."
 
-# Deploy vforwater-portal
-vforwater-portal-deploy:
-    stage: deploy
+# Deploy vforwater-portal (production version)
+vforwater-portal-deploy-prod:
+    stage: deploy-prod
     script:
         # Stop web server
         - sudo systemctl stop vfwportal
@@ -35,13 +36,38 @@ vforwater-portal-deploy:
         - sudo -u vfwportal cd /home/vfwportal/vforwater-portal
         #- python36 manage.py migrate
         - sudo PYTHONPATH=/usr/local/lib64/python3.6/site-packages:/usr/local/lib/python3.6/site-packages:/home/vfwportal/vforwater-portal -u vfwportal python36 manage.py collectstatic --noinput
-        # fix ownership
-        #- cd /home/vfwportal
-        #- sudo chown -R vfwportal:vfwportal vforwater-portal
-        # Start web server
+        # Start django service
         - sudo systemctl start vfwportal
     environment:
         name: production
         url: https://portal.vforwater.de/vfwheron/
+    only:
+        - master
+        
+        
+# Deploy vforwater-portal (demo version)
+vforwater-portal-deploy-demo:
+    stage: deploy-demo
+    script:
+        # Stop web server
+        - sudo systemctl stop vfwportal-demo
+        # Move current installation to "vforwater-portal_old"
+        - sudo -u vfwdemo rm -rf /home/vfwdemo/vforwater-portal_old
+        #- test ! -d /home/vfwdemo/vforwater-portal ||
+        - sudo -u vfwdemo mv /home/vfwdemo/vforwater-portal
+               /home/vfwdemo/vforwater-portal_old
+        # Copy new files and prepared "settings.py"
+        - sudo cp -r ${CI_PROJECT_DIR} /home/vfwdemo/vforwater-portal
+        - sudo chown -R vfwdemo:vfwdemo /home/vfwdemo/vforwater-portal
+        - sudo -u vfwdemo cp /home/vfwdemo/settings.py-demo
+             /home/vfwdemo/vforwater-portal/heron/settings.py
+        - sudo -u vfwdemo cd /home/vfwdemo/vforwater-portal
+        #- python36 manage.py migrate
+        - sudo PYTHONPATH=/usr/local/lib64/python3.6/site-packages:/usr/local/lib/python3.6/site-packages:/home/vfwdemo/vforwater-portal -u vfwdemo python36 manage.py collectstatic --noinput
+        # Start django service
+        - sudo systemctl start vfwportal-demo
+    environment:
+        name: development
+        url: https://portal.vforwater.de/demo/vfwheron/
     only:
         - master
