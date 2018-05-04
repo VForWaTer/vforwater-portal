@@ -109,7 +109,7 @@ class menuView(TemplateView):
         if work_dataset:
             conv_work_dataset = json.loads(work_dataset)
             for id in conv_work_dataset:
-                work_dataset = str(id)
+                work_dataset = str(id) if type(conv_work_dataset) == list else work_dataset
                 work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                              work_dataset
                 if min_time:
