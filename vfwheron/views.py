@@ -59,7 +59,7 @@ class HomeView(TemplateView):
         try:
             dataExt = get_bbox_from_data()
         except:
-            print("ERROR: Data Extend cannot be loaded in views.py")  # TODO: How to write this to a log file?
+            logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
         return {'dataExt': dataExt, 'data_style': data_style,
@@ -103,10 +103,7 @@ class menuView(TemplateView):
             else:
                 cache.set(menu, [])
 
-        work_dataset = request.GET.get('workspaceData')
-        min_time = request.GET.get('minTime')
-        max_time = request.GET.get('maxTime')
-        if work_dataset:
+        def cache_selection(work_dataset):
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
             if min_time:
@@ -127,6 +124,17 @@ class menuView(TemplateView):
 
             request.session['dataset' + work_dataset] = work_query
             cache.set('workspaceData', request.session['work_dataset_list'])
+
+        work_dataset = request.GET.get('workspaceData')
+        min_time = request.GET.get('minTime')
+        max_time = request.GET.get('maxTime')
+        if work_dataset:
+            conv_work_dataset = json.loads(work_dataset)
+            if type(conv_work_dataset) == list:
+                for datasetId in conv_work_dataset:
+                    cache_selection(str(datasetId))
+            elif type(conv_work_dataset) == int:
+                cache_selection(work_dataset)
             return JsonResponse({'workspaceData': request.session['work_dataset_list']})
 
         remove_dataset = request.GET.get('remover')
