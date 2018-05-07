@@ -87,7 +87,7 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
-        }
+        },
         'AuthorizationManagement': {
             'handlers': ['file'],
             'level': 'DEBUG',
