@@ -72,7 +72,7 @@ class menuView(TemplateView):
 
     def get(self, request):
 
-        request.session.set_expiry(5)  # expire after 20 seconds
+        request.session.set_expiry(20)  # expire after 20 seconds
 
         # bring last used menu to session
         menu = request.GET.get('menu')
@@ -117,22 +117,8 @@ class menuView(TemplateView):
             definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
             data_definition['name'] = definition_query['variable__variable_name']
-            data_definition['abbrev'] = definition_query['variable__variable_abbrev']
+            data_definition['abbr'] = definition_query['variable__variable_abbrev']
             data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
-            #
-            # if 'work_dataset_list' in request.session:
-            #     if 'dataset' + work_dataset in request.session['work_dataset_list']:
-            #         # TODO: Need timestamp in name to see if different selection
-            #         print('A C H T U N G :  gibts schon!')
-            #         return
-            #     else:
-            #         # request.session['work_dataset_list'].append('dataset' + work_dataset)
-            #         request.session['work_dataset_list'].append(work_dataset)
-            # else:
-            #     # request.session['work_dataset_list'] = ['dataset' + work_dataset]
-            #     request.session['work_dataset_list'] = [work_dataset]
-            # request.session['dataset' + work_dataset] = work_query
-            # cache.set('workspaceData', request.session['work_dataset_list'])
 
             if 'work_dataset_dict' in request.session:
                 if 'dataset' + work_dataset in request.session['work_dataset_dict']:
@@ -140,12 +126,10 @@ class menuView(TemplateView):
                     print('A C H T U N G :  gibts schon!')
                     return
                 else:
-                    request.session['work_dataset_dict'].append({work_dataset: data_definition})
+                    request.session['work_dataset_dict'].update({work_dataset: data_definition})
             else:
                 request.session['work_dataset_dict'] = {work_dataset: data_definition}
             cache.set('workspaceData', request.session['work_dataset_dict'])
-            print('++++++++++++++++')
-            print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'])
 
         work_dataset = request.GET.get('workspaceData')
         min_time = request.GET.get('minTime')
@@ -162,18 +146,8 @@ class menuView(TemplateView):
 
         remove_dataset = request.GET.get('remover')
         if remove_dataset:
-            print('remove_dataset: ', remove_dataset)
-            # if 'work_dataset_list' in request.session:
-            #     request.session['work_dataset_list'].remove(remove_dataset)
-            #     cache.set('workspaceData', request.session['work_dataset_list'])
-            # return JsonResponse({'workspaceData': request.session['work_dataset_list']})
             if 'work_dataset_dict' in request.session:
-                print('----------------------------')
-                print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'])
-                print('----------------------------', type(remove_dataset))
-                print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'][0])
-                print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'][0][remove_dataset])
-                del request.session['work_dataset_dict'][0][remove_dataset]
+                del request.session['work_dataset_dict'][remove_dataset]
                 cache.set('workspaceData', request.session['work_dataset_dict'])
             return JsonResponse({'workspaceData': request.session['work_dataset_dict']})
 
