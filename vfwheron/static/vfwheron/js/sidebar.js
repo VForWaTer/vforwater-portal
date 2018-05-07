@@ -62,13 +62,29 @@ function show_data() {
 }
 
 function workspace_button(json) {
+	console.log('json: ', json);
+	console.log('json[workspaceData]: ', json['workspaceData']);
+
     if (json !== undefined) {
         $.each(json['workspaceData'], function (key, value) {
+            let btnName;
+            let id = Object.keys(value);
+            console.log('value[id]: ', value[id]);
+            console.log('value[id]: ', value[id]['name']);
+            console.log('Object.keys(value): ', Object.keys(value))
+            if (value[id]['name'].length + value[id]['abbrev'].length + value[id]['unit'].length <= 16) {
+                btnName = value[id]['name'] + ' (' + value[id]['abbrev'] + ' in ' + value[id]['unit'] + ') - ' + id;
+            } else if (value[id]['name'].length <= 20) {
+                btnName = value[id]['name'] + ' - ' + id;
+            } else {
+                btnName = value[id]['abbrev'] + ' in ' + value[id]['unit'] + ' - ' + id;
+            }
+            let title = value[id]['name'] + ' (' + value[id]['abbrev'] + ' in ' + value[id]['unit'] + ')'
             // check which buttons already exist before creating a new one:
-            if (document.getElementById(value) === null) {
-            	var removeValues = "'" + value + "'";
-				document.getElementById("workspace").innerHTML += '<li class="respo-padding" id="' + value + '">' +
-					'<span class="respo-medium">' + value + '</span><a href="javascript:void(0)"' +
+            if (document.getElementById(id) === null) {
+            	var removeValues = "'" + id + "'";
+				document.getElementById("workspace").innerHTML += '<li class="respo-padding" id="' + id + '">' +
+					'<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
 					'onclick="remove_data('+removeValues+')"; class="respo-hover-white respo-right"><i ' +
 					'class="fa fa-remove fa-fw"></i></a><br></li>';
             }

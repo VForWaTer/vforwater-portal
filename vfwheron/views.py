@@ -28,6 +28,7 @@ from datetime import datetime
 import time
 
 from .filter import FilterMethods, Menu, newbuild_id_list
+from .models import TblMeta, TblVariable
 
 import logging
 import os
@@ -71,7 +72,7 @@ class menuView(TemplateView):
 
     def get(self, request):
 
-        request.session.set_expiry(20)  # expire after 20 seconds
+        request.session.set_expiry(5)  # expire after 20 seconds
 
         # bring last used menu to session
         menu = request.GET.get('menu')
@@ -103,46 +104,78 @@ class menuView(TemplateView):
             else:
                 cache.set(menu, [])
 
+        # cache_selection is called if the following request.GET.get('workspaceData') is true
         def cache_selection(work_dataset):
+            data_definition = {}
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
             if min_time:
                 work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
             if max_time:
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
-            if 'work_dataset_list' in request.session:
-                if 'dataset' + work_dataset in request.session['work_dataset_list']:
+
+            definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
+                                                     'variable__unit__unit_abbrev').get(pk=work_dataset)
+            data_definition['name'] = definition_query['variable__variable_name']
+            data_definition['abbrev'] = definition_query['variable__variable_abbrev']
+            data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
+            #
+            # if 'work_dataset_list' in request.session:
+            #     if 'dataset' + work_dataset in request.session['work_dataset_list']:
+            #         # TODO: Need timestamp in name to see if different selection
+            #         print('A C H T U N G :  gibts schon!')
+            #         return
+            #     else:
+            #         # request.session['work_dataset_list'].append('dataset' + work_dataset)
+            #         request.session['work_dataset_list'].append(work_dataset)
+            # else:
+            #     # request.session['work_dataset_list'] = ['dataset' + work_dataset]
+            #     request.session['work_dataset_list'] = [work_dataset]
+            # request.session['dataset' + work_dataset] = work_query
+            # cache.set('workspaceData', request.session['work_dataset_list'])
+
+            if 'work_dataset_dict' in request.session:
+                if 'dataset' + work_dataset in request.session['work_dataset_dict']:
                     # TODO: Need timestamp in name to see if different selection
                     print('A C H T U N G :  gibts schon!')
                     return
                 else:
-                    # request.session['work_dataset_list'].append('dataset' + work_dataset)
-                    request.session['work_dataset_list'].append(work_dataset)
+                    request.session['work_dataset_dict'].append({work_dataset: data_definition})
             else:
-                # request.session['work_dataset_list'] = ['dataset' + work_dataset]
-                request.session['work_dataset_list'] = [work_dataset]
-
-            request.session['dataset' + work_dataset] = work_query
-            cache.set('workspaceData', request.session['work_dataset_list'])
+                request.session['work_dataset_dict'] = {work_dataset: data_definition}
+            cache.set('workspaceData', request.session['work_dataset_dict'])
+            print('++++++++++++++++')
+            print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'])
 
         work_dataset = request.GET.get('workspaceData')
         min_time = request.GET.get('minTime')
         max_time = request.GET.get('maxTime')
         if work_dataset:
+            # prepare work_dataset differently for list and single value to use in cache_selection
             conv_work_dataset = json.loads(work_dataset)
             if type(conv_work_dataset) == list:
                 for datasetId in conv_work_dataset:
                     cache_selection(str(datasetId))
             elif type(conv_work_dataset) == int:
                 cache_selection(work_dataset)
-            return JsonResponse({'workspaceData': request.session['work_dataset_list']})
+            return JsonResponse({'workspaceData': request.session['work_dataset_dict']})
 
         remove_dataset = request.GET.get('remover')
         if remove_dataset:
-            if 'work_dataset_list' in request.session:
-                request.session['work_dataset_list'].remove(remove_dataset)
-                cache.set('workspaceData', request.session['work_dataset_list'])
-            return JsonResponse({'workspaceData': request.session['work_dataset_list']})
+            print('remove_dataset: ', remove_dataset)
+            # if 'work_dataset_list' in request.session:
+            #     request.session['work_dataset_list'].remove(remove_dataset)
+            #     cache.set('workspaceData', request.session['work_dataset_list'])
+            # return JsonResponse({'workspaceData': request.session['work_dataset_list']})
+            if 'work_dataset_dict' in request.session:
+                print('----------------------------')
+                print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'])
+                print('----------------------------', type(remove_dataset))
+                print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'][0])
+                print("request.session['work_dataset_dict']: ", request.session['work_dataset_dict'][0][remove_dataset])
+                del request.session['work_dataset_dict'][0][remove_dataset]
+                cache.set('workspaceData', request.session['work_dataset_dict'])
+            return JsonResponse({'workspaceData': request.session['work_dataset_dict']})
 
         if 'preview' in request.GET:
             # plot png the mälicke way:
