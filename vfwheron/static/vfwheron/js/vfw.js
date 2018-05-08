@@ -231,16 +231,17 @@ function getCookie(name) {
 }
 
 function workspace_dataset(id) {
-    $.ajax({
-        url: DEMO_VAR+"/vfwheron/menu",
-        datatype: 'json',
-        data: {
-            workspaceData: id,
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-        success: function(json) {workspace_button(json)} // function in sidebar.js
-    });
-}
+    if (id !== 'null'){
+        $.ajax({
+            url: DEMO_VAR+"/vfwheron/menu",
+            datatype: 'json',
+            data: {
+                workspaceData: id,
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+            success: function(json) {workspace_button(json)} // function in sidebar.js
+        });
+}}
 
 /* Send ID to server to build preview and add preview image to html */
 function show_preview(id) {

@@ -52,23 +52,37 @@ function Sidemenu_close() {
 	overlaymenu.style.display = "none";
 }
 
-//Get the User Selection in Workspace
+// Get the User Selection in Workspace
+// Button information is stored in an HTML object with Id 'workdata'
+// it is stored as a string, so the following function transforms this string to a dictionary again
 function show_data() {
     var workspaceData = document.getElementById('workdata').value;
-	if (workspaceData !== "[]"){
-		workspaceData = workspaceData.slice(workspaceData.indexOf("'"), workspaceData.lastIndexOf("'"));
-		workspaceData = workspaceData.replace(/'/g, "");
-	    workspace_button({'workspaceData': workspaceData.split(", ")})}
+    if (workspaceData !== "[]") {
+        workspaceData = workspaceData.replace(/'/g, "\"");
+        workspace_button({'workspaceData': JSON.parse(workspaceData)})
+    }
 }
 
 function workspace_button(json) {
     if (json !== undefined) {
         $.each(json['workspaceData'], function (key, value) {
+            let btnName;
+
+            if (value['name'].length + value['abbr'].length + value['unit'].length <= 16) {
+                btnName = value['name'] + ' (' + value['abbr'] + ' in ' + value['unit'] + ') - ' + key;
+            } else if (value['name'].length + value['abbr'].length <= 18) {
+                btnName = value['name'] + ' (' + value['abbr'] +') - ' + key;
+            } else if (value['name'].length <= 20) {
+                btnName = value['name'] + ' - ' + key;
+            } else {
+                btnName = value['abbr'] + ' in ' + value['unit'] + ' - ' + key;
+            }
+            let title = value['name'] + ' (' + value['abbr'] + ' in ' + value['unit'] + ')';
             // check which buttons already exist before creating a new one:
-            if (document.getElementById(value) === null) {
-            	var removeValues = "'" + value + "'";
-				document.getElementById("workspace").innerHTML += '<li class="respo-padding" id="' + value + '">' +
-					'<span class="respo-medium">' + value + '</span><a href="javascript:void(0)"' +
+            if (document.getElementById(key) === null) {
+            	var removeValues = "'" + key + "'";
+				document.getElementById("workspace").innerHTML += '<li class="respo-padding" id="' + key + '">' +
+					'<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
 					'onclick="remove_data('+removeValues+')"; class="respo-hover-white respo-right"><i ' +
 					'class="fa fa-remove fa-fw"></i></a><br></li>';
             }
