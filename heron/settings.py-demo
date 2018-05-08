@@ -92,7 +92,18 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'django': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'WARN',
+        },
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
         }
+
     }
 
 }
@@ -229,6 +240,15 @@ LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
 LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron/failedlogin'
 #LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron'
 #LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
+
+
+##EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smarthost.kit.edu'                                                                                                                                                                                                            
+EMAIL_HOST_USER = 'info@vforwater.de'                                                                                                                                                                                              
+#EMAIL_HOST_PASSWORD = 'xxx'                                                                                                                                                                                                 
+EMAIL_PORT = 25 #587                                                                                                                                                                                                                        
+EMAIL_USE_TLS = False
 
 
 # Figure out if we're on our development server...
