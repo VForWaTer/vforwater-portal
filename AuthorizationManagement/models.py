@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User as CustomUser
+from django.contrib.auth.models import User as Owner
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.core.mail.message import EmailMessage
@@ -8,16 +10,20 @@ from django.core.validators import MaxLengthValidator
 
 
 
-class CustomUser(User):
-    
-    class Meta:
-        #uses proxy model to extend behavior of  Django built-in user (does not generate an extra table in the database)
-        proxy = True
+#class CustomUser(User):
+#    
+#    class Meta:
+#        #uses proxy model to extend behavior of  Django built-in user (does not generate an extra table in the database)
+#        proxy = True
+
+#CustomUser = User
+
+#Owner = CustomUser
    
-class Owner(CustomUser):
-    
-    class Meta:
-        proxy = True
+#class Owner(CustomUser):
+#    
+#    class Meta:
+#        proxy = True
         
 # corresponds to the table in the database storing all information about a resource
 class Resource(models.Model):

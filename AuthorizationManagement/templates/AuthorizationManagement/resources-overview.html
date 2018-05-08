@@ -17,7 +17,7 @@ class="active";
 <!-- search box for resources -->
 <div class="search">
    <p>Which resource do you need?</p>
-   <form action="/resources-overview/search" method="get">
+   <form action="{% url 'AuthorizationManagement:search-resources' %}" method="get">
       <input type="text" name="q" class="search-box" value={{query}}>
       <input type="submit" value="Search" class="search-btn">
    </form>
@@ -68,7 +68,7 @@ class="active";
       <div id="cancel-request-{{res.id}}" class="modalDialog">
          <div>
             <a href="" title="Close" id="x"> x </a>
-            <form action="/cancel-access-request/{{res.id}}" method="post">
+            <form action="{% url 'AuthorizationManagement:cancel-access-request' res.id %}" method="post">
                {% csrf_token %}						    
                <div>
                   <p> Are you sure you want to <strong>cancel</strong> the access request for resource: 
@@ -89,7 +89,7 @@ class="active";
       <div id="send-request-{{res.id}}" class="modalDialog">
          <div>
             <a href="" title="Close" id="x"> x </a>
-            <form action="/send-access-request/{{res.id}}" method="post">
+            <form action="{% url 'AuthorizationManagement:send-access-request' res.id %}" method="post">
                {% csrf_token %}
                <div class "row">
                   <p> Are you sure you want to <strong>send</strong> an access request for resource
