@@ -58,10 +58,11 @@
    <a href="#cancel-deletion-request-{{resource.id}}" class="cancel-del-req"> Cancel Deletion Request </a>
    
    <!-- modal dialog for canceling deletion request (when such exists) -->
+
    <div id="cancel-deletion-request-{{resource.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/cancel-deletion-request/{{resource.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:cancel-delete-request' resource.id %}" method="post">
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>cancel</strong> the deletion request for resource: 
@@ -85,7 +86,7 @@
    <div id="delete-resource-{{resource.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/delete-resource/{{resource.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:delete-resource' resource.id %}" method="post">
             {% csrf_token %}
             <div class = "row">
                <p> Are you sure you want to <strong>delete</strong> the resource 
@@ -112,8 +113,7 @@
    <div id="send-deletion-request-{{resource.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/send-deletion-request/{{resource.id}}" method="post">
-         <!-- <form action="{prozent url 'AuthorizationManagement:send_delete_request' %}{{resource.id}}" method="post"> -->
+         <form action="{% url 'AuthorizationManagement:send-delete-request' resource.id %}" method="post">
             {% csrf_token %}						    
             <div class = "row">
                <p> Are you sure you want to send a request for <strong>deletion</strong> of resource:

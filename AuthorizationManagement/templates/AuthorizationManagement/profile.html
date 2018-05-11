@@ -68,7 +68,7 @@ class="active";
    <div id="approve-request-{{request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/approve-access-request/{{request.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:approve-access-request' request.id %}" method="post">
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>approve</strong> the access request for resource:
@@ -91,7 +91,7 @@ class="active";
    <div id="deny-request-{{request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/deny-access-request/{{request.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:deny-access-request' request.id %}" method="post">
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>deny</strong> the access request for resource:
@@ -123,7 +123,7 @@ class="active";
    <div id="approve-request-{{request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/approve-deletion-request/{{request.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:approve-deletion-request' request.id %}" method="post">
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>delete</strong> resource:
@@ -146,7 +146,7 @@ class="active";
    <div id="deny-request-{{request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/deny-deletion-request/{{request.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:deny-deletion-request' request.id %}" method="post">
             {% csrf_token %}
             <div class ="row">
                <p> Are you sure you want to <strong>deny</strong> the deletion request for resource:
@@ -183,7 +183,7 @@ class="active";
    <div id="approve-request-{{access_request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/approve-access-request/{{access_request.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:approve-access-request' access_request.id %}" method="post">
             {% csrf_token %}
             <div class="row" id="are-you-sure">
                <p> Are you sure you want to <strong>approve</strong> the access request for resource:
@@ -206,7 +206,7 @@ class="active";
    <div id="deny-request-{{access_request.id}}" class="modalDialog">
       <div>
          <a href="" title="Close" id="x"> x </a>
-         <form action="/deny-access-request/{{access_request.id}}" method="post">
+         <form action="{% url 'AuthorizationManagement:deny-access-request' access_request.id %}" method="post">
             {% csrf_token %}
             <div class="row">
                <p> Are you sure you want to <strong>deny</strong> the access request for resource:

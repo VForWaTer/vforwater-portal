@@ -122,7 +122,8 @@ class SendDeletionRequestView(generic.View):
         # redirects the current user to profile/my-resources if the user is a staff user or the user has already requested to delete the resource
         if  request.user.is_staff or DeletionRequest.objects.filter(resource=res,sender = request.user).exists():
             logger.info("User %s tried to inconsistently send a deletion request for resource '%s' \n" % (request.user.username,res.name))
-            return redirect("/profile/my-resources")
+            #return redirect("/profile/my-resources")
+            return redirect('AuthorizationManagement:my-resources')
         
         # creates a deletion request with the given description
         req = DeletionRequest.objects.create(sender=request.user,
@@ -143,7 +144,8 @@ class SendDeletionRequestView(generic.View):
         msg.send()
         logger.info("Deletion request for '%s' resource was sent by %s \n" % (res.name,request.user.username))
         logger.info("An email was sent to the Staff members from %s, Subject: Deletion Request for '%s' \n" % (request.user.username,res.name))
-        return redirect("/profile/my-resources")
+        #return redirect("/profile/my-resources")
+        return redirect('AuthorizationManagement:my-resources')
 
 
 # the view for canceling a deletion request
@@ -170,7 +172,7 @@ class CancelDeletionRequestView(generic.View):
         # redirects the current user to /profile/my-resources if the user is a staff user 
         if request.user.is_staff :
             logger.info("User %s tried to cancel a deletion request for resource '%s' \n" % (request.user.username,res.name))
-            return redirect("/profile/my-resources")
+            return redirect('AuthorizationManagement:my-resources')
         
         #requests_of_user = DeletionRequest.objects.filter(sender=request.user) 
         request_to_delete = get_object_or_404(DeletionRequest,sender=request.user, resource=res)
@@ -188,7 +190,8 @@ class CancelDeletionRequestView(generic.View):
         logger.info("Deletion request for '%s' was canceled by %s \n" % (request_to_delete.resource.name,request.user.username))
         logger.info("An email was sent to the Staff members from %s, Subject: Cancel the Deletion Request for '%s' \n" % (request.user.username,request_to_delete.resource.name))
         request_to_delete.delete()
-        return redirect("/profile/my-resources")
+        #return redirect("/profile/my-resources")
+        return redirect('AuthorizationManagement:my-resources')
 
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch') 
@@ -234,7 +237,8 @@ class ResourcesOverviewSearch(ResourcesOverview):
             self.requested_resources = Resource.objects.filter(id__in=current_user_has_requested)
             return super(ResourcesOverviewSearch, self).get(request)
         else:
-            return redirect("/resources-overview")
+            return redirect('AuthorizationManagement:resources-overview')
+                         #"/resources-overview"
     
     # returns a dictionary representing the template context.
     def get_context_data(self, **kwargs):
@@ -284,7 +288,7 @@ class ApproveAccessRequest(generic.View):
         req.delete() 
         logger.info("Request from %s to access '%s' was approved by %s \n" % (req.sender,req.resource.name,request.user.username))
         logger.info("An email was sent from %s to %s, Subject: Access request for '%s' approved \n" % (request.user.username,req.sender,req.resource.name))           
-        return redirect("/profile")
+        return redirect('AuthorizationManagement:profile')
 
 # the view for denying an access request
 @method_decorator(never_cache, name='dispatch')
@@ -324,7 +328,7 @@ class DenyAccessRequest(generic.View):
         req.delete()  
         logger.info("Request from %s to access '%s' was denied by %s \n" % (req.sender,req.resource.name,request.user.username)) 
         logger.info("An email was sent from %s to %s, Subject: Access Request for '%s' denied \n" % (request.user.username,req.sender,req.resource.name))     
-        return redirect("/profile")
+        return redirect('AuthorizationManagement:profile')
 
 #the view for sending an access request
 @method_decorator(never_cache, name='dispatch')
@@ -344,7 +348,7 @@ class SendAccessRequestView(generic.View):
         # or if the user has already requested to access this resource
         if res.readers.filter(id= request.user.id).exists() or request.user.is_staff or AccessRequest.objects.filter(resource=res,sender = request.user).exists():
             logger.info("User %s tried to inconsistently send an access request for resource '%s' \n" % (request.user.username,res.name))
-            return redirect("/resources-overview")
+            return redirect('AuthorizationManagement:resources-overview')
         
         # creates an access request with the given description
         req=AccessRequest.objects.create(sender= request.user, resource=res, description=request.POST['descr'])
@@ -364,7 +368,7 @@ class SendAccessRequestView(generic.View):
         msg.send()
         logger.info("Access request for resource '%s' with id '%s' was sent by %s \n" % (res.name,pk,request.user.username))
         logger.info("An email was sent from %s to '%s' owners, Subject: Access Request for '%s' \n" % (request.user.username,res.name,res.name))
-        return redirect("/resources-overview")
+        return redirect('AuthorizationManagement:resources-overview')
    
 
 # the view for canceling an access request
@@ -403,7 +407,7 @@ class CancelAccessRequest(generic.View):
         msg.send()
         logger.info("Access request for '%s' was canceled by %s \n" % (request_to_delete.resource.name,request.user.username))
         logger.info("An email was sent from %s to '%s' owners, Subject: Cancel the Access Request for '%s' \n" % (request.user.username,request_to_delete.resource.name,request_to_delete.resource.name))
-        return redirect("/resources-overview")
+        return redirect('AuthorizationManagement:resources-overview')
     
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')     
@@ -571,10 +575,10 @@ class PermissionEditingView(generic.ListView):
                     logger.info("An email was sent from %s to '%s' , Subject: ownership revoked \n" % (request.user.username,user.username))
               
             if user_removed_own_right:
-                path_to_redirect = '/profile/my-resources/'   
+                path_to_redirect = 'AuthorizationManagement:my-resources'   
             # All users on the page are removed and there is no search        
             elif not('q' in self.request.GET and self.request.GET['q']) and no_rights_users == len(users_on_page):
-                path_to_redirect = '/profile/my-resources/'    
+                path_to_redirect = 'AuthorizationManagement:my-resources'    
             else:  
                 path_to_redirect = utilities.get_relative_path_with_parameters(self.request)
             return redirect(path_to_redirect)
@@ -670,7 +674,7 @@ class DeleteResourceView(generic.View):
         
         # deletes the resource
         res.delete()
-        return redirect("/profile/my-resources")
+        return redirect('AuthorizationManagement:my-resources')
 
 # the view for approving a deletion request
 @method_decorator(never_cache, name='dispatch')
@@ -736,7 +740,7 @@ class ApproveDeletionRequest(generic.View):
 
         logger.info("Request from %s to delete '%s' accepted by %s \n" % (req.sender,req.resource.name,request.user.username))
         
-        return redirect("/profile")
+        return redirect('AuthorizationManagement:profile')
 
 # the view for denying a deletion request
 @method_decorator(never_cache, name='dispatch')
@@ -779,7 +783,7 @@ class DenyDeletionRequest(generic.View):
         
         # deletes the request
         req.delete()
-        return redirect("/profile")
+        return redirect('AuthorizationManagement:profile')
 
 
 # the view for adding a new resource
@@ -799,7 +803,7 @@ class AddNewResourceView(generic.View):
             
         else:
             logger.info("User %s tried to inconsistently create a resource \n" % request.user.username)
-        return redirect("/profile/my-resources")
+        return redirect('AuthorizationManagement:my-resources')
 
     def get(self,request):
         form = AddNewResourceForm()
@@ -826,7 +830,7 @@ class EditNameView(generic.View):
         if(request.POST['lastName'] and (not request.POST['lastName'].isspace())):
             request.user.last_name=request.POST['lastName']
             request.user.save()  
-        return redirect('/profile')
+        return redirect('AuthorizationManagement:profile')
 
 
 # returns a sorted list of combination of the access requests and the deletion requests        

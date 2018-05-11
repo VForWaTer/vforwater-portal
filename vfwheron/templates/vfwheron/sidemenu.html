@@ -48,7 +48,7 @@
 
                         <div class="respo-dropdown-content" style="right:0">
                             <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:profile' %}">{% trans "Profile" %}</a>
-                            <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:resource-overview' %}">{% trans "Resource Overview" %}</a>
+                            <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:resources-overview' %}">{% trans "Resource Overview" %}</a>
                             <a href="#" class="respo-hover-blue">
                                 <form action="{% url 'vfwheron:logout' %}" method="post"> {% csrf_token %}
                                     <input class="respo-btn-simple" type="submit" name="logout" value="Logout"/>
