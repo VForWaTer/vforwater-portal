@@ -7,13 +7,13 @@ from django.db import connections
 from django.core.serializers import serialize
 
 from vfwheron.models import LtLocation
-
+from time import time
 
 def get_bbox_from_data(): # get bbox for available data
     try:
         cursor = connections['vforwater'].cursor() # connect to database
         # request bbox in srid of openlayers:
-        cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(centroid_x, centroid_y),srid),3857)) FROM lt_location;')
+        cursor.execute('SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)),srid),3857)) FROM lt_location;')
         m = re.findall("(\d+.\d*)", cursor.fetchall()[0][0]) # get string with coordinates
         cursor.close()
     except:

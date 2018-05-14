@@ -78,6 +78,7 @@ class menuView(TemplateView):
         menu = request.GET.get('menu')
         if menu:
             request.session['menu'] = menu
+            request.session.modified = True
         else:
             menu = request.session.get('menu')
 
@@ -127,8 +128,10 @@ class menuView(TemplateView):
                     return
                 else:
                     request.session['work_dataset_dict'].update({work_dataset: data_definition})
+                    request.session.modified = True
             else:
                 request.session['work_dataset_dict'] = {work_dataset: data_definition}
+                request.session.modified = True
             cache.set('workspaceData', request.session['work_dataset_dict'])
 
         work_dataset = request.GET.get('workspaceData')

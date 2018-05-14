@@ -234,11 +234,11 @@ class LtUser(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-    column_dict = {'first_name': {'DE': 'Vorname', 'EN': 'First name'},
-                      'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
-                      'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
-                      'department': {'DE': 'Abteilung', 'EN': 'Department'},
-                      'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+    column_dict = {'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
+                   'department': {'DE': 'Abteilung', 'EN': 'Department'},
+                   'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
+                   'first_name': {'DE': 'Vorname', 'EN': 'First name'},
+                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
     menu_name = {'DE': 'Nutzer', 'EN': 'User'}
     path = 'creator'
 
