@@ -46,8 +46,6 @@ class HomeView(TemplateView):
     JSON_Menu = json.dumps(Menu['client'])
     # JSON_Menu = Menu().json_menu()
 
-    # Menu = JsonResponse({"Name": "Harry", "Age": 2})
-
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
         data_style = 'default'
@@ -107,14 +105,13 @@ class menuView(TemplateView):
                 cache.set(menu, [])
 
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset):
+        def build_selection(work_dataset, dataset_dict={}, min_time=0, max_time=0):
             data_definition = {}
-            result = {}
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
-            if min_time:
+            if min_time != 0:
                 work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
-            if max_time:
+            if max_time != 0:
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
 
             definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
@@ -123,31 +120,27 @@ class menuView(TemplateView):
             data_definition['abbr'] = definition_query['variable__variable_abbrev']
             data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
 
-            if 'work_dataset_dict' in request.session:
-                if 'dataset' + work_dataset in request.session['work_dataset_dict']:
-                    # TODO: Need timestamp in name to see if different selection
-                    print('A C H T U N G :  gibts schon!')
-                    return
-                else:
-                    request.session['work_dataset_dict'].update({work_dataset: data_definition})
-                    request.session.modified = True
+            # if 'work_dataset_dict' in request.session:
+            if dataset_dict != {}:
+                # TODO: Need timestamp in name to see if different selection
+                dataset_dict.update({work_dataset: data_definition})
             else:
-                request.session['work_dataset_dict'] = {work_dataset: data_definition}
-                request.session.modified = True
-            return result
+                dataset_dict = {work_dataset: data_definition}
+            return dataset_dict
 
         work_dataset = request.GET.get('workspaceData')
         min_time = request.GET.get('minTime')
         max_time = request.GET.get('maxTime')
         if work_dataset:
+            result = {}
             # prepare work_dataset differently for list and single value to use in build_selection
             conv_work_dataset = json.loads(work_dataset)
             if type(conv_work_dataset) == list:
                 for datasetId in conv_work_dataset:
-                    build_selection(str(datasetId))
+                    result = build_selection(str(datasetId), result, min_time, max_time)
             elif type(conv_work_dataset) == int:
-                build_selection(work_dataset)
-            return JsonResponse({'workspaceData': request.session['work_dataset_dict']})
+                result = build_selection(work_dataset, min_time, max_time)
+            return JsonResponse({'workspaceData': result})
 
         if 'preview' in request.GET:
             # plot png the mälicke way:
