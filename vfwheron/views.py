@@ -82,6 +82,7 @@ class menuView(TemplateView):
         else:
             menu = request.session.get('menu')
 
+# TODO: is this still used? Check how map.js works!
         # save your selections in cache
         selection = request.GET.get('selection')
         submenu = request.GET.get('submenu')
@@ -105,9 +106,10 @@ class menuView(TemplateView):
             else:
                 cache.set(menu, [])
 
-        # cache_selection is called if the following request.GET.get('workspaceData') is true
-        def cache_selection(work_dataset):
+        # build_selection is called if the following request.GET.get('workspaceData') is true
+        def build_selection(work_dataset):
             data_definition = {}
+            result = {}
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
             if min_time:
@@ -132,26 +134,19 @@ class menuView(TemplateView):
             else:
                 request.session['work_dataset_dict'] = {work_dataset: data_definition}
                 request.session.modified = True
-            cache.set('workspaceData', request.session['work_dataset_dict'])
+            return result
 
         work_dataset = request.GET.get('workspaceData')
         min_time = request.GET.get('minTime')
         max_time = request.GET.get('maxTime')
         if work_dataset:
-            # prepare work_dataset differently for list and single value to use in cache_selection
+            # prepare work_dataset differently for list and single value to use in build_selection
             conv_work_dataset = json.loads(work_dataset)
             if type(conv_work_dataset) == list:
                 for datasetId in conv_work_dataset:
-                    cache_selection(str(datasetId))
+                    build_selection(str(datasetId))
             elif type(conv_work_dataset) == int:
-                cache_selection(work_dataset)
-            return JsonResponse({'workspaceData': request.session['work_dataset_dict']})
-
-        remove_dataset = request.GET.get('remover')
-        if remove_dataset:
-            if 'work_dataset_dict' in request.session:
-                del request.session['work_dataset_dict'][remove_dataset]
-                cache.set('workspaceData', request.session['work_dataset_dict'])
+                build_selection(work_dataset)
             return JsonResponse({'workspaceData': request.session['work_dataset_dict']})
 
         if 'preview' in request.GET:

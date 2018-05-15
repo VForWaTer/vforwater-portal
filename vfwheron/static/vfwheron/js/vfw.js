@@ -230,6 +230,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
     if (id !== 'null'){
         $.ajax({
@@ -239,7 +240,28 @@ function workspace_dataset(id) {
                 workspaceData: id,
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
-            success: function(json) {workspace_button(json)} // function in sidebar.js
+            success: function(json) {
+                if (sessionStorage.getItem("btn")) {
+                    var stored = JSON.parse(sessionStorage.getItem("btn"))
+                    $.each(json['workspaceData'], function (key, value) {
+                        if (!stored[key]) {
+                            stored[key] = value;
+                        }
+                    });
+                    sessionStorage.setItem("btn", JSON.stringify(stored))
+                } else {
+                    sessionStorage.setItem("btn", JSON.stringify(json['workspaceData']));
+                }
+                // push sessionStorage keys to html for Workspace
+                var x = [];
+                $.each(JSON.parse(sessionStorage.getItem("btn")), function (key){
+                   x.push(key)
+                });
+                document.getElementById("workdata").value = x
+
+                // build buttons
+                workspace_button(json);
+            } // function in sidebar.js
         });
 }}
 

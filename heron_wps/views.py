@@ -24,8 +24,7 @@ def home(request):
 
     context = {'wps_services': wps_services,
                'wps': wps,
-               'service': service,
-               'workspaceData': getworkspacedata()}
+               'service': service}
 
     return render(request, 'heron_wps/home.html', context)
 
@@ -37,8 +36,7 @@ def service(request, service):
     wps = get_wps_service_engine(service)
 
     context = {'wps': wps,
-               'service': service,
-               'workspaceData': getworkspacedata()}
+               'service': service}
 
     return render(request, 'heron_wps/service.html', context)
 
@@ -54,7 +52,6 @@ def process(request, service, identifier):
     context = {'process': wps_process,
                'service': service,
                'is_link': abstract_is_link(wps_process),
-               'workspaceData': getworkspacedata(),
                'wps': wps,
                }
 
@@ -104,18 +101,10 @@ def process(request, service, identifier):
                      'outputs': outputs,
                      'image': image,
                      'output_reference': output_reference,
-                     'execution_status': execution_status,
-                     'workspaceData': getworkspacedata()
+                     'execution_status': execution_status
                     }
     
         return render(request, 'heron_wps/result.html', context_p)
     
     return render(request, 'heron_wps/process.html', context)
 
-
-def getworkspacedata():
-    if cache.get('workspaceData') == None:
-        workspaceData = []
-    else:
-        workspaceData = cache.get('workspaceData')
-    return workspaceData

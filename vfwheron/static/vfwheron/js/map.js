@@ -190,7 +190,7 @@ function create_map() {
           }
           return style;
         }*/
-
+    // var csrf_token = getCookie('csrftoken');
     var wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
@@ -324,7 +324,7 @@ function create_map() {
                 'onclick=\"show_preview(\''+id+'\')\" value="Preview" data-toggle="tooltip" ' +
                 'title="Attention! Loading the preview might take a while."></b></a>' +
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
-                'onclick=\"workspace_dataset(\''+id+'\')\" value="Select dataset" data-toggle="tooltip" ' +
+                'onclick=\"workspace_dataset(\''+id+'\')\" value="Pass dataset to datastore" data-toggle="tooltip" ' +
                 'title="Put dataset to session datastore"></b></a>';
             var popupTableAfterMeta = popUpText + '</table>' + buttons
             var img_preview = '</td><td><p id = "preview_img" ></p></td></table>'

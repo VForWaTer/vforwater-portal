@@ -56,54 +56,56 @@ function Sidemenu_close() {
 // Button information is stored in an HTML object with Id 'workdata'
 // it is stored as a string, so the following function transforms this string to a dictionary again
 function show_data() {
-    var workspaceData = document.getElementById('workdata').value;
+    var workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     if (workspaceData !== "[]") {
-        workspaceData = workspaceData.replace(/'/g, "\"");
-        workspace_button({'workspaceData': JSON.parse(workspaceData)})
+        workspace_button({'workspaceData': workspaceData})
     }
 }
 
+// build buttons in workspace and store selection in clients sessionStorage
 function workspace_button(json) {
     if (json !== undefined) {
         $.each(json['workspaceData'], function (key, value) {
             let btnName;
-
-            if (value['name'].length + value['abbr'].length + value['unit'].length <= 16) {
+            if (value['name'].length + value['abbr'].length + value['unit'].length <= 14) {
                 btnName = value['name'] + ' (' + value['abbr'] + ' in ' + value['unit'] + ') - ' + key;
-            } else if (value['name'].length + value['abbr'].length <= 18) {
+            } else if (value['name'].length + value['abbr'].length <= 16) {
                 btnName = value['name'] + ' (' + value['abbr'] +') - ' + key;
-            } else if (value['name'].length <= 20) {
+            } else if (value['name'].length <= 18) {
                 btnName = value['name'] + ' - ' + key;
             } else {
                 btnName = value['abbr'] + ' in ' + value['unit'] + ' - ' + key;
             }
             let title = value['name'] + ' (' + value['abbr'] + ' in ' + value['unit'] + ')';
-            // check which buttons already exist before creating a new one:
+            // check if buttons already exist before creating a new one:
             if (document.getElementById(key) === null) {
             	var removeValues = "'" + key + "'";
 				document.getElementById("workspace").innerHTML += '<li class="respo-padding" id="' + key + '">' +
 					'<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
-					'onclick="remove_data('+removeValues+')"; class="respo-hover-white respo-right"><i ' +
-					'class="fa fa-remove fa-fw"></i></a><br></li>';
+					'onclick="remove_single_data('+removeValues+')"; class="respo-hover-white respo-right">' +
+                    '<i class="fa fa-remove fa-fw"></i></a>' +
+                    '<br></li>';
             }
         })
     }
 }
 
 // Remove data / elements from workspace
-function remove_data(removeData) {
+function remove_single_data(removeData) {
     // remove data from portal:
-    document.getElementById(removeData).remove()
+    document.getElementById(removeData).remove();
     // remove data from session:
-    $.ajax({
-        url: "/vfwheron/menu",
-        datatype: 'json',
-        data: {
-            remover: removeData,
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-        success: function (json) {
-        },
+    var workspaceData = JSON.parse(sessionStorage.getItem("btn"));
+    delete workspaceData[removeData]
+    sessionStorage.setItem("btn", JSON.stringify(workspaceData))
+}
+
+function remove_all_datasets() {
+	// remove button from portal
+	$.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
+		console.log('remove key: ', key)
+		document.getElementById(key).remove()
     });
-//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+	// remove button from session
+	sessionStorage.removeItem("btn");
 }
