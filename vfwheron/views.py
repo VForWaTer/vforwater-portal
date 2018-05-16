@@ -62,7 +62,7 @@ class HomeView(TemplateView):
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
         return {'dataExt': dataExt, 'data_style': data_style,
-                'workspaceData': workspaceData, 'Menu': self.JSON_Menu}
+                'workspaceData': workspaceData, 'Filter_Menu': self.JSON_Menu}
 
 
 class menuView(TemplateView):
