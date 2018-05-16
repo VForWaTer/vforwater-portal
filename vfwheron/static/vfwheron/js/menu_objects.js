@@ -260,6 +260,11 @@ function showAllPointsOnMap(){
 
 /* button to remove the selection in the filter menu, reset values on items, and show all points on map */
 function reset_filter(){
+    $('#accordion').accordion({
+        heightStyle: "content",
+        active: false,
+        collapsible: true,
+    });
     while (document.getElementsByClassName('activeP')[0]) {
         document.getElementsByClassName('activeP')[0].classList.remove('activeP');
     }
