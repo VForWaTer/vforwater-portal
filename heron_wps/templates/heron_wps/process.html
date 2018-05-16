@@ -55,22 +55,22 @@
 	            <label for="input">{{ input.title }}</label>
                 {%  if "sql" in input.identifier|lower  %}
                     {%  if "reduce time" not in process.title|lower %}
-                        <div ><p><b>{%  trans "Please select you dataset" %}</b></p></div>
+                        <div><p><b>{%  trans "Please select you dataset" %}</b></p></div>
                             <select multiple id = "{{ input.identifier }}" name="input" title="Available datasets" class="form-control">
-                            <option value="Select dataset">None</option>
-                            {% for datasets in workspaceData %}
-                                <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
-                            {% comment %}{% empty %}
-                                <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>{% endcomment %}
-                            {% endfor %}
-                                <option value = "select tstamp, value from tbl_data where meta_id=2557"> Colpach</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> Huewelerbach</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> Niederpallen</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2557"> Platen</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> Schwebich</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> Useldange</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2558"> Weierbach</option>
-                                <option value = "select tstamp, value from tbl_data where meta_id=2562"> Wollefsbach</option>
+                                <option value="Select dataset">None</option>
+                                {% for datasets in workspaceData %}
+                                    <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
+                                {% comment %}{% empty %}
+                                    <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>{% endcomment %}
+                                {% endfor %}
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2557"> Colpach</option>
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2558"> Huewelerbach</option>
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2562"> Niederpallen</option>
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2557"> Platen</option>
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2558"> Schwebich</option>
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2562"> Useldange</option>
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2558"> Weierbach</option>
+                                    <option value = "select tstamp, value from tbl_data where meta_id=2562"> Wollefsbach</option>
                             </select>
                     {% else %}
                            <input id="{{ input.identifier }}" name="input" type="text" class="form-control"></input>

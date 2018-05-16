@@ -3,6 +3,8 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 <head>
+    {#    TODO: Why do I have to import jquery again? Find the correct place for import! #}
+    <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
     <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>
 </head>
 <!--<param id="workdata" value ="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->

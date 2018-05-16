@@ -22,8 +22,9 @@ let selection = {};
 //         }
 //     }
 // }
+
 /* Loop through menues after load and build menu objects */
-menues.forEach(menuBuilder,jsMenu);
+menues.forEach(menuBuilder);
 
 /* build the parents of the menu*/
 function menuBuilder(parent) {
@@ -50,7 +51,6 @@ function childBuilder(child, shortChild, shortParent) {
     let itemHTML = "";
     let inputName = "";
     let dDL = 8;  // dropDownLimit
-    // console.log('child in childbuilder: ', shortChild)
 /* build child with items for amount of items between 1 and dropDownLimit (dDL) */
     if (child.total > 1 && child.total <= dDL && !child.hasOwnProperty("type")) {
         itemHTML = itemBuilder(child, shortChild, shortParent);
@@ -235,7 +235,7 @@ function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
     if (!jQuery.isEmptyObject(selection)) {
         showSelectionOnMap(selection);
-        updatedMenuToServer(selection);
+        getCountFromServer(selection);
     }
     // else {
     //     console.log
@@ -259,31 +259,19 @@ function showAllPointsOnMap(){
 }
 
 /* button to remove the selection in the filter menu, reset values on items, and show all points on map */
-// function unselect_all_func(){
-//     console.log('Na dann viel Spaß!');
-//     // menues.forEach(menuBuilder,jsMenu);
-//     console.log(menues, menues.length);
-//     // document.classList.remove('activeP')
-//     // document.classList.remove('activeC')
-//     // document.classList.remove('activeI')
-//     // document.classList.remove('respo-disabled')
-//     for (let p = 1; p <= menues.length; p++){
-//         // let nodeListC = eval("document.getElementsByClassName('child "+shortChild+" "+shortParent+"')");
-//         let nodeListP = document.getElementsByClassName('parent P' + p.toString());
-//         if (nodeListP.contains('activeP')){
-//
-//
-//
-//         console.log('nodeListP: ', nodeListP);
-//         console.log('Loop p: '+ 'P'+p.toString())
-//         parent = document.getElementsByClassName('P'+p.toString());
-//         parent[0].getElementsByClassName('activeP')
-//             }
-//         // console.log('Parent: ', parent)
-//     }
-//     selectedIds = null;
-//     wfsPointLayer.changed()
-// }
+function reset_filter(){
+    while (document.getElementsByClassName('activeP')[0]) {
+        document.getElementsByClassName('activeP')[0].classList.remove('activeP');
+    }
+    while (document.getElementsByClassName('activeC')[0]) {
+        document.getElementsByClassName('activeC')[0].classList.remove('activeC');
+    }
+    while (document.getElementsByClassName('activeI')[0]) {
+        document.getElementsByClassName('activeI')[0].classList.remove('activeI');
+    }
+    selectedIds = null;
+    wfsPointLayer.changed()
+}
 
 /* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
 function showSelectionOnMap(selection) {
@@ -303,7 +291,7 @@ function showSelectionOnMap(selection) {
 }
 
 /* send json Object with selection to server and get int(in a json) with amount of items back */
-function updatedMenuToServer(selection) {
+function getCountFromServer(selection) {
     $.ajax({
         url: DEMO_VAR+"/vfwheron/menu",
         dataType   : 'json',
@@ -379,18 +367,9 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
             delete selection[shortParent]
         }
     }
-
     return selection;
 }
 
 function many_datasets() {
     workspace_dataset(JSON.stringify(selectedIds))
-    // for (let id in selectedIds) {
-    //     workspace_dataset(selectedIds[id])
-    // }
-
-}
-
-function reset_filter() {
-
 }
