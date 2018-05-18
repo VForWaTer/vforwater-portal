@@ -103,7 +103,6 @@ function remove_single_data(removeData) {
 function remove_all_datasets() {
 	// remove button from portal
 	$.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
-		console.log('remove key: ', key)
 		document.getElementById(key).remove()
     });
 	// remove button from session

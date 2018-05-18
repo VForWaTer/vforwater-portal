@@ -1,6 +1,7 @@
 import base64
 import json
 import re
+import urllib
 
 from io import StringIO, BytesIO
 
@@ -15,6 +16,7 @@ from django.conf import settings
 
 import matplotlib as mpl
 
+from heron.settings import GEO_SERVER
 from vfwheron.previewplot import maelicke_plot
 
 mpl.use('Agg')
@@ -196,3 +198,16 @@ class HelpView(TemplateView):
             i += 1
         f.close()
         return render(request, 'vfwheron/help.html', {'context': context})
+
+
+class GeoserverView(View):
+
+    def get(self, request, service, bbox, srid):
+        wfsLayerName = 'new_ID_as_identifier_update'
+        workSpaceName = 'CAOS_update'
+        url = GEO_SERVER + '/' + workSpaceName + '/ows?service=' + service + \
+              '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \
+              '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        request = urllib.request.Request(url)
+        response = urllib.request.urlopen(request)
+        return HttpResponse(response.read().decode('utf-8'))

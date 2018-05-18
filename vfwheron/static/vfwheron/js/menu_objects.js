@@ -375,6 +375,7 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
     return selection;
 }
 
+// implented in vfw.js
 function many_datasets() {
     workspace_dataset(JSON.stringify(selectedIds))
 }
