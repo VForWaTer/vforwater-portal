@@ -52,10 +52,6 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         data_style = 'default'
         # data_style = 'Light Blue Circle'
-        if cache.get('workspaceData') == None:
-            workspaceData = []
-        else:
-            workspaceData = cache.get('workspaceData')
 
         try:
             dataExt = get_bbox_from_data()
@@ -63,8 +59,7 @@ class HomeView(TemplateView):
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-        return {'dataExt': dataExt, 'data_style': data_style,
-                'workspaceData': workspaceData, 'Filter_Menu': self.JSON_Menu}
+        return {'dataExt': dataExt, 'data_style': data_style, 'Filter_Menu': self.JSON_Menu}
 
 
 class menuView(TemplateView):
