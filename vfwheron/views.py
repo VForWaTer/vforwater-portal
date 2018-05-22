@@ -16,7 +16,7 @@ from django.conf import settings
 
 import matplotlib as mpl
 
-from heron.settings import GEO_SERVER
+from heron.settings import LOCAL_GEOSERVER
 from vfwheron.previewplot import maelicke_plot
 
 mpl.use('Agg')
@@ -200,7 +200,7 @@ class GeoserverView(View):
     def get(self, request, service, bbox, srid):
         wfsLayerName = 'new_ID_as_identifier_update'
         workSpaceName = 'CAOS_update'
-        url = GEO_SERVER + '/' + workSpaceName + '/ows?service=' + service + \
+        url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         request = urllib.request.Request(url)
