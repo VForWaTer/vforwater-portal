@@ -1,6 +1,7 @@
 import base64
 import json
 import re
+import urllib
 
 from io import StringIO, BytesIO
 
@@ -15,6 +16,7 @@ from django.conf import settings
 
 import matplotlib as mpl
 
+from heron.settings import LOCAL_GEOSERVER
 from vfwheron.previewplot import maelicke_plot
 
 mpl.use('Agg')
@@ -50,10 +52,6 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         data_style = 'default'
         # data_style = 'Light Blue Circle'
-        if cache.get('workspaceData') == None:
-            workspaceData = []
-        else:
-            workspaceData = cache.get('workspaceData')
 
         try:
             dataExt = get_bbox_from_data()
@@ -61,8 +59,7 @@ class HomeView(TemplateView):
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-        return {'dataExt': dataExt, 'data_style': data_style,
-                'workspaceData': workspaceData, 'Filter_Menu': self.JSON_Menu}
+        return {'dataExt': dataExt, 'data_style': data_style, 'Filter_Menu': self.JSON_Menu}
 
 
 class menuView(TemplateView):
@@ -196,3 +193,16 @@ class HelpView(TemplateView):
             i += 1
         f.close()
         return render(request, 'vfwheron/help.html', {'context': context})
+
+
+class GeoserverView(View):
+
+    def get(self, request, service, bbox, srid):
+        wfsLayerName = 'new_ID_as_identifier_update'
+        workSpaceName = 'CAOS_update'
+        url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
+              '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \
+              '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        request = urllib.request.Request(url)
+        response = urllib.request.urlopen(request)
+        return HttpResponse(response.read().decode('utf-8'))

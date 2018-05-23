@@ -1,28 +1,30 @@
-var data_style = null;
-var wfsPointLayer = null;
-var createStyle = null;
-var wfsLayerName = 'new_ID_as_identifier_update';
+let data_style = null;
+let wfsPointLayer = null;
+let createStyle = null;
+let wfsLayerName = 'new_ID_as_identifier_update';
 // var feature = null;
-var selectedIds = null;
+let selectedIds = null;
+
 
 //Create own base layer
 function create_map() {
-    var mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
-    var dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
+    const GEO_SERVER = DEMO_VAR+"/vfwheron/geoserver"
+    let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
+    let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
     // var data_style = JSON.parse(document.getElementById('data_style').value); // style for wms layer
     data_style = JSON.parse(document.getElementById('data_style').value)['data_style'];
 // build the background map
-    var mapLayer = new ol.layer.Tile({
+    let mapLayer = new ol.layer.Tile({
         preload: Infinity,
         source: mapSource
     });
 // get OSM in case local map is not loading:
     mapLayer.getSource().on('tileloaderror', function () {
-        var source = new ol.source.OSM();
+        let source = new ol.source.OSM();
         mapLayer.setSource(source)
     });
 
-    var mapView = new ol.View({
+    let mapView = new ol.View({
         center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
         zoom: 6,
         maxZoom: 18,
@@ -30,8 +32,8 @@ function create_map() {
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
     // wms layer for use on a local machine
-    var wmsPointSource = new ol.source.TileWMS({
-        url: SERVER + '/geoserver/wms',
+    let wmsPointSource = new ol.source.TileWMS({
+        url: GEO_SERVER + '/wms',
         serverType: 'geoserver',
         params: {
             LAYERS: 'CAOS_update:new_ID_as_identifier_update', // 'CAOS:get_pointinfo' 'CAOS:pointdata'
@@ -40,11 +42,11 @@ function create_map() {
         },
         name: 'wmsPointSource'
     });
-    var wmsPointLayer = new ol.layer.Tile({
+    let wmsPointLayer = new ol.layer.Tile({
         source: wmsPointSource
     });
 
-    var defaultStyle = new ol.style.Style({
+    let defaultStyle = new ol.style.Style({
         image: new ol.style.Circle({
             radius: 5,
             fill: new ol.style.Fill({
@@ -190,14 +192,10 @@ function create_map() {
           }
           return style;
         }*/
-    // var csrf_token = getCookie('csrftoken');
-    var wfsPointSource = new ol.source.Vector({
+    let wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            var url = SERVER + '/geoserver/CAOS_update/wfs?service=WFS&version=2.0.0&' +
-            // var url = 'http://127.0.0.1:8080/geoserver/CAOS/wfs?service=WFS&version=2.0.0&' + // for local geoserver
-                'request=GetFeature&typename=CAOS_update:' + wfsLayerName + '&outputFormat=application/json&srsname=EPSG:3857' +
-                '&bbox=' + extent.join(',') + ',EPSG:3857';
+            var url = GEO_SERVER + '/wfs/' + extent.join(',') +'/3857';
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url);
             var onError = function () {
@@ -229,15 +227,15 @@ function create_map() {
         renderMode: 'image',
         style: createStyle//clusterStyle//styleFunction//defaultStyle
     });
-    // console.log('wfsPointLayer.getStyle(): ', wfsPointLayer.getStyle());
+
 
 // Elements that make up the popup.
-    var container = document.getElementById('popup');
-    var content = document.getElementById('popup-content');
-    var closer = document.getElementById('popup-closer');
+    let container = document.getElementById('popup');
+    let content = document.getElementById('popup-content');
+    let closer = document.getElementById('popup-closer');
 
 // Create an metaData_Overlay to anchor the popup to the map.
-    var metaData_Overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+    let metaData_Overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
         element: container,
         autoPan: true,
         autoPanAnimation: {
@@ -252,17 +250,17 @@ function create_map() {
         return false;
     };
 
-    var vectorSource = new ol.source.TileWMS({
-        url: SERVER + '/geoserver/wms',
+    let vectorSource = new ol.source.TileWMS({
+        url: GEO_SERVER + '/wms',
         params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'}
         // visible: False,
     });
-    var vectorLayer = new ol.layer.Tile({
+    let vectorLayer = new ol.layer.Tile({
         source: vectorSource
     });
 
-    var map_tar = document.getElementById("map");
-    var map = new ol.Map({
+    let map_tar = document.getElementById("map");
+    let map = new ol.Map({
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
@@ -295,23 +293,23 @@ function create_map() {
     map.on('singleclick', showInfo);
 
     function showInfo(evt) {
-        var coordinate = evt.coordinate;
-        var clickedFeatures = map.getFeaturesAtPixel(evt.pixel);
+        let coordinate = evt.coordinate;
+        let clickedFeatures = map.getFeaturesAtPixel(evt.pixel);
         if (clickedFeatures != null) {
-            var name = clickedFeatures[0].getId();
-            var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-            var properties = clickedFeatures[0].getProperties();
-            var clickedKeys = clickedFeatures[0].getKeys();
+            let name = clickedFeatures[0].getId();
+            let id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+            let properties = clickedFeatures[0].getProperties();
+            let clickedKeys = clickedFeatures[0].getKeys();
             // TODO: CSS style überarbeiten
-            var popupTableBeforeMeta = '<table id="popupTable"><td>'
-            var popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>'
-            var popUpText = popupTableBeforeMeta + popupTextStyle + '<table id="metaTable">';
+            let popupTableBeforeMeta = '<table id="popupTable"><td>'
+            let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>'
+            let popUpText = popupTableBeforeMeta + popupTextStyle + '<table id="metaTable">';
             for (var i = 0; i < clickedKeys.length; i++) {
                 if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
                     clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
                     clickedKeys[i] != 'geometry' && clickedKeys[i] != 'id') {
                     if (clickedKeys[i] == 'Vorname') {
-                        var name = properties[clickedKeys[i]]
+                        let name = properties[clickedKeys[i]]
                     }
                     else if (clickedKeys[i] == 'Nachname') {
                         popUpText = popUpText + '<tr><td><b>Name</b></td><td>' + name + ' ' + properties[clickedKeys[i]] + '</td></tr>'
@@ -320,14 +318,14 @@ function create_map() {
                     }
                 }
             }
-            var buttons = '<a><b><input id="show_data_preview" class="respo-btn-block" type="submit" ' +
+            let buttons = '<a><b><input id="show_data_preview" class="respo-btn-block" type="submit" ' +
                 'onclick=\"show_preview(\''+id+'\')\" value="Preview" data-toggle="tooltip" ' +
                 'title="Attention! Loading the preview might take a while."></b></a>' +
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
                 'onclick=\"workspace_dataset(\''+id+'\')\" value="Pass dataset to datastore" data-toggle="tooltip" ' +
                 'title="Put dataset to session datastore"></b></a>';
-            var popupTableAfterMeta = popUpText + '</table>' + buttons
-            var img_preview = '</td><td><p id = "preview_img" ></p></td></table>'
+            let popupTableAfterMeta = popUpText + '</table>' + buttons
+            let img_preview = '</td><td><p id = "preview_img" ></p></td></table>'
             content.innerHTML =  popupTableAfterMeta + img_preview;
             metaData_Overlay.setPosition(coordinate);
         } else {
@@ -343,8 +341,8 @@ function create_map() {
         if (evt.dragging) {
             return;
         }
-        var pixel = map.getEventPixel(evt.originalEvent);
-        var hit = map.forEachLayerAtPixel(pixel, function (feature, layer) {
+        let pixel = map.getEventPixel(evt.originalEvent);
+        let hit = map.forEachLayerAtPixel(pixel, function (feature, layer) {
                 return feature;
             }, null, function (layer) {
                 return layer === wfsPointLayer

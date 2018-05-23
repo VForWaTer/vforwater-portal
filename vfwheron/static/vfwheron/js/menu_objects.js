@@ -237,12 +237,14 @@ function itemButtonFunction(item, shortParent, shortChild, shortItem) {
         showSelectionOnMap(selection);
         getCountFromServer(selection);
     }
-    // else {
-    //     console.log
-    //     showAllPointsOnMap();
-    // }
+    else {
+        selectedIds = null;
+        wfsPointLayer.changed()
+        // showAllPointsOnMap();
+    }
 }
 
+// TODO: When you decide to remove the wms map, use showAllPointsOnMap
 function showAllPointsOnMap(){
    $.ajax({
        url: DEMO_VAR + "/vfwheron/menu",
@@ -375,6 +377,7 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
     return selection;
 }
 
+// implented in vfw.js
 function many_datasets() {
     workspace_dataset(JSON.stringify(selectedIds))
 }
