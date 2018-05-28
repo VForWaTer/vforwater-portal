@@ -21,21 +21,26 @@ def get_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CA
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
     build = requests.get(url, auth=('admin', 'vfwaterv2'), headers={"Accept": "application/xml"})
     if build.status_code != 200:
-        logger.warning(build.status_code + ': ' + build.text)
-    # print('get: ', str(build.status_code) + ': ' + build.text)
-    print('get: ', str(build.status_code) + ': ')
+        logger.warning(str(build.status_code) + ': ' + build.text)
+        return False
+    return True
 
 
 def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
+    # first delete layer, then feature!
+    url = LOCAL_GEOSERVER + '/rest/layers/' + filename
+    build = requests.delete(url, auth=('admin', 'vfwaterv2'),
+                            headers={'Content-type': 'application/json', 'Accept': 'application/json'})
+    if build.status_code != 200:
+        logger.warning(str(build.status_code) + ': ' + build.text)
 
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
-    build = requests.delete(url, auth=('admin', 'vfwaterv2'))
-    # if build.status_code != 201:
-    #     logger.warning(build.status_code + ': ' + build.content)
-    print('delete: ', str(build.status_code) + ': ' + build.text)
-    print('delete: ', build.content)
-    print('delete: ', build.headers)
+    build = requests.delete(url, auth=('admin', 'vfwaterv2'),
+                            headers={'Content-type': 'application/json', 'Accept': 'application/json'})
+    if build.status_code != 200:
+        logger.warning(str(build.status_code) + ': ' + build.text)
 
+# TODO: Query needs 'WHERE' for the IDs of data available for user
 def build_new_layer_XML(filename, datastore, workspace, srid):
 
     query ='SELECT ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid), 3857) ::geometry'\
