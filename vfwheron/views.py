@@ -17,6 +17,7 @@ from django.conf import settings
 import matplotlib as mpl
 
 from heron.settings import LOCAL_GEOSERVER
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer
 from vfwheron.previewplot import maelicke_plot
 
 mpl.use('Agg')
@@ -47,6 +48,9 @@ class HomeView(TemplateView):
     Menu = Menu().menu()
     JSON_Menu = json.dumps(Menu['client'])
     # JSON_Menu = Menu().json_menu()
+    data_layer = 'default_layer'
+    if not get_layer(data_layer):
+        create_layer(data_layer)
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
@@ -59,7 +63,7 @@ class HomeView(TemplateView):
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-        return {'dataExt': dataExt, 'data_style': data_style, 'Filter_Menu': self.JSON_Menu}
+        return {'dataExt': dataExt, 'data_style': data_style, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
 
 
 class menuView(TemplateView):
@@ -77,7 +81,7 @@ class menuView(TemplateView):
         else:
             menu = request.session.get('menu')
 
-# TODO: is this still used? Check how map.js works!
+        # TODO: is this still used? Check how map.js works!
         # save your selections in cache
         selection = request.GET.get('selection')
         submenu = request.GET.get('submenu')
@@ -112,7 +116,7 @@ class menuView(TemplateView):
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
 
             definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                     'variable__unit__unit_abbrev').get(pk=work_dataset)
+                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
             data_definition['name'] = definition_query['variable__variable_name']
             data_definition['abbr'] = definition_query['variable__variable_abbrev']
             data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
@@ -197,8 +201,9 @@ class HelpView(TemplateView):
 
 class GeoserverView(View):
 
-    def get(self, request, service, bbox, srid):
+    def get(self, request, service, layer, bbox, srid):
         wfsLayerName = 'new_ID_as_identifier_update'
+        wfsLayerName = layer
         workSpaceName = 'CAOS_update'
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \

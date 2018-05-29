@@ -1,18 +1,17 @@
 let data_style = null;
 let wfsPointLayer = null;
 let createStyle = null;
-let wfsLayerName = 'new_ID_as_identifier_update';
-// var feature = null;
 let selectedIds = null;
 
 
 //Create own base layer
 function create_map() {
-    const GEO_SERVER = DEMO_VAR+"/vfwheron/geoserver"
+    const GEO_SERVER = DEMO_VAR+"/vfwheron/geoserver";
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
     let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
     // var data_style = JSON.parse(document.getElementById('data_style').value); // style for wms layer
     data_style = JSON.parse(document.getElementById('data_style').value)['data_style'];
+    let wfsLayerName = document.getElementById('data_layer').value;
 // build the background map
     let mapLayer = new ol.layer.Tile({
         preload: Infinity,
@@ -82,13 +81,12 @@ function create_map() {
            return style
          }*/
     function createStyle(feature) {
-        var style;
+        let style;
         if (selectedIds) {
-            var name = feature.getId();
-            var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+            let name = feature.getId();
+            let id = parseInt(name.substr(wfsLayerName.length + 1, 8));
             if (selectedIds.includes(id)) {
-                // console.log('found: ', id);
-                var style = new ol.style.Style({
+                style = new ol.style.Style({
                     image: new ol.style.Circle({
                         radius: 8,
                         fill: new ol.style.Fill({
@@ -107,9 +105,8 @@ function create_map() {
         } else {
             style = defaultStyle
         }
-
         return style
-    };
+    }
 
   //  next thing to try: cluster data:
   /*var maxFeatureCount, wfsPointLayer;
@@ -195,7 +192,7 @@ function create_map() {
     let wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            var url = GEO_SERVER + '/wfs/' + extent.join(',') +'/3857';
+            var url = GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') +'/3857';
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url);
             var onError = function () {
@@ -324,14 +321,14 @@ function create_map() {
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
                 'onclick=\"workspace_dataset(\''+id+'\')\" value="Pass dataset to datastore" data-toggle="tooltip" ' +
                 'title="Put dataset to session datastore"></b></a>';
-            let popupTableAfterMeta = popUpText + '</table>' + buttons
-            let img_preview = '</td><td><p id = "preview_img" ></p></td></table>'
+            let popupTableAfterMeta = popUpText + '</table>' + buttons;
+            let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
             content.innerHTML =  popupTableAfterMeta + img_preview;
             metaData_Overlay.setPosition(coordinate);
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
-    };
+    }
 
     // select data with doubleclick
     //map.on('doubleclick', selectDataset);
