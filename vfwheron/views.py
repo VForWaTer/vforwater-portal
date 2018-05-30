@@ -51,6 +51,10 @@ class HomeView(TemplateView):
     data_layer = 'default_layer'
     if not get_layer(data_layer):
         create_layer(data_layer)
+    # else:
+    # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+    #     delete_layer(data_layer)
+    #     create_layer(data_layer)
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
