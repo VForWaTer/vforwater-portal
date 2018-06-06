@@ -1,0 +1,580 @@
+##########################
+### All files sorted   ###
+### by extension in    ###
+### alphabetical order ###
+##########################
+
+Total file count: 452
+
+There are 33 extensions
+
+        No            Type      Lines
+         1          centos           
+         5            conf        137
+        36             css      19804
+         2       directory         10
+         2             eot       1556
+         1       gitignore           
+       137            html      25165
+         2             ico          6
+         1             idx           
+         4             jpg       2885
+        43              js     104255
+        14            less       1836
+         5             map          0
+         2              md        115
+         1             otf           
+         1            pack           
+        11             png       1106
+       102              py       9406
+         1      py_example           
+         1         py-prod           
+         9          sample        497
+        14            scss       1836
+         5              sh        100
+         1             sql           
+         9             svg       3025
+         1             swf           
+         2             ttf       2222
+         4             txt        465
+         1          ubuntu           
+         8            woff       2210
+         2           woff2        359
+         7             xml        931
+         1             yml           
+
+### centos files ###
+
+./docker/Dockerfile.centos
+
+### conf files ###
+
+./docker/renderd.conf
+./docker/services.conf
+./docker/apache/http-site.conf
+./docker/apache/https-site.conf
+./docker/apache/mod_tile.conf
+
+### css files ###
+
+./code_docu/epydoc.css
+./dashboard/static/dashboard/dist/css/bootstrap.min.css
+./dashboard/static/dashboard/dist/css/bootstrap-theme.css
+./dashboard/static/dashboard/dist/css/bootstrap.css
+./dashboard/static/dashboard/dist/css/bootstrap-theme.min.css
+./dashboard/static/dashboard/assets/css/docs.min.css
+./dashboard/static/dashboard/assets/css/src/pygments-manni.css
+./dashboard/static/dashboard/assets/css/src/docs.css
+./dashboard/static/dashboard/assets/css/ie10-viewport-bug-workaround.css
+./dashboard/static/dashboard/dashboard.css
+./AuthorizationManagement/static/AuthorizationManagement/css/add-new-resource.css
+./AuthorizationManagement/static/AuthorizationManagement/css/profile.css
+./AuthorizationManagement/static/AuthorizationManagement/css/modal-dialog-req.css
+./AuthorizationManagement/static/AuthorizationManagement/css/edit-permissions.css
+./AuthorizationManagement/static/AuthorizationManagement/css/fonts.css
+./AuthorizationManagement/static/AuthorizationManagement/css/resources-overview.css
+./AuthorizationManagement/static/AuthorizationManagement/css/base.css
+./AuthorizationManagement/static/AuthorizationManagement/css/modal-dialog-info.css
+./AuthorizationManagement/static/AuthorizationManagement/css/my-resources.css
+./AuthorizationManagement/static/css/admin-extra.css
+./AuthorizationManagement/static/css/fonts.css
+./wps_workflow/static/styles.bundle.css
+./wps_workflow/static/styles.e5da1c793135e1916e5e.bundle.css
+./vfwheron/static/vfwheron/font-awesome-4.7.0/css/font-awesome.min.css
+./vfwheron/static/vfwheron/font-awesome-4.7.0/css/font-awesome.css
+./vfwheron/static/vfwheron/vcss/jquery-ui.min.css
+./vfwheron/static/vfwheron/vcss/respostyle.css
+./vfwheron/static/vfwheron/vcss/nouislider.css
+./vfwheron/static/vfwheron/vcss/ol.css
+./vfwheron/static/vfwheron/vcss/jquery.mobile-1.4.5.min.css
+./vfwheron/static/vfwheron/vcss/jquery-ui.structure.css
+./vfwheron/static/vfwheron/vcss/jquery-ui.css
+./vfwheron/static/vfwheron/vcss/nouislider.min.css
+./vfwheron/static/vfwheron/vcss/base.css
+./vfwheron/static/vfwheron/vcss/jquery-ui.structure.min.css
+./vfwheron/static/vfwheron/vcss/filter.css
+
+### directory files ###
+
+./heron_wps/.directory
+./heron_wps/templates/heron_wps/.directory
+
+### eot files ###
+
+./dashboard/static/dashboard/dist/fonts/glyphicons-halflings-regular.eot
+./vfwheron/static/vfwheron/font-awesome-4.7.0/fonts/fontawesome-webfont.eot
+
+### gitignore files ###
+
+./.gitignore
+
+### html files ###
+
+./code_docu/wps_workflow.views.SettingsView-class.html
+./code_docu/wps_workflow-module.html
+./code_docu/toc-wps_workflow.utils-module.html
+./code_docu/wps_workflow.models.Edge-class.html
+./code_docu/toc-wps_workflow.models-module.html
+./code_docu/toc.html
+./code_docu/wps_workflow.tests.AuthenticationViewsCase-class.html
+./code_docu/frames.html
+./code_docu/wps_workflow.cron-module.html
+./code_docu/wps_workflow.utils-pysrc.html
+./code_docu/wps_workflow.admin.WorkflowAdmin-class.html
+./code_docu/wps_workflow.tests.ParserTestCase-class.html
+./code_docu/redirect.html
+./code_docu/wps_workflow.tests.ProcessViewCase-class.html
+./code_docu/wps_workflow.views.WorkflowView-class.html
+./code_docu/wps_workflow.tests.CronTestCase-class.html
+./code_docu/class-tree.html
+./code_docu/wps_workflow.admin-pysrc.html
+./code_docu/wps_workflow.views.OurLogoutView-class.html
+./code_docu/toc-wps_workflow-module.html
+./code_docu/wps_workflow.urls-pysrc.html
+./code_docu/wps_workflow.admin.TaskInline-class.html
+./code_docu/wps_workflow.models.Process.Meta-class.html
+./code_docu/wps_workflow.models.Edge.Meta-class.html
+./code_docu/wps_workflow.cron-pysrc.html
+./code_docu/wps_workflow.models-pysrc.html
+./code_docu/wps_workflow.models.Workflow-class.html
+./code_docu/wps_workflow.admin-module.html
+./code_docu/wps_workflow.views.OurLoginView-class.html
+./code_docu/toc-wps_workflow.urls-module.html
+./code_docu/wps_workflow.views.ProcessView-class.html
+./code_docu/identifier-index.html
+./code_docu/wps_workflow.tests.DatabaseTestCase-class.html
+./code_docu/toc-wps_workflow.admin-module.html
+./code_docu/wps_workflow.tests-module.html
+./code_docu/wps_workflow.views.WorkflowsView-class.html
+./code_docu/toc-wps_workflow.views-module.html
+./code_docu/wps_workflow.models-module.html
+./code_docu/wps_workflow.models.InputOutput-class.html
+./code_docu/toc-wps_workflow.cron-module.html
+./code_docu/toc-wps_workflow.apps-module.html
+./code_docu/wps_workflow.admin.TaskAdmin.Meta-class.html
+./code_docu/wps_workflow.models.Session-class.html
+./code_docu/wps_workflow.models.Session.Meta-class.html
+./code_docu/toc-everything.html
+./code_docu/wps_workflow.views.WPSView-class.html
+./code_docu/wps_workflow.admin.EdgeAdmin.Meta-class.html
+./code_docu/wps_workflow.apps-module.html
+./code_docu/wps_workflow.tests.WpsViewCase-class.html
+./code_docu/wps_workflow.admin.TaskAdmin-class.html
+./code_docu/wps_workflow.apps.wps_workflowConfig-class.html
+./code_docu/wps_workflow.views-pysrc.html
+./code_docu/wps_workflow.apps-pysrc.html
+./code_docu/wps_workflow-pysrc.html
+./code_docu/module-tree.html
+./code_docu/wps_workflow.views.EditorView-class.html
+./code_docu/index.html
+./code_docu/wps_workflow.tests-pysrc.html
+./code_docu/toc-wps_workflow.tests-module.html
+./code_docu/wps_workflow.models.Task.Meta-class.html
+./code_docu/wps_workflow.models.Artefact-class.html
+./code_docu/wps_workflow.models.WPS.Meta-class.html
+./code_docu/wps_workflow.models.Workflow.Meta-class.html
+./code_docu/wps_workflow.models.WPS-class.html
+./code_docu/wps_workflow.models.Artefact.Meta-class.html
+./code_docu/wps_workflow.utils-module.html
+./code_docu/help.html
+./code_docu/wps_workflow.models.Process-class.html
+./code_docu/wps_workflow.views-module.html
+./code_docu/wps_workflow.admin.WorkflowAdmin.Meta-class.html
+./code_docu/wps_workflow.models.WPSProvider.Meta-class.html
+./code_docu/wps_workflow.admin.EdgeAdmin-class.html
+./code_docu/wps_workflow.models.WPSProvider-class.html
+./code_docu/wps_workflow.tests.UserViewCase-class.html
+./code_docu/wps_workflow.views.UserView-class.html
+./code_docu/wps_workflow.urls-module.html
+./code_docu/wps_workflow.tests.WorkflowViewCase-class.html
+./code_docu/wps_workflow.models.InputOutput.Meta-class.html
+./code_docu/wps_workflow.models.Task-class.html
+./code_docu/wps_workflow.tests.WorkflowViewLoggedOutCase-class.html
+./dashboard/templates/dashboard/index.html
+./dashboard/templates/dashboard/dashboard.html
+./heron_upload/templates/heron_upload/home.html
+./heron_monitor/templates/heron_monitor/home.html
+./AuthorizationManagement/templates/AuthorizationManagement/base.html
+./AuthorizationManagement/templates/AuthorizationManagement/add-new-resource.html
+./AuthorizationManagement/templates/AuthorizationManagement/my-resources.html
+./AuthorizationManagement/templates/AuthorizationManagement/resources-overview.html
+./AuthorizationManagement/templates/AuthorizationManagement/edit-permissions.html
+./AuthorizationManagement/templates/AuthorizationManagement/home.html
+./AuthorizationManagement/templates/AuthorizationManagement/profile.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/access-granted-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/delete-request-accepted-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/delete-resource-request-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/ownership-revoked-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/deletion-request-canceled-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/access-request-approved-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/access-request-canceled-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/access-request-denied-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/access-resource-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/admin-rights-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/ownership-granted-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/resource-deleted-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/access-removed-mail.html
+./AuthorizationManagement/templates/AuthorizationManagement/mail/delete-request-denied-mail.html
+./AuthorizationManagement/templates/404.html
+./AuthorizationManagement/templates/admin/base_site.html
+./AuthorizationManagement/templates/403.html
+./docker/map/index.html
+./docker/html/index.html
+./wps_workflow/templates/index.html
+./wps_workflow/templates/wps_workflow_seems_unused/index_seems_unused.html
+./wps_workflow/templates/wps_workflow_seems_unused/workflows_seems_unused.html
+./wps_workflow/templates/wps_workflow_seems_unused/base_seems_unused.html
+./wps_workflow/templates/wps_workflow_seems_unused/settings_seems_unused.html
+./wps_workflow/templates/wps_workflow_seems_unused/login_seems_unused.html
+./wps_workflow/templates/wps_workflow_seems_unused/editor_seems_unused.html
+./wps_workflow/static/index_seems_unused.html
+./vfwheron/templates/vfwheron/base.html
+./vfwheron/templates/vfwheron/map.html
+./vfwheron/templates/vfwheron/static_sidebar.html
+./vfwheron/templates/vfwheron/select_data.html
+./vfwheron/templates/vfwheron/failedlogin.html
+./vfwheron/templates/vfwheron/home.html
+./vfwheron/templates/vfwheron/logo.html
+./vfwheron/templates/vfwheron/login.html
+./vfwheron/templates/vfwheron/help.html
+./vfwheron/templates/vfwheron/base_sidebar.html
+./vfwheron/templates/vfwheron/sidemenu.html
+./heron_wps/templates/heron_wps/service.html
+./heron_wps/templates/heron_wps/select_process.html
+./heron_wps/templates/heron_wps/result.html
+./heron_wps/templates/heron_wps/sidebar.html
+./heron_wps/templates/heron_wps/home.html
+./heron_wps/templates/heron_wps/process.html
+./heron_visual/templates/heron_visual/sidebar.html
+./heron_visual/templates/heron_visual/home.html
+
+### ico files ###
+
+./wps_workflow/static/favicon.ico
+./vfwheron/static/vfwheron/images/Favicon.ico
+
+### idx files ###
+
+./.git/objects/pack/pack-384ad4c1fe17a1e88a65d8411c91548bf7f5d710.idx
+
+### jpg files ###
+
+./dashboard/static/dashboard/assets/img/expo-vogue.jpg
+./dashboard/static/dashboard/assets/img/expo-newsweek.jpg
+./dashboard/static/dashboard/assets/img/expo-riot.jpg
+./dashboard/static/dashboard/assets/img/expo-lyft.jpg
+
+### js files ###
+
+./code_docu/epydoc.js
+./dashboard/static/dashboard/dist/js/bootstrap.min.js
+./dashboard/static/dashboard/dist/js/bootstrap.js
+./dashboard/static/dashboard/dist/js/npm.js
+./dashboard/static/dashboard/assets/js/ie-emulation-modes-warning.js
+./dashboard/static/dashboard/assets/js/customize.min.js
+./dashboard/static/dashboard/assets/js/ie8-responsive-file-warning.js
+./dashboard/static/dashboard/assets/js/src/application.js
+./dashboard/static/dashboard/assets/js/src/customizer.js
+./dashboard/static/dashboard/assets/js/raw-files.min.js
+./dashboard/static/dashboard/assets/js/docs.min.js
+./dashboard/static/dashboard/assets/js/ie10-viewport-bug-workaround.js
+./dashboard/static/dashboard/assets/js/vendor/less.min.js
+./dashboard/static/dashboard/assets/js/vendor/FileSaver.js
+./dashboard/static/dashboard/assets/js/vendor/Blob.js
+./dashboard/static/dashboard/assets/js/vendor/jquery.min.js
+./dashboard/static/dashboard/assets/js/vendor/holder.min.js
+./dashboard/static/dashboard/assets/js/vendor/anchor.min.js
+./dashboard/static/dashboard/assets/js/vendor/autoprefixer.js
+./dashboard/static/dashboard/assets/js/vendor/ZeroClipboard.min.js
+./dashboard/static/dashboard/assets/js/vendor/jszip.min.js
+./dashboard/static/dashboard/assets/js/vendor/uglify.min.js
+./heron_upload/static/heron_upload/js/data_access.js
+./heron_upload/static/heron_upload/js/base.js
+./wps_workflow/static/inline.2b62737a5d9cad41a082.bundle.js
+./wps_workflow/static/main.06ce01928caeba1e4e9e.bundle.js
+./wps_workflow/static/main.bundle.js
+./wps_workflow/static/polyfills.bundle.js
+./wps_workflow/static/polyfills.64434f84d37df9d6f6cb.bundle.js
+./wps_workflow/static/inline.bundle.js
+./vfwheron/static/vfwheron/js/jquery-ui.min.js
+./vfwheron/static/vfwheron/js/jquery-ui.js
+./vfwheron/static/vfwheron/js/jquery-3.2.1.min.js
+./vfwheron/static/vfwheron/js/jquery.mobile-1.4.5.min.js
+./vfwheron/static/vfwheron/js/sidebar.js
+./vfwheron/static/vfwheron/js/nouislider.js
+./vfwheron/static/vfwheron/js/nouislider.min.js
+./vfwheron/static/vfwheron/js/jquery-1.11.3.min.js
+./vfwheron/static/vfwheron/js/menu_objects.js
+./vfwheron/static/vfwheron/js/map.js
+./vfwheron/static/vfwheron/js/ol.js
+./vfwheron/static/vfwheron/js/vfw.js
+./heron_wps/static/heron_wps/js/process.js
+
+### less files ###
+
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/screen-reader.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/animated.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/rotated-flipped.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/font-awesome.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/stacked.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/mixins.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/icons.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/bordered-pulled.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/list.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/fixed-width.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/core.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/path.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/larger.less
+./vfwheron/static/vfwheron/font-awesome-4.7.0/less/variables.less
+
+### map files ###
+
+./dashboard/static/dashboard/dist/css/bootstrap.min.css.map
+./dashboard/static/dashboard/dist/css/bootstrap-theme.css.map
+./dashboard/static/dashboard/dist/css/bootstrap.css.map
+./dashboard/static/dashboard/dist/css/bootstrap-theme.min.css.map
+./dashboard/static/dashboard/assets/css/docs.min.css.map
+
+### md files ###
+
+./README.md
+./USERHELP.md
+
+### otf files ###
+
+./vfwheron/static/vfwheron/font-awesome-4.7.0/fonts/FontAwesome.otf
+
+### pack files ###
+
+./.git/objects/pack/pack-384ad4c1fe17a1e88a65d8411c91548bf7f5d710.pack
+
+### png files ###
+
+./code_docu/crarr.png
+./dashboard/static/dashboard/assets/img/devices.png
+./dashboard/static/dashboard/assets/img/components.png
+./dashboard/static/dashboard/assets/img/sass-less.png
+./AuthorizationManagement/static/AuthorizationManagement/images/logo.png
+./wps_workflow/static/assets/img/logo.png
+./wps_workflow/static/assets/img/editor_bg.png
+./wps_workflow/static/static/assets/img/logo.png
+./wps_workflow/static/static/assets/img/editor_bg.png
+./wps_workflow/static/editor_bg.a05b9f83c7c3ca3568ef.png
+./vfwheron/static/vfwheron/images/logo_main.png
+
+### py files ###
+
+./heron/wsgi.py
+./heron/router.py
+./heron/urls.py
+./heron/__init__.py
+./heron/context_processors.py
+./dashboard/admin.py
+./dashboard/views.py
+./dashboard/models.py
+./dashboard/apps.py
+./dashboard/migrations/0001_initial.py
+./dashboard/migrations/__init__.py
+./dashboard/urls.py
+./dashboard/__init__.py
+./dashboard/tests.py
+./heron_upload/views.py
+./heron_upload/models.py
+./heron_upload/apps.py
+./heron_upload/urls.py
+./heron_upload/__init__.py
+./heron_upload/forms.py
+./heron_monitor/views.py
+./heron_monitor/apps.py
+./heron_monitor/urls.py
+./heron_monitor/__init__.py
+./AuthorizationManagement/admin.py
+./AuthorizationManagement/views.py
+./AuthorizationManagement/models.py
+./AuthorizationManagement/apps.py
+./AuthorizationManagement/migrations/0005_auto_20180125_1707.py
+./AuthorizationManagement/migrations/0010_auto_20180128_2345.py
+./AuthorizationManagement/migrations/0013_auto_20180204_2131.py
+./AuthorizationManagement/migrations/0004_auto_20180125_1659.py
+./AuthorizationManagement/migrations/0008_auto_20180128_2335.py
+./AuthorizationManagement/migrations/0016_auto_20180304_1140.py
+./AuthorizationManagement/migrations/0014_auto_20180205_0008.py
+./AuthorizationManagement/migrations/0009_auto_20180128_2344.py
+./AuthorizationManagement/migrations/0018_auto_20180304_1919.py
+./AuthorizationManagement/migrations/0003_auto_20180125_1450.py
+./AuthorizationManagement/migrations/0019_auto_20180304_1953.py
+./AuthorizationManagement/migrations/0002_auto_20180123_1426.py
+./AuthorizationManagement/migrations/0012_auto_20180204_2120.py
+./AuthorizationManagement/migrations/0007_auto_20180126_1226.py
+./AuthorizationManagement/migrations/0004_merge_20180125_1830.py
+./AuthorizationManagement/migrations/0017_auto_20180304_1146.py
+./AuthorizationManagement/migrations/0001_initial.py
+./AuthorizationManagement/migrations/__init__.py
+./AuthorizationManagement/migrations/0015_auto_20180304_1115.py
+./AuthorizationManagement/migrations/0002_auto_20180122_2016.py
+./AuthorizationManagement/migrations/0011_auto_20180204_1815.py
+./AuthorizationManagement/migrations/0006_merge_20180126_1226.py
+./AuthorizationManagement/tests/test_views.py
+./AuthorizationManagement/tests/__init__.py
+./AuthorizationManagement/tests/test_integration.py
+./AuthorizationManagement/utilities.py
+./AuthorizationManagement/urls.py
+./AuthorizationManagement/__init__.py
+./AuthorizationManagement/forms.py
+./wps_workflow/cron.py
+./wps_workflow/admin.py
+./wps_workflow/views.py
+./wps_workflow/models.py
+./wps_workflow/apps.py
+./wps_workflow/migrations/__init__.py
+./wps_workflow/urls.py
+./wps_workflow/__init__.py
+./wps_workflow/tests.py
+./wps_workflow/utils.py
+./vfwheron/load_shp.py
+./vfwheron/admin.py
+./vfwheron/views.py
+./vfwheron/query_functions.py
+./vfwheron/models.py
+./vfwheron/apps.py
+./vfwheron/migrations/0001_initial.py
+./vfwheron/migrations/__init__.py
+./vfwheron/filter.py
+./vfwheron/urls.py
+./vfwheron/previewplot.py
+./vfwheron/__init__.py
+./vfwheron/geoserver_layer.py
+./vfwheron/templatetags/markdown_filter.py
+./vfwheron/templatetags/menutags.py
+./vfwheron/templatetags/__init__.py
+./vfwheron/tests.py
+./heron_wps/templatetags_unused/tethys_wps.py
+./heron_wps/templatetags_unused/__init__.py
+./heron_wps/admin.py
+./heron_wps/base.py
+./heron_wps/views.py
+./heron_wps/models.py
+./heron_wps/apps.py
+./heron_wps/migrations/0001_initial.py
+./heron_wps/migrations/__init__.py
+./heron_wps/utilities.py
+./heron_wps/urls.py
+./heron_wps/__init__.py
+./heron_wps/forms.py
+./heron_visual/views.py
+./heron_visual/apps.py
+./heron_visual/urls.py
+./heron_visual/__init__.py
+./manage.py
+
+### py_example files ###
+
+./heron/settings.py_example
+
+### py-prod files ###
+
+./heron/settings.py-prod
+
+### sample files ###
+
+./.git/hooks/prepare-commit-msg.sample
+./.git/hooks/pre-applypatch.sample
+./.git/hooks/update.sample
+./.git/hooks/pre-push.sample
+./.git/hooks/applypatch-msg.sample
+./.git/hooks/post-update.sample
+./.git/hooks/pre-commit.sample
+./.git/hooks/commit-msg.sample
+./.git/hooks/pre-rebase.sample
+
+### scss files ###
+
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_animated.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_icons.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_core.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_bordered-pulled.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_stacked.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_rotated-flipped.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_screen-reader.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_list.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_fixed-width.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_larger.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/font-awesome.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_path.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_variables.scss
+./vfwheron/static/vfwheron/font-awesome-4.7.0/scss/_mixins.scss
+
+### sh files ###
+
+./utilities/files.sh
+./utilities/code_docu.sh
+./docker/django_makemigrations.sh
+./docker/create_django_superuser.sh
+./docker/become_django_user.sh
+
+### sql files ###
+
+./docker/metacatalog.sql
+
+### svg files ###
+
+./dashboard/static/dashboard/dist/fonts/glyphicons-halflings-regular.svg
+./dashboard/static/dashboard/assets/brand/bootstrap-punchout.svg
+./dashboard/static/dashboard/assets/brand/bootstrap-solid.svg
+./dashboard/static/dashboard/assets/brand/bootstrap-outline.svg
+./AuthorizationManagement/static/img/icon-changelink.svg
+./AuthorizationManagement/static/img/icon-addlink.svg
+./AuthorizationManagement/static/img/tooltag-add.svg
+./AuthorizationManagement/static/img/icon-deletelink.svg
+./vfwheron/static/vfwheron/font-awesome-4.7.0/fonts/fontawesome-webfont.svg
+
+### swf files ###
+
+./dashboard/static/dashboard/assets/flash/ZeroClipboard.swf
+
+### ttf files ###
+
+./dashboard/static/dashboard/dist/fonts/glyphicons-halflings-regular.ttf
+./vfwheron/static/vfwheron/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf
+
+### txt files ###
+
+./code_docu/api-objects.txt
+./utilities/files.txt
+./wps_workflow/outfile.txt
+./wps_workflow/static/3rdpartylicenses.txt
+
+### ubuntu files ###
+
+./docker/Dockerfile.ubuntu
+
+### woff files ###
+
+./dashboard/static/dashboard/dist/fonts/glyphicons-halflings-regular.woff
+./AuthorizationManagement/static/AuthorizationManagement/fonts/Roboto-Light-webfont.woff
+./AuthorizationManagement/static/AuthorizationManagement/fonts/Roboto-Bold-webfont.woff
+./AuthorizationManagement/static/AuthorizationManagement/fonts/Roboto-Regular-webfont.woff
+./AuthorizationManagement/static/fonts/Roboto-Light-webfont.woff
+./AuthorizationManagement/static/fonts/Roboto-Bold-webfont.woff
+./AuthorizationManagement/static/fonts/Roboto-Regular-webfont.woff
+./vfwheron/static/vfwheron/font-awesome-4.7.0/fonts/fontawesome-webfont.woff
+
+### woff2 files ###
+
+./dashboard/static/dashboard/dist/fonts/glyphicons-halflings-regular.woff2
+./vfwheron/static/vfwheron/font-awesome-4.7.0/fonts/fontawesome-webfont.woff2
+
+### xml files ###
+
+./wps_workflow/testfiles/task37.xml
+./wps_workflow/testfiles/wpsDescribeProcesses.xml
+./wps_workflow/testfiles/wpsGetCapabilities.xml
+./wps_workflow/testfiles/task34.xml
+./wps_workflow/testfiles/getCapabilitiesFromEsdiHumboldt.xml
+./wps_workflow/testfiles/broken_wpsGetCapabilities.xml
+./vfwheron/point_style_example_sld.xml
+
+### yml files ###
+
+./.gitlab-ci.yml
+

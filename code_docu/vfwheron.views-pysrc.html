@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>vfwheron.views</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="vfwheron-module.html">Package&nbsp;vfwheron</a> ::
+        Module&nbsp;views
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="vfwheron.views-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="vfwheron.views-module.html">Module vfwheron.views</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">base64</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">json</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">re</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">urllib</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">io</tt> <tt class="py-keyword">import</tt> <tt class="py-name">StringIO</tt><tt class="py-op">,</tt> <tt class="py-name">BytesIO</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">db</tt> <tt class="py-keyword">import</tt> <tt class="py-name">connections</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">http</tt><tt class="py-op">.</tt><tt class="py-name">response</tt> <tt class="py-keyword">import</tt> <tt class="py-name">JsonResponse</tt><tt class="py-op">,</tt> <tt class="py-name">HttpResponse</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Module dashboard.views=dashboard.views-module.html,Module heron_monitor.views=heron_monitor.views-module.html,Module heron_upload.views=heron_upload.views-module.html,Module heron_visual.views=heron_visual.views-module.html,Module heron_wps.views=heron_wps.views-module.html,Module vfwheron.views=vfwheron.views-module.html,Module wps_workflow.views=wps_workflow.views-module.html"><a title="dashboard.views
+heron_monitor.views
+heron_upload.views
+heron_visual.views
+heron_wps.views
+vfwheron.views
+wps_workflow.views" class="py-name" href="#" onclick="return doclink('link-0', 'views', 'link-0');">views</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">View</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt id="link-1" class="py-name"><a title="dashboard.views
+heron_monitor.views
+heron_upload.views
+heron_visual.views
+heron_wps.views
+vfwheron.views
+wps_workflow.views" class="py-name" href="#" onclick="return doclink('link-1', 'views', 'link-0');">views</a></tt><tt class="py-op">.</tt><tt class="py-name">generic</tt> <tt class="py-keyword">import</tt> <tt class="py-name">TemplateView</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">contrib</tt><tt class="py-op">.</tt><tt class="py-name">auth</tt> <tt class="py-keyword">import</tt> <tt id="link-2" class="py-name" targets="Method vfwheron.views.LogoutView.logout()=vfwheron.views.LogoutView-class.html#logout"><a title="vfwheron.views.LogoutView.logout" class="py-name" href="#" onclick="return doclink('link-2', 'logout', 'link-2');">logout</a></tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">shortcuts</tt> <tt class="py-keyword">import</tt> <tt class="py-name">redirect</tt><tt class="py-op">,</tt> <tt class="py-name">render</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">core</tt><tt class="py-op">.</tt><tt class="py-name">cache</tt> <tt class="py-keyword">import</tt> <tt class="py-name">cache</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">conf</tt> <tt class="py-keyword">import</tt> <tt id="link-3" class="py-name" targets="Variable vfwheron.models.TblDataSource.settings=vfwheron.models.TblDataSource-class.html#settings"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-3', 'settings', 'link-3');">settings</a></tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">matplotlib</tt> <tt class="py-keyword">as</tt> <tt class="py-name">mpl</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-4" class="py-name" targets="Package heron=heron-module.html"><a title="heron" class="py-name" href="#" onclick="return doclink('link-4', 'heron', 'link-4');">heron</a></tt><tt class="py-op">.</tt><tt id="link-5" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-5', 'settings', 'link-3');">settings</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">LOCAL_GEOSERVER</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-6" class="py-name" targets="Package vfwheron=vfwheron-module.html"><a title="vfwheron" class="py-name" href="#" onclick="return doclink('link-6', 'vfwheron', 'link-6');">vfwheron</a></tt><tt class="py-op">.</tt><tt id="link-7" class="py-name" targets="Module vfwheron.geoserver_layer=vfwheron.geoserver_layer-module.html"><a title="vfwheron.geoserver_layer" class="py-name" href="#" onclick="return doclink('link-7', 'geoserver_layer', 'link-7');">geoserver_layer</a></tt> <tt class="py-keyword">import</tt> <tt id="link-8" class="py-name" targets="Function vfwheron.geoserver_layer.create_layer()=vfwheron.geoserver_layer-module.html#create_layer"><a title="vfwheron.geoserver_layer.create_layer" class="py-name" href="#" onclick="return doclink('link-8', 'create_layer', 'link-8');">create_layer</a></tt><tt class="py-op">,</tt> <tt id="link-9" class="py-name" targets="Function vfwheron.geoserver_layer.get_layer()=vfwheron.geoserver_layer-module.html#get_layer"><a title="vfwheron.geoserver_layer.get_layer" class="py-name" href="#" onclick="return doclink('link-9', 'get_layer', 'link-9');">get_layer</a></tt><tt class="py-op">,</tt> <tt id="link-10" class="py-name" targets="Function vfwheron.geoserver_layer.delete_layer()=vfwheron.geoserver_layer-module.html#delete_layer"><a title="vfwheron.geoserver_layer.delete_layer" class="py-name" href="#" onclick="return doclink('link-10', 'delete_layer', 'link-10');">delete_layer</a></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-11" class="py-name"><a title="vfwheron" class="py-name" href="#" onclick="return doclink('link-11', 'vfwheron', 'link-6');">vfwheron</a></tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Module vfwheron.previewplot=vfwheron.previewplot-module.html"><a title="vfwheron.previewplot" class="py-name" href="#" onclick="return doclink('link-12', 'previewplot', 'link-12');">previewplot</a></tt> <tt class="py-keyword">import</tt> <tt id="link-13" class="py-name" targets="Function vfwheron.previewplot.maelicke_plot()=vfwheron.previewplot-module.html#maelicke_plot"><a title="vfwheron.previewplot.maelicke_plot" class="py-name" href="#" onclick="return doclink('link-13', 'maelicke_plot', 'link-13');">maelicke_plot</a></tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-name">mpl</tt><tt class="py-op">.</tt><tt class="py-name">use</tt><tt class="py-op">(</tt><tt class="py-string">'Agg'</tt><tt class="py-op">)</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">matplotlib</tt><tt class="py-op">.</tt><tt class="py-name">backends</tt><tt class="py-op">.</tt><tt class="py-name">backend_agg</tt> <tt class="py-keyword">import</tt> <tt class="py-name">FigureCanvasAgg</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">matplotlib</tt> <tt class="py-keyword">import</tt> <tt class="py-name">pylab</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">matplotlib</tt><tt class="py-op">.</tt><tt class="py-name">dates</tt> <tt class="py-keyword">import</tt> <tt class="py-name">DateFormatter</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">matplotlib</tt><tt class="py-op">.</tt><tt class="py-name">figure</tt> <tt class="py-keyword">import</tt> <tt class="py-name">Figure</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Module vfwheron.query_functions=vfwheron.query_functions-module.html"><a title="vfwheron.query_functions" class="py-name" href="#" onclick="return doclink('link-14', 'query_functions', 'link-14');">query_functions</a></tt> <tt class="py-keyword">import</tt> <tt id="link-15" class="py-name" targets="Function vfwheron.query_functions.get_bbox_from_data()=vfwheron.query_functions-module.html#get_bbox_from_data"><a title="vfwheron.query_functions.get_bbox_from_data" class="py-name" href="#" onclick="return doclink('link-15', 'get_bbox_from_data', 'link-15');">get_bbox_from_data</a></tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">datetime</tt> <tt class="py-keyword">import</tt> <tt class="py-name">datetime</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Module vfwheron.filter=vfwheron.filter-module.html"><a title="vfwheron.filter" class="py-name" href="#" onclick="return doclink('link-16', 'filter', 'link-16');">filter</a></tt> <tt class="py-keyword">import</tt> <tt id="link-17" class="py-name" targets="Class vfwheron.filter.FilterMethods=vfwheron.filter.FilterMethods-class.html"><a title="vfwheron.filter.FilterMethods" class="py-name" href="#" onclick="return doclink('link-17', 'FilterMethods', 'link-17');">FilterMethods</a></tt><tt class="py-op">,</tt> <tt id="link-18" class="py-name" targets="Class vfwheron.filter.Menu=vfwheron.filter.Menu-class.html,Variable vfwheron.views.HomeView.Menu=vfwheron.views.HomeView-class.html#Menu"><a title="vfwheron.filter.Menu
+vfwheron.views.HomeView.Menu" class="py-name" href="#" onclick="return doclink('link-18', 'Menu', 'link-18');">Menu</a></tt><tt class="py-op">,</tt> <tt id="link-19" class="py-name" targets="Function vfwheron.filter.newbuild_id_list()=vfwheron.filter-module.html#newbuild_id_list"><a title="vfwheron.filter.newbuild_id_list" class="py-name" href="#" onclick="return doclink('link-19', 'newbuild_id_list', 'link-19');">newbuild_id_list</a></tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-20" class="py-name" targets="Module AuthorizationManagement.models=AuthorizationManagement.models-module.html,Module dashboard.models=dashboard.models-module.html,Module heron_upload.models=heron_upload.models-module.html,Module heron_wps.models=heron_wps.models-module.html,Module vfwheron.models=vfwheron.models-module.html,Module wps_workflow.models=wps_workflow.models-module.html"><a title="AuthorizationManagement.models
+dashboard.models
+heron_upload.models
+heron_wps.models
+vfwheron.models
+wps_workflow.models" class="py-name" href="#" onclick="return doclink('link-20', 'models', 'link-20');">models</a></tt> <tt class="py-keyword">import</tt> <tt id="link-21" class="py-name" targets="Class vfwheron.models.TblMeta=vfwheron.models.TblMeta-class.html"><a title="vfwheron.models.TblMeta" class="py-name" href="#" onclick="return doclink('link-21', 'TblMeta', 'link-21');">TblMeta</a></tt><tt class="py-op">,</tt> <tt id="link-22" class="py-name" targets="Class vfwheron.models.TblVariable=vfwheron.models.TblVariable-class.html"><a title="vfwheron.models.TblVariable" class="py-name" href="#" onclick="return doclink('link-22', 'TblVariable', 'link-22');">TblVariable</a></tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">logging</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-comment"># Create your views here.</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt id="link-23" class="py-name" targets="Variable vfwheron.geoserver_layer.logger=vfwheron.geoserver_layer-module.html#logger,Variable vfwheron.views.logger=vfwheron.views-module.html#logger"><a title="vfwheron.geoserver_layer.logger
+vfwheron.views.logger" class="py-name" href="#" onclick="return doclink('link-23', 'logger', 'link-23');">logger</a></tt> <tt class="py-op">=</tt> <tt class="py-name">logging</tt><tt class="py-op">.</tt><tt class="py-name">getLogger</tt><tt class="py-op">(</tt><tt class="py-name">__name__</tt><tt class="py-op">)</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"><tt class="py-comment"># from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-comment"># cookies &#226;&#128;&#147; cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line"><tt class="py-comment"># every time they open a browser.</tt> </tt>
+<a name="HomeView"></a><div id="HomeView-def"><a name="L46"></a><tt class="py-lineno"> 46</tt> <a class="py-toggle" href="#" id="HomeView-toggle" onclick="return toggle('HomeView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="vfwheron.views.HomeView-class.html">HomeView</a><tt class="py-op">(</tt><tt class="py-base-class">TemplateView</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HomeView-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="HomeView-expanded"><a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">    <tt id="link-24" class="py-name" targets="Variable heron_upload.views.HomeView.template_name=heron_upload.views.HomeView-class.html#template_name,Variable vfwheron.views.HomeView.template_name=vfwheron.views.HomeView-class.html#template_name,Variable wps_workflow.views.EditorView.template_name=wps_workflow.views.EditorView-class.html#template_name,Variable wps_workflow.views.OurLoginView.template_name=wps_workflow.views.OurLoginView-class.html#template_name,Variable wps_workflow.views.OurLogoutView.template_name=wps_workflow.views.OurLogoutView-class.html#template_name,Variable wps_workflow.views.SettingsView.template_name=wps_workflow.views.SettingsView-class.html#template_name,Variable wps_workflow.views.WorkflowsView.template_name=wps_workflow.views.WorkflowsView-class.html#template_name"><a title="heron_upload.views.HomeView.template_name
+vfwheron.views.HomeView.template_name
+wps_workflow.views.EditorView.template_name
+wps_workflow.views.OurLoginView.template_name
+wps_workflow.views.OurLogoutView.template_name
+wps_workflow.views.SettingsView.template_name
+wps_workflow.views.WorkflowsView.template_name" class="py-name" href="#" onclick="return doclink('link-24', 'template_name', 'link-24');">template_name</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'vfwheron/home.html'</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">    <tt id="link-25" class="py-name"><a title="vfwheron.filter.Menu
+vfwheron.views.HomeView.Menu" class="py-name" href="#" onclick="return doclink('link-25', 'Menu', 'link-18');">Menu</a></tt> <tt class="py-op">=</tt> <tt id="link-26" class="py-name"><a title="vfwheron.filter.Menu
+vfwheron.views.HomeView.Menu" class="py-name" href="#" onclick="return doclink('link-26', 'Menu', 'link-18');">Menu</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method vfwheron.filter.Menu.menu()=vfwheron.filter.Menu-class.html#menu"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-27', 'menu', 'link-27');">menu</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">    <tt id="link-28" class="py-name" targets="Variable vfwheron.views.HomeView.JSON_Menu=vfwheron.views.HomeView-class.html#JSON_Menu"><a title="vfwheron.views.HomeView.JSON_Menu" class="py-name" href="#" onclick="return doclink('link-28', 'JSON_Menu', 'link-28');">JSON_Menu</a></tt> <tt class="py-op">=</tt> <tt class="py-name">json</tt><tt class="py-op">.</tt><tt class="py-name">dumps</tt><tt class="py-op">(</tt><tt id="link-29" class="py-name"><a title="vfwheron.filter.Menu
+vfwheron.views.HomeView.Menu" class="py-name" href="#" onclick="return doclink('link-29', 'Menu', 'link-18');">Menu</a></tt><tt class="py-op">[</tt><tt class="py-string">'client'</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">    <tt class="py-comment"># JSON_Menu = Menu().json_menu()</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt id="link-30" class="py-name" targets="Variable vfwheron.views.HomeView.data_layer=vfwheron.views.HomeView-class.html#data_layer"><a title="vfwheron.views.HomeView.data_layer" class="py-name" href="#" onclick="return doclink('link-30', 'data_layer', 'link-30');">data_layer</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'default_layer'</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-31" class="py-name"><a title="vfwheron.geoserver_layer.get_layer" class="py-name" href="#" onclick="return doclink('link-31', 'get_layer', 'link-9');">get_layer</a></tt><tt class="py-op">(</tt><tt id="link-32" class="py-name"><a title="vfwheron.views.HomeView.data_layer" class="py-name" href="#" onclick="return doclink('link-32', 'data_layer', 'link-30');">data_layer</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">        <tt id="link-33" class="py-name"><a title="vfwheron.geoserver_layer.create_layer" class="py-name" href="#" onclick="return doclink('link-33', 'create_layer', 'link-8');">create_layer</a></tt><tt class="py-op">(</tt><tt id="link-34" class="py-name"><a title="vfwheron.views.HomeView.data_layer" class="py-name" href="#" onclick="return doclink('link-34', 'data_layer', 'link-30');">data_layer</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">    <tt class="py-comment"># else:</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">    <tt class="py-comment"># # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">    <tt class="py-comment">#     delete_layer(data_layer)</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">    <tt class="py-comment">#     create_layer(data_layer)</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">    <tt class="py-comment"># Put here everything you need at startup and for refresh</tt> </tt>
+<a name="HomeView.get_context_data"></a><div id="HomeView.get_context_data-def"><a name="L60"></a><tt class="py-lineno"> 60</tt> <a class="py-toggle" href="#" id="HomeView.get_context_data-toggle" onclick="return toggle('HomeView.get_context_data');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.HomeView-class.html#get_context_data">get_context_data</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">kwargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HomeView.get_context_data-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="HomeView.get_context_data-expanded"><a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">        <tt class="py-name">data_style</tt> <tt class="py-op">=</tt> <tt class="py-string">'default'</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-comment"># data_style = 'Light Blue Circle'</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">            <tt class="py-name">dataExt</tt> <tt class="py-op">=</tt> <tt id="link-35" class="py-name"><a title="vfwheron.query_functions.get_bbox_from_data" class="py-name" href="#" onclick="return doclink('link-35', 'get_bbox_from_data', 'link-15');">get_bbox_from_data</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">            <tt id="link-36" class="py-name"><a title="vfwheron.geoserver_layer.logger
+vfwheron.views.logger" class="py-name" href="#" onclick="return doclink('link-36', 'logger', 'link-23');">logger</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Data Extend cannot be loaded in views.py. Using fixed values.'</tt><tt class="py-op">)</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">            <tt class="py-name">dataExt</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-number">645336.034469495</tt><tt class="py-op">,</tt> <tt class="py-number">6395474.75106861</tt><tt class="py-op">,</tt> <tt class="py-number">666358.204722283</tt><tt class="py-op">,</tt> <tt class="py-number">6416613.20733359</tt><tt class="py-op">]</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">{</tt><tt class="py-string">'dataExt'</tt><tt class="py-op">:</tt> <tt class="py-name">dataExt</tt><tt class="py-op">,</tt> <tt class="py-string">'data_style'</tt><tt class="py-op">:</tt> <tt class="py-name">data_style</tt><tt class="py-op">,</tt> <tt class="py-string">'Filter_Menu'</tt><tt class="py-op">:</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name"><a title="vfwheron.views.HomeView.JSON_Menu" class="py-name" href="#" onclick="return doclink('link-37', 'JSON_Menu', 'link-28');">JSON_Menu</a></tt><tt class="py-op">,</tt> <tt class="py-string">'data_layer'</tt><tt class="py-op">:</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name"><a title="vfwheron.views.HomeView.data_layer" class="py-name" href="#" onclick="return doclink('link-38', 'data_layer', 'link-30');">data_layer</a></tt><tt class="py-op">}</tt> </tt>
+</div></div><a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line"> </tt>
+<a name="menuView"></a><div id="menuView-def"><a name="L73"></a><tt class="py-lineno"> 73</tt> <a class="py-toggle" href="#" id="menuView-toggle" onclick="return toggle('menuView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="vfwheron.views.menuView-class.html">menuView</a><tt class="py-op">(</tt><tt class="py-base-class">TemplateView</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="menuView-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="menuView-expanded"><a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">    <tt class="py-comment"># user = 'default'</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"> </tt>
+<a name="menuView.get"></a><div id="menuView.get-def"><a name="L76"></a><tt class="py-lineno"> 76</tt> <a class="py-toggle" href="#" id="menuView.get-toggle" onclick="return toggle('menuView.get');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.menuView-class.html#get">get</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="menuView.get-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="menuView.get-expanded"><a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">        <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">session</tt><tt class="py-op">.</tt><tt class="py-name">set_expiry</tt><tt class="py-op">(</tt><tt class="py-number">20</tt><tt class="py-op">)</tt>  <tt class="py-comment"># expire after 20 seconds</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">        <tt class="py-comment"># bring last used menu to session</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">        <tt id="link-39" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-39', 'menu', 'link-27');">menu</a></tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-40" class="py-name" targets="Method heron_upload.views.HomeView.get()=heron_upload.views.HomeView-class.html#get,Method vfwheron.views.GeoserverView.get()=vfwheron.views.GeoserverView-class.html#get,Method vfwheron.views.HelpView.get()=vfwheron.views.HelpView-class.html#get,Method vfwheron.views.menuView.get()=vfwheron.views.menuView-class.html#get,Static Method wps_workflow.views.ProcessView.get()=wps_workflow.views.ProcessView-class.html#get,Static Method wps_workflow.views.UserView.get()=wps_workflow.views.UserView-class.html#get,Static Method wps_workflow.views.WPSView.get()=wps_workflow.views.WPSView-class.html#get,Static Method wps_workflow.views.WorkflowView.get()=wps_workflow.views.WorkflowView-class.html#get"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-40', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'menu'</tt><tt class="py-op">)</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-41" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-41', 'menu', 'link-27');">menu</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">            <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">session</tt><tt class="py-op">[</tt><tt class="py-string">'menu'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-42" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-42', 'menu', 'link-27');">menu</a></tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">            <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">session</tt><tt class="py-op">.</tt><tt class="py-name">modified</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">            <tt id="link-43" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-43', 'menu', 'link-27');">menu</a></tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">session</tt><tt class="py-op">.</tt><tt id="link-44" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-44', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'menu'</tt><tt class="py-op">)</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line"> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-comment"># TODO: is this still used? Check how map.js works!</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-comment"># save your selections in cache</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-name">selection</tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-45" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-45', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'selection'</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-name">submenu</tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-46" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-46', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'submenu'</tt><tt class="py-op">)</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">selection</tt><tt class="py-op">:</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-47', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt id="link-48" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-48', 'menu', 'link-27');">menu</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">                <tt class="py-name">edit_cache</tt> <tt class="py-op">=</tt> <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt id="link-49" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-49', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt id="link-50" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-50', 'menu', 'link-27');">menu</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">selection</tt> <tt class="py-keyword">in</tt> <tt class="py-name">edit_cache</tt><tt class="py-op">[</tt><tt class="py-name">submenu</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">                    <tt class="py-name">edit_cache</tt><tt class="py-op">[</tt><tt class="py-name">submenu</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">remove</tt><tt class="py-op">(</tt><tt class="py-name">selection</tt><tt class="py-op">)</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">                    <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt class="py-name">set</tt><tt class="py-op">(</tt><tt id="link-51" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-51', 'menu', 'link-27');">menu</a></tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-name">submenu</tt><tt class="py-op">:</tt> <tt class="py-name">edit_cache</tt><tt class="py-op">[</tt><tt class="py-name">submenu</tt><tt class="py-op">]</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">                    <tt class="py-name">edit_cache</tt><tt class="py-op">[</tt><tt class="py-name">submenu</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">selection</tt><tt class="py-op">)</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">                    <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt class="py-name">set</tt><tt class="py-op">(</tt><tt id="link-52" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-52', 'menu', 'link-27');">menu</a></tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-name">submenu</tt><tt class="py-op">:</tt> <tt class="py-name">edit_cache</tt><tt class="py-op">[</tt><tt class="py-name">submenu</tt><tt class="py-op">]</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">                <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt class="py-name">set</tt><tt class="py-op">(</tt><tt id="link-53" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-53', 'menu', 'link-27');">menu</a></tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-name">submenu</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-name">selection</tt><tt class="py-op">]</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line"> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">        <tt class="py-name">selection_list</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt id="link-54" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-54', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt id="link-55" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-55', 'menu', 'link-27');">menu</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt id="link-56" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-56', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt id="link-57" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-57', 'menu', 'link-27');">menu</a></tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">values</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">                <tt class="py-name">selection_list</tt> <tt class="py-op">=</tt> <tt class="py-name">list</tt><tt class="py-op">(</tt><tt class="py-name">cache</tt><tt class="py-op">.</tt><tt id="link-58" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-58', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt id="link-59" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-59', 'menu', 'link-27');">menu</a></tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">values</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">                <tt class="py-name">selection_list</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">item</tt> <tt class="py-keyword">for</tt> <tt class="py-name">sublist</tt> <tt class="py-keyword">in</tt> <tt class="py-name">selection_list</tt> <tt class="py-keyword">for</tt> <tt class="py-name">item</tt> <tt class="py-keyword">in</tt> <tt class="py-name">sublist</tt><tt class="py-op">]</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">                <tt class="py-name">cache</tt><tt class="py-op">.</tt><tt class="py-name">set</tt><tt class="py-op">(</tt><tt id="link-60" class="py-name"><a title="vfwheron.filter.Menu.menu" class="py-name" href="#" onclick="return doclink('link-60', 'menu', 'link-27');">menu</a></tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">        <tt class="py-comment"># build_selection is called if the following request.GET.get('workspaceData') is true</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">        <tt class="py-keyword">def</tt> <tt class="py-def-name">build_selection</tt><tt class="py-op">(</tt><tt class="py-param">work_dataset</tt><tt class="py-op">,</tt> <tt class="py-param">dataset_dict</tt><tt class="py-op">=</tt><tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">,</tt> <tt class="py-param">min_time</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-param">max_time</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">            <tt class="py-name">data_definition</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">            <tt class="py-name">work_query</tt> <tt class="py-op">=</tt> <tt class="py-string">'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = '</tt> <tt class="py-op">+</tt> \ </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                         <tt class="py-name">work_dataset</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">min_time</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">                <tt class="py-name">work_query</tt> <tt class="py-op">=</tt> <tt class="py-name">work_query</tt> <tt class="py-op">+</tt> <tt class="py-string">'AND tbl_data.tstamp &gt; '</tt> <tt class="py-op">+</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">min_time</tt><tt class="py-op">)</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">max_time</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">                <tt class="py-name">work_query</tt> <tt class="py-op">=</tt> <tt class="py-name">work_query</tt> <tt class="py-op">+</tt> <tt class="py-string">'AND tbl_data.tstamp &lt; '</tt> <tt class="py-op">+</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">max_time</tt><tt class="py-op">)</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">            <tt class="py-name">definition_query</tt> <tt class="py-op">=</tt> <tt id="link-61" class="py-name"><a title="vfwheron.models.TblMeta" class="py-name" href="#" onclick="return doclink('link-61', 'TblMeta', 'link-21');">TblMeta</a></tt><tt class="py-op">.</tt><tt class="py-name">objects</tt><tt class="py-op">.</tt><tt class="py-name">values</tt><tt class="py-op">(</tt><tt class="py-string">'variable__variable_name'</tt><tt class="py-op">,</tt> <tt class="py-string">'variable__variable_abbrev'</tt><tt class="py-op">,</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                                                      <tt class="py-string">'variable__unit__unit_abbrev'</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-62" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-62', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-name">pk</tt><tt class="py-op">=</tt><tt class="py-name">work_dataset</tt><tt class="py-op">)</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">            <tt class="py-name">data_definition</tt><tt class="py-op">[</tt><tt class="py-string">'name'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">definition_query</tt><tt class="py-op">[</tt><tt class="py-string">'variable__variable_name'</tt><tt class="py-op">]</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">            <tt class="py-name">data_definition</tt><tt class="py-op">[</tt><tt class="py-string">'abbr'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">definition_query</tt><tt class="py-op">[</tt><tt class="py-string">'variable__variable_abbrev'</tt><tt class="py-op">]</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">            <tt class="py-name">data_definition</tt><tt class="py-op">[</tt><tt class="py-string">'unit'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">definition_query</tt><tt class="py-op">[</tt><tt class="py-string">'variable__unit__unit_abbrev'</tt><tt class="py-op">]</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">            <tt class="py-comment"># if 'work_dataset_dict' in request.session:</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">dataset_dict</tt> <tt class="py-op">!=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">:</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">                <tt class="py-comment"># TODO: Need timestamp in name to see if different selection</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">                <tt class="py-name">dataset_dict</tt><tt class="py-op">.</tt><tt class="py-name">update</tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-name">work_dataset</tt><tt class="py-op">:</tt> <tt class="py-name">data_definition</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">                <tt class="py-name">dataset_dict</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-name">work_dataset</tt><tt class="py-op">:</tt> <tt class="py-name">data_definition</tt><tt class="py-op">}</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">dataset_dict</tt> </tt>
+</div><a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line"> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">        <tt class="py-name">work_dataset</tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-63" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-63', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'workspaceData'</tt><tt class="py-op">)</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">        <tt class="py-name">min_time</tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-64" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-64', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'minTime'</tt><tt class="py-op">)</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">        <tt class="py-name">max_time</tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-65" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-65', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'maxTime'</tt><tt class="py-op">)</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">work_dataset</tt><tt class="py-op">:</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">            <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">            <tt class="py-comment"># prepare work_dataset differently for list and single value to use in build_selection</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">            <tt class="py-name">conv_work_dataset</tt> <tt class="py-op">=</tt> <tt class="py-name">json</tt><tt class="py-op">.</tt><tt class="py-name">loads</tt><tt class="py-op">(</tt><tt class="py-name">work_dataset</tt><tt class="py-op">)</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt id="link-66" class="py-name" targets="Variable AuthorizationManagement.models.AccessRequest.type=AuthorizationManagement.models.AccessRequest-class.html#type,Variable AuthorizationManagement.models.DeletionRequest.type=AuthorizationManagement.models.DeletionRequest-class.html#type,Variable AuthorizationManagement.models.Request.type=AuthorizationManagement.models.Request-class.html#type,Variable AuthorizationManagement.models.Resource.type=AuthorizationManagement.models.Resource-class.html#type"><a title="AuthorizationManagement.models.AccessRequest.type
+AuthorizationManagement.models.DeletionRequest.type
+AuthorizationManagement.models.Request.type
+AuthorizationManagement.models.Resource.type" class="py-name" href="#" onclick="return doclink('link-66', 'type', 'link-66');">type</a></tt><tt class="py-op">(</tt><tt class="py-name">conv_work_dataset</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-name">list</tt><tt class="py-op">:</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">                <tt class="py-keyword">for</tt> <tt class="py-name">datasetId</tt> <tt class="py-keyword">in</tt> <tt class="py-name">conv_work_dataset</tt><tt class="py-op">:</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">                    <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">build_selection</tt><tt class="py-op">(</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">datasetId</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">result</tt><tt class="py-op">,</tt> <tt class="py-name">min_time</tt><tt class="py-op">,</tt> <tt class="py-name">max_time</tt><tt class="py-op">)</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">            <tt class="py-keyword">elif</tt> <tt id="link-67" class="py-name"><a title="AuthorizationManagement.models.AccessRequest.type
+AuthorizationManagement.models.DeletionRequest.type
+AuthorizationManagement.models.Request.type
+AuthorizationManagement.models.Resource.type" class="py-name" href="#" onclick="return doclink('link-67', 'type', 'link-66');">type</a></tt><tt class="py-op">(</tt><tt class="py-name">conv_work_dataset</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-name">int</tt><tt class="py-op">:</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">                <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">build_selection</tt><tt class="py-op">(</tt><tt class="py-name">work_dataset</tt><tt class="py-op">,</tt> <tt class="py-name">min_time</tt><tt class="py-op">,</tt> <tt class="py-name">max_time</tt><tt class="py-op">)</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">JsonResponse</tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-string">'workspaceData'</tt><tt class="py-op">:</tt> <tt class="py-name">result</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line"> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-string">'preview'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">:</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">            <tt class="py-comment"># plot png the m&#195;&#164;licke way:</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">            <tt class="py-name">imgtag</tt> <tt class="py-op">=</tt> <tt id="link-68" class="py-name"><a title="vfwheron.previewplot.maelicke_plot" class="py-name" href="#" onclick="return doclink('link-68', 'maelicke_plot', 'link-13');">maelicke_plot</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-69" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-69', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'preview'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">JsonResponse</tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-string">'get'</tt><tt class="py-op">:</tt> <tt class="py-name">imgtag</tt><tt class="py-op">}</tt><tt class="py-op">)</tt>  <tt class="py-comment"># requested from vfw.js show_preview</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">        <tt class="py-comment"># if request.GET.get('filter_selection'):</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">        <tt class="py-name">filter_selection</tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-70" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-70', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'filter_selection'</tt><tt class="py-op">)</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">filter_selection</tt><tt class="py-op">:</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">            <tt class="py-name">filter_menu</tt> <tt class="py-op">=</tt> <tt id="link-71" class="py-name"><a title="vfwheron.filter.FilterMethods" class="py-name" href="#" onclick="return doclink('link-71', 'FilterMethods', 'link-17');">FilterMethods</a></tt><tt class="py-op">.</tt><tt id="link-72" class="py-name" targets="Static Method vfwheron.filter.FilterMethods.selection_counts()=vfwheron.filter.FilterMethods-class.html#selection_counts"><a title="vfwheron.filter.FilterMethods.selection_counts" class="py-name" href="#" onclick="return doclink('link-72', 'selection_counts', 'link-72');">selection_counts</a></tt><tt class="py-op">(</tt><tt id="link-73" class="py-name" targets="Class heron_upload.views.HomeView=heron_upload.views.HomeView-class.html,Class vfwheron.views.HomeView=vfwheron.views.HomeView-class.html"><a title="heron_upload.views.HomeView
+vfwheron.views.HomeView" class="py-name" href="#" onclick="return doclink('link-73', 'HomeView', 'link-73');">HomeView</a></tt><tt class="py-op">.</tt><tt id="link-74" class="py-name"><a title="vfwheron.filter.Menu
+vfwheron.views.HomeView.Menu" class="py-name" href="#" onclick="return doclink('link-74', 'Menu', 'link-18');">Menu</a></tt><tt class="py-op">[</tt><tt class="py-string">'server'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">json</tt><tt class="py-op">.</tt><tt class="py-name">loads</tt><tt class="py-op">(</tt><tt class="py-name">filter_selection</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">JsonResponse</tt><tt class="py-op">(</tt><tt class="py-name">filter_menu</tt><tt class="py-op">)</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">        <tt class="py-name">filter_selection_map</tt> <tt class="py-op">=</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">GET</tt><tt class="py-op">.</tt><tt id="link-75" class="py-name"><a title="heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-75', 'get', 'link-40');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'filter_selection_map'</tt><tt class="py-op">)</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">filter_selection_map</tt><tt class="py-op">:</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">            <tt class="py-name">meta_ids</tt> <tt class="py-op">=</tt> <tt id="link-76" class="py-name"><a title="vfwheron.filter.newbuild_id_list" class="py-name" href="#" onclick="return doclink('link-76', 'newbuild_id_list', 'link-19');">newbuild_id_list</a></tt><tt class="py-op">(</tt><tt id="link-77" class="py-name"><a title="heron_upload.views.HomeView
+vfwheron.views.HomeView" class="py-name" href="#" onclick="return doclink('link-77', 'HomeView', 'link-73');">HomeView</a></tt><tt class="py-op">.</tt><tt id="link-78" class="py-name"><a title="vfwheron.filter.Menu
+vfwheron.views.HomeView.Menu" class="py-name" href="#" onclick="return doclink('link-78', 'Menu', 'link-18');">Menu</a></tt><tt class="py-op">[</tt><tt class="py-string">'server'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">json</tt><tt class="py-op">.</tt><tt class="py-name">loads</tt><tt class="py-op">(</tt><tt class="py-name">filter_selection_map</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">JsonResponse</tt><tt class="py-op">(</tt><tt class="py-name">meta_ids</tt><tt class="py-op">)</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line"> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">JsonResponse</tt><tt class="py-op">(</tt><tt class="py-op">{</tt><tt class="py-string">'Error'</tt><tt class="py-op">:</tt> <tt class="py-string">'Something is missing. Check views.py'</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"> </tt>
+<a name="LoginView"></a><div id="LoginView-def"><a name="L169"></a><tt class="py-lineno">169</tt> <a class="py-toggle" href="#" id="LoginView-toggle" onclick="return toggle('LoginView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="vfwheron.views.LoginView-class.html">LoginView</a><tt class="py-op">(</tt><tt class="py-base-class">View</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LoginView-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="LoginView-expanded"><a name="LoginView.post"></a><div id="LoginView.post-def"><a name="L170"></a><tt class="py-lineno">170</tt> <a class="py-toggle" href="#" id="LoginView.post-toggle" onclick="return toggle('LoginView.post');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.LoginView-class.html#post">post</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LoginView.post-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="LoginView.post-expanded"><a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line">        <tt id="link-79" class="py-name"><a title="vfwheron.geoserver_layer.logger
+vfwheron.views.logger" class="py-name" href="#" onclick="return doclink('link-79', 'logger', 'link-23');">logger</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">'Redirect to vfwheron/rsp/login/init...'</tt><tt class="py-op">)</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">redirect</tt><tt class="py-op">(</tt><tt class="py-string">'vfwheron:watts_rsp:login_init'</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line"> </tt>
+<a name="LoginView.dispatch"></a><div id="LoginView.dispatch-def"><a name="L174"></a><tt class="py-lineno">174</tt> <a class="py-toggle" href="#" id="LoginView.dispatch-toggle" onclick="return toggle('LoginView.dispatch');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.LoginView-class.html#dispatch">dispatch</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">kwargs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LoginView.dispatch-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="LoginView.dispatch-expanded"><a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt id="link-80" class="py-name" targets="Variable vfwheron.models.LtProject.user=vfwheron.models.LtProject-class.html#user,Variable wps_workflow.models.Session.user=wps_workflow.models.Session-class.html#user"><a title="vfwheron.models.LtProject.user
+wps_workflow.models.Session.user" class="py-name" href="#" onclick="return doclink('link-80', 'user', 'link-80');">user</a></tt><tt class="py-op">.</tt><tt class="py-name">is_authenticated</tt><tt class="py-op">:</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">            <tt id="link-81" class="py-name"><a title="vfwheron.geoserver_layer.logger
+vfwheron.views.logger" class="py-name" href="#" onclick="return doclink('link-81', 'logger', 'link-23');">logger</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">'The user is not authenticated!'</tt><tt class="py-op">)</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">            <tt id="link-82" class="py-name"><a title="vfwheron.geoserver_layer.logger
+vfwheron.views.logger" class="py-name" href="#" onclick="return doclink('link-82', 'logger', 'link-23');">logger</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">'{} logged in as'</tt><tt class="py-op">.</tt><tt id="link-83" class="py-name" targets="Variable wps_workflow.models.Artefact.format=wps_workflow.models.Artefact-class.html#format,Variable wps_workflow.models.InputOutput.format=wps_workflow.models.InputOutput-class.html#format"><a title="wps_workflow.models.Artefact.format
+wps_workflow.models.InputOutput.format" class="py-name" href="#" onclick="return doclink('link-83', 'format', 'link-83');">format</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt id="link-84" class="py-name"><a title="vfwheron.models.LtProject.user
+wps_workflow.models.Session.user" class="py-name" href="#" onclick="return doclink('link-84', 'user', 'link-80');">user</a></tt><tt class="py-op">.</tt><tt id="link-85" class="py-name" targets="Variable heron_wps.models.WebProcessingService.username=heron_wps.models.WebProcessingService-class.html#username"><a title="heron_wps.models.WebProcessingService.username" class="py-name" href="#" onclick="return doclink('link-85', 'username', 'link-85');">username</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line"> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">super</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-86" class="py-name" targets="Method vfwheron.views.LoginView.dispatch()=vfwheron.views.LoginView-class.html#dispatch,Method wps_workflow.views.OurLoginView.dispatch()=wps_workflow.views.OurLoginView-class.html#dispatch,Method wps_workflow.views.OurLogoutView.dispatch()=wps_workflow.views.OurLogoutView-class.html#dispatch,Method wps_workflow.views.ProcessView.dispatch()=wps_workflow.views.ProcessView-class.html#dispatch,Method wps_workflow.views.WPSView.dispatch()=wps_workflow.views.WPSView-class.html#dispatch,Method wps_workflow.views.WorkflowView.dispatch()=wps_workflow.views.WorkflowView-class.html#dispatch"><a title="vfwheron.views.LoginView.dispatch
+wps_workflow.views.OurLoginView.dispatch
+wps_workflow.views.OurLogoutView.dispatch
+wps_workflow.views.ProcessView.dispatch
+wps_workflow.views.WPSView.dispatch
+wps_workflow.views.WorkflowView.dispatch" class="py-name" href="#" onclick="return doclink('link-86', 'dispatch', 'link-86');">dispatch</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-name">args</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-name">kwargs</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line"> </tt>
+<a name="LogoutView"></a><div id="LogoutView-def"><a name="L183"></a><tt class="py-lineno">183</tt> <a class="py-toggle" href="#" id="LogoutView-toggle" onclick="return toggle('LogoutView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="vfwheron.views.LogoutView-class.html">LogoutView</a><tt class="py-op">(</tt><tt class="py-base-class">View</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LogoutView-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="LogoutView-expanded"><a name="LogoutView.logout"></a><div id="LogoutView.logout-def"><a name="L184"></a><tt class="py-lineno">184</tt> <a class="py-toggle" href="#" id="LogoutView.logout-toggle" onclick="return toggle('LogoutView.logout');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.LogoutView-class.html#logout">logout</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LogoutView.logout-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="LogoutView.logout-expanded"><a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">        <tt id="link-87" class="py-name"><a title="vfwheron.geoserver_layer.logger
+vfwheron.views.logger" class="py-name" href="#" onclick="return doclink('link-87', 'logger', 'link-23');">logger</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">'{} logged out'</tt><tt class="py-op">.</tt><tt id="link-88" class="py-name"><a title="wps_workflow.models.Artefact.format
+wps_workflow.models.InputOutput.format" class="py-name" href="#" onclick="return doclink('link-88', 'format', 'link-83');">format</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt id="link-89" class="py-name"><a title="vfwheron.models.LtProject.user
+wps_workflow.models.Session.user" class="py-name" href="#" onclick="return doclink('link-89', 'user', 'link-80');">user</a></tt><tt class="py-op">.</tt><tt id="link-90" class="py-name"><a title="heron_wps.models.WebProcessingService.username" class="py-name" href="#" onclick="return doclink('link-90', 'username', 'link-85');">username</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">        <tt id="link-91" class="py-name"><a title="vfwheron.views.LogoutView.logout" class="py-name" href="#" onclick="return doclink('link-91', 'logout', 'link-2');">logout</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line"> </tt>
+<a name="LogoutView.post"></a><div id="LogoutView.post-def"><a name="L188"></a><tt class="py-lineno">188</tt> <a class="py-toggle" href="#" id="LogoutView.post-toggle" onclick="return toggle('LogoutView.post');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.LogoutView-class.html#post">post</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="LogoutView.post-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="LogoutView.post-expanded"><a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-92" class="py-name"><a title="vfwheron.views.LogoutView.logout" class="py-name" href="#" onclick="return doclink('link-92', 'logout', 'link-2');">logout</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">)</tt> </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">redirect</tt><tt class="py-op">(</tt><tt class="py-string">'vfwheron:home'</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line"> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line"> </tt>
+<a name="HelpView"></a><div id="HelpView-def"><a name="L193"></a><tt class="py-lineno">193</tt> <a class="py-toggle" href="#" id="HelpView-toggle" onclick="return toggle('HelpView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="vfwheron.views.HelpView-class.html">HelpView</a><tt class="py-op">(</tt><tt class="py-base-class">TemplateView</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HelpView-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="HelpView-expanded"><a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">    <tt class="py-comment">#     template_name = 'vfwheron/help.html'</tt> </tt>
+<a name="HelpView.get"></a><div id="HelpView.get-def"><a name="L195"></a><tt class="py-lineno">195</tt> <a class="py-toggle" href="#" id="HelpView.get-toggle" onclick="return toggle('HelpView.get');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.HelpView-class.html#get">get</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HelpView.get-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="HelpView.get-expanded"><a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">        <tt class="py-name">f</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-93" class="py-name" targets="Variable vfwheron.models.LtDomain.path=vfwheron.models.LtDomain-class.html#path,Variable vfwheron.models.LtLicense.path=vfwheron.models.LtLicense-class.html#path,Variable vfwheron.models.LtLocation.path=vfwheron.models.LtLocation-class.html#path,Variable vfwheron.models.LtProject.path=vfwheron.models.LtProject-class.html#path,Variable vfwheron.models.LtQuality.path=vfwheron.models.LtQuality-class.html#path,Variable vfwheron.models.LtSite.path=vfwheron.models.LtSite-class.html#path,Variable vfwheron.models.LtSoil.path=vfwheron.models.LtSoil-class.html#path,Variable vfwheron.models.LtUser.path=vfwheron.models.LtUser-class.html#path,Variable vfwheron.models.TblMeta.path=vfwheron.models.TblMeta-class.html#path,Variable vfwheron.models.TblSensor.path=vfwheron.models.TblSensor-class.html#path,Variable vfwheron.models.TblVariable.path=vfwheron.models.TblVariable-class.html#path"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-93', 'path', 'link-93');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-94" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-94', 'settings', 'link-3');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">BASE_DIR</tt><tt class="py-op">,</tt> <tt class="py-string">'USERHELP.md'</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-string">'r'</tt><tt class="py-op">)</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">        <tt class="py-name">context</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">        <tt class="py-name">i</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">line</tt> <tt class="py-keyword">in</tt> <tt class="py-name">f</tt><tt class="py-op">:</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">            <tt class="py-name">context</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">line</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">            <tt class="py-name">i</tt> <tt class="py-op">+=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">        <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">render</tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">,</tt> <tt class="py-string">'vfwheron/help.html'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-string">'context'</tt><tt class="py-op">:</tt> <tt class="py-name">context</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line"> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line"> </tt>
+<a name="GeoserverView"></a><div id="GeoserverView-def"><a name="L206"></a><tt class="py-lineno">206</tt> <a class="py-toggle" href="#" id="GeoserverView-toggle" onclick="return toggle('GeoserverView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="vfwheron.views.GeoserverView-class.html">GeoserverView</a><tt class="py-op">(</tt><tt class="py-base-class">View</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GeoserverView-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="GeoserverView-expanded"><a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line"> </tt>
+<a name="GeoserverView.get"></a><div id="GeoserverView.get-def"><a name="L208"></a><tt class="py-lineno">208</tt> <a class="py-toggle" href="#" id="GeoserverView.get-toggle" onclick="return toggle('GeoserverView.get');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="vfwheron.views.GeoserverView-class.html#get">get</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">,</tt> <tt class="py-param">service</tt><tt class="py-op">,</tt> <tt class="py-param">layer</tt><tt class="py-op">,</tt> <tt class="py-param">bbox</tt><tt class="py-op">,</tt> <tt class="py-param">srid</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GeoserverView.get-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="GeoserverView.get-expanded"><a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line">        <tt class="py-name">wfsLayerName</tt> <tt class="py-op">=</tt> <tt class="py-string">'new_ID_as_identifier_update'</tt> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line">        <tt class="py-name">wfsLayerName</tt> <tt class="py-op">=</tt> <tt class="py-name">layer</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line">        <tt class="py-name">workSpaceName</tt> <tt class="py-op">=</tt> <tt class="py-string">'CAOS_update'</tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line">        <tt class="py-name">url</tt> <tt class="py-op">=</tt> <tt class="py-name">LOCAL_GEOSERVER</tt> <tt class="py-op">+</tt> <tt class="py-string">'/'</tt> <tt class="py-op">+</tt> <tt class="py-name">workSpaceName</tt> <tt class="py-op">+</tt> <tt class="py-string">'/ows?service='</tt> <tt class="py-op">+</tt> <tt id="link-95" class="py-name" targets="Function heron_wps.views.service()=heron_wps.views-module.html#service"><a title="heron_wps.views.service" class="py-name" href="#" onclick="return doclink('link-95', 'service', 'link-95');">service</a></tt> <tt class="py-op">+</tt> \ </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line">              <tt class="py-string">'&amp;version=1.0.0&amp;request=GetFeature&amp;typeName='</tt> <tt class="py-op">+</tt> <tt class="py-name">workSpaceName</tt> <tt class="py-op">+</tt> <tt class="py-string">':'</tt> <tt class="py-op">+</tt> <tt class="py-name">wfsLayerName</tt> <tt class="py-op">+</tt> \ </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line">              <tt class="py-string">'&amp;outputFormat=application%2Fjson&amp;srsname=EPSG:'</tt> <tt class="py-op">+</tt> <tt id="link-96" class="py-name" targets="Variable vfwheron.models.LtLocation.srid=vfwheron.models.LtLocation-class.html#srid,Variable vfwheron.models.SpatialRefSys.srid=vfwheron.models.SpatialRefSys-class.html#srid"><a title="vfwheron.models.LtLocation.srid
+vfwheron.models.SpatialRefSys.srid" class="py-name" href="#" onclick="return doclink('link-96', 'srid', 'link-96');">srid</a></tt> <tt class="py-op">+</tt> <tt class="py-string">'&amp;bbox='</tt> <tt class="py-op">+</tt> <tt class="py-name">bbox</tt> <tt class="py-op">+</tt> <tt class="py-string">',EPSG:'</tt> <tt class="py-op">+</tt> <tt id="link-97" class="py-name"><a title="vfwheron.models.LtLocation.srid
+vfwheron.models.SpatialRefSys.srid" class="py-name" href="#" onclick="return doclink('link-97', 'srid', 'link-96');">srid</a></tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line">        <tt class="py-name">request</tt> <tt class="py-op">=</tt> <tt class="py-name">urllib</tt><tt class="py-op">.</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt id="link-98" class="py-name" targets="Class AuthorizationManagement.models.Request=AuthorizationManagement.models.Request-class.html"><a title="AuthorizationManagement.models.Request" class="py-name" href="#" onclick="return doclink('link-98', 'Request', 'link-98');">Request</a></tt><tt class="py-op">(</tt><tt class="py-name">url</tt><tt class="py-op">)</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line">        <tt class="py-name">response</tt> <tt class="py-op">=</tt> <tt class="py-name">urllib</tt><tt class="py-op">.</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">urlopen</tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">)</tt> </tt>
+<a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">HttpResponse</tt><tt class="py-op">(</tt><tt class="py-name">response</tt><tt class="py-op">.</tt><tt class="py-name">read</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">decode</tt><tt class="py-op">(</tt><tt class="py-string">'utf-8'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun  6 09:32:22 2018
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

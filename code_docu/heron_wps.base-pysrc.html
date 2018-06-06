@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>heron_wps.base</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="heron_wps-module.html">Package&nbsp;heron_wps</a> ::
+        Module&nbsp;base
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="heron_wps.base-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="heron_wps.base-module.html">Module heron_wps.base</a></h1>
+<pre class="py-src">
+<a name="WpsService"></a><div id="WpsService-def"><a name="L1"></a><tt class="py-lineno"> 1</tt> <a class="py-toggle" href="#" id="WpsService-toggle" onclick="return toggle('WpsService');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="heron_wps.base.WpsService-class.html">WpsService</a><tt class="py-op">:</tt> </tt>
+</div><div id="WpsService-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="WpsService-expanded"><a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-docstring">    Used to define dataset services for apps.</tt> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"> </tt>
+<a name="WpsService.__init__"></a><div id="WpsService.__init__-def"><a name="L6"></a><tt class="py-lineno"> 6</tt> <a class="py-toggle" href="#" id="WpsService.__init__-toggle" onclick="return toggle('WpsService.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="heron_wps.base.WpsService-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">,</tt> <tt class="py-param">endpoint</tt><tt class="py-op">,</tt> <tt class="py-param">username</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">password</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="WpsService.__init__-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="WpsService.__init__-expanded"><a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line"><tt class="py-docstring">        Constructor</tt> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Variable AuthorizationManagement.apps.AuthorizationmanagementConfig.name=AuthorizationManagement.apps.AuthorizationmanagementConfig-class.html#name,Variable AuthorizationManagement.models.Resource.name=AuthorizationManagement.models.Resource-class.html#name,Variable dashboard.apps.DashboardConfig.name=dashboard.apps.DashboardConfig-class.html#name,Variable dashboard.models.WebProcessingService.name=dashboard.models.WebProcessingService-class.html#name,Variable heron_monitor.apps.HeronMonitorConfig.name=heron_monitor.apps.HeronMonitorConfig-class.html#name,Variable heron_upload.apps.HeronUploadConfig.name=heron_upload.apps.HeronUploadConfig-class.html#name,Variable heron_visual.apps.HeronVisualConfig.name=heron_visual.apps.HeronVisualConfig-class.html#name,Variable heron_wps.apps.HeronWpsConfig.name=heron_wps.apps.HeronWpsConfig-class.html#name,Variable heron_wps.models.WebProcessingService.name=heron_wps.models.WebProcessingService-class.html#name,Variable vfwheron.apps.VfwheronConfig.name=vfwheron.apps.VfwheronConfig-class.html#name,Variable vfwheron.models.DjangoMigrations.name=vfwheron.models.DjangoMigrations-class.html#name,Variable wps_workflow.apps.wps_workflowConfig.name=wps_workflow.apps.wps_workflowConfig-class.html#name,Variable wps_workflow.models.Workflow.name=wps_workflow.models.Workflow-class.html#name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-0', 'name', 'link-0');">name</a></tt> <tt class="py-op">=</tt> <tt id="link-1" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-1', 'name', 'link-0');">name</a></tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Variable heron_wps.models.WebProcessingService.endpoint=heron_wps.models.WebProcessingService-class.html#endpoint"><a title="heron_wps.models.WebProcessingService.endpoint" class="py-name" href="#" onclick="return doclink('link-2', 'endpoint', 'link-2');">endpoint</a></tt> <tt class="py-op">=</tt> <tt id="link-3" class="py-name"><a title="heron_wps.models.WebProcessingService.endpoint" class="py-name" href="#" onclick="return doclink('link-3', 'endpoint', 'link-2');">endpoint</a></tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name" targets="Variable heron_wps.models.WebProcessingService.username=heron_wps.models.WebProcessingService-class.html#username"><a title="heron_wps.models.WebProcessingService.username" class="py-name" href="#" onclick="return doclink('link-4', 'username', 'link-4');">username</a></tt> <tt class="py-op">=</tt> <tt id="link-5" class="py-name"><a title="heron_wps.models.WebProcessingService.username" class="py-name" href="#" onclick="return doclink('link-5', 'username', 'link-4');">username</a></tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Variable heron_wps.models.WebProcessingService.password=heron_wps.models.WebProcessingService-class.html#password"><a title="heron_wps.models.WebProcessingService.password" class="py-name" href="#" onclick="return doclink('link-6', 'password', 'link-6');">password</a></tt> <tt class="py-op">=</tt> <tt id="link-7" class="py-name"><a title="heron_wps.models.WebProcessingService.password" class="py-name" href="#" onclick="return doclink('link-7', 'password', 'link-6');">password</a></tt> </tt>
+</div><a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"> </tt>
+<a name="WpsService.__repr__"></a><div id="WpsService.__repr__-def"><a name="L15"></a><tt class="py-lineno">15</tt> <a class="py-toggle" href="#" id="WpsService.__repr__-toggle" onclick="return toggle('WpsService.__repr__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="heron_wps.base.WpsService-class.html#__repr__">__repr__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="WpsService.__repr__-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="WpsService.__repr__-expanded"><a name="L16"></a><tt class="py-lineno">16</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line"><tt class="py-docstring">        String representation</tt> </tt>
+<a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-string">'&lt;WpsService: name={0}, endpoint={1}&gt;'</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Variable wps_workflow.models.Artefact.format=wps_workflow.models.Artefact-class.html#format,Variable wps_workflow.models.InputOutput.format=wps_workflow.models.InputOutput-class.html#format"><a title="wps_workflow.models.Artefact.format
+wps_workflow.models.InputOutput.format" class="py-name" href="#" onclick="return doclink('link-8', 'format', 'link-8');">format</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-9', 'name', 'link-0');">name</a></tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name"><a title="heron_wps.models.WebProcessingService.endpoint" class="py-name" href="#" onclick="return doclink('link-10', 'endpoint', 'link-2');">endpoint</a></tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun  6 09:32:21 2018
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

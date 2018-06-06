@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wps_workflow.cron</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="wps_workflow-module.html">Package&nbsp;wps_workflow</a> ::
+        Module&nbsp;cron
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="wps_workflow.cron-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module cron</h1><p class="nomargin-top"><span class="codelink"><a href="wps_workflow.cron-pysrc.html">source&nbsp;code</a></span></p>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#scheduler" class="summary-sig-name">scheduler</a>()</span><br />
+      Main scheduling function.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#scheduler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#xml_generator" class="summary-sig-name">xml_generator</a>(<span class="summary-sig-arg">xml_dir</span>)</span><br />
+      Traverses Database and generates execution XML files for every Task 
+      set to status WAITING</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#xml_generator">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">lxml.etree._Element/int</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#create_data_doc" class="summary-sig-name">create_data_doc</a>(<span class="summary-sig-arg">task</span>)</span><br />
+      Creates subtree for execute request for model.Task task.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#create_data_doc">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#send_task" class="summary-sig-name">send_task</a>(<span class="summary-sig-arg">task_id</span>,
+        <span class="summary-sig-arg">xml_dir</span>)</span><br />
+      Sends a Task identified by its Database ID to its WPS Server.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#send_task">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">string</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#get_execute_url" class="summary-sig-name">get_execute_url</a>(<span class="summary-sig-arg">task</span>)</span><br />
+      Extracts the Execute URL from the Database for a given task.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#get_execute_url">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#receiver" class="summary-sig-name">receiver</a>()</span><br />
+      Loops all running tasks, then parses xml on server and checks for 
+      status.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#receiver">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">int</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#parse_execute_response" class="summary-sig-name">parse_execute_response</a>(<span class="summary-sig-arg">task</span>)</span><br />
+      Checks parameter tasks status by checking xml file found at 
+      status_url for change If task has finished write data to db if there 
+      is any data</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_execute_response">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#parse_output" class="summary-sig-name">parse_output</a>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">task</span>)</span><br />
+      Parses output node of xml and inserts respective data if found and 
+      also updates status of task if there are any changes @param output 
+      the output that has to be parsed @type output lxmls.etree._Element</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_output">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#parse_response_literaldata" class="summary-sig-name">parse_response_literaldata</a>(<span class="summary-sig-arg">artefact</span>,
+        <span class="summary-sig-arg">data_elem</span>)</span><br />
+      Parses the xmls literaldata subtree and inserts data into artefact</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_response_literaldata">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#parse_response_bbox" class="summary-sig-name">parse_response_bbox</a>(<span class="summary-sig-arg">artefact</span>,
+        <span class="summary-sig-arg">data_elem</span>)</span><br />
+      Parses the xmls boundingboxdata subtree and inserts data into 
+      artefact</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_response_bbox">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#parse_response_complexdata" class="summary-sig-name">parse_response_complexdata</a>(<span class="summary-sig-arg">artefact</span>,
+        <span class="summary-sig-arg">data_elem</span>)</span><br />
+      Parses the xmls complexdata subtree and inserts data into artefact</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_response_complexdata">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">int</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#calculate_percent_done" class="summary-sig-name">calculate_percent_done</a>(<span class="summary-sig-arg">workflow</span>)</span><br />
+      Calculates the percentage of finished tasks in the workflow of task</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#calculate_percent_done">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#task_failed_handling" class="summary-sig-name">task_failed_handling</a>(<span class="summary-sig-arg">task</span>,
+        <span class="summary-sig-arg">err_msg</span>)</span><br />
+      Is called if a task failed to create error Artefacts which signals 
+      the client that the task has failed</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#task_failed_handling">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.cron-module.html#update_wps_processes" class="summary-sig-name">update_wps_processes</a>()</span><br />
+      This method update the list of WPS processes provided by the WPS 
+      Server.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.cron-pysrc.html#update_wps_processes">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTION DETAILS ==================== -->
+<a name="section-FunctionDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Function Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-FunctionDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="scheduler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">scheduler</span>()</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#scheduler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Main scheduling function. Schedules Tasks in Workflows according to 
+  their execution order, generates execution XML files and sends tasks to 
+  their server for execution</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="xml_generator"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">xml_generator</span>(<span class="sig-arg">xml_dir</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#xml_generator">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Traverses Database and generates execution XML files for every Task 
+  set to status WAITING</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>xml_dir</code></strong> (string) - Directory where XMLs are generated in</li>
+    </ul></dd>
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="create_data_doc"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">create_data_doc</span>(<span class="sig-arg">task</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#create_data_doc">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Creates subtree for execute request for model.Task task.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>task</code></strong> (models.Task) - the task for which the data subtree is created</li>
+    </ul></dd>
+    <dt>Returns: lxml.etree._Element/int</dt>
+        <dd>subtree on success, error code 1 otherwise</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="send_task"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">send_task</span>(<span class="sig-arg">task_id</span>,
+        <span class="sig-arg">xml_dir</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#send_task">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Sends a Task identified by its Database ID to its WPS Server.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>task_id</code></strong> (int) - ID of Task in Database</li>
+        <li><strong class="pname"><code>xml_dir</code></strong> (string) - Directory where XMLs are stored in</li>
+    </ul></dd>
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_execute_url"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_execute_url</span>(<span class="sig-arg">task</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#get_execute_url">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Extracts the Execute URL from the Database for a given task. Returns 
+  empty string on error.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>task</code></strong> (Task) - Task object from Database</li>
+    </ul></dd>
+    <dt>Returns: string</dt>
+        <dd>Execute URL. Empty on error or empty DB field</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="receiver"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">receiver</span>()</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#receiver">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Loops all running tasks, then parses xml on server and checks for 
+  status. Overwrites status if changed and if task is finished, writes data
+  to db</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_execute_response"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_execute_response</span>(<span class="sig-arg">task</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_execute_response">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Checks parameter tasks status by checking xml file found at status_url
+  for change If task has finished write data to db if there is any data</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>task</code></strong> (subclass of models.Model) - the task whose status is currently checked</li>
+    </ul></dd>
+    <dt>Returns: int</dt>
+        <dd>0 on success, error code otherwise</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_output"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_output</span>(<span class="sig-arg">output</span>,
+        <span class="sig-arg">task</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_output">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parses output node of xml and inserts respective data if found and 
+  also updates status of task if there are any changes @param output the 
+  output that has to be parsed @type output lxmls.etree._Element</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>task</code></strong> (subclass of models.Model) - the task that belongs to the output</li>
+    </ul></dd>
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_response_literaldata"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_response_literaldata</span>(<span class="sig-arg">artefact</span>,
+        <span class="sig-arg">data_elem</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_response_literaldata">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parses the xmls literaldata subtree and inserts data into artefact</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>artefact</code></strong> (models.Artefact) - the artefact which the data is put into</li>
+        <li><strong class="pname"><code>data_elem</code></strong> (lxml.etree._Element) - the xml node element which holds the data</li>
+    </ul></dd>
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_response_bbox"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_response_bbox</span>(<span class="sig-arg">artefact</span>,
+        <span class="sig-arg">data_elem</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_response_bbox">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parses the xmls boundingboxdata subtree and inserts data into 
+  artefact</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>artefact</code></strong> (models.Artefact) - the artefact which the data is put into</li>
+        <li><strong class="pname"><code>data_elem</code></strong> (lxml.etree._Element) - the xml node element which holds the data</li>
+    </ul></dd>
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_response_complexdata"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_response_complexdata</span>(<span class="sig-arg">artefact</span>,
+        <span class="sig-arg">data_elem</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#parse_response_complexdata">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Parses the xmls complexdata subtree and inserts data into artefact</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>artefact</code></strong> (models.Artefact) - the artefact which the data is put into</li>
+        <li><strong class="pname"><code>data_elem</code></strong> (lxml.etree._Element) - the xml node element which holds the data</li>
+    </ul></dd>
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="calculate_percent_done"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">calculate_percent_done</span>(<span class="sig-arg">workflow</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#calculate_percent_done">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Calculates the percentage of finished tasks in the workflow of 
+  task</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>task</code></strong> (Task) - task with recently changed status</li>
+    </ul></dd>
+    <dt>Returns: int</dt>
+        <dd>percentage of finished tasks in the workflow of task</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="task_failed_handling"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">task_failed_handling</span>(<span class="sig-arg">task</span>,
+        <span class="sig-arg">err_msg</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#task_failed_handling">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Is called if a task failed to create error Artefacts which signals the
+  client that the task has failed</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>task</code></strong> (models.Task) - the failed task</li>
+        <li><strong class="pname"><code>err_msg</code></strong> (string) - the error message</li>
+    </ul></dd>
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="update_wps_processes"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">update_wps_processes</span>()</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.cron-pysrc.html#update_wps_processes">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>This method update the list of WPS processes provided by the WPS 
+  Server. It takes a describe_processes_url of each wps server saved in 
+  database, open it, and parses the xml file, that comes in request 
+  message.</p>
+  <p>It will be checked if any object present in database. If no, it will 
+  be saved, else it will be overwritten with the actual information 
+  provided by the WPS server.</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Wed Jun  6 09:32:20 2018
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
