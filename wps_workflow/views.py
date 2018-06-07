@@ -776,9 +776,11 @@ class OurLoginView(TemplateView):
     @staticmethod  # TODO: document
     def post(request):
         """
-        
+
         @param request:
         @type request:
+        @return:
+        @rtype:
         """
         login_data = json.loads(request.body)
         user = authenticate(
@@ -816,9 +818,7 @@ class EditorView(LoginRequiredMixin, TemplateView):
 
 # TODO: document
 class SettingsView(LoginRequiredMixin, TemplateView):
-    """
 
-    """
     login_url = '/login/'
 
     template_name = "index.html"

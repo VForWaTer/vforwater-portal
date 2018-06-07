@@ -7,13 +7,19 @@ admin.site.register(AccessRequest)
 admin.site.register(DeletionRequest)
  
 #this is the subpage 'Manage Resources' only displayable to the admin
-class ResourceManager(AdminSite):      
+class ResourceManager(AdminSite):
+    """
+
+    """
     pass
     #or methods         
 resource_manager = AdminSite(name="ResourceManager")
 
 class ResourceAdmin(admin.ModelAdmin):
-    list_display = ["name", 
+    """
+
+    """
+    list_display = ["name",
                     "type", 
                     "description"]
     search_fields = ["name", 
@@ -33,11 +39,17 @@ resource_manager.index_title = 'Administration'
 
 #this is the subpage 'Manage Users' also only displayable to the admin
 class UserManager(AdminSite):
+    """
+
+    """
     pass
     #or methods    
 user_manager = AdminSite(name="UserManager")
 
 class UserAdmin(admin.ModelAdmin):
+    """
+
+    """
     list_display = ["username",
                     "last_name", 
                     "first_name", 

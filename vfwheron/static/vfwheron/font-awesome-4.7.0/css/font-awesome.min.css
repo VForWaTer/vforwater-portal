@@ -874,6 +874,10 @@ keyframes fa-spin { 0%{
 	content: "\f0ad"
 }
 
+.fa-workflow:before {
+	content: "\0048"
+}
+
 .fa-tasks:before {
 	content: "\f0ae"
 }
