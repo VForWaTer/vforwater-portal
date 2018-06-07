@@ -263,7 +263,8 @@ function workspace_dataset(id) {
                 workspace_button(json);
             } // function in sidebar.js
         });
-}}
+    }
+}
 
 /* Send ID to server to build preview and add preview image to html */
 function show_preview(id) {
