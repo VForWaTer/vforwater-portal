@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
-from .models import *
+from AuthorizationManagement.models import *
 
 admin.site.register(Resource)
 admin.site.register(AccessRequest)

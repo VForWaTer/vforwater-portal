@@ -55,18 +55,25 @@
 <pre class="py-src">
 <a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">conf</tt> <tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Variable vfwheron.models.TblDataSource.settings=vfwheron.models.TblDataSource-class.html#settings"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-0', 'settings', 'link-0');">settings</a></tt> </tt>
 <a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"> </tt>
-<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-comment"># TODO: document</tt> </tt>
 <a name="global_settings"></a><div id="global_settings-def"><a name="L4"></a><tt class="py-lineno"> 4</tt> <a class="py-toggle" href="#" id="global_settings-toggle" onclick="return toggle('global_settings');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="heron.context_processors-module.html#global_settings">global_settings</a><tt class="py-op">(</tt><tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="global_settings-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="global_settings-expanded"><a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line">    <tt class="py-comment"># return any necessary values</tt> </tt>
-<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-op">{</tt> </tt>
-<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line">        <tt class="py-string">'HOST_NAME'</tt><tt class="py-op">:</tt> <tt id="link-1" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-1', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">HOST_NAME</tt><tt class="py-op">,</tt> </tt>
-<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line">        <tt class="py-string">'VFW_SERVER'</tt><tt class="py-op">:</tt> <tt id="link-2" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-2', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">VFW_SERVER</tt><tt class="py-op">,</tt>  <tt class="py-comment"># TODO: Are you serious!?! You get a value from settings and make it</tt> </tt>
-<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line">        <tt class="py-string">'MAP_SERVER'</tt><tt class="py-op">:</tt> <tt id="link-3" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-3', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">MAP_SERVER</tt><tt class="py-op">,</tt> </tt>
-<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line">        <tt class="py-comment"># 'PORTAL_GEOSERVER': settings.PORTAL_GEOSERVER,</tt> </tt>
-<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line">        <tt class="py-string">'DEMO_VAR'</tt><tt class="py-op">:</tt> <tt id="link-4" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-4', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">DEMO_VAR</tt><tt class="py-op">,</tt> </tt>
-<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line">        <tt class="py-comment"># again available for settings?!?</tt> </tt>
-<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line"><tt class="py-op">}</tt> </tt>
-</div><a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+</div><div id="global_settings-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="global_settings-expanded"><a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line"><tt class="py-docstring">    @param request:</tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line"><tt class="py-docstring">    @type request:</tt> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"><tt class="py-docstring">    @return:</tt> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line"><tt class="py-docstring">    @rtype:</tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line">    <tt class="py-comment"># return any necessary values</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-op">{</tt> </tt>
+<a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line">        <tt class="py-string">'HOST_NAME'</tt><tt class="py-op">:</tt> <tt id="link-1" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-1', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">HOST_NAME</tt><tt class="py-op">,</tt> </tt>
+<a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line">        <tt class="py-string">'VFW_SERVER'</tt><tt class="py-op">:</tt> <tt id="link-2" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-2', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">VFW_SERVER</tt><tt class="py-op">,</tt>  <tt class="py-comment"># TODO: Are you serious!?! You get a value from settings and make it</tt> </tt>
+<a name="L16"></a><tt class="py-lineno">16</tt>  <tt class="py-line">        <tt class="py-string">'MAP_SERVER'</tt><tt class="py-op">:</tt> <tt id="link-3" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-3', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">MAP_SERVER</tt><tt class="py-op">,</tt> </tt>
+<a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line">        <tt class="py-comment"># 'PORTAL_GEOSERVER': settings.PORTAL_GEOSERVER,</tt> </tt>
+<a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line">        <tt class="py-string">'DEMO_VAR'</tt><tt class="py-op">:</tt> <tt id="link-4" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-4', 'settings', 'link-0');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">DEMO_VAR</tt><tt class="py-op">,</tt> </tt>
+<a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line">        <tt class="py-comment"># again available for settings?!?</tt> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line"><tt class="py-op">}</tt> </tt>
+</div><a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line"> </tt><script type="text/javascript">
 <!--
 expandto(location.href);
 // -->
@@ -96,7 +103,7 @@ expandto(location.href);
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Wed Jun  6 09:32:22 2018
+    Generated by Epydoc 3.0.1 on Fri Jun  8 09:44:10 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
