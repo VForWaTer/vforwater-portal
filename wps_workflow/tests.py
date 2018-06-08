@@ -93,14 +93,25 @@ class CronTestCase(TestCase):
         self.assertEqual(output.data, 'Hello Ueda')
 
     def test_update_wps_processes_with_empty_database(self):
+        """
+
+        @return:
+        @rtype:
+        """
         wps_workflow.cron.update_wps_processes()
         self.assertEqual(Process.objects.all().__len__(), 0)
 
     def test_update_wps_processes(self):
+        """
+
+        @return:
+        @rtype:
+        """
         wps_workflow.utils.add_wps_server('http://milbaier.com:5000')
         self.assertEqual(Process.objects.all().__len__(), 14)
 
 
+# TODO: document
 # Create your tests here.
 class ParserTestCase(TestCase):
     """
@@ -296,7 +307,14 @@ class ParserTestCase(TestCase):
         self.assertEqual(wps_process_input.min_occurs, self.say_hello_literal_input.min_occurs)
         self.assertEqual(wps_process_input.max_occurs, self.say_hello_literal_input.max_occurs)
 
+    # TODO: document
     def test_parse_process_output_literal(self):
+        """
+        
+        @return: None
+        @rtype: NoneType
+        """
+        
         say_hello_process_output_element = self.say_hello_process_element.find('./ProcessOutputs/Output')
         wps_process_output = wps_workflow.utils.parse_output_info(say_hello_process_output_element, self.xml_namespaces,
                                                           self.say_hello_literal_process)
@@ -405,6 +423,7 @@ class ParserTestCase(TestCase):
                                                                        self.say_hello_literal_process))
 
 
+# TODO: document
 class DatabaseTestCase(TestCase):
     """
 
@@ -416,6 +435,11 @@ class DatabaseTestCase(TestCase):
     wps_process_output = None
 
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.wps_provider = WPSProvider.objects.create(provider_name='Organization Name',
                                                        provider_site='http://pywps.org/',
                                                        individual_name='Lastname, Firstname',
@@ -462,6 +486,7 @@ class DatabaseTestCase(TestCase):
         provider_from_database = utils.search_provider_in_database(self.wps_provider)
         self.assertIsNotNone(provider_from_database)
 
+    # TODO: document
     def test_search_provider_in_empty_database(self):
         """
 
@@ -472,6 +497,7 @@ class DatabaseTestCase(TestCase):
         provider_from_database = utils.search_provider_in_database(self.wps_provider)
         self.assertIsNone(provider_from_database)
 
+    # TODO: document
     def test_search_server_in_database(self):
         """
 
@@ -480,7 +506,8 @@ class DatabaseTestCase(TestCase):
         """
         server_from_database = utils.search_server_in_database(self.wps_server)
         self.assertIsNotNone(server_from_database)
-
+    
+    # TODO: document
     def test_search_server_in_empty_database_(self):
         """
 
@@ -491,20 +518,44 @@ class DatabaseTestCase(TestCase):
         server_from_database = utils.search_server_in_database(self.wps_server)
         self.assertIsNone(server_from_database)
 
+    # TODO: document
     def test_search_process_in_database(self):
+        """
+
+        @return:
+        @rtype:
+        """
         process_from_database = utils.search_process_in_database(self.wps_process)
         self.assertIsNotNone(process_from_database)
 
+    # TODO: document
     def test_search_process_in_empty_database(self):
+        """
+
+        @return:
+        @rtype:
+        """
         Process.objects.all().delete()
         process_from_database = utils.search_process_in_database(self.wps_process)
         self.assertIsNone(process_from_database)
 
+    # TODO: document
     def test_search_input_output_in_database(self):
+        """
+
+        @return:
+        @rtype:
+        """
         input_from_database = utils.search_input_output_in_database(self.wps_process_input)
         self.assertIsNotNone(input_from_database)
 
+    # TODO: document
     def test_search_input_output_in_empty_database(self):
+        """
+
+        @return:
+        @rtype:
+        """
         InputOutput.objects.all().delete()
         input_from_database = utils.search_input_output_in_database(self.wps_process_input)
         self.assertIsNone(input_from_database)
@@ -536,7 +587,13 @@ class DatabaseTestCase(TestCase):
         self.assertEqual(new_database_entry.describe_url, new_wps_server.describe_url)
         self.assertEqual(new_database_entry.execute_url, new_wps_server.execute_url)
 
+    # TODO: document
     def test_overwrite_process(self):
+        """
+
+        @return:
+        @rtype:
+        """
         old_database_entry = Process.objects.get(identifier='say_hello')
         new_wps_process = Process(wps=self.wps_server,
                                   identifier='say_hello',
@@ -552,7 +609,13 @@ class DatabaseTestCase(TestCase):
         self.assertEqual(new_database_entry.title, new_wps_process.title)
         self.assertEqual(new_database_entry.abstract, new_wps_process.abstract)
 
+    # TODO: document
     def test_overwrite_input_output(self):
+        """
+
+        @return:
+        @rtype:
+        """
         old_database_entry = InputOutput.objects.get(identifier='name')
         new_literal_input = InputOutput(process=self.wps_process,
                                           role='0',  # Input
@@ -577,7 +640,13 @@ class DatabaseTestCase(TestCase):
         self.assertEqual(new_database_entry.max_occurs, new_literal_input.max_occurs)
 
 
+# TODO: document
 def set_up_fixtures():
+    """
+
+    @return:
+    @rtype:
+    """
     User.objects.create(
         password='admin',
         is_superuser=True,
@@ -684,11 +753,25 @@ def set_up_fixtures():
     )
 
 
+# TODO: document
 class WorkflowViewLoggedOutCase(TestCase):
+    """
+
+    """
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         set_up_fixtures()
 
     def test_workflow_get_single(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.get('/workflow/1')
         parsed_response = json.loads(response.content)
 
@@ -696,6 +779,11 @@ class WorkflowViewLoggedOutCase(TestCase):
         self.assertEqual(parsed_response['error'], 'no access')
 
     def test_workflow_get_all(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.get('/workflow/')
         parsed_response = json.loads(response.content)
 
@@ -703,6 +791,11 @@ class WorkflowViewLoggedOutCase(TestCase):
         self.assertEqual(parsed_response['error'], 'no access')
 
     def test_workflow_post(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.post('/workflow/')
         parsed_response = json.loads(response.content)
 
@@ -710,6 +803,11 @@ class WorkflowViewLoggedOutCase(TestCase):
         self.assertEqual(parsed_response['error'], 'no access')
 
     def test_workflow_patch(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.patch('/workflow/1')
         parsed_response = json.loads(response.content)
 
@@ -717,6 +815,11 @@ class WorkflowViewLoggedOutCase(TestCase):
         self.assertEqual(parsed_response['error'], 'no access')
 
     def test_workflow_delete(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.delete('/workflow/1')
         parsed_response = json.loads(response.content)
 
@@ -724,12 +827,28 @@ class WorkflowViewLoggedOutCase(TestCase):
         self.assertEqual(parsed_response['error'], 'no access')
 
 
+# TODO: document
 class WorkflowViewCase(TestCase):
+    """
+    
+    """
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         set_up_fixtures()
         self.client.force_login(User.objects.get(pk=1))
 
     def assert_workflow_equal_to_expected(self, workflow):
+        """
+
+        @param workflow:
+        @type workflow:
+        @return:
+        @rtype:
+        """
         self.assertEqual(workflow['id'], 1)
         self.assertEqual(workflow['name'], 'Workflow')
         self.assertEqual(workflow['description'], 'tl;dr')
@@ -779,16 +898,31 @@ class WorkflowViewCase(TestCase):
         self.assertEqual(workflow['tasks'][1]['input_artefacts'][0]['data'], 'bla')
 
     def test_workflow_get_single(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.get('/workflow/1').content)
 
         self.assert_workflow_equal_to_expected(response)
 
     def test_workflow_get_all(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.get('/workflow/').content)
 
         self.assert_workflow_equal_to_expected(response[0])
 
     def test_workflow_post(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.generic(
             'POST',
             '/workflow/',
@@ -879,6 +1013,11 @@ class WorkflowViewCase(TestCase):
         self.assertEqual(workflow['tasks'][1]['status'], '0')
 
     def test_workflow_patch(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.generic(
             'PATCH',
             '/workflow/1',
@@ -1032,6 +1171,11 @@ class WorkflowViewCase(TestCase):
         self.assertEqual(workflow['tasks'][2]['input_artefacts'][0]['data'], 'bla 4')
 
     def test_workflow_delete(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.delete('/workflow/1')
         parsed_response = json.loads(response.content)
 
@@ -1039,12 +1183,22 @@ class WorkflowViewCase(TestCase):
         self.assertEqual(parsed_response['deleted'], True)
 
     def test_workflow_start(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.assertEqual(self.client.get('/workflow_start/1').status_code, 200)
 
         self.assertEqual(Task.objects.get(pk=1).status, '1')
         self.assertEqual(Task.objects.get(pk=2).status, '1')
 
     def test_workflow_stop(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.assertEqual(self.client.get('/workflow_stop/1').status_code, 200)
 
         self.assertEqual(Task.objects.get(pk=1).status, '0')
@@ -1053,14 +1207,35 @@ class WorkflowViewCase(TestCase):
         self.assertEqual(Artefact.objects.all().count(), 0)
 
     def test_workflow_refresh(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.assertEqual(self.client.get('/workflow_refresh/1').status_code, 200)
 
 
+# TODO: document
 class ProcessViewCase(TestCase):
+    """
+    
+    """
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         set_up_fixtures()
 
     def assert_process_equal_to_expected(self, process):
+        """
+
+        @param process:
+        @type process:
+        @return:
+        @rtype:
+        """
         self.assertEqual(process['id'], 1)
         self.assertEqual(process['identifier'], 'say_hello')
         self.assertEqual(process['title'], 'Process Say Hello')
@@ -1100,36 +1275,77 @@ class ProcessViewCase(TestCase):
         self.assertEqual(process['outputs'][0]['min_occurs'], 1)
 
     def test_process_get_single(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.get('/process/1').content)
 
         self.assert_process_equal_to_expected(response)
 
     def test_process_get_all(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.get('/process/').content)
 
         self.assert_process_equal_to_expected(response[0])
 
     def test_process_post(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.post('/process/').content)
 
         self.assertTrue('error' in response)
 
     def test_process_path(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.patch('/process/').content)
 
         self.assertTrue('error' in response)
 
     def test_process_delete(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.delete('/process/').content)
 
         self.assertTrue('error' in response)
 
 
+# TODO: document
 class WpsViewCase(TestCase):
+    """
+    
+    """
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         set_up_fixtures()
 
     def assert_wps_equal_to_expected(self, wps):
+        """
+
+        @param wps:
+        @type wps:
+        @return:
+        @rtype:
+        """
         self.assertEqual(wps['id'], 1)
         self.assertEqual(wps['title'], 'PyWPS Testserver')
         self.assertEqual(wps['abstract'], 'tl;dr')
@@ -1144,35 +1360,78 @@ class WpsViewCase(TestCase):
         self.assertEqual(wps['provider']['position_name'], 'Software Engineer')
 
     def test_wps_get_single(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.get('/wps/1').content)
 
         self.assert_wps_equal_to_expected(response)
 
     def test_wps_get_all(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = json.loads(self.client.get('/wps/').content)
 
         self.assert_wps_equal_to_expected(response[0])
 
     def test_wps_post(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.generic('POST', '/wps/', 'http://pse.rudolphrichard.de:5000')
 
         self.assertEqual(Process.objects.count(), 14)
 
 
+# TODO: document
 class UserViewCase(TestCase):
+    """
+    
+    """
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         set_up_fixtures()
         self.client.force_login(User.objects.get(pk=1))
 
     def test_user_get(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.assertEqual(self.client.get('/user/').status_code, 200)
 
 
+# TODO: document
 class AuthenticationViewsCase(TestCase):
+    """
+    
+    """
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         set_up_fixtures()
 
     def test_login_attempt_with_wrong_credentials(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.generic(
                 'POST',
                 '/login/',
@@ -1187,6 +1446,11 @@ class AuthenticationViewsCase(TestCase):
         self.assertEqual(parsed_response['error'], 'no access')
 
     def test_logout(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.force_login(User.objects.get(pk=1))
 
         response = self.client.delete('/logout/')

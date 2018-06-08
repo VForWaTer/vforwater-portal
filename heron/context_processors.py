@@ -1,7 +1,14 @@
 from django.conf import settings
 
-
+# TODO: document
 def global_settings(request):
+    """
+
+    @param request:
+    @type request:
+    @return:
+    @rtype:
+    """
     # return any necessary values
     return {
         'HOST_NAME': settings.HOST_NAME,

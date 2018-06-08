@@ -3,6 +3,11 @@ from AuthorizationManagement.models import *
 
 
 def setUpUsers():
+    """
+
+    @return:
+    @rtype:
+    """
     test_admin = User.objects.create(username='admin')
     test_admin.set_password('123456') 
     test_admin.is_staff = True
@@ -20,6 +25,13 @@ def setUpUsers():
     return {'test_admin': test_admin, 'test_user1': test_user, 'test_user2': test_user2}
     
 def setUpResourceAndRequests(users):
+    """
+
+    @param users:
+    @type users:
+    @return:
+    @rtype:
+    """
 
     res1 = Resource.objects.create(name='res1', type='text', description='desc', link='res.txt')
     res1.readers.add(users['test_user1'].id)
@@ -59,75 +71,149 @@ def setUpResourceAndRequests(users):
     req5.save()
 
 def deleteUsers():
+    """
+
+    @return:
+    @rtype:
+    """
     User.objects.all().delete()
     
 def deleteResourcesAndRequests():
+    """
+
+    @return:
+    @rtype:
+    """
     AccessRequest.objects.all().delete()
     DeletionRequest.objects.all().delete()
     Resource.objects.all().delete()
 
 
 class TestUserData(TestCase):       
+    """
+
+    """
     @classmethod
     def setUpClass(cls):
+        """
+
+        @return:
+        @rtype:
+        """
         super().setUpClass()
         users = setUpUsers()
         setUpResourceAndRequests(users)
     
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client = Client()
         self.client.login(username='user1', password='123456')
         
     @classmethod
     def tearDownClass(cls):
+        """
+
+        @return:
+        @rtype:
+        """
         deleteUsers()
         deleteResourcesAndRequests()
         super().tearDownClass()
         
     def test_edit_name(self): 
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.post('/profile/edit-name/', {'firstName': 'bob', 'lastName': 'dylan'})
         self.assertEqual(User.objects.get_by_natural_key('user1').first_name, 'bob')
         
     def test_my_requests(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.get('/profile/')
         resources = Owner.objects.get_by_natural_key('user1').owner.all()
         requests = AccessRequest.objects.all().filter(resource__in=resources)
         self.assertCountEqual(response.context['requests_list'], requests)
     
     def test_my_resources(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.get('/profile/my-resources/')
         resources = Owner.objects.get_by_natural_key('user1').owner.all()
         self.assertCountEqual(response.context['resource_list'], resources)
     
 
 class TestResourcesData(TestCase):
+    """
+
+    """
+
     @classmethod
     def setUpClass(cls):
+        """
+
+        @return:
+        @rtype:
+        """
         super().setUpClass()
         users = setUpUsers()
         setUpResourceAndRequests(users)
     
     def setUp(self):
+        """"""
+
         self.client = Client()
         self.client.login(username='user1', password='123456')
         
     @classmethod
     def tearDownClass(cls):
+        """
+
+        @return:
+        @rtype:
+        """
         deleteUsers()
         deleteResourcesAndRequests()
         super().tearDownClass()
         
     def test_resources_overview(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.get('/resources-overview/')
         resources = Resource.objects.all()
         self.assertCountEqual(response.context['resources_list'], resources)
     
     def test_access_permissions(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.get('/resources-overview/')
         resources = CustomUser.objects.get_by_natural_key('user1').reader.all()
         self.assertCountEqual(response.context['can_access'], resources)
         
     def test_resource_permissions(self):
+        """
+
+        @return:
+        @rtype:
+        """
         response = self.client.get('/profile/my-resources/')
         resources = response.context['resource_list']
         for resource in resources:
@@ -140,22 +226,43 @@ class TestResourcesData(TestCase):
     
     
 class TestRequestsData(TestCase):
+    """
+
+    """
+
     @classmethod
     def setUpClass(cls):
+        """
+
+        @return:
+        @rtype:
+        """
         super().setUpClass()
         users = setUpUsers()
         setUpResourceAndRequests(users)
     
     def setUp(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client = Client()
                 
     @classmethod
     def tearDownClass(cls):
+        """
+
+        @return:
+        @rtype:
+        """
         deleteUsers()
         deleteResourcesAndRequests()
         super().tearDownClass()
         
     def test_create_access_request(self):
+        """"""
+
         self.client.login(username='user1', password='123456')
         self.client.get('/resources-overview/')
         resources = Resource.objects.all()
@@ -169,6 +276,11 @@ class TestRequestsData(TestCase):
         self.assertEqual(requests.count(), resources.count() - resources_can_access.count())
         
     def test_cancel_access_request(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.login(username='user2', password='123456')
         response = self.client.get('/resources-overview/')
         requested_resources = response.context['requested_resources']
@@ -179,6 +291,11 @@ class TestRequestsData(TestCase):
         self.assertFalse(AccessRequest.objects.filter(sender=CustomUser.objects.get_by_natural_key('user1')).exists())
     
     def test_create_deletion_request(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.login(username='user1', password='123456')
         user = Owner.objects.get_by_natural_key('user1')
         response = self.client.get('/profile/my-resources/')
@@ -190,6 +307,11 @@ class TestRequestsData(TestCase):
         self.assertEqual(DeletionRequest.objects.filter(sender=user).count(), user.owner.all().count())
     
     def test_cancel_deletion_request(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.login(username='user2', password='123456')
         response = self.client.get('/profile/my-resources/')
         requested_resources = response.context['deletion_requested']
@@ -200,6 +322,11 @@ class TestRequestsData(TestCase):
         self.assertFalse(DeletionRequest.objects.filter(sender=Owner.objects.get_by_natural_key('user2')).exists())
         
     def test_accept_access_request(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.login(username='user1', password='123456')
         response = self.client.get('/profile/')
         requests = response.context['requests_list']
@@ -216,6 +343,11 @@ class TestRequestsData(TestCase):
         self.assertFalse(requests.exists())
         
     def test_deny_access_request(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.login(username='user1', password='123456')
         response = self.client.get('/profile/')
         requests = response.context['requests_list']
@@ -232,6 +364,11 @@ class TestRequestsData(TestCase):
         self.assertFalse(requests.exists())
     
     def test_accept_deletion_request(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.login(username='admin', password='123456')
         response=self.client.get('/profile/')
         requests = response.context['requests_list']
@@ -246,6 +383,11 @@ class TestRequestsData(TestCase):
         self.assertFalse(requests.exists())
         
     def test_deny_deletion_request(self):
+        """
+
+        @return:
+        @rtype:
+        """
         self.client.login(username='admin', password='123456')
         response = self.client.get('/profile/')
         requests = response.context['requests_list']

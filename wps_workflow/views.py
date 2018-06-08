@@ -723,9 +723,10 @@ class WPSView(View):
         return JsonResponse({})
 
 
+# TODO: document 
 class OurLogoutView(TemplateView):
     """
-
+    
     """
     template_name = "index.html"
 
@@ -749,6 +750,7 @@ class OurLogoutView(TemplateView):
         return JsonResponse({'logged': 'out'})
 
 
+# TODO: document
 class OurLoginView(TemplateView):
     """
 
@@ -771,8 +773,15 @@ class OurLoginView(TemplateView):
 
         return super(OurLoginView, self).dispatch(*args, **kwargs)
 
-    @staticmethod
+    @staticmethod  # TODO: document
     def post(request):
+        """
+
+        @param request:
+        @type request:
+        @return:
+        @rtype:
+        """
         login_data = json.loads(request.body)
         user = authenticate(
             username=login_data['username'], password=login_data['password'])
@@ -786,6 +795,7 @@ class OurLoginView(TemplateView):
             return JsonResponse({'error': 'no access'})
 
 
+# TODO: document
 class WorkflowsView(LoginRequiredMixin, TemplateView):
     """
 
@@ -795,6 +805,7 @@ class WorkflowsView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
 
 
+# TODO: document
 class EditorView(LoginRequiredMixin, TemplateView):
     """
 
@@ -805,10 +816,9 @@ class EditorView(LoginRequiredMixin, TemplateView):
     template_name = "index.html"
 
 
+# TODO: document
 class SettingsView(LoginRequiredMixin, TemplateView):
-    """
 
-    """
     login_url = '/login/'
 
     template_name = "index.html"

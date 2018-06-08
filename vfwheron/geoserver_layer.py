@@ -14,6 +14,7 @@ def create_layer(filename='rest_test', datastore='new_vforwater_gis', workspace=
     build = requests.post(url, auth=('admin', 'vfwaterv2'), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
         logger.warning(str(build.status_code) + ': ' + build.text)
+    # print('create layer: ', str(build.status_code) + ': ' + build.text)
 
 
 def get_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
@@ -22,7 +23,9 @@ def get_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CA
     build = requests.get(url, auth=('admin', 'vfwaterv2'), headers={"Accept": "application/xml"})
     if build.status_code != 200:
         logger.warning(str(build.status_code) + ': ' + build.text)
+        # print('get layer (if): ', str(build.status_code) + ': ' + build.text)
         return False
+    # print('get layer: ', str(build.status_code) + ': ' + build.text)
     return True
 
 
@@ -43,6 +46,7 @@ def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace=
 # TODO: Query needs 'WHERE' for the IDs of data available for user
 def build_new_layer_XML(filename, datastore, workspace, srid):
 
+    # attributes have to be defined according to the selected table columns in the query
     query ='SELECT ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid), 3857) ::geometry'\
         ' as "Geometry",'\
         ' tbl_variable.variable_name AS "Datentyp",'\
@@ -54,8 +58,10 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
         ' lt_user.institution_name AS "Institut",'\
         ' lt_user.department AS "Abteilung",'\
         ' lt_project.project_name AS "Projekt",'\
-        ' lt_domain.domain_name AS "Domäne",'\
+        ' lt_domain.domain_name AS "Dom&#228;ne",'\
         ' tbl_meta.comment AS "Kommentar",'\
+        ' lt_license.license_abbrev AS "Lizenz",'\
+        ' lt_license.text_url AS "Lizenz_URL",'\
         ' tbl_meta.id,'\
         ' tbl_meta.site_id,'\
         ' tbl_meta.external_id,'\
@@ -72,11 +78,11 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
         ' LEFT JOIN tbl_data_source ON tbl_meta.source_id = tbl_data_source.id'\
         ' LEFT JOIN lt_source_type ON tbl_data_source.source_type_id = lt_source_type.id'\
         ' LEFT JOIN lt_site ON tbl_meta.site_id = lt_site.id'\
-        ' LEFT JOIN lt_soil ON tbl_meta.soil_id = lt_soil.id'\
+        ' LEFT JOIN lt_soil ON tbl_meta.soil_id = lt_soil.id' \
+        ' LEFT JOIN lt_license ON tbl_meta.license_id = lt_license.id' \
         ' LEFT JOIN tbl_variable ON tbl_meta.variable_id = tbl_variable.id'\
         ' LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id'\
 
-    # attributes have to be defined according to the selected table columns in the query
     attributes = '<attribute>'\
         '<name>Geometry</name>'\
         '<minOccurs>0</minOccurs>'\
@@ -148,7 +154,7 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
         '<binding>java.lang.String</binding>'\
         '</attribute>'\
         '<attribute>'\
-        '<name>Domäne</name>'\
+        '<name>Dom&#228;ne</name>'\
         '<minOccurs>1</minOccurs>'\
         '<maxOccurs>1</maxOccurs>'\
         '<nillable>false</nillable>'\
@@ -156,6 +162,20 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
         '</attribute>'\
         '<attribute>'\
         '<name>Kommentar</name>'\
+        '<minOccurs>0</minOccurs>'\
+        '<maxOccurs>1</maxOccurs>'\
+        '<nillable>true</nillable>'\
+        '<binding>java.lang.String</binding>'\
+        '</attribute>'\
+                 '<attribute>'\
+        '<name>Lizenz</name>'\
+        '<minOccurs>1</minOccurs>'\
+        '<maxOccurs>1</maxOccurs>'\
+        '<nillable>false</nillable>'\
+        '<binding>java.lang.String</binding>'\
+        '</attribute>'\
+                 '<attribute>'\
+        '<name>Lizenz_URL</name>'\
         '<minOccurs>0</minOccurs>'\
         '<maxOccurs>1</maxOccurs>'\
         '<nillable>true</nillable>'\

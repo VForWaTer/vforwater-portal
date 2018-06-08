@@ -51,6 +51,10 @@ class HomeView(TemplateView):
     data_layer = 'default_layer'
     if not get_layer(data_layer):
         create_layer(data_layer)
+    # else:
+    # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+    #     delete_layer(data_layer)
+    #     create_layer(data_layer)
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
@@ -71,7 +75,7 @@ class menuView(TemplateView):
 
     def get(self, request):
 
-        request.session.set_expiry(20)  # expire after 20 seconds
+        request.session.set_expiry(20)  # TODO: expire after 20 seconds/ this is only for development!!!
 
         # bring last used menu to session
         menu = request.GET.get('menu')
@@ -81,32 +85,8 @@ class menuView(TemplateView):
         else:
             menu = request.session.get('menu')
 
-        # TODO: is this still used? Check how map.js works!
-        # save your selections in cache
-        selection = request.GET.get('selection')
-        submenu = request.GET.get('submenu')
-        if selection:
-            if cache.get(menu):
-                edit_cache = cache.get(menu)
-                if selection in edit_cache[submenu]:
-                    edit_cache[submenu].remove(selection)
-                    cache.set(menu, {submenu: edit_cache[submenu]})
-                else:
-                    edit_cache[submenu].append(selection)
-                    cache.set(menu, {submenu: edit_cache[submenu]})
-            else:
-                cache.set(menu, {submenu: [selection]})
-
-        selection_list = []
-        if cache.get(menu):
-            if cache.get(menu).values():
-                selection_list = list(cache.get(menu).values())
-                selection_list = [item for sublist in selection_list for item in sublist]
-            else:
-                cache.set(menu, [])
-
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset, dataset_dict={}, min_time=0, max_time=0):
+        def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
             data_definition = {}
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
@@ -140,7 +120,7 @@ class menuView(TemplateView):
                 for datasetId in conv_work_dataset:
                     result = build_selection(str(datasetId), result, min_time, max_time)
             elif type(conv_work_dataset) == int:
-                result = build_selection(work_dataset, min_time, max_time)
+                result = build_selection(str(conv_work_dataset), result, min_time, max_time)
             return JsonResponse({'workspaceData': result})
 
         if 'preview' in request.GET:

@@ -1,0 +1,21 @@
+<meta charset="UTF-8">
+
+{% extends "vfwheron/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}- Heron WPS{% endblock %}
+
+{% block sidebar %} 
+	{% include 'heron_wps/sidebar.html' %} 
+{% endblock sidebar %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+      <iframe src="{% url 'wps_workflow:index' %}" />
+  </div>
+</div>
+{% endblock %}

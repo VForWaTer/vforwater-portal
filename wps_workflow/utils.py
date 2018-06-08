@@ -14,9 +14,9 @@ wps_em = ElementMaker(namespace=ns['wps'], nsmap=ns)
 ows_em = ElementMaker(namespace=ns['ows'], nsmap=ns)
 xlink_em = ElementMaker(namespace=ns['ows'], nsmap=ns)
 
-'''
+"""
 maps the xml namespaces of pywps 
-'''
+"""
 ns_map = {
     # wps namespaced tags
     "Capabilities": f"{{{ns['wps']}}}Capabilities",

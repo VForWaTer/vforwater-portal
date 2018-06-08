@@ -27,6 +27,9 @@ from django.core.validators import MaxLengthValidator
         
 # corresponds to the table in the database storing all information about a resource
 class Resource(models.Model):
+    """
+
+    """
     type = models.CharField(max_length=50)
     name = models.CharField(max_length=150)
     description = models.TextField(max_length=250, blank=True,
@@ -38,6 +41,9 @@ class Resource(models.Model):
 
     
 class Request(models.Model):
+    """
+
+    """
     sender = models.ForeignKey(CustomUser, on_delete = models.CASCADE)
     creationDate = models.DateTimeField(default=datetime.now, blank=True)
     resource = models.ForeignKey(Resource, on_delete = models.CASCADE)
@@ -53,8 +59,15 @@ class Request(models.Model):
 
 # corresponds to the table in the database storing all information about an access request    
 class AccessRequest(Request):
+    """
+
+    """
     type = 'access'
-# corresponds to the table in the database storing all information about a deletion request    
+
+# corresponds to the table in the database storing all information about a deletion request
 class DeletionRequest(Request):
+    """
+
+    """
     type = 'deletion' 
     
