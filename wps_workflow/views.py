@@ -806,11 +806,12 @@ class WorkflowsView(LoginRequiredMixin, TemplateView):
 
 
 # TODO: document
-class EditorView(LoginRequiredMixin, TemplateView):
+#class EditorView(LoginRequiredMixin, TemplateView):
+class EditorView(TemplateView):
     """
 
     """
-    login_url = '/login/'
+    #login_url = '/login/'
     # login_url = 'vfwheron:watts_login'
 
     template_name = "index.html"

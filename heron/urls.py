@@ -17,10 +17,13 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.views.generic.base import RedirectView
+
 
 print('   *   heron urls.py')
 
 urlpatterns = [
+   # url(r'^$', RedirectView.as_view(url='vfwheron/', permanent=False)),
     url(r'^vfwheron/', include('vfwheron.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
     url(r'^admin/', admin.site.urls),
@@ -28,8 +31,8 @@ urlpatterns = [
     url(r'^heron_monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
     url(r'^heron_visual/', include('heron_visual.urls', namespace='heron_visual')),    
     url(r'^heron_upload/', include('heron_upload.urls', namespace='heron_upload')),
-   # url(r'^', include('wps_workflow.urls')),  # from wps_workflow
-    url(r'^wps_workflow/', include('wps_workflow.urls', namespace='wps_workflow')),
+    url(r'^', include('wps_workflow.urls')),  # from wps_workflow
+   # url(r'^wps_workflow/', include('wps_workflow.urls', namespace='wps_workflow')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     url(r'^AuthorizationManagement/', include('AuthorizationManagement.urls', namespace='AuthorizationManagement')),
 ]
