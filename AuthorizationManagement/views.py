@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, render_to_response, _get_queryset
 from django.views import generic
 from django.contrib.auth.decorators import login_required
-from .models import *
+from AuthorizationManagement.models import *
 from django.core.files import File
 from django.conf import settings
 import os
