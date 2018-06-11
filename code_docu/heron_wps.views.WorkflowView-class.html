@@ -3,7 +3,7 @@
           "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-  <title>vfwheron.apps</title>
+  <title>heron_wps.views.WorkflowView</title>
   <link rel="stylesheet" href="epydoc.css" type="text/css" />
   <script type="text/javascript" src="epydoc.js"></script>
 </head>
@@ -34,8 +34,9 @@
   <tr valign="top">
     <td width="100%">
       <span class="breadcrumbs">
-        <a href="vfwheron-module.html">Package&nbsp;vfwheron</a> ::
-        Module&nbsp;apps
+        <a href="heron_wps-module.html">Package&nbsp;heron_wps</a> ::
+        <a href="heron_wps.views-module.html">Module&nbsp;views</a> ::
+        Class&nbsp;WorkflowView
       </span>
     </td>
     <td>
@@ -45,25 +46,35 @@
     onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
         <tr><td align="right"><span class="options"
             >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="vfwheron.apps-module.html"
+            >]&nbsp;|&nbsp;<a href="heron_wps.views.WorkflowView-class.html"
             target="_top">no&nbsp;frames</a>]</span></td></tr>
       </table>
     </td>
   </tr>
 </table>
-<!-- ==================== MODULE DESCRIPTION ==================== -->
-<h1 class="epydoc">Module apps</h1><p class="nomargin-top"><span class="codelink"><a href="vfwheron.apps-pysrc.html">source&nbsp;code</a></span></p>
-<!-- ==================== CLASSES ==================== -->
-<a name="section-Classes"></a>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class WorkflowView</h1><p class="nomargin-top"><span class="codelink"><a href="heron_wps.views-pysrc.html#WorkflowView">source&nbsp;code</a></span></p>
+<pre class="base-tree">
+django.views.generic.base.TemplateView --+
+                                         |
+                                        <strong class="uidshort">WorkflowView</strong>
+</pre>
+
+<hr />
+<p>Template View for plain workflow HTML Template. Template so far does 
+  only contain iframe in content Block, that embedds wps_workflow app</p>
+
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
 <tr bgcolor="#70b0f0" class="table-header">
   <td colspan="2" class="table-header">
     <table border="0" cellpadding="0" cellspacing="0" width="100%">
       <tr valign="top">
-        <td align="left"><span class="table-header">Classes</span></td>
+        <td align="left"><span class="table-header">Class Variables</span></td>
         <td align="right" valign="top"
-         ><span class="options">[<a href="#section-Classes"
+         ><span class="options">[<a href="#section-ClassVariables"
          class="privatelink" onclick="toggle_private();"
          >hide private</a>]</span></td>
       </tr>
@@ -74,7 +85,7 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a href="vfwheron.apps.VfwheronConfig-class.html" class="summary-name">VfwheronConfig</a>
+        <a name="template_name"></a><span class="summary-name">template_name</span> = <code title="&quot;heron_wps/workflow.html&quot;">&quot;heron_wps/workflow.html&quot;</code>
     </td>
   </tr>
 </table>

@@ -28,8 +28,8 @@ urlpatterns = [
     url(r'^heron_monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
     url(r'^heron_visual/', include('heron_visual.urls', namespace='heron_visual')),    
     url(r'^heron_upload/', include('heron_upload.urls', namespace='heron_upload')),
-    url(r'^', include('wps_workflow.urls')),  # from wps_workflow
-    # url(r'^wps_workflow/', include('wps_workflow.urls', namespace='wps_workflow')),
+   # url(r'^', include('wps_workflow.urls')),  # from wps_workflow
+    url(r'^wps_workflow/', include('wps_workflow.urls', namespace='wps_workflow')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     url(r'^AuthorizationManagement/', include('AuthorizationManagement.urls', namespace='AuthorizationManagement')),
 ]

@@ -583,6 +583,8 @@ heron_wps.models.WebProcessingService.password	heron_wps.models.WebProcessingSer
 heron_wps.models.WebProcessingService.Meta	heron_wps.models.WebProcessingService.Meta-class.html
 heron_wps.models.WebProcessingService.Meta.verbose_name	heron_wps.models.WebProcessingService.Meta-class.html#verbose_name
 heron_wps.models.WebProcessingService.Meta.verbose_name_plural	heron_wps.models.WebProcessingService.Meta-class.html#verbose_name_plural
+heron_wps.views.WorkflowView	heron_wps.views.WorkflowView-class.html
+heron_wps.views.WorkflowView.template_name	heron_wps.views.WorkflowView-class.html#template_name
 vfwheron.admin.LtLicenseAdmin	vfwheron.admin.LtLicenseAdmin-class.html
 vfwheron.admin.LtLicenseAdmin.list_display	vfwheron.admin.LtLicenseAdmin-class.html#list_display
 vfwheron.admin.LtLicenseAdmin.form	vfwheron.admin.LtLicenseAdminForm-class.html
