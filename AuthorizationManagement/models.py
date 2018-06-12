@@ -8,7 +8,7 @@ import logging
 from django.template.loader import render_to_string
 from django.core.validators import MaxLengthValidator
 
-
+from vfwheron.models import TblMeta
 
 #class CustomUser(User):
 #    
@@ -24,11 +24,25 @@ from django.core.validators import MaxLengthValidator
 #    
 #    class Meta:
 #        proxy = True
+
+class PostgresReader(models.Model):
+    """
+    Table that links Users to Data in Postgres DB reader rights
+    """
+    psql_id = models.ForeignKey(TblMeta, models.DO_NOTHING)
+    user_id = models.ForeignKey(User, models.DO_NOTHING)
+    
+
+class PostgresOwner(models.Model):    
+    """
+    Table that links Users to Data in Postgres DB with owner rights
+    """
+    psql_id = models.ForeignKey(TblMeta, models.DO_NOTHING)
+    user_id = models.ForeignKey(User, models.DO_NOTHING)
         
-# corresponds to the table in the database storing all information about a resource
 class Resource(models.Model):
     """
-
+    Corresponds to the table in the database storing all information about a resource
     """
     type = models.CharField(max_length=50)
     name = models.CharField(max_length=150)
@@ -37,12 +51,12 @@ class Resource(models.Model):
     creationDate = models.DateTimeField(default=datetime.now, blank=True)
     readers = models.ManyToManyField(CustomUser, related_name= 'reader')
     owners = models.ManyToManyField(Owner, related_name= 'owner')
-    link = models.FileField(upload_to='')
+    link = models.FileField(upload_to='', default=' ')
 
     
 class Request(models.Model):
     """
-
+    Represents the Request table in the Database
     """
     sender = models.ForeignKey(CustomUser, on_delete = models.CASCADE)
     creationDate = models.DateTimeField(default=datetime.now, blank=True)
@@ -51,23 +65,25 @@ class Request(models.Model):
     type=""
     
     class Meta:
-        # the Request model must be an abstract class, to put some common information into the AccessRequest and DeletionRequest  model
-        #This model will not be used to create any database table
+        """
+        The Request model must be an abstract class, to put some common information into the AccessRequest and DeletionRequest  model
+        This model will not be used to create any database table
+        """
         abstract = True        
         unique_together=('sender','resource',) # This tuple must be unique when considered together
 
 
-# corresponds to the table in the database storing all information about an access request    
+  
 class AccessRequest(Request):
     """
-
+    Corresponds to the table in the database storing all information about an access request  
     """
     type = 'access'
 
-# corresponds to the table in the database storing all information about a deletion request
+
 class DeletionRequest(Request):
     """
-
+    Corresponds to the table in the database storing all information about a deletion request
     """
     type = 'deletion' 
     

@@ -40,6 +40,15 @@ import os
 logger = logging.getLogger(__name__)
 
 
+
+class WorkflowView(TemplateView):
+    """
+    Template View for plain workflow HTML Template.
+    Template so far does only contain iframe in content Block, that embedds wps_workflow app
+    """
+    template_name = "vfwheron/workflow.html"
+
+
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.

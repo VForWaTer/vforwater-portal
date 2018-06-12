@@ -13,9 +13,11 @@
 
 {% block content %}
 
+<script type="text/javascript">$(document).ready(function(){$("#wpstool").attr("src", "{% url 'wps_workflow:index' %}")})</script>
+
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
-      <iframe src="{% url 'wps_workflow:index' %}" />
+      <iframe id="wpstool" src="about:blank" frameBorder="0" height="80%" width="100%" style="margin-top: -20px; -moz-border-radius: 0; -webkit-border-radius: 0; border-radius: 0;"/>
   </div>
 </div>
 {% endblock %}

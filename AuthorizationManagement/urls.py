@@ -3,7 +3,7 @@ from django.urls import path
 from django.urls.conf import re_path
 from .admin import resource_manager
 from .admin import user_manager
-from .views import *
+from AuthorizationManagement.views import *
 
 # for security reasons all urls are accessible only for logged in users
 
