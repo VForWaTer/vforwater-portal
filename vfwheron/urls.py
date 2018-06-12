@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from heron import settings
 from .views import WorkflowView
+from wps_workflow.views import EditorView
 
 app_name = 'vfwheron'
 print('   *   vfwheron urls.py')

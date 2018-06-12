@@ -875,7 +875,14 @@ keyframes fa-spin { 0%{
 }
 
 .fa-workflow:before {
-	content: "\0048"
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+    margin-top: 3px;
+    content: "";
+    background: url('../../images/wf.png') no-repeat 0 0;
+    background-size: 100%;
 }
 
 .fa-tasks:before {

@@ -1,0 +1,248 @@
+   *   heron urls.py
+   *   vfwheron urls.py
+/	django.views.generic.base.RedirectView
+/AuthorizationManagement/	AuthorizationManagement.views.HomeView	AuthorizationManagement:home
+/AuthorizationManagement/approve-access-request/<requestid>	AuthorizationManagement.views.ApproveAccessRequest	AuthorizationManagement:approve-access-request
+/AuthorizationManagement/approve-deletion-request/<requestid>*	AuthorizationManagement.views.ApproveDeletionRequest	AuthorizationManagement:approve deletion request
+/AuthorizationManagement/cancel-access-request/<resourceid>	AuthorizationManagement.views.CancelAccessRequest	AuthorizationManagement:cancel-access-request
+/AuthorizationManagement/cancel-deletion-request/<resourceid>	AuthorizationManagement.views.CancelDeletionRequestView	AuthorizationManagement:cancel-delete-request
+/AuthorizationManagement/delete-resource/<resourceid>*	AuthorizationManagement.views.DeleteResourceView	AuthorizationManagement:delete resource
+/AuthorizationManagement/deny-access-request/<requestid>	AuthorizationManagement.views.DenyAccessRequest	AuthorizationManagement:deny-access-request
+/AuthorizationManagement/deny-deletion-request/<requestid>	AuthorizationManagement.views.DenyDeletionRequest	AuthorizationManagement:deny deletion request
+/AuthorizationManagement/profile/	AuthorizationManagement.views.ProfileView	AuthorizationManagement:profile
+/AuthorizationManagement/profile/edit-name/	AuthorizationManagement.views.EditNameView	AuthorizationManagement:edit-name
+/AuthorizationManagement/profile/my-resources/	AuthorizationManagement.views.MyResourcesView	AuthorizationManagement:my-resources
+/AuthorizationManagement/profile/my-resources/<resourceid>-edit-users-permissions/	AuthorizationManagement.views.PermissionEditingView	AuthorizationManagement:edit permissions
+/AuthorizationManagement/profile/my-resources/<resourceid>-edit-users-permissions/search	AuthorizationManagement.views.PermissionEditingViewSearch	AuthorizationManagement:edit permissions searching for user
+/AuthorizationManagement/profile/my-resources/add-new-resource/	AuthorizationManagement.views.AddNewResourceView	AuthorizationManagement:add-new-resource
+/AuthorizationManagement/resource-manager/	django.contrib.admin.sites.index	AuthorizationManagement:ResourceManager:index
+/AuthorizationManagement/resource-manager/<app_label>/	django.contrib.admin.sites.app_index	AuthorizationManagement:ResourceManager:app_list
+/AuthorizationManagement/resource-manager/AuthorizationManagement/resource/	django.contrib.admin.options.changelist_view	AuthorizationManagement:ResourceManager:AuthorizationManagement_resource_changelist
+/AuthorizationManagement/resource-manager/AuthorizationManagement/resource/<path:object_id>/	django.views.generic.base.RedirectView
+/AuthorizationManagement/resource-manager/AuthorizationManagement/resource/<path:object_id>/change/	django.contrib.admin.options.change_view	AuthorizationManagement:ResourceManager:AuthorizationManagement_resource_change
+/AuthorizationManagement/resource-manager/AuthorizationManagement/resource/<path:object_id>/delete/	django.contrib.admin.options.delete_view	AuthorizationManagement:ResourceManager:AuthorizationManagement_resource_delete
+/AuthorizationManagement/resource-manager/AuthorizationManagement/resource/<path:object_id>/history/	django.contrib.admin.options.history_view	AuthorizationManagement:ResourceManager:AuthorizationManagement_resource_history
+/AuthorizationManagement/resource-manager/AuthorizationManagement/resource/add/	django.contrib.admin.options.add_view	AuthorizationManagement:ResourceManager:AuthorizationManagement_resource_add
+/AuthorizationManagement/resource-manager/AuthorizationManagement/resource/autocomplete/	django.contrib.admin.options.autocomplete_view	AuthorizationManagement:ResourceManager:AuthorizationManagement_resource_autocomplete
+/AuthorizationManagement/resource-manager/jsi18n/	django.contrib.admin.sites.i18n_javascript	AuthorizationManagement:ResourceManager:jsi18n
+/AuthorizationManagement/resource-manager/login/	django.contrib.admin.sites.login	AuthorizationManagement:ResourceManager:login
+/AuthorizationManagement/resource-manager/logout/	django.contrib.admin.sites.logout	AuthorizationManagement:ResourceManager:logout
+/AuthorizationManagement/resource-manager/password_change/	django.contrib.admin.sites.password_change	AuthorizationManagement:ResourceManager:password_change
+/AuthorizationManagement/resource-manager/password_change/done/	django.contrib.admin.sites.password_change_done	AuthorizationManagement:ResourceManager:password_change_done
+/AuthorizationManagement/resource-manager/r/<int:content_type_id>/<path:object_id>/	django.contrib.contenttypes.views.shortcut	AuthorizationManagement:ResourceManager:view_on_site
+/AuthorizationManagement/resources-overview/	AuthorizationManagement.views.ResourcesOverview	AuthorizationManagement:resources-overview
+/AuthorizationManagement/resources-overview/search	AuthorizationManagement.views.ResourcesOverviewSearch	AuthorizationManagement:search-resources
+/AuthorizationManagement/resources/<resourceid>	AuthorizationManagement.views.OpenResourceView	AuthorizationManagement:open resources
+/AuthorizationManagement/send-access-request/<resourceid>	AuthorizationManagement.views.SendAccessRequestView	AuthorizationManagement:send-access-request
+/AuthorizationManagement/send-deletion-request/<resourceid>	AuthorizationManagement.views.SendDeletionRequestView	AuthorizationManagement:send-delete-request
+/AuthorizationManagement/user-manager/	django.contrib.admin.sites.index	AuthorizationManagement:UserManager:index
+/AuthorizationManagement/user-manager/<app_label>/	django.contrib.admin.sites.app_index	AuthorizationManagement:UserManager:app_list
+/AuthorizationManagement/user-manager/auth/user/	django.contrib.admin.options.changelist_view	AuthorizationManagement:UserManager:auth_user_changelist
+/AuthorizationManagement/user-manager/auth/user/<path:object_id>/	django.views.generic.base.RedirectView
+/AuthorizationManagement/user-manager/auth/user/<path:object_id>/change/	django.contrib.admin.options.change_view	AuthorizationManagement:UserManager:auth_user_change
+/AuthorizationManagement/user-manager/auth/user/<path:object_id>/delete/	django.contrib.admin.options.delete_view	AuthorizationManagement:UserManager:auth_user_delete
+/AuthorizationManagement/user-manager/auth/user/<path:object_id>/history/	django.contrib.admin.options.history_view	AuthorizationManagement:UserManager:auth_user_history
+/AuthorizationManagement/user-manager/auth/user/add/	django.contrib.admin.options.add_view	AuthorizationManagement:UserManager:auth_user_add
+/AuthorizationManagement/user-manager/auth/user/autocomplete/	django.contrib.admin.options.autocomplete_view	AuthorizationManagement:UserManager:auth_user_autocomplete
+/AuthorizationManagement/user-manager/jsi18n/	django.contrib.admin.sites.i18n_javascript	AuthorizationManagement:UserManager:jsi18n
+/AuthorizationManagement/user-manager/login/	django.contrib.admin.sites.login	AuthorizationManagement:UserManager:login
+/AuthorizationManagement/user-manager/logout/	django.contrib.admin.sites.logout	AuthorizationManagement:UserManager:logout
+/AuthorizationManagement/user-manager/password_change/	django.contrib.admin.sites.password_change	AuthorizationManagement:UserManager:password_change
+/AuthorizationManagement/user-manager/password_change/done/	django.contrib.admin.sites.password_change_done	AuthorizationManagement:UserManager:password_change_done
+/AuthorizationManagement/user-manager/r/<int:content_type_id>/<path:object_id>/	django.contrib.contenttypes.views.shortcut	AuthorizationManagement:UserManager:view_on_site
+/admin/	django.contrib.admin.sites.index	admin:index
+/admin/<app_label>/	django.contrib.admin.sites.app_index	admin:app_list
+/admin/AuthorizationManagement/accessrequest/	django.contrib.admin.options.changelist_view	admin:AuthorizationManagement_accessrequest_changelist
+/admin/AuthorizationManagement/accessrequest/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/AuthorizationManagement/accessrequest/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:AuthorizationManagement_accessrequest_change
+/admin/AuthorizationManagement/accessrequest/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:AuthorizationManagement_accessrequest_delete
+/admin/AuthorizationManagement/accessrequest/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:AuthorizationManagement_accessrequest_history
+/admin/AuthorizationManagement/accessrequest/add/	django.contrib.admin.options.add_view	admin:AuthorizationManagement_accessrequest_add
+/admin/AuthorizationManagement/accessrequest/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:AuthorizationManagement_accessrequest_autocomplete
+/admin/AuthorizationManagement/deletionrequest/	django.contrib.admin.options.changelist_view	admin:AuthorizationManagement_deletionrequest_changelist
+/admin/AuthorizationManagement/deletionrequest/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/AuthorizationManagement/deletionrequest/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:AuthorizationManagement_deletionrequest_change
+/admin/AuthorizationManagement/deletionrequest/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:AuthorizationManagement_deletionrequest_delete
+/admin/AuthorizationManagement/deletionrequest/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:AuthorizationManagement_deletionrequest_history
+/admin/AuthorizationManagement/deletionrequest/add/	django.contrib.admin.options.add_view	admin:AuthorizationManagement_deletionrequest_add
+/admin/AuthorizationManagement/deletionrequest/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:AuthorizationManagement_deletionrequest_autocomplete
+/admin/AuthorizationManagement/resource/	django.contrib.admin.options.changelist_view	admin:AuthorizationManagement_resource_changelist
+/admin/AuthorizationManagement/resource/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/AuthorizationManagement/resource/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:AuthorizationManagement_resource_change
+/admin/AuthorizationManagement/resource/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:AuthorizationManagement_resource_delete
+/admin/AuthorizationManagement/resource/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:AuthorizationManagement_resource_history
+/admin/AuthorizationManagement/resource/add/	django.contrib.admin.options.add_view	admin:AuthorizationManagement_resource_add
+/admin/AuthorizationManagement/resource/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:AuthorizationManagement_resource_autocomplete
+/admin/auth/group/	django.contrib.admin.options.changelist_view	admin:auth_group_changelist
+/admin/auth/group/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/auth/group/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_group_change
+/admin/auth/group/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_group_delete
+/admin/auth/group/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_group_history
+/admin/auth/group/add/	django.contrib.admin.options.add_view	admin:auth_group_add
+/admin/auth/group/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:auth_group_autocomplete
+/admin/auth/user/	django.contrib.admin.options.changelist_view	admin:auth_user_changelist
+/admin/auth/user/<id>/password/	django.contrib.auth.admin.user_change_password	admin:auth_user_password_change
+/admin/auth/user/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/auth/user/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_user_change
+/admin/auth/user/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_user_delete
+/admin/auth/user/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_user_history
+/admin/auth/user/add/	django.contrib.auth.admin.add_view	admin:auth_user_add
+/admin/auth/user/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:auth_user_autocomplete
+/admin/dashboard/webprocessingservice/	django.contrib.admin.options.changelist_view	admin:dashboard_webprocessingservice_changelist
+/admin/dashboard/webprocessingservice/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/dashboard/webprocessingservice/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dashboard_webprocessingservice_change
+/admin/dashboard/webprocessingservice/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dashboard_webprocessingservice_delete
+/admin/dashboard/webprocessingservice/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dashboard_webprocessingservice_history
+/admin/dashboard/webprocessingservice/add/	django.contrib.admin.options.add_view	admin:dashboard_webprocessingservice_add
+/admin/dashboard/webprocessingservice/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:dashboard_webprocessingservice_autocomplete
+/admin/doc/	django.contrib.admindocs.views.BaseAdminDocsView	django-admindocs-docroot
+/admin/doc/bookmarklets/	django.contrib.admindocs.views.BookmarkletsView	django-admindocs-bookmarklets
+/admin/doc/filters/	django.contrib.admindocs.views.TemplateFilterIndexView	django-admindocs-filters
+/admin/doc/models/	django.contrib.admindocs.views.ModelIndexView	django-admindocs-models-index
+/admin/doc/models/<app_label>\.<model_name>/	django.contrib.admindocs.views.ModelDetailView	django-admindocs-models-detail
+/admin/doc/tags/	django.contrib.admindocs.views.TemplateTagIndexView	django-admindocs-tags
+/admin/doc/templates/<path:template>/	django.contrib.admindocs.views.TemplateDetailView	django-admindocs-templates
+/admin/doc/views/	django.contrib.admindocs.views.ViewIndexView	django-admindocs-views-index
+/admin/doc/views/<view>/	django.contrib.admindocs.views.ViewDetailView	django-admindocs-views-detail
+/admin/heron_wps/webprocessingservice/	django.contrib.admin.options.changelist_view	admin:heron_wps_webprocessingservice_changelist
+/admin/heron_wps/webprocessingservice/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/heron_wps/webprocessingservice/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:heron_wps_webprocessingservice_change
+/admin/heron_wps/webprocessingservice/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:heron_wps_webprocessingservice_delete
+/admin/heron_wps/webprocessingservice/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:heron_wps_webprocessingservice_history
+/admin/heron_wps/webprocessingservice/add/	django.contrib.admin.options.add_view	admin:heron_wps_webprocessingservice_add
+/admin/heron_wps/webprocessingservice/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:heron_wps_webprocessingservice_autocomplete
+/admin/jsi18n/	django.contrib.admin.sites.i18n_javascript	admin:jsi18n
+/admin/login/	django.contrib.admin.sites.login	admin:login
+/admin/logout/	django.contrib.admin.sites.logout	admin:logout
+/admin/password_change/	django.contrib.admin.sites.password_change	admin:password_change
+/admin/password_change/done/	django.contrib.admin.sites.password_change_done	admin:password_change_done
+/admin/r/<int:content_type_id>/<path:object_id>/	django.contrib.contenttypes.views.shortcut	admin:view_on_site
+/admin/vfwheron/ltlicense/	django.contrib.admin.options.changelist_view	admin:vfwheron_ltlicense_changelist
+/admin/vfwheron/ltlicense/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/vfwheron/ltlicense/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:vfwheron_ltlicense_change
+/admin/vfwheron/ltlicense/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:vfwheron_ltlicense_delete
+/admin/vfwheron/ltlicense/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:vfwheron_ltlicense_history
+/admin/vfwheron/ltlicense/add/	django.contrib.admin.options.add_view	admin:vfwheron_ltlicense_add
+/admin/vfwheron/ltlicense/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:vfwheron_ltlicense_autocomplete
+/admin/vfwheron/ltuser/	django.contrib.admin.options.changelist_view	admin:vfwheron_ltuser_changelist
+/admin/vfwheron/ltuser/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/vfwheron/ltuser/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:vfwheron_ltuser_change
+/admin/vfwheron/ltuser/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:vfwheron_ltuser_delete
+/admin/vfwheron/ltuser/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:vfwheron_ltuser_history
+/admin/vfwheron/ltuser/add/	django.contrib.admin.options.add_view	admin:vfwheron_ltuser_add
+/admin/vfwheron/ltuser/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:vfwheron_ltuser_autocomplete
+/admin/vfwheron/tblmeta/	django.contrib.admin.options.changelist_view	admin:vfwheron_tblmeta_changelist
+/admin/vfwheron/tblmeta/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/vfwheron/tblmeta/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:vfwheron_tblmeta_change
+/admin/vfwheron/tblmeta/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:vfwheron_tblmeta_delete
+/admin/vfwheron/tblmeta/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:vfwheron_tblmeta_history
+/admin/vfwheron/tblmeta/add/	django.contrib.admin.options.add_view	admin:vfwheron_tblmeta_add
+/admin/vfwheron/tblmeta/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:vfwheron_tblmeta_autocomplete
+/admin/vfwheron/tblvariable/	django.contrib.admin.options.changelist_view	admin:vfwheron_tblvariable_changelist
+/admin/vfwheron/tblvariable/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/vfwheron/tblvariable/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:vfwheron_tblvariable_change
+/admin/vfwheron/tblvariable/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:vfwheron_tblvariable_delete
+/admin/vfwheron/tblvariable/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:vfwheron_tblvariable_history
+/admin/vfwheron/tblvariable/add/	django.contrib.admin.options.add_view	admin:vfwheron_tblvariable_add
+/admin/vfwheron/tblvariable/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:vfwheron_tblvariable_autocomplete
+/admin/wps_workflow/artefact/	django.contrib.admin.options.changelist_view	admin:wps_workflow_artefact_changelist
+/admin/wps_workflow/artefact/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/artefact/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_artefact_change
+/admin/wps_workflow/artefact/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_artefact_delete
+/admin/wps_workflow/artefact/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_artefact_history
+/admin/wps_workflow/artefact/add/	django.contrib.admin.options.add_view	admin:wps_workflow_artefact_add
+/admin/wps_workflow/artefact/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_artefact_autocomplete
+/admin/wps_workflow/edge/	django.contrib.admin.options.changelist_view	admin:wps_workflow_edge_changelist
+/admin/wps_workflow/edge/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/edge/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_edge_change
+/admin/wps_workflow/edge/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_edge_delete
+/admin/wps_workflow/edge/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_edge_history
+/admin/wps_workflow/edge/add/	django.contrib.admin.options.add_view	admin:wps_workflow_edge_add
+/admin/wps_workflow/edge/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_edge_autocomplete
+/admin/wps_workflow/inputoutput/	django.contrib.admin.options.changelist_view	admin:wps_workflow_inputoutput_changelist
+/admin/wps_workflow/inputoutput/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/inputoutput/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_inputoutput_change
+/admin/wps_workflow/inputoutput/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_inputoutput_delete
+/admin/wps_workflow/inputoutput/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_inputoutput_history
+/admin/wps_workflow/inputoutput/add/	django.contrib.admin.options.add_view	admin:wps_workflow_inputoutput_add
+/admin/wps_workflow/inputoutput/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_inputoutput_autocomplete
+/admin/wps_workflow/process/	django.contrib.admin.options.changelist_view	admin:wps_workflow_process_changelist
+/admin/wps_workflow/process/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/process/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_process_change
+/admin/wps_workflow/process/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_process_delete
+/admin/wps_workflow/process/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_process_history
+/admin/wps_workflow/process/add/	django.contrib.admin.options.add_view	admin:wps_workflow_process_add
+/admin/wps_workflow/process/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_process_autocomplete
+/admin/wps_workflow/session/	django.contrib.admin.options.changelist_view	admin:wps_workflow_session_changelist
+/admin/wps_workflow/session/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/session/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_session_change
+/admin/wps_workflow/session/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_session_delete
+/admin/wps_workflow/session/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_session_history
+/admin/wps_workflow/session/add/	django.contrib.admin.options.add_view	admin:wps_workflow_session_add
+/admin/wps_workflow/session/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_session_autocomplete
+/admin/wps_workflow/task/	django.contrib.admin.options.changelist_view	admin:wps_workflow_task_changelist
+/admin/wps_workflow/task/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/task/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_task_change
+/admin/wps_workflow/task/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_task_delete
+/admin/wps_workflow/task/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_task_history
+/admin/wps_workflow/task/add/	django.contrib.admin.options.add_view	admin:wps_workflow_task_add
+/admin/wps_workflow/task/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_task_autocomplete
+/admin/wps_workflow/workflow/	django.contrib.admin.options.changelist_view	admin:wps_workflow_workflow_changelist
+/admin/wps_workflow/workflow/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/workflow/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_workflow_change
+/admin/wps_workflow/workflow/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_workflow_delete
+/admin/wps_workflow/workflow/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_workflow_history
+/admin/wps_workflow/workflow/add/	django.contrib.admin.options.add_view	admin:wps_workflow_workflow_add
+/admin/wps_workflow/workflow/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_workflow_autocomplete
+/admin/wps_workflow/wps/	django.contrib.admin.options.changelist_view	admin:wps_workflow_wps_changelist
+/admin/wps_workflow/wps/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/wps/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_wps_change
+/admin/wps_workflow/wps/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_wps_delete
+/admin/wps_workflow/wps/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_wps_history
+/admin/wps_workflow/wps/add/	django.contrib.admin.options.add_view	admin:wps_workflow_wps_add
+/admin/wps_workflow/wps/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_wps_autocomplete
+/admin/wps_workflow/wpsprovider/	django.contrib.admin.options.changelist_view	admin:wps_workflow_wpsprovider_changelist
+/admin/wps_workflow/wpsprovider/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/wps_workflow/wpsprovider/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:wps_workflow_wpsprovider_change
+/admin/wps_workflow/wpsprovider/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:wps_workflow_wpsprovider_delete
+/admin/wps_workflow/wpsprovider/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:wps_workflow_wpsprovider_history
+/admin/wps_workflow/wpsprovider/add/	django.contrib.admin.options.add_view	admin:wps_workflow_wpsprovider_add
+/admin/wps_workflow/wpsprovider/autocomplete/	django.contrib.admin.options.autocomplete_view	admin:wps_workflow_wpsprovider_autocomplete
+/dashboard/	dashboard.views.index	dashboard:index
+/dashboard/template	dashboard.views.template	dashboard:template
+/heron_monitor/	heron_monitor.views.home	heron_monitor:home
+/heron_upload/	heron_upload.views.HomeView	heron_upload:home
+/heron_upload/clear/	heron_upload.views.clear_database	heron_upload:clear_database
+/heron_upload/clear/<pk>/delete/	heron_upload.views.delete_data	heron_upload:delete_data
+/heron_upload/heron-upload/	heron_upload.views.HomeView	heron_upload:heron_upload
+/heron_visual/	heron_visual.views.home	heron_visual:home
+/heron_wps/	heron_wps.views.home	heron_wps:home
+/heron_wps/<service>/	heron_wps.views.service	heron_wps:service
+/heron_wps/<service>/process/<identifier>/	heron_wps.views.process	heron_wps:process
+/media\/<path>	django.views.static.serve
+/vfwheron/	vfwheron.views.HomeView	vfwheron:home
+/vfwheron/failedlogin	django.contrib.auth.views.login	vfwheron:failedlogin
+/vfwheron/geoserver/<service>/<layer>/<bbox>/<srid>	vfwheron.views.GeoserverView
+/vfwheron/help	vfwheron.views.HelpView	vfwheron:help
+/vfwheron/login	django.contrib.auth.views.login	vfwheron:login
+/vfwheron/logout	vfwheron.views.LogoutView	vfwheron:logout
+/vfwheron/menu	vfwheron.views.menuView	vfwheron:menu
+/vfwheron/watts_login	vfwheron.views.LoginView	vfwheron:watts_login
+/vfwheron/workflowtool/	vfwheron.views.WorkflowView	vfwheron:workflow
+/wps_workflow/	wps_workflow.views.EditorView	wps_workflow:index
+/wps_workflow/editor/	wps_workflow.views.EditorView	wps_workflow:editor
+/wps_workflow/login/	wps_workflow.views.OurLoginView	wps_workflow:login
+/wps_workflow/logout/	wps_workflow.views.OurLogoutView	wps_workflow:logout
+/wps_workflow/process/	wps_workflow.views.ProcessView
+/wps_workflow/process/<int:process_id>	wps_workflow.views.ProcessView
+/wps_workflow/settings/	wps_workflow.views.SettingsView	wps_workflow:settings
+/wps_workflow/user/	wps_workflow.views.UserView
+/wps_workflow/workflow/	wps_workflow.views.WorkflowView
+/wps_workflow/workflow/<int:workflow_id>	wps_workflow.views.WorkflowView
+/wps_workflow/workflow_refresh/<int:workflow_id>	wps_workflow.views.refresh
+/wps_workflow/workflow_start/<int:workflow_id>	wps_workflow.views.start
+/wps_workflow/workflow_stop/<int:workflow_id>	wps_workflow.views.stop
+/wps_workflow/workflows/	wps_workflow.views.WorkflowsView	wps_workflow:workflows
+/wps_workflow/wps/	wps_workflow.views.WPSView
+/wps_workflow/wps/<int:wps_id>	wps_workflow.views.WPSView
+/wps_workflow/wps_refresh/	wps_workflow.views.refresh
