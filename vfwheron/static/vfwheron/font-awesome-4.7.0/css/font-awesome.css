@@ -688,10 +688,12 @@
 }
 .fa-workflow:before {
   display: inline-block;
+  position: relative;
   width: 24px;
   height: 24px;
   margin-right: 5px;
-  margin-top: 3px;
+  margin-top: -4px;
+  top: 5px;
   content: "";
   background: url('../../images/wf.png') no-repeat 0 0;
   background-size: 100%;
