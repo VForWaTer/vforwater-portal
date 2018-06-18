@@ -2,9 +2,20 @@ from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from AuthorizationManagement.models import *
 
+
+admin.site.register(PostgresReader)
+admin.site.register(PostgresOwner)
 admin.site.register(Resource)
 admin.site.register(AccessRequest)
 admin.site.register(DeletionRequest)
+
+
+
+#class RowInline(admin.TabularInline):
+    #model = Resource.owners.through
+    #fields = ['user_id']
+
+    
  
 class ResourceManager(AdminSite):
     """
@@ -19,6 +30,9 @@ class ResourceAdmin(admin.ModelAdmin):
     """
     Admin Model display for a Resource object entry in Database 
     """
+    #inlines = [
+    #    RowInline,
+    #]
     list_display = ["name",
                     "type", 
                     "description"]
@@ -26,7 +40,10 @@ class ResourceAdmin(admin.ModelAdmin):
                      "type", 
                      "description"]
     
+
+
 resource_manager.register(Resource, ResourceAdmin)
+#resource_manager.register(TableAdmin)
 # Text to put at the end of each page's <title>.
 resource_manager.site_title = 'Site Admin'
 

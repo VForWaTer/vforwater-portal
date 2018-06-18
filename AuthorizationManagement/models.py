@@ -8,7 +8,7 @@ import logging
 from django.template.loader import render_to_string
 from django.core.validators import MaxLengthValidator
 
-from vfwheron.models import TblMeta
+#from vfwheron.models import TblMeta
 
 #class CustomUser(User):
 #    
@@ -29,16 +29,17 @@ class PostgresReader(models.Model):
     """
     Table that links Users to Data in Postgres DB reader rights
     """
-    psql_id = models.ForeignKey(TblMeta, models.DO_NOTHING)
-    user_id = models.ForeignKey(User, models.DO_NOTHING)
+    psql_id = models.IntegerField(default=0)
+    user_id = models.IntegerField(default=0)
     
 
 class PostgresOwner(models.Model):    
     """
-    Table that links Users to Data in Postgres DB with owner rights
+    Table that links Users to Data in Postgres DB with owner rights    
     """
-    psql_id = models.ForeignKey(TblMeta, models.DO_NOTHING)
-    user_id = models.ForeignKey(User, models.DO_NOTHING)
+    psql_id = models.IntegerField(default=0)
+    user_id = models.IntegerField(default=0)
+   
         
 class Resource(models.Model):
     """
@@ -49,8 +50,8 @@ class Resource(models.Model):
     description = models.TextField(max_length=250, blank=True,
                                    validators=[MaxLengthValidator(250)])
     creationDate = models.DateTimeField(default=datetime.now, blank=True)
-    readers = models.ManyToManyField(CustomUser, related_name= 'reader')
-    owners = models.ManyToManyField(Owner, related_name= 'owner')
+    readers = models.ManyToManyField(User, related_name= 'reader')
+    owners = models.ManyToManyField(User, related_name= 'owner')
     link = models.FileField(upload_to='', default=' ')
 
     
