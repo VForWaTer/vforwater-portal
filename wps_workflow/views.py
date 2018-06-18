@@ -800,7 +800,7 @@ class WorkflowsView(LoginRequiredMixin, TemplateView):
     """
 
     """
-    login_url = '/login/'
+    login_url = '/wps_workflow/login/'
 
     template_name = "index.html"
 
@@ -810,7 +810,7 @@ class EditorView(LoginRequiredMixin, TemplateView):
     """
 
     """
-    login_url = '/login/'
+    login_url = '/wps_workflow/login/'
     # login_url = 'vfwheron:watts_login'
 
     template_name = "index.html"
@@ -819,6 +819,6 @@ class EditorView(LoginRequiredMixin, TemplateView):
 # TODO: document
 class SettingsView(LoginRequiredMixin, TemplateView):
 
-    login_url = '/login/'
+    login_url = '/wps_workflow/login/'
 
     template_name = "index.html"

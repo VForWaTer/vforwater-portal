@@ -7,15 +7,7 @@ from heron.settings import VFW_SERVER, HOST_NAME
 from heron_wps.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 #from heron_wps.forms import InputForm
 
-from django.views.generic.base import TemplateView
 
-
-class WorkflowView(TemplateView):
-    """
-    Template View for plain workflow HTML Template.
-    Template so far does only contain iframe in content Block, that embedds wps_workflow app
-    """
-    template_name = "heron_wps/workflow.html"
     
 
 def home(request):

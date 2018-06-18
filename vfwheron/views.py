@@ -40,6 +40,15 @@ import os
 logger = logging.getLogger(__name__)
 
 
+
+class WorkflowView(TemplateView):
+    """
+    Template View for plain workflow HTML Template.
+    Template so far does only contain iframe in content Block, that embedds wps_workflow app
+    """
+    template_name = "vfwheron/workflow.html"
+
+
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
@@ -78,9 +87,8 @@ class menuView(TemplateView):
         request.session.set_expiry(20)  # TODO: expire after 20 seconds/ this is only for development!!!
 
         # bring last used menu to session
-        menu = request.GET.get('menu')
-        if menu:
-            request.session['menu'] = menu
+        if 'menu' in request.GET:
+            request.session['menu'] = request.GET.get('menu')
             request.session.modified = True
         else:
             menu = request.session.get('menu')
@@ -109,13 +117,12 @@ class menuView(TemplateView):
                 dataset_dict = {work_dataset: data_definition}
             return dataset_dict
 
-        work_dataset = request.GET.get('workspaceData')
-        min_time = request.GET.get('minTime')
-        max_time = request.GET.get('maxTime')
-        if work_dataset:
+        if 'workspaceData' in request.GET:
+            min_time = request.GET.get('minTime')
+            max_time = request.GET.get('maxTime')
             result = {}
             # prepare work_dataset differently for list and single value to use in build_selection
-            conv_work_dataset = json.loads(work_dataset)
+            conv_work_dataset = json.loads(request.GET.get('workspaceData'))
             if type(conv_work_dataset) == list:
                 for datasetId in conv_work_dataset:
                     result = build_selection(str(datasetId), result, min_time, max_time)
@@ -128,15 +135,12 @@ class menuView(TemplateView):
             imgtag = maelicke_plot(request.GET.get('preview'))
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
-        # if request.GET.get('filter_selection'):
-        filter_selection = request.GET.get('filter_selection')
-        if filter_selection:
-            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(filter_selection))
+        if 'filter_selection' in request.GET:
+            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection')))
             return JsonResponse(filter_menu)
 
-        filter_selection_map = request.GET.get('filter_selection_map')
-        if filter_selection_map:
-            meta_ids = newbuild_id_list(HomeView.Menu['server'], json.loads(filter_selection_map))
+        if 'filter_selection_map' in request.GET:
+            meta_ids = newbuild_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
             return JsonResponse(meta_ids)
 
         return JsonResponse({'Error': 'Something is missing. Check views.py'})
