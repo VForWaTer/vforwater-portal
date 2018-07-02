@@ -31,13 +31,23 @@ from datetime import datetime
 import time
 
 from .filter import FilterMethods, Menu, newbuild_id_list
-from .models import TblMeta, TblVariable
+from .models import TblMeta, TblVariable, TblData
 
 import logging
 import os
 
 # Create your views here.
 logger = logging.getLogger(__name__)
+
+
+def get_dataset(self, request, **kwargs):
+    # here 
+    id = request.POST.get('meta_id')
+    
+    data = TblData.objects.get(meta=id).value
+    result = "test"
+    
+    return result
 
 
 
