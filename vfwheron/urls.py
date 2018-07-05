@@ -17,7 +17,7 @@ urlpatterns = [
     url(r'^logout$', views.LogoutView.as_view(), name='logout'),
     url(r'^menu$', views.menuView.as_view(), name='menu'),
     url(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$', views.GeoserverView.as_view()),
-    url(r'^workflowtool/', WorkflowView.as_view(), name='workflow'),
+    url(r'^workflowtool/', WorkflowView.as_view(), name='workflowtool'),
 ]
 
 if settings.ON_VFW_SERVER:

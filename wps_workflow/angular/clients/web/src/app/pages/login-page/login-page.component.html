@@ -1,0 +1,26 @@
+<div *ngIf="!(loggedIn | async) else logoutTemplate" class="container login-page">
+    <h1>Login</h1>
+
+    <mat-card fxLayout="row" fxLayoutAlign="space-between">
+        <div>
+            <mat-form-field>
+                <input #usernameInput matInput placeholder="Name" autofocus>
+            </mat-form-field>
+            <mat-form-field>
+                <input #passwordInput matInput placeholder="Password" type="password">
+            </mat-form-field>
+
+        </div>
+        <button mat-raised-button color="primary" (click)="login(usernameInput.value, passwordInput.value)"
+                                                (keyup.enter)="login(usernameInput.value, passwordInput.value)">LOGIN</button>
+    </mat-card>
+</div>
+
+<ng-template #logoutTemplate>
+    <div class="container login-page">
+        <h1>Logout</h1>
+
+        <button mat-raised-button color="primary" (click)="logout()">LOGOUT</button>
+    </div>
+
+</ng-template>
