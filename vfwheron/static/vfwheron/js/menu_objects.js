@@ -291,7 +291,31 @@ function showSelectionOnMap(selection) {
         }, // data sent with the post request
         success: function (json) {
             selectedIds = json['all_filters'];
-            wfsPointLayer.changed()
+            console.log('wfsPointSource: ', wfsPointSource)
+            console.log('wfsPointSource: ', wfsPointSource.getProperties())
+            console.log('wfsPointSource: ', wfsPointSource.getState())
+            console.log('wfsPointSource: ', wfsPointSource.getFeatures())
+            console.log('filteredPoints: ', filteredPoints.getFeatures())
+            console.log('filteredPoints: ', filteredPoints.getProperties())
+            console.log('filteredPoints: ', filteredPoints.getState())
+            filteredPoints.clear()
+            // console.log('wfsPointSource: ', wfsPointSource)
+            // console.log('wfsPointSource: ', wfsPointSource.getProperties())
+            // console.log('wfsPointSource: ', wfsPointSource.getState())
+            // console.log('wfsPointSource: ', wfsPointSource.getFeatures())
+            //
+            // console.log('filtered points: ', filteredPoints)
+            // console.log('filteredPoints: ', filteredPoints.getProperties())
+            // console.log('filteredPoints: ', filteredPoints.getState())
+            // // let mainfnc = new create_map();
+            // // mainfnc.filterSource();
+            // wfsPointLayer.changed()
+            // // vector.changed()
+            // filteredPoints.changed()
+            // // wfsPointSource.changed()
+            // clusterSource.changed()
+            // clusterLayer.changed()
+            // styleCache = {}
         },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";

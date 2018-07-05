@@ -2,10 +2,12 @@ let data_style = null;
 let wfsPointLayer = null;
 let wfsPointSource = null;
 let vector = null;
-let clusterSource = null;
-let createStyle = null;
+// let clusterSource = null;
 let selectedIds = null;
-let filteredWfs = null;
+let clusterLayer = null;
+let filteredPoints = null;
+// Style for the clusters
+let styleCache = {};
 
 
 //Create own base layer
@@ -34,199 +36,12 @@ function create_map() {
         minZoom: 2,
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
-    // wms layer for use on a local machine
-    let wmsPointSource = new ol.source.TileWMS({
-        url: GEO_SERVER + '/wms',
-        serverType: 'geoserver',
-        params: {
-            LAYERS: 'CAOS_update:new_ID_as_identifier_update', // 'CAOS:get_pointinfo' 'CAOS:pointdata'
-            TILED: true,
-            STYLES: data_style //STYLES: Light Blue Circle', 'CAOS:new_point',
-        },
-        name: 'wmsPointSource'
-    });
-    let wmsPointLayer = new ol.layer.Tile({
-        source: wmsPointSource
-    });
 
-    let defaultStyle = new ol.style.Style({
-        image: new ol.style.Circle({
-            radius: 8,
-            fill: new ol.style.Fill({
-                color: '#AADDF9'
-            }),
-            stroke: new ol.style.Stroke({
-                color: '#00BAEE',
-                width: 0.1
-            })
-        })
-    });
-     const invisibleFill = new ol.style.Fill({
-        color: 'rgba(255, 255, 255, 0.01)'
-      });
-    /*   function styleFunction(feature){
-           var name = feature.getId();
-           var id = parseInt(name.substr(wfsLayerName.length+1,8))
-           if (selection.includes(id)) {
-               console.log('found: ', id)
-               var style = new ol.style.Style({
-                   image: new ol.style.Circle({
-                       radius: 6,
-                       fill: new ol.style.Fill({
-                           color: 'blue'
-                       }),
-                       stroke: new ol.style.Stroke({
-                           color: 'black',
-                           width: 0.5
-                       })
-                   })
-               })
-           } else {
-               style = defaultStyle
-           }
-           return style
-         }*/
-    function createStyle(feature) {
-        console.log('createStyle')
-        feature = feature.get('features')[0];
-        var style;
-        if (selectedIds) {
-            console.log('there are selectedIds: ');//, selectedIds);
-            var name = feature.getId();
-            var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-            if (selectedIds.includes(id)) {
-                console.log('found id: ', id);
-                var style = new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: 10,
-                        fill: new ol.style.Fill({
-                            color: '#AADDF9'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: 'black',
-                            width: 1.5
-                        })
-                    })
-                })
-            } else {
-                console.log('!!! !! ! Else von create style ');
-                // defaultStyle.getImage().setRadius(3)
-                // style = defaultStyle
-            }
-        } else {
-            style = defaultStyle
-        }
-
-        return style
-    }
-
-    // works more or less... but first fix sidebar
-    /*    let styleCache = {};
-        function clusterStyle (feature) {
-            let size = feature.get('features').length;
-            let style = styleCache[size];
-              if (!style) {
-                style = new ol.style.Style({
-                  image: new ol.style.Circle({
-                    radius: Math.round(8+1.3*Math.log(size)),
-                    stroke: new ol.style.Stroke({
-                      color: 'green',
-                      width: 0.1
-                    }),
-                    fill: new ol.style.Fill({
-                      color: 'blue', //'dodgerblue'
-                    })
-                  }),
-                  text: new ol.style.Text({
-                    text: size.toString(),
-                      font: '12px helvetica,sans-serif',
-                    fill: new ol.style.Fill({
-                      color: 'white'
-                    })
-                  })
-                });
-                styleCache[size] = style;
-              }
-              console.log('style: ', style)
-              return style;
-            }*/
-
-    var maxFeatureCount;
-
-    function calculateClusterInfo(resolution) {
-        console.log('calculateClusterInfo')
-        maxFeatureCount = 0;
-        var features = vector.getSource().getFeatures();
-        console.log('calculateClusterInfo')
-        // console.log(' + + + features: ', features)
-        var feature, radius;
-        for (var i = features.length - 1; i >= 0; --i) {
-            feature = features[i];
-            var originalFeatures = feature.get('features');
-            var extent = ol.extent.createEmpty();
-            var j, jj;
-            for (j = 0, jj = originalFeatures.length; j < jj; ++j) {
-                ol.extent.extend(extent, originalFeatures[j].getGeometry().getExtent());
-            }
-            maxFeatureCount = Math.max(maxFeatureCount, jj);
-            radius = 0.25 * (ol.extent.getWidth(extent) + ol.extent.getHeight(extent)) /
-                resolution;
-            feature.set('radius', radius);
-        }
-    }
-
-    var currentResolution;
-
-// TODO: Check why styleFunction is called twice and correct it
-    function styleFunction(feature, resolution) {
-        console.log('styleFunction')
-        if (resolution != currentResolution) {
-            console.log('if styleFunction')
-            calculateClusterInfo(resolution);
-            currentResolution = resolution;
-        }
-        var style;
-        var size = feature.get('features').length;
-        if (size > 1) {
-            var name = feature.getId();
-            // console.log('selection feature: ', feature)
-            // console.log('selection feature: ', feature.get("features"))
-           /* console.log('selection feature: ', feature.getProperties())
-            var id = parseInt(name.substr(wfsLayerName.length+1,8))
-            if (selection.includes(id)) {
-               console.log('selection name, id', name, id)
-           }*/
-            console.log('features: in styleFunction ', feature.get('features'))
-            style = new ol.style.Style({
-                image: new ol.style.Circle({
-                    radius: Math.round(8 + 1.3 * Math.log(size)),
-                    stroke: new ol.style.Stroke({
-                        color: '                  color: \'black\'\n',
-                        width: 0.1
-                    }),
-                    fill: new ol.style.Fill({
-                        color: '#AADDF9', //'dodgerblue'
-                    })
-                }),
-                text: new ol.style.Text({
-                    text: size.toString(),
-                    font: '12px helvetica,sans-serif',
-                    fill: new ol.style.Fill({
-                        color: 'black'
-                    })
-                })
-            });
-        } else {
-            var originalFeature = feature.get('features')[0];
-            console.log('else styleFunction', originalFeature)
-            style = createStyle(originalFeature);
-        }
-        return style;
-    }
 
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
+            console.log(' - - - - - - -  loader is running - - - - -  ')
             var url = GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857';
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url);
@@ -249,83 +64,24 @@ function create_map() {
         strategy: ol.loadingstrategy.bbox
     });
 
-    function filterSource() {
-        console.log('filterSource')
-    // function filterSource(feature, selection) {
-        if (!filteredWfs) {
-            filteredWfs = wfsPointSource;
-        } else {
-            if (selectedIds) {
-                console.log('wfsPointSource: ', wfsPointSource)
-                console.log('wfsPointSource: ', wfsPointSource.getProperties())
-                console.log('wfsPointSource: ', wfsPointSource.getState())
-                console.log('wfsPointSource: ', wfsPointSource.getFeatures())
-            var name = wfsPointSource.getId();
+    function PointFilter(feature) {
+        console.log('wfsPointSource ', wfsPointSource);
+        if (selectedIds) {
+            console.log('wfsPointSource: ', wfsPointSource)
+            console.log('wfsPointSource: ', wfsPointSource.getProperties())
+            console.log('wfsPointSource: ', wfsPointSource.getState())
+            console.log('wfsPointSource: ', wfsPointSource.getFeatures())
+            console.log('filteredPoints: ', filteredPoints.getFeatures())
+            filteredPoints.clear()
+            console.log('filteredPoints: ', filteredPoints.getFeatures())
+            var name = feature.getId();
+            console.log(' -- - - - - -  in get filteredPoints  - -  -  - ', name)
             var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-            if (selectedIds.includes(id)) {
-                console.log('found: ', id);
-
-
-            } else {
-                // defaultStyle.getImage().setRadius(3)
-                // style = defaultStyle
+            if (selectedIds.includes(id)){
+                console.log('selectedIds.includes(id): ', selectedIds.includes(id))
             }
         }
-
-        }
-    }
-    // filterSource();
-    // create_map.filterSource = filterSource;
-
-// works more or less 2; first fix sidebar
-    vector = new ol.layer.Vector({
-        source: new ol.source.Cluster({
-            distance: 35,   //parseInt(distance.value, 10),
-            source: wfsPointSource,//filteredWfs,
-
-
-        /*
-                        clusterSource = new ol.source.Cluster({
-                    distance: 30,   //parseInt(distance.value, 10),
-                    source: wfsPointSource,
-        */
-
-/*                geometryFunction: function(feature) {
-                    // console.log('* ** * * feature: ', feature)
-                    if (selectedIds){
-                        var name = feature.getId();
-                        var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-                        if (selectedIds.includes(id)) {
-                            console.log('**** name: ', name)
-                            console.log('id: ', id)
-                            console.log('feature.getGeometry(): ', feature.getGeometry())
-                            feature.removeFeature
-
-                        }
-                        // console.log('feature.getProperties: ', feature.get("features"))
-                        // console.log('feature.getProperties: ', feature.get("features").length)
-            /!*            for (let i = 0; i < feature.get("features").length; i++) {
-                            let name =feature.get("features")[i].getId()
-                            let id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-                            if (selectedIds.includes(id)) {
-                                console.log(' *  da * ')
-                            }
-                        }*!/
-                    }
-                    // console.log('feature.getGeometry(): ', feature.getGeometry())
-                    return feature.getGeometry();
-                }*/
-                }),
-        style: styleFunction,
-    });
-
-
-    /*    wfsPointLayer = new ol.layer.Vector({
-            source: clusterSource,//wfsPointSource,
-            renderMode: 'image',
-            style: clusterStyle//createStyle//clusterStyle//styleFunction//defaultStyle
-        });*/
-
+        return filteredPoints}
 
 // Elements that make up the popup.
     let container = document.getElementById('popup');
@@ -348,27 +104,105 @@ function create_map() {
         return false;
     };
 
-    let vectorSource = new ol.source.TileWMS({
-        url: GEO_SERVER + '/wms',
-        params: {LAYERS: 'LUBW:vfwheron_basiseinzugsgebiet'}
-        // visible: False,
+    // Cluster Source
+/*
+    function clusterSource() {
+        console.log('wfsPointSource', wfsPointSource)
+        return [new ol.source.Cluster({
+            distance: 30,
+            source: wfsPointSource
+        })];
+    }
+*/
+    if (!selectedIds) {
+        filteredPoints = wfsPointSource;
+    }
+
+    // Cluster Source
+    clusterSource = new ol.source.Cluster({
+        distance: 30,
+        source: filteredPoints//wfsPointSource//filteredPoints
     });
-    let vectorLayer = new ol.layer.Tile({
-        source: vectorSource
-    });
+
+    // Animated cluster layer
+    clusterLayer = new ol.layer.AnimatedCluster(
+        {
+            name: 'Cluster',
+            source: clusterSource,
+            animationDuration: 0,
+            // Cluster style
+            style: getStyle
+        });
+
+    // Style for selection
+    let img = new ol.style.Circle(
+        {
+            radius: 8,
+            stroke: new ol.style.Stroke({
+                color: '#00BAEE',
+                width: 0.1
+            }),
+            fill: new ol.style.Fill({
+                color: "rgba(170, 221, 249,0.7)"
+            })
+        });
+    let style1 = new ol.style.Style(
+        {
+            image: img,
+            // Draw a link beetween points (or not)
+            stroke: new ol.style.Stroke(
+                {
+                    color: '#AADDF9',
+                    width: 1
+                })
+        });
+
+
+
+
+    function getStyle(feature) {
+        // PointFilter(feature);
+        console.log('filteredPoints in getStyle: ', filteredPoints.getFeatures())
+        let size = feature.get('features').length;
+        let style = styleCache[size];
+        console.log(' -- - - - - -  in get style  - -  -  - ', style, selectedIds, size)
+
+        if (!style) {
+            style = styleCache[size] = new ol.style.Style(
+                {
+                    image: new ol.style.Circle(
+                        {
+                            radius: Math.round(8 + 1.3 * Math.log(size)),
+                            stroke: new ol.style.Stroke(
+                                {
+                                    color: '#00BAEE',
+                                    width: 0.5
+                                }),
+                            fill: new ol.style.Fill(
+                                {
+                                    color: '#AADDF9'
+                                })
+                        }),
+                    text: new ol.style.Text({
+                        text: size.toString(),
+                        font: '12px helvetica,sans-serif',
+                        fill: new ol.style.Fill({
+                            color: 'black'
+                        })
+                    })
+                });
+        }
+
+        return [style];
+    }
+
 
     let map_tar = document.getElementById("map");
     let map = new ol.Map({
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
-        layers: [mapLayer, vector], //wfsPointLayer],
-        interactions: ol.interaction.defaults().extend([new ol.interaction.Select({
-          condition: function(evt) {
-            return  evt.type == 'singleclick';
-          },
-          style: createStyle
-        })]),
+        layers: [mapLayer, clusterLayer], //vector], //wfsPointLayer],
 
         controls: [
             new ol.control.Zoom({duration: 300}),
@@ -394,23 +228,6 @@ function create_map() {
     //mapView.fit(dataExt, {duration: 15000});
 // get information about your data in a popup when you click on a data point in the map
     map.on('singleclick', showInfo);
-
-    function selectStyleFunction(feature) {
-        const styles = [new ol.style.Style({
-          image: new ol.style.Circle({
-            radius: feature.get('radius'),
-            fill: invisibleFill
-          })
-        })];
-        const originalFeatures = feature.get('features');
-        let originalFeature;
-        for (let i = originalFeatures.length - 1; i >= 0; --i) {
-          originalFeature = originalFeatures[i];
-          // styles.push(defaultStyle(originalFeature));
-          styles.push(defaultStyle); // TODO: make a new default style function
-        }
-        return styles;
-      }
 
     function showInfo(evt) {
         if (map.getFeaturesAtPixel(evt.pixel) != null) {
@@ -458,13 +275,66 @@ function create_map() {
 
     // select data with doubleclick
     //map.on('doubleclick', selectDataset);
+    var selectCluster = new ol.interaction.SelectCluster(
+        {	// Point radius: to calculate distance between the features
+            pointRadius: 8.5,
+            animate: 100,
+            // Feature style when it springs apart
+            featureStyle: style1,
+            // selectCluster: false,	// disable cluster selection
+            // Style to draw cluster when selected
+            style: function (f) {
+                console.log(' + + + + + + in select cluster + + + + ')
+                var cluster = f.get('features');
+                console.log('cluster: ', cluster);
+        if (selectedIds) {
+            console.log('there are selectedIds: ');//, selectedIds);
+            var name = f.getId();
+            console.log('name: ', name)
+            var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+            if (selectedIds.includes(id)) {
 
+
+            }
+        }
+                if (cluster.length > 1) {
+                    var s = getStyle(f);
+                    if (ol.coordinate.convexHull) {
+                        var coords = [];
+                        for (i = 0; i < cluster.length; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
+                        // var chull = ol.coordinate.convexHull(coords);
+                        s.push(new ol.style.Style( // spread datapoints around the center of the cluster
+                            {
+                                stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),
+                                fill: new ol.style.Fill({color: "rgba(0,0,192,0.3)"}),
+                                geometry: new ol.geom.Polygon([ol.coordinate.convexHull(coords)]),
+                                zIndex: 1
+                            }));
+                    }
+                    return s;
+                }
+                else {
+                    return [
+                        new ol.style.Style( // draw a circle around your selection
+                            {
+                                image: new ol.style.Circle(
+                                    {
+                                        stroke: new ol.style.Stroke({color: "rgba(0,73,120,0.5)", width: 2}),
+                                        fill: new ol.style.Fill({color: "rgba(0,73,120,0.3)"}),
+                                        radius: 15
+                                    })
+                            })];
+                }
+            }
+        });
+
+    map.addInteraction(selectCluster);
     map.on('pointermove', function (evt) {
         if (evt.dragging) {
             return;
         }
         let pixel = map.getEventPixel(evt.originalEvent);
-        let hit = map.forEachLayerAtPixel(pixel, function (feature, layer) {
+        let hit = map.forEachLayerAtPixel(pixel, function (feature) {
                 return feature;
             }, null, function (layer) {
                 return layer === vector
@@ -473,6 +343,19 @@ function create_map() {
         map.getTargetElement().style.cursor = hit ? 'pointer' : '';
     });
 
+    // On selected => get feature in cluster and show info
+    selectCluster.getFeatures().on(['add'], function (e) {
+        var c = e.element.get('features');
+        if (c.length == 1) {
+            var feature = c[0];
+            $(".infos").html("One feature selected...<br/>(id=" + feature.get('id') + ")");
+        }
+        else {
+            $(".infos").text("Cluster (" + c.length + " features)");
+        }
+    });
+    selectCluster.getFeatures().on(['remove'], function (e) {
+        $(".infos").html("");
+    })
+
 }
-
-
