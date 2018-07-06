@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/font-awesome-4.7.0/css/font-awesome.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/flag-icon.css' %}">
     <link rel="icon" href="{% static 'vfwheron/images/Favicon.ico' %}">
 
 </head>
@@ -157,7 +158,14 @@
                     </form>
                 </a>
             </li>
-        {% endif %}
+            {% endif %}
+
+	<!-- flag -->
+	<li class="respo-hide-small respo-right">
+	  <a href="{% url 'vfwheron:home' %}" class="respo-hover-white img-thumbnail flag flag-icon-background flag-icon-gb" title="gb" id="gb">&nbsp;</a>
+	</li>
+	
+	    
     </ul>
 </div>
 
