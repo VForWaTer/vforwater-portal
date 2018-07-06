@@ -239,7 +239,8 @@ function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     }
     else {
         selectedIds = null;
-        wfsPointLayer.changed()
+        showSelectionOnMap(0)
+        // clusterLayer.changed()
         // showAllPointsOnMap();
     }
 }
@@ -277,7 +278,8 @@ function reset_filter(){
         document.getElementsByClassName('activeI')[0].classList.remove('activeI');
     }
     selectedIds = null;
-    wfsPointLayer.changed()
+    showSelectionOnMap(0)
+    // clusterLayer.changed()
 }
 
 /* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
@@ -290,32 +292,10 @@ function showSelectionOnMap(selection) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            selectedIds = json['all_filters'];
-            console.log('wfsPointSource: ', wfsPointSource)
-            console.log('wfsPointSource: ', wfsPointSource.getProperties())
-            console.log('wfsPointSource: ', wfsPointSource.getState())
-            console.log('wfsPointSource: ', wfsPointSource.getFeatures())
-            console.log('filteredPoints: ', filteredPoints.getFeatures())
-            console.log('filteredPoints: ', filteredPoints.getProperties())
-            console.log('filteredPoints: ', filteredPoints.getState())
-            filteredPoints.clear()
-            // console.log('wfsPointSource: ', wfsPointSource)
-            // console.log('wfsPointSource: ', wfsPointSource.getProperties())
-            // console.log('wfsPointSource: ', wfsPointSource.getState())
-            // console.log('wfsPointSource: ', wfsPointSource.getFeatures())
-            //
-            // console.log('filtered points: ', filteredPoints)
-            // console.log('filteredPoints: ', filteredPoints.getProperties())
-            // console.log('filteredPoints: ', filteredPoints.getState())
-            // // let mainfnc = new create_map();
-            // // mainfnc.filterSource();
-            // wfsPointLayer.changed()
-            // // vector.changed()
-            // filteredPoints.changed()
-            // // wfsPointSource.changed()
-            // clusterSource.changed()
+            // selectedIds = json['all_filters'];
+            wfsLayerName = json['ID_layer'];
+            wfsPointSource.clear()
             // clusterLayer.changed()
-            // styleCache = {}
         },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";

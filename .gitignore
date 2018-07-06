@@ -1,6 +1,7 @@
 # Local / temporary files
 *.pyc
 heron/secret.txt
+heron/secret_geoserver.txt
 heron/settings.py
 
 

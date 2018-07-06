@@ -1,23 +1,11 @@
-let data_style = null;
-let wfsPointLayer = null;
-let wfsPointSource = null;
-let vector = null;
-// let clusterSource = null;
-let selectedIds = null;
-let clusterLayer = null;
-let filteredPoints = null;
-// Style for the clusters
-let styleCache = {};
-
+let wfsLayerName;
 
 //Create own base layer
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/vfwheron/geoserver";
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
     let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
-    // var data_style = JSON.parse(document.getElementById('data_style').value); // style for wms layer
-    data_style = JSON.parse(document.getElementById('data_style').value)['data_style'];
-    let wfsLayerName = document.getElementById('data_layer').value;
+    wfsLayerName = document.getElementById('data_layer').value;
 // build the background map
     let mapLayer = new ol.layer.Tile({
         preload: Infinity,
@@ -41,7 +29,6 @@ function create_map() {
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            console.log(' - - - - - - -  loader is running - - - - -  ')
             var url = GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857';
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url);
@@ -62,26 +49,7 @@ function create_map() {
             xhr.send();
         },
         strategy: ol.loadingstrategy.bbox
-    });
-
-    function PointFilter(feature) {
-        console.log('wfsPointSource ', wfsPointSource);
-        if (selectedIds) {
-            console.log('wfsPointSource: ', wfsPointSource)
-            console.log('wfsPointSource: ', wfsPointSource.getProperties())
-            console.log('wfsPointSource: ', wfsPointSource.getState())
-            console.log('wfsPointSource: ', wfsPointSource.getFeatures())
-            console.log('filteredPoints: ', filteredPoints.getFeatures())
-            filteredPoints.clear()
-            console.log('filteredPoints: ', filteredPoints.getFeatures())
-            var name = feature.getId();
-            console.log(' -- - - - - -  in get filteredPoints  - -  -  - ', name)
-            var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-            if (selectedIds.includes(id)){
-                console.log('selectedIds.includes(id): ', selectedIds.includes(id))
-            }
-        }
-        return filteredPoints}
+    })
 
 // Elements that make up the popup.
     let container = document.getElementById('popup');
@@ -104,39 +72,20 @@ function create_map() {
         return false;
     };
 
-    // Cluster Source
-/*
-    function clusterSource() {
-        console.log('wfsPointSource', wfsPointSource)
-        return [new ol.source.Cluster({
-            distance: 30,
-            source: wfsPointSource
-        })];
-    }
-*/
-    if (!selectedIds) {
-        filteredPoints = wfsPointSource;
-    }
-
-    // Cluster Source
-    clusterSource = new ol.source.Cluster({
-        distance: 30,
-        source: filteredPoints//wfsPointSource//filteredPoints
-    });
-
     // Animated cluster layer
-    clusterLayer = new ol.layer.AnimatedCluster(
-        {
+    clusterLayer = new ol.layer.AnimatedCluster({
             name: 'Cluster',
-            source: clusterSource,
+            source: new ol.source.Cluster({
+                distance: 30,
+                source: wfsPointSource
+            }),
             animationDuration: 0,
             // Cluster style
             style: getStyle
         });
 
-    // Style for selection
-    let img = new ol.style.Circle(
-        {
+    // Style for selection/single circles around cluster
+    let img = new ol.style.Circle({
             radius: 8,
             stroke: new ol.style.Stroke({
                 color: '#00BAEE',
@@ -149,24 +98,19 @@ function create_map() {
     let style1 = new ol.style.Style(
         {
             image: img,
-            // Draw a link beetween points (or not)
-            stroke: new ol.style.Stroke(
-                {
+            // Draw a link beetween points
+            stroke: new ol.style.Stroke({
                     color: '#AADDF9',
                     width: 1
                 })
         });
 
 
-
+    let styleCache = {}
 
     function getStyle(feature) {
-        // PointFilter(feature);
-        console.log('filteredPoints in getStyle: ', filteredPoints.getFeatures())
         let size = feature.get('features').length;
         let style = styleCache[size];
-        console.log(' -- - - - - -  in get style  - -  -  - ', style, selectedIds, size)
-
         if (!style) {
             style = styleCache[size] = new ol.style.Style(
                 {
@@ -192,7 +136,6 @@ function create_map() {
                     })
                 });
         }
-
         return [style];
     }
 
@@ -202,7 +145,7 @@ function create_map() {
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
-        layers: [mapLayer, clusterLayer], //vector], //wfsPointLayer],
+        layers: [mapLayer, clusterLayer],
 
         controls: [
             new ol.control.Zoom({duration: 300}),
@@ -228,7 +171,7 @@ function create_map() {
     //mapView.fit(dataExt, {duration: 15000});
 // get information about your data in a popup when you click on a data point in the map
     map.on('singleclick', showInfo);
-
+    // TODO: reduced data in wfs, so make new request for preview
     function showInfo(evt) {
         if (map.getFeaturesAtPixel(evt.pixel) != null) {
             let clickedFeatures = map.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
@@ -284,19 +227,7 @@ function create_map() {
             // selectCluster: false,	// disable cluster selection
             // Style to draw cluster when selected
             style: function (f) {
-                console.log(' + + + + + + in select cluster + + + + ')
                 var cluster = f.get('features');
-                console.log('cluster: ', cluster);
-        if (selectedIds) {
-            console.log('there are selectedIds: ');//, selectedIds);
-            var name = f.getId();
-            console.log('name: ', name)
-            var id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-            if (selectedIds.includes(id)) {
-
-
-            }
-        }
                 if (cluster.length > 1) {
                     var s = getStyle(f);
                     if (ol.coordinate.convexHull) {
@@ -337,7 +268,7 @@ function create_map() {
         let hit = map.forEachLayerAtPixel(pixel, function (feature) {
                 return feature;
             }, null, function (layer) {
-                return layer === vector
+                return layer === clusterLayer
             }
         );
         map.getTargetElement().style.cursor = hit ? 'pointer' : '';
