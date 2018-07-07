@@ -7,6 +7,7 @@ import { ProcessService } from 'app/services/process.service';
 import { Process } from 'app/models/Process';
 import { take } from 'rxjs/operators/take';
 import { delay } from 'rxjs/operators/delay';
+import { environment } from 'environments/environment';
 
 /**
  * Workflow list page.
