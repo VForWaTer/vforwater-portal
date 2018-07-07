@@ -37,7 +37,7 @@ def build_select_filters(menu, filter_selection):
     return {'all_filters': all_filters, 'one_excluded': query_filters}
 
 
-def newbuild_id_list(menu, filter_selection):
+def build_id_list(menu, filter_selection):
     # build queries for the filter values
     query_filters = ''
     # build the django filter for every selection separately
@@ -87,7 +87,7 @@ class FilterMethods:
 
 
 class Menu:
-    def __init__(self, lang='EN'):
+    def __init__(self, lang='EN', user='default'):
         """
         :type table: object
         """
@@ -95,20 +95,32 @@ class Menu:
         # self.min_amount = 0 if DEBUG else 1
         self.min_amount = 1
         self.lang = lang
-        # The order here will be used as order for the menu at the server
-        # self.menu_list = [LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
+        self.user = user
+        self.user_query_set()
+        # self.user = user
+        # The order here is used as order for the menu on the client
+        # self.menu_list = [LtDomain, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
         self.menu_list = [LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
         # self.menu_list = [LtDomain]
         # self.menu()
         # self.write_json_menu()
 
-    def menu(self):
+    def user_query_set(self):
+        if self.user == 'default':
+            query_set = TblMeta.objects.filter(license__share=True).all()
+            for i in query_set:
+                print('i: ', i)
+            print('query_set: ', query_set.__len__())
+            # print('query_set: ', query_set.filter(tbl))
+
+
+    def menu(self, user):
         # print('ACHTUNG!!! DU BAUST EIN MENU!!!')  # One line to check how often this is accessed        count = 0
         json_menu = {}  # menu for client
         menu_map = {}  # menu for server
         count = 0
         for table in self.menu_list:
-            whole_menu = Table(table, self.min_amount, self.lang)
+            whole_menu = Table(table, self.min_amount, self.lang, self.user_query_set)
             json_table = whole_menu.json_child['client']
             map_table = whole_menu.json_child['server']
             # map_table = whole_menu.map_child
@@ -151,18 +163,25 @@ class Menu:
 
 # TODO: Check how often 'get_filter_type' and the others are called; Shall they be properties?
 class Table:
-    def __init__(self, table, min_amount, lang='EN'):
+    default_query = TblMeta.objects.select_related().filter(license__share=True)
+
+    def __init__(self, table, min_amount, lang, user_query_set):
         """
         :type table: object
         """
+        self.child = {}
         self.min_amount = min_amount
         self.lang = lang
+        self.user_query_set = user_query_set
         self.table_name = table
         self.child_columns = table.column_dict.keys()
+        print('self.child_columns: ', self.child_columns)
+        self.default_user_child_columns = {}
         self.get_query_set()
         self.get_query_path()
         self.get_filter_type()
         self.json_child = self.build_json_child
+    #     TODO: Add user_query like self.default_query
 
     def get_filter_type(self):
         try:
@@ -173,10 +192,25 @@ class Table:
             self.filter_type = self.table_name.filter_type
 
     def get_query_set(self):
-        self.child = {}
+        # print(' + + + + + + + default_query: ', self.default_query)
         for columns in self.child_columns:
+            # if else when you want filter for default user
+            # if self.table_name.path:
+            #     table_path = self.table_name.path + '__' + columns
+            #     # query_set = TblMeta.objects.select_related().filter(license__share=True).values_list(table_path, flat=True).distinct()
+            #     # print('query_set: ', query_set)
+            #     # query1 = TblMeta.objects.select_related().filter(license__share=True)
+            #     query_set = self.default_query.values_list(table_path, flat=True).distinct()
+            #     # print(' * * *  * * * * query_set: ', query_set)
+            #
+            #     # print('query2: ', query2)
+            # else:
+            #     query_set = self.default_query.values_list(columns, flat=True).distinct()
+
             query_set = self.table_name.objects.select_related().values_list(columns, flat=True).distinct()
             # if not (len(query_set) <= 1 and query_set[0] is None):
+            # print('*** 1: ', query_set)
+            # print('*** 2: ', self.table_name.objects.select_related().values_list(columns, flat=True).distinct())
             if (len(query_set) > 0):
                 if not (len(query_set) == 1 and query_set[0] is None):
                     self.child[columns] = query_set
@@ -185,10 +219,9 @@ class Table:
         self.query_paths = {}
         for columns in self.child_columns:
             if self.table_name.path == '':
-                query_path = columns
+                self.query_paths[columns] = columns
             else:
-                query_path = self.table_name.path + '__' + columns
-            self.query_paths[columns] = query_path
+                self.query_paths[columns] = self.table_name.path + '__' + columns
 
     @property
     def build_json_child(self):
@@ -222,6 +255,8 @@ class Table:
                     json_all_childs = result['json']
                     map_all_childs = result['server']
                 else:
+                    # print('* * * * * grand_child: ', grand_child)
+                    # print('* * * * * result["total"]: ', result['total'])
                     grandchilds.update(
                         dict(name=self.table_name.column_dict[grand_child][self.lang], total=result['total']))
                     map_grandchilds.update({'name': self.table_name.column_dict[grand_child][self.lang],

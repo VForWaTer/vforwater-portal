@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import redis
 
 
-def maelicke_plot(preview):
+def get_preview(preview):
     use_redis=True
     in_cache=False
     try:
