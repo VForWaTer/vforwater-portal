@@ -13,6 +13,7 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect, render
 from django.core.cache import cache
 from django.conf import settings
+from django.utils import translation
 
 import matplotlib as mpl
 
@@ -166,7 +167,6 @@ class LoginView(View):
             logger.debug('The user is not authenticated!')
         else:
             logger.debug('{} logged in as'.format(request.user.username))
-
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -192,6 +192,21 @@ class HelpView(TemplateView):
         f.close()
         return render(request, 'vfwheron/help.html', {'context': context})
 
+class ToggleLanguageView(View):
+    def post(self, request):
+        lang=translation.get_language()
+        logger.debug('current language: {}'.format(lang))
+        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),translation.check_for_language('en-us'),translation.check_for_language('en-gb')))
+        if lang == 'en-gb' or lang == 'en-us':
+            translation.activate('de')
+            request.session[translation.LANGUAGE_SESSION_KEY] = 'de'
+        else:
+            translation.activate('en-gb')
+            if hasattr(request, 'session'):
+                request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
+        logger.debug('new language: {}'.format(translation.get_language()))
+        logger.debug('translation test: {}'.format(translation.gettext("help")))
+        return redirect('/')
 
 class GeoserverView(View):
 
