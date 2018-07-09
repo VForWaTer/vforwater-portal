@@ -24,7 +24,6 @@ import { SettingsPageComponent } from 'app/pages/settings-page/settings-page.com
 import { ArtefactDialogComponent } from 'app/components/artefact-dialog/artefact-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { ResultDialogComponent } from 'app/components/result-dialog/result-dialog.component';
-import { LoginPageComponent } from 'app/pages/login-page/login-page.component';
 import { UserService } from 'app/services/user.service';
 
 
@@ -35,8 +34,6 @@ const routes = [
   { path: 'editor/:id', component: EditorPageComponent },
   { path: 'workflows', component: WorkflowsPageComponent },
   { path: 'settings', component: SettingsPageComponent },
-  { path: 'login', component: LoginPageComponent },
-  { path: 'logout', component: LoginPageComponent },
 ];
 
 @NgModule({
@@ -45,7 +42,6 @@ const routes = [
     EditorPageComponent,
     WorkflowsPageComponent,
     SettingsPageComponent,
-    LoginPageComponent,
     ProcessListComponent,
     ProcessComponent,
     ProcessDialogComponent,

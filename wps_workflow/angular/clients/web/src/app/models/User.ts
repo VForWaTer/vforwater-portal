@@ -7,7 +7,8 @@ import { Workflow } from './Workflow';
  * @interface User
  */
 export interface User {
-	id: number;
-	username: string;
-	is_staff: boolean;
+    id: number;
+    username: string;
+    is_staff: boolean;
+    is_admin: boolean;
 }

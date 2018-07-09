@@ -115,6 +115,7 @@ export class EditorPageComponent implements OnInit {
           shared: false,
           created_at: (new Date()).getTime(),
           updated_at: (new Date()).getTime(),
+          percent_done: 0,
         };
       }
     });

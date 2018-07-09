@@ -2,6 +2,7 @@ import base64
 import json
 import re
 import urllib
+import hashlib
 
 from io import StringIO, BytesIO
 
@@ -18,8 +19,8 @@ from django.utils import translation
 import matplotlib as mpl
 
 from heron.settings import LOCAL_GEOSERVER
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer
-from vfwheron.previewplot import maelicke_plot
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, get_ID_layer, delete_ID_layer
+from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -31,7 +32,7 @@ from .query_functions import get_bbox_from_data
 from datetime import datetime
 import time
 
-from .filter import FilterMethods, Menu, newbuild_id_list
+from .filter import FilterMethods, Menu, build_id_list
 from .models import TblMeta, TblVariable, TblData
 
 import logging
@@ -65,7 +66,8 @@ class WorkflowView(TemplateView):
 # every time they open a browser.
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
-    Menu = Menu().menu()
+    user = 'default'
+    Menu = Menu().menu(user)
     JSON_Menu = json.dumps(Menu['client'])
     # JSON_Menu = Menu().json_menu()
     data_layer = 'default_layer'
@@ -78,8 +80,6 @@ class HomeView(TemplateView):
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
-        data_style = 'default'
-        # data_style = 'Light Blue Circle'
 
         try:
             dataExt = get_bbox_from_data()
@@ -87,13 +87,13 @@ class HomeView(TemplateView):
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-        return {'dataExt': dataExt, 'data_style': data_style, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
+        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
 
 
 class menuView(TemplateView):
     # user = 'default'
 
-    def get(self, request):
+    def get(self, request, user='default'):
 
         request.session.set_expiry(20)  # TODO: expire after 20 seconds/ this is only for development!!!
 
@@ -143,7 +143,7 @@ class menuView(TemplateView):
 
         if 'preview' in request.GET:
             # plot png the mälicke way:
-            imgtag = maelicke_plot(request.GET.get('preview'))
+            imgtag = get_preview(request.GET.get('preview'))
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
         if 'filter_selection' in request.GET:
@@ -151,8 +151,23 @@ class menuView(TemplateView):
             return JsonResponse(filter_menu)
 
         if 'filter_selection_map' in request.GET:
-            meta_ids = newbuild_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
-            return JsonResponse(meta_ids)
+            if json.loads(request.GET.get('filter_selection_map')) == 0:
+                ID_layer = HomeView.data_layer
+            else:
+                meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
+                ID_layer = 'ID_layer' # + user
+                if get_ID_layer(ID_layer):
+                    delete_ID_layer(ID_layer)
+                create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+    # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none existing layers
+            # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
+            # if not get_ID_layer(ID_layer):
+            #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+#             else:
+# # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+#                 delete_ID_layer(ID_layer)
+#                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            return JsonResponse({'ID_layer': ID_layer})
 
         return JsonResponse({'Error': 'Something is missing. Check views.py'})
 

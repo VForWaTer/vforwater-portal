@@ -17,6 +17,7 @@ import { catchError } from 'rxjs/operators';
 export class AppComponent {
 
   showNav = true;
+  admin = false;
 
   /**
    * Creates an instance of AppComponent.
@@ -26,14 +27,17 @@ export class AppComponent {
    * @memberof AppComponent
    */
   public constructor(private router: Router, private userService: UserService) {
+    this.admin = false;   
     userService.get()
       .subscribe(
         user => {
           if (user['error']) {
-            this.router.navigate(['/login']);
+            this.admin = false;
+          } else {
+            this.admin = user.is_staff;
           }
         },
-        err => this.router.navigate(['/login'])
+        err => this.admin = false
       );
 
     // Hide navigation bar when user is on /login

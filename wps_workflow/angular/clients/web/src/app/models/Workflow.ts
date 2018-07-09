@@ -15,7 +15,7 @@ export interface Workflow {
     tasks: Task[];
     creator_id: number;
     shared: boolean;
-    percent_done?: number;
+    percent_done: number;
     created_at: number;
     updated_at: number;
 }
