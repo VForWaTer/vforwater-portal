@@ -58,7 +58,7 @@
         <li class="respo-hide-small">
             <div class="respo-dropdown-hover respo-transparent">
                 <a class="respo-hover-white ">
-                    <i class="fa fa-external-link fa-fw"></i>{% trans "  Help" %}<i class="fa fa-caret-down fa-fw"></i>
+                    <i class="fa fa-external-link fa-fw"></i>  {% trans "Help" %}<i class="fa fa-caret-down fa-fw"></i>
                     <div class="respo-dropdown-content" style="right:0">
                         <a href="{% url 'vfwheron:help' %}" class="respo-hover-blue">
                             <i class="fa fa-book fa-fw"></i>{% trans "  Portal Help" %}
@@ -160,12 +160,38 @@
             </li>
             {% endif %}
 
-	<!-- flag -->
+	    <!-- flag -->
+	    {% get_current_language as LANGUAGE_CODE %}
+	    {% if LANGUAGE_CODE == 'de' %}
+<!--
 	<li class="respo-hide-small respo-right">
-	  <a href="{% url 'vfwheron:home' %}" class="respo-hover-white img-thumbnail flag flag-icon-background flag-icon-gb" title="gb" id="gb">&nbsp;</a>
-	</li>
+	  <a href="#" class="respo-hover-white img-thumbnail flag flag-icon-background flag-icon-gb" title="gb" id="gb">
+	    <form action="{% url 'vfwheron:togglelang' %}" method="post"> {% csrf_token %}
+              <input class="respo-btn-simple" type="submit" name="togglelang" value="&nbsp;"/>
+            </form>
+	  </a>
+	</li> -->
+
+	<li class="respo-hide-small respo-right">
+	  <a href="#" class="respo-hover-none">
+	    <form action="{% url 'vfwheron:togglelang' %}" method="post"> {% csrf_token %}
+              <input class="respo-btn-simple flag-icon-background flag-icon-gb" type="submit" name="togglelang" value="&nbsp;&nbsp;&nbsp;"/>
+            </form>
+          </a>
+	</li>	
+
+	{% else %}
+	<li class="respo-hide-small respo-right">
+	  <a href="#" class="respo-hover-none">
+	    <form action="{% url 'vfwheron:togglelang' %}" method="post"> {% csrf_token %}
+              <input class="respo-btn-simple flag-icon-background flag-icon-de" type="submit" name="togglelang" value="&nbsp;&nbsp;&nbsp;"/>
+            </form>
+          </a>
+	</li>	
 	
-	    
+	{% endif %}
+
+	  
     </ul>
 </div>
 
