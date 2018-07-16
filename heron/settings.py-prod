@@ -49,7 +49,7 @@ else:
 secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
 if os.path.isfile(secretGeoServer):
     with open(secretGeoServer) as gs:
-        SECRET_GEOSERER = gs.read().strip()
+        SECRET_GEOSERVER = gs.read().strip()
 else:
         # TODO: Print to log file
     print('secretGeoServer.txt is missing')

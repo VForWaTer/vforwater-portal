@@ -3,6 +3,7 @@ import json
 import re
 import urllib
 import hashlib
+from collections import defaultdict
 
 from io import StringIO, BytesIO
 
@@ -146,6 +147,39 @@ class menuView(TemplateView):
             imgtag = get_preview(request.GET.get('preview'))
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
+        # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
+        if 'show_info' in request.GET:
+            # get field names from models:
+            field = []
+            fieldName = {}
+            for i in Menu().menu_list:
+                for j in i.column_dict_en.items():
+                    fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
+                    field.append(fieldpath)
+                    fieldName[fieldpath] = j[1]
+
+            # build dict of lists for preview:
+            ids = json.loads(request.GET.get('show_info'))
+            preview = defaultdict(list)
+            for k in ids:
+                preview['id'].append(k)
+                imgtag = eval(
+                    "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
+                for i in imgtag[0]:
+                    # preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i]))
+                    preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i])) if imgtag[0][i] is not None else preview[translation.gettext(fieldName[i])].append('-')
+
+            # remove rows only containing no value:
+            comparelist = ['-'] * len(ids)
+            deleteable = []
+            for i in preview:
+                if preview[i] == comparelist:
+                    deleteable.append(i)
+            for i in deleteable:
+                del preview[i]
+
+            return JsonResponse({'get': preview})  # requested from map.js show_info
+
         if 'filter_selection' in request.GET:
             filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection')))
             return JsonResponse(filter_menu)
@@ -169,7 +203,7 @@ class menuView(TemplateView):
 #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             return JsonResponse({'ID_layer': ID_layer})
 
-        return JsonResponse({'Error': 'Something is missing. Check views.py'})
+        return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
 
 class LoginView(View):

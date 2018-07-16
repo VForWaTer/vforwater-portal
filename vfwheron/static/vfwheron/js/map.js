@@ -74,35 +74,35 @@ function create_map() {
 
     // Animated cluster layer
     clusterLayer = new ol.layer.AnimatedCluster({
-            name: 'Cluster',
-            source: new ol.source.Cluster({
-                distance: 30,
-                source: wfsPointSource
-            }),
-            animationDuration: 0,
-            // Cluster style
-            style: getStyle
-        });
+        name: 'Cluster',
+        source: new ol.source.Cluster({
+            distance: 30,
+            source: wfsPointSource
+        }),
+        animationDuration: 0,
+        // Cluster style
+        style: getStyle
+    });
 
     // Style for selection/single circles around cluster
     let img = new ol.style.Circle({
-            radius: 8,
-            stroke: new ol.style.Stroke({
-                color: '#00BAEE',
-                width: 0.1
-            }),
-            fill: new ol.style.Fill({
-                color: "rgba(170, 221, 249,0.7)"
-            })
-        });
+        radius: 8,
+        stroke: new ol.style.Stroke({
+            color: '#00BAEE',
+            width: 0.1
+        }),
+        fill: new ol.style.Fill({
+            color: "rgba(170, 221, 249,0.7)"
+        })
+    });
     let style1 = new ol.style.Style(
         {
             image: img,
             // Draw a link beetween points
             stroke: new ol.style.Stroke({
-                    color: '#AADDF9',
-                    width: 1
-                })
+                color: '#AADDF9',
+                width: 1
+            })
         });
 
 
@@ -169,51 +169,99 @@ function create_map() {
         view: mapView//dataview
     });
     //mapView.fit(dataExt, {duration: 15000});
+
 // get information about your data in a popup when you click on a data point in the map
-    map.on('singleclick', showInfo);
-    // TODO: reduced data in wfs, so make new request for preview
-    function showInfo(evt) {
+    map.on('singleclick', buildPopup);
+
+    function buildPopup(evt) {
+        console.log('evt: ', evt)
         if (map.getFeaturesAtPixel(evt.pixel) != null) {
             let clickedFeatures = map.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
-            if (clickedFeatures.length > 1) {
-                console.log('TODO: build list for preview', clickedFeatures)
-            } else {
-                let name = clickedFeatures[0].getId();
-                let id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-                let properties = clickedFeatures[0].getProperties();
-                let clickedKeys = clickedFeatures[0].getKeys();
-                // TODO: CSS style überarbeiten
-                let popupTableBeforeMeta = '<table id="popupTable"><td>';
-                let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
-                let popUpText = popupTableBeforeMeta + popupTextStyle + '<table id="metaTable">';
-                for (var i = 0; i < clickedKeys.length; i++) {
-                    if (clickedKeys[i] != 'geometry_type' && clickedKeys[i] != 'srid' && clickedKeys[i] != 'centroid_x' &&
-                        clickedKeys[i] != 'centroid_y' && clickedKeys[i] != 'external_id' && clickedKeys[i] != 'site_id' &&
-                        clickedKeys[i] != 'geometry' && clickedKeys[i] != 'id') {
-                        if (clickedKeys[i] == 'Vorname') {
-                            let name = properties[clickedKeys[i]]
-                        }
-                        else if (clickedKeys[i] == 'Nachname') {
-                            popUpText = popUpText + '<tr><td><b>Name</b></td><td>' + name + ' ' + properties[clickedKeys[i]] + '</td></tr>'
-                        } else {
-                            popUpText = popUpText + '<tr><td><b>' + clickedKeys[i] + '</b></td><td>' + properties[clickedKeys[i]] + '</td></tr>'
+            console.log('clickedFeatures: ', clickedFeatures)
+            // TODO: CSS style überarbeiten
+            let popupTableBeforeMeta = '<table id="popupTable"><td>';
+            let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
+            let popUpText = popupTableBeforeMeta + popupTextStyle + '<table id="metaTable">';
+            if (clickedFeatures.length > 0) { // check how many datasets are selected
+                let ids = [];
+                let name, id;
+                // bulid list with selection to send to server
+                for (let i = 0; i < clickedFeatures.length; i++) {
+                    console.log('TODO: build list for preview', clickedFeatures[i]);
+                    name = clickedFeatures[i].getId();
+                    id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+                    console.log('id: ', id)
+                    ids.push(id)
+                }
+                // let name = clickedFeatures[0].getId();
+                // let id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+                // console.log('id: ', id)
+
+                // request info from server
+                $.ajax({
+                    url: DEMO_VAR + "/vfwheron/menu",
+                    dataType: 'json',
+                    data: {
+                        show_info: JSON.stringify(ids),
+                        // show_info: JSON.stringify(parseInt(name.substr(wfsLayerName.length + 1, 8))),
+                        'csrfmiddlewaretoken': csrf_token,
+                    }, // data sent with the post request
+                    success: function (json) {
+                        try {
+                            let properties = json.get;
+                            let lastProperty = json.get[json.get.length];
+                            let buttons = [];
+                            let valueLen;
+                            let buttonId = [];
+                            // loop over "properties"dict with metadata, build columns
+                            for (let j in properties) {
+                                // console.log('j: : ', j, eval('json.get["' + j + '"]'), eval('json.get["' + j + '"]').length);
+                                let values = eval('json.get["' + j + '"]');
+                                valueLen = values.length;
+                                popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
+                                // loop over dict values and build rows
+                                for (let k = 0; k < valueLen; k++) {
+                                    popUpText = popUpText + '<td>' + values[k] + '</td>';
+                                    if (j.toLowerCase() == 'id') {
+                                        buttonId.push(values[k])
+                                    }
+                                }
+                                popUpText = popUpText + '</tr>'
+                            }
+                            popUpText = popUpText + '<tr><td><b></b></td>';
+                            // build buttons for each dataset
+                            for (let k = 0; k < valueLen; k++) {
+                                popUpText = popUpText + '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
+                                    'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
+                                    'title="Attention! Loading the preview might take a while."></b></a>' +
+                                    '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
+                                    'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
+                                    'title="Put dataset to session datastore"></b></a></td>';
+                            }
+
+                            let popupTableAfterMeta = popUpText + '</table>';
+                            let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+                            content.innerHTML = popupTableAfterMeta + img_preview;
+                            metaData_Overlay.setPosition(evt.coordinate);
+
+                        } catch (err) {
+                            document.getElementById("popup-content").removeChild(document.getElementById("loader"));
+                            content.innerHTML = '<td><a style="background-color:White;color:Red;"><b> Error: Unable to load data</td></a></b>'
+                            console.error(err); // TODO: remove for production
                         }
                     }
-                }
-                let buttons = '<a><b><input id="show_data_preview" class="respo-btn-block" type="submit" ' +
-                    'onclick=\"show_preview(\'' + id + '\')\" value="Preview" data-toggle="tooltip" ' +
-                    'title="Attention! Loading the preview might take a while."></b></a>' +
-                    '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
-                    'onclick=\"workspace_dataset(\'' + id + '\')\" value="Pass dataset to datastore" data-toggle="tooltip" ' +
-                    'title="Put dataset to session datastore"></b></a>';
-                let popupTableAfterMeta = popUpText + '</table>' + buttons;
-                let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
-                content.innerHTML = popupTableAfterMeta + img_preview;
+
+                });
+                // TODO: reduce width of window for loader
+                // Create spinning loader while getting meta data from server
+                content.innerHTML = '<div id="loader" class="loader"></div>';
                 metaData_Overlay.setPosition(evt.coordinate);
+
             }
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
+
     }
 
     // select data with doubleclick

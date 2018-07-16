@@ -109,8 +109,9 @@ class Menu:
         if self.user == 'default':
             query_set = TblMeta.objects.filter(license__share=True).all()
             for i in query_set:
-                print('i: ', i)
-            print('query_set: ', query_set.__len__())
+                return
+                # print('i: ', i)
+            # print('query_set: ', query_set.__len__())
             # print('query_set: ', query_set.filter(tbl))
 
 

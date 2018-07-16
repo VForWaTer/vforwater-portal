@@ -59,7 +59,7 @@ def get_preview(preview):
         ax.set_xlabel('Date')
         ax.grid(which='major', axis='x')
         ax.set_ylabel(ylabel)
-        ax.set_title('Dataset preview')
+        ax.set_title('Dataset ' + str(preview))
         # create tempfile and read as base64
         tmpFile = BytesIO()
         fig.savefig(tmpFile, format='png')

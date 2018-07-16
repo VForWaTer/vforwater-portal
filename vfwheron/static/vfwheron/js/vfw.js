@@ -232,17 +232,17 @@ function getCookie(name) {
 
 // send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
-    if (id !== 'null'){
+    if (id !== 'null') {
         $.ajax({
-            url: DEMO_VAR+"/vfwheron/menu",
+            url: DEMO_VAR + "/vfwheron/menu",
             datatype: 'json',
             data: {
                 workspaceData: id,
                 'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
-            success: function(json) {
+            }, // data sent with post request
+            success: function (json) {
                 if (sessionStorage.getItem("btn")) {
-                    let stored = JSON.parse(sessionStorage.getItem("btn"))
+                    let stored = JSON.parse(sessionStorage.getItem("btn"));
                     $.each(json['workspaceData'], function (key, value) {
                         if (!stored[key]) {
                             stored[key] = value;
@@ -254,8 +254,8 @@ function workspace_dataset(id) {
                 }
                 // push sessionStorage keys to html for Workspace
                 let x = [];
-                $.each(JSON.parse(sessionStorage.getItem("btn")), function (key){
-                   x.push(key)
+                $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
+                    x.push(key)
                 });
                 document.getElementById("workdata").value = x;
 
@@ -268,25 +268,23 @@ function workspace_dataset(id) {
 
 /* Send ID to server to build preview and add preview image to html */
 function show_preview(id) {
-    document.getElementById("show_data_preview").value = "Loading Preview"
+    document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
     $.ajax({
-        url: DEMO_VAR+"/vfwheron/menu",
+        url: DEMO_VAR + "/vfwheron/menu",
         datatype: 'image/png;base64',
         data: {
             preview: id,
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function(json) {
-            // console.log('back from preview', json)
+        success: function (json) {
             $.each(json, function (key, value) {
                 // document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value; // Strobl svg
-                document.getElementById("preview_img").innerHTML = value; // Mälicke  png
-                document.getElementById("show_data_preview").value = "Load Preview again"
+                document.getElementById("preview_img").innerHTML = value; // png
+                document.getElementById("show_data_preview" + id.toString()).value = "Reload Preview"
             });
         }
     });
 }
-
 
 
 // // another accordion/ didn't work for me (Marcus)
