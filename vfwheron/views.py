@@ -72,6 +72,11 @@ class HomeView(TemplateView):
     JSON_Menu = json.dumps(Menu['client'])
     # JSON_Menu = Menu().json_menu()
     data_layer = 'default_layer'
+    # if not dataExt:
+
+    dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+        # dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+
     if not get_layer(data_layer):
         create_layer(data_layer)
     # else:
@@ -86,7 +91,6 @@ class HomeView(TemplateView):
             dataExt = get_bbox_from_data()
         except:
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
-            dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
         return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
 
@@ -187,8 +191,10 @@ class menuView(TemplateView):
         if 'filter_selection_map' in request.GET:
             if json.loads(request.GET.get('filter_selection_map')) == 0:
                 ID_layer = HomeView.data_layer
+                dataExt = get_bbox_from_data()
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
+                dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
                 ID_layer = 'ID_layer' # + user
                 if get_ID_layer(ID_layer):
                     delete_ID_layer(ID_layer)
@@ -201,7 +207,7 @@ class menuView(TemplateView):
 # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
 #                 delete_ID_layer(ID_layer)
 #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': ID_layer})
+            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
@@ -266,6 +272,8 @@ class GeoserverView(View):
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+              # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+              # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))

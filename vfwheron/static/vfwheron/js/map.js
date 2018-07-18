@@ -1,3 +1,4 @@
+let zoomToExt;
 let wfsLayerName;
 
 //Create own base layer
@@ -25,14 +26,13 @@ function create_map() {
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
 
-
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            var url = GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857';
-            var xhr = new XMLHttpRequest();
+            let url = GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857';
+            let xhr = new XMLHttpRequest();
             xhr.open('GET', url);
-            var onError = function () {
+            let onError = function () {
                 console.log('Error in building vector wfsPointSource');
                 wfsPointSource.removeLoadedExtent(extent);
             };
@@ -49,7 +49,7 @@ function create_map() {
             xhr.send();
         },
         strategy: ol.loadingstrategy.bbox
-    })
+    });
 
 // Elements that make up the popup.
     let container = document.getElementById('popup');
@@ -73,7 +73,7 @@ function create_map() {
     };
 
     // Animated cluster layer
-    clusterLayer = new ol.layer.AnimatedCluster({
+    let clusterLayer = new ol.layer.AnimatedCluster({
         name: 'Cluster',
         source: new ol.source.Cluster({
             distance: 30,
@@ -106,7 +106,7 @@ function create_map() {
         });
 
 
-    let styleCache = {}
+    let styleCache = {};
 
     function getStyle(feature) {
         let size = feature.get('features').length;
@@ -139,6 +139,13 @@ function create_map() {
         return [style];
     }
 
+    zoomToExt = new ol.control.ZoomToExtent({ // zoom button
+        label: 'Z',
+        tipLabel: 'Zoom to your available data',
+        extent: dataExt,
+        duration: 2500,
+        animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
+    });
 
     let map_tar = document.getElementById("map");
     let map = new ol.Map({
@@ -158,26 +165,17 @@ function create_map() {
                 }
             }),
             new ol.control.ScaleLine(),
-            new ol.control.ZoomToExtent({ // zoom button
-                label: 'Z',
-                tipLabel: 'Zoom to your available data',
-                extent: dataExt,
-                duration: 2500,
-                animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
-            })
+            zoomToExt,
         ],
         view: mapView//dataview
     });
-    //mapView.fit(dataExt, {duration: 15000});
 
 // get information about your data in a popup when you click on a data point in the map
     map.on('singleclick', buildPopup);
 
     function buildPopup(evt) {
-        console.log('evt: ', evt)
         if (map.getFeaturesAtPixel(evt.pixel) != null) {
             let clickedFeatures = map.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
-            console.log('clickedFeatures: ', clickedFeatures)
             // TODO: CSS style überarbeiten
             let popupTableBeforeMeta = '<table id="popupTable"><td>';
             let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
@@ -187,30 +185,21 @@ function create_map() {
                 let name, id;
                 // bulid list with selection to send to server
                 for (let i = 0; i < clickedFeatures.length; i++) {
-                    console.log('TODO: build list for preview', clickedFeatures[i]);
                     name = clickedFeatures[i].getId();
                     id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-                    console.log('id: ', id)
-                    ids.push(id)
+                    ids.push(id);
                 }
-                // let name = clickedFeatures[0].getId();
-                // let id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-                // console.log('id: ', id)
-
                 // request info from server
                 $.ajax({
                     url: DEMO_VAR + "/vfwheron/menu",
                     dataType: 'json',
                     data: {
                         show_info: JSON.stringify(ids),
-                        // show_info: JSON.stringify(parseInt(name.substr(wfsLayerName.length + 1, 8))),
                         'csrfmiddlewaretoken': csrf_token,
                     }, // data sent with the post request
                     success: function (json) {
                         try {
                             let properties = json.get;
-                            let lastProperty = json.get[json.get.length];
-                            let buttons = [];
                             let valueLen;
                             let buttonId = [];
                             // loop over "properties"dict with metadata, build columns
@@ -281,7 +270,6 @@ function create_map() {
                     if (ol.coordinate.convexHull) {
                         var coords = [];
                         for (i = 0; i < cluster.length; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
-                        // var chull = ol.coordinate.convexHull(coords);
                         s.push(new ol.style.Style( // spread datapoints around the center of the cluster
                             {
                                 stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),
@@ -324,9 +312,9 @@ function create_map() {
 
     // On selected => get feature in cluster and show info
     selectCluster.getFeatures().on(['add'], function (e) {
-        var c = e.element.get('features');
+        let c = e.element.get('features');
         if (c.length == 1) {
-            var feature = c[0];
+            let feature = c[0];
             $(".infos").html("One feature selected...<br/>(id=" + feature.get('id') + ")");
         }
         else {

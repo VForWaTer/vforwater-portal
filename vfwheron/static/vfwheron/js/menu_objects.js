@@ -255,7 +255,6 @@ function showAllPointsOnMap(){
            'csrfmiddlewaretoken': csrf_token,
        }, // data sent with the post request
        success: function (json) {
-           console.log('response of showAllPointsOnMap: ', json)
        },
    });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
@@ -292,9 +291,10 @@ function showSelectionOnMap(selection) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            // selectedIds = json['all_filters'];
+            zoomToExt.extent = json['dataExt'];
             wfsLayerName = json['ID_layer'];
-            wfsPointSource.clear()
+            wfsPointSource.clear();
+            // document.getElementById()
             // clusterLayer.changed()
         },
     });

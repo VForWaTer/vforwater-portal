@@ -176,7 +176,6 @@ class Table:
         self.user_query_set = user_query_set
         self.table_name = table
         self.child_columns = table.column_dict.keys()
-        print('self.child_columns: ', self.child_columns)
         self.default_user_child_columns = {}
         self.get_query_set()
         self.get_query_path()
