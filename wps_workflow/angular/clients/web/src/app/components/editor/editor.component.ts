@@ -1,3 +1,4 @@
+import { Data } from '../../models/Data';
 import {
   Component, OnInit, HostListener, ElementRef, Input, QueryList,
   ViewChildren, NgZone, ChangeDetectionStrategy, EventEmitter, Output,
@@ -9,6 +10,7 @@ import { Workflow } from 'app/models/Workflow';
 import { Task, TaskState } from 'app/models/Task';
 import { ProcessParameter } from 'app/models/ProcessParameter';
 import { TaskComponent } from 'app/components/task/task.component';
+import { DataComponent } from 'app/components/data/data.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { window } from 'rxjs/operators/window';
 import { AfterContentChecked } from '@angular/core/src/metadata/lifecycle_hooks';
@@ -298,6 +300,19 @@ export class EditorComponent implements OnInit, AfterContentInit {
     this.workflowChanged.emit(this.workflow);
     this.detectChanges();
   }
+  
+  public addData(data: number, x: number, y: number) {
+    const dataElement: Data = {
+      id: -Math.round(Math.random() * 10000),
+      x,
+      y,
+      data,
+    };
+    
+    this.workflow.datas.push(dataElement);
+    this.workflowChanged.emit(this.workflow);
+    this.detectChanges();
+  }
 
   /**
    * Called when changes detected
@@ -454,6 +469,11 @@ export class EditorComponent implements OnInit, AfterContentInit {
   public drop(event: DragEvent) {
     // get process data from drag and drop event
     try {
+      console.log('test ' + event.dataTransfer.getData('data'));
+      const data = parseInt(event.dataTransfer.getData('data'), 10);
+      if (!isNaN(data)) {
+        this.addData(data, event.offsetX - 100, event.offsetY - 50);
+      }
       const process: Process = JSON.parse(event.dataTransfer.getData('json'));
       this.add(process, event.offsetX - 100, event.offsetY - 50);
     } catch (e) {

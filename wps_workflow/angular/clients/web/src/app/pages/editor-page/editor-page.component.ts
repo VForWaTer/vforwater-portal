@@ -111,6 +111,7 @@ export class EditorPageComponent implements OnInit {
           title: 'My New Workflow',
           edges: [],
           tasks: [],
+          datas: [],
           creator_id: 0,
           shared: false,
           created_at: (new Date()).getTime(),

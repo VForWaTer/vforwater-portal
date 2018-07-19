@@ -15,6 +15,8 @@
             <app-task @fade #AppTask *ngFor="let task of workflow.tasks; let i = index" class="task" [style.left.px]="task.x" [style.top.px]="task.y"
                 [process]="findProcess(task.process_id)" [task]="task" (mousedown)="dragStart(i, $event)" (parameterDrag)="parameterDrag($event, AppTask)"
                 (parameterDrop)="parameterDrop($event, AppTask)" (taskRemove)="remove(task.id)" [running]="running" (changeArtefact)="changeArtefact($event)"></app-task>
+        
+        	<app-data @fade #AppData *ngFor="let data of workflow.datas; let i = index" class="task" [style.left.px]="data.x" [style.top.px]="data.y" [data]="data"></app-data>
         </ng-container>
     </div>
 </ng-container>

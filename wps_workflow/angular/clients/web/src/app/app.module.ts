@@ -25,6 +25,7 @@ import { ArtefactDialogComponent } from 'app/components/artefact-dialog/artefact
 import { FormsModule } from '@angular/forms';
 import { ResultDialogComponent } from 'app/components/result-dialog/result-dialog.component';
 import { UserService } from 'app/services/user.service';
+import { DataComponent } from './components/data/data.component';
 
 
 
@@ -48,7 +49,8 @@ const routes = [
     ArtefactDialogComponent,
     ResultDialogComponent,
     EditorComponent,
-    TaskComponent
+    TaskComponent,
+    DataComponent
   ],
   imports: [
     BrowserModule,

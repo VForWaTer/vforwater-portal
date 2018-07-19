@@ -1,3 +1,4 @@
+import { Data } from 'app/models/Data';
 import { Edge } from 'app/models/Edge';
 import { Task } from 'app/models/Task';
 
@@ -13,6 +14,7 @@ export interface Workflow {
     title: string;
     edges: Edge[];
     tasks: Task[];
+    datas: Data[];
     creator_id: number;
     shared: boolean;
     percent_done: number;

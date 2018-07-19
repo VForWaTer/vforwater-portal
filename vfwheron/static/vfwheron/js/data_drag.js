@@ -1,12 +1,19 @@
 $(function() {
 		    var clientFrameWindow = $('#wpstool').get(0).contentWindow;
             var test = document.getElementById("wpstool");
-		    $("#workspace li").on('dragstart',function() {
+		    $("#workspace li").on('dragstart',function(event) {
 		    	dragged = event.target;
 		        console.log("Drag Started");
 		        var clientFrameWindow = $('#wpstool').get(0).contentWindow;
+		        event.dataTransfer = event.originalEvent.dataTransfer;
+		        event.dataTransfer.setData("data", dragged.id);
 		    });
-		    $("#workspace li").on('dragend',function() {
+		    $("#workspace li").on('drag',function(event) {
+		    	dragged = event.target;
+		        event.dataTransfer = event.originalEvent.dataTransfer;
+		        event.dataTransfer.setData("data", dragged.id);
+		    });
+		    $("#workspace li").on('dragend',function(event) {
 		        console.log("Drag End");
 		        document.getElementById("wpstool").contentWindow.document.getElementsByTagName("input")[1].value = dragged.id;		
 		    });
@@ -43,9 +50,10 @@ $(function() {
 		            console.log("Total Events Fired = "+total);
 		            total = 0;
 		            
-		            var iframe = document.getElementById("wpstool");
-		            var elmnt = iframe.contentWindow.document.getElementByTagName("input")[0];
-		            elmnt.value = dragged.id;
+		            
+		            //var iframe = document.getElementById("wpstool");
+		            //var elmnt = this.contentWindow.document.getElementsByTagName("input")[1];
+		            //elmnt.value = dragged.id;
 		            
 		        });
 		    });
