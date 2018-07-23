@@ -146,7 +146,8 @@ export class EditorComponent implements OnInit, AfterContentInit {
    */
   public scrollToMiddle() {
     const native: HTMLElement = this.el.nativeElement;
-    native.scrollTo(500, 500);
+    native.scrollTop;
+    //native.scrollTo(500, 500);
   }
 
   /**

@@ -355,8 +355,8 @@ def send_task(task_id, xml_dir):
     if status_url is None:
         status = '5'
         status_url = "error_url"
-    else:
-        status_url = "http://" + re.sub(r"^http://", "", status_url)
+    #else:
+        #status_url = "http://" + re.sub(r"^http://", "", status_url)   # why do that?
 
     wps_log.info(f"STATUS URL: {status_url}")
 
