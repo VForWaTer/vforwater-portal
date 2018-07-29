@@ -28,7 +28,7 @@ export class UserService {
         return this.http.get<User>(`${environment.ip}/user/`, { withCredentials: true }).pipe(
             map(message => {
                 if (message['error']) {
-                    this.router.navigate(['/login']);
+                   // this.router.navigate(['/login']);
                 }
                 return message;
             })
@@ -43,9 +43,9 @@ export class UserService {
      * @returns {Observable<User>} Loggedin User
      * @memberof UserService
      */
-    public login(username: string, password: string): Observable<User> {
-        return this.http.post<User>(`${environment.ip}/login/`, { username, password }, { withCredentials: true });
-    }
+   // public login(username: string, password: string): Observable<User> {
+    //    return this.http.post<User>(`${environment.ip}/login/`, { username, password }, { withCredentials: true });
+   // }
 
     /**
      * User logout.
@@ -53,8 +53,8 @@ export class UserService {
      * @returns {Promise<any>} Logout promise
      * @memberof UserService
      */
-    public async logout(): Promise<any> {
-        return this.http.delete<any>(`${environment.ip}/logout/`, { withCredentials: true }).toPromise();
-    }
+//    public async logout(): Promise<any> {
+ //       return this.http.delete<any>(`${environment.ip}/logout/`, { withCredentials: true }).toPromise();
+  //  }
 
 }

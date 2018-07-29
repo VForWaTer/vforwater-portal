@@ -4,7 +4,7 @@ import { ProcessService } from 'app/services/process.service';
 import { WpsService } from 'app/services/wps.service';
 import { WPS } from '../../models/WPS';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { UserService } from 'app/services/user.service';
+import { UserService } from 'app/services/.user.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { map } from 'rxjs/operators/map';

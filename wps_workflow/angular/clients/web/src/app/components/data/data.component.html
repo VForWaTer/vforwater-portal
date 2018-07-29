@@ -1,1 +1,12 @@
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="clickDelete()" i18n="@@delete">Delete</button>
+</mat-menu>
+
 <div class="title">{{ data.data }}</div>
+<span [matMenuTriggerFor]="menu"></span>
+
+<div class="outputs" #outputs>
+  <span [attr.data-id]="0" class="output nomove" [matTooltip]="data.data"
+    matTooltipPosition="below" [style.background]="getParameterColor()" (mousedown)="dataMouseDown($event)" >
+  </span>
+</div>

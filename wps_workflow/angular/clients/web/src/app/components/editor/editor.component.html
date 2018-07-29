@@ -16,7 +16,8 @@
                 [process]="findProcess(task.process_id)" [task]="task" (mousedown)="dragStart(i, $event)" (parameterDrag)="parameterDrag($event, AppTask)"
                 (parameterDrop)="parameterDrop($event, AppTask)" (taskRemove)="remove(task.id)" [running]="running" (changeArtefact)="changeArtefact($event)"></app-task>
         
-        	<app-data @fade #AppData *ngFor="let data of workflow.datas; let i = index" class="task" [style.left.px]="data.x" [style.top.px]="data.y" [data]="data"></app-data>
+        	<app-data @fade #AppData *ngFor="let data of workflow.datas; let i = index" class="task" [style.left.px]="data.x" [style.top.px]="data.y" [data]="data" 
+        	    (mousedown)="dataDragStart(i, $event)" (dataDrag)="dataDrag(AppData)" (dataDrop)="dataDrop(AppData)" (dataRemove)="dataRemove(data.id)"></app-data>
         </ng-container>
     </div>
 </ng-container>

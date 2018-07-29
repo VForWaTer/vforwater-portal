@@ -266,10 +266,30 @@ vfwheron.apps.VfwheronConfig.name
 vfwheron.models.DjangoMigrations.name
 wps_workflow.apps.wps_workflowConfig.name
 wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-32', 'name', 'link-14');">name</a></tt><tt class="py-op">=</tt><tt class="py-string">'workflowtool'</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
-<a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line"><tt class="py-op">]</tt> </tt>
-<a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line"> </tt>
-<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt id="link-33" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-33', 'settings', 'link-4');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">ON_VFW_SERVER</tt><tt class="py-op">:</tt> </tt>
-<a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line">    <tt id="link-34" class="py-name"><a title="AuthorizationManagement.urls.urlpatterns
+<a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line">    <tt class="py-name">url</tt><tt class="py-op">(</tt><tt class="py-string">r'^togglelang$'</tt><tt class="py-op">,</tt> <tt id="link-33" class="py-name"><a title="AuthorizationManagement.views
+dashboard.views
+heron_monitor.views
+heron_upload.views
+heron_visual.views
+heron_wps.views
+vfwheron.views
+wps_workflow.views" class="py-name" href="#" onclick="return doclink('link-33', 'views', 'link-1');">views</a></tt><tt class="py-op">.</tt><tt id="link-34" class="py-name" targets="Class vfwheron.views.ToggleLanguageView=vfwheron.views.ToggleLanguageView-class.html"><a title="vfwheron.views.ToggleLanguageView" class="py-name" href="#" onclick="return doclink('link-34', 'ToggleLanguageView', 'link-34');">ToggleLanguageView</a></tt><tt class="py-op">.</tt><tt class="py-name">as_view</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt id="link-35" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-35', 'name', 'link-14');">name</a></tt><tt class="py-op">=</tt><tt class="py-string">'togglelang'</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line"><tt class="py-op">]</tt> </tt>
+<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line"> </tt>
+<a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt id="link-36" class="py-name"><a title="vfwheron.models.TblDataSource.settings" class="py-name" href="#" onclick="return doclink('link-36', 'settings', 'link-4');">settings</a></tt><tt class="py-op">.</tt><tt class="py-name">ON_VFW_SERVER</tt><tt class="py-op">:</tt> </tt>
+<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line">    <tt id="link-37" class="py-name"><a title="AuthorizationManagement.urls.urlpatterns
 dashboard.urls.urlpatterns
 heron.urls.urlpatterns
 heron_monitor.urls.urlpatterns
@@ -277,8 +297,8 @@ heron_upload.urls.urlpatterns
 heron_visual.urls.urlpatterns
 heron_wps.urls.urlpatterns
 vfwheron.urls.urlpatterns
-wps_workflow.urls.urlpatterns" class="py-name" href="#" onclick="return doclink('link-34', 'urlpatterns', 'link-11');">urlpatterns</a></tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">url</tt><tt class="py-op">(</tt><tt class="py-string">r'^rsp/'</tt><tt class="py-op">,</tt> <tt class="py-name">include</tt><tt class="py-op">(</tt><tt class="py-string">'watts_rsp.urls'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+wps_workflow.urls.urlpatterns" class="py-name" href="#" onclick="return doclink('link-37', 'urlpatterns', 'link-11');">urlpatterns</a></tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">url</tt><tt class="py-op">(</tt><tt class="py-string">r'^rsp/'</tt><tt class="py-op">,</tt> <tt class="py-name">include</tt><tt class="py-op">(</tt><tt class="py-string">'watts_rsp.urls'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line"> </tt><script type="text/javascript">
 <!--
 expandto(location.href);
 // -->
@@ -308,7 +328,7 @@ expandto(location.href);
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Fri Jul 13 12:43:06 2018
+    Generated by Epydoc 3.0.1 on Wed Jul 25 17:17:35 2018
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
