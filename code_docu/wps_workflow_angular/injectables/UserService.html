@@ -688,15 +688,6 @@
                                     <span class="modifier">Public</span>
                                 <a href="#get">get</a>
                             </li>
-                            <li>
-                                    <span class="modifier">Public</span>
-                                <a href="#login">login</a>
-                            </li>
-                            <li>
-                                    <span class="modifier">Public</span>
-                                    <span class="modifier">Async</span>
-                                <a href="#logout">logout</a>
-                            </li>
                         </ul>
                     </td>
                 </tr>
@@ -823,150 +814,6 @@
                 </tr>
             </tbody>
         </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="login"></a>
-                        <span class="name">
-                            <b>
-                                <span class="modifier">Public</span>
-                            login
-                            </b>
-                            <a href="#login"><span class="fa fa-link"></span></a>
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                            <span class="modifier-icon fa fa-reset"></span>
-                        <code>login(username: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>, password: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank">string</a>)</code>
-                    </td>
-                </tr>
-
-
-                        <tr>
-                            <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="46" class="link-to-prism">src/app/services/user.service.ts:46</a></div>
-                            </td>
-                        </tr>
-
-
-                <tr>
-                    <td class="col-md-4">
-                            <div class="io-description"><p>User login.</p>
-</div>
-
-                            <div class="io-description">
-                                    <b>Parameters :</b>
-                                    <table class="params">
-                                        <thead>
-                                            <tr>
-                                                <td>Name</td>
-                                                    <td>Type</td>
-                                                <td>Optional</td>
-                                                    <td>Description</td>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                                <tr>
-                                                        <td>username</td>
-                                                        <td>
-                                                                    <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                                        </td>
-                                                    
-                                                    <td>
-                                                            no
-                                                    </td>
-                                                    
-
-                                                        <td>
-                                                                <code><p>Username</p>
-</code>
-                                                        </td>
-                                                </tr>
-                                                <tr>
-                                                        <td>password</td>
-                                                        <td>
-                                                                    <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-                                                        </td>
-                                                    
-                                                    <td>
-                                                            no
-                                                    </td>
-                                                    
-
-                                                        <td>
-                                                                <code><p>Password</p>
-</code>
-                                                        </td>
-                                                </tr>
-                                        </tbody>
-                                    </table>
-                            </div>
-                            <div>
-                            </div>
-                            <div class="io-description">
-                                <b>Returns : </b>    <code><a href="../interfaces/User.html" target="_self" >Observable&lt;User&gt;</a></code>
-
-                            </div>
-                                <div class="io-description">
-                                    <p>Loggedin User</p>
-
-                                </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="logout"></a>
-                        <span class="name">
-                            <b>
-                                <span class="modifier">Public</span>
-                                <span class="modifier">Async</span>
-                            logout
-                            </b>
-                            <a href="#logout"><span class="fa fa-link"></span></a>
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                            <span class="modifier-icon fa fa-reset"></span>
-                        <code>logout()</code>
-                    </td>
-                </tr>
-
-
-                        <tr>
-                            <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="56" class="link-to-prism">src/app/services/user.service.ts:56</a></div>
-                            </td>
-                        </tr>
-
-
-                <tr>
-                    <td class="col-md-4">
-                            <div class="io-description"><p>User logout.</p>
-</div>
-
-                            <div>
-                            </div>
-                            <div class="io-description">
-                                <b>Returns : </b>    <code>Promise&lt;any&gt;</code>
-
-                            </div>
-                                <div class="io-description">
-                                    <p>Logout promise</p>
-
-                                </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
 </section>
 
 
@@ -1004,7 +851,7 @@ export class UserService {
         return this.http.get&lt;User&gt;(&#x60;${environment.ip}/user/&#x60;, { withCredentials: true }).pipe(
             map(message &#x3D;&gt; {
                 if (message[&#x27;error&#x27;]) {
-                    this.router.navigate([&#x27;/login&#x27;]);
+                   // this.router.navigate([&#x27;/login&#x27;]);
                 }
                 return message;
             })
@@ -1019,9 +866,9 @@ export class UserService {
      * @returns {Observable&lt;User&gt;} Loggedin User
      * @memberof UserService
      */
-    public login(username: string, password: string): Observable&lt;User&gt; {
-        return this.http.post&lt;User&gt;(&#x60;${environment.ip}/login/&#x60;, { username, password }, { withCredentials: true });
-    }
+   // public login(username: string, password: string): Observable&lt;User&gt; {
+    //    return this.http.post&lt;User&gt;(&#x60;${environment.ip}/login/&#x60;, { username, password }, { withCredentials: true });
+   // }
 
     /**
      * User logout.
@@ -1029,9 +876,9 @@ export class UserService {
      * @returns {Promise&lt;any&gt;} Logout promise
      * @memberof UserService
      */
-    public async logout(): Promise&lt;any&gt; {
-        return this.http.delete&lt;any&gt;(&#x60;${environment.ip}/logout/&#x60;, { withCredentials: true }).toPromise();
-    }
+//    public async logout(): Promise&lt;any&gt; {
+ //       return this.http.delete&lt;any&gt;(&#x60;${environment.ip}/logout/&#x60;, { withCredentials: true }).toPromise();
+  //  }
 
 }
 </code></pre>

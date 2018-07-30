@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>analyzer</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<h1 class="toc">Module analyzer</h1>
+<hr />
+  <h2 class="toc">Classes</h2>
+    <a target="mainFrame" href="gyp.generator.analyzer.Config-class.html"
+     >Config</a><br />    <a target="mainFrame" href="gyp.generator.analyzer.Target-class.html"
+     >Target</a><br />    <a target="mainFrame" href="gyp.generator.analyzer.TargetCalculator-class.html"
+     >TargetCalculator</a><br />  <h2 class="toc">Functions</h2>
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#CalculateVariables"
+     >CalculateVariables</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#GenerateOutput"
+     >GenerateOutput</a><br />  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_AddCompileTargets"
+     >_AddCompileTargets</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_AddSources"
+     >_AddSources</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_DoesTargetDependOnMatchingTargets"
+     >_DoesTargetDependOnMatchingTargets</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_DoesTargetTypeRequireBuild"
+     >_DoesTargetTypeRequireBuild</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_ExtractSources"
+     >_ExtractSources</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_ExtractSourcesFromAction"
+     >_ExtractSourcesFromAction</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_GenerateTargets"
+     >_GenerateTargets</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_GetCompileTargets"
+     >_GetCompileTargets</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_GetOrCreateTargetByName"
+     >_GetOrCreateTargetByName</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_GetTargetsDependingOnMatchingTargets"
+     >_GetTargetsDependingOnMatchingTargets</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_GetUnqualifiedToTargetMapping"
+     >_GetUnqualifiedToTargetMapping</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_LookupTargets"
+     >_LookupTargets</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_NamesNotIn"
+     >_NamesNotIn</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_ResolveParent"
+     >_ResolveParent</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_ToGypPath"
+     >_ToGypPath</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_ToLocalPath"
+     >_ToLocalPath</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_WasBuildFileModified"
+     >_WasBuildFileModified</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_WasGypIncludeFileModified"
+     >_WasGypIncludeFileModified</a><br />  </div>
+  <div class="private">
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#_WriteOutput"
+     >_WriteOutput</a><br />  </div>
+  <h2 class="toc">Variables</h2>
+    <a target="mainFrame" href="gyp.generator.analyzer-module.html#MATCH_STATUS_DOESNT_MATCH"
+     >MATCH_STATUS_DOESNT_MATCH</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#MATCH_STATUS_MATCHES"
+     >MATCH_STATUS_MATCHES</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#MATCH_STATUS_MATCHES_BY_DEPENDENCY"
+     >MATCH_STATUS_MATCHES_BY_DEPENDENCY</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#MATCH_STATUS_TBD"
+     >MATCH_STATUS_TBD</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#all_changed_string"
+     >all_changed_string</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#debug"
+     >debug</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#found_dependency_string"
+     >found_dependency_string</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#generator_default_variables"
+     >generator_default_variables</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#generator_supports_multiple_toolsets"
+     >generator_supports_multiple_toolsets</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#generator_wants_static_library_dependencies_adjusted"
+     >generator_wants_static_library_dependencies_adjusted</a><br />    <a target="mainFrame" href="gyp.generator.analyzer-module.html#no_dependency_string"
+     >no_dependency_string</a><br /><hr />
+<span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

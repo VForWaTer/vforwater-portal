@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.xcode_emulation.MacPrefixHeader</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.xcode_emulation-module.html">Module&nbsp;xcode_emulation</a> ::
+        Class&nbsp;MacPrefixHeader
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.xcode_emulation.MacPrefixHeader-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class MacPrefixHeader</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_xcod" name="uml_class_diagram_for_gyp_xcod">
+<area shape="rect" id="node1_4" href="gyp.xcode_emulation.MacPrefixHeader-class.html#__init__" title="If xcode_settings is None, all methods on this class are no&#45;ops." alt="" coords="17,38,495,58"/>
+<area shape="rect" id="node1_5" href="gyp.xcode_emulation.MacPrefixHeader-class.html#GetInclude" title="Gets the cflags to include the prefix header for language |lang|." alt="" coords="17,58,495,78"/>
+<area shape="rect" id="node1_6" href="gyp.xcode_emulation.MacPrefixHeader-class.html#GetObjDependencies" title="Given a list of source files and the corresponding object files, returns a &#160;list of (source, object, gch) tuples, where |gch| is the build&#45;directory &#160;relative path to the gch file each object file depends on." alt="" coords="17,78,495,98"/>
+<area shape="rect" id="node1_7" href="gyp.xcode_emulation.MacPrefixHeader-class.html#GetPchBuildCommands" title="Returns [(path_to_gch, language_flag, language, header)]." alt="" coords="17,98,495,118"/>
+<area shape="rect" id="node1" href="gyp.xcode_emulation.MacPrefixHeader-class.html" title="A class that helps with emulating Xcode&#39;s GCC_PREFIX_HEADER feature." alt="" coords="5,5,507,124"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_xcod.gif" alt='' usemap="#uml_class_diagram_for_gyp_xcod" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<pre class="literalblock">
+A class that helps with emulating Xcode's GCC_PREFIX_HEADER feature.
+
+This feature consists of several pieces:
+* If GCC_PREFIX_HEADER is present, all compilations in that project get an
+  additional |-include path_to_prefix_header| cflag.
+* If GCC_PRECOMPILE_PREFIX_HEADER is present too, then the prefix header is
+  instead compiled, and all other compilations in the project get an
+  additional |-include path_to_compiled_header| instead.
+  + Compiled prefix headers have the extension gch. There is one gch file for
+    every language used in the project (c, cc, m, mm), since gch files for
+    different languages aren't compatible.
+  + gch files themselves are built with the target's normal cflags, but they
+    obviously don't get the |-include| flag. Instead, they need a -x flag that
+    describes their language.
+  + All o files in the target need to depend on the gch file, to make sure
+    it's built before any o file is built.
+
+This class helps with some of these tasks, but it needs help from the build
+system for writing dependencies to the gch files, for writing build commands
+for the gch files, and for figuring out the location of the gch files.
+
+</pre>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.MacPrefixHeader-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">xcode_settings</span>,
+        <span class="summary-sig-arg">gyp_path_to_build_path</span>,
+        <span class="summary-sig-arg">gyp_path_to_build_output</span>)</span><br />
+      If xcode_settings is None, all methods on this class are no-ops.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_CompiledHeader"></a><span class="summary-sig-name">_CompiledHeader</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lang</span>,
+        <span class="summary-sig-arg">arch</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader._CompiledHeader">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetInclude"></a><span class="summary-sig-name">GetInclude</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lang</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Gets the cflags to include the prefix header for language |lang|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader.GetInclude">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_Gch"></a><span class="summary-sig-name">_Gch</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lang</span>,
+        <span class="summary-sig-arg">arch</span>)</span><br />
+      Returns the actual file name of the prefix header for language 
+      |lang|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader._Gch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.MacPrefixHeader-class.html#GetObjDependencies" class="summary-sig-name">GetObjDependencies</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">sources</span>,
+        <span class="summary-sig-arg">objs</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Given a list of source files and the corresponding object files, 
+      returns a list of (source, object, gch) tuples, where |gch| is the 
+      build-directory relative path to the gch file each object file 
+      depends on.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader.GetObjDependencies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.MacPrefixHeader-class.html#GetPchBuildCommands" class="summary-sig-name">GetPchBuildCommands</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns [(path_to_gch, language_flag, language, header)].</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader.GetPchBuildCommands">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">xcode_settings</span>,
+        <span class="sig-arg">gyp_path_to_build_path</span>,
+        <span class="sig-arg">gyp_path_to_build_output</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+If xcode_settings is None, all methods on this class are no-ops.
+
+Args:
+    gyp_path_to_build_path: A function that takes a gyp-relative path,
+        and returns a path relative to the build directory.
+    gyp_path_to_build_output: A function that takes a gyp-relative path and
+        a language code ('c', 'cc', 'm', or 'mm'), and that returns a path
+        to where the output of precompiling that path for that language
+        should be placed (without the trailing '.gch').
+
+</pre>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetObjDependencies"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetObjDependencies</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">sources</span>,
+        <span class="sig-arg">objs</span>,
+        <span class="sig-arg">arch</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader.GetObjDependencies">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Given a list of source files and the corresponding object files, 
+  returns a list of (source, object, gch) tuples, where |gch| is the 
+  build-directory relative path to the gch file each object file depends 
+  on.  |compilable[i]| has to be the source file belonging to 
+  |objs[i]|.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetPchBuildCommands"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetPchBuildCommands</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">arch</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#MacPrefixHeader.GetPchBuildCommands">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns [(path_to_gch, language_flag, language, header)]. 
+  |path_to_gch| and |header| are relative to the build directory.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:29 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

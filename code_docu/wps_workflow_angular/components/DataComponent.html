@@ -757,11 +757,11 @@
                             </li>
                             <li>
                                     <span class="modifier">Public</span>
-                                <a href="#getParameterColor">getParameterColor</a>
+                                <a href="#getDataPosition">getDataPosition</a>
                             </li>
                             <li>
                                     <span class="modifier">Public</span>
-                                <a href="#getParameterPosition">getParameterPosition</a>
+                                <a href="#getParameterColor">getParameterColor</a>
                             </li>
                             <li>
                                     <span class="modifier">Public</span>
@@ -1246,62 +1246,20 @@
             <tbody>
                 <tr>
                     <td class="col-md-4">
-                        <a name="getParameterColor"></a>
+                        <a name="getDataPosition"></a>
                         <span class="name">
                             <b>
                                 <span class="modifier">Public</span>
-                            getParameterColor
+                            getDataPosition
                             </b>
-                            <a href="#getParameterColor"><span class="fa fa-link"></span></a>
+                            <a href="#getDataPosition"><span class="fa fa-link"></span></a>
                         </span>
                     </td>
                 </tr>
                 <tr>
                     <td class="col-md-4">
                             <span class="modifier-icon fa fa-reset"></span>
-                        <code>getParameterColor()</code>
-                    </td>
-                </tr>
-
-
-                        <tr>
-                            <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="122" class="link-to-prism">src/app/components/data/data.component.ts:122</a></div>
-                            </td>
-                        </tr>
-
-
-                <tr>
-                    <td class="col-md-4">
-                            <div class="io-description"><p>returns the color of the process parameter</p>
-</div>
-
-                            <div class="io-description">
-                                <b>Returns : </b>    <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
-
-                            </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <table class="table table-sm table-bordered">
-            <tbody>
-                <tr>
-                    <td class="col-md-4">
-                        <a name="getParameterPosition"></a>
-                        <span class="name">
-                            <b>
-                                <span class="modifier">Public</span>
-                            getParameterPosition
-                            </b>
-                            <a href="#getParameterPosition"><span class="fa fa-link"></span></a>
-                        </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="col-md-4">
-                            <span class="modifier-icon fa fa-reset"></span>
-                        <code>getParameterPosition(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank">number</a>)</code>
+                        <code>getDataPosition(id: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank">number</a>)</code>
                     </td>
                 </tr>
 
@@ -1350,6 +1308,48 @@
                                     </table>
                             </div>
                             <div>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="getParameterColor"></a>
+                        <span class="name">
+                            <b>
+                                <span class="modifier">Public</span>
+                            getParameterColor
+                            </b>
+                            <a href="#getParameterColor"><span class="fa fa-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                            <span class="modifier-icon fa fa-reset"></span>
+                        <code>getParameterColor()</code>
+                    </td>
+                </tr>
+
+
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="127" class="link-to-prism">src/app/components/data/data.component.ts:127</a></div>
+                            </td>
+                        </tr>
+
+
+                <tr>
+                    <td class="col-md-4">
+                            <div class="io-description"><p>returns the color of the process parameter</p>
+</div>
+
+                            <div class="io-description">
+                                <b>Returns : </b>    <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
                             </div>
                     </td>
                 </tr>
@@ -1668,12 +1668,17 @@ export class DataComponent implements OnInit {
    * @param role the parameter role which can either be input or output
    * @param id the parameter id
    */
-  public getParameterPosition(id: number): [number, number] {
+  public getDataPosition(id: number): [number, number] {
+      console.log(&quot;dataPosition: 1&quot;);
     const n: HTMLDivElement &#x3D; this.outputContainer.nativeElement;
-
+      console.log(&quot;dataPosition: 2&quot;);
+      
     for (let i &#x3D; 0; i &lt; n.childElementCount; i++) {
+        console.log(&quot;dataPosition: 3&quot;);
       if (n.children[i].getAttribute(&#x27;data-id&#x27;) &#x3D;&#x3D;&#x3D; &#x27;&#x27; + id) {
+          console.log(&quot;dataPosition: 4&quot;);
         const rect &#x3D; n.children[i].getBoundingClientRect();
+        console.log(&quot;dataPosition: 5&quot;);
         return [rect.left + 11, rect.top + 11];
       }
     }

@@ -16,9 +16,16 @@ import { window } from 'rxjs/operators/window';
 import { AfterContentChecked } from '@angular/core/src/metadata/lifecycle_hooks';
 
 /**
- * Metadata for mouse movement inside the editor.
+ * Metadata for mouse movement inside the editor. Holds Info on coords, index, etc of dragged Task, Edge or Data
+ * @interface MovementData 
+ * parameter: Selected Input or Output an Edge comes from
+ * task: Task object of dragged Task
+ * index: Index of dragged Task in workflow.tasks[] Array
+ * dataId: Index of dragged Data in workflow.datas[] Array
+ * x: X-Coord of Task, Data or Parameter
+ * y: Y-Coord of Task, Data or Parameter
+ * before:
  *
- * @interface MovementData
  */
 interface MovementData {
     parameter?: ProcessParameter<'input' | 'output'>;
@@ -32,7 +39,8 @@ interface MovementData {
 }
 
 /**
- * Editor Component.
+ * Editor Component
+ * Component for the workflow Editor
  *
  * @export
  * @class EditorComponent
@@ -53,31 +61,55 @@ interface MovementData {
     ]
 } )
 export class EditorComponent implements OnInit, AfterContentInit {
-
+    
+    /**
+     * current Workflow
+     */
     @Input()
     public workflow: Workflow;
 
+    /**
+     * List of Processes loaded in DB
+     */
     @Input()
     public processes: Process[];
 
+    /**
+     * Metadata Variable for Movement Data
+     */
     private movement: MovementData = {};
 
+    /**
+     * List for undo Button
+     */
     private snapshots: Workflow[] = [];
 
+    /**
+    * List of all Task Components in Editor
+    */
     @ViewChildren( TaskComponent )
     public taskComponents: QueryList<TaskComponent>;
 
+    /**
+    * List of all Data Components in Editor
+    */
     @ViewChildren( DataComponent )
     public dataComponents: QueryList<DataComponent>;
 
-
+    /**
+    * Emitter for updating current Workflow
+    */
     @Output()
     public workflowChanged = new EventEmitter<Workflow>();
 
+    /**
+    * Status indicating if Workflow is running or not
+    */
     @Input()
     public running = false;
 
     /**
+     * Constructor of Component
      * Creates an instance of EditorComponent.
      *
      * @param {ElementRef} el
@@ -115,7 +147,7 @@ export class EditorComponent implements OnInit, AfterContentInit {
 
 
     /**
-     * Empties snapshots
+     * Empties snapshots list and movement variable
      *
      * @memberof EditorComponent
      */
@@ -126,8 +158,9 @@ export class EditorComponent implements OnInit, AfterContentInit {
 
     /**
      * Is called when an edge is clicked.
+     * Deletes the clicked Edge
      *
-     * @param edges the workflows edges
+     * @param edges The edges in workflow
      */
     public clickEdge( edges ) {
 
@@ -144,7 +177,8 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Move canvas to the middle.
+     * Moves canvas to the middle of the screen when a workflow is loaded or Editor is initialized.
+     * 
      *
      * @memberof EditorComponent
      */
@@ -156,8 +190,9 @@ export class EditorComponent implements OnInit, AfterContentInit {
 
     /**
      * Changes an artefact.
+     * Deletes or changes the value of an Artefact according to Edges
      *
-     * @param event the event that triggers the call
+     * @param event The event that triggers the call. Holds Parameter and Data values to create a new Artefact
      */
     public changeArtefact( event ) {
         this.snapshot();
@@ -214,8 +249,8 @@ export class EditorComponent implements OnInit, AfterContentInit {
     /**
      * Returns edge as svg string.
      *
-     * @param edge the edge
-     * @param mouse the mouse
+     * @param edge The edge to be returned as string
+     * @param {bool} mouse the mouse
      */
     public getSvgEdge( edge: [number, number, number, number, number], mouse = false ) {
         let delta = Math.abs( edge[1] - edge[3] );
@@ -281,9 +316,9 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Adds the process at the given coordinates.
+     * Adds a Process as Task to the Editor and Workflow at the given coordinates.
      *
-     * @param process the process to add
+     * @param process the selected process to add
      * @param x x coordinate in the editor
      * @param y y coordinate in the editor
      */
@@ -310,6 +345,13 @@ export class EditorComponent implements OnInit, AfterContentInit {
         this.detectChanges();
     }
 
+    /**
+    * Adds a dropped Dataset from vfwportal Datastore as Data Object to the Editor and Workflow
+    * 
+    * @param data value of dataset representing id of query in database
+    * @param x X Coordinate in Editor
+    * @param y Y Coordinate in Editor
+    */
     public addData( data: number, x: number, y: number ) {
         const dataElement: Data = {
             id: -Math.round( Math.random() * 10000 ),
@@ -339,7 +381,7 @@ export class EditorComponent implements OnInit, AfterContentInit {
      * Removes a task from the editor.
      *
      *
-     * @param task_id the id of the task
+     * @param task_id the id of the task to remove
      */
     public remove( task_id: number ) {
         if ( this.running ) {
@@ -356,9 +398,9 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Removes a task from the editor.
+     * Removes a Data from the Editor.
      *
-     * @param task_id the id of the task
+     * @param data_id the id of the data object to remove
      */
     public dataRemove( data_id: number ) {
         this.snapshot();
@@ -380,11 +422,13 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
+     * EventListener for dragStart Event
      * Triggered when the user starts to drag an edge from
-     * a parameter to somewhere else.
+     * a parameter to somewhere else and saves metadata to movement var.
+     * resets movement.index when no parameter is dragged
      *
      * @param index the parameter index
-     * @param event the user clicks on a parameter node
+     * @param {MouseEvent} event event var
      */
     public dragStart( index: number, event: MouseEvent ) {
         if ( event.button !== 0 || this.running ) {
@@ -406,11 +450,13 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
+     * EventListener for dragStart Event on Data
      * Triggered when the user starts to drag an edge from
-     * a parameter to somewhere else.
+     * a Data output to somewhere else and saves metadata to movement var.
+     * resets movement.index when no parameter is dragged
      *
-     * @param index the parameter index
-     * @param event the user clicks on a parameter node
+     * @param dataId The index of the Data Element in workflow.datas[]
+     * @param {MouseEvent} event Event var
      */
     public dataDragStart( dataId: number, event: MouseEvent ) {
         if ( event.button !== 0 || this.running ) {
@@ -427,14 +473,15 @@ export class EditorComponent implements OnInit, AfterContentInit {
             }
             this.movement = { dataId, x, y, before: JSON.stringify( this.workflow ) };
         } else {
-            console.log( "reset movement data field" );
             //this.movement.index = undefined;
             //this.movement.dataId = undefined; //this.workflow.datas[data].data;
         }
     }
 
     /**
-     * Triggerd when the user moves his mouse.
+     * EventListener for mouseDown Event
+     * Triggerd when the user clicks (and holds) the left mouse Button.
+     * Adds and binds the mousemove Eventlistener
      *
      * @param {MouseEvent} event Mouse event
      * @memberof EditorComponent
@@ -448,10 +495,15 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Triggered when the user moves the cursor to
-     * from a parameter node to somewhere creating an edge.
+     * EventListener for mouseMove Event
+     * Calculates the Coordinates for moving a Task, Data or Edge
+     * Triggered when the user moves his mouse.
+     * Is only triggered when the right mouse Button is clicked (or held down) 
+     * Reason: The associated Eventlistener is only added when mouseDown is triggered
      *
-     * @param event the user moves the mouse
+     *
+     *
+     * @param {MouseEvent} event Event variable
      */
     public mouseMove( event: MouseEvent ) {
         // return if no task / parameter is selected
@@ -488,11 +540,14 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
+     * EventListener for dragEnd Event
+     * Detects the end of a drag event.
+     * Resets movement var and unbinds mousemove listener
      * Triggered when the user releases the mouse button
      * when he drags an edge from one parameter node to
      * another.
      *
-     * @param event the user releases the mouse button
+     * @param event Event var
      */
     @HostListener( 'mouseup' )
     public dragEnd( event ) {
@@ -510,10 +565,11 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Returns allways false.
-     * An indicator for browsers.
+     * EventListener for dragOver Event
+     * An indicator for browsers, always returns false
      *
-     * @param event drag over event
+     * @param {DragEvent} event drag over event var
+     * @returns bool false
      */
     public dragOver( event: DragEvent ): boolean {
         // this needs to return false validate dropping area
@@ -521,9 +577,10 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Process is dropped.
+     * EventListener for drop Event
+     * Triggered when Process or Data is dropped into the Editor and adds them to the workflow
      *
-     * @param event user drops element
+     * @param {DragEvent} event Event var
      */
     public drop( event: DragEvent ) {
         // get process data from drag and drop event
@@ -542,10 +599,10 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Drags a parameter.
+     * Starts the parameter edge drag from a Task. Saves Task, Parameter and coords to movement var
      *
-     * @param parameter the parameter
-     * @param task the task
+     * @param parameter the dragged parameter
+     * @param task the task the parameter is dragged from
      */
     public parameterDrag( parameter: ProcessParameter<'input' | 'output'>, task: TaskComponent ) {
         if ( this.running ) {
@@ -570,10 +627,12 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Drops a parameter.
-     *
-     * @param parameter the parameter
-     * @param task the task
+     * Handler for when an Edge from a Parameter is dropped onto another Parameter
+     * Calculates and adds the according edge between the tasks to the workflow.
+     * If one end of the edge is a Data Element, the input artefact data of the task is set to the data held in the data element
+     * 
+     * @param parameter the parameter an edge is dropped to
+     * @param task the task to the dropped to parameter
      */
     public parameterDrop( parameter: ProcessParameter<'input' | 'output'>, task: TaskComponent ) {
         console.log( "param drop before" + this.movement.dataId );
@@ -629,10 +688,10 @@ export class EditorComponent implements OnInit, AfterContentInit {
 
 
     /**
-     * Drags a parameter.
+     * Starts the data edge drag from an Data Element.
+     * Saves data indes and coords to movement var
      *
-     * @param parameter the parameter
-     * @param task the task
+     * @param {DataComponent} Data the data Element Component the drag is started from
      */
     public dataDrag( Data: DataComponent ) {
         console.log( "before data drag!" + Data.data.data );
@@ -653,10 +712,9 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
-     * Drops a parameter.
+     * Handler for when an endge is dropped to an data Element
      *
-     * @param parameter the parameter
-     * @param task the task
+     * @param {DataComponent} data the data element an edge is dropped to
      */
     public dataDrop( data: DataComponent ) {
         console.log( 'dataDrop!' );
