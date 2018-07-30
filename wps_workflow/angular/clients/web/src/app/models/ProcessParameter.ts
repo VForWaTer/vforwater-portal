@@ -7,7 +7,8 @@
  * @export
  * @enum {number}
  */
-export enum ProcessParameterType {
+export enum ProcessParameterType
+{
     LITERAL,
     COMPLEX,
     BOUNDING_BOX
@@ -23,7 +24,8 @@ export enum ProcessParameterType {
  * @interface ProcessParameter
  * @template T
  */
-export interface ProcessParameter<T extends 'input' | 'output'> {
+export interface ProcessParameter<T extends 'input' | 'output'>
+{
     id: number;
     role: T;
     type: ProcessParameterType;

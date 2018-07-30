@@ -1,6 +1,6 @@
-import { Data } from 'app/models/Data';
-import { Edge } from 'app/models/Edge';
-import { Task } from 'app/models/Task';
+import {Data} from 'app/models/Data';
+import {Edge} from 'app/models/Edge';
+import {Task} from 'app/models/Task';
 
 /**
  * A workflow contains all related
@@ -9,7 +9,8 @@ import { Task } from 'app/models/Task';
  * @export
  * @interface Workflow
  */
-export interface Workflow {
+export interface Workflow
+{
     id: number;
     title: string;
     edges: Edge[];

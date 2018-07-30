@@ -6,7 +6,8 @@
  * @interface Artefact
  * @template T
  */
-export interface Artefact<T> {
+export interface Artefact<T>
+{
     parameter_id: number;
     task_id: number;
     workflow_id: number;

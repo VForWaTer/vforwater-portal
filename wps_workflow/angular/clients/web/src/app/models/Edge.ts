@@ -5,7 +5,8 @@
  * @export
  * @interface Edge
  */
-export interface Edge {
+export interface Edge
+{
     id: number;
     from_task_id: number;
     to_task_id: number;

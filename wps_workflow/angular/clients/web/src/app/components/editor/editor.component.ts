@@ -17,23 +17,38 @@ import { AfterContentChecked } from '@angular/core/src/metadata/lifecycle_hooks'
 
 /**
  * Metadata for mouse movement inside the editor. Holds Info on coords, index, etc of dragged Task, Edge or Data
- * @interface MovementData 
- * parameter: Selected Input or Output an Edge comes from
- * task: Task object of dragged Task
- * index: Index of dragged Task in workflow.tasks[] Array
- * dataId: Index of dragged Data in workflow.datas[] Array
- * x: X-Coord of Task, Data or Parameter
- * y: Y-Coord of Task, Data or Parameter
- * before:
  *
+ * @interface MovementData
  */
 interface MovementData {
+    /**
+     *  Selected Input or Output an Edge comes from
+     *  @type {ProcessParameter}
+     */
     parameter?: ProcessParameter<'input' | 'output'>;
+    /**
+     * Vectors for the dragged edge
+     */
     edge?: [number, number, number, number];
+    /**
+     * Task Object of dragged Task
+     */
     task?: Task;
+    /**
+     * Index of dragged Task in workflow.tasks[] Array
+     */
     index?: number;
+    /**
+     * Index of dragged Data in workflow.datas[] Array
+     */
     dataId?: number;
+    /**
+     * X-Coord of Task, Data or Parameter
+     */
     x?: number;
+    /**
+     * Y-Coord of Task, Data or Parameter
+     */
     y?: number;
     before?: string;
 }

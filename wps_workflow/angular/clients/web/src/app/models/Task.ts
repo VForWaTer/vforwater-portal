@@ -1,12 +1,13 @@
-import { Artefact } from 'app/models/Artefact';
+import {Artefact} from 'app/models/Artefact';
 
 /**
  * Describes the current state of a task.
  *
  * @export
- * @enum {number}
+ * @enum {number} TaskState state
  */
-export enum TaskState {
+export enum TaskState
+{
     NONE,
     READY,
     WAITING,
@@ -25,7 +26,8 @@ export enum TaskState {
  * @export
  * @interface Task
  */
-export interface Task {
+export interface Task
+{
     id: number;
     x: number;
     y: number;

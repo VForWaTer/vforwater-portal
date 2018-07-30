@@ -1,4 +1,4 @@
-import { WPSProvider } from 'app/models/WPSProvider';
+import {WPSProvider} from 'app/models/WPSProvider';
 
 /**
  * Wps contains data about a wps server
@@ -6,7 +6,8 @@ import { WPSProvider } from 'app/models/WPSProvider';
  * @export
  * @interface WPS
  */
-export interface WPS {
+export interface WPS
+{
     id: number;
     provider: WPSProvider;
     title: string;

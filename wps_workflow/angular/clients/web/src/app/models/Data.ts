@@ -1,4 +1,5 @@
-export interface Data {
+export interface Data
+{
     id: number;
     x: number;
     y: number;
