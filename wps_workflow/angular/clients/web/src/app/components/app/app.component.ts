@@ -40,15 +40,5 @@ export class AppComponent {
         err => this.admin = false
       );
 
-    // Hide navigation bar when user is on /login
-    //this.router.events.subscribe(route => {
-      //if (route instanceof NavigationEnd) {
-        //if (route.url === '/login') {
-         // this.showNav = false;
-        //} else {
-         // this.showNav = true;
-        //}
-      //}
-   // });
   }
 }

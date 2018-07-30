@@ -18,7 +18,7 @@ export interface TaskParameterTuple
 }
 
 /**
- *
+ * Component Class for the Task  in Editor
  * @export
  * @class TaskComponent
  * @implements {OnInit}
@@ -32,51 +32,82 @@ export class TaskComponent implements OnInit
 {
     
     /**
-     *
+     * Process to this Task
      */
     @Input()
     public process: Process;
-    
+
+    /**
+     *  Task Model to this Component
+     */
     @Input()
     public task: Task;
-    
+
+    /**
+     *  Parameter Input Container Reference
+     */
     @ViewChild('inputs')
     public inputContainer: ElementRef;
-    
+
+    /**
+     *  Parameter Output Container Reference
+     */
     @ViewChild('outputs')
     public outputContainer: ElementRef;
-    
+
+    /**
+     * Trigger for context menu
+     */
     @ViewChild(MatMenuTrigger)
     public menuComponent: MatMenuTrigger;
-    
+
+    /**
+     * Emitter for Edge drag function
+     */
     @Output()
     public parameterDrag = new EventEmitter<ProcessParameter<'input' | 'output'>>();
-    
+
+    /**
+     * Emitter for Edge drop function
+     */
     @Output()
     public parameterDrop = new EventEmitter<ProcessParameter<'input' | 'output'>>();
-    
+
+    /**
+     * Emitter for delete function
+     */
     @Output()
     public taskRemove = new EventEmitter<Task>();
-    
+
+    /**
+     * Emitter for Artefact change/delete function
+     */
     @Output()
     public changeArtefact = new EventEmitter<[TaskParameterTuple, object]>();
-    
+
+    /**
+     * Status variable if workflow is running
+     */
     @Input()
     public running = false;
-    
+
+    /**
+     * holds coordinates where mouse button was pressed
+     */
     private mouseDownPos: number[];
     
     /**
      * creates a task object
-     * @param dialog material dialog
-     * @param el element reference
+     * @param {MatDialog} dialog material dialog
+     * @param {ElementRef} el element reference to component
      */
     public constructor(public dialog: MatDialog, private el: ElementRef)
     {
     }
     
     /**
-     *
+     * Component setup
+     * @memberOf TaskComponent
      */
     public ngOnInit()
     {
@@ -84,10 +115,8 @@ export class TaskComponent implements OnInit
     }
     
     /**
-     *
-     * @return {{state: TaskState, name: string, color: string} | {state: TaskState, name: string, color: string} |
-     *     {state: TaskState, name: string, color: string} | {state: TaskState, name: string, color: string} | {state:
-     *     TaskState, name: string, color: string} | {state: TaskState, name: string, color: string}}
+     * Getter for task execute state
+     * @returns Touple of name and color of state
      */
     public get stateInfo(): { name: string, color: string }
     {
@@ -104,8 +133,10 @@ export class TaskComponent implements OnInit
     }
     
     /**
+     * EventListener for mouseDown Event
      * triggered when the user clicks
-     * @param event the user clicks the mouse button
+     * sets local var to the mouse coordinates
+     * @param {MouseEvent} event Event variable
      */
     @HostListener('mousedown', ['$event'])
     public hostMouseDown(event: MouseEvent)
@@ -117,8 +148,10 @@ export class TaskComponent implements OnInit
     }
     
     /**
+     * EventListener for mouseUp Event
      * triggered when user releases mouse button
-     * @param event user releases mouse button
+     * opens the context menu and resets local mouseDownPos Variable
+     * @param {MouseEvent} event Event Var
      */
     @HostListener('mouseup', ['$event'])
     public hostMouseUp(event: MouseEvent)
@@ -135,8 +168,9 @@ export class TaskComponent implements OnInit
     }
     
     /**
+     * EventListener for context menu click
      * opens task menu
-     * @param event context menu event
+     * @param {MouseEvent} event Event Var
      */
     @HostListener('contextmenu', ['$event'])
     public hostContextmenu(event: MouseEvent)
@@ -165,7 +199,7 @@ export class TaskComponent implements OnInit
     
     /**
      * returns the color of the process parameter
-     * @param type type of the process parameter
+     * @param {ProcessParameterType} type type of the process parameter
      */
     public getParameterColor(type: ProcessParameterType): string
     {
@@ -183,9 +217,10 @@ export class TaskComponent implements OnInit
     }
     
     /**
-     * triggered when user clicks on task
-     * @param parameter process parameter
-     * @param event user clicks mouse
+     * EventListener for mouseDown Event on Parameter
+     * triggered when user clicks on a parameter of task.
+     * @param {ProcessParameter} parameter clicked parameter
+     * @param {MouseEvent} event Event Var
      */
     public parameterMouseDown(parameter: ProcessParameter<'input' | 'output'>, event: MouseEvent)
     {
@@ -199,9 +234,10 @@ export class TaskComponent implements OnInit
     }
     
     /**
-     * opens artefact dialog
-     * @param parameter process parameter
-     * @param event user releases mouse button
+     * EventListener for mouseUp Event on Parameter
+     * triggered when user releases the mouse button on a parameter (clicking it) and opens the artefact dialog
+     * @param {ProcessParameter} parameter clicked parameter
+     * @param {MouseEvent} event Event Var
      */
     public parameterMouseUp(parameter: ProcessParameter<'input' | 'output'>, event: MouseEvent)
     {
@@ -244,14 +280,18 @@ export class TaskComponent implements OnInit
     
     /**
      * adds data to an artefact
-     * @param parameter process parameter
+     * @param {ProcessParameter} parameter process parameter
      * @param data the added data
      */
     public addArtefact(parameter: ProcessParameter<'input' | 'output'>, data: object)
     {
         this.changeArtefact.emit([{task: this.task, parameter}, data]);
     }
-    
+
+    /**
+     * removes the artefact to the clicked parameter
+     * @param {ProcessParameter} parameter
+     */
     public removeArtefact(parameter: ProcessParameter<'input' | 'output'>)
     {
         this.changeArtefact.emit([{task: this.task, parameter}, null]);
@@ -259,7 +299,7 @@ export class TaskComponent implements OnInit
     
     /**
      * returns if the task component has an artefact
-     * @param parameter process parameter
+     * @param {ProcessParameter} parameter process parameter
      */
     public hasArtefact(parameter: ProcessParameter<'input' | 'output'>): boolean
     {
