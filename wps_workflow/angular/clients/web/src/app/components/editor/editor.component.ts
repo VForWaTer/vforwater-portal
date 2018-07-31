@@ -657,8 +657,8 @@ export class EditorComponent implements OnInit, AfterContentInit {
                 if(index >= 0)
                 {
                    console.log(index);
-                   console.log(" " + task.task.input_artefacts[index].data);
-
+                   console.log("setze artefact data " + task.task.input_artefacts[index].data);
+                   task.task.input_artefacts[index].data = "" +  this.workflow.datas[this.movement.dataId].data;
                 }
                 else //neues artefact erstellen
                 {
@@ -739,15 +739,31 @@ export class EditorComponent implements OnInit, AfterContentInit {
 
         if ( this.movement.edge ) {
             this.snapshot();
-            //    const input_id = this.movement.parameter.id;
-            //    const output_id = parameter.role === 'output' ? parameter.id : this.movement.parameter.id;
-            //    const from_task_id = parameter.role === 'output' ? task.task.id : this.movement.task.id;
-            //    const to_task_id = parameter.role === 'input' ? task.task.id : this.movement.task.id;
 
-            this.movement.task.input_artefacts[this.movement.parameter.id].data = "" + data.data.data;
+            const index = this.movement.task.input_artefacts.findIndex( artefact => artefact.parameter_id === this.movement.parameter.id );
+            if(index >= 0)
+            {
+                console.log(index);
+                console.log("setze artefact data " + this.movement.task.input_artefacts[index].data);
+                this.movement.task.input_artefacts[index].data = "" + data.data.data;
 
-            //      this.workflow.edges.push({ id: -Math.round(Math.random() * 10000), from_task_id, to_task_id, input_id, output_id });
+            }
+            else //neues artefact erstellen
+            {
+                console.log("erstelle neues artefact");
+                this.movement.task.input_artefacts.push( {
+                    parameter_id: this.movement.parameter.id,
+                    task_id: this.movement.task.id,
+                    workflow_id: this.workflow.id,
+                    role: 'input',
+                    format: 'string',
+                    data: "" + data.data.data,
+                    created_at: ( new Date ).getTime(),
+                    updated_at: ( new Date ).getTime(),
+                } );
+            }
             this.workflowChanged.emit( this.workflow );
+
         }
     }
 
