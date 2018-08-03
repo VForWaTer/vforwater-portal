@@ -82,9 +82,14 @@ ul.respo-ul{list-style-type:none;padding:0;margin:0}ul.respo-ul li{padding:6px 2
 .respo-modal{z-index:3;display:none;padding-top:100px;position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgb(0,0,0);background-color:rgba(0,0,0,0.4)}
 .respo-modal-content{margin:auto;background-color:#fff;position:relative;padding:0;outline:0;width:600px}.respo-closebtn{text-decoration:none;float:right;font-size:24px;font-weight:bold;color:inherit}
 .respo-closebtn:hover,.respo-closebtn:focus{color:#000;text-decoration:none;cursor:pointer}
-.respo-pagination{display:inline-block;padding:0;margin:0}.respo-pagination li{display:inline}
+.center {
+    text-align: center;
+}
+.respo-pagination{display:inline-block;padding:0;margin:0;font-size: 16px}.respo-pagination li{display:inline}
 .respo-pagination li a{text-decoration:none;color:#000;float:left;padding:8px 16px}
-.respo-pagination li a:hover{background-color:#ccc}
+.respo-pagination li.active a{border-radius: 10px;background-color:#00BAEE}
+.respo-pagination li:not(.active) a:hover{border-radius: 10px;background-color:#ccc}
+/*.respo-pagination li a:active{background-color:#00BAEE}*/
 .respo-input-group,.respo-group{margin-top:24px;margin-bottom:24px}
 .respo-input{padding:8px;display:block;border:none;border-bottom:1px solid #808080;width:100%}
 .respo-label{color:#009688}.respo-input:not(:valid)~.respo-validate{color:#f44336}
