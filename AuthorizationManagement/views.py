@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, render_to_response, _get_queryset
 from django.views import generic
 from django.contrib.auth.decorators import login_required
-from .models import *
+from AuthorizationManagement.models import *
 from django.core.files import File
 from django.conf import settings
 import os
@@ -19,7 +19,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from _csv import reader, Error
 import mimetypes
 from test.support import resource
-from pip._vendor.requests.api import request
+# from pip._vendor.requests.api import request  # TODO: what is this? It's whether used nor available.
 from django.db.models import Q
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404

@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import redis
 
 
-def maelicke_plot(preview):
+def get_preview(preview):
     use_redis=True
     in_cache=False
     try:
@@ -59,7 +59,7 @@ def maelicke_plot(preview):
         ax.set_xlabel('Date')
         ax.grid(which='major', axis='x')
         ax.set_ylabel(ylabel)
-        ax.set_title('Dataset preview')
+        ax.set_title('Dataset ' + str(preview))
         # create tempfile and read as base64
         tmpFile = BytesIO()
         fig.savefig(tmpFile, format='png')

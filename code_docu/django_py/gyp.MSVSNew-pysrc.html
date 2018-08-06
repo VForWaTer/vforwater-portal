@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.MSVSNew</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        Module&nbsp;MSVSNew
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.MSVSNew-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="gyp.MSVSNew-module.html">Module gyp.MSVSNew</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (c) 2012 Google Inc. All rights reserved.</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"># Use of this source code is governed by a BSD-style license that can be</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># found in the LICENSE file.</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-docstring">"""New implementation of Visual Studio project generation."""</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">random</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Package gyp=gyp-module.html"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-0', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Module gyp.common=gyp.common-module.html"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-1', 'common', 'link-1');">common</a></tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"># hashlib is supplied as of Python 2.5 as the replacement interface for md5</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"># and other secure hashes.  In 2.6, md5 is deprecated.  Import hashlib if</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"># available, avoiding a deprecation warning under 2.6.  Import md5 otherwise,</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"># preserving 2.4 compatibility.</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line">  <tt class="py-keyword">import</tt> <tt class="py-name">hashlib</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line">  <tt id="link-2" class="py-name" targets="Variable gyp.MSVSNew._new_md5=gyp.MSVSNew-module.html#_new_md5"><a title="gyp.MSVSNew._new_md5" class="py-name" href="#" onclick="return doclink('link-2', '_new_md5', 'link-2');">_new_md5</a></tt> <tt class="py-op">=</tt> <tt class="py-name">hashlib</tt><tt class="py-op">.</tt><tt class="py-name">md5</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-keyword">except</tt> <tt class="py-name">ImportError</tt><tt class="py-op">:</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line">  <tt class="py-keyword">import</tt> <tt class="py-name">md5</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line">  <tt id="link-3" class="py-name"><a title="gyp.MSVSNew._new_md5" class="py-name" href="#" onclick="return doclink('link-3', '_new_md5', 'link-2');">_new_md5</a></tt> <tt class="py-op">=</tt> <tt class="py-name">md5</tt><tt class="py-op">.</tt><tt class="py-name">new</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-comment"># Initialize random number generator</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-name">random</tt><tt class="py-op">.</tt><tt class="py-name">seed</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-comment"># GUIDs for project types</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt id="link-4" class="py-name" targets="Variable gyp.MSVSNew.ENTRY_TYPE_GUIDS=gyp.MSVSNew-module.html#ENTRY_TYPE_GUIDS"><a title="gyp.MSVSNew.ENTRY_TYPE_GUIDS" class="py-name" href="#" onclick="return doclink('link-4', 'ENTRY_TYPE_GUIDS', 'link-4');">ENTRY_TYPE_GUIDS</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">    <tt class="py-string">'project'</tt><tt class="py-op">:</tt> <tt class="py-string">'{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}'</tt><tt class="py-op">,</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">    <tt class="py-string">'folder'</tt><tt class="py-op">:</tt> <tt class="py-string">'{2150E333-8FDC-42A3-9474-1A3956D46DE8}'</tt><tt class="py-op">,</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-op">}</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-comment">#------------------------------------------------------------------------------</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-comment"># Helper functions</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"> </tt>
+<a name="MakeGuid"></a><div id="MakeGuid-def"><a name="L37"></a><tt class="py-lineno"> 37</tt> <a class="py-toggle" href="#" id="MakeGuid-toggle" onclick="return toggle('MakeGuid');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew-module.html#MakeGuid">MakeGuid</a><tt class="py-op">(</tt><tt class="py-param">name</tt><tt class="py-op">,</tt> <tt class="py-param">seed</tt><tt class="py-op">=</tt><tt class="py-string">'msvs_new'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MakeGuid-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MakeGuid-expanded"><a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">  <tt class="py-docstring">"""Returns a GUID for the specified target name.</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">  Args:</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-docstring">    name: Target name.</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"><tt class="py-docstring">    seed: Seed for MD5 hash.</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"><tt class="py-docstring">  Returns:</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line"><tt class="py-docstring">    A GUID-line string calculated from the name and seed.</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line"><tt class="py-docstring">  This generates something which looks like a GUID, but depends only on the</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line"><tt class="py-docstring">  name and seed.  This means the same name/seed will always generate the same</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"><tt class="py-docstring">  GUID, so that projects and solutions which refer to each other can explicitly</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line"><tt class="py-docstring">  determine the GUID to refer to explicitly.  It also means that the GUID will</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"><tt class="py-docstring">  not change when the project for a target is rebuilt.</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line"><tt class="py-docstring">  """</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">  <tt class="py-comment"># Calculate a MD5 signature for the seed and name.</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">  <tt class="py-name">d</tt> <tt class="py-op">=</tt> <tt id="link-5" class="py-name"><a title="gyp.MSVSNew._new_md5" class="py-name" href="#" onclick="return doclink('link-5', '_new_md5', 'link-2');">_new_md5</a></tt><tt class="py-op">(</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">seed</tt><tt class="py-op">)</tt> <tt class="py-op">+</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt id="link-6" class="py-name" targets="Variable AuthorizationManagement.apps.AuthorizationmanagementConfig.name=AuthorizationManagement.apps.AuthorizationmanagementConfig-class.html#name,Variable AuthorizationManagement.models.Resource.name=AuthorizationManagement.models.Resource-class.html#name,Variable dashboard.apps.DashboardConfig.name=dashboard.apps.DashboardConfig-class.html#name,Variable dashboard.models.WebProcessingService.name=dashboard.models.WebProcessingService-class.html#name,Variable heron_monitor.apps.HeronMonitorConfig.name=heron_monitor.apps.HeronMonitorConfig-class.html#name,Variable heron_upload.apps.HeronUploadConfig.name=heron_upload.apps.HeronUploadConfig-class.html#name,Variable heron_visual.apps.HeronVisualConfig.name=heron_visual.apps.HeronVisualConfig-class.html#name,Variable heron_wps.apps.HeronWpsConfig.name=heron_wps.apps.HeronWpsConfig-class.html#name,Variable heron_wps.models.WebProcessingService.name=heron_wps.models.WebProcessingService-class.html#name,Variable vfwheron.apps.VfwheronConfig.name=vfwheron.apps.VfwheronConfig-class.html#name,Variable vfwheron.models.DjangoMigrations.name=vfwheron.models.DjangoMigrations-class.html#name,Variable wps_workflow.apps.wps_workflowConfig.name=wps_workflow.apps.wps_workflowConfig-class.html#name,Variable wps_workflow.models.Workflow.name=wps_workflow.models.Workflow-class.html#name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-6', 'name', 'link-6');">name</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">hexdigest</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">upper</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">  <tt class="py-comment"># Convert most of the signature to GUID form (discard the rest)</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">  <tt class="py-name">guid</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-string">'{'</tt> <tt class="py-op">+</tt> <tt class="py-name">d</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-number">8</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-string">'-'</tt> <tt class="py-op">+</tt> <tt class="py-name">d</tt><tt class="py-op">[</tt><tt class="py-number">8</tt><tt class="py-op">:</tt><tt class="py-number">12</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-string">'-'</tt> <tt class="py-op">+</tt> <tt class="py-name">d</tt><tt class="py-op">[</tt><tt class="py-number">12</tt><tt class="py-op">:</tt><tt class="py-number">16</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-string">'-'</tt> <tt class="py-op">+</tt> <tt class="py-name">d</tt><tt class="py-op">[</tt><tt class="py-number">16</tt><tt class="py-op">:</tt><tt class="py-number">20</tt><tt class="py-op">]</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">          <tt class="py-op">+</tt> <tt class="py-string">'-'</tt> <tt class="py-op">+</tt> <tt class="py-name">d</tt><tt class="py-op">[</tt><tt class="py-number">20</tt><tt class="py-op">:</tt><tt class="py-number">32</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-string">'}'</tt><tt class="py-op">)</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">  <tt class="py-keyword">return</tt> <tt class="py-name">guid</tt> </tt>
+</div><a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-comment">#------------------------------------------------------------------------------</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"> </tt>
+<a name="MSVSSolutionEntry"></a><div id="MSVSSolutionEntry-def"><a name="L62"></a><tt class="py-lineno"> 62</tt> <a class="py-toggle" href="#" id="MSVSSolutionEntry-toggle" onclick="return toggle('MSVSSolutionEntry');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSSolutionEntry-class.html">MSVSSolutionEntry</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSSolutionEntry-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MSVSSolutionEntry-expanded"><a name="MSVSSolutionEntry.__cmp__"></a><div id="MSVSSolutionEntry.__cmp__-def"><a name="L63"></a><tt class="py-lineno"> 63</tt> <a class="py-toggle" href="#" id="MSVSSolutionEntry.__cmp__-toggle" onclick="return toggle('MSVSSolutionEntry.__cmp__');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSSolutionEntry-class.html#__cmp__">__cmp__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">other</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSSolutionEntry.__cmp__-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSSolutionEntry.__cmp__-expanded"><a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">    <tt class="py-comment"># Sort by name then guid (so things are in order on vs2008).</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">cmp</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-7" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-7', 'name', 'link-6');">name</a></tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Method gyp.MSVSNew.MSVSFolder.get_guid()=gyp.MSVSNew.MSVSFolder-class.html#get_guid,Method gyp.MSVSNew.MSVSProject.get_guid()=gyp.MSVSNew.MSVSProject-class.html#get_guid"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-8', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-name">other</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-9', 'name', 'link-6');">name</a></tt><tt class="py-op">,</tt> <tt class="py-name">other</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-10', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"> </tt>
+<a name="MSVSFolder"></a><div id="MSVSFolder-def"><a name="L68"></a><tt class="py-lineno"> 68</tt> <a class="py-toggle" href="#" id="MSVSFolder-toggle" onclick="return toggle('MSVSFolder');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSFolder-class.html">MSVSFolder</a><tt class="py-op">(</tt><tt class="py-base-class">MSVSSolutionEntry</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSFolder-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MSVSFolder-expanded"><a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">  <tt class="py-docstring">"""Folder in a Visual Studio project or solution."""</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line"> </tt>
+<a name="MSVSFolder.__init__"></a><div id="MSVSFolder.__init__-def"><a name="L71"></a><tt class="py-lineno"> 71</tt> <a class="py-toggle" href="#" id="MSVSFolder.__init__-toggle" onclick="return toggle('MSVSFolder.__init__');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSFolder-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">path</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">entries</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">               <tt class="py-param">guid</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">items</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSFolder.__init__-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSFolder.__init__-expanded"><a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">    <tt class="py-docstring">"""Initializes the folder.</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"><tt class="py-docstring">    Args:</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line"><tt class="py-docstring">      path: Full path to the folder.</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"><tt class="py-docstring">      name: Name of the folder.</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line"><tt class="py-docstring">      entries: List of folder entries to nest inside this folder.  May contain</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"><tt class="py-docstring">          Folder or Project objects.  May be None, if the folder is empty.</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"><tt class="py-docstring">      guid: GUID to use for folder, if not None.</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"><tt class="py-docstring">      items: List of solution items to include in the folder project.  May be</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"><tt class="py-docstring">          None, if the folder does not directly contain items.</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt id="link-11" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-11', 'name', 'link-6');">name</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-12', 'name', 'link-6');">name</a></tt> <tt class="py-op">=</tt> <tt id="link-13" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-13', 'name', 'link-6');">name</a></tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">      <tt class="py-comment"># Use last layer.</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-14', 'name', 'link-6');">name</a></tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Variable vfwheron.models.LtDomain.path=vfwheron.models.LtDomain-class.html#path,Variable vfwheron.models.LtLicense.path=vfwheron.models.LtLicense-class.html#path,Variable vfwheron.models.LtLocation.path=vfwheron.models.LtLocation-class.html#path,Variable vfwheron.models.LtProject.path=vfwheron.models.LtProject-class.html#path,Variable vfwheron.models.LtQuality.path=vfwheron.models.LtQuality-class.html#path,Variable vfwheron.models.LtSite.path=vfwheron.models.LtSite-class.html#path,Variable vfwheron.models.LtSoil.path=vfwheron.models.LtSoil-class.html#path,Variable vfwheron.models.LtUser.path=vfwheron.models.LtUser-class.html#path,Variable vfwheron.models.TblMeta.path=vfwheron.models.TblMeta-class.html#path,Variable vfwheron.models.TblSensor.path=vfwheron.models.TblSensor-class.html#path,Variable vfwheron.models.TblVariable.path=vfwheron.models.TblVariable-class.html#path"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-15', 'path', 'link-15');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">basename</tt><tt class="py-op">(</tt><tt id="link-16" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-16', 'path', 'link-15');">path</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line"> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-17', 'path', 'link-15');">path</a></tt> <tt class="py-op">=</tt> <tt id="link-18" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-18', 'path', 'link-15');">path</a></tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> <tt class="py-op">=</tt> <tt class="py-name">guid</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">    <tt class="py-comment"># Copy passed lists (or set to empty lists)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">entries</tt> <tt class="py-op">=</tt> <tt class="py-name">sorted</tt><tt class="py-op">(</tt><tt class="py-name">list</tt><tt class="py-op">(</tt><tt class="py-name">entries</tt> <tt class="py-keyword">or</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name" targets="Method gyp.ordered_dict.OrderedDict.items()=gyp.ordered_dict.OrderedDict-class.html#items"><a title="gyp.ordered_dict.OrderedDict.items" class="py-name" href="#" onclick="return doclink('link-19', 'items', 'link-19');">items</a></tt> <tt class="py-op">=</tt> <tt class="py-name">list</tt><tt class="py-op">(</tt><tt id="link-20" class="py-name"><a title="gyp.ordered_dict.OrderedDict.items" class="py-name" href="#" onclick="return doclink('link-20', 'items', 'link-19');">items</a></tt> <tt class="py-keyword">or</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line"> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">entry_type_guid</tt> <tt class="py-op">=</tt> <tt id="link-21" class="py-name"><a title="gyp.MSVSNew.ENTRY_TYPE_GUIDS" class="py-name" href="#" onclick="return doclink('link-21', 'ENTRY_TYPE_GUIDS', 'link-4');">ENTRY_TYPE_GUIDS</a></tt><tt class="py-op">[</tt><tt class="py-string">'folder'</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line"> </tt>
+<a name="MSVSFolder.get_guid"></a><div id="MSVSFolder.get_guid-def"><a name="L99"></a><tt class="py-lineno"> 99</tt> <a class="py-toggle" href="#" id="MSVSFolder.get_guid-toggle" onclick="return toggle('MSVSFolder.get_guid');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSFolder-class.html#get_guid">get_guid</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSFolder.get_guid-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSFolder.get_guid-expanded"><a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">      <tt class="py-comment"># Use consistent guids for folders (so things don't regenerate).</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> <tt class="py-op">=</tt> <tt id="link-22" class="py-name" targets="Function gyp.MSVSNew.MakeGuid()=gyp.MSVSNew-module.html#MakeGuid"><a title="gyp.MSVSNew.MakeGuid" class="py-name" href="#" onclick="return doclink('link-22', 'MakeGuid', 'link-22');">MakeGuid</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-23" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-23', 'path', 'link-15');">path</a></tt><tt class="py-op">,</tt> <tt class="py-name">seed</tt><tt class="py-op">=</tt><tt class="py-string">'msvs_folder'</tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> </tt>
+</div></div><a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line"> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"><tt class="py-comment">#------------------------------------------------------------------------------</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line"> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"> </tt>
+<a name="MSVSProject"></a><div id="MSVSProject-def"><a name="L109"></a><tt class="py-lineno">109</tt> <a class="py-toggle" href="#" id="MSVSProject-toggle" onclick="return toggle('MSVSProject');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSProject-class.html">MSVSProject</a><tt class="py-op">(</tt><tt class="py-base-class">MSVSSolutionEntry</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSProject-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MSVSProject-expanded"><a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">  <tt class="py-docstring">"""Visual Studio project."""</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"> </tt>
+<a name="MSVSProject.__init__"></a><div id="MSVSProject.__init__-def"><a name="L112"></a><tt class="py-lineno">112</tt> <a class="py-toggle" href="#" id="MSVSProject.__init__-toggle" onclick="return toggle('MSVSProject.__init__');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSProject-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">path</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">dependencies</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">guid</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">               <tt class="py-param">spec</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">build_file</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">config_platform_overrides</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">               <tt class="py-param">fixpath_prefix</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSProject.__init__-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSProject.__init__-expanded"><a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">    <tt class="py-docstring">"""Initializes the project.</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line"><tt class="py-docstring">    Args:</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line"><tt class="py-docstring">      path: Absolute path to the project file.</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line"><tt class="py-docstring">      name: Name of project.  If None, the name will be the same as the base</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line"><tt class="py-docstring">          name of the project file.</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"><tt class="py-docstring">      dependencies: List of other Project objects this project is dependent</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line"><tt class="py-docstring">          upon, if not None.</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line"><tt class="py-docstring">      guid: GUID to use for project, if not None.</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"><tt class="py-docstring">      spec: Dictionary specifying how to build this project.</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line"><tt class="py-docstring">      build_file: Filename of the .gyp file that the vcproj file comes from.</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"><tt class="py-docstring">      config_platform_overrides: optional dict of configuration platforms to</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"><tt class="py-docstring">          used in place of the default for this target.</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"><tt class="py-docstring">      fixpath_prefix: the path used to adjust the behavior of _fixpath</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-24', 'path', 'link-15');">path</a></tt> <tt class="py-op">=</tt> <tt id="link-25" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-25', 'path', 'link-15');">path</a></tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> <tt class="py-op">=</tt> <tt class="py-name">guid</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">spec</tt> <tt class="py-op">=</tt> <tt class="py-name">spec</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">build_file</tt> <tt class="py-op">=</tt> <tt class="py-name">build_file</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">    <tt class="py-comment"># Use project filename if name not specified</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-26', 'name', 'link-6');">name</a></tt> <tt class="py-op">=</tt> <tt id="link-27" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-27', 'name', 'link-6');">name</a></tt> <tt class="py-keyword">or</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-28', 'path', 'link-15');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">splitext</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-29', 'path', 'link-15');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">basename</tt><tt class="py-op">(</tt><tt id="link-30" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-30', 'path', 'link-15');">path</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line"> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">    <tt class="py-comment"># Copy passed lists (or set to empty lists)</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dependencies</tt> <tt class="py-op">=</tt> <tt class="py-name">list</tt><tt class="py-op">(</tt><tt class="py-name">dependencies</tt> <tt class="py-keyword">or</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line"> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">entry_type_guid</tt> <tt class="py-op">=</tt> <tt id="link-31" class="py-name"><a title="gyp.MSVSNew.ENTRY_TYPE_GUIDS" class="py-name" href="#" onclick="return doclink('link-31', 'ENTRY_TYPE_GUIDS', 'link-4');">ENTRY_TYPE_GUIDS</a></tt><tt class="py-op">[</tt><tt class="py-string">'project'</tt><tt class="py-op">]</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">config_platform_overrides</tt><tt class="py-op">:</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">config_platform_overrides</tt> <tt class="py-op">=</tt> <tt class="py-name">config_platform_overrides</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">config_platform_overrides</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name" targets="Variable gyp.generator.msvs.fixpath_prefix=gyp.generator.msvs-module.html#fixpath_prefix"><a title="gyp.generator.msvs.fixpath_prefix" class="py-name" href="#" onclick="return doclink('link-32', 'fixpath_prefix', 'link-32');">fixpath_prefix</a></tt> <tt class="py-op">=</tt> <tt id="link-33" class="py-name"><a title="gyp.generator.msvs.fixpath_prefix" class="py-name" href="#" onclick="return doclink('link-33', 'fixpath_prefix', 'link-32');">fixpath_prefix</a></tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">msbuild_toolset</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line"> </tt>
+<a name="MSVSProject.set_dependencies"></a><div id="MSVSProject.set_dependencies-def"><a name="L149"></a><tt class="py-lineno">149</tt> <a class="py-toggle" href="#" id="MSVSProject.set_dependencies-toggle" onclick="return toggle('MSVSProject.set_dependencies');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSProject-class.html#set_dependencies">set_dependencies</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">dependencies</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSProject.set_dependencies-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSProject.set_dependencies-expanded"><a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dependencies</tt> <tt class="py-op">=</tt> <tt class="py-name">list</tt><tt class="py-op">(</tt><tt class="py-name">dependencies</tt> <tt class="py-keyword">or</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"> </tt>
+<a name="MSVSProject.get_guid"></a><div id="MSVSProject.get_guid-def"><a name="L152"></a><tt class="py-lineno">152</tt> <a class="py-toggle" href="#" id="MSVSProject.get_guid-toggle" onclick="return toggle('MSVSProject.get_guid');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSProject-class.html#get_guid">get_guid</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSProject.get_guid-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSProject.get_guid-expanded"><a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">      <tt class="py-comment"># Set GUID from path</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line">      <tt class="py-comment"># TODO(rspangler): This is fragile.</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">      <tt class="py-comment"># 1. We can't just use the project filename sans path, since there could</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">      <tt class="py-comment">#    be multiple projects with the same base name (for example,</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">      <tt class="py-comment">#    foo/unittest.vcproj and bar/unittest.vcproj).</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">      <tt class="py-comment"># 2. The path needs to be relative to $SOURCE_ROOT, so that the project</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">      <tt class="py-comment">#    GUID is the same whether it's included from base/base.sln or</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">      <tt class="py-comment">#    foo/bar/baz/baz.sln.</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">      <tt class="py-comment"># 3. The GUID needs to be the same each time this builder is invoked, so</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">      <tt class="py-comment">#    that we don't need to rebuild the solution when the project changes.</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">      <tt class="py-comment"># 4. We should be able to handle pre-built project files by reading the</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">      <tt class="py-comment">#    GUID from the files.</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> <tt class="py-op">=</tt> <tt id="link-34" class="py-name"><a title="gyp.MSVSNew.MakeGuid" class="py-name" href="#" onclick="return doclink('link-34', 'MakeGuid', 'link-22');">MakeGuid</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-35', 'name', 'link-6');">name</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">guid</tt> </tt>
+</div><a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"> </tt>
+<a name="MSVSProject.set_msbuild_toolset"></a><div id="MSVSProject.set_msbuild_toolset-def"><a name="L169"></a><tt class="py-lineno">169</tt> <a class="py-toggle" href="#" id="MSVSProject.set_msbuild_toolset-toggle" onclick="return toggle('MSVSProject.set_msbuild_toolset');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSProject-class.html#set_msbuild_toolset">set_msbuild_toolset</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">msbuild_toolset</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSProject.set_msbuild_toolset-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSProject.set_msbuild_toolset-expanded"><a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">msbuild_toolset</tt> <tt class="py-op">=</tt> <tt class="py-name">msbuild_toolset</tt> </tt>
+</div></div><a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line"><tt class="py-comment">#------------------------------------------------------------------------------</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line"> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line"> </tt>
+<a name="MSVSSolution"></a><div id="MSVSSolution-def"><a name="L175"></a><tt class="py-lineno">175</tt> <a class="py-toggle" href="#" id="MSVSSolution-toggle" onclick="return toggle('MSVSSolution');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSSolution-class.html">MSVSSolution</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSSolution-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="MSVSSolution-expanded"><a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">  <tt class="py-docstring">"""Visual Studio solution."""</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line"> </tt>
+<a name="MSVSSolution.__init__"></a><div id="MSVSSolution.__init__-def"><a name="L178"></a><tt class="py-lineno">178</tt> <a class="py-toggle" href="#" id="MSVSSolution.__init__-toggle" onclick="return toggle('MSVSSolution.__init__');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSSolution-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">path</tt><tt class="py-op">,</tt> <tt class="py-param">version</tt><tt class="py-op">,</tt> <tt class="py-param">entries</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">variants</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">               <tt class="py-param">websiteProperties</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSSolution.__init__-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSSolution.__init__-expanded"><a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">    <tt class="py-docstring">"""Initializes the solution.</tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line"><tt class="py-docstring">    Args:</tt> </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line"><tt class="py-docstring">      path: Path to solution file.</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line"><tt class="py-docstring">      version: Format version to emit.</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line"><tt class="py-docstring">      entries: List of entries in solution.  May contain Folder or Project</tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line"><tt class="py-docstring">          objects.  May be None, if the folder is empty.</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line"><tt class="py-docstring">      variants: List of build variant strings.  If none, a default list will</tt> </tt>
+<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line"><tt class="py-docstring">          be used.</tt> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line"><tt class="py-docstring">      websiteProperties: Flag to decide if the website properties section</tt> </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line"><tt class="py-docstring">          is generated.</tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-36', 'path', 'link-15');">path</a></tt> <tt class="py-op">=</tt> <tt id="link-37" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-37', 'path', 'link-15');">path</a></tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">websiteProperties</tt> <tt class="py-op">=</tt> <tt class="py-name">websiteProperties</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">version</tt> <tt class="py-op">=</tt> <tt class="py-name">version</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line"> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">    <tt class="py-comment"># Copy passed lists (or set to empty lists)</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">entries</tt> <tt class="py-op">=</tt> <tt class="py-name">list</tt><tt class="py-op">(</tt><tt class="py-name">entries</tt> <tt class="py-keyword">or</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line"> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">variants</tt><tt class="py-op">:</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">      <tt class="py-comment"># Copy passed list</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">variants</tt> <tt class="py-op">=</tt> <tt class="py-name">variants</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">      <tt class="py-comment"># Use default</tt> </tt>
+<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line">      <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">variants</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-string">'Debug|Win32'</tt><tt class="py-op">,</tt> <tt class="py-string">'Release|Win32'</tt><tt class="py-op">]</tt> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line">    <tt class="py-comment"># TODO(rspangler): Need to be able to handle a mapping of solution config</tt> </tt>
+<a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line">    <tt class="py-comment"># to project config.  Should we be able to handle variants being a dict,</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line">    <tt class="py-comment"># or add a separate variant_map variable?  If it's a dict, we can't</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line">    <tt class="py-comment"># guarantee the order of variants since dict keys aren't ordered.</tt> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line"> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line"> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line">    <tt class="py-comment"># TODO(rspangler): Automatically write to disk for now; should delay until</tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line">    <tt class="py-comment"># node-evaluation time.</tt> </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line">    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name" targets="Method gyp.MSVSNew.MSVSSolution.Write()=gyp.MSVSNew.MSVSSolution-class.html#Write,Method gyp.generator.android.AndroidMkWriter.Write()=gyp.generator.android.AndroidMkWriter-class.html#Write,Method gyp.generator.make.MakefileWriter.Write()=gyp.generator.make.MakefileWriter-class.html#Write,Method gyp.generator.xcode.XcodeProject.Write()=gyp.generator.xcode.XcodeProject-class.html#Write"><a title="gyp.MSVSNew.MSVSSolution.Write
+gyp.generator.android.AndroidMkWriter.Write
+gyp.generator.make.MakefileWriter.Write
+gyp.generator.xcode.XcodeProject.Write" class="py-name" href="#" onclick="return doclink('link-38', 'Write', 'link-38');">Write</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line"> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line"> </tt>
+<a name="MSVSSolution.Write"></a><div id="MSVSSolution.Write-def"><a name="L216"></a><tt class="py-lineno">216</tt> <a class="py-toggle" href="#" id="MSVSSolution.Write-toggle" onclick="return toggle('MSVSSolution.Write');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.MSVSNew.MSVSSolution-class.html#Write">Write</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">writer</tt><tt class="py-op">=</tt><tt id="link-39" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-39', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-40" class="py-name"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-40', 'common', 'link-1');">common</a></tt><tt class="py-op">.</tt><tt id="link-41" class="py-name" targets="Function gyp.common.WriteOnDiff()=gyp.common-module.html#WriteOnDiff"><a title="gyp.common.WriteOnDiff" class="py-name" href="#" onclick="return doclink('link-41', 'WriteOnDiff', 'link-41');">WriteOnDiff</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="MSVSSolution.Write-collapsed" style="display:none;" pad="+++" indent="++++++"></div><div id="MSVSSolution.Write-expanded"><a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">    <tt class="py-docstring">"""Writes the solution file to disk.</tt> </tt>
+<a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line"><tt class="py-docstring">    Raises:</tt> </tt>
+<a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line"><tt class="py-docstring">      IndexError: An entry appears multiple times.</tt> </tt>
+<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">    <tt class="py-comment"># Walk the entry tree and collect all the folders and projects.</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">    <tt class="py-name">all_entries</tt> <tt class="py-op">=</tt> <tt class="py-name">set</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line">    <tt class="py-name">entries_to_check</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">entries</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line">    <tt class="py-keyword">while</tt> <tt class="py-name">entries_to_check</tt><tt class="py-op">:</tt> </tt>
+<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line">      <tt class="py-name">e</tt> <tt class="py-op">=</tt> <tt class="py-name">entries_to_check</tt><tt class="py-op">.</tt><tt id="link-42" class="py-name" targets="Method gyp.common.OrderedSet.pop()=gyp.common.OrderedSet-class.html#pop,Method gyp.ordered_dict.OrderedDict.pop()=gyp.ordered_dict.OrderedDict-class.html#pop"><a title="gyp.common.OrderedSet.pop
+gyp.ordered_dict.OrderedDict.pop" class="py-name" href="#" onclick="return doclink('link-42', 'pop', 'link-42');">pop</a></tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line"> </tt>
+<a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line">      <tt class="py-comment"># If this entry has been visited, nothing to do.</tt> </tt>
+<a name="L229"></a><tt class="py-lineno">229</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-name">e</tt> <tt class="py-keyword">in</tt> <tt class="py-name">all_entries</tt><tt class="py-op">:</tt> </tt>
+<a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line">        <tt class="py-keyword">continue</tt> </tt>
+<a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line"> </tt>
+<a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line">      <tt class="py-name">all_entries</tt><tt class="py-op">.</tt><tt id="link-43" class="py-name" targets="Method gyp.common.OrderedSet.add()=gyp.common.OrderedSet-class.html#add"><a title="gyp.common.OrderedSet.add" class="py-name" href="#" onclick="return doclink('link-43', 'add', 'link-43');">add</a></tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line"> </tt>
+<a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line">      <tt class="py-comment"># If this is a folder, check its entries too.</tt> </tt>
+<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">,</tt> <tt id="link-44" class="py-name" targets="Class gyp.MSVSNew.MSVSFolder=gyp.MSVSNew.MSVSFolder-class.html"><a title="gyp.MSVSNew.MSVSFolder" class="py-name" href="#" onclick="return doclink('link-44', 'MSVSFolder', 'link-44');">MSVSFolder</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line">        <tt class="py-name">entries_to_check</tt> <tt class="py-op">+=</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">entries</tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line"> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line">    <tt class="py-name">all_entries</tt> <tt class="py-op">=</tt> <tt class="py-name">sorted</tt><tt class="py-op">(</tt><tt class="py-name">all_entries</tt><tt class="py-op">)</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line"> </tt>
+<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line">    <tt class="py-comment"># Open file and print header</tt> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line">    <tt class="py-name">f</tt> <tt class="py-op">=</tt> <tt class="py-name">writer</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-45" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-45', 'path', 'link-15');">path</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'Microsoft Visual Studio Solution File, '</tt> </tt>
+<a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line">            <tt class="py-string">'Format Version %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">version</tt><tt class="py-op">.</tt><tt id="link-46" class="py-name" targets="Method gyp.MSVSVersion.VisualStudioVersion.SolutionVersion()=gyp.MSVSVersion.VisualStudioVersion-class.html#SolutionVersion"><a title="gyp.MSVSVersion.VisualStudioVersion.SolutionVersion" class="py-name" href="#" onclick="return doclink('link-46', 'SolutionVersion', 'link-46');">SolutionVersion</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'# %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">version</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name" targets="Method gyp.MSVSVersion.VisualStudioVersion.Description()=gyp.MSVSVersion.VisualStudioVersion-class.html#Description"><a title="gyp.MSVSVersion.VisualStudioVersion.Description" class="py-name" href="#" onclick="return doclink('link-47', 'Description', 'link-47');">Description</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line"> </tt>
+<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line">    <tt class="py-comment"># Project entries</tt> </tt>
+<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line">    <tt class="py-name">sln_root</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-48" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-48', 'path', 'link-15');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-49" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-49', 'path', 'link-15');">path</a></tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">e</tt> <tt class="py-keyword">in</tt> <tt class="py-name">all_entries</tt><tt class="py-op">:</tt> </tt>
+<a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line">      <tt class="py-name">relative_path</tt> <tt class="py-op">=</tt> <tt id="link-50" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-50', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-51" class="py-name"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-51', 'common', 'link-1');">common</a></tt><tt class="py-op">.</tt><tt id="link-52" class="py-name" targets="Function gyp.common.RelativePath()=gyp.common-module.html#RelativePath"><a title="gyp.common.RelativePath" class="py-name" href="#" onclick="return doclink('link-52', 'RelativePath', 'link-52');">RelativePath</a></tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-53" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-53', 'path', 'link-15');">path</a></tt><tt class="py-op">,</tt> <tt class="py-name">sln_root</tt><tt class="py-op">)</tt> </tt>
+<a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line">      <tt class="py-comment"># msbuild does not accept an empty folder_name.</tt> </tt>
+<a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line">      <tt class="py-comment"># use '.' in case relative_path is empty.</tt> </tt>
+<a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line">      <tt class="py-name">folder_name</tt> <tt class="py-op">=</tt> <tt class="py-name">relative_path</tt><tt class="py-op">.</tt><tt class="py-name">replace</tt><tt class="py-op">(</tt><tt class="py-string">'/'</tt><tt class="py-op">,</tt> <tt class="py-string">'\\'</tt><tt class="py-op">)</tt> <tt class="py-keyword">or</tt> <tt class="py-string">'.'</tt> </tt>
+<a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line">      <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'Project("%s") = "%s", "%s", "%s"\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt> </tt>
+<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line">          <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">entry_type_guid</tt><tt class="py-op">,</tt>          <tt class="py-comment"># Entry type GUID</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line">          <tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-54" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-54', 'name', 'link-6');">name</a></tt><tt class="py-op">,</tt>                     <tt class="py-comment"># Folder name</tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line">          <tt class="py-name">folder_name</tt><tt class="py-op">,</tt>                <tt class="py-comment"># Folder name (again)</tt> </tt>
+<a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line">          <tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-55" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-55', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt>               <tt class="py-comment"># Entry GUID</tt> </tt>
+<a name="L258"></a><tt class="py-lineno">258</tt>  <tt class="py-line">      <tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line"> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">      <tt class="py-comment"># TODO(rspangler): Need a way to configure this stuff</tt> </tt>
+<a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">websiteProperties</tt><tt class="py-op">:</tt> </tt>
+<a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">        <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tProjectSection(WebsiteProperties) = preProject\r\n'</tt> </tt>
+<a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line">                <tt class="py-string">'\t\tDebug.AspNetCompiler.Debug = "True"\r\n'</tt> </tt>
+<a name="L264"></a><tt class="py-lineno">264</tt>  <tt class="py-line">                <tt class="py-string">'\t\tRelease.AspNetCompiler.Debug = "False"\r\n'</tt> </tt>
+<a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line">                <tt class="py-string">'\tEndProjectSection\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line"> </tt>
+<a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">,</tt> <tt id="link-56" class="py-name"><a title="gyp.MSVSNew.MSVSFolder" class="py-name" href="#" onclick="return doclink('link-56', 'MSVSFolder', 'link-44');">MSVSFolder</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-57" class="py-name"><a title="gyp.ordered_dict.OrderedDict.items" class="py-name" href="#" onclick="return doclink('link-57', 'items', 'link-19');">items</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line">          <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tProjectSection(SolutionItems) = preProject\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line">          <tt class="py-keyword">for</tt> <tt id="link-58" class="py-name" targets="Variable gyp.xcodeproj_file.XCObject.i=gyp.xcodeproj_file.XCObject-class.html#i"><a title="gyp.xcodeproj_file.XCObject.i" class="py-name" href="#" onclick="return doclink('link-58', 'i', 'link-58');">i</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-59" class="py-name"><a title="gyp.ordered_dict.OrderedDict.items" class="py-name" href="#" onclick="return doclink('link-59', 'items', 'link-19');">items</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">            <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\t\t%s = %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt id="link-60" class="py-name"><a title="gyp.xcodeproj_file.XCObject.i" class="py-name" href="#" onclick="return doclink('link-60', 'i', 'link-58');">i</a></tt><tt class="py-op">,</tt> <tt id="link-61" class="py-name"><a title="gyp.xcodeproj_file.XCObject.i" class="py-name" href="#" onclick="return doclink('link-61', 'i', 'link-58');">i</a></tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line">          <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tEndProjectSection\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line"> </tt>
+<a name="L274"></a><tt class="py-lineno">274</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">,</tt> <tt id="link-62" class="py-name" targets="Class gyp.MSVSNew.MSVSProject=gyp.MSVSNew.MSVSProject-class.html,Module gyp.MSVSProject=gyp.MSVSProject-module.html"><a title="gyp.MSVSNew.MSVSProject
+gyp.MSVSProject" class="py-name" href="#" onclick="return doclink('link-62', 'MSVSProject', 'link-62');">MSVSProject</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L275"></a><tt class="py-lineno">275</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">dependencies</tt><tt class="py-op">:</tt> </tt>
+<a name="L276"></a><tt class="py-lineno">276</tt>  <tt class="py-line">          <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tProjectSection(ProjectDependencies) = postProject\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L277"></a><tt class="py-lineno">277</tt>  <tt class="py-line">          <tt class="py-keyword">for</tt> <tt class="py-name">d</tt> <tt class="py-keyword">in</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">dependencies</tt><tt class="py-op">:</tt> </tt>
+<a name="L278"></a><tt class="py-lineno">278</tt>  <tt class="py-line">            <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\t\t%s = %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">d</tt><tt class="py-op">.</tt><tt id="link-63" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-63', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">d</tt><tt class="py-op">.</tt><tt id="link-64" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-64', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L279"></a><tt class="py-lineno">279</tt>  <tt class="py-line">          <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tEndProjectSection\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L280"></a><tt class="py-lineno">280</tt>  <tt class="py-line"> </tt>
+<a name="L281"></a><tt class="py-lineno">281</tt>  <tt class="py-line">      <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'EndProject\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L282"></a><tt class="py-lineno">282</tt>  <tt class="py-line"> </tt>
+<a name="L283"></a><tt class="py-lineno">283</tt>  <tt class="py-line">    <tt class="py-comment"># Global section</tt> </tt>
+<a name="L284"></a><tt class="py-lineno">284</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'Global\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L285"></a><tt class="py-lineno">285</tt>  <tt class="py-line"> </tt>
+<a name="L286"></a><tt class="py-lineno">286</tt>  <tt class="py-line">    <tt class="py-comment"># Configurations (variants)</tt> </tt>
+<a name="L287"></a><tt class="py-lineno">287</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L288"></a><tt class="py-lineno">288</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">v</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">variants</tt><tt class="py-op">:</tt> </tt>
+<a name="L289"></a><tt class="py-lineno">289</tt>  <tt class="py-line">      <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\t\t%s = %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">,</tt> <tt class="py-name">v</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L290"></a><tt class="py-lineno">290</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tEndGlobalSection\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L291"></a><tt class="py-lineno">291</tt>  <tt class="py-line"> </tt>
+<a name="L292"></a><tt class="py-lineno">292</tt>  <tt class="py-line">    <tt class="py-comment"># Sort config guids for easier diffing of solution changes.</tt> </tt>
+<a name="L293"></a><tt class="py-lineno">293</tt>  <tt class="py-line">    <tt class="py-name">config_guids</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L294"></a><tt class="py-lineno">294</tt>  <tt class="py-line">    <tt class="py-name">config_guids_overrides</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L295"></a><tt class="py-lineno">295</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">e</tt> <tt class="py-keyword">in</tt> <tt class="py-name">all_entries</tt><tt class="py-op">:</tt> </tt>
+<a name="L296"></a><tt class="py-lineno">296</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">,</tt> <tt id="link-65" class="py-name"><a title="gyp.MSVSNew.MSVSProject
+gyp.MSVSProject" class="py-name" href="#" onclick="return doclink('link-65', 'MSVSProject', 'link-62');">MSVSProject</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L297"></a><tt class="py-lineno">297</tt>  <tt class="py-line">        <tt class="py-name">config_guids</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-66" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-66', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L298"></a><tt class="py-lineno">298</tt>  <tt class="py-line">        <tt class="py-name">config_guids_overrides</tt><tt class="py-op">[</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-67" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-67', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">config_platform_overrides</tt> </tt>
+<a name="L299"></a><tt class="py-lineno">299</tt>  <tt class="py-line">    <tt class="py-name">config_guids</tt><tt class="py-op">.</tt><tt class="py-name">sort</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L300"></a><tt class="py-lineno">300</tt>  <tt class="py-line"> </tt>
+<a name="L301"></a><tt class="py-lineno">301</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tGlobalSection(ProjectConfigurationPlatforms) = postSolution\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L302"></a><tt class="py-lineno">302</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">g</tt> <tt class="py-keyword">in</tt> <tt class="py-name">config_guids</tt><tt class="py-op">:</tt> </tt>
+<a name="L303"></a><tt class="py-lineno">303</tt>  <tt class="py-line">      <tt class="py-keyword">for</tt> <tt class="py-name">v</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">variants</tt><tt class="py-op">:</tt> </tt>
+<a name="L304"></a><tt class="py-lineno">304</tt>  <tt class="py-line">        <tt class="py-name">nv</tt> <tt class="py-op">=</tt> <tt class="py-name">config_guids_overrides</tt><tt class="py-op">[</tt><tt class="py-name">g</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-68" class="py-name" targets="Method AuthorizationManagement.views.AddNewResourceView.get()=AuthorizationManagement.views.AddNewResourceView-class.html#get,Method AuthorizationManagement.views.HomeView.get()=AuthorizationManagement.views.HomeView-class.html#get,Method AuthorizationManagement.views.OpenResourceView.get()=AuthorizationManagement.views.OpenResourceView-class.html#get,Method AuthorizationManagement.views.PermissionEditingView.get()=AuthorizationManagement.views.PermissionEditingView-class.html#get,Method AuthorizationManagement.views.PermissionEditingViewSearch.get()=AuthorizationManagement.views.PermissionEditingViewSearch-class.html#get,Method AuthorizationManagement.views.ProfileView.get()=AuthorizationManagement.views.ProfileView-class.html#get,Method AuthorizationManagement.views.ResourcesOverviewSearch.get()=AuthorizationManagement.views.ResourcesOverviewSearch-class.html#get,Method heron_upload.views.HomeView.get()=heron_upload.views.HomeView-class.html#get,Method vfwheron.views.GeoserverView.get()=vfwheron.views.GeoserverView-class.html#get,Method vfwheron.views.HelpView.get()=vfwheron.views.HelpView-class.html#get,Method vfwheron.views.menuView.get()=vfwheron.views.menuView-class.html#get,Static Method wps_workflow.views.ProcessView.get()=wps_workflow.views.ProcessView-class.html#get,Static Method wps_workflow.views.UserView.get()=wps_workflow.views.UserView-class.html#get,Static Method wps_workflow.views.WPSView.get()=wps_workflow.views.WPSView-class.html#get,Static Method wps_workflow.views.WorkflowView.get()=wps_workflow.views.WorkflowView-class.html#get"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-68', 'get', 'link-68');">get</a></tt><tt class="py-op">(</tt><tt class="py-name">v</tt><tt class="py-op">,</tt> <tt class="py-name">v</tt><tt class="py-op">)</tt> </tt>
+<a name="L305"></a><tt class="py-lineno">305</tt>  <tt class="py-line">        <tt class="py-comment"># Pick which project configuration to build for this solution</tt> </tt>
+<a name="L306"></a><tt class="py-lineno">306</tt>  <tt class="py-line">        <tt class="py-comment"># configuration.</tt> </tt>
+<a name="L307"></a><tt class="py-lineno">307</tt>  <tt class="py-line">        <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\t\t%s.%s.ActiveCfg = %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt> </tt>
+<a name="L308"></a><tt class="py-lineno">308</tt>  <tt class="py-line">            <tt class="py-name">g</tt><tt class="py-op">,</tt>              <tt class="py-comment"># Project GUID</tt> </tt>
+<a name="L309"></a><tt class="py-lineno">309</tt>  <tt class="py-line">            <tt class="py-name">v</tt><tt class="py-op">,</tt>              <tt class="py-comment"># Solution build configuration</tt> </tt>
+<a name="L310"></a><tt class="py-lineno">310</tt>  <tt class="py-line">            <tt class="py-name">nv</tt><tt class="py-op">,</tt>             <tt class="py-comment"># Project build config for that solution config</tt> </tt>
+<a name="L311"></a><tt class="py-lineno">311</tt>  <tt class="py-line">        <tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L312"></a><tt class="py-lineno">312</tt>  <tt class="py-line"> </tt>
+<a name="L313"></a><tt class="py-lineno">313</tt>  <tt class="py-line">        <tt class="py-comment"># Enable project in this solution configuration.</tt> </tt>
+<a name="L314"></a><tt class="py-lineno">314</tt>  <tt class="py-line">        <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\t\t%s.%s.Build.0 = %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt> </tt>
+<a name="L315"></a><tt class="py-lineno">315</tt>  <tt class="py-line">            <tt class="py-name">g</tt><tt class="py-op">,</tt>              <tt class="py-comment"># Project GUID</tt> </tt>
+<a name="L316"></a><tt class="py-lineno">316</tt>  <tt class="py-line">            <tt class="py-name">v</tt><tt class="py-op">,</tt>              <tt class="py-comment"># Solution build configuration</tt> </tt>
+<a name="L317"></a><tt class="py-lineno">317</tt>  <tt class="py-line">            <tt class="py-name">nv</tt><tt class="py-op">,</tt>             <tt class="py-comment"># Project build config for that solution config</tt> </tt>
+<a name="L318"></a><tt class="py-lineno">318</tt>  <tt class="py-line">        <tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L319"></a><tt class="py-lineno">319</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tEndGlobalSection\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L320"></a><tt class="py-lineno">320</tt>  <tt class="py-line"> </tt>
+<a name="L321"></a><tt class="py-lineno">321</tt>  <tt class="py-line">    <tt class="py-comment"># TODO(rspangler): Should be able to configure this stuff too (though I've</tt> </tt>
+<a name="L322"></a><tt class="py-lineno">322</tt>  <tt class="py-line">    <tt class="py-comment"># never seen this be any different)</tt> </tt>
+<a name="L323"></a><tt class="py-lineno">323</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tGlobalSection(SolutionProperties) = preSolution\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L324"></a><tt class="py-lineno">324</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\t\tHideSolutionNode = FALSE\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L325"></a><tt class="py-lineno">325</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tEndGlobalSection\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L326"></a><tt class="py-lineno">326</tt>  <tt class="py-line"> </tt>
+<a name="L327"></a><tt class="py-lineno">327</tt>  <tt class="py-line">    <tt class="py-comment"># Folder mappings</tt> </tt>
+<a name="L328"></a><tt class="py-lineno">328</tt>  <tt class="py-line">    <tt class="py-comment"># Omit this section if there are no folders</tt> </tt>
+<a name="L329"></a><tt class="py-lineno">329</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">any</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">entries</tt> <tt class="py-keyword">for</tt> <tt class="py-name">e</tt> <tt class="py-keyword">in</tt> <tt class="py-name">all_entries</tt> <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">,</tt> <tt id="link-69" class="py-name"><a title="gyp.MSVSNew.MSVSFolder" class="py-name" href="#" onclick="return doclink('link-69', 'MSVSFolder', 'link-44');">MSVSFolder</a></tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L330"></a><tt class="py-lineno">330</tt>  <tt class="py-line">      <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tGlobalSection(NestedProjects) = preSolution\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L331"></a><tt class="py-lineno">331</tt>  <tt class="py-line">      <tt class="py-keyword">for</tt> <tt class="py-name">e</tt> <tt class="py-keyword">in</tt> <tt class="py-name">all_entries</tt><tt class="py-op">:</tt> </tt>
+<a name="L332"></a><tt class="py-lineno">332</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">,</tt> <tt id="link-70" class="py-name"><a title="gyp.MSVSNew.MSVSFolder" class="py-name" href="#" onclick="return doclink('link-70', 'MSVSFolder', 'link-44');">MSVSFolder</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L333"></a><tt class="py-lineno">333</tt>  <tt class="py-line">          <tt class="py-keyword">continue</tt>        <tt class="py-comment"># Does not apply to projects, only folders</tt> </tt>
+<a name="L334"></a><tt class="py-lineno">334</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">subentry</tt> <tt class="py-keyword">in</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">entries</tt><tt class="py-op">:</tt> </tt>
+<a name="L335"></a><tt class="py-lineno">335</tt>  <tt class="py-line">          <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\t\t%s = %s\r\n'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">subentry</tt><tt class="py-op">.</tt><tt id="link-71" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-71', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt id="link-72" class="py-name"><a title="gyp.MSVSNew.MSVSFolder.get_guid
+gyp.MSVSNew.MSVSProject.get_guid" class="py-name" href="#" onclick="return doclink('link-72', 'get_guid', 'link-8');">get_guid</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L336"></a><tt class="py-lineno">336</tt>  <tt class="py-line">      <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'\tEndGlobalSection\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L337"></a><tt class="py-lineno">337</tt>  <tt class="py-line"> </tt>
+<a name="L338"></a><tt class="py-lineno">338</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">'EndGlobal\r\n'</tt><tt class="py-op">)</tt> </tt>
+<a name="L339"></a><tt class="py-lineno">339</tt>  <tt class="py-line"> </tt>
+<a name="L340"></a><tt class="py-lineno">340</tt>  <tt class="py-line">    <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L341"></a><tt class="py-lineno">341</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:34 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

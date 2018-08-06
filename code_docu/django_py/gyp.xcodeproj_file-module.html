@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.xcodeproj_file</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        Module&nbsp;xcodeproj_file
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.xcodeproj_file-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module xcodeproj_file</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.xcodeproj_file-pysrc.html">source&nbsp;code</a></span></p>
+<pre class="literalblock">
+Xcode project file generator.
+
+This module is both an Xcode project file generator and a documentation of the
+Xcode project file format.  Knowledge of the project file format was gained
+based on extensive experience with Xcode, and by making changes to projects in
+Xcode.app and observing the resultant changes in the associated project files.
+
+XCODE PROJECT FILES
+
+The generator targets the file format as written by Xcode 3.2 (specifically,
+3.2.6), but past experience has taught that the format has not changed
+significantly in the past several years, and future versions of Xcode are able
+to read older project files.
+
+Xcode project files are &quot;bundled&quot;: the project &quot;file&quot; from an end-user's
+perspective is actually a directory with an &quot;.xcodeproj&quot; extension.  The
+project file from this module's perspective is actually a file inside this
+directory, always named &quot;project.pbxproj&quot;.  This file contains a complete
+description of the project and is all that is needed to use the xcodeproj.
+Other files contained in the xcodeproj directory are simply used to store
+per-user settings, such as the state of various UI elements in the Xcode
+application.
+
+The project.pbxproj file is a property list, stored in a format almost
+identical to the NeXTstep property list format.  The file is able to carry
+Unicode data, and is encoded in UTF-8.  The root element in the property list
+is a dictionary that contains several properties of minimal interest, and two
+properties of immense interest.  The most important property is a dictionary
+named &quot;objects&quot;.  The entire structure of the project is represented by the
+children of this property.  The objects dictionary is keyed by unique 96-bit
+values represented by 24 uppercase hexadecimal characters.  Each value in the
+objects dictionary is itself a dictionary, describing an individual object.
+
+Each object in the dictionary is a member of a class, which is identified by
+the &quot;isa&quot; property of each object.  A variety of classes are represented in a
+project file.  Objects can refer to other objects by ID, using the 24-character
+hexadecimal object key.  A project's objects form a tree, with a root object
+of class PBXProject at the root.  As an example, the PBXProject object serves
+as parent to an XCConfigurationList object defining the build configurations
+used in the project, a PBXGroup object serving as a container for all files
+referenced in the project, and a list of target objects, each of which defines
+a target in the project.  There are several different types of target object,
+such as PBXNativeTarget and PBXAggregateTarget.  In this module, this
+relationship is expressed by having each target type derive from an abstract
+base named XCTarget.
+
+The project.pbxproj file's root dictionary also contains a property, sibling to
+the &quot;objects&quot; dictionary, named &quot;rootObject&quot;.  The value of rootObject is a
+24-character object key referring to the root PBXProject object in the
+objects dictionary.
+
+In Xcode, every file used as input to a target or produced as a final product
+of a target must appear somewhere in the hierarchy rooted at the PBXGroup
+object referenced by the PBXProject's mainGroup property.  A PBXGroup is
+generally represented as a folder in the Xcode application.  PBXGroups can
+contain other PBXGroups as well as PBXFileReferences, which are pointers to
+actual files.
+
+Each XCTarget contains a list of build phases, represented in this module by
+the abstract base XCBuildPhase.  Examples of concrete XCBuildPhase derivations
+are PBXSourcesBuildPhase and PBXFrameworksBuildPhase, which correspond to the
+&quot;Compile Sources&quot; and &quot;Link Binary With Libraries&quot; phases displayed in the
+Xcode application.  Files used as input to these phases (for example, source
+files in the former case and libraries and frameworks in the latter) are
+represented by PBXBuildFile objects, referenced by elements of &quot;files&quot; lists
+in XCTarget objects.  Each PBXBuildFile object refers to a PBXBuildFile
+object as a &quot;weak&quot; reference: it does not &quot;own&quot; the PBXBuildFile, which is
+owned by the root object's mainGroup or a descendant group.  In most cases, the
+layer of indirection between an XCBuildPhase and a PBXFileReference via a
+PBXBuildFile appears extraneous, but there's actually one reason for this:
+file-specific compiler flags are added to the PBXBuildFile object so as to
+allow a single file to be a member of multiple targets while having distinct
+compiler flags for each.  These flags can be modified in the Xcode applciation
+in the &quot;Build&quot; tab of a File Info window.
+
+When a project is open in the Xcode application, Xcode will rewrite it.  As
+such, this module is careful to adhere to the formatting used by Xcode, to
+avoid insignificant changes appearing in the file when it is used in the
+Xcode application.  This will keep version control repositories happy, and
+makes it possible to compare a project file used in Xcode to one generated by
+this module to determine if any significant changes were made in the
+application.
+
+Xcode has its own way of assigning 24-character identifiers to each object,
+which is not duplicated here.  Because the identifier only is only generated
+once, when an object is created, and is then left unchanged, there is no need
+to attempt to duplicate Xcode's behavior in this area.  The generator is free
+to select any identifier, even at random, to refer to the objects it creates,
+and Xcode will retain those identifiers and use them when subsequently
+rewriting the project file.  However, the generator would choose new random
+identifiers each time the project files are generated, leading to difficulties
+comparing &quot;used&quot; project files to &quot;pristine&quot; ones produced by this module,
+and causing the appearance of changes as every object identifier is changed
+when updated projects are checked in to a version control repository.  To
+mitigate this problem, this module chooses identifiers in a more deterministic
+way, by hashing a description of each object as well as its parent and ancestor
+objects.  This strategy should result in minimal &quot;shift&quot; in IDs as successive
+generations of project files are produced.
+
+THIS MODULE
+
+This module introduces several classes, all derived from the XCObject class.
+Nearly all of the &quot;brains&quot; are built into the XCObject class, which understands
+how to create and modify objects, maintain the proper tree structure, compute
+identifiers, and print objects.  For the most part, classes derived from
+XCObject need only provide a _schema class object, a dictionary that
+expresses what properties objects of the class may contain.
+
+Given this structure, it's possible to build a minimal project file by creating
+objects of the appropriate types and making the proper connections:
+
+  config_list = XCConfigurationList()
+  group = PBXGroup()
+  project = PBXProject({'buildConfigurationList': config_list,
+                        'mainGroup': group})
+
+With the project object set up, it can be added to an XCProjectFile object.
+XCProjectFile is a pseudo-class in the sense that it is a concrete XCObject
+subclass that does not actually correspond to a class type found in a project
+file.  Rather, it is used to represent the project file's root dictionary.
+Printing an XCProjectFile will print the entire project file, including the
+full &quot;objects&quot; dictionary.
+
+  project_file = XCProjectFile({'rootObject': project})
+  project_file.ComputeIDs()
+  project_file.Print()
+
+Xcode project files are always encoded in UTF-8.  This module will accept
+strings of either the str class or the unicode class.  Strings of class str
+are assumed to already be encoded in UTF-8.  Obviously, if you're just using
+ASCII, you won't encounter difficulties because ASCII is a UTF-8 subset.
+Strings of class unicode are handled properly and encoded in UTF-8 when
+a project file is output.
+
+</pre>
+
+<!-- ==================== CLASSES ==================== -->
+<a name="section-Classes"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Classes"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCObject-class.html" class="summary-name">XCObject</a><br />
+      The abstract base of all class types used in Xcode project files.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCHierarchicalElement-class.html" class="summary-name">XCHierarchicalElement</a><br />
+      Abstract base for PBXGroup and PBXFileReference.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXGroup-class.html" class="summary-name">PBXGroup</a><br />
+      Attributes:
+  _children_by_path: Maps pathnames of children of this PBXGroup to the
+    actual child XCHierarchicalElement objects.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCFileLikeElement-class.html" class="summary-name">XCFileLikeElement</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCContainerPortal-class.html" class="summary-name">XCContainerPortal</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCRemoteObject-class.html" class="summary-name">XCRemoteObject</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXFileReference-class.html" class="summary-name">PBXFileReference</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXVariantGroup-class.html" class="summary-name">PBXVariantGroup</a><br />
+      PBXVariantGroup is used by Xcode to represent localizations.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCBuildConfiguration-class.html" class="summary-name">XCBuildConfiguration</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCConfigurationList-class.html" class="summary-name">XCConfigurationList</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXBuildFile-class.html" class="summary-name">PBXBuildFile</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCBuildPhase-class.html" class="summary-name">XCBuildPhase</a><br />
+      Abstract base for build phase classes.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXHeadersBuildPhase-class.html" class="summary-name">PBXHeadersBuildPhase</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXResourcesBuildPhase-class.html" class="summary-name">PBXResourcesBuildPhase</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXSourcesBuildPhase-class.html" class="summary-name">PBXSourcesBuildPhase</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXFrameworksBuildPhase-class.html" class="summary-name">PBXFrameworksBuildPhase</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXShellScriptBuildPhase-class.html" class="summary-name">PBXShellScriptBuildPhase</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXCopyFilesBuildPhase-class.html" class="summary-name">PBXCopyFilesBuildPhase</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXBuildRule-class.html" class="summary-name">PBXBuildRule</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXContainerItemProxy-class.html" class="summary-name">PBXContainerItemProxy</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXTargetDependency-class.html" class="summary-name">PBXTargetDependency</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXReferenceProxy-class.html" class="summary-name">PBXReferenceProxy</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCTarget-class.html" class="summary-name">XCTarget</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXNativeTarget-class.html" class="summary-name">PBXNativeTarget</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXAggregateTarget-class.html" class="summary-name">PBXAggregateTarget</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.PBXProject-class.html" class="summary-name">PBXProject</a><br />
+      Attributes:
+  path: &quot;sample.xcodeproj&quot;.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.xcodeproj_file.XCProjectFile-class.html" class="summary-name">XCProjectFile</a>
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcodeproj_file-module.html#SourceTreeAndPathFromPath" class="summary-sig-name">SourceTreeAndPathFromPath</a>(<span class="summary-sig-arg">input_path</span>)</span><br />
+      Given input_path, returns a tuple with sourceTree and path values.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcodeproj_file-pysrc.html#SourceTreeAndPathFromPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ConvertVariablesToShellSyntax"></a><span class="summary-sig-name">ConvertVariablesToShellSyntax</span>(<span class="summary-sig-arg">input_string</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcodeproj_file-pysrc.html#ConvertVariablesToShellSyntax">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_new_sha1"></a><span class="summary-name">_new_sha1</span> = <code title="sha.new">sha.new</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_unquoted"></a><span class="summary-name">_unquoted</span> = <code title="re.compile('^[A-Za-z0-9$./_]+$')">re.compile('^[A-Za-z0-9$./_]+$')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_quoted"></a><span class="summary-name">_quoted</span> = <code title="re.compile('___')">re.compile('___')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_escaped"></a><span class="summary-name">_escaped</span> = <code title="re.compile('[\\\\&quot;]|[\x00-\x1f]')">re.compile('[\\\\&quot;]|[\x00-\x1f]')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_path_leading_variable"></a><span class="summary-name">_path_leading_variable</span> = <code title="re.compile(r'^\$\((.*?)\)(/(.*))?$')">re.compile(r'^\$\((.*?)\)(/(.*))?$')</code>
+    </td>
+  </tr>
+</table>
+<p class="indent-wrapped-lines"><b>Imports:</b>
+  <a href="gyp-module.html" title="gyp">gyp</a>,
+  <span title="posixpath">posixpath</span>,
+  <span title="re">re</span>,
+  <span title="struct">struct</span>,
+  <span title="sys">sys</span>,
+  <span title="hashlib">hashlib</span>,
+  <span title="sha">sha</span>
+</p><br />
+<!-- ==================== FUNCTION DETAILS ==================== -->
+<a name="section-FunctionDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Function Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-FunctionDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="SourceTreeAndPathFromPath"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">SourceTreeAndPathFromPath</span>(<span class="sig-arg">input_path</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcodeproj_file-pysrc.html#SourceTreeAndPathFromPath">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Given input_path, returns a tuple with sourceTree and path values.
+
+Examples:
+  input_path     (source_tree, output_path)
+  '$(VAR)/path'  ('VAR', 'path')
+  '$(VAR)'       ('VAR', None)
+  'path'         (None, 'path')
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:26 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

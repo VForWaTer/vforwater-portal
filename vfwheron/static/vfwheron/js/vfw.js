@@ -232,17 +232,17 @@ function getCookie(name) {
 
 // send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
-    if (id !== 'null'){
+    if (id !== 'null') {
         $.ajax({
-            url: DEMO_VAR+"/vfwheron/menu",
+            url: DEMO_VAR + "/vfwheron/menu",
             datatype: 'json',
             data: {
                 workspaceData: id,
                 'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
-            success: function(json) {
+            }, // data sent with post request
+            success: function (json) {
                 if (sessionStorage.getItem("btn")) {
-                    let stored = JSON.parse(sessionStorage.getItem("btn"))
+                    let stored = JSON.parse(sessionStorage.getItem("btn"));
                     $.each(json['workspaceData'], function (key, value) {
                         if (!stored[key]) {
                             stored[key] = value;
@@ -254,8 +254,8 @@ function workspace_dataset(id) {
                 }
                 // push sessionStorage keys to html for Workspace
                 let x = [];
-                $.each(JSON.parse(sessionStorage.getItem("btn")), function (key){
-                   x.push(key)
+                $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
+                    x.push(key)
                 });
                 document.getElementById("workdata").value = x;
 
@@ -268,27 +268,88 @@ function workspace_dataset(id) {
 
 /* Send ID to server to build preview and add preview image to html */
 function show_preview(id) {
-    document.getElementById("show_data_preview").value = "Loading Preview"
+    document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
     $.ajax({
-        url: DEMO_VAR+"/vfwheron/menu",
+        url: DEMO_VAR + "/vfwheron/menu",
         datatype: 'image/png;base64',
         data: {
             preview: id,
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function(json) {
-            // console.log('back from preview', json)
+        success: function (json) {
             $.each(json, function (key, value) {
                 // document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value; // Strobl svg
-                document.getElementById("preview_img").innerHTML = value; // Mälicke  png
-                document.getElementById("show_data_preview").value = "Load Preview again"
+                document.getElementById("preview_img").innerHTML = value; // png
+                document.getElementById("show_data_preview" + id.toString()).value = "Reload Preview"
             });
         }
     });
 }
 
+function popupContentvfw(ids, page) {
+    // TODO: CSS style überarbeiten
+     if (typeof (ids) === 'string' && typeof(page) === 'undefined' ) {
+         page = JSON.parse("["+ids+"]").slice(-1);
+         ids = JSON.parse("["+ids+"]").slice(0, -1);
+    }
+        document.getElementById("pagi"+page).classList.add("loadspin");
+    let popupTableBeforeMeta = '<table id="popupTable"><td>';
+    // let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
+    let popUpText = popupTableBeforeMeta +
+        '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
+        '<table id="metaTable">';
 
+    // request info from server
+    $.ajax({
+        url: DEMO_VAR + "/vfwheron/menu",
+        dataType: 'json',
+        data: {
+            show_info: JSON.stringify(ids),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (json) {
+                document.getElementById('popup-content').innerHTML = buildPopupTextvfw(json, popUpText);
+                document.getElementsByClassName("active")[0].classList.remove("active");
+                document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
+                document.getElementById("pagi"+page).classList.add("active");
+        }
 
+    });
+
+}
+function buildPopupTextvfw(json, popUpText) {
+    let properties = json.get;
+    let valueLen;
+    let buttonId = [];
+    // loop over "properties" dict with metadata, build columns
+    for (let j in properties) {
+        let values = eval('properties["' + j + '"]');
+        valueLen = values.length;
+        popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
+        // loop over dict values and build rows
+        for (let k = 0; k < valueLen; k++) {
+            popUpText = popUpText + '<td>' + values[k] + '</td>';
+            if (j.toLowerCase() == 'id') {
+                buttonId.push(values[k])
+            }
+        }
+        popUpText = popUpText + '</tr>'
+    }
+    popUpText = popUpText + '<tr><td><b></b></td>';
+    // build buttons for each dataset
+    for (let k = 0; k < valueLen; k++) {
+        popUpText = popUpText + '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
+            'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
+            'title="Attention! Loading the preview might take a while."></b></a>' +
+            '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
+            'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
+            'title="Put dataset to session datastore"></b></a></td>';
+    }
+
+    let popupTableAfterMeta = popUpText + '</table>';
+    let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+    return popupTableAfterMeta + img_preview;
+}
 // // another accordion/ didn't work for me (Marcus)
 // var acc = document.getElementsByClassName("new_accord");
 // var i;

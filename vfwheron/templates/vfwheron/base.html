@@ -12,6 +12,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/font-awesome-4.7.0/css/font-awesome.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/flag-icon.css' %}">
     <link rel="icon" href="{% static 'vfwheron/images/Favicon.ico' %}">
 
 </head>
@@ -21,7 +22,7 @@
 <body class="respo-light-grey">
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 <!--    Top container -->
-<div class="respo-container respo-top respo-black respo-large respo-padding" style="z-index:4">
+<div class="respo-container respo-top respo-black respo-large respo-padding" style="z-index:4" id="topcontainer">
     <button class="respo-btn respo-hide-large respo-padding-0 respo-hover-text-grey" onclick="respo_open();"><i class="fa fa-bars"></i>
     </button>
     {#	  <span class="respo-right"><strong><small>Virtuelle Forschungsumgebung für die Wasser- und terrestrische Umweltforschung</small></strong></span>#}
@@ -44,10 +45,10 @@
         </li>
         <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white">
             <i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
-{#        </li>#}
-{#        <li class="respo-hide-small"><a href="{% url 'heron_wps:workflow' %}" class="respo-hover-white">#}
-{#            <i class="fa fa-workflow fa-fw"></i>{% trans "  Workflow" %}</a>#}
-{#        </li>#}
+        </li>
+         <li class="respo-hide-small"><a href="{% url 'vfwheron:workflowtool' %}" class="respo-hover-white">
+            <i class="fa fa-workflow fa-fw" style="height: 24px; width: 24px;"></i>{% trans "  Workflow" %}</a>
+        </li>     
         <li class="respo-hide-small"><a href="{% url 'heron_monitor:home' %}" class="respo-hover-white">
             <i class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>
         </li>
@@ -57,7 +58,7 @@
         <li class="respo-hide-small">
             <div class="respo-dropdown-hover respo-transparent">
                 <a class="respo-hover-white ">
-                    <i class="fa fa-external-link fa-fw"></i>{% trans "  Help" %}<i class="fa fa-caret-down fa-fw"></i>
+                    <i class="fa fa-external-link fa-fw"></i>  {% trans "Help" %}<i class="fa fa-caret-down fa-fw"></i>
                     <div class="respo-dropdown-content" style="right:0">
                         <a href="{% url 'vfwheron:help' %}" class="respo-hover-blue">
                             <i class="fa fa-book fa-fw"></i>{% trans "  Portal Help" %}
@@ -157,7 +158,40 @@
                     </form>
                 </a>
             </li>
-        {% endif %}
+            {% endif %}
+
+	    <!-- flag -->
+	    {% get_current_language as LANGUAGE_CODE %}
+	    {% if LANGUAGE_CODE == 'de' %}
+<!--
+	<li class="respo-hide-small respo-right">
+	  <a href="#" class="respo-hover-white img-thumbnail flag flag-icon-background flag-icon-gb" title="gb" id="gb">
+	    <form action="{% url 'vfwheron:togglelang' %}" method="post"> {% csrf_token %}
+              <input class="respo-btn-simple" type="submit" name="togglelang" value="&nbsp;"/>
+            </form>
+	  </a>
+	</li> -->
+
+	<li class="respo-hide-small respo-right">
+	  <a href="#" class="respo-hover-none">
+	    <form action="{% url 'vfwheron:togglelang' %}" method="post"> {% csrf_token %}
+              <input class="respo-btn-simple flag-icon-background flag-icon-gb" type="submit" name="togglelang" value="&nbsp;&nbsp;&nbsp;"/>
+            </form>
+          </a>
+	</li>	
+
+	{% else %}
+	<li class="respo-hide-small respo-right">
+	  <a href="#" class="respo-hover-none">
+	    <form action="{% url 'vfwheron:togglelang' %}" method="post"> {% csrf_token %}
+              <input class="respo-btn-simple flag-icon-background flag-icon-de" type="submit" name="togglelang" value="&nbsp;&nbsp;&nbsp;"/>
+            </form>
+          </a>
+	</li>	
+	
+	{% endif %}
+
+	  
     </ul>
 </div>
 

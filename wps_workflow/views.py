@@ -724,84 +724,84 @@ class WPSView(View):
 
 
 # TODO: document 
-class OurLogoutView(TemplateView):
-    """
-    
-    """
-    template_name = "index.html"
-
-    # needed because Django needs CSRF token in cookie unless you put this
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        """
-
-        @param args: non-keyworded arguments passed to models.Model.dispatch() method
-        @type args:
-        @param kwargs: keyworded arguments passed to models.Model.dispatch() method
-        @type kwargs:
-        @return:
-        @rtype: django.http.response.HttpResponse
-        """
-        return super(OurLogoutView, self).dispatch(*args, **kwargs)
-
-    @staticmethod
-    def delete(request):
-        logout(request)
-        return JsonResponse({'logged': 'out'})
-
-
-# TODO: document
-class OurLoginView(TemplateView):
-    """
-
-    """
-    template_name = "index.html"
-
-    # needed because Django needs CSRF token in cookie unless you put this
-    @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        """
-        Sends a http response to the client
-        @param args: non-keyworded arguments passed to models.Model.dispatch() method
-        @type args: list
-        @param kwargs: keyworded arguments passed to models.Model.dispatch() method
-        @type kwargs: list
-        @return: the response
-        @rtype: django.http.response.HttpResponse
-        """
-        print('   *2  OurLoginView views.py', self, *args, **kwargs)
-
-        return super(OurLoginView, self).dispatch(*args, **kwargs)
-
-    @staticmethod  # TODO: document
-    def post(request):
-        """
-
-        @param request:
-        @type request:
-        @return:
-        @rtype:
-        """
-        login_data = json.loads(request.body)
-        user = authenticate(
-            username=login_data['username'], password=login_data['password'])
-
-        if user is not None:
-            login(request, user)
-            user = model_to_dict(user)
-            del user['password']
-            return as_json_response(user)
-        else:
-            return JsonResponse({'error': 'no access'})
+# class OurLogoutView(TemplateView):
+#     """
+#     
+#     """
+#     template_name = "index.html"
+# 
+#     # needed because Django needs CSRF token in cookie unless you put this
+#     @csrf_exempt
+#     def dispatch(self, *args, **kwargs):
+#         """
+# 
+#         @param args: non-keyworded arguments passed to models.Model.dispatch() method
+#         @type args:
+#         @param kwargs: keyworded arguments passed to models.Model.dispatch() method
+#         @type kwargs:
+#         @return:
+#         @rtype: django.http.response.HttpResponse
+#         """
+#         return super(OurLogoutView, self).dispatch(*args, **kwargs)
+# 
+#     @staticmethod
+#     def delete(request):
+#         logout(request)
+#         return JsonResponse({'logged': 'out'})
+# 
+# 
+# # TODO: document
+# class OurLoginView(TemplateView):
+#     """
+# 
+#     """
+#     template_name = "index.html"
+# 
+#     # needed because Django needs CSRF token in cookie unless you put this
+#     @csrf_exempt
+#     def dispatch(self, *args, **kwargs):
+#         """
+#         Sends a http response to the client
+#         @param args: non-keyworded arguments passed to models.Model.dispatch() method
+#         @type args: list
+#         @param kwargs: keyworded arguments passed to models.Model.dispatch() method
+#         @type kwargs: list
+#         @return: the response
+#         @rtype: django.http.response.HttpResponse
+#         """
+#         print('   *2  OurLoginView views.py', self, *args, **kwargs)
+# 
+#         return super(OurLoginView, self).dispatch(*args, **kwargs)
+# 
+#     @staticmethod  # TODO: document
+#     def post(request):
+#         """
+# 
+#         @param request:
+#         @type request:
+#         @return:
+#         @rtype:
+#         """
+#         login_data = json.loads(request.body)
+#         user = authenticate(
+#             username=login_data['username'], password=login_data['password'])
+# 
+#         if user is not None:
+#             login(request, user)
+#             user = model_to_dict(user)
+#             del user['password']
+#             return as_json_response(user)
+#         else:
+#             return JsonResponse({'error': 'no access'})
 
 
 # TODO: document
 class WorkflowsView(LoginRequiredMixin, TemplateView):
     """
-
+ 
     """
-    login_url = '/login/'
-
+    #login_url = '/wps_workflow/login/'
+ 
     template_name = "index.html"
 
 
@@ -810,8 +810,8 @@ class EditorView(LoginRequiredMixin, TemplateView):
     """
 
     """
-    login_url = '/login/'
-    # login_url = 'vfwheron:watts_login'
+    #login_url = '/wps_workflow/login/'
+    login_url = 'vfwheron:watts_login'
 
     template_name = "index.html"
 
@@ -819,6 +819,6 @@ class EditorView(LoginRequiredMixin, TemplateView):
 # TODO: document
 class SettingsView(LoginRequiredMixin, TemplateView):
 
-    login_url = '/login/'
+    #login_url = '/wps_workflow/login/'
 
     template_name = "index.html"

@@ -2,6 +2,8 @@ import base64
 import json
 import re
 import urllib
+import hashlib
+from collections import defaultdict
 
 from io import StringIO, BytesIO
 
@@ -13,12 +15,13 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect, render
 from django.core.cache import cache
 from django.conf import settings
+from django.utils import translation
 
 import matplotlib as mpl
 
 from heron.settings import LOCAL_GEOSERVER
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer
-from vfwheron.previewplot import maelicke_plot
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, get_ID_layer, delete_ID_layer
+from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -30,8 +33,8 @@ from .query_functions import get_bbox_from_data
 from datetime import datetime
 import time
 
-from .filter import FilterMethods, Menu, newbuild_id_list
-from .models import TblMeta, TblVariable
+from .filter import FilterMethods, Menu, build_id_list
+from .models import TblMeta, TblVariable, TblData
 
 import logging
 import os
@@ -40,15 +43,40 @@ import os
 logger = logging.getLogger(__name__)
 
 
+def get_dataset(self, request, **kwargs):
+    # here 
+    id = request.POST.get('meta_id')
+    
+    data = TblData.objects.get(meta=id).value
+    result = "test"
+    
+    return result
+
+
+
+class WorkflowView(TemplateView):
+    """
+    Template View for plain workflow HTML Template.
+    Template so far does only contain iframe in content Block, that embedds wps_workflow app
+    """
+    template_name = "vfwheron/workflow.html"
+
+
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
 class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
-    Menu = Menu().menu()
+    user = 'default'
+    Menu = Menu().menu(user)
     JSON_Menu = json.dumps(Menu['client'])
     # JSON_Menu = Menu().json_menu()
     data_layer = 'default_layer'
+    # if not dataExt:
+
+    dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+        # dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+
     if not get_layer(data_layer):
         create_layer(data_layer)
     # else:
@@ -58,29 +86,25 @@ class HomeView(TemplateView):
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
-        data_style = 'default'
-        # data_style = 'Light Blue Circle'
 
         try:
             dataExt = get_bbox_from_data()
         except:
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
-            dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-        return {'dataExt': dataExt, 'data_style': data_style, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
+        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
 
 
 class menuView(TemplateView):
     # user = 'default'
 
-    def get(self, request):
+    def get(self, request, user='default'):
 
         request.session.set_expiry(20)  # TODO: expire after 20 seconds/ this is only for development!!!
 
         # bring last used menu to session
-        menu = request.GET.get('menu')
-        if menu:
-            request.session['menu'] = menu
+        if 'menu' in request.GET:
+            request.session['menu'] = request.GET.get('menu')
             request.session.modified = True
         else:
             menu = request.session.get('menu')
@@ -109,13 +133,12 @@ class menuView(TemplateView):
                 dataset_dict = {work_dataset: data_definition}
             return dataset_dict
 
-        work_dataset = request.GET.get('workspaceData')
-        min_time = request.GET.get('minTime')
-        max_time = request.GET.get('maxTime')
-        if work_dataset:
+        if 'workspaceData' in request.GET:
+            min_time = request.GET.get('minTime')
+            max_time = request.GET.get('maxTime')
             result = {}
             # prepare work_dataset differently for list and single value to use in build_selection
-            conv_work_dataset = json.loads(work_dataset)
+            conv_work_dataset = json.loads(request.GET.get('workspaceData'))
             if type(conv_work_dataset) == list:
                 for datasetId in conv_work_dataset:
                     result = build_selection(str(datasetId), result, min_time, max_time)
@@ -125,21 +148,68 @@ class menuView(TemplateView):
 
         if 'preview' in request.GET:
             # plot png the mälicke way:
-            imgtag = maelicke_plot(request.GET.get('preview'))
+            imgtag = get_preview(request.GET.get('preview'))
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
-        # if request.GET.get('filter_selection'):
-        filter_selection = request.GET.get('filter_selection')
-        if filter_selection:
-            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(filter_selection))
+        # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
+        if 'show_info' in request.GET:
+            # get field names from models:
+            field = []
+            fieldName = {}
+            for i in Menu().menu_list:
+                for j in i.column_dict_en.items():
+                    fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
+                    field.append(fieldpath)
+                    fieldName[fieldpath] = j[1]
+
+            # build dict of lists for preview:
+            ids = json.loads(request.GET.get('show_info'))
+            preview = defaultdict(list)
+            for k in ids:
+                preview['id'].append(k)
+                imgtag = eval(
+                    "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
+                for i in imgtag[0]:
+                    # preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i]))
+                    preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i])) if imgtag[0][i] is not None else preview[translation.gettext(fieldName[i])].append('-')
+
+            # remove rows only containing no value:
+            comparelist = ['-'] * len(ids)
+            deleteable = []
+            for i in preview:
+                if preview[i] == comparelist:
+                    deleteable.append(i)
+            for i in deleteable:
+                del preview[i]
+
+            return JsonResponse({'get': preview})  # requested from map.js show_info
+
+        if 'filter_selection' in request.GET:
+            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection')))
             return JsonResponse(filter_menu)
 
-        filter_selection_map = request.GET.get('filter_selection_map')
-        if filter_selection_map:
-            meta_ids = newbuild_id_list(HomeView.Menu['server'], json.loads(filter_selection_map))
-            return JsonResponse(meta_ids)
+        if 'filter_selection_map' in request.GET:
+            if json.loads(request.GET.get('filter_selection_map')) == 0:
+                ID_layer = HomeView.data_layer
+                dataExt = get_bbox_from_data()
+            else:
+                meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
+                dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
+                ID_layer = 'ID_layer' # + user
+                if get_ID_layer(ID_layer):
+                    delete_ID_layer(ID_layer)
+                create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+    # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none existing layers
+            # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
+            # if not get_ID_layer(ID_layer):
+            #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+#             else:
+# # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+#                 delete_ID_layer(ID_layer)
+#                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt})
 
-        return JsonResponse({'Error': 'Something is missing. Check views.py'})
+        return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
 
 class LoginView(View):
@@ -152,7 +222,6 @@ class LoginView(View):
             logger.debug('The user is not authenticated!')
         else:
             logger.debug('{} logged in as'.format(request.user.username))
-
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -178,6 +247,21 @@ class HelpView(TemplateView):
         f.close()
         return render(request, 'vfwheron/help.html', {'context': context})
 
+class ToggleLanguageView(View):
+    def post(self, request):
+        lang=translation.get_language()
+        logger.debug('current language: {}'.format(lang))
+        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),translation.check_for_language('en-us'),translation.check_for_language('en-gb')))
+        if lang == 'en-gb' or lang == 'en-us':
+            translation.activate('de')
+            request.session[translation.LANGUAGE_SESSION_KEY] = 'de'
+        else:
+            translation.activate('en-gb')
+            if hasattr(request, 'session'):
+                request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
+        logger.debug('new language: {}'.format(translation.get_language()))
+        logger.debug('translation test: {}'.format(translation.gettext("help")))
+        return redirect('/')
 
 class GeoserverView(View):
 
@@ -188,6 +272,8 @@ class GeoserverView(View):
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+              # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+              # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))

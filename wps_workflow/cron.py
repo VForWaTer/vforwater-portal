@@ -341,12 +341,22 @@ def send_task(task_id, xml_dir):
         return
 
     # TODO refactor dirty fix
+    # TODO switch in settings.py for status_url type or by comparing front of status url with execute url
+    exec_part_url = get_execute_url(Task.objects.get(id=task_id))
+    front_part_url = re.sub('\/wps\?request[^^]*', '', exec_part_url)
+        
     status_url = xml.get('statusLocation')
+    
+    file_part_url = re.sub('\A[^^]*/outputs', '', status_url)
+    part_out = '/outputs'
+    status_url = front_part_url + part_out + file_part_url
+    
+    
     if status_url is None:
         status = '5'
         status_url = "error_url"
-    else:
-        status_url = "http://" + re.sub(r"^http://", "", status_url)
+    #else:
+        #status_url = "http://" + re.sub(r"^http://", "", status_url)   # why do that?
 
     wps_log.info(f"STATUS URL: {status_url}")
 
