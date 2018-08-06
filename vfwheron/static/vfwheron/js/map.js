@@ -212,37 +212,17 @@ function create_map() {
                     idDict[page].push(id);
 
                 }
-                console.log('idDict: ', idDict)
-                console.log('idDict[1], evt: ', idDict[1], pos)
-                console.log('# # #  # # # window.parent: ',window.parent)
                 popupContent(idDict[1], pos);
 
                 // add paginatation to popup:
                 let pagi = '';
-                console.log('page: ', page)
                 for (let i = 1; i <= page; i++) {
-                    console.log('i: ', i)
                     if (i == 1) {
-                        /*// pagi = '<li class="active"><a value="#">' + i + '</a></li>'; //TODO: active is not working. Why?
-                        pagi = '<li class="active"><a><p class="respo-btn-simple" id="popBtn'+i+'">'+i+'</p></a></li>';
-                        console.log('-------------------- ', "popBtn".concat(i))
-                        console.log('-------------------- ', document.getElementById("popBtn".concat(i)))
-                        document.getElementById("popBtn".concat(i)).onclick = function() {popupContent()};
-                        */
-                        // pagi = '<li class="active"><a><input type="submit" id='+"popBtn".concat(i)+' class="respo-btn-simple"' +
-                        pagi = '<li class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                            'onclick=\"popupContent(\'['+idDict[i]+'],['+pos+']\')\" value="' + i + '"></a></li>';
-                        console.log('-------------------- ', "popBtn".concat(i))
-                        console.log('-------------------- ', metaData_Overlay)
-                        console.log('-------------------- ', document.getElementById("popBtn"))
-                        // console.log('-------------------- ', metaData_Overlay.getElementById("popBtn".concat(i)))
-                            // 'onclick=\"popupContent(idDict[i],[pos])\" value="' + i + '"></a></td>';
-                        // 'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
+                        pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                            'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
                     } else {
-                        // pagi = pagi + '<li><a href="#">' + i + '</a></li>';
-                        pagi = pagi + '<li><a><input type="submit" class="respo-btn-simple"' +
-                            'onclick=\"popupContent(\'['+idDict[i]+'],['+pos+']\')\" value="' + i + '"></a></li>';
-                        // 'onclick=\"popupContent([' + idDict[i] + '],[' + pos + '])\" value="' + i + '"></a></td>';
+                        pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
+                            'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
                     }
                 }
                 paginat.innerHTML = pagi;
@@ -258,15 +238,11 @@ function create_map() {
     }
     function popupContent(ids, pos) {
     // TODO: CSS style überarbeiten
-        console.log('ids, pos: ', ids, pos)
-        console.log('ids, pos: ', typeof (ids), typeof (pos))
         let popupTableBeforeMeta = '<table id="popupTable"><td>';
-        // let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
         let popUpText = popupTableBeforeMeta +
             '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
             '<table id="metaTable">';
 
-        console.log('lets send: ', ids)
         // request info from server
         $.ajax({
             url: DEMO_VAR + "/vfwheron/menu",
@@ -276,21 +252,15 @@ function create_map() {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
             success: function (json) {
-                try {
-                    content.innerHTML = buildPopupText(json, popUpText);
+                    document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
+                    // content.innerHTML = buildPopupText(json, popUpText);
                     metaData_Overlay.setPosition(pos);
-
-                } catch (err) {
-                    // document.getElementById("popup-content").removeChild(document.getElementById("loader"));
-                    content.removeChild(document.getElementById("loader"));
-                    content.innerHTML = '<td><a style="background-color:White;color:Red;"><b> Error: Unable to load metadata</td></a></b>'
-                    console.error(err); // TODO: remove for production
-                }
             }
 
         });
 
     }
+    // TODO: buildPopupText is the same as buildPopupTextvfw.js ==> figure out how(where) to use only one of the two functions for both cases
     function buildPopupText(json, popUpText) {
         let properties = json.get;
         let valueLen;
@@ -303,7 +273,6 @@ function create_map() {
             // loop over dict values and build rows
             for (let k = 0; k < valueLen; k++) {
                 popUpText = popUpText + '<td>' + values[k] + '</td>';
-                // console.log('got was ', k, valueLen)
                 if (j.toLowerCase() == 'id') {
                     buttonId.push(values[k])
                 }

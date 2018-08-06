@@ -89,7 +89,22 @@ ul.respo-ul{list-style-type:none;padding:0;margin:0}ul.respo-ul li{padding:6px 2
 .respo-pagination li a{text-decoration:none;color:#000;float:left;padding:8px 16px}
 .respo-pagination li.active a{border-radius: 10px;background-color:#00BAEE}
 .respo-pagination li:not(.active) a:hover{border-radius: 10px;background-color:#ccc}
-/*.respo-pagination li a:active{background-color:#00BAEE}*/
+.respo-pagination li a:active{background-color:#00BAEE}
+/*.respo-pagination li.loadspin a{border-radius: 10px;background-color:#f44336}*/
+.respo-pagination li.loadspin a{ background-color: #AADDF9;
+  border-radius: 10px;
+  animation: spin 1.2s linear infinite;
+    -webkit-animation: spin 1.2s linear infinite; /* Safari */}
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .respo-input-group,.respo-group{margin-top:24px;margin-bottom:24px}
 .respo-input{padding:8px;display:block;border:none;border-bottom:1px solid #808080;width:100%}
 .respo-label{color:#009688}.respo-input:not(:valid)~.respo-validate{color:#f44336}

@@ -286,7 +286,70 @@ function show_preview(id) {
     });
 }
 
+function popupContentvfw(ids, page) {
+    // TODO: CSS style überarbeiten
+     if (typeof (ids) === 'string' && typeof(page) === 'undefined' ) {
+         page = JSON.parse("["+ids+"]").slice(-1);
+         ids = JSON.parse("["+ids+"]").slice(0, -1);
+    }
+        document.getElementById("pagi"+page).classList.add("loadspin");
+    let popupTableBeforeMeta = '<table id="popupTable"><td>';
+    // let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
+    let popUpText = popupTableBeforeMeta +
+        '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
+        '<table id="metaTable">';
 
+    // request info from server
+    $.ajax({
+        url: DEMO_VAR + "/vfwheron/menu",
+        dataType: 'json',
+        data: {
+            show_info: JSON.stringify(ids),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (json) {
+                document.getElementById('popup-content').innerHTML = buildPopupTextvfw(json, popUpText);
+                document.getElementsByClassName("active")[0].classList.remove("active");
+                document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
+                document.getElementById("pagi"+page).classList.add("active");
+        }
+
+    });
+
+}
+function buildPopupTextvfw(json, popUpText) {
+    let properties = json.get;
+    let valueLen;
+    let buttonId = [];
+    // loop over "properties" dict with metadata, build columns
+    for (let j in properties) {
+        let values = eval('properties["' + j + '"]');
+        valueLen = values.length;
+        popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
+        // loop over dict values and build rows
+        for (let k = 0; k < valueLen; k++) {
+            popUpText = popUpText + '<td>' + values[k] + '</td>';
+            if (j.toLowerCase() == 'id') {
+                buttonId.push(values[k])
+            }
+        }
+        popUpText = popUpText + '</tr>'
+    }
+    popUpText = popUpText + '<tr><td><b></b></td>';
+    // build buttons for each dataset
+    for (let k = 0; k < valueLen; k++) {
+        popUpText = popUpText + '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
+            'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
+            'title="Attention! Loading the preview might take a while."></b></a>' +
+            '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
+            'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
+            'title="Put dataset to session datastore"></b></a></td>';
+    }
+
+    let popupTableAfterMeta = popUpText + '</table>';
+    let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+    return popupTableAfterMeta + img_preview;
+}
 // // another accordion/ didn't work for me (Marcus)
 // var acc = document.getElementsByClassName("new_accord");
 // var i;
