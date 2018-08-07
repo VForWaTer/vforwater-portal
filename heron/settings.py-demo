@@ -30,7 +30,7 @@ if not os.path.exists(VFW_DIR):
 HOST_NAME = "portal.vforwater.de"
 VFW_SERVER = 'https://' + HOST_NAME + '/demo'
 MAP_SERVER = "https://portal.vforwater.de"
-GEO_SERVER = 'https://' + HOST_NAME + '/geoserver'
+LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 
 # Variable to set the demo path in static files
 DEMO_VAR = '/demo'
