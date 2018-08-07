@@ -30,7 +30,7 @@ if not os.path.exists(VFW_DIR):
 HOST_NAME = "portal.vforwater.de"
 VFW_SERVER = 'https://' + HOST_NAME + '/demo'
 MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
+GEO_SERVER = 'https://' + HOST_NAME + '/geoserver'
 
 # Variable to set the demo path in static files
 DEMO_VAR = '/demo'
@@ -50,7 +50,14 @@ if not os.path.isfile(secretFile):
 else:
     with open(secretFile) as f:
         SECRET_KEY = f.read().strip()
-
+secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
+if os.path.isfile(secretGeoServer):
+    with open(secretGeoServer) as gs:
+        SECRET_GEOSERVER = gs.read().strip()
+else:
+        # TODO: Print to log file
+    print('secretGeoServer.txt is missing')
+    
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
