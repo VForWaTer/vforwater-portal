@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>heron_wps.admin</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="heron_wps-module.html">Package&nbsp;heron_wps</a> ::
+        Module&nbsp;admin
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="heron_wps.admin-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="heron_wps.admin-module.html">Module heron_wps.admin</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">contrib</tt> <tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Module AuthorizationManagement.admin=AuthorizationManagement.admin-module.html,Module dashboard.admin=dashboard.admin-module.html,Module heron_wps.admin=heron_wps.admin-module.html,Module vfwheron.admin=vfwheron.admin-module.html,Module wps_workflow.admin=wps_workflow.admin-module.html"><a title="AuthorizationManagement.admin
+dashboard.admin
+heron_wps.admin
+vfwheron.admin
+wps_workflow.admin" class="py-name" href="#" onclick="return doclink('link-0', 'admin', 'link-0');">admin</a></tt> </tt>
+<a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Module AuthorizationManagement.models=AuthorizationManagement.models-module.html,Module dashboard.models=dashboard.models-module.html,Module heron_upload.models=heron_upload.models-module.html,Module heron_wps.models=heron_wps.models-module.html,Module vfwheron.models=vfwheron.models-module.html,Module wps_workflow.models=wps_workflow.models-module.html"><a title="AuthorizationManagement.models
+dashboard.models
+heron_upload.models
+heron_wps.models
+vfwheron.models
+wps_workflow.models" class="py-name" href="#" onclick="return doclink('link-1', 'models', 'link-1');">models</a></tt> <tt class="py-keyword">import</tt> <tt id="link-2" class="py-name" targets="Class dashboard.models.WebProcessingService=dashboard.models.WebProcessingService-class.html,Class heron_wps.models.WebProcessingService=heron_wps.models.WebProcessingService-class.html"><a title="dashboard.models.WebProcessingService
+heron_wps.models.WebProcessingService" class="py-name" href="#" onclick="return doclink('link-2', 'WebProcessingService', 'link-2');">WebProcessingService</a></tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-op">.</tt><tt class="py-keyword">import</tt> <tt id="link-3" class="py-name"><a title="AuthorizationManagement.models
+dashboard.models
+heron_upload.models
+heron_wps.models
+vfwheron.models
+wps_workflow.models" class="py-name" href="#" onclick="return doclink('link-3', 'models', 'link-1');">models</a></tt> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name" targets="Module AuthorizationManagement.forms=AuthorizationManagement.forms-module.html,Module heron_upload.forms=heron_upload.forms-module.html,Module heron_wps.forms=heron_wps.forms-module.html"><a title="AuthorizationManagement.forms
+heron_upload.forms
+heron_wps.forms" class="py-name" href="#" onclick="return doclink('link-4', 'forms', 'link-4');">forms</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">ModelForm</tt><tt class="py-op">,</tt> <tt class="py-name">PasswordInput</tt> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"> </tt>
+<a name="WebProcessingServiceForm"></a><div id="WebProcessingServiceForm-def"><a name="L7"></a><tt class="py-lineno"> 7</tt> <a class="py-toggle" href="#" id="WebProcessingServiceForm-toggle" onclick="return toggle('WebProcessingServiceForm');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="heron_wps.admin.WebProcessingServiceForm-class.html">WebProcessingServiceForm</a><tt class="py-op">(</tt><tt class="py-base-class">ModelForm</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="WebProcessingServiceForm-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="WebProcessingServiceForm-expanded"><a name="WebProcessingServiceForm.Meta"></a><div id="WebProcessingServiceForm.Meta-def"><a name="L8"></a><tt class="py-lineno"> 8</tt> <a class="py-toggle" href="#" id="WebProcessingServiceForm.Meta-toggle" onclick="return toggle('WebProcessingServiceForm.Meta');">-</a><tt class="py-line">    <tt class="py-keyword">class</tt> <a class="py-def-name" href="heron_wps.admin.WebProcessingServiceForm.Meta-class.html">Meta</a><tt class="py-op">:</tt> </tt>
+</div><div id="WebProcessingServiceForm.Meta-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="WebProcessingServiceForm.Meta-expanded"><a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line">        <tt id="link-5" class="py-name" targets="Variable AuthorizationManagement.forms.AddNewResourceForm.Meta.model=AuthorizationManagement.forms.AddNewResourceForm.Meta-class.html#model,Variable AuthorizationManagement.views.HomeView.model=AuthorizationManagement.views.HomeView-class.html#model,Variable AuthorizationManagement.views.MyResourcesView.model=AuthorizationManagement.views.MyResourcesView-class.html#model,Variable AuthorizationManagement.views.PermissionEditingView.model=AuthorizationManagement.views.PermissionEditingView-class.html#model,Variable AuthorizationManagement.views.ProfileView.model=AuthorizationManagement.views.ProfileView-class.html#model,Variable AuthorizationManagement.views.ResourcesOverview.model=AuthorizationManagement.views.ResourcesOverview-class.html#model,Variable heron_upload.forms.UploadForm.Meta.model=heron_upload.forms.UploadForm.Meta-class.html#model,Variable heron_wps.admin.WebProcessingServiceForm.Meta.model=heron_wps.admin.WebProcessingServiceForm.Meta-class.html#model,Variable wps_workflow.admin.EdgeAdmin.Meta.model=wps_workflow.admin.EdgeAdmin.Meta-class.html#model,Variable wps_workflow.admin.TaskAdmin.Meta.model=wps_workflow.admin.TaskAdmin.Meta-class.html#model,Variable wps_workflow.admin.TaskInline.model=wps_workflow.admin.TaskInline-class.html#model,Variable wps_workflow.admin.WorkflowAdmin.Meta.model=wps_workflow.admin.WorkflowAdmin.Meta-class.html#model"><a title="AuthorizationManagement.forms.AddNewResourceForm.Meta.model
+AuthorizationManagement.views.HomeView.model
+AuthorizationManagement.views.MyResourcesView.model
+AuthorizationManagement.views.PermissionEditingView.model
+AuthorizationManagement.views.ProfileView.model
+AuthorizationManagement.views.ResourcesOverview.model
+heron_upload.forms.UploadForm.Meta.model
+heron_wps.admin.WebProcessingServiceForm.Meta.model
+wps_workflow.admin.EdgeAdmin.Meta.model
+wps_workflow.admin.TaskAdmin.Meta.model
+wps_workflow.admin.TaskInline.model
+wps_workflow.admin.WorkflowAdmin.Meta.model" class="py-name" href="#" onclick="return doclink('link-5', 'model', 'link-5');">model</a></tt> <tt class="py-op">=</tt> <tt id="link-6" class="py-name"><a title="dashboard.models.WebProcessingService
+heron_wps.models.WebProcessingService" class="py-name" href="#" onclick="return doclink('link-6', 'WebProcessingService', 'link-2');">WebProcessingService</a></tt> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line">        <tt id="link-7" class="py-name" targets="Variable AuthorizationManagement.forms.AddNewResourceForm.Meta.fields=AuthorizationManagement.forms.AddNewResourceForm.Meta-class.html#fields,Variable heron_upload.forms.UploadForm.Meta.fields=heron_upload.forms.UploadForm.Meta-class.html#fields,Variable heron_wps.admin.WebProcessingServiceForm.Meta.fields=heron_wps.admin.WebProcessingServiceForm.Meta-class.html#fields,Variable vfwheron.admin.LtLicenseAdminForm.Meta.fields=vfwheron.admin.LtLicenseAdminForm.Meta-class.html#fields,Variable vfwheron.admin.LtUserAdminForm.Meta.fields=vfwheron.admin.LtUserAdminForm.Meta-class.html#fields,Variable vfwheron.admin.TblMetaAdminForm.Meta.fields=vfwheron.admin.TblMetaAdminForm.Meta-class.html#fields,Variable vfwheron.admin.TblVariableAdminForm.Meta.fields=vfwheron.admin.TblVariableAdminForm.Meta-class.html#fields"><a title="AuthorizationManagement.forms.AddNewResourceForm.Meta.fields
+heron_upload.forms.UploadForm.Meta.fields
+heron_wps.admin.WebProcessingServiceForm.Meta.fields
+vfwheron.admin.LtLicenseAdminForm.Meta.fields
+vfwheron.admin.LtUserAdminForm.Meta.fields
+vfwheron.admin.TblMetaAdminForm.Meta.fields
+vfwheron.admin.TblVariableAdminForm.Meta.fields" class="py-name" href="#" onclick="return doclink('link-7', 'fields', 'link-7');">fields</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-string">'name'</tt><tt class="py-op">,</tt> <tt class="py-string">'endpoint'</tt><tt class="py-op">,</tt> <tt class="py-string">'username'</tt><tt class="py-op">,</tt> <tt class="py-string">'password'</tt><tt class="py-op">]</tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line">        <tt id="link-8" class="py-name" targets="Variable heron_wps.admin.WebProcessingServiceForm.Meta.widgets=heron_wps.admin.WebProcessingServiceForm.Meta-class.html#widgets"><a title="heron_wps.admin.WebProcessingServiceForm.Meta.widgets" class="py-name" href="#" onclick="return doclink('link-8', 'widgets', 'link-8');">widgets</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line">            <tt class="py-string">'password'</tt><tt class="py-op">:</tt> <tt class="py-name">PasswordInput</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line">        <tt class="py-op">}</tt> </tt>
+</div></div><a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"> </tt>
+<a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line"> </tt>
+<a name="WebProcessingServiceAdmin"></a><div id="WebProcessingServiceAdmin-def"><a name="L16"></a><tt class="py-lineno">16</tt> <a class="py-toggle" href="#" id="WebProcessingServiceAdmin-toggle" onclick="return toggle('WebProcessingServiceAdmin');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="heron_wps.admin.WebProcessingServiceAdmin-class.html">WebProcessingServiceAdmin</a><tt class="py-op">(</tt><tt class="py-base-class">admin</tt><tt class="py-op">.</tt><tt class="py-base-class">ModelAdmin</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="WebProcessingServiceAdmin-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="WebProcessingServiceAdmin-expanded"><a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line"><tt class="py-docstring">    Admin model for Web Processing Service Model</tt> </tt>
+<a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line">    <tt class="py-name">form</tt> <tt class="py-op">=</tt> <tt id="link-9" class="py-name" targets="Class heron_wps.admin.WebProcessingServiceForm=heron_wps.admin.WebProcessingServiceForm-class.html"><a title="heron_wps.admin.WebProcessingServiceForm" class="py-name" href="#" onclick="return doclink('link-9', 'WebProcessingServiceForm', 'link-9');">WebProcessingServiceForm</a></tt> </tt>
+<a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line">    <tt id="link-10" class="py-name" targets="Variable AuthorizationManagement.admin.ResourceAdmin.list_display=AuthorizationManagement.admin.ResourceAdmin-class.html#list_display,Variable AuthorizationManagement.admin.UserAdmin.list_display=AuthorizationManagement.admin.UserAdmin-class.html#list_display,Variable heron_wps.admin.WebProcessingServiceAdmin.list_display=heron_wps.admin.WebProcessingServiceAdmin-class.html#list_display,Variable vfwheron.admin.LtLicenseAdmin.list_display=vfwheron.admin.LtLicenseAdmin-class.html#list_display,Variable vfwheron.admin.LtUserAdmin.list_display=vfwheron.admin.LtUserAdmin-class.html#list_display,Variable vfwheron.admin.TblMetaAdmin.list_display=vfwheron.admin.TblMetaAdmin-class.html#list_display,Variable vfwheron.admin.TblVariableAdmin.list_display=vfwheron.admin.TblVariableAdmin-class.html#list_display,Variable wps_workflow.admin.TaskAdmin.list_display=wps_workflow.admin.TaskAdmin-class.html#list_display,Variable wps_workflow.admin.WorkflowAdmin.list_display=wps_workflow.admin.WorkflowAdmin-class.html#list_display"><a title="AuthorizationManagement.admin.ResourceAdmin.list_display
+AuthorizationManagement.admin.UserAdmin.list_display
+heron_wps.admin.WebProcessingServiceAdmin.list_display
+vfwheron.admin.LtLicenseAdmin.list_display
+vfwheron.admin.LtUserAdmin.list_display
+vfwheron.admin.TblMetaAdmin.list_display
+vfwheron.admin.TblVariableAdmin.list_display
+wps_workflow.admin.TaskAdmin.list_display
+wps_workflow.admin.WorkflowAdmin.list_display" class="py-name" href="#" onclick="return doclink('link-10', 'list_display', 'link-10');">list_display</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-string">'name'</tt><tt class="py-op">,</tt> <tt class="py-string">'endpoint'</tt><tt class="py-op">,</tt> <tt class="py-string">'username'</tt><tt class="py-op">]</tt> </tt>
+</div><a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line"> </tt>
+<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line"> </tt>
+<a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line"> </tt>
+<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line"><tt id="link-11" class="py-name"><a title="AuthorizationManagement.admin
+dashboard.admin
+heron_wps.admin
+vfwheron.admin
+wps_workflow.admin" class="py-name" href="#" onclick="return doclink('link-11', 'admin', 'link-0');">admin</a></tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Variable vfwheron.models.TblMeta.site=vfwheron.models.TblMeta-class.html#site"><a title="vfwheron.models.TblMeta.site" class="py-name" href="#" onclick="return doclink('link-12', 'site', 'link-12');">site</a></tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Variable heron_wps.templatetags_unused.tethys_wps.register=heron_wps.templatetags_unused.tethys_wps-module.html#register,Variable vfwheron.templatetags.markdown_filter.register=vfwheron.templatetags.markdown_filter-module.html#register"><a title="heron_wps.templatetags_unused.tethys_wps.register
+vfwheron.templatetags.markdown_filter.register" class="py-name" href="#" onclick="return doclink('link-13', 'register', 'link-13');">register</a></tt><tt class="py-op">(</tt><tt id="link-14" class="py-name"><a title="AuthorizationManagement.models
+dashboard.models
+heron_upload.models
+heron_wps.models
+vfwheron.models
+wps_workflow.models" class="py-name" href="#" onclick="return doclink('link-14', 'models', 'link-1');">models</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="dashboard.models.WebProcessingService
+heron_wps.models.WebProcessingService" class="py-name" href="#" onclick="return doclink('link-15', 'WebProcessingService', 'link-2');">WebProcessingService</a></tt><tt class="py-op">,</tt> <tt id="link-16" class="py-name" targets="Class heron_wps.admin.WebProcessingServiceAdmin=heron_wps.admin.WebProcessingServiceAdmin-class.html"><a title="heron_wps.admin.WebProcessingServiceAdmin" class="py-name" href="#" onclick="return doclink('link-16', 'WebProcessingServiceAdmin', 'link-16');">WebProcessingServiceAdmin</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:34 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

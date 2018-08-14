@@ -18,3 +18,23 @@ a.respo-hover-blue{padding: 0px}
 #filterbox, #select_catchment {display: none;}
 /*.respo-dropdown-hover {.respo-navbar {overflow: visible }}*/
 .respo-dropdown-content {min-width: 200px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
+
+/*style for a spinning wheel during load*/
+.loader {
+  border: 16px solid #00BAEE;
+  border-radius: 50%;
+  border-top: 16px solid #AADDF9;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.input.DependencyGraphNode</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.input-module.html">Module&nbsp;input</a> ::
+        Class&nbsp;DependencyGraphNode
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.input.DependencyGraphNode-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class DependencyGraphNode</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_inpu" name="uml_class_diagram_for_gyp_inpu">
+<area shape="rect" id="node1_10" href="gyp.input.DependencyGraphNode.CircularException-class.html" title="gyp.input.DependencyGraphNode.CircularException" alt="" coords="17,30,420,50"/>
+<area shape="rect" id="node1_11" href="gyp.input.DependencyGraphNode-class.html#__init__" title="x.__init__(...) initializes x; see help(type(x)) for signature" alt="" coords="17,53,420,73"/>
+<area shape="rect" id="node1_12" href="gyp.input.DependencyGraphNode-class.html#__repr__" title="repr(x)" alt="" coords="17,73,420,93"/>
+<area shape="rect" id="node1_13" href="gyp.input.DependencyGraphNode-class.html#FlattenToList" title="gyp.input.DependencyGraphNode.FlattenToList" alt="" coords="17,93,420,113"/>
+<area shape="rect" id="node1_14" href="gyp.input.DependencyGraphNode-class.html#FindCycles" title="Returns a list of cycles in the graph, where each cycle is its own list." alt="" coords="17,113,420,133"/>
+<area shape="rect" id="node1_15" href="gyp.input.DependencyGraphNode-class.html#DirectDependencies" title="Returns a list of just direct dependencies." alt="" coords="17,133,420,153"/>
+<area shape="rect" id="node1_16" href="gyp.input.DependencyGraphNode-class.html#DirectAndImportedDependencies" title="Returns a list of a target&#39;s direct dependencies and all indirect &#160;dependencies that a dependency has advertised settings should be exported &#160;through the dependency for." alt="" coords="17,153,420,173"/>
+<area shape="rect" id="node1_17" href="gyp.input.DependencyGraphNode-class.html#DeepDependencies" title="Returns an OrderedSet of all of a target&#39;s dependencies, recursively." alt="" coords="17,173,420,193"/>
+<area shape="rect" id="node1_18" href="gyp.input.DependencyGraphNode-class.html#DependenciesForLinkSettings" title="Returns a list of dependency targets whose link_settings should be merged &#160;into this target." alt="" coords="17,193,420,213"/>
+<area shape="rect" id="node1_19" href="gyp.input.DependencyGraphNode-class.html#DependenciesToLinkAgainst" title="Returns a list of dependency targets that are linked into this target." alt="" coords="17,213,420,233"/>
+<area shape="rect" id="node1" href="gyp.input.DependencyGraphNode-class.html" title="Attributes: ref: A reference to an object that this DependencyGraphNode represents." alt="" coords="5,5,432,239"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_inpu.gif" alt='' usemap="#uml_class_diagram_for_gyp_inpu" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<pre class="literalblock">
+
+
+Attributes:
+  ref: A reference to an object that this DependencyGraphNode represents.
+  dependencies: List of DependencyGraphNodes on which this one depends.
+  dependents: List of DependencyGraphNodes that depend on this one.
+
+</pre>
+
+<!-- ==================== NESTED CLASSES ==================== -->
+<a name="section-NestedClasses"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Nested Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-NestedClasses"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.input.DependencyGraphNode.CircularException-class.html" class="summary-name">CircularException</a>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.input.DependencyGraphNode-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ref</span>)</span><br />
+      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.input.DependencyGraphNode-class.html#__repr__" class="summary-sig-name">__repr__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      repr(x)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.__repr__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="FlattenToList"></a><span class="summary-sig-name">FlattenToList</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.FlattenToList">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="FindCycles"></a><span class="summary-sig-name">FindCycles</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns a list of cycles in the graph, where each cycle is its own 
+      list.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.FindCycles">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="DirectDependencies"></a><span class="summary-sig-name">DirectDependencies</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dependencies</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns a list of just direct dependencies.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.DirectDependencies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.input.DependencyGraphNode-class.html#_AddImportedDependencies" class="summary-sig-name" onclick="show_private();">_AddImportedDependencies</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">targets</span>,
+        <span class="summary-sig-arg">dependencies</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Given a list of direct dependencies, adds indirect dependencies that 
+      other dependencies have declared to export their settings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode._AddImportedDependencies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="DirectAndImportedDependencies"></a><span class="summary-sig-name">DirectAndImportedDependencies</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">targets</span>,
+        <span class="summary-sig-arg">dependencies</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns a list of a target's direct dependencies and all indirect 
+      dependencies that a dependency has advertised settings should be 
+      exported through the dependency for.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.DirectAndImportedDependencies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="DeepDependencies"></a><span class="summary-sig-name">DeepDependencies</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dependencies</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns an OrderedSet of all of a target's dependencies, recursively.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.DeepDependencies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.input.DependencyGraphNode-class.html#_LinkDependenciesInternal" class="summary-sig-name" onclick="show_private();">_LinkDependenciesInternal</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">targets</span>,
+        <span class="summary-sig-arg">include_shared_libraries</span>,
+        <span class="summary-sig-arg">dependencies</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">initial</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Returns an OrderedSet of dependency targets that are linked into this
+      target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode._LinkDependenciesInternal">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="DependenciesForLinkSettings"></a><span class="summary-sig-name">DependenciesForLinkSettings</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">targets</span>)</span><br />
+      Returns a list of dependency targets whose link_settings should be 
+      merged into this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.DependenciesForLinkSettings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="DependenciesToLinkAgainst"></a><span class="summary-sig-name">DependenciesToLinkAgainst</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">targets</span>)</span><br />
+      Returns a list of dependency targets that are linked into this 
+      target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.DependenciesToLinkAgainst">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ref</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="__repr__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__repr__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Representation operator)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode.__repr__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>repr(x)</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__repr__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_AddImportedDependencies"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_AddImportedDependencies</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">targets</span>,
+        <span class="sig-arg">dependencies</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode._AddImportedDependencies">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Given a list of direct dependencies, adds indirect dependencies that 
+  other dependencies have declared to export their settings.</p>
+  <p>This method does not operate on self.  Rather, it operates on the list
+  of dependencies in the |dependencies| argument.  For each dependency in 
+  that list, if any declares that it exports the settings of one of its own
+  dependencies, those dependencies whose settings are &quot;passed 
+  through&quot; are added to the list.  As new items are added to the list,
+  they too will be processed, so it is possible to import settings through 
+  multiple levels of dependencies.</p>
+  <p>This method is not terribly useful on its own, it depends on being 
+  &quot;primed&quot; with a list of direct dependencies such as one 
+  provided by DirectDependencies.  DirectAndImportedDependencies is 
+  intended to be the public entry point.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_LinkDependenciesInternal"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_LinkDependenciesInternal</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">targets</span>,
+        <span class="sig-arg">include_shared_libraries</span>,
+        <span class="sig-arg">dependencies</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">initial</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.input-pysrc.html#DependencyGraphNode._LinkDependenciesInternal">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns an OrderedSet of dependency targets that are linked into this 
+  target.</p>
+  <p>This function has a split personality, depending on the setting of 
+  |initial|.  Outside callers should always leave |initial| at its default 
+  setting.</p>
+  <p>When adding a target to the list of dependencies, this function will 
+  recurse into itself with |initial| set to False, to collect dependencies 
+  that are linked into the linkable target for which the list is being 
+  built.</p>
+  <p>If |include_shared_libraries| is False, the resulting dependencies 
+  will not include shared_library targets that are linked into this 
+  target.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:29 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

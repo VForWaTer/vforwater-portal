@@ -1,0 +1,58 @@
+:host {
+    display: block;
+    position: relative;
+}
+.content {
+    width: 40vw;
+}
+.badges {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+}
+
+.badge {
+    float: right;
+    padding: 3px 5px;
+    border: solid 1px #385160;
+    border-radius: 3px;
+    font-size: 13px;
+    text-transform: uppercase;
+    margin: 3px;
+}
+
+.abstract {
+    color: #595959;
+}
+
+.data-field {
+    width: calc(100% - 16px);
+    background: #F9F9F9;
+    border-radius: 3px;
+    padding: 8px;
+}
+
+.type-container {
+    margin: 3px 0 21px 0;
+}
+.subtitle {
+    line-height: 40px;
+    font-weight: bold;
+    color: #595959;
+}
+
+.data-field-small {
+    width: calc(50% - 21px);
+    background: #F9F9F9;
+    border-radius: 3px;
+    padding: 8px;
+    margin: 2px 0;
+}
+
+.output {
+    width: calc(100% - 16px);
+    background: #F9F9F9;
+    border-radius: 3px;
+    padding: 8px;
+    overflow: scroll;
+}

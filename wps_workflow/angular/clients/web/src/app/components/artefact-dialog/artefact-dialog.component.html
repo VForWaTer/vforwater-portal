@@ -1,0 +1,62 @@
+<h2 mat-dialog-title> {{ parameter.title }}</h2>
+
+<div class="badges" *ngIf="parameter">
+  <span class="badge">{{ parameter.role }}</span>
+  <span *ngIf="getTypeInfo(parameter.type); let info" class="badge" [style.color]="info[1]" [style.borderColor]="info[1]">{{ info[0] }}</span>
+</div>
+
+<mat-dialog-content *ngIf="parameter" class="content">
+  <!-- INPUT -->
+  <div *ngIf="parameter.role === 'input'" class="type-container" [ngSwitch]="parameter.type">
+    <p class="abstract" *ngIf="parameter.abstract">{{ parameter.abstract }}</p>
+
+    <div [style.display]="editMode ? 'block' : 'none'">
+      <!-- Literal Input -->
+      <ng-container *ngSwitchCase="0">
+        <mat-form-field class="data-field">
+          <input type="text" matInput [(ngModel)]="data.value" placeholder="Input Value">
+          <mat-hint>Format: {{ data.format | uppercase }}</mat-hint>
+        </mat-form-field>
+      </ng-container>
+
+      <!-- Compley Input -->
+      <ng-container *ngSwitchCase="1">
+        <mat-form-field class="data-field">
+          <textarea matInput [(ngModel)]="data.value" placeholder="Input Data" matTextareaAutosize matAutosizeMinRows="5"></textarea>
+        </mat-form-field>
+      </ng-container>
+
+      <!-- Bounding Box Input -->
+      <ng-container *ngSwitchCase="2">
+        <mat-form-field class="data-field-small">
+          <input matInput [(ngModel)]="data.ux" placeholder="UpperCorner X" type="number">
+        </mat-form-field>
+        <mat-form-field class="data-field-small">
+          <input matInput [(ngModel)]="data.uy" placeholder="UpperCorner Y" type="number">
+        </mat-form-field>
+        <mat-form-field class="data-field-small">
+          <input matInput [(ngModel)]="data.lx" placeholder="LowerCorner X" type="number">
+        </mat-form-field>
+        <mat-form-field class="data-field-small">
+          <input matInput [(ngModel)]="data.ly" placeholder="LowerCorner Y" type="number">
+        </mat-form-field>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div *ngIf="parameter.role === 'output'" class="type-container">
+
+    <pre class="output">{{ this.data.value }}</pre>
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions fxLayout="row" fxLayoutAlign="end">
+  <button mat-button mat-dialog-close i18n="@@close">Close</button>
+
+  <ng-container *ngIf="parameter.role === 'input'">
+    <button *ngIf="deletable" mat-button (click)="remove()" i18n="@@delete" color="warn">DELETE</button>
+    <button mat-raised-button (click)="save()" i18n="@@save" color="primary" [disabled]="!valid">SAVE</button>
+  </ng-container>
+</mat-dialog-actions>

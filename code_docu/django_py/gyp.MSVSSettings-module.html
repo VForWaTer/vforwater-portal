@@ -1,0 +1,1256 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.MSVSSettings</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        Module&nbsp;MSVSSettings
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.MSVSSettings-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module MSVSSettings</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html">source&nbsp;code</a></span></p>
+<p>Code to validate and convert settings of the Microsoft build 
+  tools.</p>
+  <p>This file contains code to validate and convert settings of the 
+  Microsoft build tools.  The function ConvertToMSBuildSettings(), 
+  ValidateMSVSSettings(), and ValidateMSBuildSettings() are the entry 
+  points.</p>
+  <p>This file was created by comparing the projects created by Visual 
+  Studio 2008 and Visual Studio 2010 for all available settings through the
+  user interface. The MSBuild schemas were also considered.  They are 
+  typically found in the MSBuild install directory, e.g. c:\Program Files 
+  (x86)\MSBuild</p>
+
+<!-- ==================== CLASSES ==================== -->
+<a name="section-Classes"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Classes"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings._Tool-class.html" class="summary-name" onclick="show_private();">_Tool</a><br />
+      Represents a tool used by MSVS or MSBuild.
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings._Type-class.html" class="summary-name" onclick="show_private();">_Type</a><br />
+      Type of settings (Base class).
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings._String-class.html" class="summary-name" onclick="show_private();">_String</a><br />
+      A setting that's just a string.
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings._StringList-class.html" class="summary-name" onclick="show_private();">_StringList</a><br />
+      A settings that's a list of strings.
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings._Boolean-class.html" class="summary-name" onclick="show_private();">_Boolean</a><br />
+      Boolean settings, can have the values 'false' or 'true'.
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings._Integer-class.html" class="summary-name" onclick="show_private();">_Integer</a><br />
+      Integer settings.
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings._Enumeration-class.html" class="summary-name" onclick="show_private();">_Enumeration</a><br />
+      Type of settings that is an enumeration.
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_AddTool" class="summary-sig-name" onclick="show_private();">_AddTool</a>(<span class="summary-sig-arg">tool</span>)</span><br />
+      Adds a tool to the four dictionaries used to process settings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_AddTool">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_GetMSBuildToolSettings" class="summary-sig-name" onclick="show_private();">_GetMSBuildToolSettings</a>(<span class="summary-sig-arg">msbuild_settings</span>,
+        <span class="summary-sig-arg">tool</span>)</span><br />
+      Returns an MSBuild tool dictionary.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_GetMSBuildToolSettings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_Same" class="summary-sig-name" onclick="show_private();">_Same</a>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">setting_type</span>)</span><br />
+      Defines a setting that has the same name in MSVS and MSBuild.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_Same">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_Renamed" class="summary-sig-name" onclick="show_private();">_Renamed</a>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">msvs_name</span>,
+        <span class="summary-sig-arg">msbuild_name</span>,
+        <span class="summary-sig-arg">setting_type</span>)</span><br />
+      Defines a setting for which the name has changed.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_Renamed">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_Moved"></a><span class="summary-sig-name">_Moved</span>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">settings_name</span>,
+        <span class="summary-sig-arg">msbuild_tool_name</span>,
+        <span class="summary-sig-arg">setting_type</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_Moved">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_MovedAndRenamed" class="summary-sig-name" onclick="show_private();">_MovedAndRenamed</a>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">msvs_settings_name</span>,
+        <span class="summary-sig-arg">msbuild_tool_name</span>,
+        <span class="summary-sig-arg">msbuild_settings_name</span>,
+        <span class="summary-sig-arg">setting_type</span>)</span><br />
+      Defines a setting that may have moved to a new section.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_MovedAndRenamed">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_MSVSOnly" class="summary-sig-name" onclick="show_private();">_MSVSOnly</a>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">setting_type</span>)</span><br />
+      Defines a setting that is only found in MSVS.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_MSVSOnly">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_MSBuildOnly" class="summary-sig-name" onclick="show_private();">_MSBuildOnly</a>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">setting_type</span>)</span><br />
+      Defines a setting that is only found in MSBuild.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_MSBuildOnly">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_ConvertedToAdditionalOption" class="summary-sig-name" onclick="show_private();">_ConvertedToAdditionalOption</a>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">msvs_name</span>,
+        <span class="summary-sig-arg">flag</span>)</span><br />
+      Defines a setting that's handled via a command line option in MSBuild.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_ConvertedToAdditionalOption">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_CustomGeneratePreprocessedFile"></a><span class="summary-sig-name">_CustomGeneratePreprocessedFile</span>(<span class="summary-sig-arg">tool</span>,
+        <span class="summary-sig-arg">msvs_name</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_CustomGeneratePreprocessedFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_ValidateExclusionSetting" class="summary-sig-name" onclick="show_private();">_ValidateExclusionSetting</a>(<span class="summary-sig-arg">setting</span>,
+        <span class="summary-sig-arg">settings</span>,
+        <span class="summary-sig-arg">error_msg</span>,
+        <span class="summary-sig-arg">stderr</span>=<span class="summary-sig-default">sys.stderr</span>)</span><br />
+      Verify that 'setting' is valid if it is generated from an exclusion list.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_ValidateExclusionSetting">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#FixVCMacroSlashes" class="summary-sig-name">FixVCMacroSlashes</a>(<span class="summary-sig-arg">s</span>)</span><br />
+      Replace macros which have excessive following slashes.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#FixVCMacroSlashes">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#ConvertVCMacrosToMSBuild" class="summary-sig-name">ConvertVCMacrosToMSBuild</a>(<span class="summary-sig-arg">s</span>)</span><br />
+      Convert the the MSVS macros found in the string to the MSBuild 
+      equivalent.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ConvertVCMacrosToMSBuild">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#ConvertToMSBuildSettings" class="summary-sig-name">ConvertToMSBuildSettings</a>(<span class="summary-sig-arg">msvs_settings</span>,
+        <span class="summary-sig-arg">stderr</span>=<span class="summary-sig-default">sys.stderr</span>)</span><br />
+      Converts MSVS settings (VS2008 and earlier) to MSBuild settings (VS2010+).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ConvertToMSBuildSettings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#ValidateMSVSSettings" class="summary-sig-name">ValidateMSVSSettings</a>(<span class="summary-sig-arg">settings</span>,
+        <span class="summary-sig-arg">stderr</span>=<span class="summary-sig-default">sys.stderr</span>)</span><br />
+      Validates that the names of the settings are valid for MSVS.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ValidateMSVSSettings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#ValidateMSBuildSettings" class="summary-sig-name">ValidateMSBuildSettings</a>(<span class="summary-sig-arg">settings</span>,
+        <span class="summary-sig-arg">stderr</span>=<span class="summary-sig-default">sys.stderr</span>)</span><br />
+      Validates that the names of the settings are valid for MSBuild.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ValidateMSBuildSettings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.MSVSSettings-module.html#_ValidateSettings" class="summary-sig-name" onclick="show_private();">_ValidateSettings</a>(<span class="summary-sig-arg">validators</span>,
+        <span class="summary-sig-arg">settings</span>,
+        <span class="summary-sig-arg">stderr</span>)</span><br />
+      Validates that the settings are valid for MSBuild or MSVS.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_ValidateSettings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_msvs_validators"></a><span class="summary-name">_msvs_validators</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_msbuild_validators"></a><span class="summary-name">_msbuild_validators</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_msvs_to_msbuild_converters"></a><span class="summary-name">_msvs_to_msbuild_converters</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_msbuild_name_of_tool"></a><span class="summary-name">_msbuild_name_of_tool</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_boolean"></a><span class="summary-name">_boolean</span> = <code title="_Boolean()">_Boolean()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_integer"></a><span class="summary-name">_integer</span> = <code title="_Integer()">_Integer()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_string"></a><span class="summary-name">_string</span> = <code title="_String()">_String()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_file_name"></a><span class="summary-name">_file_name</span> = <code title="_String()">_String()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_folder_name"></a><span class="summary-name">_folder_name</span> = <code title="_String()">_String()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_file_list"></a><span class="summary-name">_file_list</span> = <code title="_StringList()">_StringList()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_folder_list"></a><span class="summary-name">_folder_list</span> = <code title="_StringList()">_StringList()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_string_list"></a><span class="summary-name">_string_list</span> = <code title="_StringList()">_StringList()</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_newly_boolean"></a><span class="summary-name">_newly_boolean</span> = <code title="_Enumeration(['', 'false', 'true'])">_Enumeration(['', 'false', 'true'])</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="fix_vc_macro_slashes_regex_list"></a><span class="summary-name">fix_vc_macro_slashes_regex_list</span> = <code title="'IntDir', 'OutDir'">'IntDir', 'OutDir'</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings-module.html#fix_vc_macro_slashes_regex" class="summary-name">fix_vc_macro_slashes_regex</a> = <code title="re.compile(r'(\$\((?:%s)\))(?:[\\/]+)' % &quot;|&quot;.join(fix_vc_macro_slashes\
+_regex_list))">re.compile(r'(\$\((?:%s)\))(?:[\\<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_EXCLUDED_SUFFIX_RE"></a><span class="summary-name">_EXCLUDED_SUFFIX_RE</span> = <code title="re.compile('^(.*)_excluded$')">re.compile('^(.*)_excluded$')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_compile"></a><span class="summary-name">_compile</span> = <code title="_Tool('VCCLCompilerTool', 'ClCompile')">_Tool('VCCLCompilerTool', 'ClCompile')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_link"></a><span class="summary-name">_link</span> = <code title="_Tool('VCLinkerTool', 'Link')">_Tool('VCLinkerTool', 'Link')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_midl"></a><span class="summary-name">_midl</span> = <code title="_Tool('VCMIDLTool', 'Midl')">_Tool('VCMIDLTool', 'Midl')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_rc"></a><span class="summary-name">_rc</span> = <code title="_Tool('VCResourceCompilerTool', 'ResourceCompile')">_Tool('VCResourceCompilerTool', 'ResourceCompile')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_lib"></a><span class="summary-name">_lib</span> = <code title="_Tool('VCLibrarianTool', 'Lib')">_Tool('VCLibrarianTool', 'Lib')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_manifest"></a><span class="summary-name">_manifest</span> = <code title="_Tool('VCManifestTool', 'Manifest')">_Tool('VCManifestTool', 'Manifest')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_masm"></a><span class="summary-name">_masm</span> = <code title="_Tool('MASM', 'MASM')">_Tool('MASM', 'MASM')</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings-module.html#_subsystem_enumeration" class="summary-name" onclick="show_private();">_subsystem_enumeration</a> = <code title="_Enumeration(['NotSet', 'Console', 'Windows', 'Native', 'EFI Applicati\
+on', 'EFI Boot Service Driver', 'EFI ROM', 'EFI Runtime', 'WindowsCE']\
+, new= ['POSIX'])">_Enumeration(['NotSet', 'Console', 'W<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.MSVSSettings-module.html#_target_machine_enumeration" class="summary-name" onclick="show_private();">_target_machine_enumeration</a> = <code title="_Enumeration(['NotSet', 'MachineX86', None, 'MachineARM', 'MachineEBC'\
+, 'MachineIA64', None, 'MachineMIPS', 'MachineMIPS16', 'MachineMIPSFPU\
+', 'MachineMIPSFPU16', None, None, None, 'MachineSH4', None, 'MachineT\
+HUMB', 'MachineX64'])">_Enumeration(['NotSet', 'Machine<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+</table>
+<p class="indent-wrapped-lines"><b>Imports:</b>
+  <span title="sys">sys</span>,
+  <span title="re">re</span>
+</p><br />
+<!-- ==================== FUNCTION DETAILS ==================== -->
+<a name="section-FunctionDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Function Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-FunctionDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="_AddTool"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_AddTool</span>(<span class="sig-arg">tool</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_AddTool">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Adds a tool to the four dictionaries used to process settings.
+
+This only defines the tool.  Each setting also needs to be added.
+
+Args:
+  tool: The _Tool object to be added.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetMSBuildToolSettings"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetMSBuildToolSettings</span>(<span class="sig-arg">msbuild_settings</span>,
+        <span class="sig-arg">tool</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_GetMSBuildToolSettings">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns an MSBuild tool dictionary.  Creates it if needed.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_Same"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_Same</span>(<span class="sig-arg">tool</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">setting_type</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_Same">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Defines a setting that has the same name in MSVS and MSBuild.
+
+Args:
+  tool: a dictionary that gives the names of the tool for MSVS and MSBuild.
+  name: the name of the setting.
+  setting_type: the type of this setting.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_Renamed"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_Renamed</span>(<span class="sig-arg">tool</span>,
+        <span class="sig-arg">msvs_name</span>,
+        <span class="sig-arg">msbuild_name</span>,
+        <span class="sig-arg">setting_type</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_Renamed">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Defines a setting for which the name has changed.
+
+Args:
+  tool: a dictionary that gives the names of the tool for MSVS and MSBuild.
+  msvs_name: the name of the MSVS setting.
+  msbuild_name: the name of the MSBuild setting.
+  setting_type: the type of this setting.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_MovedAndRenamed"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_MovedAndRenamed</span>(<span class="sig-arg">tool</span>,
+        <span class="sig-arg">msvs_settings_name</span>,
+        <span class="sig-arg">msbuild_tool_name</span>,
+        <span class="sig-arg">msbuild_settings_name</span>,
+        <span class="sig-arg">setting_type</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_MovedAndRenamed">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Defines a setting that may have moved to a new section.
+
+Args:
+  tool: a dictionary that gives the names of the tool for MSVS and MSBuild.
+  msvs_settings_name: the MSVS name of the setting.
+  msbuild_tool_name: the name of the MSBuild tool to place the setting under.
+  msbuild_settings_name: the MSBuild name of the setting.
+  setting_type: the type of this setting.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_MSVSOnly"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_MSVSOnly</span>(<span class="sig-arg">tool</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">setting_type</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_MSVSOnly">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Defines a setting that is only found in MSVS.
+
+Args:
+  tool: a dictionary that gives the names of the tool for MSVS and MSBuild.
+  name: the name of the setting.
+  setting_type: the type of this setting.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_MSBuildOnly"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_MSBuildOnly</span>(<span class="sig-arg">tool</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">setting_type</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_MSBuildOnly">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Defines a setting that is only found in MSBuild.
+
+Args:
+  tool: a dictionary that gives the names of the tool for MSVS and MSBuild.
+  name: the name of the setting.
+  setting_type: the type of this setting.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_ConvertedToAdditionalOption"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_ConvertedToAdditionalOption</span>(<span class="sig-arg">tool</span>,
+        <span class="sig-arg">msvs_name</span>,
+        <span class="sig-arg">flag</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_ConvertedToAdditionalOption">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Defines a setting that's handled via a command line option in MSBuild.
+
+Args:
+  tool: a dictionary that gives the names of the tool for MSVS and MSBuild.
+  msvs_name: the name of the MSVS setting that if 'true' becomes a flag
+  flag: the flag to insert at the end of the AdditionalOptions
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_ValidateExclusionSetting"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_ValidateExclusionSetting</span>(<span class="sig-arg">setting</span>,
+        <span class="sig-arg">settings</span>,
+        <span class="sig-arg">error_msg</span>,
+        <span class="sig-arg">stderr</span>=<span class="sig-default">sys.stderr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_ValidateExclusionSetting">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Verify that 'setting' is valid if it is generated from an exclusion list.
+
+If the setting appears to be generated from an exclusion list, the root name
+is checked.
+
+Args:
+    setting:   A string that is the setting name to validate
+    settings:  A dictionary where the keys are valid settings
+    error_msg: The message to emit in the event of error
+    stderr:    The stream receiving the error messages.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="FixVCMacroSlashes"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">FixVCMacroSlashes</span>(<span class="sig-arg">s</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#FixVCMacroSlashes">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Replace macros which have excessive following slashes.</p>
+  <p>These macros are known to have a built-in trailing slash. Furthermore,
+  many scripts hiccup on processing paths with extra slashes in the 
+  middle.</p>
+  <p>This list is probably not exhaustive.  Add as needed.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ConvertVCMacrosToMSBuild"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ConvertVCMacrosToMSBuild</span>(<span class="sig-arg">s</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ConvertVCMacrosToMSBuild">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Convert the the MSVS macros found in the string to the MSBuild 
+  equivalent.</p>
+  <p>This list is probably not exhaustive.  Add as needed.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ConvertToMSBuildSettings"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ConvertToMSBuildSettings</span>(<span class="sig-arg">msvs_settings</span>,
+        <span class="sig-arg">stderr</span>=<span class="sig-default">sys.stderr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ConvertToMSBuildSettings">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Converts MSVS settings (VS2008 and earlier) to MSBuild settings (VS2010+).
+
+Args:
+    msvs_settings: A dictionary.  The key is the tool name.  The values are
+        themselves dictionaries of settings and their values.
+    stderr: The stream receiving the error messages.
+
+Returns:
+    A dictionary of MSBuild settings.  The key is either the MSBuild tool name
+    or the empty string (for the global settings).  The values are themselves
+    dictionaries of settings and their values.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ValidateMSVSSettings"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ValidateMSVSSettings</span>(<span class="sig-arg">settings</span>,
+        <span class="sig-arg">stderr</span>=<span class="sig-default">sys.stderr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ValidateMSVSSettings">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Validates that the names of the settings are valid for MSVS.
+
+Args:
+    settings: A dictionary.  The key is the tool name.  The values are
+        themselves dictionaries of settings and their values.
+    stderr: The stream receiving the error messages.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ValidateMSBuildSettings"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ValidateMSBuildSettings</span>(<span class="sig-arg">settings</span>,
+        <span class="sig-arg">stderr</span>=<span class="sig-default">sys.stderr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#ValidateMSBuildSettings">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Validates that the names of the settings are valid for MSBuild.
+
+Args:
+    settings: A dictionary.  The key is the tool name.  The values are
+        themselves dictionaries of settings and their values.
+    stderr: The stream receiving the error messages.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_ValidateSettings"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_ValidateSettings</span>(<span class="sig-arg">validators</span>,
+        <span class="sig-arg">settings</span>,
+        <span class="sig-arg">stderr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.MSVSSettings-pysrc.html#_ValidateSettings">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Validates that the settings are valid for MSBuild or MSVS.
+
+We currently only validate the names of the settings, not their values.
+
+Args:
+    validators: A dictionary of tools and their validators.
+    settings: A dictionary.  The key is the tool name.  The values are
+        themselves dictionaries of settings and their values.
+    stderr: The stream receiving the error messages.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== VARIABLES DETAILS ==================== -->
+<a name="section-VariablesDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-VariablesDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="fix_vc_macro_slashes_regex"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">fix_vc_macro_slashes_regex</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+re.compile(r'(\$\((?:%s)\))(?:[\\/]+)' % &quot;|&quot;.join(fix_vc_macro_slashes<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+_regex_list))
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_subsystem_enumeration"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">_subsystem_enumeration</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+_Enumeration(['NotSet', 'Console', 'Windows', 'Native', 'EFI Applicati<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+on', 'EFI Boot Service Driver', 'EFI ROM', 'EFI Runtime', 'WindowsCE']<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+, new= ['POSIX'])
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_target_machine_enumeration"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">_target_machine_enumeration</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+_Enumeration(['NotSet', 'MachineX86', None, 'MachineARM', 'MachineEBC'<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+, 'MachineIA64', None, 'MachineMIPS', 'MachineMIPS16', 'MachineMIPSFPU<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+', 'MachineMIPSFPU16', None, None, None, 'MachineSH4', None, 'MachineT<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+HUMB', 'MachineX64'])
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:26 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

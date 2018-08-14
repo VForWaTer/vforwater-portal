@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.generator.gypd</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.generator-module.html">Package&nbsp;generator</a> ::
+        Module&nbsp;gypd
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.generator.gypd-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="gyp.generator.gypd-module.html">Module gyp.generator.gypd</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (c) 2011 Google Inc. All rights reserved.</tt> </tt>
+<a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"><tt class="py-comment"># Use of this source code is governed by a BSD-style license that can be</tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-comment"># found in the LICENSE file.</tt> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"><tt class="py-docstring">"""gypd output module</tt> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line"><tt class="py-docstring">This module produces gyp input as its output.  Output files are given the</tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line"><tt class="py-docstring">.gypd extension to avoid overwriting the .gyp files that they are generated</tt> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"><tt class="py-docstring">from.  Internal references to .gyp files (such as those found in</tt> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line"><tt class="py-docstring">"dependencies" sections) are not adjusted to point to .gypd files instead;</tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line"><tt class="py-docstring">unlike other paths, which are relative to the .gyp or .gypd file, such paths</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line"><tt class="py-docstring">are relative to the directory from which gyp was run to create the .gypd file.</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"><tt class="py-docstring">This generator module is intended to be a sample and a debugging aid, hence</tt> </tt>
+<a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line"><tt class="py-docstring">the "d" for "debug" in .gypd.  It is useful to inspect the results of the</tt> </tt>
+<a name="L16"></a><tt class="py-lineno">16</tt>  <tt class="py-line"><tt class="py-docstring">various merges, expansions, and conditional evaluations performed by gyp</tt> </tt>
+<a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line"><tt class="py-docstring">and to see a representation of what would be fed to a generator module.</tt> </tt>
+<a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line"><tt class="py-docstring">It's not advisable to rename .gypd files produced by this module to .gyp,</tt> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line"><tt class="py-docstring">because they will have all merges, expansions, and evaluations already</tt> </tt>
+<a name="L21"></a><tt class="py-lineno">21</tt>  <tt class="py-line"><tt class="py-docstring">performed and the relevant constructs not present in the output; paths to</tt> </tt>
+<a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line"><tt class="py-docstring">dependencies may be wrong; and various sections that do not belong in .gyp</tt> </tt>
+<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line"><tt class="py-docstring">files such as such as "included_files" and "*_excluded" will be present.</tt> </tt>
+<a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line"><tt class="py-docstring">Output will also be stripped of comments.  This is not intended to be a</tt> </tt>
+<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line"><tt class="py-docstring">general-purpose gyp pretty-printer; for that, you probably just want to</tt> </tt>
+<a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line"><tt class="py-docstring">run "pprint.pprint(eval(open('source.gyp').read()))", which will still strip</tt> </tt>
+<a name="L27"></a><tt class="py-lineno">27</tt>  <tt class="py-line"><tt class="py-docstring">comments but won't do all of the other things done to this module's output.</tt> </tt>
+<a name="L28"></a><tt class="py-lineno">28</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L29"></a><tt class="py-lineno">29</tt>  <tt class="py-line"><tt class="py-docstring">The specific formatting of the output generated by this module is subject</tt> </tt>
+<a name="L30"></a><tt class="py-lineno">30</tt>  <tt class="py-line"><tt class="py-docstring">to change.</tt> </tt>
+<a name="L31"></a><tt class="py-lineno">31</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L32"></a><tt class="py-lineno">32</tt>  <tt class="py-line"> </tt>
+<a name="L33"></a><tt class="py-lineno">33</tt>  <tt class="py-line"> </tt>
+<a name="L34"></a><tt class="py-lineno">34</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Package gyp=gyp-module.html"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-0', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Module gyp.common=gyp.common-module.html"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-1', 'common', 'link-1');">common</a></tt> </tt>
+<a name="L35"></a><tt class="py-lineno">35</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">errno</tt> </tt>
+<a name="L36"></a><tt class="py-lineno">36</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L37"></a><tt class="py-lineno">37</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">pprint</tt> </tt>
+<a name="L38"></a><tt class="py-lineno">38</tt>  <tt class="py-line"> </tt>
+<a name="L39"></a><tt class="py-lineno">39</tt>  <tt class="py-line"> </tt>
+<a name="L40"></a><tt class="py-lineno">40</tt>  <tt class="py-line"><tt class="py-comment"># These variables should just be spit back out as variable references.</tt> </tt>
+<a name="L41"></a><tt class="py-lineno">41</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable gyp.generator.gypd._generator_identity_variables=gyp.generator.gypd-module.html#_generator_identity_variables,Variable gyp.generator.gypsh._generator_identity_variables=gyp.generator.gypsh-module.html#_generator_identity_variables"><a title="gyp.generator.gypd._generator_identity_variables
+gyp.generator.gypsh._generator_identity_variables" class="py-name" href="#" onclick="return doclink('link-2', '_generator_identity_variables', 'link-2');">_generator_identity_variables</a></tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L42"></a><tt class="py-lineno">42</tt>  <tt class="py-line">  <tt class="py-string">'CONFIGURATION_NAME'</tt><tt class="py-op">,</tt> </tt>
+<a name="L43"></a><tt class="py-lineno">43</tt>  <tt class="py-line">  <tt class="py-string">'EXECUTABLE_PREFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L44"></a><tt class="py-lineno">44</tt>  <tt class="py-line">  <tt class="py-string">'EXECUTABLE_SUFFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L45"></a><tt class="py-lineno">45</tt>  <tt class="py-line">  <tt class="py-string">'INTERMEDIATE_DIR'</tt><tt class="py-op">,</tt> </tt>
+<a name="L46"></a><tt class="py-lineno">46</tt>  <tt class="py-line">  <tt class="py-string">'LIB_DIR'</tt><tt class="py-op">,</tt> </tt>
+<a name="L47"></a><tt class="py-lineno">47</tt>  <tt class="py-line">  <tt class="py-string">'PRODUCT_DIR'</tt><tt class="py-op">,</tt> </tt>
+<a name="L48"></a><tt class="py-lineno">48</tt>  <tt class="py-line">  <tt class="py-string">'RULE_INPUT_ROOT'</tt><tt class="py-op">,</tt> </tt>
+<a name="L49"></a><tt class="py-lineno">49</tt>  <tt class="py-line">  <tt class="py-string">'RULE_INPUT_DIRNAME'</tt><tt class="py-op">,</tt> </tt>
+<a name="L50"></a><tt class="py-lineno">50</tt>  <tt class="py-line">  <tt class="py-string">'RULE_INPUT_EXT'</tt><tt class="py-op">,</tt> </tt>
+<a name="L51"></a><tt class="py-lineno">51</tt>  <tt class="py-line">  <tt class="py-string">'RULE_INPUT_NAME'</tt><tt class="py-op">,</tt> </tt>
+<a name="L52"></a><tt class="py-lineno">52</tt>  <tt class="py-line">  <tt class="py-string">'RULE_INPUT_PATH'</tt><tt class="py-op">,</tt> </tt>
+<a name="L53"></a><tt class="py-lineno">53</tt>  <tt class="py-line">  <tt class="py-string">'SHARED_INTERMEDIATE_DIR'</tt><tt class="py-op">,</tt> </tt>
+<a name="L54"></a><tt class="py-lineno">54</tt>  <tt class="py-line">  <tt class="py-string">'SHARED_LIB_DIR'</tt><tt class="py-op">,</tt> </tt>
+<a name="L55"></a><tt class="py-lineno">55</tt>  <tt class="py-line">  <tt class="py-string">'SHARED_LIB_PREFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L56"></a><tt class="py-lineno">56</tt>  <tt class="py-line">  <tt class="py-string">'SHARED_LIB_SUFFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L57"></a><tt class="py-lineno">57</tt>  <tt class="py-line">  <tt class="py-string">'STATIC_LIB_PREFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L58"></a><tt class="py-lineno">58</tt>  <tt class="py-line">  <tt class="py-string">'STATIC_LIB_SUFFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L59"></a><tt class="py-lineno">59</tt>  <tt class="py-line"><tt class="py-op">]</tt> </tt>
+<a name="L60"></a><tt class="py-lineno">60</tt>  <tt class="py-line"> </tt>
+<a name="L61"></a><tt class="py-lineno">61</tt>  <tt class="py-line"><tt class="py-comment"># gypd doesn't define a default value for OS like many other generator</tt> </tt>
+<a name="L62"></a><tt class="py-lineno">62</tt>  <tt class="py-line"><tt class="py-comment"># modules.  Specify "-D OS=whatever" on the command line to provide a value.</tt> </tt>
+<a name="L63"></a><tt class="py-lineno">63</tt>  <tt class="py-line"><tt id="link-3" class="py-name" targets="Variable gyp.generator.analyzer.generator_default_variables=gyp.generator.analyzer-module.html#generator_default_variables,Variable gyp.generator.android.generator_default_variables=gyp.generator.android-module.html#generator_default_variables,Variable gyp.generator.cmake.generator_default_variables=gyp.generator.cmake-module.html#generator_default_variables,Variable gyp.generator.dump_dependency_json.generator_default_variables=gyp.generator.dump_dependency_json-module.html#generator_default_variables,Variable gyp.generator.eclipse.generator_default_variables=gyp.generator.eclipse-module.html#generator_default_variables,Variable gyp.generator.gypd.generator_default_variables=gyp.generator.gypd-module.html#generator_default_variables,Variable gyp.generator.gypsh.generator_default_variables=gyp.generator.gypsh-module.html#generator_default_variables,Variable gyp.generator.make.generator_default_variables=gyp.generator.make-module.html#generator_default_variables,Variable gyp.generator.msvs.generator_default_variables=gyp.generator.msvs-module.html#generator_default_variables,Variable gyp.generator.ninja.generator_default_variables=gyp.generator.ninja-module.html#generator_default_variables,Variable gyp.generator.xcode.generator_default_variables=gyp.generator.xcode-module.html#generator_default_variables"><a title="gyp.generator.analyzer.generator_default_variables
+gyp.generator.android.generator_default_variables
+gyp.generator.cmake.generator_default_variables
+gyp.generator.dump_dependency_json.generator_default_variables
+gyp.generator.eclipse.generator_default_variables
+gyp.generator.gypd.generator_default_variables
+gyp.generator.gypsh.generator_default_variables
+gyp.generator.make.generator_default_variables
+gyp.generator.msvs.generator_default_variables
+gyp.generator.ninja.generator_default_variables
+gyp.generator.xcode.generator_default_variables" class="py-name" href="#" onclick="return doclink('link-3', 'generator_default_variables', 'link-3');">generator_default_variables</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> </tt>
+<a name="L64"></a><tt class="py-lineno">64</tt>  <tt class="py-line"><tt class="py-op">}</tt> </tt>
+<a name="L65"></a><tt class="py-lineno">65</tt>  <tt class="py-line"> </tt>
+<a name="L66"></a><tt class="py-lineno">66</tt>  <tt class="py-line"><tt class="py-comment"># gypd supports multiple toolsets</tt> </tt>
+<a name="L67"></a><tt class="py-lineno">67</tt>  <tt class="py-line"><tt id="link-4" class="py-name" targets="Variable gyp.generator.analyzer.generator_supports_multiple_toolsets=gyp.generator.analyzer-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.android.generator_supports_multiple_toolsets=gyp.generator.android-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.cmake.generator_supports_multiple_toolsets=gyp.generator.cmake-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.dump_dependency_json.generator_supports_multiple_toolsets=gyp.generator.dump_dependency_json-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.gypd.generator_supports_multiple_toolsets=gyp.generator.gypd-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.make.generator_supports_multiple_toolsets=gyp.generator.make-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.ninja.generator_supports_multiple_toolsets=gyp.generator.ninja-module.html#generator_supports_multiple_toolsets"><a title="gyp.generator.analyzer.generator_supports_multiple_toolsets
+gyp.generator.android.generator_supports_multiple_toolsets
+gyp.generator.cmake.generator_supports_multiple_toolsets
+gyp.generator.dump_dependency_json.generator_supports_multiple_toolsets
+gyp.generator.gypd.generator_supports_multiple_toolsets
+gyp.generator.make.generator_supports_multiple_toolsets
+gyp.generator.ninja.generator_supports_multiple_toolsets" class="py-name" href="#" onclick="return doclink('link-4', 'generator_supports_multiple_toolsets', 'link-4');">generator_supports_multiple_toolsets</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L68"></a><tt class="py-lineno">68</tt>  <tt class="py-line"> </tt>
+<a name="L69"></a><tt class="py-lineno">69</tt>  <tt class="py-line"><tt class="py-comment"># TODO(mark): This always uses &lt;, which isn't right.  The input module should</tt> </tt>
+<a name="L70"></a><tt class="py-lineno">70</tt>  <tt class="py-line"><tt class="py-comment"># notify the generator to tell it which phase it is operating in, and this</tt> </tt>
+<a name="L71"></a><tt class="py-lineno">71</tt>  <tt class="py-line"><tt class="py-comment"># module should use &lt; for the early phase and then switch to &gt; for the late</tt> </tt>
+<a name="L72"></a><tt class="py-lineno">72</tt>  <tt class="py-line"><tt class="py-comment"># phase.  Bonus points for carrying @ back into the output too.</tt> </tt>
+<a name="L73"></a><tt class="py-lineno">73</tt>  <tt class="py-line"><tt class="py-keyword">for</tt> <tt class="py-name">v</tt> <tt class="py-keyword">in</tt> <tt id="link-5" class="py-name"><a title="gyp.generator.gypd._generator_identity_variables
+gyp.generator.gypsh._generator_identity_variables" class="py-name" href="#" onclick="return doclink('link-5', '_generator_identity_variables', 'link-2');">_generator_identity_variables</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L74"></a><tt class="py-lineno">74</tt>  <tt class="py-line">  <tt id="link-6" class="py-name"><a title="gyp.generator.analyzer.generator_default_variables
+gyp.generator.android.generator_default_variables
+gyp.generator.cmake.generator_default_variables
+gyp.generator.dump_dependency_json.generator_default_variables
+gyp.generator.eclipse.generator_default_variables
+gyp.generator.gypd.generator_default_variables
+gyp.generator.gypsh.generator_default_variables
+gyp.generator.make.generator_default_variables
+gyp.generator.msvs.generator_default_variables
+gyp.generator.ninja.generator_default_variables
+gyp.generator.xcode.generator_default_variables" class="py-name" href="#" onclick="return doclink('link-6', 'generator_default_variables', 'link-3');">generator_default_variables</a></tt><tt class="py-op">[</tt><tt class="py-name">v</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">'&lt;(%s)'</tt> <tt class="py-op">%</tt> <tt class="py-name">v</tt> </tt>
+<a name="L75"></a><tt class="py-lineno">75</tt>  <tt class="py-line"> </tt>
+<a name="L76"></a><tt class="py-lineno">76</tt>  <tt class="py-line"> </tt>
+<a name="GenerateOutput"></a><div id="GenerateOutput-def"><a name="L77"></a><tt class="py-lineno">77</tt> <a class="py-toggle" href="#" id="GenerateOutput-toggle" onclick="return toggle('GenerateOutput');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.generator.gypd-module.html#GenerateOutput">GenerateOutput</a><tt class="py-op">(</tt><tt class="py-param">target_list</tt><tt class="py-op">,</tt> <tt class="py-param">target_dicts</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">,</tt> <tt class="py-param">params</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GenerateOutput-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="GenerateOutput-expanded"><a name="L78"></a><tt class="py-lineno">78</tt>  <tt class="py-line">  <tt class="py-name">output_files</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L79"></a><tt class="py-lineno">79</tt>  <tt class="py-line">  <tt class="py-keyword">for</tt> <tt class="py-name">qualified_target</tt> <tt class="py-keyword">in</tt> <tt class="py-name">target_list</tt><tt class="py-op">:</tt> </tt>
+<a name="L80"></a><tt class="py-lineno">80</tt>  <tt class="py-line">    <tt class="py-op">[</tt><tt class="py-name">input_file</tt><tt class="py-op">,</tt> <tt class="py-name">target</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L81"></a><tt class="py-lineno">81</tt>  <tt class="py-line">        <tt id="link-7" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-7', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-8" class="py-name"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-8', 'common', 'link-1');">common</a></tt><tt class="py-op">.</tt><tt id="link-9" class="py-name" targets="Function gyp.common.ParseQualifiedTarget()=gyp.common-module.html#ParseQualifiedTarget"><a title="gyp.common.ParseQualifiedTarget" class="py-name" href="#" onclick="return doclink('link-9', 'ParseQualifiedTarget', 'link-9');">ParseQualifiedTarget</a></tt><tt class="py-op">(</tt><tt class="py-name">qualified_target</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">:</tt><tt class="py-number">2</tt><tt class="py-op">]</tt> </tt>
+<a name="L82"></a><tt class="py-lineno">82</tt>  <tt class="py-line"> </tt>
+<a name="L83"></a><tt class="py-lineno">83</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">input_file</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">4</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> <tt class="py-op">!=</tt> <tt class="py-string">'.gyp'</tt><tt class="py-op">:</tt> </tt>
+<a name="L84"></a><tt class="py-lineno">84</tt>  <tt class="py-line">      <tt class="py-keyword">continue</tt> </tt>
+<a name="L85"></a><tt class="py-lineno">85</tt>  <tt class="py-line">    <tt class="py-name">input_file_stem</tt> <tt class="py-op">=</tt> <tt class="py-name">input_file</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">-</tt><tt class="py-number">4</tt><tt class="py-op">]</tt> </tt>
+<a name="L86"></a><tt class="py-lineno">86</tt>  <tt class="py-line">    <tt class="py-name">output_file</tt> <tt class="py-op">=</tt> <tt class="py-name">input_file_stem</tt> <tt class="py-op">+</tt> <tt class="py-name">params</tt><tt class="py-op">[</tt><tt class="py-string">'options'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">suffix</tt> <tt class="py-op">+</tt> <tt class="py-string">'.gypd'</tt> </tt>
+<a name="L87"></a><tt class="py-lineno">87</tt>  <tt class="py-line"> </tt>
+<a name="L88"></a><tt class="py-lineno">88</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">output_file</tt> <tt class="py-keyword">in</tt> <tt class="py-name">output_files</tt><tt class="py-op">:</tt> </tt>
+<a name="L89"></a><tt class="py-lineno">89</tt>  <tt class="py-line">      <tt class="py-name">output_files</tt><tt class="py-op">[</tt><tt class="py-name">output_file</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">input_file</tt> </tt>
+<a name="L90"></a><tt class="py-lineno">90</tt>  <tt class="py-line"> </tt>
+<a name="L91"></a><tt class="py-lineno">91</tt>  <tt class="py-line">  <tt class="py-keyword">for</tt> <tt class="py-name">output_file</tt><tt class="py-op">,</tt> <tt class="py-name">input_file</tt> <tt class="py-keyword">in</tt> <tt class="py-name">output_files</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name" targets="Method gyp.ordered_dict.OrderedDict.iteritems()=gyp.ordered_dict.OrderedDict-class.html#iteritems"><a title="gyp.ordered_dict.OrderedDict.iteritems" class="py-name" href="#" onclick="return doclink('link-10', 'iteritems', 'link-10');">iteritems</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L92"></a><tt class="py-lineno">92</tt>  <tt class="py-line">    <tt id="link-11" class="py-name" targets="Variable wps_workflow.models.Edge.output=wps_workflow.models.Edge-class.html#output"><a title="wps_workflow.models.Edge.output" class="py-name" href="#" onclick="return doclink('link-11', 'output', 'link-11');">output</a></tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">output_file</tt><tt class="py-op">,</tt> <tt class="py-string">'w'</tt><tt class="py-op">)</tt> </tt>
+<a name="L93"></a><tt class="py-lineno">93</tt>  <tt class="py-line">    <tt class="py-name">pprint</tt><tt class="py-op">.</tt><tt class="py-name">pprint</tt><tt class="py-op">(</tt><tt id="link-12" class="py-name" targets="Variable wps_workflow.models.Artefact.data=wps_workflow.models.Artefact-class.html#data"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-12', 'data', 'link-12');">data</a></tt><tt class="py-op">[</tt><tt class="py-name">input_file</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt id="link-13" class="py-name"><a title="wps_workflow.models.Edge.output" class="py-name" href="#" onclick="return doclink('link-13', 'output', 'link-11');">output</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno">94</tt>  <tt class="py-line">    <tt id="link-14" class="py-name"><a title="wps_workflow.models.Edge.output" class="py-name" href="#" onclick="return doclink('link-14', 'output', 'link-11');">output</a></tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L95"></a><tt class="py-lineno">95</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:35 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

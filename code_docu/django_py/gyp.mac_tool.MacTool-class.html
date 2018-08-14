@@ -1,0 +1,1110 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.mac_tool.MacTool</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.mac_tool-module.html">Module&nbsp;mac_tool</a> ::
+        Class&nbsp;MacTool
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.mac_tool.MacTool-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class MacTool</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_mac_" name="uml_class_diagram_for_gyp_mac_">
+<area shape="rect" id="node1_9" href="gyp.mac_tool.MacTool-class.html#Dispatch" title="Dispatches a string command to a method." alt="" coords="17,37,457,57"/>
+<area shape="rect" id="node1_10" href="gyp.mac_tool.MacTool-class.html#ExecCopyBundleResource" title="Copies a resource file to the bundle/Resources directory, performing any &#160;necessary compilation on each resource." alt="" coords="17,57,457,77"/>
+<area shape="rect" id="node1_11" href="gyp.mac_tool.MacTool-class.html#ExecCopyInfoPlist" title="Copies the |source| Info.plist to the destination directory |dest|." alt="" coords="17,77,457,97"/>
+<area shape="rect" id="node1_12" href="gyp.mac_tool.MacTool-class.html#ExecFlock" title="Emulates the most basic behavior of Linux&#39;s flock(1)." alt="" coords="17,97,457,117"/>
+<area shape="rect" id="node1_13" href="gyp.mac_tool.MacTool-class.html#ExecFilterLibtool" title="Calls libtool and filters out &#39;/path/to/libtool: file: foo.o has no &#160;symbols&#39;." alt="" coords="17,117,457,137"/>
+<area shape="rect" id="node1_14" href="gyp.mac_tool.MacTool-class.html#ExecPackageFramework" title="Takes a path to Something.framework and the Current version of that and &#160;sets up all the symlinks." alt="" coords="17,137,457,157"/>
+<area shape="rect" id="node1_15" href="gyp.mac_tool.MacTool-class.html#ExecCompileXcassets" title="Compiles multiple .xcassets files into a single .car file." alt="" coords="17,157,457,177"/>
+<area shape="rect" id="node1_16" href="gyp.mac_tool.MacTool-class.html#ExecMergeInfoPlist" title="Merge multiple .plist files into a single .plist file." alt="" coords="17,177,457,197"/>
+<area shape="rect" id="node1_17" href="gyp.mac_tool.MacTool-class.html#ExecCodeSignBundle" title="Code sign a bundle." alt="" coords="17,197,457,217"/>
+<area shape="rect" id="node1" href="gyp.mac_tool.MacTool-class.html" title="This class performs all the Mac tooling steps." alt="" coords="5,5,469,224"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_mac_.gif" alt='' usemap="#uml_class_diagram_for_gyp_mac_" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>This class performs all the Mac tooling steps. The methods can either 
+  be executed directly, or dispatched from an argument list.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="Dispatch"></a><span class="summary-sig-name">Dispatch</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">args</span>)</span><br />
+      Dispatches a string command to a method.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.Dispatch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_CommandifyName"></a><span class="summary-sig-name">_CommandifyName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name_string</span>)</span><br />
+      Transforms a tool name like copy-info-plist to CopyInfoPlist</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._CommandifyName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecCopyBundleResource"></a><span class="summary-sig-name">ExecCopyBundleResource</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">dest</span>,
+        <span class="summary-sig-arg">convert_to_binary</span>)</span><br />
+      Copies a resource file to the bundle/Resources directory, performing 
+      any necessary compilation on each resource.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecCopyBundleResource">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_CopyXIBFile"></a><span class="summary-sig-name">_CopyXIBFile</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">dest</span>)</span><br />
+      Compiles a XIB file with ibtool into a binary plist in the bundle.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._CopyXIBFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_ConvertToBinary"></a><span class="summary-sig-name">_ConvertToBinary</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dest</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._ConvertToBinary">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_CopyStringsFile"></a><span class="summary-sig-name">_CopyStringsFile</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">dest</span>,
+        <span class="summary-sig-arg">convert_to_binary</span>)</span><br />
+      Copies a .strings file using iconv to reconvert the input into 
+      UTF-16.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._CopyStringsFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_DetectInputEncoding" class="summary-sig-name" onclick="show_private();">_DetectInputEncoding</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">file_name</span>)</span><br />
+      Reads the first few bytes from file_name and tries to guess the text 
+      encoding.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._DetectInputEncoding">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecCopyInfoPlist"></a><span class="summary-sig-name">ExecCopyInfoPlist</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">dest</span>,
+        <span class="summary-sig-arg">convert_to_binary</span>,
+        <span class="summary-sig-arg">*keys</span>)</span><br />
+      Copies the |source| Info.plist to the destination directory |dest|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecCopyInfoPlist">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_WritePkgInfo"></a><span class="summary-sig-name">_WritePkgInfo</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">info_plist</span>)</span><br />
+      This writes the PkgInfo file from the data stored in Info.plist.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._WritePkgInfo">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecFlock"></a><span class="summary-sig-name">ExecFlock</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lockfile</span>,
+        <span class="summary-sig-arg">*cmd_list</span>)</span><br />
+      Emulates the most basic behavior of Linux's flock(1).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecFlock">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecFilterLibtool"></a><span class="summary-sig-name">ExecFilterLibtool</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">*cmd_list</span>)</span><br />
+      Calls libtool and filters out '/path/to/libtool: file: foo.o has no 
+      symbols'.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecFilterLibtool">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecPackageFramework"></a><span class="summary-sig-name">ExecPackageFramework</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">framework</span>,
+        <span class="summary-sig-arg">version</span>)</span><br />
+      Takes a path to Something.framework and the Current version of that 
+      and sets up all the symlinks.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecPackageFramework">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_Relink" class="summary-sig-name" onclick="show_private();">_Relink</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dest</span>,
+        <span class="summary-sig-arg">link</span>)</span><br />
+      Creates a symlink to |dest| named |link|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._Relink">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#ExecCompileXcassets" class="summary-sig-name">ExecCompileXcassets</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">keys</span>,
+        <span class="summary-sig-arg">*inputs</span>)</span><br />
+      Compiles multiple .xcassets files into a single .car file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecCompileXcassets">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecMergeInfoPlist"></a><span class="summary-sig-name">ExecMergeInfoPlist</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">*inputs</span>)</span><br />
+      Merge multiple .plist files into a single .plist file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecMergeInfoPlist">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#ExecCodeSignBundle" class="summary-sig-name">ExecCodeSignBundle</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">key</span>,
+        <span class="summary-sig-arg">resource_rules</span>,
+        <span class="summary-sig-arg">entitlements</span>,
+        <span class="summary-sig-arg">provisioning</span>)</span><br />
+      Code sign a bundle.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecCodeSignBundle">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_InstallResourceRules" class="summary-sig-name" onclick="show_private();">_InstallResourceRules</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">resource_rules</span>)</span><br />
+      Installs ResourceRules.plist from user or SDK into the bundle.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._InstallResourceRules">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_InstallProvisioningProfile" class="summary-sig-name" onclick="show_private();">_InstallProvisioningProfile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">profile</span>,
+        <span class="summary-sig-arg">bundle_identifier</span>)</span><br />
+      Installs embedded.mobileprovision into the bundle.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._InstallProvisioningProfile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_FindProvisioningProfile" class="summary-sig-name" onclick="show_private();">_FindProvisioningProfile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">profile</span>,
+        <span class="summary-sig-arg">bundle_identifier</span>)</span><br />
+      Finds the .mobileprovision file to use for signing the bundle.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._FindProvisioningProfile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_LoadProvisioningProfile" class="summary-sig-name" onclick="show_private();">_LoadProvisioningProfile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">profile_path</span>)</span><br />
+      Extracts the plist embedded in a provisioning profile.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._LoadProvisioningProfile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_MergePlist"></a><span class="summary-sig-name">_MergePlist</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">merged_plist</span>,
+        <span class="summary-sig-arg">plist</span>)</span><br />
+      Merge |plist| into |merged_plist|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._MergePlist">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_LoadPlistMaybeBinary" class="summary-sig-name" onclick="show_private();">_LoadPlistMaybeBinary</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">plist_path</span>)</span><br />
+      Loads into a memory a plist possibly encoded in binary format.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._LoadPlistMaybeBinary">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_GetSubstitutions" class="summary-sig-name" onclick="show_private();">_GetSubstitutions</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">bundle_identifier</span>,
+        <span class="summary-sig-arg">app_identifier_prefix</span>)</span><br />
+      Constructs a dictionary of variable substitutions for Entitlements.plist.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._GetSubstitutions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_GetCFBundleIdentifier" class="summary-sig-name" onclick="show_private();">_GetCFBundleIdentifier</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Extracts CFBundleIdentifier value from Info.plist in the bundle.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._GetCFBundleIdentifier">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_InstallEntitlements" class="summary-sig-name" onclick="show_private();">_InstallEntitlements</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">entitlements</span>,
+        <span class="summary-sig-arg">substitutions</span>,
+        <span class="summary-sig-arg">overrides</span>)</span><br />
+      Generates and install the ${BundleName}.xcent entitlements file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._InstallEntitlements">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.mac_tool.MacTool-class.html#_ExpandVariables" class="summary-sig-name" onclick="show_private();">_ExpandVariables</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">data</span>,
+        <span class="summary-sig-arg">substitutions</span>)</span><br />
+      Expands variables &quot;$(variable)&quot; in data.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._ExpandVariables">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__init__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="_DetectInputEncoding"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_DetectInputEncoding</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">file_name</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._DetectInputEncoding">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Reads the first few bytes from file_name and tries to guess the text 
+  encoding. Returns None as a guess if it can't detect it.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_Relink"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_Relink</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dest</span>,
+        <span class="sig-arg">link</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._Relink">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Creates a symlink to |dest| named |link|. If |link| already exists, it
+  is overwritten.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ExecCompileXcassets"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ExecCompileXcassets</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">keys</span>,
+        <span class="sig-arg">*inputs</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecCompileXcassets">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Compiles multiple .xcassets files into a single .car file.</p>
+  <p>This invokes 'actool' to compile all the inputs .xcassets files. The 
+  |keys| arguments is a json-encoded dictionary of extra arguments to pass 
+  to 'actool' when the asset catalogs contains an application icon or a 
+  launch image.</p>
+  <p>Note that 'actool' does not create the Assets.car file if the asset 
+  catalogs does not contains imageset.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ExecCodeSignBundle"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ExecCodeSignBundle</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">key</span>,
+        <span class="sig-arg">resource_rules</span>,
+        <span class="sig-arg">entitlements</span>,
+        <span class="sig-arg">provisioning</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool.ExecCodeSignBundle">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Code sign a bundle.</p>
+  <p>This function tries to code sign an iOS bundle, following the same 
+  algorithm as Xcode:</p>
+  <ol start="1">
+    <li>
+      copy ResourceRules.plist from the user or the SDK into the bundle,
+    </li>
+    <li>
+      pick the provisioning profile that best match the bundle identifier, 
+      and copy it into the bundle as embedded.mobileprovision,
+    </li>
+    <li>
+      copy Entitlements.plist from user or SDK next to the bundle,
+    </li>
+    <li>
+      code sign the bundle.
+    </li>
+  </ol>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_InstallResourceRules"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_InstallResourceRules</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">resource_rules</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._InstallResourceRules">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Installs ResourceRules.plist from user or SDK into the bundle.
+
+Args:
+  resource_rules: string, optional, path to the ResourceRules.plist file
+    to use, default to &quot;${SDKROOT}/ResourceRules.plist&quot;
+
+Returns:
+  Path to the copy of ResourceRules.plist into the bundle.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_InstallProvisioningProfile"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_InstallProvisioningProfile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">profile</span>,
+        <span class="sig-arg">bundle_identifier</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._InstallProvisioningProfile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Installs embedded.mobileprovision into the bundle.
+
+Args:
+  profile: string, optional, short name of the .mobileprovision file
+    to use, if empty or the file is missing, the best file installed
+    will be used
+  bundle_identifier: string, value of CFBundleIdentifier from Info.plist
+
+Returns:
+  A tuple containing two dictionary: variables substitutions and values
+  to overrides when generating the entitlements file.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_FindProvisioningProfile"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_FindProvisioningProfile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">profile</span>,
+        <span class="sig-arg">bundle_identifier</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._FindProvisioningProfile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Finds the .mobileprovision file to use for signing the bundle.
+
+Checks all the installed provisioning profiles (or if the user specified
+the PROVISIONING_PROFILE variable, only consult it) and select the most
+specific that correspond to the bundle identifier.
+
+Args:
+  profile: string, optional, short name of the .mobileprovision file
+    to use, if empty or the file is missing, the best file installed
+    will be used
+  bundle_identifier: string, value of CFBundleIdentifier from Info.plist
+
+Returns:
+  A tuple of the path to the selected provisioning profile, the data of
+  the embedded plist in the provisioning profile and the team identifier
+  to use for code signing.
+
+Raises:
+  SystemExit: if no .mobileprovision can be used to sign the bundle.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_LoadProvisioningProfile"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_LoadProvisioningProfile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">profile_path</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._LoadProvisioningProfile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Extracts the plist embedded in a provisioning profile.
+
+Args:
+  profile_path: string, path to the .mobileprovision file
+
+Returns:
+  Content of the plist embedded in the provisioning profile as a dictionary.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_LoadPlistMaybeBinary"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_LoadPlistMaybeBinary</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">plist_path</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._LoadPlistMaybeBinary">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Loads into a memory a plist possibly encoded in binary format.
+
+This is a wrapper around plistlib.readPlist that tries to convert the
+plist to the XML format if it can't be parsed (assuming that it is in
+the binary format).
+
+Args:
+  plist_path: string, path to a plist file, in XML or binary format
+
+Returns:
+  Content of the plist as a dictionary.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetSubstitutions"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetSubstitutions</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">bundle_identifier</span>,
+        <span class="sig-arg">app_identifier_prefix</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._GetSubstitutions">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Constructs a dictionary of variable substitutions for Entitlements.plist.
+
+Args:
+  bundle_identifier: string, value of CFBundleIdentifier from Info.plist
+  app_identifier_prefix: string, value for AppIdentifierPrefix
+
+Returns:
+  Dictionary of substitutions to apply when generating Entitlements.plist.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetCFBundleIdentifier"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetCFBundleIdentifier</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._GetCFBundleIdentifier">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Extracts CFBundleIdentifier value from Info.plist in the bundle.
+
+Returns:
+  Value of CFBundleIdentifier in the Info.plist located in the bundle.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_InstallEntitlements"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_InstallEntitlements</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">entitlements</span>,
+        <span class="sig-arg">substitutions</span>,
+        <span class="sig-arg">overrides</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._InstallEntitlements">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Generates and install the ${BundleName}.xcent entitlements file.
+
+Expands variables &quot;$(variable)&quot; pattern in the source entitlements file,
+add extra entitlements defined in the .mobileprovision file and the copy
+the generated plist to &quot;${BundlePath}.xcent&quot;.
+
+Args:
+  entitlements: string, optional, path to the Entitlements.plist template
+    to use, defaults to &quot;${SDKROOT}/Entitlements.plist&quot;
+  substitutions: dictionary, variable substitutions
+  overrides: dictionary, values to add to the entitlements
+
+Returns:
+  Path to the generated entitlements file.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_ExpandVariables"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_ExpandVariables</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">data</span>,
+        <span class="sig-arg">substitutions</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.mac_tool-pysrc.html#MacTool._ExpandVariables">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Expands variables &quot;$(variable)&quot; in data.
+
+Args:
+  data: object, can be either string, list or dictionary
+  substitutions: dictionary, variable substitutions to perform
+
+Returns:
+  Copy of data where each references to &quot;$(variable)&quot; has been replaced
+  by the corresponding value found in substitutions, or left intact if
+  the key was not found.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:29 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

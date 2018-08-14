@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.win_tool.WinTool</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.win_tool-module.html">Module&nbsp;win_tool</a> ::
+        Class&nbsp;WinTool
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.win_tool.WinTool-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class WinTool</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_win_" name="uml_class_diagram_for_gyp_win_">
+<area shape="rect" id="node1_12" href="gyp.win_tool.WinTool-class.html#Dispatch" title="Dispatches a string command to a method." alt="" coords="17,38,703,58"/>
+<area shape="rect" id="node1_13" href="gyp.win_tool.WinTool-class.html#ExecStamp" title="Simple stamp command." alt="" coords="17,58,703,78"/>
+<area shape="rect" id="node1_14" href="gyp.win_tool.WinTool-class.html#ExecRecursiveMirror" title="Emulation of rm &#45;rf out &amp;&amp; cp &#45;af in out." alt="" coords="17,78,703,98"/>
+<area shape="rect" id="node1_15" href="gyp.win_tool.WinTool-class.html#ExecLinkWrapper" title="Filter diagnostic output from link that looks like: &#39; &#160;&#160;Creating library &#160;ui.dll.lib and object ui.dll.exp&#39; This happens when there are exports from &#160;the dll or exe." alt="" coords="17,98,703,118"/>
+<area shape="rect" id="node1_16" href="gyp.win_tool.WinTool-class.html#ExecLinkWithManifests" title="A wrapper for handling creating a manifest resource and then executing a &#160;link command." alt="" coords="17,118,703,138"/>
+<area shape="rect" id="node1_17" href="gyp.win_tool.WinTool-class.html#ExecManifestWrapper" title="Run manifest tool with environment set." alt="" coords="17,138,703,158"/>
+<area shape="rect" id="node1_18" href="gyp.win_tool.WinTool-class.html#ExecManifestToRc" title="Creates a resource file pointing a SxS assembly manifest." alt="" coords="17,158,703,178"/>
+<area shape="rect" id="node1_19" href="gyp.win_tool.WinTool-class.html#ExecMidlWrapper" title="Filter noisy filenames output from MIDL compile step that isn&#39;t quietable &#160;via command line flags." alt="" coords="17,178,703,198"/>
+<area shape="rect" id="node1_20" href="gyp.win_tool.WinTool-class.html#ExecAsmWrapper" title="Filter logo banner from invocations of asm.exe." alt="" coords="17,198,703,218"/>
+<area shape="rect" id="node1_21" href="gyp.win_tool.WinTool-class.html#ExecRcWrapper" title="Filter logo banner from invocations of rc.exe." alt="" coords="17,218,703,238"/>
+<area shape="rect" id="node1_22" href="gyp.win_tool.WinTool-class.html#ExecActionWrapper" title="Runs an action command line from a response file using the environment for &#160;|arch|." alt="" coords="17,238,703,258"/>
+<area shape="rect" id="node1_23" href="gyp.win_tool.WinTool-class.html#ExecClCompile" title="Executed by msvs&#45;ninja projects when the &#39;ClCompile&#39; target is used to &#160;build selected C/C++ files." alt="" coords="17,258,703,278"/>
+<area shape="rect" id="node1" href="gyp.win_tool.WinTool-class.html" title="This class performs all the Windows tooling steps." alt="" coords="5,5,715,284"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_win_.gif" alt='' usemap="#uml_class_diagram_for_gyp_win_" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>This class performs all the Windows tooling steps. The methods can 
+  either be executed directly, or dispatched from an argument list.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_UseSeparateMspdbsrv"></a><span class="summary-sig-name">_UseSeparateMspdbsrv</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">env</span>,
+        <span class="summary-sig-arg">args</span>)</span><br />
+      Allows to use a unique instance of mspdbsrv.exe per linker instead of
+      a shared one.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool._UseSeparateMspdbsrv">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="Dispatch"></a><span class="summary-sig-name">Dispatch</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">args</span>)</span><br />
+      Dispatches a string command to a method.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.Dispatch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_CommandifyName"></a><span class="summary-sig-name">_CommandifyName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name_string</span>)</span><br />
+      Transforms a tool name like recursive-mirror to RecursiveMirror.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool._CommandifyName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetEnv"></a><span class="summary-sig-name">_GetEnv</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>)</span><br />
+      Gets the saved environment from a file for a given architecture.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool._GetEnv">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecStamp"></a><span class="summary-sig-name">ExecStamp</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>)</span><br />
+      Simple stamp command.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecStamp">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecRecursiveMirror"></a><span class="summary-sig-name">ExecRecursiveMirror</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">dest</span>)</span><br />
+      Emulation of rm -rf out &amp;&amp; cp -af in out.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecRecursiveMirror">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecLinkWrapper"></a><span class="summary-sig-name">ExecLinkWrapper</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">use_separate_mspdbsrv</span>,
+        <span class="summary-sig-arg">*args</span>)</span><br />
+      Filter diagnostic output from link that looks like: '   Creating 
+      library ui.dll.lib and object ui.dll.exp' This happens when there are
+      exports from the dll or exe.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecLinkWrapper">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecLinkWithManifests"></a><span class="summary-sig-name">ExecLinkWithManifests</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">embed_manifest</span>,
+        <span class="summary-sig-arg">out</span>,
+        <span class="summary-sig-arg">ldcmd</span>,
+        <span class="summary-sig-arg">resname</span>,
+        <span class="summary-sig-arg">mt</span>,
+        <span class="summary-sig-arg">rc</span>,
+        <span class="summary-sig-arg">intermediate_manifest</span>,
+        <span class="summary-sig-arg">*manifests</span>)</span><br />
+      A wrapper for handling creating a manifest resource and then 
+      executing a link command.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecLinkWithManifests">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.win_tool.WinTool-class.html#ExecManifestWrapper" class="summary-sig-name">ExecManifestWrapper</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">*args</span>)</span><br />
+      Run manifest tool with environment set.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecManifestWrapper">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.win_tool.WinTool-class.html#ExecManifestToRc" class="summary-sig-name">ExecManifestToRc</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">*args</span>)</span><br />
+      Creates a resource file pointing a SxS assembly manifest.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecManifestToRc">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecMidlWrapper"></a><span class="summary-sig-name">ExecMidlWrapper</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">outdir</span>,
+        <span class="summary-sig-arg">tlb</span>,
+        <span class="summary-sig-arg">h</span>,
+        <span class="summary-sig-arg">dlldata</span>,
+        <span class="summary-sig-arg">iid</span>,
+        <span class="summary-sig-arg">proxy</span>,
+        <span class="summary-sig-arg">idl</span>,
+        <span class="summary-sig-arg">*flags</span>)</span><br />
+      Filter noisy filenames output from MIDL compile step that isn't 
+      quietable via command line flags.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecMidlWrapper">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecAsmWrapper"></a><span class="summary-sig-name">ExecAsmWrapper</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">*args</span>)</span><br />
+      Filter logo banner from invocations of asm.exe.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecAsmWrapper">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.win_tool.WinTool-class.html#ExecRcWrapper" class="summary-sig-name">ExecRcWrapper</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">*args</span>)</span><br />
+      Filter logo banner from invocations of rc.exe.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecRcWrapper">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.win_tool.WinTool-class.html#ExecActionWrapper" class="summary-sig-name">ExecActionWrapper</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>,
+        <span class="summary-sig-arg">rspfile</span>,
+        <span class="summary-sig-arg">*dir</span>)</span><br />
+      Runs an action command line from a response file using the 
+      environment for |arch|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecActionWrapper">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExecClCompile"></a><span class="summary-sig-name">ExecClCompile</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">project_dir</span>,
+        <span class="summary-sig-arg">selected_files</span>)</span><br />
+      Executed by msvs-ninja projects when the 'ClCompile' target is used 
+      to build selected C/C++ files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecClCompile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__init__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="ExecManifestWrapper"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ExecManifestWrapper</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">arch</span>,
+        <span class="sig-arg">*args</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecManifestWrapper">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Run manifest tool with environment set. Strip out undesirable warning 
+  (some XML blocks are recognized by the OS loader, but not the manifest 
+  tool).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ExecManifestToRc"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ExecManifestToRc</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">arch</span>,
+        <span class="sig-arg">*args</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecManifestToRc">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Creates a resource file pointing a SxS assembly manifest. |args| is 
+  tuple containing path to resource file, path to manifest file and 
+  resource name which can be &quot;1&quot; (for executables) or 
+  &quot;2&quot; (for DLLs).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ExecRcWrapper"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ExecRcWrapper</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">arch</span>,
+        <span class="sig-arg">*args</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecRcWrapper">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Filter logo banner from invocations of rc.exe. Older versions of RC 
+  don't support the /nologo flag.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ExecActionWrapper"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ExecActionWrapper</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">arch</span>,
+        <span class="sig-arg">rspfile</span>,
+        <span class="sig-arg">*dir</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.win_tool-pysrc.html#WinTool.ExecActionWrapper">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Runs an action command line from a response file using the environment
+  for |arch|. If |dir| is supplied, use that as the working directory.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:29 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

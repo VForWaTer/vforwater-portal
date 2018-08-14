@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>heron_upload.views</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="heron_upload-module.html">Package&nbsp;heron_upload</a> ::
+        Module&nbsp;views
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="heron_upload.views-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="heron_upload.views-module.html">Module heron_upload.views</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">shortcuts</tt> <tt class="py-keyword">import</tt> <tt class="py-name">render</tt> </tt>
+<a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt id="link-0" class="py-name" targets="Module AuthorizationManagement.views=AuthorizationManagement.views-module.html,Module dashboard.views=dashboard.views-module.html,Module heron_monitor.views=heron_monitor.views-module.html,Module heron_upload.views=heron_upload.views-module.html,Module heron_visual.views=heron_visual.views-module.html,Module heron_wps.views=heron_wps.views-module.html,Module vfwheron.views=vfwheron.views-module.html,Module wps_workflow.views=wps_workflow.views-module.html"><a title="AuthorizationManagement.views
+dashboard.views
+heron_monitor.views
+heron_upload.views
+heron_visual.views
+heron_wps.views
+vfwheron.views
+wps_workflow.views" class="py-name" href="#" onclick="return doclink('link-0', 'views', 'link-0');">views</a></tt> <tt class="py-keyword">import</tt> <tt class="py-name">View</tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt id="link-1" class="py-name"><a title="AuthorizationManagement.views
+dashboard.views
+heron_monitor.views
+heron_upload.views
+heron_visual.views
+heron_wps.views
+vfwheron.views
+wps_workflow.views" class="py-name" href="#" onclick="return doclink('link-1', 'views', 'link-0');">views</a></tt><tt class="py-op">.</tt><tt class="py-name">generic</tt> <tt class="py-keyword">import</tt> <tt class="py-name">TemplateView</tt> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">shortcuts</tt> <tt class="py-keyword">import</tt> <tt class="py-name">render</tt><tt class="py-op">,</tt> <tt class="py-name">redirect</tt><tt class="py-op">,</tt> <tt class="py-name">get_object_or_404</tt> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">django</tt><tt class="py-op">.</tt><tt class="py-name">http</tt> <tt class="py-keyword">import</tt> <tt class="py-name">JsonResponse</tt> </tt>
+<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-2" class="py-name" targets="Package heron_upload=heron_upload-module.html"><a title="heron_upload" class="py-name" href="#" onclick="return doclink('link-2', 'heron_upload', 'link-2');">heron_upload</a></tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Module AuthorizationManagement.forms=AuthorizationManagement.forms-module.html,Module heron_upload.forms=heron_upload.forms-module.html,Module heron_wps.forms=heron_wps.forms-module.html"><a title="AuthorizationManagement.forms
+heron_upload.forms
+heron_wps.forms" class="py-name" href="#" onclick="return doclink('link-3', 'forms', 'link-3');">forms</a></tt> <tt class="py-keyword">import</tt> <tt id="link-4" class="py-name" targets="Class heron_upload.forms.UploadForm=heron_upload.forms.UploadForm-class.html"><a title="heron_upload.forms.UploadForm" class="py-name" href="#" onclick="return doclink('link-4', 'UploadForm', 'link-4');">UploadForm</a></tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-5" class="py-name"><a title="heron_upload" class="py-name" href="#" onclick="return doclink('link-5', 'heron_upload', 'link-2');">heron_upload</a></tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Module AuthorizationManagement.models=AuthorizationManagement.models-module.html,Module dashboard.models=dashboard.models-module.html,Module heron_upload.models=heron_upload.models-module.html,Module heron_wps.models=heron_wps.models-module.html,Module vfwheron.models=vfwheron.models-module.html,Module wps_workflow.models=wps_workflow.models-module.html"><a title="AuthorizationManagement.models
+dashboard.models
+heron_upload.models
+heron_wps.models
+vfwheron.models
+wps_workflow.models" class="py-name" href="#" onclick="return doclink('link-6', 'models', 'link-6');">models</a></tt> <tt class="py-keyword">import</tt> <tt id="link-7" class="py-name" targets="Class heron_upload.models.UploadedFile=heron_upload.models.UploadedFile-class.html"><a title="heron_upload.models.UploadedFile" class="py-name" href="#" onclick="return doclink('link-7', 'UploadedFile', 'link-7');">UploadedFile</a></tt> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line"> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line"><tt class="py-comment"># def home(request):</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line"><tt class="py-comment">#     """</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line"><tt class="py-comment">#     Dummy page for Heron Upload tool.</tt> </tt>
+<a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"><tt class="py-comment">#     """</tt> </tt>
+<a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line"><tt class="py-comment">#     return render(request, 'heron_upload/home.html')</tt> </tt>
+<a name="L16"></a><tt class="py-lineno">16</tt>  <tt class="py-line"> </tt>
+<a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line"> </tt>
+<a name="HomeView"></a><div id="HomeView-def"><a name="L18"></a><tt class="py-lineno">18</tt> <a class="py-toggle" href="#" id="HomeView-toggle" onclick="return toggle('HomeView');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="heron_upload.views.HomeView-class.html">HomeView</a><tt class="py-op">(</tt><tt class="py-base-class">TemplateView</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HomeView-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="HomeView-expanded"><a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line">    <tt id="link-8" class="py-name" targets="Variable AuthorizationManagement.views.MyResourcesView.template_name=AuthorizationManagement.views.MyResourcesView-class.html#template_name,Variable AuthorizationManagement.views.PermissionEditingView.template_name=AuthorizationManagement.views.PermissionEditingView-class.html#template_name,Variable AuthorizationManagement.views.ProfileView.template_name=AuthorizationManagement.views.ProfileView-class.html#template_name,Variable AuthorizationManagement.views.ResourcesOverview.template_name=AuthorizationManagement.views.ResourcesOverview-class.html#template_name,Variable heron_upload.views.HomeView.template_name=heron_upload.views.HomeView-class.html#template_name,Variable vfwheron.views.HomeView.template_name=vfwheron.views.HomeView-class.html#template_name,Variable vfwheron.views.WorkflowView.template_name=vfwheron.views.WorkflowView-class.html#template_name,Variable wps_workflow.views.EditorView.template_name=wps_workflow.views.EditorView-class.html#template_name,Variable wps_workflow.views.SettingsView.template_name=wps_workflow.views.SettingsView-class.html#template_name,Variable wps_workflow.views.WorkflowsView.template_name=wps_workflow.views.WorkflowsView-class.html#template_name"><a title="AuthorizationManagement.views.MyResourcesView.template_name
+AuthorizationManagement.views.PermissionEditingView.template_name
+AuthorizationManagement.views.ProfileView.template_name
+AuthorizationManagement.views.ResourcesOverview.template_name
+heron_upload.views.HomeView.template_name
+vfwheron.views.HomeView.template_name
+vfwheron.views.WorkflowView.template_name
+wps_workflow.views.EditorView.template_name
+wps_workflow.views.SettingsView.template_name
+wps_workflow.views.WorkflowsView.template_name" class="py-name" href="#" onclick="return doclink('link-8', 'template_name', 'link-8');">template_name</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'heron_upload/home.html'</tt> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line"> </tt>
+<a name="HomeView.get"></a><div id="HomeView.get-def"><a name="L21"></a><tt class="py-lineno">21</tt> <a class="py-toggle" href="#" id="HomeView.get-toggle" onclick="return toggle('HomeView.get');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="heron_upload.views.HomeView-class.html#get">get</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HomeView.get-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="HomeView.get-expanded"><a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line">        <tt class="py-name">data_list</tt> <tt class="py-op">=</tt> <tt id="link-9" class="py-name"><a title="heron_upload.models.UploadedFile" class="py-name" href="#" onclick="return doclink('link-9', 'UploadedFile', 'link-7');">UploadedFile</a></tt><tt class="py-op">.</tt><tt class="py-name">objects</tt><tt class="py-op">.</tt><tt class="py-name">all</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L23"></a><tt class="py-lineno">23</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">render</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">request</tt><tt class="py-op">,</tt> <tt class="py-string">'heron_upload/home.html'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-string">'data'</tt><tt class="py-op">:</tt> <tt class="py-name">data_list</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line"> </tt>
+<a name="HomeView.post"></a><div id="HomeView.post-def"><a name="L25"></a><tt class="py-lineno">25</tt> <a class="py-toggle" href="#" id="HomeView.post-toggle" onclick="return toggle('HomeView.post');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="heron_upload.views.HomeView-class.html#post">post</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="HomeView.post-collapsed" style="display:none;" pad="++" indent="++++++++"></div><div id="HomeView.post-expanded"><a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line">        <tt class="py-name">form</tt> <tt class="py-op">=</tt> <tt id="link-10" class="py-name"><a title="heron_upload.forms.UploadForm" class="py-name" href="#" onclick="return doclink('link-10', 'UploadForm', 'link-4');">UploadForm</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">POST</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">FILES</tt><tt class="py-op">)</tt> </tt>
+<a name="L27"></a><tt class="py-lineno">27</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">form</tt><tt class="py-op">.</tt><tt class="py-name">is_valid</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L28"></a><tt class="py-lineno">28</tt>  <tt class="py-line">            <tt id="link-11" class="py-name" targets="Variable heron_upload.models.UploadedFile.file=heron_upload.models.UploadedFile-class.html#file"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-11', 'file', 'link-11');">file</a></tt> <tt class="py-op">=</tt> <tt class="py-name">form</tt><tt class="py-op">.</tt><tt class="py-name">save</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L29"></a><tt class="py-lineno">29</tt>  <tt class="py-line">            <tt id="link-12" class="py-name" targets="Variable wps_workflow.models.Artefact.data=wps_workflow.models.Artefact-class.html#data"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-12', 'data', 'link-12');">data</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-string">'is_valid'</tt><tt class="py-op">:</tt> <tt class="py-name">True</tt><tt class="py-op">,</tt> <tt class="py-string">'name'</tt><tt class="py-op">:</tt> <tt id="link-13" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-13', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-14', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Variable AuthorizationManagement.apps.AuthorizationmanagementConfig.name=AuthorizationManagement.apps.AuthorizationmanagementConfig-class.html#name,Variable AuthorizationManagement.models.Resource.name=AuthorizationManagement.models.Resource-class.html#name,Variable dashboard.apps.DashboardConfig.name=dashboard.apps.DashboardConfig-class.html#name,Variable dashboard.models.WebProcessingService.name=dashboard.models.WebProcessingService-class.html#name,Variable heron_monitor.apps.HeronMonitorConfig.name=heron_monitor.apps.HeronMonitorConfig-class.html#name,Variable heron_upload.apps.HeronUploadConfig.name=heron_upload.apps.HeronUploadConfig-class.html#name,Variable heron_visual.apps.HeronVisualConfig.name=heron_visual.apps.HeronVisualConfig-class.html#name,Variable heron_wps.apps.HeronWpsConfig.name=heron_wps.apps.HeronWpsConfig-class.html#name,Variable heron_wps.models.WebProcessingService.name=heron_wps.models.WebProcessingService-class.html#name,Variable vfwheron.apps.VfwheronConfig.name=vfwheron.apps.VfwheronConfig-class.html#name,Variable vfwheron.models.DjangoMigrations.name=vfwheron.models.DjangoMigrations-class.html#name,Variable wps_workflow.apps.wps_workflowConfig.name=wps_workflow.apps.wps_workflowConfig-class.html#name,Variable wps_workflow.models.Workflow.name=wps_workflow.models.Workflow-class.html#name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-15', 'name', 'link-15');">name</a></tt><tt class="py-op">,</tt> <tt class="py-string">'url'</tt><tt class="py-op">:</tt> <tt id="link-16" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-16', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-17" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-17', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt class="py-name">url</tt><tt class="py-op">}</tt> </tt>
+<a name="L30"></a><tt class="py-lineno">30</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L31"></a><tt class="py-lineno">31</tt>  <tt class="py-line">            <tt id="link-18" class="py-name"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-18', 'data', 'link-12');">data</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-string">'is_valid'</tt><tt class="py-op">:</tt> <tt class="py-name">False</tt><tt class="py-op">}</tt> </tt>
+<a name="L32"></a><tt class="py-lineno">32</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">JsonResponse</tt><tt class="py-op">(</tt><tt id="link-19" class="py-name"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-19', 'data', 'link-12');">data</a></tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L33"></a><tt class="py-lineno">33</tt>  <tt class="py-line"> </tt>
+<a name="L34"></a><tt class="py-lineno">34</tt>  <tt class="py-line"> </tt>
+<a name="clear_database"></a><div id="clear_database-def"><a name="L35"></a><tt class="py-lineno">35</tt> <a class="py-toggle" href="#" id="clear_database-toggle" onclick="return toggle('clear_database');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="heron_upload.views-module.html#clear_database">clear_database</a><tt class="py-op">(</tt><tt class="py-param">request</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="clear_database-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="clear_database-expanded"><a name="L36"></a><tt class="py-lineno">36</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt id="link-20" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-20', 'file', 'link-11');">file</a></tt> <tt class="py-keyword">in</tt> <tt id="link-21" class="py-name"><a title="heron_upload.models.UploadedFile" class="py-name" href="#" onclick="return doclink('link-21', 'UploadedFile', 'link-7');">UploadedFile</a></tt><tt class="py-op">.</tt><tt class="py-name">objects</tt><tt class="py-op">.</tt><tt class="py-name">all</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L37"></a><tt class="py-lineno">37</tt>  <tt class="py-line">        <tt id="link-22" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-22', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-23" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-23', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-24" class="py-name" targets="Static Method wps_workflow.views.ProcessView.delete()=wps_workflow.views.ProcessView-class.html#delete,Static Method wps_workflow.views.WPSView.delete()=wps_workflow.views.WPSView-class.html#delete,Static Method wps_workflow.views.WorkflowView.delete()=wps_workflow.views.WorkflowView-class.html#delete"><a title="wps_workflow.views.ProcessView.delete
+wps_workflow.views.WPSView.delete
+wps_workflow.views.WorkflowView.delete" class="py-name" href="#" onclick="return doclink('link-24', 'delete', 'link-24');">delete</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L38"></a><tt class="py-lineno">38</tt>  <tt class="py-line">        <tt id="link-25" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-25', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="wps_workflow.views.ProcessView.delete
+wps_workflow.views.WPSView.delete
+wps_workflow.views.WorkflowView.delete" class="py-name" href="#" onclick="return doclink('link-26', 'delete', 'link-24');">delete</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L39"></a><tt class="py-lineno">39</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">redirect</tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">POST</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method AuthorizationManagement.views.AddNewResourceView.get()=AuthorizationManagement.views.AddNewResourceView-class.html#get,Method AuthorizationManagement.views.HomeView.get()=AuthorizationManagement.views.HomeView-class.html#get,Method AuthorizationManagement.views.OpenResourceView.get()=AuthorizationManagement.views.OpenResourceView-class.html#get,Method AuthorizationManagement.views.PermissionEditingView.get()=AuthorizationManagement.views.PermissionEditingView-class.html#get,Method AuthorizationManagement.views.PermissionEditingViewSearch.get()=AuthorizationManagement.views.PermissionEditingViewSearch-class.html#get,Method AuthorizationManagement.views.ProfileView.get()=AuthorizationManagement.views.ProfileView-class.html#get,Method AuthorizationManagement.views.ResourcesOverviewSearch.get()=AuthorizationManagement.views.ResourcesOverviewSearch-class.html#get,Method heron_upload.views.HomeView.get()=heron_upload.views.HomeView-class.html#get,Method vfwheron.views.GeoserverView.get()=vfwheron.views.GeoserverView-class.html#get,Method vfwheron.views.HelpView.get()=vfwheron.views.HelpView-class.html#get,Method vfwheron.views.menuView.get()=vfwheron.views.menuView-class.html#get,Static Method wps_workflow.views.ProcessView.get()=wps_workflow.views.ProcessView-class.html#get,Static Method wps_workflow.views.UserView.get()=wps_workflow.views.UserView-class.html#get,Static Method wps_workflow.views.WPSView.get()=wps_workflow.views.WPSView-class.html#get,Static Method wps_workflow.views.WorkflowView.get()=wps_workflow.views.WorkflowView-class.html#get"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-27', 'get', 'link-27');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'next'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L40"></a><tt class="py-lineno">40</tt>  <tt class="py-line"> </tt>
+<a name="L41"></a><tt class="py-lineno">41</tt>  <tt class="py-line"> </tt>
+<a name="delete_data"></a><div id="delete_data-def"><a name="L42"></a><tt class="py-lineno">42</tt> <a class="py-toggle" href="#" id="delete_data-toggle" onclick="return toggle('delete_data');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="heron_upload.views-module.html#delete_data">delete_data</a><tt class="py-op">(</tt><tt class="py-param">request</tt><tt class="py-op">,</tt> <tt class="py-param">pk</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="delete_data-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="delete_data-expanded"><a name="L43"></a><tt class="py-lineno">43</tt>  <tt class="py-line">    <tt id="link-28" class="py-name"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-28', 'data', 'link-12');">data</a></tt> <tt class="py-op">=</tt> <tt class="py-name">get_object_or_404</tt><tt class="py-op">(</tt><tt id="link-29" class="py-name"><a title="heron_upload.models.UploadedFile" class="py-name" href="#" onclick="return doclink('link-29', 'UploadedFile', 'link-7');">UploadedFile</a></tt><tt class="py-op">,</tt> <tt class="py-name">pk</tt><tt class="py-op">=</tt><tt class="py-name">pk</tt><tt class="py-op">)</tt> </tt>
+<a name="L44"></a><tt class="py-lineno">44</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt><tt class="py-op">(</tt><tt class="py-string">'in delete / data: '</tt><tt class="py-op">,</tt> <tt id="link-30" class="py-name"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-30', 'data', 'link-12');">data</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L45"></a><tt class="py-lineno">45</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">method</tt> <tt class="py-op">==</tt> <tt class="py-string">'POST'</tt><tt class="py-op">:</tt> </tt>
+<a name="L46"></a><tt class="py-lineno">46</tt>  <tt class="py-line">        <tt class="py-name">form</tt> <tt class="py-op">=</tt> <tt id="link-31" class="py-name"><a title="heron_upload.forms.UploadForm" class="py-name" href="#" onclick="return doclink('link-31', 'UploadForm', 'link-4');">UploadForm</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">POST</tt><tt class="py-op">,</tt> <tt class="py-name">instance</tt><tt class="py-op">=</tt><tt id="link-32" class="py-name"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-32', 'data', 'link-12');">data</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno">47</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L48"></a><tt class="py-lineno">48</tt>  <tt class="py-line">        <tt class="py-name">form</tt> <tt class="py-op">=</tt> <tt id="link-33" class="py-name"><a title="heron_upload.forms.UploadForm" class="py-name" href="#" onclick="return doclink('link-33', 'UploadForm', 'link-4');">UploadForm</a></tt><tt class="py-op">(</tt><tt class="py-name">instance</tt><tt class="py-op">=</tt><tt id="link-34" class="py-name"><a title="wps_workflow.models.Artefact.data" class="py-name" href="#" onclick="return doclink('link-34', 'data', 'link-12');">data</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L49"></a><tt class="py-lineno">49</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt id="link-35" class="py-name" targets="Class AuthorizationManagement.views.HomeView=AuthorizationManagement.views.HomeView-class.html,Class heron_upload.views.HomeView=heron_upload.views.HomeView-class.html,Class vfwheron.views.HomeView=vfwheron.views.HomeView-class.html"><a title="AuthorizationManagement.views.HomeView
+heron_upload.views.HomeView
+vfwheron.views.HomeView" class="py-name" href="#" onclick="return doclink('link-35', 'HomeView', 'link-35');">HomeView</a></tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-36', 'get', 'link-27');">get</a></tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno">50</tt>  <tt class="py-line"> </tt>
+<a name="L51"></a><tt class="py-lineno">51</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt id="link-37" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-37', 'file', 'link-11');">file</a></tt> <tt class="py-keyword">in</tt> <tt id="link-38" class="py-name"><a title="heron_upload.models.UploadedFile" class="py-name" href="#" onclick="return doclink('link-38', 'UploadedFile', 'link-7');">UploadedFile</a></tt><tt class="py-op">.</tt><tt class="py-name">objects</tt><tt class="py-op">.</tt><tt class="py-name">all</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L52"></a><tt class="py-lineno">52</tt>  <tt class="py-line">        <tt id="link-39" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-39', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-40" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-40', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-41" class="py-name"><a title="wps_workflow.views.ProcessView.delete
+wps_workflow.views.WPSView.delete
+wps_workflow.views.WorkflowView.delete" class="py-name" href="#" onclick="return doclink('link-41', 'delete', 'link-24');">delete</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L53"></a><tt class="py-lineno">53</tt>  <tt class="py-line">        <tt id="link-42" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-42', 'file', 'link-11');">file</a></tt><tt class="py-op">.</tt><tt id="link-43" class="py-name"><a title="wps_workflow.views.ProcessView.delete
+wps_workflow.views.WPSView.delete
+wps_workflow.views.WorkflowView.delete" class="py-name" href="#" onclick="return doclink('link-43', 'delete', 'link-24');">delete</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L54"></a><tt class="py-lineno">54</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">redirect</tt><tt class="py-op">(</tt><tt class="py-name">request</tt><tt class="py-op">.</tt><tt class="py-name">POST</tt><tt class="py-op">.</tt><tt id="link-44" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-44', 'get', 'link-27');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'next'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L55"></a><tt class="py-lineno">55</tt>  <tt class="py-line"> </tt>
+<a name="L56"></a><tt class="py-lineno">56</tt>  <tt class="py-line"> <tt class="py-comment"># class DataUploadView(View):</tt> </tt>
+<a name="L57"></a><tt class="py-lineno">57</tt>  <tt class="py-line"> <tt class="py-comment">#     def get(self, request):</tt> </tt>
+<a name="L58"></a><tt class="py-lineno">58</tt>  <tt class="py-line"> <tt class="py-comment">#         data_list = UploadedFile.objects.all()</tt> </tt>
+<a name="L59"></a><tt class="py-lineno">59</tt>  <tt class="py-line"> <tt class="py-comment">#         return render(self.request, 'base_app/workspace.html', {'data': data_list})</tt> </tt>
+<a name="L60"></a><tt class="py-lineno">60</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:35 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

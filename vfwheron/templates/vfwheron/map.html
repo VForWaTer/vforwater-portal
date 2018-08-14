@@ -6,6 +6,9 @@
 <head>
 	<link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/ol.css' %}">
 	<script src="{% static 'vfwheron/js/ol.js' %}" type="text/javascript"></script>
+{#    TODO: Don't use web adresses for production#}
+    <link rel="stylesheet" href="https://cdn.rawgit.com/Viglino/ol-ext/master/dist/ol-ext.min.css" />
+    <script type="text/javascript" src="https://cdn.rawgit.com/Viglino/ol-ext/master/dist/ol-ext.min.js"></script>
 	<script src="{% static 'vfwheron/js/map.js' %}" type="text/javascript"></script>
 {#    TODO: menu_objects should not be loaded in map.html. Why isn't it working in select_data.html? Time of loading?#}
 	<script src="{% static 'vfwheron/js/menu_objects.js' %}" type="text/javascript"></script>
@@ -26,7 +29,7 @@
 
     <!--TODO: Was ist besser um Werte an js zu übergeben? <param> oder <script>? param muss direkt abgerufen werden, script ist für alle zugänglich)-->
 	<param id="dataExt" value ="{{ dataExt }}"></param> <!-- param to bridge data from view to js  -->
-	<param id="data_style" value = '{"data_style": "{{ data_style }}"}'></param> <!-- style from vfw.js?  -->
+	<param id="data_layer" value ="{{ data_layer }}"></param> <!-- param to bridge data from view to js  -->
 
 	<div class="respo-main respo-black respo-icon-bar" id="filterbox">
 		  <a href="javascript:void(0)" id="draw_polygon" class="respo-hover-white respo-hide-small" title="Draw"><i class="fa fa-square-o fa-fw"></i></a>
@@ -47,6 +50,10 @@
 
     	<div id="popup" class="ol-popup">
             <div id="popup-content">
+            </div>
+            <div class="center">
+                <div id="popup-paginat" class="respo-pagination">
+                </div>
             </div>
 {#            <img id="preview_img" src="" alt="Keine Vorschau verfügbar"/>#}
             <a href="#" id="popup-closer" class="ol-popup-closer"></a>

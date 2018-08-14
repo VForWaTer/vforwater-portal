@@ -1,0 +1,1353 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.msvs_emulation.MsvsSettings</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.msvs_emulation-module.html">Module&nbsp;msvs_emulation</a> ::
+        Class&nbsp;MsvsSettings
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.msvs_emulation.MsvsSettings-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class MsvsSettings</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_msvs_19" name="uml_class_diagram_for_gyp_msvs_19">
+<area shape="rect" id="node1_14" href="gyp.msvs_emulation.MsvsSettings-class.html#__init__" title="x.__init__(...) initializes x; see help(type(x)) for signature" alt="" coords="18,37,385,57"/>
+<area shape="rect" id="node1_15" href="gyp.msvs_emulation.MsvsSettings-class.html#GetExtension" title="Returns the extension for the target, with no leading dot." alt="" coords="18,57,385,77"/>
+<area shape="rect" id="node1_16" href="gyp.msvs_emulation.MsvsSettings-class.html#GetVSMacroEnv" title="Get a dict of variables mapping internal VS macro names to their gyp &#160;equivalents." alt="" coords="18,77,385,97"/>
+<area shape="rect" id="node1_17" href="gyp.msvs_emulation.MsvsSettings-class.html#ConvertVSMacros" title="Convert from VS macro names to something equivalent." alt="" coords="18,97,385,117"/>
+<area shape="rect" id="node1_18" href="gyp.msvs_emulation.MsvsSettings-class.html#AdjustLibraries" title="Strip &#45;l from library if it&#39;s specified with that." alt="" coords="18,117,385,137"/>
+<area shape="rect" id="node1_19" href="gyp.msvs_emulation.MsvsSettings-class.html#GetArch" title="Get architecture based on msvs_configuration_platform and &#160;msvs_target_platform." alt="" coords="18,137,385,157"/>
+<area shape="rect" id="node1_20" href="gyp.msvs_emulation.MsvsSettings-class.html#AdjustIncludeDirs" title="Updates include_dirs to expand VS specific paths, and adds the system &#160;include dirs used for platform SDK and similar." alt="" coords="18,157,385,177"/>
+<area shape="rect" id="node1_21" href="gyp.msvs_emulation.MsvsSettings-class.html#AdjustMidlIncludeDirs" title="Updates midl_include_dirs to expand VS specific paths, and adds the system &#160;include dirs used for platform SDK and similar." alt="" coords="18,177,385,197"/>
+<area shape="rect" id="node1_22" href="gyp.msvs_emulation.MsvsSettings-class.html#GetComputedDefines" title="Returns the set of defines that are injected to the defines list based on &#160;other VS settings." alt="" coords="18,197,385,217"/>
+<area shape="rect" id="node1_23" href="gyp.msvs_emulation.MsvsSettings-class.html#GetCompilerPdbName" title="Get the pdb file name that should be used for compiler invocations, or None if there&#39;s no explicit name specified." alt="" coords="18,217,385,237"/>
+<area shape="rect" id="node1_24" href="gyp.msvs_emulation.MsvsSettings-class.html#GetMapFileName" title="Gets the explicitly overriden map file name for a target or returns None if it&#39;s not set." alt="" coords="18,237,385,257"/>
+<area shape="rect" id="node1_25" href="gyp.msvs_emulation.MsvsSettings-class.html#GetOutputName" title="Gets the explicitly overridden output name for a target or returns None if &#160;it&#39;s not overridden." alt="" coords="18,257,385,277"/>
+<area shape="rect" id="node1_26" href="gyp.msvs_emulation.MsvsSettings-class.html#GetPDBName" title="Gets the explicitly overridden pdb name for a target or returns default if &#160;it&#39;s not overridden, or if no pdb will be generated." alt="" coords="18,277,385,297"/>
+<area shape="rect" id="node1_27" href="gyp.msvs_emulation.MsvsSettings-class.html#GetIdlBuildData" title="Determine the implicit outputs for an idl file." alt="" coords="18,317,385,337"/>
+<area shape="rect" id="node1" href="gyp.msvs_emulation.MsvsSettings-class.html" title="A class that understands the gyp &#39;msvs_...&#39; values (especially the msvs_settings field)." alt="" coords="5,5,396,344"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_msvs_19.gif" alt='' usemap="#uml_class_diagram_for_gyp_msvs_19" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>A class that understands the gyp 'msvs_...' values (especially the 
+  msvs_settings field). They largely correpond to the VS2008 IDE DOM. This 
+  class helps map those settings to command line options.</p>
+
+<!-- ==================== NESTED CLASSES ==================== -->
+<a name="section-NestedClasses"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Nested Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-NestedClasses"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.msvs_emulation.MsvsSettings._GetWrapper-class.html" class="summary-name" onclick="show_private();">_GetWrapper</a>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">generator_flags</span>)</span><br />
+      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#GetExtension" class="summary-sig-name">GetExtension</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the extension for the target, with no leading dot.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetExtension">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetVSMacroEnv"></a><span class="summary-sig-name">GetVSMacroEnv</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">base_to_build</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">config</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Get a dict of variables mapping internal VS macro names to their gyp 
+      equivalents.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetVSMacroEnv">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ConvertVSMacros"></a><span class="summary-sig-name">ConvertVSMacros</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">s</span>,
+        <span class="summary-sig-arg">base_to_build</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">config</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Convert from VS macro names to something equivalent.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.ConvertVSMacros">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="AdjustLibraries"></a><span class="summary-sig-name">AdjustLibraries</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">libraries</span>)</span><br />
+      Strip -l from library if it's specified with that.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.AdjustLibraries">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#_GetAndMunge" class="summary-sig-name" onclick="show_private();">_GetAndMunge</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">field</span>,
+        <span class="summary-sig-arg">path</span>,
+        <span class="summary-sig-arg">default</span>,
+        <span class="summary-sig-arg">prefix</span>,
+        <span class="summary-sig-arg">append</span>,
+        <span class="summary-sig-arg">map</span>)</span><br />
+      Retrieve a value from |field| at |path| or return |default|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetAndMunge">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#GetArch" class="summary-sig-name">GetArch</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Get architecture based on msvs_configuration_platform and 
+      msvs_target_platform.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetArch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_TargetConfig"></a><span class="summary-sig-name">_TargetConfig</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns the target-specific configuration.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._TargetConfig">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_Setting"></a><span class="summary-sig-name">_Setting</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">default</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">prefix</span>=<span class="summary-sig-default">''</span>,
+        <span class="summary-sig-arg">append</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">map</span>=<span class="summary-sig-default">None</span>)</span><br />
+      _GetAndMunge for msvs_settings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._Setting">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_ConfigAttrib"></a><span class="summary-sig-name">_ConfigAttrib</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">default</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">prefix</span>=<span class="summary-sig-default">''</span>,
+        <span class="summary-sig-arg">append</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">map</span>=<span class="summary-sig-default">None</span>)</span><br />
+      _GetAndMunge for msvs_configuration_attributes.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._ConfigAttrib">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="AdjustIncludeDirs"></a><span class="summary-sig-name">AdjustIncludeDirs</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">include_dirs</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Updates include_dirs to expand VS specific paths, and adds the system
+      include dirs used for platform SDK and similar.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.AdjustIncludeDirs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="AdjustMidlIncludeDirs"></a><span class="summary-sig-name">AdjustMidlIncludeDirs</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">midl_include_dirs</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Updates midl_include_dirs to expand VS specific paths, and adds the 
+      system include dirs used for platform SDK and similar.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.AdjustMidlIncludeDirs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetComputedDefines"></a><span class="summary-sig-name">GetComputedDefines</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns the set of defines that are injected to the defines list 
+      based on other VS settings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetComputedDefines">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCompilerPdbName"></a><span class="summary-sig-name">GetCompilerPdbName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">expand_special</span>)</span><br />
+      Get the pdb file name that should be used for compiler invocations, 
+      or None if there's no explicit name specified.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetCompilerPdbName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetMapFileName"></a><span class="summary-sig-name">GetMapFileName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">expand_special</span>)</span><br />
+      Gets the explicitly overriden map file name for a target or returns 
+      None if it's not set.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetMapFileName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetOutputName"></a><span class="summary-sig-name">GetOutputName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">expand_special</span>)</span><br />
+      Gets the explicitly overridden output name for a target or returns 
+      None if it's not overridden.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetOutputName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetPDBName"></a><span class="summary-sig-name">GetPDBName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">expand_special</span>,
+        <span class="summary-sig-arg">default</span>)</span><br />
+      Gets the explicitly overridden pdb name for a target or returns 
+      default if it's not overridden, or if no pdb will be generated.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetPDBName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetNoImportLibrary"></a><span class="summary-sig-name">GetNoImportLibrary</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      If NoImportLibrary: true, ninja will not expect the output to include
+      an import library.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetNoImportLibrary">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetAsmflags"></a><span class="summary-sig-name">GetAsmflags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns the flags that need to be added to ml invocations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetAsmflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflags"></a><span class="summary-sig-name">GetCflags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns the flags that need to be added to .c and .cc compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetCflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetPchFlags"></a><span class="summary-sig-name">_GetPchFlags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">extension</span>)</span><br />
+      Get the flags to be added to the cflags for precompiled header 
+      support.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetPchFlags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflagsC"></a><span class="summary-sig-name">GetCflagsC</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns the flags that need to be added to .c compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetCflagsC">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflagsCC"></a><span class="summary-sig-name">GetCflagsCC</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns the flags that need to be added to .cc compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetCflagsCC">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetAdditionalLibraryDirectories"></a><span class="summary-sig-name">_GetAdditionalLibraryDirectories</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">root</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>)</span><br />
+      Get and normalize the list of paths in AdditionalLibraryDirectories 
+      setting.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetAdditionalLibraryDirectories">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetLibFlags"></a><span class="summary-sig-name">GetLibFlags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>)</span><br />
+      Returns the flags that need to be added to lib commands.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetLibFlags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#GetDefFile" class="summary-sig-name">GetDefFile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>)</span><br />
+      Returns the .def file from sources, if any.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetDefFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#_GetDefFileAsLdflags" class="summary-sig-name" onclick="show_private();">_GetDefFileAsLdflags</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ldflags</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>)</span><br />
+      .def files get implicitly converted to a ModuleDefinitionFile for the
+      linker in the VS generator.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetDefFileAsLdflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetPGDName"></a><span class="summary-sig-name">GetPGDName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">expand_special</span>)</span><br />
+      Gets the explicitly overridden pgd name for a target or returns None 
+      if it's not overridden.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetPGDName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetLdflags"></a><span class="summary-sig-name">GetLdflags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>,
+        <span class="summary-sig-arg">expand_special</span>,
+        <span class="summary-sig-arg">manifest_base_name</span>,
+        <span class="summary-sig-arg">output_name</span>,
+        <span class="summary-sig-arg">is_executable</span>,
+        <span class="summary-sig-arg">build_dir</span>)</span><br />
+      Returns the flags that need to be added to link commands, and the 
+      manifest files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetLdflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#_GetLdManifestFlags" class="summary-sig-name" onclick="show_private();">_GetLdManifestFlags</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>,
+        <span class="summary-sig-arg">allow_isolation</span>,
+        <span class="summary-sig-arg">build_dir</span>)</span><br />
+      Returns a 3-tuple:</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetLdManifestFlags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetAdditionalManifestFiles"></a><span class="summary-sig-name">_GetAdditionalManifestFiles</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>)</span><br />
+      Gets additional manifest files that are added to the default one 
+      generated by the linker.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetAdditionalManifestFiles">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="IsUseLibraryDependencyInputs"></a><span class="summary-sig-name">IsUseLibraryDependencyInputs</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns whether the target should be linked via Use Library 
+      Dependency Inputs (using component .objs of a given .lib).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.IsUseLibraryDependencyInputs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="IsEmbedManifest"></a><span class="summary-sig-name">IsEmbedManifest</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns whether manifest should be linked into binary.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.IsEmbedManifest">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="IsLinkIncremental"></a><span class="summary-sig-name">IsLinkIncremental</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Returns whether the target should be linked incrementally.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.IsLinkIncremental">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetRcflags"></a><span class="summary-sig-name">GetRcflags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">gyp_to_ninja_path</span>)</span><br />
+      Returns the flags that need to be added to invocations of the 
+      resource compiler.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetRcflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#BuildCygwinBashCommandLine" class="summary-sig-name">BuildCygwinBashCommandLine</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">args</span>,
+        <span class="summary-sig-arg">path_to_base</span>)</span><br />
+      Build a command line that runs args via cygwin bash.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.BuildCygwinBashCommandLine">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#IsRuleRunUnderCygwin" class="summary-sig-name">IsRuleRunUnderCygwin</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">rule</span>)</span><br />
+      Determine if an action should be run under cygwin.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.IsRuleRunUnderCygwin">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_HasExplicitRuleForExtension"></a><span class="summary-sig-name">_HasExplicitRuleForExtension</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">extension</span>)</span><br />
+      Determine if there's an explicit rule for a particular extension.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._HasExplicitRuleForExtension">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_HasExplicitIdlActions"></a><span class="summary-sig-name">_HasExplicitIdlActions</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>)</span><br />
+      Determine if an action should not run midl for .idl files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._HasExplicitIdlActions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#HasExplicitIdlRulesOrActions" class="summary-sig-name">HasExplicitIdlRulesOrActions</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>)</span><br />
+      Determine if there's an explicit rule or action for idl files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.HasExplicitIdlRulesOrActions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#HasExplicitAsmRules" class="summary-sig-name">HasExplicitAsmRules</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>)</span><br />
+      Determine if there's an explicit rule for asm files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.HasExplicitAsmRules">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.msvs_emulation.MsvsSettings-class.html#GetIdlBuildData" class="summary-sig-name">GetIdlBuildData</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">config</span>)</span><br />
+      Determine the implicit outputs for an idl file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetIdlBuildData">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>,
+        <span class="sig-arg">generator_flags</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetExtension"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetExtension</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetExtension">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the extension for the target, with no leading dot.</p>
+  <p>Uses 'product_extension' if specified, otherwise uses MSVS defaults 
+  based on the target type.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetAndMunge"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetAndMunge</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">field</span>,
+        <span class="sig-arg">path</span>,
+        <span class="sig-arg">default</span>,
+        <span class="sig-arg">prefix</span>,
+        <span class="sig-arg">append</span>,
+        <span class="sig-arg">map</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetAndMunge">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Retrieve a value from |field| at |path| or return |default|. If 
+  |append| is specified, and the item is found, it will be appended to that
+  object instead of returned. If |map| is specified, results will be 
+  remapped through |map| before being returned or appended.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetArch"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetArch</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">config</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetArch">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get architecture based on msvs_configuration_platform and 
+  msvs_target_platform. Returns either 'x86' or 'x64'.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetDefFile"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetDefFile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">gyp_to_build_path</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetDefFile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the .def file from sources, if any.  Otherwise returns 
+  None.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetDefFileAsLdflags"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetDefFileAsLdflags</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ldflags</span>,
+        <span class="sig-arg">gyp_to_build_path</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetDefFileAsLdflags">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>.def files get implicitly converted to a ModuleDefinitionFile for the 
+  linker in the VS generator. Emulate that behaviour here.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetLdManifestFlags"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetLdManifestFlags</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">config</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">gyp_to_build_path</span>,
+        <span class="sig-arg">allow_isolation</span>,
+        <span class="sig-arg">build_dir</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings._GetLdManifestFlags">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns a 3-tuple:</p>
+  <ul>
+    <li>
+      the set of flags that need to be added to the link to generate a 
+      default manifest
+    </li>
+    <li>
+      the intermediate manifest that the linker will generate that should 
+      be used to assert it doesn't add anything to the merged one.
+    </li>
+    <li>
+      the list of all the manifest files to be merged by the manifest tool 
+      and included into the link.
+    </li>
+  </ul>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="BuildCygwinBashCommandLine"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">BuildCygwinBashCommandLine</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">args</span>,
+        <span class="sig-arg">path_to_base</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.BuildCygwinBashCommandLine">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Build a command line that runs args via cygwin bash. We assume that 
+  all incoming paths are in Windows normpath'd form, so they need to be 
+  converted to posix style for the part of the command line that's passed 
+  to bash. We also have to do some Visual Studio macro emulation here 
+  because various rules use magic VS names for things. Also note that rules
+  that contain ninja variables cannot be fixed here (for example 
+  ${source}), so the outer generator needs to make sure that the paths that
+  are written out are in posix style, if the command line will be used 
+  here.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="IsRuleRunUnderCygwin"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">IsRuleRunUnderCygwin</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">rule</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.IsRuleRunUnderCygwin">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Determine if an action should be run under cygwin. If the variable is 
+  unset, or set to 1 we use cygwin.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="HasExplicitIdlRulesOrActions"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">HasExplicitIdlRulesOrActions</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.HasExplicitIdlRulesOrActions">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Determine if there's an explicit rule or action for idl files. When 
+  there isn't we need to generate implicit rules to build MIDL .idl 
+  files.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="HasExplicitAsmRules"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">HasExplicitAsmRules</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.HasExplicitAsmRules">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Determine if there's an explicit rule for asm files. When there isn't 
+  we need to generate implicit rules to assemble .asm files.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetIdlBuildData"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetIdlBuildData</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">source</span>,
+        <span class="sig-arg">config</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.msvs_emulation-pysrc.html#MsvsSettings.GetIdlBuildData">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Determine the implicit outputs for an idl file. Returns output 
+  directory, outputs, and variables and flags that are required.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Mon Jul 30 12:58:29 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
