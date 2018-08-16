@@ -180,14 +180,15 @@ function create_map() {
             content.innerHTML = '<div id="loader" class="loader"></div>';
             metaData_Overlay.setPosition(evt.coordinate);
 
-            let numOfCol = 5;
+            let nCol = 5; // number of columns of metadata per page
             let clickedFeatures = map.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
             let pos = evt.coordinate;
-            if (clickedFeatures.length > 0 && clickedFeatures.length <= numOfCol) { // check how many datasets are selected
+            let l = clickedFeatures.length;
+            if (l > 0 && l <= nCol) { // check how many datasets are selected
                 let ids = [];
                 let name, id;
                 // bulid list with selection to send to server
-                for (let i = 0; i < clickedFeatures.length; i++) {
+                for (let i = 0; i < l; i++) {
                     name = clickedFeatures[i].getId();
                     id = parseInt(name.substr(wfsLayerName.length + 1, 8));
                     ids.push(id);
@@ -195,13 +196,13 @@ function create_map() {
                 popupContent(ids, pos)
                 paginat.innerHTML = []
 
-            } else if (clickedFeatures.length > numOfCol) {
+            } else if (l > nCol) {
                 let page = 1;
                 let name, id;
                 let ids = [];
                 let idDict = {1:[]};
-                for (let i = 0, j = 0; i < clickedFeatures.length; i++, j++) {
-                    if (j >= numOfCol) {
+                for (let i = 0, j = 0; i < l; i++, j++) {
+                    if (j >= nCol) {
                         j = 0;
                         page++;
                         idDict[page]=[];
@@ -215,17 +216,7 @@ function create_map() {
                 popupContent(idDict[1], pos);
 
                 // add paginatation to popup:
-                let pagi = '';
-                for (let i = 1; i <= page; i++) {
-                    if (i == 1) {
-                        pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                            'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
-                    } else {
-                        pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
-                            'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
-                    }
-                }
-                paginat.innerHTML = pagi;
+                paginat.innerHTML = buildPagi(idDict, page);
                 // end of paginatation
                 // TODO: need a list to click to next objects, to select ids
             }
@@ -235,6 +226,52 @@ function create_map() {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
 
+    }
+    function buildPagi(idDict, page) {
+        // console.log('idDict, page, pagiObj:', idDict, page)
+        let pagi = '';
+        let nDat = 16; // number of Datasets shown at once
+        if (Object.keys(idDict).length < nDat) {
+            for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                }
+            }
+        } else {
+           // TODO: Show only 16 pages to select in pagination and arrows
+           /* console.log(' + +  idDict: ', idDict)
+            let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
+            // let pagiObj = {1:[]}; // very nice, but useless for the button!
+            let pagiStr; // very nice, but useless for the button!
+            for (let j = 1; j <= nPagi; j++) {
+                let minP = nDat * (j - 1);
+                let maxP = nDat * j - 1;
+                // pagiObj[j] = [];
+                console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
+                pagi = '';
+                for (let k = minP; k <= maxP; k++) {
+                    pagiObj[j].push(idDict[k])
+                }
+            }
+            console.log('pagiObj: ', pagiObj)
+            let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
+            pagi = prePagi*/
+           for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                }
+            }
+        }
+        return pagi;
     }
     function popupContent(ids, pos) {
     // TODO: CSS style überarbeiten
@@ -311,7 +348,8 @@ function create_map() {
                     let s = getStyle(f);
                     if (ol.coordinate.convexHull) {
                         var coords = [];
-                        for (i = 0; i < cluster.length; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
+                        let l = cluster.length;
+                        for (i = 0; i < l; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
                         s.push(new ol.style.Style( // spread datapoints around the center of the cluster
                             {
                                 stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),

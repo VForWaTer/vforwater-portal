@@ -93,6 +93,11 @@ msgstr "  Menü schließen"
 msgid "Data store"
 msgstr "Datenablage"
 
+#: templates/vfwheron/base_sidebar.html:32
+#: templates/vfwheron/wps_sidebar.html:33
+msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
+msgstr "Bereich&#32um&#32die&#32ausgewählten&#32Datensätze&#32zur&#32weiteren&#32Bearbeitung&#32verfügbar&#32zu&#32machen."
+
 #: templates/vfwheron/base_sidebar.html:37
 #: templates/vfwheron/wps_sidebar.html:38
 msgid "Remove&#32all&#32datasets"
