@@ -79,14 +79,12 @@ function workspace_button(json) {
             let title = value['name'] + ' (' + value['abbr'] + ' in ' + value['unit'] + ')';
             // check if buttons already exist before creating a new one:
             if (document.getElementById(key) === null) {
-				document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding task" data-id="1"' +
-					'onmouseover="" style="cursor: pointer;" id="' + key + '" onclick="store_menu(' + key + ')" >' +
+				document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding task" ' +
+                    'data-id="' + key + '" onmouseover="" style="cursor: pointer;" id="' + key + '">' +
 					'<span class="respo-medium" title="'+title+'"><div class="task__content">' + btnName + '</div>' +
-                    '<div class="task__actions">' +
-                    '</div></span><a href="javascript:void(0)"' +
+                    '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
 					'onclick="remove_single_data('+key+')"; class="respo-hover-white respo-right">' +
-                    '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
-                    '<div id="w3popup" class="w3popup"><span class="popuptext" id="pop' + key + '"></span></div>';
+                    '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 				/*
 				document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
 					'onmouseover="" style="cursor: pointer;" id="' + key + '" onclick="store_menu(' + key + ')" >' +
@@ -120,35 +118,10 @@ function remove_all_datasets() {
 	sessionStorage.removeItem("btn");
 }
 
-// TODO: store_menu gets called when click on for remove_single_data. Prevent this! Fix it!!
-// TODO: Build overlay for sidebar???
-function store_menu(id){
+// code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
+// MIT license
 
-    /* // overwrite context menu
-    if (document.addEventListener) { // IE >= 9; other browsers
-        document.addEventListener('contextmenu', function(e) {
-            alert("You've tried to open context menu"); //here you draw your own menu
-            e.preventDefault();
-        }, false);
-    } else { // IE < 9
-        document.attachEvent('oncontextmenu', function() {
-            alert("You've tried to open context menu");
-            window.event.returnValue = false;
-        });
-    }*/
-    let content = document.getElementById("pop"+id);
-    let poptext = document.getElementById("poptext");
-    // poptext.assign("key", "'" + id + "'")
-    poptext.innerHTML.onclick = 'popupContent('+id+')';
-	// content.innerHTML = '<div id="loader" class="loader"></div>';
-	content.innerHTML = poptext.outerText;
-    content.classList.toggle("show");
-
-}
-
-
-// popup code von https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
-(function() {
+// (function() {
 
   "use strict";
   //
@@ -224,6 +197,7 @@ function store_menu(id){
   var clickCoordsY;
 
   var menu = document.querySelector("#context-menu");
+  console.log('menu: ', menu)
   var menuState = 0;
   var menuWidth;
   var menuHeight;
@@ -307,6 +281,7 @@ function store_menu(id){
   function toggleMenuOn() {
     if ( menuState !== 1 ) {
       menuState = 1;
+      console.log('menu: ', menu)
       menu.classList.add( contextMenuActive );
     }
   }
@@ -365,4 +340,4 @@ function store_menu(id){
    */
   init();
 
-})();
+// })();
