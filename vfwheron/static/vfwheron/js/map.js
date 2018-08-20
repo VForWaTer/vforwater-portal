@@ -54,6 +54,7 @@ function create_map() {
 // Elements that make up the popup.
     let container = document.getElementById('popup');
     let content = document.getElementById('popup-content');
+    let paginat = document.getElementById('popup-paginat')
     let closer = document.getElementById('popup-closer');
 
 // Create an metaData_Overlay to anchor the popup to the map.
@@ -175,87 +176,165 @@ function create_map() {
 
     function buildPopup(evt) {
         if (map.getFeaturesAtPixel(evt.pixel) != null) {
+            // Create spinning loader while getting meta data from server
+            content.innerHTML = '<div id="loader" class="loader"></div>';
+            metaData_Overlay.setPosition(evt.coordinate);
+
+            let nCol = 5; // number of columns of metadata per page
             let clickedFeatures = map.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
-            // TODO: CSS style überarbeiten
-            let popupTableBeforeMeta = '<table id="popupTable"><td>';
-            let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
-            let popUpText = popupTableBeforeMeta + popupTextStyle + '<table id="metaTable">';
-            if (clickedFeatures.length > 0) { // check how many datasets are selected
+            let pos = evt.coordinate;
+            let l = clickedFeatures.length;
+            if (l > 0 && l <= nCol) { // check how many datasets are selected
                 let ids = [];
                 let name, id;
                 // bulid list with selection to send to server
-                for (let i = 0; i < clickedFeatures.length; i++) {
+                for (let i = 0; i < l; i++) {
                     name = clickedFeatures[i].getId();
                     id = parseInt(name.substr(wfsLayerName.length + 1, 8));
                     ids.push(id);
                 }
-                // request info from server
-                $.ajax({
-                    url: DEMO_VAR + "/vfwheron/menu",
-                    dataType: 'json',
-                    data: {
-                        show_info: JSON.stringify(ids),
-                        'csrfmiddlewaretoken': csrf_token,
-                    }, // data sent with the post request
-                    success: function (json) {
-                        try {
-                            let properties = json.get;
-                            let valueLen;
-                            let buttonId = [];
-                            // loop over "properties"dict with metadata, build columns
-                            for (let j in properties) {
-                                // console.log('j: : ', j, eval('json.get["' + j + '"]'), eval('json.get["' + j + '"]').length);
-                                let values = eval('json.get["' + j + '"]');
-                                valueLen = values.length;
-                                popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
-                                // loop over dict values and build rows
-                                for (let k = 0; k < valueLen; k++) {
-                                    popUpText = popUpText + '<td>' + values[k] + '</td>';
-                                    if (j.toLowerCase() == 'id') {
-                                        buttonId.push(values[k])
-                                    }
-                                }
-                                popUpText = popUpText + '</tr>'
-                            }
-                            popUpText = popUpText + '<tr><td><b></b></td>';
-                            // build buttons for each dataset
-                            for (let k = 0; k < valueLen; k++) {
-                                popUpText = popUpText + '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
-                                    'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
-                                    'title="Attention! Loading the preview might take a while."></b></a>' +
-                                    '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
-                                    'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
-                                    'title="Put dataset to session datastore"></b></a></td>';
-                            }
+                popupContent(ids, pos)
+                paginat.innerHTML = []
 
-                            let popupTableAfterMeta = popUpText + '</table>';
-                            let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
-                            content.innerHTML = popupTableAfterMeta + img_preview;
-                            metaData_Overlay.setPosition(evt.coordinate);
-
-                        } catch (err) {
-                            document.getElementById("popup-content").removeChild(document.getElementById("loader"));
-                            content.innerHTML = '<td><a style="background-color:White;color:Red;"><b> Error: Unable to load data</td></a></b>'
-                            console.error(err); // TODO: remove for production
-                        }
+            } else if (l > nCol) {
+                let page = 1;
+                let name, id;
+                let ids = [];
+                let idDict = {1:[]};
+                for (let i = 0, j = 0; i < l; i++, j++) {
+                    if (j >= nCol) {
+                        j = 0;
+                        page++;
+                        idDict[page]=[];
                     }
+                    name = clickedFeatures[i].getId();
+                    id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+                    ids.push(id);
+                    idDict[page].push(id);
 
-                });
-                // TODO: reduce width of window for loader
-                // Create spinning loader while getting meta data from server
-                content.innerHTML = '<div id="loader" class="loader"></div>';
-                metaData_Overlay.setPosition(evt.coordinate);
+                }
+                popupContent(idDict[1], pos);
 
+                // add paginatation to popup:
+                paginat.innerHTML = buildPagi(idDict, page);
+                // end of paginatation
+                // TODO: need a list to click to next objects, to select ids
             }
+
+
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
 
     }
+    function buildPagi(idDict, page) {
+        // console.log('idDict, page, pagiObj:', idDict, page)
+        let pagi = '';
+        let nDat = 16; // number of Datasets shown at once
+        if (Object.keys(idDict).length < nDat) {
+            for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                }
+            }
+        } else {
+           // TODO: Show only 16 pages to select in pagination and arrows
+           /* console.log(' + +  idDict: ', idDict)
+            let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
+            // let pagiObj = {1:[]}; // very nice, but useless for the button!
+            let pagiStr; // very nice, but useless for the button!
+            for (let j = 1; j <= nPagi; j++) {
+                let minP = nDat * (j - 1);
+                let maxP = nDat * j - 1;
+                // pagiObj[j] = [];
+                console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
+                pagi = '';
+                for (let k = minP; k <= maxP; k++) {
+                    pagiObj[j].push(idDict[k])
+                }
+            }
+            console.log('pagiObj: ', pagiObj)
+            let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
+            pagi = prePagi*/
+           for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                }
+            }
+        }
+        return pagi;
+    }
+    function popupContent(ids, pos) {
+    // TODO: CSS style überarbeiten
+        let popupTableBeforeMeta = '<table id="popupTable"><td>';
+        let popUpText = popupTableBeforeMeta +
+            '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
+            '<table id="metaTable">';
+
+        // request info from server
+        $.ajax({
+            url: DEMO_VAR + "/vfwheron/menu",
+            dataType: 'json',
+            data: {
+                show_info: JSON.stringify(ids),
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+            success: function (json) {
+                    document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
+                    // content.innerHTML = buildPopupText(json, popUpText);
+                    metaData_Overlay.setPosition(pos);
+            }
+
+        });
+
+    }
+    // TODO: buildPopupText is the same as buildPopupTextvfw.js ==> figure out how(where) to use only one of the two functions for both cases
+    function buildPopupText(json, popUpText) {
+        let properties = json.get;
+        let valueLen;
+        let buttonId = [];
+        // loop over "properties" dict with metadata, build columns
+        for (let j in properties) {
+            let values = eval('properties["' + j + '"]');
+            valueLen = values.length;
+            popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
+            // loop over dict values and build rows
+            for (let k = 0; k < valueLen; k++) {
+                popUpText = popUpText + '<td>' + values[k] + '</td>';
+                if (j.toLowerCase() == 'id') {
+                    buttonId.push(values[k])
+                }
+            }
+            popUpText = popUpText + '</tr>'
+        }
+        popUpText = popUpText + '<tr><td><b></b></td>';
+        // build buttons for each dataset
+        for (let k = 0; k < valueLen; k++) {
+            popUpText = popUpText + '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
+                'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
+                'title="Attention! Loading the preview might take a while."></b></a>' +
+                '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
+                'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
+                'title="Put dataset to session datastore"></b></a></td>';
+        }
+
+        let popupTableAfterMeta = popUpText + '</table>';
+        let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+        return popupTableAfterMeta + img_preview;
+    }
 
     // select data with doubleclick
     //map.on('doubleclick', selectDataset);
-    var selectCluster = new ol.interaction.SelectCluster(
+    let selectCluster = new ol.interaction.SelectCluster(
         {	// Point radius: to calculate distance between the features
             pointRadius: 8.5,
             animate: 100,
@@ -264,12 +343,13 @@ function create_map() {
             // selectCluster: false,	// disable cluster selection
             // Style to draw cluster when selected
             style: function (f) {
-                var cluster = f.get('features');
+                let cluster = f.get('features');
                 if (cluster.length > 1) {
-                    var s = getStyle(f);
+                    let s = getStyle(f);
                     if (ol.coordinate.convexHull) {
                         var coords = [];
-                        for (i = 0; i < cluster.length; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
+                        let l = cluster.length;
+                        for (i = 0; i < l; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
                         s.push(new ol.style.Style( // spread datapoints around the center of the cluster
                             {
                                 stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),

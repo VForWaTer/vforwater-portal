@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+FORCE_SCRIPT_NAME = '/demo'
+##PATH_INFO = '/'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,12 +28,12 @@ if not os.path.exists(VFW_DIR):
 
 # Set where the server is running on
 HOST_NAME = "portal.vforwater.de"
-VFW_SERVER = 'https://' + HOST_NAME
+VFW_SERVER = 'https://' + HOST_NAME + '/demo'
 MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'https://' + HOST_NAME + '/geoserver'
+LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 
 # Variable to set the demo path in static files
-DEMO_VAR = ''
+DEMO_VAR = '/demo'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -45,7 +50,6 @@ if not os.path.isfile(secretFile):
 else:
     with open(secretFile) as f:
         SECRET_KEY = f.read().strip()
-
 secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
 if os.path.isfile(secretGeoServer):
     with open(secretGeoServer) as gs:
@@ -53,11 +57,11 @@ if os.path.isfile(secretGeoServer):
 else:
         # TODO: Print to log file
     print('secretGeoServer.txt is missing')
-
+    
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['portal.vforwater.de','localhost']
+ALLOWED_HOSTS = ["portal.vforwater.de","localhost","127.0.0.1"]
 
 # Logging
 LOGGING = {
@@ -91,7 +95,23 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'AuthorizationManagement': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django': {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'WARN',
+        },
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
         }
+
     }
 
 }
@@ -167,7 +187,8 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater_update',
         'HOST': 'localhost',
-        'PORT': '5432',
+        #'HOST': 'portal.vforwater.de',
+        'PORT': '5433',
         'USER': 'vfwportal',
     }
 
@@ -210,10 +231,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = '/var/www/html/static/'
+##STATIC_URL = '/static/'
+##STATIC_URL = 'https://portal.vforwater.de/demo/static/'
+STATIC_URL = '/demo/static/'
+STATIC_ROOT = '/var/www/html/demo/static/'
 
-MEDIA_URL = '/media/'
+##MEDIA_URL = '/media/'
+MEDIA_URL = '/demo/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default URLs for user authentication
@@ -221,7 +245,18 @@ LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
 LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron/failedlogin'
+#LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron'
+#LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
+
+
+##EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smarthost.kit.edu'                                                                                                                                                                                                            
+EMAIL_HOST_USER = 'info@vforwater.de'                                                                                                                                                                                              
+#EMAIL_HOST_PASSWORD = 'xxx'                                                                                                                                                                                                 
+EMAIL_PORT = 25 #587                                                                                                                                                                                                                        
+EMAIL_USE_TLS = False
 
 
 # Figure out if we're on our development server...
@@ -241,11 +276,10 @@ if ON_VFW_SERVER:
 
     # WaTTS settings
     WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
-    WATTS_SERVICE_NAME = 'rsp'
-    WATTS_ISSUER_ID = 'vforwater'
+    WATTS_SERVICE_NAME = 'rsp2'
+    WATTS_ISSUER_ID = 'vforwater_demo'
     ##WATTS_PROVIDER_ID = 'iam'
     WATTS_PROVIDER_ID = 'eudat'
-
 
 # Settings from workflowPSE, here for wps_workflow app
 import logging.handlers

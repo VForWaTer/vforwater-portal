@@ -93,6 +93,21 @@ msgstr "  Menü schließen"
 msgid "Data store"
 msgstr "Datenablage"
 
+#: templates/vfwheron/base_sidebar.html:32
+#: templates/vfwheron/wps_sidebar.html:33
+msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
+msgstr "Bereich&#32um&#32die&#32ausgewählten&#32Datensätze&#32zur&#32weiteren&#32Bearbeitung&#32verfügbar&#32zu&#32machen."
+
+#: templates/vfwheron/base_sidebar.html:37
+#: templates/vfwheron/wps_sidebar.html:38
+msgid "Remove&#32all&#32datasets"
+msgstr "Alle&#32Datensätze&#32entfernen"
+
+#: templates/vfwheron/base_sidebar.html:38
+#: templates/vfwheron/wps_sidebar.html:39
+msgid "Remove&#32all&#32datasets&#32from&#32data&#32store"
+msgstr "Alle&#32ausgewählten&#32Datensätze&#32aus&#32der&#32Datenablage&#32entfernen"
+
 #: templates/vfwheron/help.html:16
 msgid "Welcome! This site is still under construction"
 msgstr "Willkommen! Diese Seite befindet sich noch im Aufbau."
@@ -112,6 +127,26 @@ msgstr "Willkommen! Bitte einloggen."
 #: templates/vfwheron/select_data.html:38
 msgid "Filter menu"
 msgstr "Filtermenü"
+
+#: select_data.html:38
+msgid "Please&#32choose&#32here&#32the&#32data&#32shown&#32on&#32the&#32map."
+msgstr "Wählen&#32Sie&#32hier&#32bitte&#32welche&#32Daten&#32auf&#32der&#32Karte&#32gezeigt&#32werden&#32sollen."
+
+#: select_data.html:51
+msgid "Pass&#32datasets&#32to&#32data&#32store"
+msgstr "Auswahl&#32an&#32Datenablage&#32schicken"
+
+#: select_data.html:52
+msgid "Pass&#32all&#32selected&#32datasets&#32to&#32session&#32data&#32store."
+msgstr "Senden&#32Sie&#32hier&#32die&#32Auswahl&#32in&#32die&#32Datenablage&#32der&#32aktuellen&#32Sitzung."
+
+#: select_data.html:56
+msgid "Reset&#32filter&#32menu"
+msgstr "Filtermenü&#32zurücksetzen"
+
+#: select_data.html:57
+msgid "Remove&#32selection&#32from&#32filter&#32menu."
+msgstr "Markierungen&#32aus&#32dem&#32Filtermenü&#32entfernen."
 
 #: templates/vfwheron/sidemenu.html:20
 msgid "  Help"
@@ -320,3 +355,9 @@ msgstr "Datentyp"
 #: models.py:395
 msgid "Sensor comment"
 msgstr "Sensorkommentar"
+
+#: map.js:286
+msgid "Preview"
+msgstr "Vorschau"
+
+
