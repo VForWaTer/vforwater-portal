@@ -29,6 +29,7 @@ export enum TaskState
 export interface Task
 {
     id: number;
+    title: string;
     x: number;
     y: number;
     state: TaskState;

@@ -53,6 +53,14 @@ class EdgeAdmin(admin.ModelAdmin):
     class Meta:
         model = Edge
 
+class DataEdgeAdmin(admin.ModelAdmin):
+    """
+    """
+    list_filter = ['workflow']
+    
+    class Meta:
+        model = DataEdge
+
 
 # Register all models
 
@@ -60,6 +68,8 @@ class EdgeAdmin(admin.ModelAdmin):
 admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(Edge, EdgeAdmin)
+admin.site.register(DataEdge, DataEdgeAdmin)
+admin.site.register(SqlData)
 admin.site.register(Session)
 admin.site.register(Process)
 admin.site.register(Artefact)

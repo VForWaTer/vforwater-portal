@@ -175,7 +175,7 @@ class Edge(models.Model):
     input = models.ForeignKey(
         InputOutput, related_name='input', null=True, on_delete=models.SET_NULL)
     output = models.ForeignKey(
-        InputOutput, null=True, on_delete=models.SET_NULL)
+        InputOutput, related_name='output', null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = "Edge"
@@ -201,3 +201,39 @@ class Artefact(models.Model):
     class Meta:
         verbose_name = "Artefact"
         verbose_name_plural = "Artefacts"
+        
+class SqlData(models.Model):
+    """
+    """
+    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    x = models.DecimalField(max_digits=5, decimal_places=0)
+    y = models.DecimalField(max_digits=5, decimal_places=0)
+    data = models.DecimalField(max_digits=50, decimal_places=0)
+
+    class Meta:
+        verbose_name = "SqlData"
+        verbose_name_plural = "SqlDatas"
+
+    def __str__(self):
+        return "%s from Workflow '%s'" % (self.title, self.workflow.name)
+
+
+class DataEdge(models.Model):
+    """
+    Egdes between Tasks in Workflow Graph 
+    """
+    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE)
+    from_sqldata = models.ForeignKey(
+        SqlData, on_delete=models.CASCADE) 
+    to_task = models.ForeignKey(
+        Task, on_delete=models.CASCADE)  # rename to in_task?
+    task_input = models.ForeignKey(
+        InputOutput, related_name='data_input', null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        verbose_name = "DataEdge"
+        verbose_name_plural = "DataEdges"
+
+    def __str__(self):
+        return self.from_sqldata.title + " to " + self.to_task.title + " (" + self.workflow.name + ")"

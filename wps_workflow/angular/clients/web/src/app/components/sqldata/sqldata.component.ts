@@ -1,26 +1,26 @@
-import {Data} from '../../models/Data';
+import {SQLData} from '../../models/SQLData';
 import {Component, OnInit, Input, ElementRef, Output, EventEmitter, HostListener} from '@angular/core';
 import {ViewChild} from '@angular/core';
 import {MatDialog, MatMenu, MatMenuTrigger} from '@angular/material';
 
 /**
  * Component Class representing a dragged Data Element from the vfw-portal datastore
- * @class DataComponent
+ * @class SqlDataComponent
  * @export
  * @implements {OnInit}
  */
 @Component({
-    selector: 'app-data',
-    templateUrl: './data.component.html',
-    styleUrls: ['./data.component.scss']
+    selector: 'app-sqldata',
+    templateUrl: './sqldata.component.html',
+    styleUrls: ['./sqldata.component.scss']
 })
-export class DataComponent implements OnInit
+export class SQLDataComponent implements OnInit
 {
     /**
-     * Data object
+     * SQLData object
      */
     @Input()
-    public data: Data;
+    public sqldata: SQLData;
 
     /**
      * ElementRef for output parameter container
@@ -50,7 +50,7 @@ export class DataComponent implements OnInit
      * Emitter for Element remove function
      */
     @Output()
-    public dataRemove = new EventEmitter<Data>();
+    public dataRemove = new EventEmitter<SQLData>();
 
     /**
      * local variable holding coordinates where mouse was pressen
@@ -125,7 +125,7 @@ export class DataComponent implements OnInit
      */
     public clickDelete()
     {
-        this.dataRemove.emit(this.data);
+        this.dataRemove.emit(this.sqldata);
     }
 
 
@@ -154,7 +154,7 @@ export class DataComponent implements OnInit
         for (let i = 0; i < n.childElementCount; i++)
         {
             console.log("dataPosition: 3");
-            if (n.children[i].getAttribute('data-id') === '' + id)
+            if (n.children[i].getAttribute('sqldata-id') === '' + id)
             {
                 console.log("dataPosition: 4");
                 const rect = n.children[i].getBoundingClientRect();

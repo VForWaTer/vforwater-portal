@@ -168,7 +168,7 @@ def create_data_doc(task):
     wps_log.debug(f"found inputs: {[input.id for input in data_inputs]}")
     for input in inputs:
         # try to get artefact from db
-        try:
+        try: # TODO do DataEdge detection here
             artefact = Artefact.objects.get(task=task, parameter=input)
         except:
             # something is wrong here if artefact has not been created yet
@@ -349,8 +349,10 @@ def send_task(task_id, xml_dir):
     
     file_part_url = re.sub('\A[^^]*/outputs', '', status_url)
     part_out = '/outputs'
-    status_url = front_part_url + part_out + file_part_url
-    
+    if front_part_url == 'https://portal.vforwater.de':    
+        status_url = front_part_url + '/demo' + part_out + file_part_url  ## /demo needs to be included for demo wps server
+    else:
+        status_url = front_part_url +  part_out + file_part_url
     
     if status_url is None:
         status = '5'

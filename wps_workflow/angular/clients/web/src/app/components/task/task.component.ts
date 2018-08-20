@@ -271,7 +271,7 @@ export class TaskComponent implements OnInit
             });
         } else
         {
-            if (!this.hasArtefact(parameter))
+            if (!this.hasArtefact(parameter)) // TODO & if has edge from parameter
             {
                 this.parameterDrop.emit(parameter);
             }

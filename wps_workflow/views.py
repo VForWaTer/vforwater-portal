@@ -12,7 +12,8 @@ from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView, View
 
 from wps_workflow import cron, utils
-from .models import InputOutput, WPSProvider, Process, Artefact, Edge, Task, Workflow, WPS
+from .models import InputOutput, WPSProvider, Process, Artefact, Edge, Task, Workflow, WPS, SqlData, DataEdge
+from django.template.defaultfilters import title
 
 def as_json_response(response):
     """
@@ -102,7 +103,7 @@ class WorkflowView(View):
 
             workflow = get_object_or_404(Workflow, pk=kwargs['workflow_id'])
 
-            # get_object_or_404() ist not used here because for some reason
+            # get_object_or_404() is not used here because for some reason
             # it does not include created_at and updated_at fields
             returned = list(Workflow.objects.filter(
                 pk=kwargs['workflow_id']).values())[0]
@@ -115,11 +116,22 @@ class WorkflowView(View):
 
             returned['edges'] = list(workflow.edge_set.all().values())
             tasks = list(workflow.task_set.all().values())
+            datas = list(workflow.sqldata_set.all().values())
+            returned['dataEdges'] = list(workflow.dataedge_set.all().values())
+
+            for(j, sqldata) in enumerate(datas):
+                datas[j]['title'] = sqldata['title']
+                datas[j]['x'] = float(sqldata['x'])
+                datas[j]['y'] = float(sqldata['y'])
+                datas[j]['data'] = int(sqldata['data'])
+            
+            returned['datas'] = datas    
 
             for (i, task) in enumerate(tasks):
                 tasks[i]['state'] = int(tasks[i]['status'])
                 tasks[i]['x'] = float(task['x'])
                 tasks[i]['y'] = float(task['y'])
+                tasks[i]['title'] = task['title']
 
                 if task['started_at'] is not None:
                     tasks[i]['started_at'] = calendar.timegm(
@@ -148,6 +160,7 @@ class WorkflowView(View):
 
                 tasks[i]['input_artefacts'] = input_artefacts
                 tasks[i]['output_artefacts'] = output_artefacts
+                
 
             returned['tasks'] = tasks
 
@@ -168,13 +181,24 @@ class WorkflowView(View):
 
                 returned[i]['edges'] = list(
                     Edge.objects.filter(workflow=workflow['id']).values())
+                returned[i]['dataEdges'] = list(DataEdge.objects.filter(workflow=workflow['id']).values())
                 tasks = list(Task.objects.filter(
                     workflow=workflow['id']).values())
+                datas = list(SqlData.objects.filter(workflow=workflow['id']).values())
+                
+                for(k, sqldata) in enumerate(datas):
+                    datas[k]['title'] = sqldata['title']
+                    datas[k]['x'] = float(sqldata['x'])
+                    datas[k]['y'] = float(sqldata['y'])
+                    datas[k]['data'] = int(sqldata['data'])
+            
+                returned[i]['datas'] = datas    
 
                 for (j, task) in enumerate(tasks):
                     tasks[j]['state'] = int(task['status'])
                     tasks[j]['x'] = float(task['x'])
                     tasks[j]['y'] = float(task['y'])
+                    tasks[j]['title'] = task['title']
 
                     if task['started_at'] is not None:
                         tasks[j]['started_at'] = calendar.timegm(
@@ -231,14 +255,27 @@ class WorkflowView(View):
         )
 
         temporary_to_new_task_ids = {}
-
+        temporary_to_new_sqldata_ids = {}
+        
+        for new_sqldata_data in new_data['datas']:
+            new_sqldata = SqlData.objects.create(
+                workflow_id = new_workflow.id,
+                title = new_sqldata_data['title'],
+                x = new_sqldata_data['x'],
+                y = new_sqldata_data['y'],
+                data = new_sqldata_data['data']
+            )
+            
+            temporary_to_new_sqldata_ids[new_sqldata_data['id']] = new_sqldata.id
+            
         for new_task_data in new_data['tasks']:
             new_task = Task.objects.create(
                 workflow_id=new_workflow.id,
                 process_id=new_task_data['process_id'],
                 x=new_task_data['x'],
                 y=new_task_data['y'],
-                status=new_task_data['state']
+                status=new_task_data['state'],
+                title=new_task_data['title']
             )
 
             temporary_to_new_task_ids[new_task_data['id']] = new_task.id
@@ -263,6 +300,14 @@ class WorkflowView(View):
                 input_id=new_edge_data['input_id'],
                 output_id=new_edge_data['output_id']
             )
+            
+        for new_dataEdge_data in new_data['dataEdges']:
+            DataEdge.objects.create(
+                workflow_id=new_workflow.id,
+                from_sqldata_id=temporary_to_new_sqldata_ids[new_dataEdge_data['from_sqldata_id']],
+                to_task_id=temporary_to_new_task_ids[new_dataEdge_data['to_task_id']],
+                task_input_id=new_dataEdge_data['task_input_id']
+            )    
 
         return WorkflowView.get(request, workflow_id=new_workflow.id)
 
@@ -289,8 +334,35 @@ class WorkflowView(View):
 
         workflow.save()
 
+        not_deleted_data_ids = []
         not_deleted_task_ids = []
         temporary_to_new_task_ids = {}
+        temporary_to_new_sqldata_ids = {}
+
+        for sqldata_data in new_data['datas']:
+            if sqldata_data['id'] > 0:
+                sqldata = get_object_or_404(SqlData, pk=sqldata_data['id'])
+                
+                sqldata.workflow_id = workflow.id
+                sqldata.title = sqldata_data['title']
+                sqldata.x = sqldata_data['x']
+                sqldata.y = sqldata_data['y']
+                sqldata.data = sqldata_data['data']
+                
+                sqldata.save()
+                
+             
+            else:
+                sqldata = SqlData.objects.create(
+                    workflow_id = workflow.id,
+                    title = sqldata_data['title'],
+                    x = sqldata_data['x'],
+                    y = sqldata_data['y'],
+                    data = sqldata_data['data']
+                )    
+            
+            not_deleted_data_ids.append(sqldata.pk)
+            temporary_to_new_sqldata_ids[sqldata_data['id']] = sqldata.id
 
         for task_data in new_data['tasks']:
             artefacts_data = task_data['input_artefacts'] + \
@@ -342,7 +414,8 @@ class WorkflowView(View):
                     process_id=task_data['process_id'],
                     x=task_data['x'],
                     y=task_data['y'],
-                    status=task_data['state']
+                    status=task_data['state'],
+                    title=task_data['title']
                 )
 
                 for artefact_data in artefacts_data:
@@ -358,6 +431,7 @@ class WorkflowView(View):
             temporary_to_new_task_ids[task_data['id']] = task.id
 
         workflow.task_set.exclude(pk__in=not_deleted_task_ids).delete()
+        workflow.sqldata_set.exclude(pk__in=not_deleted_data_ids).delete()
 
         not_deleted_edge_ids = []
 
@@ -384,6 +458,31 @@ class WorkflowView(View):
             not_deleted_edge_ids.append(edge.pk)
 
         workflow.edge_set.exclude(pk__in=not_deleted_edge_ids).delete()
+
+        not_deleted_dataEdge_ids = []
+
+        for dataEdge_data in new_data['dataEdges']:
+            if dataEdge_data['id'] > 0:
+                dataEdge = get_object_or_404(DataEdge, pk=dataEdge_data['id'])
+
+                dataEdge.workflow = workflow
+                dataEdge.from_sqldata_id = temporary_to_new_sqldata_ids[dataEdge_data['from_sqldata_id']]
+                dataEdge.to_task_id = temporary_to_new_task_ids[dataEdge_data['to_task_id']]
+                dataEdge.task_input_id = dataEdge_data['task_input_id']
+                
+                dataEdge.save()
+            else:
+                dataEdge = DataEdge.objects.create(
+                    workflow_id=workflow.id,
+                    from_sqldata_id=temporary_to_new_sqldata_ids[dataEdge_data['from_sqldata_id']],
+                    to_task_id=temporary_to_new_task_ids[dataEdge_data['to_task_id']],
+                    task_input_id=dataEdge_data['task_input_id']
+                )
+
+            not_deleted_dataEdge_ids.append(dataEdge.pk)
+
+        workflow.dataedge_set.exclude(pk__in=not_deleted_dataEdge_ids).delete()
+
 
         return WorkflowView.get(request, workflow_id=kwargs['workflow_id'])
 
@@ -455,8 +554,13 @@ class WorkflowView(View):
             edge = Edge.objects.filter(workflow_id=workflow_id).filter(
                 to_task_id=artefact.task_id).filter(input_id=artefact.parameter_id).values()
 
+            dataEdge = DataEdge.objects.filter(workflow_id=workflow_id).filter(
+                to_task_id=artefact.task_id).filter(task_input_id=artefact.parameter_id).values()
+
             if edge.count() > 0:
                 artefact.delete()
+            if dataEdge.count() > 0:
+                artefact.delete()    
 
         return JsonResponse({})
 
@@ -811,7 +915,7 @@ class EditorView(LoginRequiredMixin, TemplateView):
 
     """
     #login_url = '/wps_workflow/login/'
-    login_url = 'vfwheron:watts_login'
+    #login_url = 'vfwheron:watts_login'
 
     template_name = "index.html"
 

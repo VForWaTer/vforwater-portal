@@ -112,6 +112,7 @@ export class EditorPageComponent implements OnInit {
           edges: [],
           tasks: [],
           datas: [],
+          dataEdges: [],
           creator_id: 0,
           shared: false,
           created_at: (new Date()).getTime(),

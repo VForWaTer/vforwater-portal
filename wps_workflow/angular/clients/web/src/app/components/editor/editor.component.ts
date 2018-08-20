@@ -1,4 +1,4 @@
-import { Data } from '../../models/Data';
+import { SQLData } from '../../models/SQLData';
 import {
     Component, OnInit, HostListener, ElementRef, Input, QueryList,
     ViewChildren, NgZone, ChangeDetectionStrategy, EventEmitter, Output,
@@ -10,7 +10,7 @@ import { Workflow } from 'app/models/Workflow';
 import { Task, TaskState } from 'app/models/Task';
 import { ProcessParameter, ProcessParameterType } from 'app/models/ProcessParameter';
 import { TaskComponent } from 'app/components/task/task.component';
-import { DataComponent } from 'app/components/data/data.component';
+import { SQLDataComponent } from 'app/components/sqldata/sqldata.component';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { window } from 'rxjs/operators/window';
 import { AfterContentChecked } from '@angular/core/src/metadata/lifecycle_hooks';
@@ -42,6 +42,12 @@ interface MovementData {
      * Index of dragged Data in workflow.datas[] Array
      */
     dataId?: number;
+    /**
+     * Same as edge
+     */
+    dataEdge?: [number, number, number, number];
+    
+    data?: SQLData;
     /**
      * X-Coord of Task, Data or Parameter
      */
@@ -76,7 +82,7 @@ interface MovementData {
     ]
 } )
 export class EditorComponent implements OnInit, AfterContentInit {
-    
+
     /**
      * current Workflow
      */
@@ -108,8 +114,8 @@ export class EditorComponent implements OnInit, AfterContentInit {
     /**
     * List of all Data Components in Editor
     */
-    @ViewChildren( DataComponent )
-    public dataComponents: QueryList<DataComponent>;
+    @ViewChildren( SQLDataComponent )
+    public sqldataComponents: QueryList<SQLDataComponent>;
 
     /**
     * Emitter for updating current Workflow
@@ -191,6 +197,27 @@ export class EditorComponent implements OnInit, AfterContentInit {
         }
     }
 
+
+    /**
+     * Is called when an data edge is clicked.
+     * Deletes the clicked Edge
+     *
+     * @param edges The edges in workflow
+     */
+    public clickDataEdge( dataEdges ) {
+
+        // Delete edge
+        if ( this.running ) { return; }
+
+        const id = dataEdges[4];
+        const index = this.workflow.dataEdges.findIndex( dataEdge => dataEdge.id === id );
+        if ( index !== -1 ) {
+            this.snapshot();
+            this.workflow.dataEdges.splice( index, 1 );
+            this.workflowChanged.emit( this.workflow );
+        }
+    }
+
     /**
      * Moves canvas to the middle of the screen when a workflow is loaded or Editor is initialized.
      * 
@@ -254,6 +281,11 @@ export class EditorComponent implements OnInit, AfterContentInit {
                         this.workflow.edges = this.workflow.edges.filter( e => e !== currentEdge );
                     }
                 }
+                for( const currentDataEdge of this.workflow.dataEdges) {
+                    if(currentDataEdge.to_task_id === currentInputArtefact.task_id && currentInputArtefact.parameter_id === currentDataEdge.task_input_id) {
+                        this.workflow.dataEdges = this.workflow.dataEdges.filter(e => e !== currentDataEdge);
+                    }
+                }
             }
         }
 
@@ -279,6 +311,24 @@ export class EditorComponent implements OnInit, AfterContentInit {
         return `M ${edge[0]} ${edge[1]} C ${edge[0]} ${edge[1] + delta}, ${edge[2]} ${edge[3] - delta}, ${edge[2]} ${edge[3]}`;
     }
 
+    /**
+     * Returns data edge as svg string.
+     *
+     * @param edge The edge to be returned as string
+     * @param {bool} mouse the mouse
+     */
+    public getSvgDataEdge( dataedge: [number, number, number, number, number], mouse = false ) {
+        let delta = Math.abs( dataedge[1] - dataedge[3] );
+        if ( mouse === true && this.movement.dataId !== undefined ) {
+            delta *= 1;
+        }
+        if ( mouse === true && this.movement.parameter !== undefined ) {
+            delta *= this.movement.parameter.role === 'input' ? -1 : 1;
+        }
+
+        return `M ${dataedge[0]} ${dataedge[1]} C ${dataedge[0]} ${dataedge[1] + delta}, ${dataedge[2]} ${dataedge[3] - delta}, ${dataedge[2]} ${dataedge[3]}`;
+    }
+        
     /**
      * Returns edge coordinates for use in SVG.
      *
@@ -331,6 +381,58 @@ export class EditorComponent implements OnInit, AfterContentInit {
     }
 
     /**
+     * Returns data edge coordinates for use in SVG.
+     *
+     * @readonly
+     * @type {[number, number, number, number, number][]}
+     * @memberof EditorComponent
+     */
+    public get dataedges(): [number, number, number, number, number][] {
+        if ( !this.sqldataComponents || !this.taskComponents) {
+            return [];
+        }
+
+        if ( !this.workflow.dataEdges ) {
+            this.workflow.dataEdges = [];
+        }
+
+        const out = [];
+        const n: HTMLElement = this.el.nativeElement;
+        const r = n.getBoundingClientRect();
+
+
+        for ( const dataEdge of this.workflow.dataEdges ) {
+
+            const aComponent = this.sqldataComponents
+                .find( component => component.sqldata.id === dataEdge.from_sqldata_id );
+
+            const bComponent = this.taskComponents
+                .find( component => component.task.id === dataEdge.to_task_id );
+
+            if ( !aComponent || !bComponent ) {
+                return;
+            }
+
+            const a = aComponent.getDataPosition( 0 );
+            const b = bComponent.getParameterPosition( 'input', dataEdge.task_input_id );
+
+            if ( a === null || b === null ) {
+                return;
+            }
+
+            out.push( [
+                a[0] - r.left + n.scrollLeft,
+                a[1] - r.top + n.scrollTop,
+                b[0] - r.left + n.scrollLeft,
+                b[1] - r.top + n.scrollTop,
+                dataEdge.id
+            ] );
+        }
+        return out;
+    }
+
+    
+    /**
      * Adds a Process as Task to the Editor and Workflow at the given coordinates.
      *
      * @param process the selected process to add
@@ -344,6 +446,7 @@ export class EditorComponent implements OnInit, AfterContentInit {
         // create task
         const task: Task = {
             id: -Math.round( Math.random() * 10000 ),
+            title: process.title,
             x,
             y,
             state: TaskState.NONE,
@@ -368,12 +471,31 @@ export class EditorComponent implements OnInit, AfterContentInit {
     * @param y Y Coordinate in Editor
     */
     public addData( data: number, x: number, y: number ) {
-        const dataElement: Data = {
+        const dataElement: SQLData = {
             id: -Math.round( Math.random() * 10000 ),
+            title: "SQL Query id " + data,
             x,
             y,
             data,
         };
+
+        if ( this.workflow.datas === undefined ) {
+            this.workflow = {
+                id: this.workflow.id,
+                title: this.workflow.title,
+                edges: this.workflow.edges,
+                tasks: this.workflow.tasks,
+                datas: [],
+                dataEdges: [],
+                creator_id: this.workflow.creator_id,
+                shared: this.workflow.shared,
+                created_at: this.workflow.created_at,
+                updated_at: this.workflow.updated_at,
+                percent_done: this.workflow.percent_done,
+            };
+            this.workflowChanged.emit( this.workflow );
+            this.detectChanges();
+        }
 
         this.workflow.datas.push( dataElement );
         this.workflowChanged.emit( this.workflow );
@@ -418,10 +540,14 @@ export class EditorComponent implements OnInit, AfterContentInit {
      * @param data_id the id of the data object to remove
      */
     public dataRemove( data_id: number ) {
+        if ( this.running ) {
+            return;
+        }
+
         this.snapshot();
-        const index = this.workflow.datas.findIndex( data => data.id === data_id );
+        const index = this.workflow.datas.findIndex( sqldata => sqldata.id === data_id );
         this.workflow.datas.splice( index, 1 );
-        //this.workflow.edges = this.workflow.edges.filter(edge => edge.from_task_id !== task_id && edge.to_task_id !== task_id);
+        this.workflow.dataEdges = this.workflow.dataEdges.filter( dataEdge => dataEdge.from_sqldata_id !== data_id );
 
         this.detectChanges();
         this.workflowChanged.emit( this.workflow );
@@ -454,7 +580,7 @@ export class EditorComponent implements OnInit, AfterContentInit {
         if ( !( <HTMLElement>event.target ).classList.contains( 'nomove' ) ) {
             let x = event.offsetX;
             let y = event.offsetY;
-            if ( ( <HTMLElement>event.target ).localName !== 'app-task' && ( <HTMLElement>event.target ).localName !== 'app-data' ) {
+            if ( ( <HTMLElement>event.target ).localName !== 'app-task' && ( <HTMLElement>event.target ).localName !== 'app-sqldata' ) {
                 x += 16;
                 y += 16;
             }
@@ -482,14 +608,14 @@ export class EditorComponent implements OnInit, AfterContentInit {
         if ( !( <HTMLElement>event.target ).classList.contains( 'nomove' ) ) {
             let x = event.offsetX;
             let y = event.offsetY;
-            if ( ( <HTMLElement>event.target ).localName !== 'app-data' && ( <HTMLElement>event.target ).localName !== 'app-task' ) {
+            if ( ( <HTMLElement>event.target ).localName !== 'app-sqldata' && ( <HTMLElement>event.target ).localName !== 'app-task' ) {
                 x += 16;
                 y += 16;
             }
             this.movement = { dataId, x, y, before: JSON.stringify( this.workflow ) };
         } else {
             //this.movement.index = undefined;
-            //this.movement.dataId = undefined; //this.workflow.datas[data].data;
+            this.movement.dataId = undefined; //this.workflow.datas[data].data;
         }
     }
 
@@ -522,7 +648,7 @@ export class EditorComponent implements OnInit, AfterContentInit {
      */
     public mouseMove( event: MouseEvent ) {
         // return if no task / parameter is selected
-        if ( this.movement.index === undefined && this.movement.edge === undefined && this.movement.dataId === undefined ) { //&& this.movement.data === undefined
+        if ( this.movement.index === undefined && this.movement.edge === undefined && this.movement.dataId === undefined && this.movement.dataEdge === undefined ) { //&& this.movement.data === undefined
             return true;
         }
 
@@ -532,24 +658,34 @@ export class EditorComponent implements OnInit, AfterContentInit {
         const { index, dataId, x, y } = this.movement;
 
 
-        if ( this.movement.edge === undefined && this.movement.dataId === undefined ) {  //&& this.movement.data === undefined
+        if ( this.movement.edge === undefined && this.movement.dataId === undefined && this.movement.dataEdge === undefined ) {  //&& this.movement.data === undefined
             // Task movement
             // calcualte new position
+            console.log("task movement");
             this.workflow.tasks[index].x = event.pageX + n.scrollLeft - r.left - x;
             this.workflow.tasks[index].y = event.pageY + n.scrollTop - r.top - y - 20;
         }
-        else if ( this.movement.edge === undefined && this.movement.index === undefined ) {
-            
+        else if ( this.movement.edge === undefined && this.movement.index === undefined && this.movement.dataEdge == undefined ) {
+            console.log("data movement");
             this.workflow.datas[dataId].x = event.pageX + n.scrollLeft - r.left - x;
             this.workflow.datas[dataId].y = event.pageY + n.scrollTop - r.top - y - 20;
-            
+
         }
-        else if ( this.movement.index === undefined ) {
+        else if ( this.movement.index === undefined && this.movement.dataEdge == undefined && this.movement.dataId === undefined ) {
             // Parameter line drawing
+            console.log("edge drawing");
             this.movement.edge[0] = n.scrollLeft - r.left + x;
             this.movement.edge[1] = n.scrollTop - r.top + y;
             this.movement.edge[2] = event.pageX + n.scrollLeft - r.left;
             this.movement.edge[3] = event.pageY + n.scrollTop - r.top;
+        }
+        else if ( this.movement.index === undefined && this.movement.edge == undefined && this.movement.dataId === undefined ) {
+            // Data line drawing
+            console.log("dataedge drawing");
+            this.movement.dataEdge[0] = n.scrollLeft - r.left + x;
+            this.movement.dataEdge[1] = n.scrollTop - r.top + y;
+            this.movement.dataEdge[2] = event.pageX + n.scrollLeft - r.left;
+            this.movement.dataEdge[3] = event.pageY + n.scrollTop - r.top;
         }
         this.detectChanges();
     }
@@ -650,46 +786,68 @@ export class EditorComponent implements OnInit, AfterContentInit {
      * @param task the task to the dropped to parameter
      */
     public parameterDrop( parameter: ProcessParameter<'input' | 'output'>, task: TaskComponent ) {
-        console.log( "param drop before" + this.movement.dataId );
-        if ( this.movement.dataId !== undefined) {
-            console.log( "do data drop here " + parameter.id );
-                const index = task.task.input_artefacts.findIndex( artefact => artefact.parameter_id === parameter.id );
-                if(index >= 0)
-                {
-                   console.log(index);
-                   console.log("setze artefact data " + task.task.input_artefacts[index].data);
-                   task.task.input_artefacts[index].data = "" +  this.workflow.datas[this.movement.dataId].data;
-                }
-                else //neues artefact erstellen
-                {
-                    console.log("erstelle neues artefact");
-                    task.task.input_artefacts.push( {
-                        parameter_id: parameter.id,
-                        task_id: task.task.id,
-                        workflow_id: this.workflow.id,
-                        role: 'input',
-                        format: 'string',
-                        data: "" + this.workflow.datas[this.movement.dataId].data,
-                        created_at: ( new Date ).getTime(),
-                        updated_at: ( new Date ).getTime(),
-                    } );
-                }
-  //              const artefact = task.task.input_artefacts.find( artefact => artefact.parameter_id === parameter.id );
-   //             artefact.data = "" + this.movement.data;
-                this.workflowChanged.emit( this.workflow );
-        }
-        if ( this.running || !this.movement.parameter || parameter.role === this.movement.parameter.role ) {
+        if ( this.running ) 
+        {
             return;
+        }
+        //        console.log( "param drop before" + this.movement.dataId );
+        //        if ( this.movement.dataId !== undefined) {
+        //            console.log( "do data drop here " + parameter.id );
+        //                const index = task.task.input_artefacts.findIndex( artefact => artefact.parameter_id === parameter.id );
+        //                if(index >= 0)
+        //                {
+        //                   console.log(index);
+        //                   console.log("setze artefact data " + task.task.input_artefacts[index].data);
+        //                   task.task.input_artefacts[index].data = "" +  this.workflow.datas[this.movement.dataId].data;
+        //                }
+        //                else //neues artefact erstellen
+        //                {
+        //                    console.log("erstelle neues artefact");
+        //                    task.task.input_artefacts.push( {
+        //                        parameter_id: parameter.id,
+        //                        task_id: task.task.id,
+        //                        workflow_id: this.workflow.id,
+        //                        role: 'input',
+        //                        format: 'string',
+        //                        data: "" + this.workflow.datas[this.movement.dataId].data,
+        //                        created_at: ( new Date ).getTime(),
+        //                        updated_at: ( new Date ).getTime(),
+        //                    } );
+        //                }
+        //  //              const artefact = task.task.input_artefacts.find( artefact => artefact.parameter_id === parameter.id );
+        //   //             artefact.data = "" + this.movement.data;
+        //                this.workflowChanged.emit( this.workflow );
+        //        }
+        if ( this.movement.dataEdge ) {
+            if(parameter.role === 'output') {
+                return
+            }
+            if(parameter.type !== ProcessParameterType.LITERAL) {
+                return;
+            }
+            
+            this.snapshot();
+            const task_input_id = parameter.id;
+            const from_sqldata_id = this.movement.data.id;
+            const to_task_id = task.task.id;
+            
+            this.workflow.dataEdges.push({ id: -Math.round( Math.random() * 10000 ), from_sqldata_id, to_task_id, task_input_id });
+            this.workflowChanged.emit(this.workflow);
         }
 
-        // Check same type
-        if ( this.movement.parameter.type !== parameter.type ) {
-            return;
-        }
 
         console.log( 'parameterDrop!' + task.task.id );
 
         if ( this.movement.edge ) {
+            if (!this.movement.parameter || parameter.role === this.movement.parameter.role ) {
+                return;
+            }
+            
+            // Check same type
+            if ( this.movement.parameter.type !== parameter.type ) {
+                return;
+            }
+            
             this.snapshot();
             const input_id = parameter.role === 'input' ? parameter.id : this.movement.parameter.id;
             const output_id = parameter.role === 'output' ? parameter.id : this.movement.parameter.id;
@@ -706,17 +864,18 @@ export class EditorComponent implements OnInit, AfterContentInit {
      * Starts the data edge drag from an Data Element.
      * Saves data indes and coords to movement var
      *
-     * @param {DataComponent} Data the data Element Component the drag is started from
+     * @param {SQLDataComponent} Data the data Element Component the drag is started from
      */
-    public dataDrag( Data: DataComponent ) {
-        console.log( "before data drag!" + Data.data.data );
-        const [x, y] = Data.getDataPosition( 0 );
-        const index = this.workflow.datas.findIndex( data => data.data === Data.data.data );
+    public dataDrag( SqlData: SQLDataComponent ) {
+        console.log( "before data drag!" + SqlData.sqldata.data );
+        const [x, y] = SqlData.getDataPosition( 0 );
+        const index = this.workflow.datas.findIndex( sqldata => sqldata.data === SqlData.sqldata.data );
 
         console.log( 'dataDrag!' );
         this.movement = {
-            edge: [0, 0, 0, 0],
-            dataId: index,
+            //dataId: index,
+            dataEdge: [0, 0, 0, 0],
+            data: SqlData.sqldata,
             x, y
         };
 
@@ -729,39 +888,38 @@ export class EditorComponent implements OnInit, AfterContentInit {
     /**
      * Handler for when an endge is dropped to an data Element
      *
-     * @param {DataComponent} data the data element an edge is dropped to
+     * @param {SQLDataComponent} data the data element an edge is dropped to
      */
-    public dataDrop( data: DataComponent ) {
+    public dataDrop( SqlData: SQLDataComponent ) {
         console.log( 'dataDrop!' );
-        if ( this.movement.dataId || !this.movement.parameter || this.movement.parameter.type !== ProcessParameterType.LITERAL ) {
+        if (this.running || !this.movement.edge || !this.movement.parameter || this.movement.parameter.type !== ProcessParameterType.LITERAL ) {
             return;
         }
 
         if ( this.movement.edge ) {
             this.snapshot();
 
-            const index = this.movement.task.input_artefacts.findIndex( artefact => artefact.parameter_id === this.movement.parameter.id );
-            if(index >= 0)
-            {
-                console.log(index);
-                console.log("setze artefact data " + this.movement.task.input_artefacts[index].data);
-                this.movement.task.input_artefacts[index].data = "" + data.data.data;
-
-            }
-            else //neues artefact erstellen
-            {
-                console.log("erstelle neues artefact");
-                this.movement.task.input_artefacts.push( {
-                    parameter_id: this.movement.parameter.id,
-                    task_id: this.movement.task.id,
-                    workflow_id: this.workflow.id,
-                    role: 'input',
-                    format: 'string',
-                    data: "" + data.data.data,
-                    created_at: ( new Date ).getTime(),
-                    updated_at: ( new Date ).getTime(),
-                } );
-            }
+//            const index = this.movement.task.input_artefacts.findIndex( artefact => artefact.parameter_id === this.movement.parameter.id );
+//            if ( index >= 0 ) {
+//                console.log( index );
+//                console.log( "setze artefact data " + this.movement.task.input_artefacts[index].data );
+//                this.movement.task.input_artefacts[index].data = "" + SqlData.sqldata.data;
+//
+//            }
+//            else //neues artefact erstellen
+//            {
+//                console.log( "erstelle neues artefact" );
+//                this.movement.task.input_artefacts.push( {
+//                    parameter_id: this.movement.parameter.id,
+//                    task_id: this.movement.task.id,
+//                    workflow_id: this.workflow.id,
+//                    role: 'input',
+//                    format: 'string',
+//                    data: "" + SqlData.sqldata.data,
+//                    created_at: ( new Date ).getTime(),
+//                    updated_at: ( new Date ).getTime(),
+//                } );
+//            }
             this.workflowChanged.emit( this.workflow );
 
         }
