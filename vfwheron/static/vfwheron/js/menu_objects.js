@@ -293,6 +293,7 @@ function showSelectionOnMap(selection) {
         success: function (json) {
             zoomToExt.extent = json['dataExt'];
             wfsLayerName = json['ID_layer'];
+            selectedIds = json['IDs'];
             wfsPointSource.clear();
             // document.getElementById()
             // clusterLayer.changed()

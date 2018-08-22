@@ -3,7 +3,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 <head>
-  <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>
+{#  <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>#}
   <style>
   .respo-sidenav {margin-top: 37px;}
   </style>
@@ -60,13 +60,22 @@
   <nav id="context-menu" class="context-menu">
     <ul class="context-menu__items">
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="View"><i class="fa fa-eye"></i> View Task</a>
+        <a href="#" class="context-menu__link" data-action="View"><i class="fa fa-eye"></i>{% trans " View metadata" %}</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="Edit"><i class="fa fa-edit"></i> Edit Task</a>
+        <a href="#" class="context-menu__link" data-action="Plot"><i class="fa fa-eye"></i>{% trans " Plot data" %}</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="Delete"><i class="fa fa-times"></i> Delete Task</a>
+        <a href="#" class="context-menu__link" data-action="DownloadD"><i class="fa fa-download"></i>{% trans " Download data" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="DownloadMD"><i class="fa fa-download"></i>{% trans " Download metadata" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="DownloadDMD"><i class="fa fa-download"></i>{% trans " Download data & metadata" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="Remove"><i class="fa fa-eraser"></i>{% trans " Remove dataset" %}</a>
       </li>
     </ul>
   </nav>
