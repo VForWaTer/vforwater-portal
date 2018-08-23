@@ -1,5 +1,6 @@
 let zoomToExt;
 let wfsLayerName;
+let selectedIds = null;
 
 //Create own base layer
 function create_map() {
@@ -243,6 +244,10 @@ function create_map() {
             }
         } else {
            // TODO: Show only 16 pages to select in pagination and arrows
+           //  Pagination durch Django:
+           //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
+           //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
+
            /* console.log(' + +  idDict: ', idDict)
             let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
             // let pagiObj = {1:[]}; // very nice, but useless for the button!

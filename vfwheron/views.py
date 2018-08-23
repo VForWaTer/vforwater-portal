@@ -195,6 +195,7 @@ class menuView(TemplateView):
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
+                print('meta ids: ', meta_ids['all_filters'])
                 ID_layer = 'ID_layer' # + user
                 if get_ID_layer(ID_layer):
                     delete_ID_layer(ID_layer)
@@ -207,7 +208,10 @@ class menuView(TemplateView):
 # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
 #                 delete_ID_layer(ID_layer)
 #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt})
+            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
+
+        if 'DownloadData' in request.GET:
+            print('DownloadData: ', json.loads(request.GET.get('filter_selection_map')))
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 

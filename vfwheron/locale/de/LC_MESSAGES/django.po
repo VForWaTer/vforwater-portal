@@ -108,6 +108,36 @@ msgstr "Alle&#32Datensätze&#32entfernen"
 msgid "Remove&#32all&#32datasets&#32from&#32data&#32store"
 msgstr "Alle&#32ausgewählten&#32Datensätze&#32aus&#32der&#32Datenablage&#32entfernen"
 
+#: templates/vfwheron/base_sidebar.html:63
+#: templates/vfwheron/wps_sidebar.html:61
+msgid " View metadata"
+msgstr " Metadaten anzeigen"
+
+#: templates/vfwheron/base_sidebar.html:66
+#: templates/vfwheron/wps_sidebar.html:64
+msgid " Plot data"
+msgstr " Datensatz darstellen"
+
+#: templates/vfwheron/base_sidebar.html:69
+#: templates/vfwheron/wps_sidebar.html:67
+msgid " Download data"
+msgstr " Datensatz herunterladen "
+
+#: templates/vfwheron/base_sidebar.html:72
+#: templates/vfwheron/wps_sidebar.html:70
+msgid " Download metadata"
+msgstr " Metadaten herunterladen"
+
+#: templates/vfwheron/base_sidebar.html:75
+#: templates/vfwheron/wps_sidebar.html:73
+msgid " Download data & metadata"
+msgstr " Daten & Metadaten herunterladen"
+
+#: templates/vfwheron/base_sidebar.html:78
+#: templates/vfwheron/wps_sidebar.html:76
+msgid " Remove dataset"
+msgstr " Datensatz entfernen"
+
 #: templates/vfwheron/help.html:16
 msgid "Welcome! This site is still under construction"
 msgstr "Willkommen! Diese Seite befindet sich noch im Aufbau."
