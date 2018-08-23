@@ -3,14 +3,14 @@ import os
 import re
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timezone
 from io import StringIO, BytesIO
 
 import requests
 from lxml import etree
 
 import wps_workflow.utils as utils_module
-from .models import WPS, Task, InputOutput, Artefact, Process, STATUS, Workflow, Edge
+from .models import WPS, Task, InputOutput, Artefact, Process, STATUS, Workflow, Edge, DataEdge, SqlData
 from .utils import ns_map, wps_em, ows_em
 from heron.settings import wps_log, BASE_DIR
 
@@ -171,12 +171,33 @@ def create_data_doc(task):
         try: # TODO do DataEdge detection here
             artefact = Artefact.objects.get(task=task, parameter=input)
         except:
-            # something is wrong here if artefact has not been created yet
-            # as execute documents for next execution are only started if previous task has finished
-            # and when previous task has finished, the output data is automatically passed to next tasks input
-            wps_log.warning(
-                f"Error: artefact for task{task.id}s input{input.id} has not been created yet")
-            return 1
+            # if no artefact is found, search DataEdges
+            # if DataEdge to task exists create artefact
+            try:                
+                wps_log.debug(f"try to get dataedges")
+                dataedges = list(DataEdge.objects.filter(to_task=task, task_input=input))
+                wps_log.debug(f"got dataedges")
+                for dataedge in dataedges:  # this should be only one element
+                    wps_log.debug(f"edge id {dataedge.id}")
+                    sqldata = SqlData.objects.get(id=dataedge.from_sqldata_id)
+                    wps_log.debug(f"sqldata id {sqldata.id}")
+                            
+                wps_log.debug(f"getting current time")    
+                time_now = datetime.now()
+                wps_log.debug(f"current time is {time_now}")
+                input_data = '' + str(sqldata.data)  # maybe to string conversion
+                wps_log.debug(f"input data: {input_data}")
+                wps_log.debug(f"try to create artefact")
+                artefact = Artefact.objects.create(task=task, parameter=input, role='0', format='plain', data=input_data, created_at=time_now, updated_at=time_now)
+                artefact.save()
+                wps_log.debug(f"created artefact..?")
+            except:            
+                # something is wrong here if artefact has not been created yet
+                # as execute documents for next execution are only started if previous task has finished
+                # and when previous task has finished, the output data is automatically passed to next tasks input
+                wps_log.warning(
+                    f"Error: artefact for task{task.id}s input{input.id} has not been created yet")
+                return 1
 
         # create identifier and title as they are used in any case
         identifier = ows_em.Identifier(input.identifier)

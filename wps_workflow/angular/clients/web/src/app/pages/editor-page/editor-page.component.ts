@@ -319,7 +319,7 @@ export class EditorPageComponent implements OnInit {
       { type: WorkflowValidationResult.MISSING_WORKFLOW, message: 'No Workflow provided' },
       { type: WorkflowValidationResult.MISSING_PROCESSES, message: 'No Process List provided' },
       { type: WorkflowValidationResult.CYCLE_IN_WORKFLOW, message: 'Workflow has a cycle' },
-      { type: WorkflowValidationResult.MULIPLE_INPUTS, message: 'Workflow has taks with multiple inputs' },
+      { type: WorkflowValidationResult.MULTIPLE_INPUTS, message: 'Workflow has taks with multiple inputs' },
     ];
 
     const result = errorMessages.find(m => m.type === this.workflowService.validate(workflow));

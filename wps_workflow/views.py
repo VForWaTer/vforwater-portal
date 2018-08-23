@@ -315,6 +315,7 @@ class WorkflowView(View):
     def patch(request, **kwargs):
         """
         Updates a workflow if it exists
+        Reads from the Angular models and vars and saves their values to Django db
         @param request: the request sent from the client
         @type request: django.http.request.HttpRequest
         @param kwargs: keyworded arguments passed to models.Model.dispatch() method
@@ -578,6 +579,7 @@ class WorkflowView(View):
         """
 
         # TODO: This needs some kind of throttling
+        # Why? The cronjobs are ment to be executed by server cron anyways, but now they are not. so without these calls, tasks will never be sent or received from pywps server
         cron.scheduler()
         cron.receiver()
 
