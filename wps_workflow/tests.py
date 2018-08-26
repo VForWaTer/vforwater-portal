@@ -1,6 +1,5 @@
 import json
 import os
-import unittest
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
@@ -112,7 +111,6 @@ class CronTestCase(TestCase):
 
 
 # TODO: document
-# Create your tests here.
 class ParserTestCase(TestCase):
     """
 

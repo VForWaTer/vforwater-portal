@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+"""
+Enum Number values that indicate the state of a Task
+"""
 STATUS = (
     ('0', 'NONE'),
     ('1', 'READY'),
@@ -11,11 +14,17 @@ STATUS = (
     ('6', 'DEPRECATED'),
 )
 
+"""
+List values for input/output distinction
+"""
 ROLE = (
     ('0', 'INPUT'),
     ('1', 'OUTPUT'),
 )
 
+"""
+Enum List for different PyWPS Datatypes
+"""
 DATATYPE = (
     ('0', 'LITERAL'),
     ('1', 'COMPLEX'),
@@ -25,7 +34,7 @@ DATATYPE = (
 
 class Workflow(models.Model):
     """
-    Workflow Database Model 
+    Workflow Database Model
     """
     name = models.CharField(max_length=200)
     description = models.TextField(
@@ -204,6 +213,7 @@ class Artefact(models.Model):
         
 class SqlData(models.Model):
     """
+    Data output element used for dragged in dataelements from vfw Datastore. Holds its data directly, no need for extra Artefact
     """
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
@@ -221,7 +231,7 @@ class SqlData(models.Model):
 
 class DataEdge(models.Model):
     """
-    Egdes between Tasks in Workflow Graph 
+    Egdes between Tasks and SqlData in Workflow Graph
     """
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE)
     from_sqldata = models.ForeignKey(

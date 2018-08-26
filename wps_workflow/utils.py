@@ -9,6 +9,9 @@ import wps_workflow.cron
 from wps_workflow.models import WPSProvider, WPS, Process, InputOutput, DATATYPE, ROLE
 from heron.settings import BASE_DIR, wps_log
 
+"""
+XML Element Maker for pywps xml schema
+"""
 E = ElementMaker()
 wps_em = ElementMaker(namespace=ns['wps'], nsmap=ns)
 ows_em = ElementMaker(namespace=ns['ows'], nsmap=ns)

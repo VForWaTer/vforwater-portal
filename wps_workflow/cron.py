@@ -3,15 +3,15 @@ import os
 import re
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime
 from io import StringIO, BytesIO
 
 import requests
 from lxml import etree
 
 import wps_workflow.utils as utils_module
-from .models import WPS, Task, InputOutput, Artefact, Process, STATUS, Workflow, Edge, DataEdge, SqlData
-from .utils import ns_map, wps_em, ows_em
+from wps_workflow.models import WPS, Task, InputOutput, Artefact, Process, STATUS, Workflow, Edge, DataEdge, SqlData
+from wps_workflow.utils import ns_map, wps_em, ows_em
 from heron.settings import wps_log, BASE_DIR
 
 
@@ -168,7 +168,7 @@ def create_data_doc(task):
     wps_log.debug(f"found inputs: {[input.id for input in data_inputs]}")
     for input in inputs:
         # try to get artefact from db
-        try: # TODO do DataEdge detection here
+        try: # do DataEdge detection here
             artefact = Artefact.objects.get(task=task, parameter=input)
         except:
             # if no artefact is found, search DataEdges
@@ -185,7 +185,7 @@ def create_data_doc(task):
                 wps_log.debug(f"getting current time")    
                 time_now = datetime.now()
                 wps_log.debug(f"current time is {time_now}")
-                input_data = '' + str(sqldata.data)  # maybe to string conversion
+                input_data = '' + str(sqldata.data)
                 wps_log.debug(f"input data: {input_data}")
                 wps_log.debug(f"try to create artefact")
                 artefact = Artefact.objects.create(task=task, parameter=input, role='0', format='plain', data=input_data, created_at=time_now, updated_at=time_now)
@@ -275,7 +275,7 @@ def create_data_doc(task):
 
             # finally create subtree
             data_inputs.append(wps_em.Input(identifier, title, bbox_elem))
-    # TODO: check if something is missing
+
     wps_log.debug(f"finished input xml generation for task{task.id}")
     return data_inputs
 
@@ -307,7 +307,6 @@ def send_task(task_id, xml_dir):
 
     # send to url
     try:
-        # 'http://pse.rudolphrichard.de:5000/wps'
         response = requests.post(execute_url, data=file)
         # get response from send
         xml = ET.fromstring(response.text)
@@ -361,13 +360,16 @@ def send_task(task_id, xml_dir):
         wps_log.warning(f"task{task_id} not found, aborting")
         return
 
-    # TODO refactor dirty fix
+    ## This part is done because the dev PyWPS Server does not deliver a correct url in status location field (hidden behind localhost)
+    ## So here the correct url is built with the filename and server url from db
+    ## does expect standard config of output folder
     # TODO switch in settings.py for status_url type or by comparing front of status url with execute url
     exec_part_url = get_execute_url(Task.objects.get(id=task_id))
     front_part_url = re.sub('\/wps\?request[^^]*', '', exec_part_url)
         
     status_url = xml.get('statusLocation')
-    
+
+    # TODO part_out and /demo part could be specified in settings file
     file_part_url = re.sub('\A[^^]*/outputs', '', status_url)
     part_out = '/outputs'
     if front_part_url == 'https://portal.vforwater.de':    

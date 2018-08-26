@@ -55,6 +55,9 @@ class EdgeAdmin(admin.ModelAdmin):
 
 class DataEdgeAdmin(admin.ModelAdmin):
     """
+    Admin class for Workflow.
+    Specifies which fields of the model "DataEdge" should be
+    displayed on the admin page.
     """
     list_filter = ['workflow']
     

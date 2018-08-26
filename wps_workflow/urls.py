@@ -1,5 +1,4 @@
 from django.conf.urls import url
-#from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from wps_workflow import views
@@ -27,6 +26,4 @@ urlpatterns = [
     url(r'^editor/', views.EditorView.as_view(), name='editor'),
     url(r'^settings/', views.SettingsView.as_view(), name='settings'),
 
-    #url(r'^login/', views.OurLoginView.as_view(), name='login'),
-    #url(r'^logout/', views.OurLogoutView.as_view(), name='logout')
 ]
