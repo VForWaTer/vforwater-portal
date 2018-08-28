@@ -1,20 +1,20 @@
-import { Injectable } from '@angular/core';
-import { Workflow } from '../models/Workflow';
-import { Edge } from '../models/Edge';
-import { DataEdge } from '../models/DataEdge';
-import { TaskState } from '../models/Task';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
-import { map, switchMap } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material';
-import { Process } from 'app/models/Process';
-import { ProcessService } from 'app/services/process.service';
-import { environment } from 'environments/environment';
+import {Injectable} from '@angular/core';
+import {Workflow} from '../models/Workflow';
+import {Edge} from '../models/Edge';
+import {TaskState} from '../models/Task';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs/Observable';
+import {map, switchMap} from 'rxjs/operators';
+import {MatSnackBar} from '@angular/material';
+import {Process} from 'app/models/Process';
+import {ProcessService} from 'app/services/process.service';
+import {environment} from 'environments/environment';
 
 /**
  * Different workflow validation results
  */
-export enum WorkflowValidationResult {
+export enum WorkflowValidationResult
+{
     /**
      * Unknown Error
      */
@@ -24,11 +24,11 @@ export enum WorkflowValidationResult {
      */
     SUCCESSFUL,
     /**
-     * Workflow title too long
+     * Workflow title is too long
      */
     TITLE_TOO_LONG,
     /**
-     * Workflow title too short
+     * Workflow title is too short
      */
     TITLE_TOO_SHORT,
     /**
@@ -48,11 +48,11 @@ export enum WorkflowValidationResult {
      */
     MISSING_TASK_INPUT,
     /**
-     * Missing Workflow
+     * Missing Workflow, there is no Workflow to execute
      */
     MISSING_WORKFLOW,
     /**
-     * Missing Processes
+     * Missing Processes, there is a Task without matching Process
      */
     MISSING_PROCESSES,
     /**
@@ -72,7 +72,11 @@ export enum WorkflowValidationResult {
  * @class WorkflowService
  */
 @Injectable()
-export class WorkflowService {
+export class WorkflowService
+{
+    /**
+     * List of processes in workflow
+     */
     private processes?: Process[];
 
     /**
@@ -82,8 +86,9 @@ export class WorkflowService {
      * @param {MatSnackBar} bar
      * @param {ProcessService} processService
      */
-    constructor( private http: HttpClient, private bar: MatSnackBar, private processService: ProcessService ) {
-        this.processService.all().subscribe( processes => this.processes = processes );
+    constructor(private http: HttpClient, private bar: MatSnackBar, private processService: ProcessService)
+    {
+        this.processService.all().subscribe(processes => this.processes = processes);
     }
 
     /**
@@ -91,8 +96,9 @@ export class WorkflowService {
      *
      * @returns {Observable<Workflow[]>}
      */
-    public all(): Observable<Workflow[]> {
-        return this.http.get<Workflow[]>( `${environment.ip}/workflow/`, { withCredentials: true } );
+    public all(): Observable<Workflow[]>
+    {
+        return this.http.get<Workflow[]>(`${environment.ip}/workflow/`, {withCredentials: true});
     }
 
     /**
@@ -101,8 +107,9 @@ export class WorkflowService {
      * @param {number} id
      * @returns {Observable<Workflow>}
      */
-    public get( id: number ): Observable<Workflow> {
-        return this.http.get<Workflow>( `${environment.ip}/workflow/${id}`, { withCredentials: true } );
+    public get(id: number): Observable<Workflow>
+    {
+        return this.http.get<Workflow>(`${environment.ip}/workflow/${id}`, {withCredentials: true});
     }
 
     /**
@@ -111,8 +118,9 @@ export class WorkflowService {
      * @param {Partial<Workflow>} workflow
      * @returns {Observable<Workflow>}
      */
-    public create( workflow: Partial<Workflow> ): Observable<Workflow> {
-        return this.http.post<Workflow>( `${environment.ip}/workflow/`, workflow, { withCredentials: true } );
+    public create(workflow: Partial<Workflow>): Observable<Workflow>
+    {
+        return this.http.post<Workflow>(`${environment.ip}/workflow/`, workflow, {withCredentials: true});
     }
 
     /**
@@ -122,9 +130,10 @@ export class WorkflowService {
      * @param {Partial<Workflow>} workflow
      * @returns {Observable<Workflow>}
      */
-    public update( id: number, workflow: Partial<Workflow> ): Observable<Workflow> {
-        this.bar.open( `Updated Workflow`, 'CLOSE', { duration: 2500 } );
-        return this.http.patch<Workflow>( `${environment.ip}/workflow/${id}`, workflow, { withCredentials: true } );
+    public update(id: number, workflow: Partial<Workflow>): Observable<Workflow>
+    {
+        this.bar.open(`Updated Workflow`, 'CLOSE', {duration: 2500});
+        return this.http.patch<Workflow>(`${environment.ip}/workflow/${id}`, workflow, {withCredentials: true});
     }
 
     /**
@@ -133,9 +142,10 @@ export class WorkflowService {
      * @param {number} id
      * @returns {Promise<boolean>}
      */
-    public async remove( id: number ): Promise<boolean> {
-        this.bar.open( `Deleted Workflow`, 'CLOSE', { duration: 2500 } );
-        return this.http.delete<boolean>( `${environment.ip}/workflow/${id}`, { withCredentials: true } ).toPromise();
+    public async remove(id: number): Promise<boolean>
+    {
+        this.bar.open(`Deleted Workflow`, 'CLOSE', {duration: 2500});
+        return this.http.delete<boolean>(`${environment.ip}/workflow/${id}`, {withCredentials: true}).toPromise();
 
     }
 
@@ -145,12 +155,16 @@ export class WorkflowService {
      * @param {Partial<Workflow>} workflow
      * @returns {boolean}
      */
-    public isRunning( workflow: Partial<Workflow> ): boolean {
-        if ( !workflow || !workflow.tasks || workflow.tasks.length === 0 ) {
+    public isRunning(workflow: Partial<Workflow>): boolean
+    {
+        if (!workflow || !workflow.tasks || workflow.tasks.length === 0)
+        {
             return false;
         }
-        for ( const task of workflow.tasks ) {
-            if ( task.state !== TaskState.NONE ) {
+        for (const task of workflow.tasks)
+        {
+            if (task.state !== TaskState.NONE)
+            {
                 return true;
             }
         }
@@ -164,15 +178,19 @@ export class WorkflowService {
      * @returns {boolean} Finished
      * @memberof WorkflowService
      */
-    public finished( workflow: Partial<Workflow> ): boolean {
-        if ( !workflow || !workflow.tasks || workflow.tasks.length === 0 ) {
+    public finished(workflow: Partial<Workflow>): boolean
+    {
+        if (!workflow || !workflow.tasks || workflow.tasks.length === 0)
+        {
             return false;
         }
 
-        for ( const task of workflow.tasks ) {
-            if ( task.state !== TaskState.FINISHED
+        for (const task of workflow.tasks)
+        {
+            if (task.state !== TaskState.FINISHED
                 && task.state !== TaskState.DEPRECATED
-                && task.state !== TaskState.FAILED ) {
+                && task.state !== TaskState.FAILED)
+            {
                 return false;
             }
         }
@@ -186,81 +204,109 @@ export class WorkflowService {
      * @param {Workflow} workflow
      * @returns {WorkflowValidationResult}
      */
-    public validate( workflow: Workflow ): WorkflowValidationResult {
-        if ( !workflow ) {
+    public validate(workflow: Workflow): WorkflowValidationResult
+    {
+        if (!workflow)
+        {
             return WorkflowValidationResult.MISSING_WORKFLOW;
-        } else if ( !this.processes ) {
+        } else if (!this.processes)
+        {
             return WorkflowValidationResult.MISSING_PROCESSES;
         }
 
         // check name
-        if ( !workflow.title || workflow.title.length > 255 ) {
+        if (!workflow.title || workflow.title.length > 255)
+        {
             return WorkflowValidationResult.TITLE_TOO_LONG;
-        } else if ( workflow.title.length < 1 ) {
+        } else if (workflow.title.length < 1)
+        {
             return WorkflowValidationResult.TITLE_TOO_SHORT;
-        } else if ( workflow.tasks && workflow.tasks.length < 1 ) {
+        } else if (workflow.tasks && workflow.tasks.length < 1)
+        {
             return WorkflowValidationResult.EMPTY;
-        } else if ( workflow.edges ) {
-            for ( let i = 0; i < workflow.edges.length; i++ ) {
+        } else if (workflow.edges)
+        {
+            for (let i = 0; i < workflow.edges.length; i++)
+            {
                 // check for loop to same task
-                if ( workflow.edges[i].from_task_id === workflow.edges[i].to_task_id ) {
+                if (workflow.edges[i].from_task_id === workflow.edges[i].to_task_id)
+                {
                     return WorkflowValidationResult.LOOP_TO_SAME_TASK;
                 }
                 // check for wrong input types
                 let inputTaskNumber: number = null;
                 let outputTaskNumber: number = null;
-                for ( let j = 0; j < workflow.tasks.length; j++ ) {
-                    if ( workflow.tasks[j].id === workflow.edges[i].to_task_id ) {
+                for (let j = 0; j < workflow.tasks.length; j++)
+                {
+                    if (workflow.tasks[j].id === workflow.edges[i].to_task_id)
+                    {
                         inputTaskNumber = workflow.tasks[j].process_id;
                     }
-                    if ( workflow.tasks[j].id === workflow.edges[i].from_task_id ) {
+                    if (workflow.tasks[j].id === workflow.edges[i].from_task_id)
+                    {
                         outputTaskNumber = workflow.tasks[j].process_id;
                     }
                 }
                 let inputProcessNumber: number = null;
                 let outputPrecessNumber: number = null;
-                for ( let k = 0; k < this.processes.length; k++ ) {
-                    if ( this.processes[k].id === inputTaskNumber ) {
+                for (let k = 0; k < this.processes.length; k++)
+                {
+                    if (this.processes[k].id === inputTaskNumber)
+                    {
                         inputProcessNumber = k;
                     }
-                    if ( this.processes[k].id === outputTaskNumber ) {
+                    if (this.processes[k].id === outputTaskNumber)
+                    {
                         outputPrecessNumber = k;
                     }
                 }
                 let processParameterTypeCorrect = false;
-                for ( let l = 0; l < this.processes[inputProcessNumber].inputs.length; l++ ) {
-                    for ( let m = 0; m < this.processes[outputPrecessNumber].outputs.length; m++ ) {
-                        if ( this.processes[inputProcessNumber].inputs[l].type === this.processes[outputPrecessNumber].outputs[m].type ) {
+                for (let l = 0; l < this.processes[inputProcessNumber].inputs.length; l++)
+                {
+                    for (let m = 0; m < this.processes[outputPrecessNumber].outputs.length; m++)
+                    {
+                        if (this.processes[inputProcessNumber].inputs[l].type === this.processes[outputPrecessNumber].outputs[m].type)
+                        {
                             processParameterTypeCorrect = true;
                         }
                     }
                 }
-                if ( !processParameterTypeCorrect ) {
+                if (!processParameterTypeCorrect)
+                {
                     return WorkflowValidationResult.WRONG_INPUT_TYPES;
                 }
             }
 
         }
         // check for missing input
-        if ( workflow.tasks && ( workflow.edges || workflow.dataEdges ) ) {
-            for ( let i = 0; i < workflow.tasks.length; i++ ) {
+        if (workflow.tasks && (workflow.edges || workflow.dataEdges))
+        {
+            for (let i = 0; i < workflow.tasks.length; i++)
+            {
                 let numberOfInputs = 0;
-                for ( let k = 0; k < workflow.edges.length; k++ ) {
-                    if ( workflow.edges[k].to_task_id === workflow.tasks[i].id ) {
+                for (let k = 0; k < workflow.edges.length; k++)
+                {
+                    if (workflow.edges[k].to_task_id === workflow.tasks[i].id)
+                    {
                         numberOfInputs++;
                     }
                 }
-                for ( let l = 0; l < workflow.dataEdges.length; l++ ) {
-                    if ( workflow.dataEdges[l].to_task_id === workflow.tasks[i].id ) {
+                for (let l = 0; l < workflow.dataEdges.length; l++)
+                {
+                    if (workflow.dataEdges[l].to_task_id === workflow.tasks[i].id)
+                    {
                         numberOfInputs++;
                     }
                 }
 
                 numberOfInputs += workflow.tasks[i].input_artefacts.length;
 
-                for ( let j = 0; j < this.processes.length; j++ ) {
-                    if ( workflow.tasks[i].process_id === this.processes[j].id ) {
-                        if ( numberOfInputs < this.processes[j].inputs.length ) {
+                for (let j = 0; j < this.processes.length; j++)
+                {
+                    if (workflow.tasks[i].process_id === this.processes[j].id)
+                    {
+                        if (numberOfInputs < this.processes[j].inputs.length)
+                        {
                             return WorkflowValidationResult.MISSING_TASK_INPUT;
                         }
                     }
@@ -268,16 +314,22 @@ export class WorkflowService {
             }
         }
         // cycle check
-        if ( workflow.tasks && workflow.edges ) {
-            for ( let i = 0; i < workflow.tasks.length; i++ ) {
-                for ( let j = 0; j < workflow.edges.length; j++ ) {
+        if (workflow.tasks && workflow.edges)
+        {
+            for (let i = 0; i < workflow.tasks.length; i++)
+            {
+                for (let j = 0; j < workflow.edges.length; j++)
+                {
                     let checkedTasks: number[] = [];
-                    if ( workflow.tasks[i].id === workflow.edges[j].to_task_id ) {
+                    if (workflow.tasks[i].id === workflow.edges[j].to_task_id)
+                    {
 
 
                         const visitedTasks: number[] = [];
-                        if ( !this.contains( checkedTasks, workflow.edges[j].from_task_id ) ) {
-                            if ( this.checkCycle( workflow.edges[j], workflow, visitedTasks ) ) {
+                        if (!this.contains(checkedTasks, workflow.edges[j].from_task_id))
+                        {
+                            if (this.checkCycle(workflow.edges[j], workflow, visitedTasks))
+                            {
                                 return WorkflowValidationResult.CYCLE_IN_WORKFLOW;
                             }
                             checkedTasks = visitedTasks;
@@ -288,41 +340,49 @@ export class WorkflowService {
         }
 
         // check for multiple inputs with edges
-        if ( workflow.edges ) {
-            for ( let i = 0; i < workflow.edges.length; i++ ) {
-                for ( let j = i + 1; j < workflow.edges.length; j++ ) {
-                    if ( workflow.edges[i].to_task_id === workflow.edges[j].to_task_id && workflow.edges[i].input_id === workflow.edges[j].input_id ) {
+        if (workflow.edges)
+        {
+            for (let i = 0; i < workflow.edges.length; i++)
+            {
+                for (let j = i + 1; j < workflow.edges.length; j++)
+                {
+                    if (workflow.edges[i].to_task_id === workflow.edges[j].to_task_id && workflow.edges[i].input_id === workflow.edges[j].input_id)
+                    {
                         return WorkflowValidationResult.MULTIPLE_INPUTS;
                     }
                 }
             }
         }
-        
+
         //check for multiple inputs with dataEdges
-        if ( workflow.dataEdges ) {
-            for ( let k = 0; k < workflow.edges.length; k++ ) {
-                for ( let l = k + 1; l < workflow.edges.length; l++ ) {
-                    if ( workflow.dataEdges[k].to_task_id === workflow.dataEdges[l].to_task_id && workflow.dataEdges[k].task_input_id === workflow.dataEdges[l].task_input_id ) {
+        if (workflow.dataEdges)
+        {
+            for (let k = 0; k < workflow.edges.length; k++)
+            {
+                for (let l = k + 1; l < workflow.edges.length; l++)
+                {
+                    if (workflow.dataEdges[k].to_task_id === workflow.dataEdges[l].to_task_id && workflow.dataEdges[k].task_input_id === workflow.dataEdges[l].task_input_id)
+                    {
                         return WorkflowValidationResult.MULTIPLE_INPUTS;
                     }
                 }
             }
         }
-        
+
         //check for multiple inputs with edges and dataEdges
-        if ( workflow.edges && workflow.dataEdges ) {
-            for ( let m = 0; m < workflow.edges.length; m++ ) {
-                for ( let n = 0; n < workflow.dataEdges.length; n++ ) {
-                    if ( workflow.edges[m].to_task_id === workflow.dataEdges[n].to_task_id && workflow.edges[m].input_id === workflow.dataEdges[n].task_input_id ) {
+        if (workflow.edges && workflow.dataEdges)
+        {
+            for (let m = 0; m < workflow.edges.length; m++)
+            {
+                for (let n = 0; n < workflow.dataEdges.length; n++)
+                {
+                    if (workflow.edges[m].to_task_id === workflow.dataEdges[n].to_task_id && workflow.edges[m].input_id === workflow.dataEdges[n].task_input_id)
+                    {
                         return WorkflowValidationResult.MULTIPLE_INPUTS;
                     }
                 }
             }
         }
-
-
-
-
 
 
         return WorkflowValidationResult.SUCCESSFUL;
@@ -335,9 +395,12 @@ export class WorkflowService {
      * @param {T} variable
      * @returns {boolean}
      */
-    private contains<T>( array: Array<T>, variable: T ): boolean {
-        for ( let i = 0; i < array.length; i++ ) {
-            if ( array[i] === variable ) {
+    private contains<T>(array: Array<T>, variable: T): boolean
+    {
+        for (let i = 0; i < array.length; i++)
+        {
+            if (array[i] === variable)
+            {
                 return true;
             }
         }
@@ -352,28 +415,38 @@ export class WorkflowService {
      * @param {number[]} visitedTasks list of visited Tasks (empty for 1st run)
      * @returns {boolean}
      */
-    private checkCycle( currentWorkflowEdge: Edge, workflow: Partial<Workflow>, visitedTasks: number[] ): boolean {
-        visitedTasks.push( currentWorkflowEdge.to_task_id );
+    private checkCycle(currentWorkflowEdge: Edge, workflow: Partial<Workflow>, visitedTasks: number[]): boolean
+    {
+        visitedTasks.push(currentWorkflowEdge.to_task_id);
         // check task at end of edge
-        for ( let i = 0; i < workflow.tasks.length; i++ ) {
-            if ( this.contains( visitedTasks, currentWorkflowEdge.from_task_id ) ) {
+        for (let i = 0; i < workflow.tasks.length; i++)
+        {
+            if (this.contains(visitedTasks, currentWorkflowEdge.from_task_id))
+            {
                 return true;
             }
-            if ( workflow.tasks[i].id === currentWorkflowEdge.to_task_id ) {
+            if (workflow.tasks[i].id === currentWorkflowEdge.to_task_id)
+            {
                 // check for new edges at task
                 let cycle = false;
-                for ( let j = 0; j < workflow.edges.length; j++ ) {
-                    if ( workflow.edges[j].to_task_id === currentWorkflowEdge.to_task_id ) {
-                        if ( this.contains( visitedTasks, workflow.edges[j].from_task_id ) ) {
+                for (let j = 0; j < workflow.edges.length; j++)
+                {
+                    if (workflow.edges[j].to_task_id === currentWorkflowEdge.to_task_id)
+                    {
+                        if (this.contains(visitedTasks, workflow.edges[j].from_task_id))
+                        {
                             return true;
                         }
-                        for ( let l = 0; l < workflow.edges.length; l++ ) {
-                            if ( workflow.edges[j].from_task_id === workflow.edges[l].to_task_id ) {
+                        for (let l = 0; l < workflow.edges.length; l++)
+                        {
+                            if (workflow.edges[j].from_task_id === workflow.edges[l].to_task_id)
+                            {
                                 const newVisitedTasks: number[] = [];
-                                for ( let k = 0; k < visitedTasks.length; k++ ) {
-                                    newVisitedTasks.push( visitedTasks[k] );
+                                for (let k = 0; k < visitedTasks.length; k++)
+                                {
+                                    newVisitedTasks.push(visitedTasks[k]);
                                 }
-                                cycle = cycle || this.checkCycle( workflow.edges[l], workflow, newVisitedTasks );
+                                cycle = cycle || this.checkCycle(workflow.edges[l], workflow, newVisitedTasks);
                             }
                         }
                     }
@@ -390,13 +463,16 @@ export class WorkflowService {
      * @param {number} id
      * @returns {Promise<boolean>}
      */
-    public async start( id: number ): Promise<boolean> {
-        const result = await this.http.get<any>( `${environment.ip}/workflow_start/${id}` ).toPromise();
+    public async start(id: number): Promise<boolean>
+    {
+        const result = await this.http.get<any>(`${environment.ip}/workflow_start/${id}`).toPromise();
 
-        if ( result['error'] ) {
-            this.bar.open( result['error'], 'CLOSE', { duration: 5000 } );
+        if (result['error'])
+        {
+            this.bar.open(result['error'], 'CLOSE', {duration: 5000});
             return false;
-        } else {
+        } else
+        {
             return true;
         }
     }
@@ -408,12 +484,15 @@ export class WorkflowService {
      * @returns {Promise<boolean>} Refresh successful
      * @memberof WorkflowService
      */
-    public async refresh( id: number ): Promise<boolean> {
-        const result = await this.http.get<any>( `${environment.ip}/workflow_refresh/${id}` ).toPromise();
-        if ( result['error'] ) {
-            this.bar.open( result['error'], 'CLOSE', { duration: 5000 } );
+    public async refresh(id: number): Promise<boolean>
+    {
+        const result = await this.http.get<any>(`${environment.ip}/workflow_refresh/${id}`).toPromise();
+        if (result['error'])
+        {
+            this.bar.open(result['error'], 'CLOSE', {duration: 5000});
             return false;
-        } else {
+        } else
+        {
             return true;
         }
     }
@@ -425,12 +504,15 @@ export class WorkflowService {
      * @returns {Promise<boolean>} Stop successful
      * @memberof WorkflowService
      */
-    public async stop( id: number ): Promise<boolean> {
-        const result = await this.http.get<any>( `${environment.ip}/workflow_stop/${id}` ).toPromise();
-        if ( result['error'] ) {
-            this.bar.open( result['error'], 'CLOSE', { duration: 5000 } );
+    public async stop(id: number): Promise<boolean>
+    {
+        const result = await this.http.get<any>(`${environment.ip}/workflow_stop/${id}`).toPromise();
+        if (result['error'])
+        {
+            this.bar.open(result['error'], 'CLOSE', {duration: 5000});
             return false;
-        } else {
+        } else
+        {
             return true;
         }
     }

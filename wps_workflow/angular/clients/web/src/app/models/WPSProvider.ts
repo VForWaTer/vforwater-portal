@@ -8,7 +8,16 @@
  */
 export interface WPSProvider
 {
+    /**
+     * ID of this object
+     */
     id: number;
+    /**
+     * Describing title of the Provider
+     */
     title: string;
+    /**
+     * Homepage of the provider
+     */
     site: string;
 }
