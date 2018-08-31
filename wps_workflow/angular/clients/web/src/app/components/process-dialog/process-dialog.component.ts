@@ -4,6 +4,13 @@ import {Process} from 'app/models/Process';
 import {ProcessParameterType} from 'app/models/ProcessParameter';
 import {ProcessService} from 'app/services/process.service';
 
+
+/**
+ * Component Class
+ * @class ProcessDialogComponent
+ * @export
+ * @implements {OnInit}
+ */
 @Component({
     selector: 'app-process-dialog',
     templateUrl: './process-dialog.component.html',
@@ -20,6 +27,9 @@ export class ProcessDialogComponent implements OnInit
     {
     }
 
+    /**
+     *
+     */
     ngOnInit()
     {
     }
