@@ -25,6 +25,7 @@ class WorkflowAdmin(admin.ModelAdmin):
     list_display = ['name', 'percent_done', 'creator']
     inlines = [TaskInline]
 
+
     class Meta:
         model = Workflow
 
@@ -38,6 +39,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ['title', 'workflow', 'status', 'status_url']
     list_filter = ['workflow']
 
+
     class Meta:
         model = Task
 
@@ -50,8 +52,10 @@ class EdgeAdmin(admin.ModelAdmin):
     """
     list_filter = ['workflow']
 
+
     class Meta:
         model = Edge
+
 
 class DataEdgeAdmin(admin.ModelAdmin):
     """
@@ -60,7 +64,8 @@ class DataEdgeAdmin(admin.ModelAdmin):
     displayed on the admin page.
     """
     list_filter = ['workflow']
-    
+
+
     class Meta:
         model = DataEdge
 

@@ -3,9 +3,10 @@ from django.urls import path
 
 from wps_workflow import views
 
+
 app_name = 'wps_workflow'
 urlpatterns = [
-    url(r'^$', views.EditorView.as_view(), name='index'),
+    url(r'^$', views.EditorView.as_view(), name = 'index'),
 
     path('user/', views.UserView.as_view()),
 
@@ -22,8 +23,8 @@ urlpatterns = [
     path('wps/<int:wps_id>', views.WPSView.as_view()),
     path('wps_refresh/', views.WPSView.refresh),
 
-    url(r'^workflows/', views.WorkflowsView.as_view(), name='workflows'),
-    url(r'^editor/', views.EditorView.as_view(), name='editor'),
-    url(r'^settings/', views.SettingsView.as_view(), name='settings'),
+    url(r'^workflows/', views.WorkflowsView.as_view(), name = 'workflows'),
+    url(r'^editor/', views.EditorView.as_view(), name = 'editor'),
+    url(r'^settings/', views.SettingsView.as_view(), name = 'settings'),
 
-]
+    ]
