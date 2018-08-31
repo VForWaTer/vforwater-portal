@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$', views.GeoserverView.as_view()),
     url(r'^workflowtool/', WorkflowView.as_view(), name='workflowtool'),
     url(r'^togglelang$', views.ToggleLanguageView.as_view(), name='togglelang'),
+    url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),
 ]
 
 if settings.ON_VFW_SERVER:

@@ -1,6 +1,6 @@
 import base64
 import json
-import re
+import csv
 import urllib
 import hashlib
 from collections import defaultdict
@@ -9,6 +9,7 @@ from io import StringIO, BytesIO
 
 from django.db import connections
 from django.http.response import JsonResponse, HttpResponse
+from django.http import StreamingHttpResponse
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib.auth import logout
@@ -210,10 +211,30 @@ class menuView(TemplateView):
 #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
 
-        if 'DownloadData' in request.GET:
-            print('DownloadData: ', json.loads(request.GET.get('filter_selection_map')))
-
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
+
+class Echo:
+    """An object that implements just the write method of the file-like
+    interface.
+    """
+
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
+
+class DatasetDownloadView(TemplateView):
+
+    def get(self, request, user='default'):
+        rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
+            pk=json.loads(request.GET.get('download_data')))
+        # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
+        # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
+        pseudo_buffer = Echo()
+        writer = csv.writer(pseudo_buffer)
+        response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+                                         content_type="text/csv")
+        #response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+        return response
 
 
 class LoginView(View):
@@ -270,11 +291,11 @@ class ToggleLanguageView(View):
 class GeoserverView(View):
 
     def get(self, request, service, layer, bbox, srid):
-        wfsLayerName = 'new_ID_as_identifier_update'
-        wfsLayerName = layer
+        # wfsLayerName = 'new_ID_as_identifier_update'
+        # wfsLayerName = layer
         workSpaceName = 'CAOS_update'
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
-              '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \
+              '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
               # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
               # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid

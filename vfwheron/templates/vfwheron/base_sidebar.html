@@ -66,7 +66,7 @@
         <a href="#" class="context-menu__link" data-action="Plot"><i class="fa fa-eye"></i>{% trans " Plot data" %}</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="DownloadD"><i class="fa fa-download"></i>{% trans " Download data" %}</a>
+        <a href="#" class="context-menu__link" data-action="DownloadD"><i class="fa fa-download"></i>{% trans " Download data" %} (.csv)</a>
       </li>
       <li class="context-menu__item">
         <a href="#" class="context-menu__link" data-action="DownloadMD"><i class="fa fa-download"></i>{% trans " Download metadata" %}</a>
@@ -79,7 +79,16 @@
       </li>
     </ul>
   </nav>
+{% comment %}<!-- The Downloading Modal -->
+<div id="contextModal" class="respo-modal">
 
+  <!-- Modal content -->
+  <div class="respo-modal-content">
+    <span class="respo-close">&times;</span>
+    <p>Some text in the Modal..</p>
+  </div>{% endcomment %}
+
+</div>
 {#  Overlay effect when opening sidenav on small screens#}
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
 </body>

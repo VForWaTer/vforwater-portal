@@ -235,6 +235,7 @@ function getCookie(name) {
 // send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
     if (id !== 'null') {
+        console.log('in workspace_dataset', id)
         $.ajax({
             url: DEMO_VAR + "/vfwheron/menu",
             datatype: 'json',
@@ -243,6 +244,7 @@ function workspace_dataset(id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
             success: function (json) {
+                console.log('in ajax of workspace_dataset', id)
                 if (sessionStorage.getItem("btn")) {
                     let stored = JSON.parse(sessionStorage.getItem("btn"));
                     $.each(json['workspaceData'], function (key, value) {
@@ -253,6 +255,7 @@ function workspace_dataset(id) {
                     sessionStorage.setItem("btn", JSON.stringify(stored))
                 } else {
                     sessionStorage.setItem("btn", JSON.stringify(json['workspaceData']));
+                    console.log('workspacedata: ', JSON.stringify(json['workspaceData']))
                 }
                 // push sessionStorage keys to html for Workspace
                 let x = [];
@@ -295,7 +298,11 @@ function popupContentvfw(ids, page) {
         page = JSON.parse("[" + ids + "]").slice(-1);
         ids = JSON.parse("[" + ids + "]").slice(0, -1);
     }
-    document.getElementById("pagi" + page).classList.add("loadspin");
+    console.log('page: ', ids, page)
+    console.log('page: ', typeof(ids), typeof(page))
+    if (page != 'none') {
+        document.getElementById("pagi" + page).classList.add("loadspin");
+    }
     let popupTableBeforeMeta = '<table id="popupTable"><td>';
     // let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
     let popUpText = popupTableBeforeMeta +
@@ -312,9 +319,12 @@ function popupContentvfw(ids, page) {
         }, // data sent with the post request
         success: function (json) {
             document.getElementById('popup-content').innerHTML = buildPopupTextvfw(json, popUpText);
-            document.getElementsByClassName("active")[0].classList.remove("active");
-            document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
-            document.getElementById("pagi" + page).classList.add("active");
+            if (page != 'none') {
+                document.getElementsByClassName("active")[0].classList.remove("active");
+                document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
+                document.getElementById("pagi" + page).classList.add("active");
+            }
+            console.log('finished', json, popUpText)
         }
 
     });
