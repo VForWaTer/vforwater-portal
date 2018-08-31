@@ -80,7 +80,7 @@ function workspace_button(json) {
             // check if buttons already exist before creating a new one:
             if (document.getElementById(key) === null) {
                 document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding task" ' +
-                    'data-id="' + key + '" onmouseover="" style="cursor: pointer;" id="' + key + '">' +
+                    'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor: pointer;" id="id' + key + '">' +
                     '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
                     '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
                     'onclick="remove_single_data(' + key + ')"; class="respo-hover-white respo-right">' +
@@ -331,6 +331,20 @@ function positionMenu(e) {
  * @param {HTMLElement} link The link that was clicked
  */
 function menuItemListener(link) {
+   /* // Get the modal
+    let modal = document.getElementById('contextModal');
+    let span = document.getElementsByClassName("respo-close")[0];
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    };
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };*/
     switch (link.getAttribute("data-action")) {
         case "View":
             console.log('Ich Viewe was');
@@ -344,69 +358,19 @@ function menuItemListener(link) {
             console.log('Ich plotte was');
             break;
         case "DownloadD":
-            console.log("Let's Download", taskItemInContext.getAttribute("data-id"));
-            console.log("Let's Download", JSON.stringify(taskItemInContext.getAttribute("data-id")));
-            console.log("Let's Download", typeof (taskItemInContext.getAttribute("data-id")));
-            console.log("Let's Download", typeof(JSON.stringify(taskItemInContext.getAttribute("data-id"))));
-            var _OBJECT_URL;
-
-            // Call an AJAX
+            console.log('Start')
+            // modal.style.display = "block";
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
+                url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
                 data: {
-                    DownloadData: JSON.stringify(taskItemInContext.getAttribute("data-id")),
-                    'csrfmiddlewaretoken': csrf_token,
+                    download_data: taskItemInContext.getAttribute("data-id"),
                 }, // data sent with post request
-                success: function () {
-                    // document.querySelector('#'+taskItemInContext.getAttribute("data-id")).addEventListener('click', function() {
-                    var request = new XMLHttpRequest();
-
-                    request.addEventListener('readystatechange', function (e) {
-                        if (request.readyState == 2 && request.status == 200) {
-                            // Download is being started
-                        }
-                        else if (request.readyState == 3) {
-                            // Download is under progress
-                        }
-                        else if (request.readyState == 4) {
-                            // Downloaing has finished
-
-                            _OBJECT_URL = URL.createObjectURL(request.response);
-
-                            // Set href as a local object URL
-                            // document.querySelector('#save-file').setAttribute('href', _OBJECT_URL);
-
-                            // Set name of download
-                            // document.querySelector('#save-file').setAttribute('download', 'img.jpeg');
-
-                            // Recommended : Revoke the object URL after some time to free up resources
-                            // There is no way to find out whether user finished downloading
-                            setTimeout(function () {
-                                window.URL.revokeObjectURL(_OBJECT_URL);
-                            }, 60 * 1000);
-                        }
-                    });
-
-                    request.addEventListener('progress', function (e) {
-                        var percent_complete = (e.loaded / e.total) * 100;
-                        console.log('percent_complete: ', percent_complete);
-                    });
-
-                    request.responseType = 'blob';
-
-                    // Downloading a JPEG file
-                    request.open('get', 'img.jpeg');
-
-                    request.send();
-                    console.log('request: ', request)
-                    // });
-                    /*$('.download').click(function(e) {
-                        e.preventDefault();  //stop the browser from following
-                        window.location.href = 'uploads/file.doc';
-                        console.log("Let's Download still...");
-                    });*/
-                    // {<a href="no-script.html" class="download">Download</a>}
+                success: function (json) {
+                    console.log('Success')
+                    let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
+                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    console.log('Fertig')
                 }
             });
             break;
