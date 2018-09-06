@@ -30,7 +30,7 @@ export interface TaskParameterTuple
 })
 export class TaskComponent implements OnInit
 {
-    
+
     /**
      * Process to this Task
      */
@@ -95,7 +95,7 @@ export class TaskComponent implements OnInit
      * holds coordinates where mouse button was pressed
      */
     private mouseDownPos: number[];
-    
+
     /**
      * creates a task object
      * @param {MatDialog} dialog material dialog
@@ -104,16 +104,16 @@ export class TaskComponent implements OnInit
     public constructor(public dialog: MatDialog, private el: ElementRef)
     {
     }
-    
+
     /**
      * Component setup
      * @memberOf TaskComponent
      */
     public ngOnInit()
     {
-    
+
     }
-    
+
     /**
      * Getter for task execute state
      * @returns Touple of name and color of state
@@ -128,10 +128,10 @@ export class TaskComponent implements OnInit
             {state: TaskState.RUNNING, name: 'RUNNING', color: '#FFC107'},
             {state: TaskState.WAITING, name: 'WAITING', color: '#03A9F4'},
         ];
-        
+
         return infoMap.find(info => info.state === this.task.state);
     }
-    
+
     /**
      * EventListener for mouseDown Event
      * triggered when the user clicks
@@ -146,7 +146,7 @@ export class TaskComponent implements OnInit
             this.mouseDownPos = [event.pageX, event.pageY];
         }
     }
-    
+
     /**
      * EventListener for mouseUp Event
      * triggered when user releases mouse button
@@ -166,7 +166,7 @@ export class TaskComponent implements OnInit
         }
         this.mouseDownPos = undefined;
     }
-    
+
     /**
      * EventListener for context menu click
      * opens task menu
@@ -178,7 +178,7 @@ export class TaskComponent implements OnInit
         this.menuComponent.openMenu();
         return false;
     }
-    
+
     /**
      * deletes the task
      */
@@ -186,7 +186,7 @@ export class TaskComponent implements OnInit
     {
         this.taskRemove.emit(this.task);
     }
-    
+
     /**
      * opens the process dialog
      */
@@ -196,7 +196,7 @@ export class TaskComponent implements OnInit
             data: this.process
         });
     }
-    
+
     /**
      * returns the color of the process parameter
      * @param {ProcessParameterType} type type of the process parameter
@@ -215,7 +215,7 @@ export class TaskComponent implements OnInit
                 return '#000000';
         }
     }
-    
+
     /**
      * EventListener for mouseDown Event on Parameter
      * triggered when user clicks on a parameter of task.
@@ -228,11 +228,11 @@ export class TaskComponent implements OnInit
         {
             return;
         }
-        
+
         this.mouseDownPos = [event.pageX, event.pageY];
         this.parameterDrag.emit(parameter);
     }
-    
+
     /**
      * EventListener for mouseUp Event on Parameter
      * triggered when user releases the mouse button on a parameter (clicking it) and opens the artefact dialog
@@ -261,8 +261,8 @@ export class TaskComponent implements OnInit
             {
                 return;
             }
-            
-            
+
+
             this.dialog.open(ArtefactDialogComponent, {
                 data: {
                     task: this,
@@ -271,13 +271,13 @@ export class TaskComponent implements OnInit
             });
         } else
         {
-            if (!this.hasArtefact(parameter))
+            if (!this.hasArtefact(parameter)) // TODO & if has edge from parameter
             {
                 this.parameterDrop.emit(parameter);
             }
         }
     }
-    
+
     /**
      * adds data to an artefact
      * @param {ProcessParameter} parameter process parameter
@@ -296,7 +296,7 @@ export class TaskComponent implements OnInit
     {
         this.changeArtefact.emit([{task: this.task, parameter}, null]);
     }
-    
+
     /**
      * returns if the task component has an artefact
      * @param {ProcessParameter} parameter process parameter
@@ -307,7 +307,7 @@ export class TaskComponent implements OnInit
         {
             return false;
         }
-        
+
         if (parameter.role === 'input')
         {
             return -1 !== this.task.input_artefacts.findIndex(artefact => artefact.parameter_id === parameter.id);
@@ -317,7 +317,7 @@ export class TaskComponent implements OnInit
         }
         return false;
     }
-    
+
     /**
      * returns the parameter position
      * @param role the parameter role which can either be input or output
@@ -326,7 +326,7 @@ export class TaskComponent implements OnInit
     public getParameterPosition(role: 'input' | 'output', id: number): [number, number]
     {
         const n: HTMLDivElement = (role === 'input' ? this.inputContainer : this.outputContainer).nativeElement;
-        
+
         for (let i = 0; i < n.childElementCount; i++)
         {
             if (n.children[i].getAttribute('data-id') === '' + id)
@@ -337,5 +337,5 @@ export class TaskComponent implements OnInit
         }
         return null;
     }
-    
+
 }

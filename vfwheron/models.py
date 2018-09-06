@@ -10,10 +10,16 @@ from __future__ import unicode_literals
 from django.contrib.gis.db import models
 
 
+# TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without explanation
+
 class DjangoMigrations(models.Model):
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
+    """
+
+    """
+    app = models.CharField(max_length = 255)
+    name = models.CharField(max_length = 255)
     applied = models.DateTimeField()
+
 
     class Meta:
         managed = False
@@ -21,19 +27,24 @@ class DjangoMigrations(models.Model):
 
 
 class LtDomain(models.Model):
-    pid = models.ForeignKey('self', models.DO_NOTHING, db_column='pid', blank=True, null=True)
-    domain_name = models.CharField(max_length=65)
-    project = models.ForeignKey('LtProject', models.DO_NOTHING, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
+
+    """
+    pid = models.ForeignKey('self', models.DO_NOTHING, db_column = 'pid', blank = True, null = True)
+    domain_name = models.CharField(max_length = 65)
+    project = models.ForeignKey('LtProject', models.DO_NOTHING, blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
     column_dict_en = {'project__project_name': 'Project'}
     menu_name = {'DE': 'Projekt/Domäne', 'EN': 'Project/Domain'}
     menu_name_en = 'Project/Domain'
-    submenu_names = {'project': {'DE': 'Projekt', 'EN': 'Project'},
-                     'domain': {'DE': 'Domäne', 'EN': 'Domain'},
-                     'subdomain': {'DE': 'Subdomäne', 'EN': 'Subdomain'}}
+    submenu_names = {
+        'project': {'DE': 'Projekt', 'EN': 'Project'},
+        'domain': {'DE': 'Domäne', 'EN': 'Domain'},
+        'subdomain': {'DE': 'Subdomäne', 'EN': 'Subdomain'}
+    }
     submenu_names_en = {'project': 'Project', 'domain': 'Domain', 'subdomain': 'Subdomain'}
     path = 'nmmetadomain__domain'
 
@@ -41,8 +52,10 @@ class LtDomain(models.Model):
     filter_type = {'project__project_name': 'recursive'}
     mother = 'LtProject'
 
+
     def __str__(self):
         return self.domain_name
+
 
     class Meta:
         managed = False
@@ -50,16 +63,19 @@ class LtDomain(models.Model):
 
 
 class LtLicense(models.Model):
-    license_abbrev = models.CharField(max_length=20)
-    license_name = models.CharField(max_length=255)
-    legal_text = models.TextField(blank=True, null=True)
-    text_url = models.CharField(max_length=255, blank=True, null=True)
+    """
+
+    """
+    license_abbrev = models.CharField(max_length = 20)
+    license_name = models.CharField(max_length = 255)
+    legal_text = models.TextField(blank = True, null = True)
+    text_url = models.CharField(max_length = 255, blank = True, null = True)
     access = models.BooleanField()
     share = models.BooleanField()
     edit = models.BooleanField()
     commercial = models.BooleanField()
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {'license_abbrev': {'DE': 'Lizenzname', 'EN': 'License name'}}
     column_dict_en = {'license_abbrev': 'License name'}
@@ -67,8 +83,10 @@ class LtLicense(models.Model):
     menu_name_en = 'License'
     path = 'license'
 
+
     def __str__(self):
         return self.license_name
+
 
     class Meta:
         managed = False
@@ -76,27 +94,34 @@ class LtLicense(models.Model):
 
 
 class LtLocation(models.Model):
-    centroid_x = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    centroid_y = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid', blank=True, null=True)
-    geometry_type = models.CharField(max_length=15, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-    geom = models.GeometryField(unique=True, srid=0)
+    """
 
-    column_dict = {'centroid_x': {'DE': 'X-Koordinaten', 'EN': 'X-Coordinate'},
-                      'centroid_y': {'DE': 'Y Koordinaten', 'EN': 'Y-Coordinate'},
-                      'geometry_type': {'DE': 'Geometrie', 'EN': 'Geometry'}}
+    """
+    centroid_x = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    centroid_y = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column = 'srid', blank = True, null = True)
+    geometry_type = models.CharField(max_length = 15, blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+    geom = models.GeometryField(unique = True, srid = 0)
+
+    column_dict = {
+        'centroid_x': {'DE': 'X-Koordinaten', 'EN': 'X-Coordinate'},
+        'centroid_y': {'DE': 'Y Koordinaten', 'EN': 'Y-Coordinate'},
+        'geometry_type': {'DE': 'Geometrie', 'EN': 'Geometry'}
+    }
     menu_name = {'DE': 'Position', 'EN': 'Location'}
-    column_dict_en = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate','geometry_type': 'Geometry'}
+    column_dict_en = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
     menu_name_en = 'Location'
     path = 'location'
     filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider'}
+
 
     def __str__(self):
         # return '%s %s' % (self.centroid_x, self.centroid_y)
         return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (
             self.geometry_type, self.centroid_x, self.centroid_y, self.srid)
+
 
     class Meta:
         managed = False
@@ -104,10 +129,13 @@ class LtLocation(models.Model):
 
 
 class LtProject(models.Model):
-    project_name = models.CharField(unique=True, max_length=65)
-    user = models.ForeignKey('LtUser', models.DO_NOTHING, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
+
+    """
+    project_name = models.CharField(unique = True, max_length = 65)
+    user = models.ForeignKey('LtUser', models.DO_NOTHING, blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {'project_name': {'DE': 'Projektname', 'EN': 'Project name'}}
     menu_name = {'DE': 'Projekt', 'EN': 'project'}
@@ -116,8 +144,10 @@ class LtProject(models.Model):
     menu_name_en = 'project'
     path = 'nmmetadomain__domain__project'
 
+
     def __str__(self):
         return self.project_name
+
 
     class Meta:
         managed = False
@@ -125,13 +155,18 @@ class LtProject(models.Model):
 
 
 class LtQuality(models.Model):
-    flag_name = models.CharField(max_length=25)
-    flag_weight = models.IntegerField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
 
-    column_dict = {'flag_name': {'DE': 'Kennzeichen', 'EN': 'Flag'},
-                      'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}}
+    """
+    flag_name = models.CharField(max_length = 25)
+    flag_weight = models.IntegerField(blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+
+    column_dict = {
+        'flag_name': {'DE': 'Kennzeichen', 'EN': 'Flag'},
+        'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}
+    }
     menu_name = {'DE': 'Qualität', 'EN': 'Quality'}
 
     column_dict_en = {'flag_name': 'Flag', 'flag_weight': 'Quantifier'}
@@ -139,8 +174,10 @@ class LtQuality(models.Model):
     path = 'quality'
     filter_type = {'flag_weight': 'slider'}
 
+
     def __str__(self):
         return self.flag_name
+
 
     class Meta:
         managed = False
@@ -148,34 +185,45 @@ class LtQuality(models.Model):
 
 
 class LtSite(models.Model):
-    site_name = models.CharField(max_length=65, blank=True, null=True)
-    elevation = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    rel_height = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    orientation_degree = models.IntegerField(blank=True, null=True)
-    slope = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    landuse = models.CharField(max_length=65, blank=True, null=True)
-    site_comment = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
 
-    column_dict = {'site_name': {'DE': 'Standortname', 'EN': 'Site name'},
-                      'elevation': {'DE': 'Hohe', 'EN': 'Elevation'},
-                      'rel_height': {'DE': 'Relative Höhe', 'EN': 'Relative height'},
-                      'orientation_degree': {'DE': 'Richtung', 'EN': 'Orientation'},
-                      'slope': {'DE': 'Hangneigung', 'EN': 'Slope'},
-                      'landuse': {'DE': 'Landnutzung', 'EN': 'Landuse'},
-                      'site_comment': {'DE': 'Kommentar', 'EN': 'Site comment'}}
+    """
+    site_name = models.CharField(max_length = 65, blank = True, null = True)
+    elevation = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    rel_height = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    orientation_degree = models.IntegerField(blank = True, null = True)
+    slope = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    landuse = models.CharField(max_length = 65, blank = True, null = True)
+    site_comment = models.TextField(blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+
+    column_dict = {
+        'site_name': {'DE': 'Standortname', 'EN': 'Site name'},
+        'elevation': {'DE': 'Hohe', 'EN': 'Elevation'},
+        'rel_height': {'DE': 'Relative Höhe', 'EN': 'Relative height'},
+        'orientation_degree': {'DE': 'Richtung', 'EN': 'Orientation'},
+        'slope': {'DE': 'Hangneigung', 'EN': 'Slope'},
+        'landuse': {'DE': 'Landnutzung', 'EN': 'Landuse'},
+        'site_comment': {'DE': 'Kommentar', 'EN': 'Site comment'}
+    }
     menu_name = {'DE': 'Standort', 'EN': 'Site'}
-    column_dict_en = {'site_name': 'Site name', 'elevation': 'Elevation', 'rel_height': 'Relative height',
-                      'orientation_degree': 'Orientation', 'slope': 'Slope', 'landuse': 'Landuse',
-                      'site_comment': 'Site comment'}
+    column_dict_en = {
+        'site_name': 'Site name', 'elevation': 'Elevation', 'rel_height': 'Relative height',
+        'orientation_degree': 'Orientation', 'slope': 'Slope', 'landuse': 'Landuse',
+        'site_comment': 'Site comment'
+    }
     menu_name_en = 'Site'
     path = 'site'
-    filter_type = {'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
-                   'slope': 'slider'}
+    filter_type = {
+        'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
+        'slope': 'slider'
+    }
+
 
     def __str__(self):
         return self.site_name  # TODO: is this useful? At the moment there is no information in site_name
+
 
     class Meta:
         managed = False
@@ -183,28 +231,37 @@ class LtSite(models.Model):
 
 
 class LtSoil(models.Model):
-    geology = models.CharField(max_length=65, blank=True, null=True)
-    soil_type = models.CharField(max_length=65, blank=True, null=True)
-    porosity = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    field_capacity = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    residual_moisture = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
 
-    column_dict = {'geology': {'DE': 'Geologie', 'EN': 'Geology'},
-                      'soil_type': {'DE': 'Bodentyp', 'EN': 'Soil Type'},
-                      'porosity': {'DE': 'Porosität', 'EN': 'Porosity'},
-                      'field_capacity': {'DE': 'Feldkapazität', 'EN': 'Field Capacity'},
-                      'residual_moisture': {'DE': 'Restfeuchte', 'EN': 'Residual Moisture'}}
+    """
+    geology = models.CharField(max_length = 65, blank = True, null = True)
+    soil_type = models.CharField(max_length = 65, blank = True, null = True)
+    porosity = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    field_capacity = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    residual_moisture = models.DecimalField(max_digits = 65535, decimal_places = 65535, blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+
+    column_dict = {
+        'geology': {'DE': 'Geologie', 'EN': 'Geology'},
+        'soil_type': {'DE': 'Bodentyp', 'EN': 'Soil Type'},
+        'porosity': {'DE': 'Porosität', 'EN': 'Porosity'},
+        'field_capacity': {'DE': 'Feldkapazität', 'EN': 'Field Capacity'},
+        'residual_moisture': {'DE': 'Restfeuchte', 'EN': 'Residual Moisture'}
+    }
     menu_name = {'DE': 'Boden', 'EN': 'Soil'}
-    column_dict_en = {'geology': 'Geology', 'soil_type': 'Soil Type', 'porosity': 'Porosity',
-                      'field_capacity': 'Field Capacity', 'residual_moisture': 'Residual Moisture'}
+    column_dict_en = {
+        'geology': 'Geology', 'soil_type': 'Soil Type', 'porosity': 'Porosity',
+        'field_capacity': 'Field Capacity', 'residual_moisture': 'Residual Moisture'
+    }
     menu_name_en = 'Soil'
     path = 'soil'
+
 
     def __str__(self):
         return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology
         # is always filled
+
 
     class Meta:
         managed = False
@@ -212,12 +269,17 @@ class LtSoil(models.Model):
 
 
 class LtSourceType(models.Model):
-    type_name = models.CharField(unique=True, max_length=65)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
+
+    """
+    type_name = models.CharField(unique = True, max_length = 65)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+
 
     def __str__(self):
         return self.type_name
+
 
     class Meta:
         managed = False
@@ -225,19 +287,24 @@ class LtSourceType(models.Model):
 
 
 class LtUnit(models.Model):
-    unit_name = models.CharField(unique=True, max_length=65)
-    unit_abbrev = models.CharField(max_length=15)
-    unit_symbol = models.CharField(max_length=5)
+    """
+
+    """
+    unit_name = models.CharField(unique = True, max_length = 65)
+    unit_abbrev = models.CharField(max_length = 15)
+    unit_symbol = models.CharField(max_length = 5)
     derived_si = models.NullBooleanField()
-    to_derived_si = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    to_derived_si = models.TextField(blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {'unit_name': {'DE': 'Einheit', 'EN': 'Unit'}}
     column_dict_en = {'unit_name': 'Unit'}
 
+
     def __str__(self):
         return self.unit_name
+
 
     class Meta:
         managed = False
@@ -245,29 +312,39 @@ class LtUnit(models.Model):
 
 
 class LtUser(models.Model):
-    is_institution = models.BooleanField()
-    first_name = models.CharField(max_length=65, blank=True, null=True)
-    last_name = models.CharField(max_length=65, blank=True, null=True)
-    institution_name = models.CharField(max_length=255, blank=True, null=True)
-    department = models.CharField(max_length=255, blank=True, null=True)
-    email = models.CharField(max_length=60, blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
 
-    column_dict = {'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
-                   'department': {'DE': 'Abteilung', 'EN': 'Department'},
-                   'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
-                   'first_name': {'DE': 'Vorname', 'EN': 'First name'},
-                   'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+    """
+
+    is_institution = models.BooleanField()
+    first_name = models.CharField(max_length = 65, blank = True, null = True)
+    last_name = models.CharField(max_length = 65, blank = True, null = True)
+    institution_name = models.CharField(max_length = 255, blank = True, null = True)
+    department = models.CharField(max_length = 255, blank = True, null = True)
+    email = models.CharField(max_length = 60, blank = True, null = True)
+    comment = models.TextField(blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+
+    column_dict = {
+        'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
+        'department': {'DE': 'Abteilung', 'EN': 'Department'},
+        'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
+        'first_name': {'DE': 'Vorname', 'EN': 'First name'},
+        'comment': {'DE': 'Kommentar', 'EN': 'Comment'}
+    }
     menu_name = {'DE': 'Nutzer', 'EN': 'User'}
-    column_dict_en = {'institution_name': 'Institution', 'department': 'Department',
-                   'last_name': 'Last name', 'first_name': 'First name', 'comment': 'User Comment'}
+    column_dict_en = {
+        'institution_name': 'Institution', 'department': 'Department',
+        'last_name': 'Last name', 'first_name': 'First name', 'comment': 'User Comment'
+    }
     menu_name_en = 'User'
     path = 'creator'
 
+
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
+
 
     class Meta:
         managed = False
@@ -275,8 +352,12 @@ class LtUser(models.Model):
 
 
 class NmMetaDomain(models.Model):
-    meta = models.ForeignKey('TblMeta', models.DO_NOTHING, blank=True, null=True)
-    domain = models.ForeignKey(LtDomain, models.DO_NOTHING, blank=True, null=True)
+    """
+
+    """
+    meta = models.ForeignKey('TblMeta', models.DO_NOTHING, blank = True, null = True)
+    domain = models.ForeignKey(LtDomain, models.DO_NOTHING, blank = True, null = True)
+
 
     class Meta:
         managed = False
@@ -284,14 +365,19 @@ class NmMetaDomain(models.Model):
 
 
 class SpatialRefSys(models.Model):
-    srid = models.IntegerField(primary_key=True)
-    auth_name = models.CharField(max_length=255, blank=True, null=True)
-    auth_srid = models.IntegerField(blank=True, null=True)
-    srtext = models.TextField(blank=True, null=True)
-    proj4text = models.TextField(blank=True, null=True)
+    """
+
+    """
+    srid = models.IntegerField(primary_key = True)
+    auth_name = models.CharField(max_length = 255, blank = True, null = True)
+    auth_srid = models.IntegerField(blank = True, null = True)
+    srtext = models.TextField(blank = True, null = True)
+    proj4text = models.TextField(blank = True, null = True)
+
 
     def __str__(self):
         return '%s %s' % (self.auth_name, self.auth_srid)
+
 
     class Meta:
         managed = False
@@ -299,12 +385,17 @@ class SpatialRefSys(models.Model):
 
 
 class TblData(models.Model):
+    """
+
+    """
     tstamp = models.DateTimeField()
     meta = models.ForeignKey('TblMeta', models.DO_NOTHING)
-    value = models.DecimalField(max_digits=65535, decimal_places=65535)
+    value = models.DecimalField(max_digits = 65535, decimal_places = 65535)
+
 
     def __str__(self):
         return self.value  # TODO: is that okay?
+
 
     class Meta:
         managed = False
@@ -313,14 +404,19 @@ class TblData(models.Model):
 
 
 class TblDataSource(models.Model):
-    source_type = models.ForeignKey(LtSourceType, models.DO_NOTHING, blank=True, null=True)
+    """
+
+    """
+    source_type = models.ForeignKey(LtSourceType, models.DO_NOTHING, blank = True, null = True)
     source_path = models.TextField()
-    settings = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    settings = models.TextField(blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+
 
     def __str__(self):
         return self.source_path
+
 
     class Meta:
         managed = False
@@ -328,24 +424,27 @@ class TblDataSource(models.Model):
 
 
 class TblMeta(models.Model):
-    ts_start = models.DateTimeField(blank=True, null=True)
-    ts_stop = models.DateTimeField(blank=True, null=True)
-    external_id = models.CharField(max_length=255, blank=True, null=True)
-    support = models.CharField(max_length=255, blank=True, null=True)
-    spacing = models.CharField(max_length=255, blank=True, null=True)
-    creator = models.ForeignKey(LtUser, models.DO_NOTHING, blank=True, null=True, related_name='creator')
-    publisher = models.ForeignKey(LtUser, models.DO_NOTHING, blank=True, null=True, related_name='Publisher')
-    geometry = models.ForeignKey(LtLocation, models.DO_NOTHING, blank=True, null=True)
-    license = models.ForeignKey(LtLicense, models.DO_NOTHING, blank=True, null=True)
-    quality = models.ForeignKey(LtQuality, models.DO_NOTHING, blank=True, null=True)
-    site = models.ForeignKey(LtSite, models.DO_NOTHING, blank=True, null=True)
-    soil = models.ForeignKey(LtSoil, models.DO_NOTHING, blank=True, null=True)
-    variable = models.ForeignKey('TblVariable', models.DO_NOTHING, blank=True, null=True)
-    sensor = models.ForeignKey('TblSensor', models.DO_NOTHING, blank=True, null=True)
-    source = models.ForeignKey(TblDataSource, models.DO_NOTHING, blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
+
+    """
+    ts_start = models.DateTimeField(blank = True, null = True)
+    ts_stop = models.DateTimeField(blank = True, null = True)
+    external_id = models.CharField(max_length = 255, blank = True, null = True)
+    support = models.CharField(max_length = 255, blank = True, null = True)
+    spacing = models.CharField(max_length = 255, blank = True, null = True)
+    creator = models.ForeignKey(LtUser, models.DO_NOTHING, blank = True, null = True, related_name = 'creator')
+    publisher = models.ForeignKey(LtUser, models.DO_NOTHING, blank = True, null = True, related_name = 'Publisher')
+    geometry = models.ForeignKey(LtLocation, models.DO_NOTHING, blank = True, null = True)
+    license = models.ForeignKey(LtLicense, models.DO_NOTHING, blank = True, null = True)
+    quality = models.ForeignKey(LtQuality, models.DO_NOTHING, blank = True, null = True)
+    site = models.ForeignKey(LtSite, models.DO_NOTHING, blank = True, null = True)
+    soil = models.ForeignKey(LtSoil, models.DO_NOTHING, blank = True, null = True)
+    variable = models.ForeignKey('TblVariable', models.DO_NOTHING, blank = True, null = True)
+    sensor = models.ForeignKey('TblSensor', models.DO_NOTHING, blank = True, null = True)
+    source = models.ForeignKey(TblDataSource, models.DO_NOTHING, blank = True, null = True)
+    comment = models.TextField(blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
 
     # column_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
     #                'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
@@ -354,24 +453,27 @@ class TblMeta(models.Model):
     #                'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
 
     # TODO: ussed because users are creator and publisher. Improve this!
-    column_dict = {'ts_start': {'DE': 'Daten nach dem', 'EN': 'Data after'},
-                      'ts_stop': {'DE': 'Daten vor dem', 'EN': 'Data before'},
-                      'support': {'DE': 'Auflage???', 'EN': 'Support'},
-                      'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
-                      'comment': {'DE': 'Kommentar', 'EN': 'Comment'},
-                      # 'creator__LtUser': {'DE': 'Ersteller', 'EN': 'Creator'},
-                      # 'publisher__LtUser': {'DE': 'Veröffentlicher', 'EN': 'Publisher'}
-                      }
+    column_dict = {
+        'ts_start': {'DE': 'Daten nach dem', 'EN': 'Data after'},
+        'ts_stop': {'DE': 'Daten vor dem', 'EN': 'Data before'},
+        'support': {'DE': 'Auflage???', 'EN': 'Support'},
+        'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
+        'comment': {'DE': 'Kommentar', 'EN': 'Comment'},
+        # 'creator__LtUser': {'DE': 'Ersteller', 'EN': 'Creator'},
+        # 'publisher__LtUser': {'DE': 'Veröffentlicher', 'EN': 'Publisher'}
+        }
 
-    column_dict_en = {'ts_start': 'Start of measurement', 'ts_stop': 'End of measurement',
-                      'support': 'Support', 'spacing': 'Spacing','comment':'Comment',
-                      # 'creator__LtUser': 'Creator', 'publisher__LtUser': 'Publisher'}
-                      }
+    column_dict_en = {
+        'ts_start': 'Start of measurement', 'ts_stop': 'End of measurement',
+        'support': 'Support', 'spacing': 'Spacing', 'comment': 'Comment',
+        # 'creator__LtUser': 'Creator', 'publisher__LtUser': 'Publisher'}
+        }
 
     menu_name = {'DE': 'Messung', 'EN': 'Sampling'}
     menu_name_en = 'Sampling'
     path = ''
     filter_type = {'ts_start': 'date', 'ts_stop': 'date'}
+
 
     class Meta:
         managed = False
@@ -379,25 +481,32 @@ class TblMeta(models.Model):
 
 
 class TblSensor(models.Model):
-    sensor_name = models.CharField(max_length=65, blank=True, null=True)
-    manufacturer = models.CharField(max_length=255, blank=True, null=True)
-    documentation_url = models.TextField(blank=True, null=True)
-    last_configured = models.DateTimeField(blank=True, null=True)
-    valid_until = models.DateTimeField(blank=True, null=True)
-    sensor_comment = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    """
 
-    column_dict = {'sensor_name': {'DE': 'Name', 'EN': 'Name'},
-                      'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufacturer'},
-                      'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
+    """
+    sensor_name = models.CharField(max_length = 65, blank = True, null = True)
+    manufacturer = models.CharField(max_length = 255, blank = True, null = True)
+    documentation_url = models.TextField(blank = True, null = True)
+    last_configured = models.DateTimeField(blank = True, null = True)
+    valid_until = models.DateTimeField(blank = True, null = True)
+    sensor_comment = models.TextField(blank = True, null = True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
+
+    column_dict = {
+        'sensor_name': {'DE': 'Name', 'EN': 'Name'},
+        'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufacturer'},
+        'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}
+    }
     menu_name = {'DE': 'Sensor', 'EN': 'Sensor'}
     column_dict_en = {'sensor_name': 'Name', 'manufacturer': 'Manufacturer', 'sensor_comment': 'sensor comment'}
     menu_name_en = 'Sensor'
     path = 'sensor'
 
+
     def __str__(self):
         return self.sensor_name
+
 
     class Meta:
         managed = False
@@ -405,12 +514,15 @@ class TblSensor(models.Model):
 
 
 class TblVariable(models.Model):
-    variable_name = models.CharField(unique=True, max_length=65)
-    variable_abbrev = models.CharField(max_length=15)
-    variable_symbol = models.CharField(max_length=5)
+    """
+
+    """
+    variable_name = models.CharField(unique = True, max_length = 65)
+    variable_abbrev = models.CharField(max_length = 15)
+    variable_symbol = models.CharField(max_length = 5)
     unit = models.ForeignKey(LtUnit, models.DO_NOTHING)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
+    created_on = models.DateTimeField(blank = True, null = True)
+    updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {'variable_name': {'DE': 'Variablenname', 'EN': 'Variable Name'}}
     menu_name = {'DE': 'Datentyp', 'EN': 'Data type'}
@@ -419,18 +531,23 @@ class TblVariable(models.Model):
     menu_name_en = 'Data type'
     path = 'variable'
 
+
     def __str__(self):
         return self.variable_name
+
 
     class Meta:
         managed = False
         db_table = 'tbl_variable'
 
-
+# TODO rename to english for continuity
 # build BW watershed table
 class Basiseinzugsgebiet(models.Model):
+    """
+
+    """
     # Regular Django fields corresponding to the attributes in the Basiseinzugsgebiet shapefile.
-    langname = models.CharField(max_length=100)
+    langname = models.CharField(max_length = 100)
     area = models.FloatField()
     objectid = models.BigIntegerField()
     object_id = models.FloatField()
@@ -438,25 +555,26 @@ class Basiseinzugsgebiet(models.Model):
     fgkz_nr = models.FloatField('flussgebietskennzahl')
     einzugsgeb = models.IntegerField('einzugsgebietsordnung')  # Einzugsgebiets Ordnung – eines Flusses, Baches
     einzugsg00 = models.CharField('einzugsgebietsordnung in Worten',
-                                  max_length=80)  # Quellgebiet – oberstes Teilgebiet eines Flusses,
+                                  max_length = 80)  # Quellgebiet – oberstes Teilgebiet eines Flusses,
     # Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet
     #  – unterstes Teilgebiet eines Flusses, Baches
-    einzugsg01 = models.CharField(max_length=1)
-    einzugsg02 = models.CharField(max_length=26)
+    einzugsg01 = models.CharField(max_length = 1)
+    einzugsg02 = models.CharField(max_length = 26)
     vor_fgkz_n = models.FloatField('flussgebietskennzahl des vorfluters')
     vor_fg_id = models.FloatField()
-    vor_fg_lan = models.CharField('vorfluter_langname', max_length=100)
-    wasserkoer = models.CharField('wasserkoerper_code', max_length=10)
-    wasserko00 = models.CharField('wasserkoerper_name', max_length=85)
-    aenderungs = models.CharField(max_length=20)
-    aenderun00 = models.CharField(max_length=20)
+    vor_fg_lan = models.CharField('vorfluter_langname', max_length = 100)
+    wasserkoer = models.CharField('wasserkoerper_code', max_length = 10)
+    wasserko00 = models.CharField('wasserkoerper_name', max_length = 85)
+    aenderungs = models.CharField(max_length = 20)
+    aenderun00 = models.CharField(max_length = 20)
     length = models.FloatField()
-    mod_by = models.CharField(max_length=32)
-    last_mod = models.CharField(max_length=20)
-    se_anno_ca = models.CharField(max_length=254)
+    mod_by = models.CharField(max_length = 32)
+    last_mod = models.CharField(max_length = 20)
+    se_anno_ca = models.CharField(max_length = 254)
     wasserko01 = models.BigIntegerField()
     # GeoDjango-specific: a geometry field (MultiPolygonField)
-    mpoly = models.MultiPolygonField(srid=31467)
+    mpoly = models.MultiPolygonField(srid = 31467)
+
 
     # Returns the string representation of the model.
     def __str__(self):  # __unicode__ on Python 2

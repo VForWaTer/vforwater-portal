@@ -3,6 +3,12 @@ import {Process} from 'app/models/Process';
 import {WPS} from 'app/models/WPS';
 
 
+/**
+ * Component Class
+ * @class ProcessListComponent
+ * @export
+ * @implements {OnInit}
+ */
 @Component({
     selector: 'app-process-list',
     templateUrl: './process-list.component.html',

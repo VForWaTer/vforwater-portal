@@ -162,7 +162,8 @@ function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         let cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
+        let l = cookies.length;
+        for (var i = 0; i < l; i++) {
             let cookie = jQuery.trim(cookies[i]);
             // Does this cookie string begin with the name we want?
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
@@ -218,7 +219,8 @@ function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         let cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
+        let l = cookies.length;
+        for (var i = 0; i < l; i++) {
             let cookie = jQuery.trim(cookies[i]);
             // Does this cookie string begin with the name we want?
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
@@ -233,6 +235,7 @@ function getCookie(name) {
 // send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
     if (id !== 'null') {
+        console.log('in workspace_dataset', id)
         $.ajax({
             url: DEMO_VAR + "/vfwheron/menu",
             datatype: 'json',
@@ -241,6 +244,7 @@ function workspace_dataset(id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
             success: function (json) {
+                console.log('in ajax of workspace_dataset', id)
                 if (sessionStorage.getItem("btn")) {
                     let stored = JSON.parse(sessionStorage.getItem("btn"));
                     $.each(json['workspaceData'], function (key, value) {
@@ -251,6 +255,7 @@ function workspace_dataset(id) {
                     sessionStorage.setItem("btn", JSON.stringify(stored))
                 } else {
                     sessionStorage.setItem("btn", JSON.stringify(json['workspaceData']));
+                    console.log('workspacedata: ', JSON.stringify(json['workspaceData']))
                 }
                 // push sessionStorage keys to html for Workspace
                 let x = [];
@@ -288,11 +293,16 @@ function show_preview(id) {
 
 function popupContentvfw(ids, page) {
     // TODO: CSS style überarbeiten
-     if (typeof (ids) === 'string' && typeof(page) === 'undefined' ) {
-         page = JSON.parse("["+ids+"]").slice(-1);
-         ids = JSON.parse("["+ids+"]").slice(0, -1);
+    // console.log(' + + + ++  ids: ', ids)
+    if (typeof (ids) === 'string' && typeof(page) === 'undefined') {
+        page = JSON.parse("[" + ids + "]").slice(-1);
+        ids = JSON.parse("[" + ids + "]").slice(0, -1);
     }
-        document.getElementById("pagi"+page).classList.add("loadspin");
+    console.log('page: ', ids, page)
+    console.log('page: ', typeof(ids), typeof(page))
+    if (page != 'none') {
+        document.getElementById("pagi" + page).classList.add("loadspin");
+    }
     let popupTableBeforeMeta = '<table id="popupTable"><td>';
     // let popupTextStyle = '<style>table tr:nth-child(even)  {background-color: #c8ebee;}</style>';
     let popUpText = popupTableBeforeMeta +
@@ -308,15 +318,19 @@ function popupContentvfw(ids, page) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-                document.getElementById('popup-content').innerHTML = buildPopupTextvfw(json, popUpText);
+            document.getElementById('popup-content').innerHTML = buildPopupTextvfw(json, popUpText);
+            if (page != 'none') {
                 document.getElementsByClassName("active")[0].classList.remove("active");
                 document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
-                document.getElementById("pagi"+page).classList.add("active");
+                document.getElementById("pagi" + page).classList.add("active");
+            }
+            console.log('finished', json, popUpText)
         }
 
     });
 
 }
+
 function buildPopupTextvfw(json, popUpText) {
     let properties = json.get;
     let valueLen;
@@ -345,11 +359,30 @@ function buildPopupTextvfw(json, popUpText) {
             'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
             'title="Put dataset to session datastore"></b></a></td>';
     }
-
     let popupTableAfterMeta = popUpText + '</table>';
     let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
     return popupTableAfterMeta + img_preview;
 }
+
+function buildPagivfw(idDict, page) {
+    console.log('----------------------------')
+    console.log('idDict, page: ', idDict, page)
+    console.log('JSON.parse("[" + idDict + "]"): ', JSON.parse("[" + idDict + "]"))
+    if (typeof (idDict) === 'string' && typeof(page) === 'undefined') {
+        page = JSON.parse("[" + idDict + "]").slice(-1);
+        idDict = JSON.parse("[" + idDict + "]").slice(0, -1);
+    }
+    for (let i = 1; i <= page; i++) {
+        if (i == 1) {
+            pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+        } else {
+            pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+        }
+    }
+}
+
 // // another accordion/ didn't work for me (Marcus)
 // var acc = document.getElementsByClassName("new_accord");
 // var i;

@@ -1,18 +1,21 @@
 import os
 import urllib.request
 import xml.etree.ElementTree as ET
-
+from heron.settings import BASE_DIR, wps_log
 from lxml.builder import ElementMaker
 from pywps import NAMESPACES as ns
 
 import wps_workflow.cron
 from wps_workflow.models import WPSProvider, WPS, Process, InputOutput, DATATYPE, ROLE
-from heron.settings import BASE_DIR, wps_log
 
+
+"""
+XML Element Maker for pywps xml schema
+"""
 E = ElementMaker()
-wps_em = ElementMaker(namespace=ns['wps'], nsmap=ns)
-ows_em = ElementMaker(namespace=ns['ows'], nsmap=ns)
-xlink_em = ElementMaker(namespace=ns['ows'], nsmap=ns)
+wps_em = ElementMaker(namespace = ns['wps'], nsmap = ns)
+ows_em = ElementMaker(namespace = ns['ows'], nsmap = ns)
+xlink_em = ElementMaker(namespace = ns['ows'], nsmap = ns)
 
 """
 maps the xml namespaces of pywps 
@@ -55,7 +58,7 @@ ns_map = {
 
     # xlink namespaced tags
     "href": f"{{{ns['xlink']}}}href",
-}
+    }
 
 
 # TODO: rework if path problem is solved
@@ -105,7 +108,7 @@ def add_wps_server(server_url):
         'wps': 'http://www.opengis.net/wps/1.0.0',
         'ows': 'http://www.opengis.net/ows/1.1',
         'xsi': 'http://www.w3.org/2001/XMLSchema-instance'
-    }
+        }
 
     # Parse the xml file
     get_capabilities_tree = ET.parse(temp_xml)
@@ -145,8 +148,8 @@ def search_provider_in_database(service_provider):
     @rtype: WPSProvider | NoneType
     """
     try:
-        provider = WPSProvider.objects.get(provider_name=service_provider.provider_name,
-                                           provider_site=service_provider.provider_site)
+        provider = WPSProvider.objects.get(provider_name = service_provider.provider_name,
+                                           provider_site = service_provider.provider_site)
     except WPSProvider.DoesNotExist:
         provider = None
 
@@ -168,7 +171,7 @@ def search_server_in_database(wps_server):
     @rtype: WPS | NoneType
     """
     try:
-        server = WPS.objects.get(title=wps_server.title)
+        server = WPS.objects.get(title = wps_server.title)
     except WPS.DoesNotExist:
         server = None
 
@@ -189,7 +192,7 @@ def search_process_in_database(parsed_process):
     @rtype: Process | NoneType
     """
     try:
-        process_from_database = Process.objects.get(identifier=parsed_process.identifier)
+        process_from_database = Process.objects.get(identifier = parsed_process.identifier)
         if process_from_database.wps.title != parsed_process.wps.title:
             process_from_database = None
     except Process.DoesNotExist:
@@ -212,8 +215,8 @@ def search_input_output_in_database(parsed_input_output):
     @return:
     """
     try:
-        input_output = InputOutput.objects.get(identifier=parsed_input_output.identifier,
-                                               process=parsed_input_output.process, role=parsed_input_output.role)
+        input_output = InputOutput.objects.get(identifier = parsed_input_output.identifier,
+                                               process = parsed_input_output.process, role = parsed_input_output.role)
     except InputOutput.DoesNotExist:
         input_output = None
 
@@ -298,7 +301,7 @@ def parse_service_provider_info(root, namespaces):
         provider_name = service_provider_element.find('ows:ProviderName', namespaces).text
 
         provider_site = service_provider_element.find('ows:ProviderSite', namespaces).attrib.get(
-            '{' + namespaces.get('xlink') + '}href')
+                '{' + namespaces.get('xlink') + '}href')
 
         service_contact_element = service_provider_element.find('ows:ServiceContact', namespaces)
 
@@ -310,10 +313,10 @@ def parse_service_provider_info(root, namespaces):
         wps_log.error('Unable to parse information about service provider')
         return None
 
-    service_provider = WPSProvider(provider_name=provider_name,
-                                   provider_site=provider_site,
-                                   individual_name=individual_name,
-                                   position_name=position_name)
+    service_provider = WPSProvider(provider_name = provider_name,
+                                   provider_site = provider_site,
+                                   individual_name = individual_name,
+                                   position_name = position_name)
 
     return service_provider
 
@@ -359,12 +362,12 @@ def parse_wps_server_info(root, namespaces, provider, passed_url):
         wps_log.error('Unable to parse information about wps server')
         return None
 
-    wps_server = WPS(service_provider=provider,
-                     title=server_title,
-                     abstract=server_abstract,
-                     capabilities_url=passed_url + get_capabilities_annex,
-                     describe_url=passed_url + describe_processes_annex,
-                     execute_url=passed_url + execute_annex)
+    wps_server = WPS(service_provider = provider,
+                     title = server_title,
+                     abstract = server_abstract,
+                     capabilities_url = passed_url + get_capabilities_annex,
+                     describe_url = passed_url + describe_processes_annex,
+                     execute_url = passed_url + execute_annex)
     return wps_server
 
 
@@ -394,10 +397,10 @@ def parse_process_info(process_element, namespaces, wps_server):
         wps_log.error('Unable to parse information about wps process')
         return None
 
-    process = Process(wps=wps_server,
-                      identifier=process_identifier,
-                      title=process_title,
-                      abstract=process_abstract)
+    process = Process(wps = wps_server,
+                      identifier = process_identifier,
+                      title = process_title,
+                      abstract = process_abstract)
     return process
 
 
@@ -444,15 +447,15 @@ def parse_input_info(input_element, namespaces, process):
         wps_log.error('Unable to parse information about wps process s input')
         return None
 
-    return_input = InputOutput(process=process,
-                               role=ROLE[0][0],
-                               identifier=input_identifier,
-                               title=input_title,
-                               abstract=input_abstract,
-                               datatype=input_datatype,
-                               format=input_format,
-                               min_occurs=input_min_occurs,
-                               max_occurs=input_max_occurs)
+    return_input = InputOutput(process = process,
+                               role = ROLE[0][0],
+                               identifier = input_identifier,
+                               title = input_title,
+                               abstract = input_abstract,
+                               datatype = input_datatype,
+                               format = input_format,
+                               min_occurs = input_min_occurs,
+                               max_occurs = input_max_occurs)
     return return_input
 
 
@@ -498,13 +501,13 @@ def parse_output_info(output_element, namespaces, process):
         wps_log.error('Unable to parse information about wps process s output')
         return None
 
-    output = InputOutput(process=process,
-                         role=ROLE[1][0],
-                         identifier=output_identifier,
-                         title=output_title,
-                         abstract=output_abstract,
-                         datatype=output_datatype,
-                         format=output_format,
-                         min_occurs=output_min_occurs,
-                         max_occurs=output_max_occurs)
+    output = InputOutput(process = process,
+                         role = ROLE[1][0],
+                         identifier = output_identifier,
+                         title = output_title,
+                         abstract = output_abstract,
+                         datatype = output_datatype,
+                         format = output_format,
+                         min_occurs = output_min_occurs,
+                         max_occurs = output_max_occurs)
     return output

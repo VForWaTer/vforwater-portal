@@ -5,6 +5,12 @@ import {ProcessDialogComponent} from 'app/components/process-dialog/process-dial
 import {Process} from 'app/models/Process';
 
 
+/**
+ * Component Class representing a Process
+ * @class ProcessComponent
+ * @export
+ * @implements {OnInit}
+ */
 @Component({
     selector: 'app-process',
     templateUrl: './process.component.html',
@@ -89,6 +95,9 @@ export class ProcessComponent implements OnInit
     }
 
 
+    /**
+     *
+     */
     public ngOnInit()
     {
 

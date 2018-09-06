@@ -30,7 +30,7 @@
     <hr style="margin-bottom:0px;">
 
     <div class="respo-container respo-light-turquoise">
-      <b title="Area to make the datasets you have selected available for further use.">{%  trans "Data store" %}</b>
+      <b title={%  trans "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use." %}>{%  trans "Data store" %}</b>
     </div>
     <ul class="respo-ul respo-card-4 respo-white" id="workspace">
         <b class="respo-btn-group">
@@ -54,6 +54,30 @@
     </ul>
   </nav>
 </div>
-  Overlay effect when opening sidenav on small screens
+{#TODO: Why is this not working in  wps?#}
+  <nav id="context-menu" class="context-menu">
+    <ul class="context-menu__items">
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="View"><i class="fa fa-eye"></i>{% trans " View metadata" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="Plot"><i class="fa fa-eye"></i>{% trans " Plot data" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="DownloadD"><i class="fa fa-download"></i>{% trans " Download data" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="DownloadMD"><i class="fa fa-download"></i>{% trans " Download metadata" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="DownloadDMD"><i class="fa fa-download"></i>{% trans " Download data & metadata" %}</a>
+      </li>
+      <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="Remove"><i class="fa fa-eraser"></i>{% trans " Remove dataset" %}</a>
+      </li>
+    </ul>
+  </nav>
+
+{#  Overlay effect when opening sidenav on small screens#}
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
 </body>

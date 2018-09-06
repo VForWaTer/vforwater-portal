@@ -8,9 +8,19 @@ import {TaskComponent} from 'app/components/task/task.component';
 import {analyzeFile} from '@angular/compiler';
 import {Artefact} from 'app/models/Artefact';
 
+/**
+ *
+ * @interface ArtefactDialogData
+ */
 interface ArtefactDialogData
 {
+    /**
+     *
+     */
     task: TaskComponent;
+    /**
+     *
+     */
     parameter: ProcessParameter<'input' | 'output'>;
 }
 

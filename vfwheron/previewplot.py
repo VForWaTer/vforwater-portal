@@ -1,15 +1,18 @@
+"""
+
+"""
+
 import base64
+import matplotlib as mpl
+from django.db import connections
 from io import BytesIO
+
+from vfwheron.models import TblMeta
+
 
 # import plotly
 # import plotly.plotly as ply
 # import plotly.graph_objs as go
-
-from django.db import connections
-
-from vfwheron.models import TblMeta
-
-import matplotlib as mpl
 
 mpl.use('Agg')
 import matplotlib.pyplot as plt
@@ -18,31 +21,38 @@ import redis
 
 
 def get_preview(preview):
-    use_redis=True
-    in_cache=False
+    """
+
+    :param preview:
+    :type preview:
+    :return:
+    :rtype:
+    """
+    use_redis = True
+    in_cache = False
     try:
-        r = redis.StrictRedis() 
+        r = redis.StrictRedis()
         b64 = r.get("preview_{}".format(preview))
     except:
-        use_redis=False
+        use_redis = False
     if use_redis:
-        if b64 is None: 
-            in_cache=False
+        if b64 is None:
+            in_cache = False
         else:
-            b64 = str(b64,'utf-8')
-            in_cache=True
+            b64 = str(b64, 'utf-8')
+            in_cache = True
 
     if not in_cache:
         # preview = 1157
-        label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name',
-                                                               'variable__variable_symbol', 'variable__unit__unit_abbrev')
+        label = TblMeta.objects.filter(id = preview).values_list('variable__variable_name',
+                                                                 'variable__variable_symbol', 'variable__unit__unit_abbrev')
         ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
         # connect to database
         cursor = connections['vforwater'].cursor()
         cursor.execute(
-            "SELECT date_trunc('day', tstamp) as date, avg(value) as avg, "
-            "min(value) as min, max(value) as max "
-            "FROM tbl_data WHERE meta_id = %s GROUP BY date_trunc('day', tstamp);" % preview)
+                "SELECT date_trunc('day', tstamp) as date, avg(value) as avg, "
+                "min(value) as min, max(value) as max "
+                "FROM tbl_data WHERE meta_id = %s GROUP BY date_trunc('day', tstamp);" % preview)
         m = cursor.fetchall()
         cursor.close()
 
@@ -51,26 +61,27 @@ def get_preview(preview):
         ymin = [row[2] for row in m]
         ymax = [row[3] for row in m]
 
-        fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-        ax.plot(x, ymin, '-c', x, ymax, '-c', lw=0.3, label='Daily min/max')
-        ax.plot(x, yavg, '-b', lw=1, label="Daily average")
+        fig, ax = plt.subplots(1, 1, figsize = (6, 4))
+        ax.plot(x, ymin, '-c', x, ymax, '-c', lw = 0.3, label = 'Daily min/max')
+        ax.plot(x, yavg, '-b', lw = 1, label = "Daily average")
         fig.autofmt_xdate(),
-        ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+        ax.legend(bbox_to_anchor = (0., 1.02, 1., .102), loc = 3, ncol = 2, mode = "expand", borderaxespad = 0.)
         ax.set_xlabel('Date')
-        ax.grid(which='major', axis='x')
+        ax.grid(which = 'major', axis = 'x')
         ax.set_ylabel(ylabel)
         ax.set_title('Dataset ' + str(preview))
         # create tempfile and read as base64
         tmpFile = BytesIO()
-        fig.savefig(tmpFile, format='png')
+        fig.savefig(tmpFile, format = 'png')
         tmpFile.seek(0)
         b64 = base64.b64encode(tmpFile.getvalue()).decode('utf8')
         if use_redis:
-            r.set("preview_{}".format(preview) ,b64)
+            r.set("preview_{}".format(preview), b64)
 
             # create the image-tag
     imgtag = "<img alt='data image' src='data:image/png;base64,%s'>" % b64
     return imgtag
+
 
 # class DataDisplayDownsampler(object):
 #     def __init__(self, xdata, ydata):

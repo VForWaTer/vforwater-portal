@@ -1,27 +1,26 @@
 import base64
-import json
-import re
-import urllib
+import csv
 import hashlib
+import json
+import matplotlib as mpl
+import urllib
 from collections import defaultdict
-
-from io import StringIO, BytesIO
-
+from django.conf import settings
+from django.contrib.auth import logout
+from django.core.cache import cache
 from django.db import connections
+from django.http import StreamingHttpResponse
 from django.http.response import JsonResponse, HttpResponse
+from django.shortcuts import redirect, render
+from django.utils import translation
 from django.views import View
 from django.views.generic import TemplateView
-from django.contrib.auth import logout
-from django.shortcuts import redirect, render
-from django.core.cache import cache
-from django.conf import settings
-from django.utils import translation
-
-import matplotlib as mpl
-
 from heron.settings import LOCAL_GEOSERVER
+from io import StringIO, BytesIO
+
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, get_ID_layer, delete_ID_layer
 from vfwheron.previewplot import get_preview
+
 
 mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -39,19 +38,33 @@ from .models import TblMeta, TblVariable, TblData
 import logging
 import os
 
+
 # Create your views here.
+"""
+
+"""
 logger = logging.getLogger(__name__)
 
 
 def get_dataset(self, request, **kwargs):
+    """
+
+    :param self:
+    :type self:
+    :param request:
+    :type request:
+    :param kwargs:
+    :type kwargs:
+    :return:
+    :rtype:
+    """
     # here 
     id = request.POST.get('meta_id')
-    
-    data = TblData.objects.get(meta=id).value
-    result = "test"
-    
-    return result
 
+    data = TblData.objects.get(meta = id).value
+    result = "test"
+
+    return result
 
 
 class WorkflowView(TemplateView):
@@ -66,6 +79,9 @@ class WorkflowView(TemplateView):
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
 class HomeView(TemplateView):
+    """
+
+    """
     template_name = 'vfwheron/home.html'
     user = 'default'
     Menu = Menu().menu(user)
@@ -75,12 +91,14 @@ class HomeView(TemplateView):
     # if not dataExt:
 
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
-        # dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+    # dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
     if not get_layer(data_layer):
         create_layer(data_layer)
+
+
     # else:
-    # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+    # # TODO: don't do that in production! That's just for development to make sure geoserver is updated after restart of django
     #     delete_layer(data_layer)
     #     create_layer(data_layer)
 
@@ -96,9 +114,23 @@ class HomeView(TemplateView):
 
 
 class menuView(TemplateView):
+    """
+
+    """
+
+
     # user = 'default'
 
-    def get(self, request, user='default'):
+    def get(self, request, user = 'default'):
+        """
+
+        :param request:
+        :type request:
+        :param user:
+        :type user:
+        :return:
+        :rtype:
+        """
 
         request.session.set_expiry(20)  # TODO: expire after 20 seconds/ this is only for development!!!
 
@@ -109,8 +141,9 @@ class menuView(TemplateView):
         else:
             menu = request.session.get('menu')
 
+
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
+        def build_selection(work_dataset, dataset_dict, min_time = 0, max_time = 0):
             data_definition = {}
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
@@ -120,7 +153,7 @@ class menuView(TemplateView):
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
 
             definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
+                                                      'variable__unit__unit_abbrev').get(pk = work_dataset)
             data_definition['name'] = definition_query['variable__variable_name']
             data_definition['abbr'] = definition_query['variable__variable_abbrev']
             data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
@@ -132,6 +165,7 @@ class menuView(TemplateView):
             else:
                 dataset_dict = {work_dataset: data_definition}
             return dataset_dict
+
 
         if 'workspaceData' in request.GET:
             min_time = request.GET.get('minTime')
@@ -168,7 +202,7 @@ class menuView(TemplateView):
             for k in ids:
                 preview['id'].append(k)
                 imgtag = eval(
-                    "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
+                        "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
                 for i in imgtag[0]:
                     # preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i]))
                     preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i])) if imgtag[0][i] is not None else preview[translation.gettext(fieldName[i])].append('-')
@@ -195,29 +229,94 @@ class menuView(TemplateView):
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                ID_layer = 'ID_layer' # + user
+                print('meta ids: ', meta_ids['all_filters'])
+                ID_layer = 'ID_layer'  # + user
                 if get_ID_layer(ID_layer):
                     delete_ID_layer(ID_layer)
                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-    # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none existing layers
-            # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
-            # if not get_ID_layer(ID_layer):
-            #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-#             else:
-# # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
-#                 delete_ID_layer(ID_layer)
-#                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt})
+                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none existing layers
+                # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
+                # if not get_ID_layer(ID_layer):
+                #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            #             else:
+            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+            #                 delete_ID_layer(ID_layer)
+            #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
 
+class Echo:
+    """
+    An object that implements just the write method of the file-like
+    interface.
+    """
+
+
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
+
+
+class DatasetDownloadView(TemplateView):
+    """
+
+    """
+
+
+    def get(self, request, user = 'default'):
+        """
+
+        :param request:
+        :type request:
+        :param user:
+        :type user:
+        :return:
+        :rtype:
+        """
+        rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
+                pk = json.loads(request.GET.get('download_data')))
+        # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
+        # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
+        pseudo_buffer = Echo()
+        writer = csv.writer(pseudo_buffer)
+        response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+                                         content_type = "text/csv")
+        # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+        return response
+
+
 class LoginView(View):
+    """
+
+    """
+
+
     def post(self, request):
+        """
+
+        :param request:
+        :type request:
+        :return:
+        :rtype:
+        """
         logger.debug('Redirect to vfwheron/rsp/login/init...')
         return redirect('vfwheron:watts_rsp:login_init')
 
+
     def dispatch(self, request, *args, **kwargs):
+        """
+
+        :param request:
+        :type request:
+        :param args:
+        :type args:
+        :param kwargs:
+        :type kwargs:
+        :return:
+        :rtype:
+        """
         if not request.user.is_authenticated:
             logger.debug('The user is not authenticated!')
         else:
@@ -226,18 +325,50 @@ class LoginView(View):
 
 
 class LogoutView(View):
+    """
+
+    """
+
+
     def logout(self, request):
+        """
+
+        :param request:
+        :type request:
+        :return:
+        :rtype:
+        """
         logger.debug('{} logged out'.format(request.user.username))
         logout(request)
 
+
     def post(self, request):
+        """
+
+        :param request:
+        :type request:
+        :return:
+        :rtype:
+        """
         self.logout(request)
         return redirect('vfwheron:home')
 
 
 class HelpView(TemplateView):
+    """
+
+    """
+
+
     #     template_name = 'vfwheron/help.html'
     def get(self, request):
+        """
+
+        :param request:
+        :type request:
+        :return:
+        :rtype:
+        """
         f = open(os.path.join(settings.BASE_DIR, 'USERHELP.md'), 'r')
         context = {}
         i = 0
@@ -247,11 +378,24 @@ class HelpView(TemplateView):
         f.close()
         return render(request, 'vfwheron/help.html', {'context': context})
 
+
 class ToggleLanguageView(View):
+    """
+
+    """
+
+
     def post(self, request):
-        lang=translation.get_language()
+        """
+
+        :param request:
+        :type request:
+        :return:
+        :rtype:
+        """
+        lang = translation.get_language()
         logger.debug('current language: {}'.format(lang))
-        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),translation.check_for_language('en-us'),translation.check_for_language('en-gb')))
+        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'), translation.check_for_language('en-us'), translation.check_for_language('en-gb')))
         if lang == 'en-gb' or lang == 'en-us':
             translation.activate('de')
             request.session[translation.LANGUAGE_SESSION_KEY] = 'de'
@@ -263,17 +407,36 @@ class ToggleLanguageView(View):
         logger.debug('translation test: {}'.format(translation.gettext("help")))
         return redirect('/')
 
+
 class GeoserverView(View):
+    """
+    """
+
 
     def get(self, request, service, layer, bbox, srid):
-        wfsLayerName = 'new_ID_as_identifier_update'
-        wfsLayerName = layer
+        """
+
+        :param request:
+        :type request:
+        :param service:
+        :type service:
+        :param layer:
+        :type layer:
+        :param bbox:
+        :type bbox:
+        :param srid:
+        :type srid:
+        :return:
+        :rtype:
+        """
+        # wfsLayerName = 'new_ID_as_identifier_update'
+        # wfsLayerName = layer
         workSpaceName = 'CAOS_update'
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
-              '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + wfsLayerName + \
+              '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-              # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-              # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))
