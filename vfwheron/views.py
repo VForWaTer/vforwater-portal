@@ -87,7 +87,7 @@ class HomeView(TemplateView):
     Menu = Menu().menu(user)
     JSON_Menu = json.dumps(Menu['client'])
     # JSON_Menu = Menu().json_menu()
-    data_layer = 'default_layer'
+    data_layer = 'default_layer_prod'
     # if not dataExt:
 
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
