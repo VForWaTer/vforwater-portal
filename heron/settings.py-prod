@@ -55,7 +55,7 @@ else:
     print('secretGeoServer.txt is missing')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['portal.vforwater.de','localhost']
 
