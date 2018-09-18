@@ -102,7 +102,7 @@ function workspace_button(json) {
 // Remove data / elements from workspace
 function remove_single_data(removeData) {
     // remove data from portal:
-    document.getElementById(removeData).remove();
+    document.getElementById("id"+removeData).remove();
     // remove data from session:
     var workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     delete workspaceData[removeData];
@@ -112,7 +112,7 @@ function remove_single_data(removeData) {
 function remove_all_datasets() {
     // remove button from portal
     $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
-        document.getElementById(key).remove()
+        document.getElementById("id"+key).remove()
     });
     // remove button from session
     sessionStorage.removeItem("btn");
@@ -242,7 +242,7 @@ function contextListener() {
 function clickListener() {
     document.addEventListener("click", function (e) {
         var clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
-        console.log('clickeElIsLink: ', clickeElIsLink)
+        // console.log('clickeElIsLink: ', clickeElIsLink)
         if (clickeElIsLink) {
             e.preventDefault();
             menuItemListener(clickeElIsLink);
@@ -345,40 +345,58 @@ function menuItemListener(link) {
             modal.style.display = "none";
         }
     };*/
+
+    var modal = document.getElementById('myModal');
+    var mod_cont = document.getElementById('modal-content');
+    // var span = document.getElementsByClassName("close")[0];  // element to close the modal
+    let id = taskItemInContext.getAttribute("data-id");
     switch (link.getAttribute("data-action")) {
+
         case "View":
             console.log('Ich Viewe was');
-            let container = document.getElementById('popup');
-            let content = document.getElementById('popup-content');
-            let closer = document.getElementById('popup-closer');
             content.innerHTML = '<div id="loader" class="loader"></div>';
-            popupContentvfw(taskItemInContext.getAttribute("data-id"), 'none')
+            popupContentvfw(id, 'none');
             break;
         case "Plot":
             console.log('Ich plotte was');
             break;
         case "DownloadD":
             console.log('Start')
+            // content.innerHTML = '<div id="loader" class="loader"></div>';
             // modal.style.display = "block";
+            mod_cont.innerHTML = '<p>Ha Ha!..</p>';
+            mod_cont.innerHTML = '<div class="modal-header"><span class="close">&times;</span><h2>Modal Header</h2></div>' +
+                '<div class="modal-body"><p>Some text in the Modal Body</p><p>Some other text...</p></div><div class="modal-footer"></div>';
+            modal.style.display = "block";
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
                 data: {
-                    download_data: taskItemInContext.getAttribute("data-id"),
+                    download_data: id,
                 }, // data sent with post request
                 success: function (json) {
                     console.log('Success')
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
                     console.log('Fertig')
+                    modal.style.display = "none";
                 }
             });
+            break;
+        case "DownloadMD":
+            console.log('DownloadMD');
+            break;
+        case "DownloadDMD":
+            console.log('DownloadDMD');
+            break;
+        case "Remove":
+            remove_single_data(id);
             break;
         default:
             console.error('Error! There is no function defined for "' + link.getAttribute("data-action") + '".')
 
     }
-    console.log("Task ID - " + taskItemInContext.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
+    console.log("Task ID - " + id + ", Task action - " + link.getAttribute("data-action"));
     toggleMenuOff();
 }
 

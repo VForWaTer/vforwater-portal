@@ -91,7 +91,6 @@ class HomeView(TemplateView):
     # if not dataExt:
 
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
-    # dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
     if not get_layer(data_layer):
         create_layer(data_layer)
@@ -253,7 +252,6 @@ class Echo:
     interface.
     """
 
-
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
@@ -410,6 +408,7 @@ class ToggleLanguageView(View):
 
 class GeoserverView(View):
     """
+    Build URL to get layers from Geoserver
     """
 
 
