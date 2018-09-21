@@ -298,8 +298,6 @@ function popupContentvfw(ids, page) {
         page = JSON.parse("[" + ids + "]").slice(-1);
         ids = JSON.parse("[" + ids + "]").slice(0, -1);
     }
-    console.log('page: ', ids, page)
-    console.log('page: ', typeof(ids), typeof(page))
     if (page != 'none') {
         document.getElementById("pagi" + page).classList.add("loadspin");
     }

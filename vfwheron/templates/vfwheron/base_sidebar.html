@@ -82,25 +82,19 @@
     </ul>
   </nav>
 
+<nav id="loader-popup" class="mod-popup respo-center">
+{#    TODO: figure out how to aport download, then there is no need to hide the closer#}
+    <a href="#" id="pop-closer" class="mod-popup-closer respo-hide"></a>
+{#    <div id="loader" class="loader"></div>#}
+{#    <div id="loader-text"></div>#}
+    <div id="pop-content-side">
+    </div>
+    <a><h5><div id="popupText" class="mod-popup--inactive">{% trans " Please wait. Preparing data..." %}</div></h5></a>
+</nav>
 
-{% comment %}<!-- The Downloading Modal -->
-<div id="contextModal" class="respo-modal">
-
-  <!-- Modal content -->
-  <div class="respo-modal-content">
-    <span class="respo-close">&times;</span>
-    <p>Some text in the Modal..</p>
-  </div>{% endcomment %}
-<!-- The Modal -->
-<div id="myModal" class="mod-popup">
-
-  <!-- Modal content -->
-  <div id="modal-content" class="respo-modal-content">
-{#    <span class="close">&times;</span>#}  {# button to close the modal #}
-    <p>Some text in the Modal..</p>
-  </div>
-
-</div>
+<nav id="img-popup" class="context-menu respo-center">
+    <div id="imgPopup"></div>
+</nav>
 {#  Overlay effect when opening sidenav on small screens#}
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
 </body>

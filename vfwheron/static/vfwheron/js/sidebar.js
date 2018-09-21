@@ -197,6 +197,13 @@ var clickCoordsX;
 var clickCoordsY;
 
 var menu = document.querySelector("#context-menu");
+let popup = document.querySelector("#loader-popup");
+let content = document.querySelector('#pop-content-side');
+let popText = document.querySelector('#popupText');
+let popcloser = document.querySelector('#pop-closer');
+let popActive = "mod-popup--active";
+let popInActive = "mod-popup--inactive";
+
 console.log('menu: ', menu)
 var menuState = 0;
 var menuWidth;
@@ -224,6 +231,7 @@ function init() {
 function contextListener() {
     document.addEventListener("contextmenu", function (e) {
         taskItemInContext = clickInsideElement(e, taskItemClassName);
+        console.log('----------- e: ', e)
 
         if (taskItemInContext) {
             e.preventDefault();
@@ -323,6 +331,26 @@ function positionMenu(e) {
     } else {
         menu.style.top = clickCoordsY + "px";
     }
+
+}/**
+ * Positions the popup properly.
+ *
+ * @param {Object} e The event
+ */
+// TODO: Why is the position only sometimes correctly updated?
+function positionPopup(window) {
+    let popupWidth = window.offsetWidth + 4;
+    let popupHeight = window.offsetHeight + 4;
+    if ((windowWidth - clickCoordsX) < popupWidth) {
+        window.style.left = windowWidth - popupWidth + "px";
+    } else {
+        window.style.left = clickCoordsX + "px";
+    }
+    if ((windowHeight - clickCoordsY) < popupHeight) {
+        window.style.top = windowHeight - popupHeight + "px";
+    } else {
+        window.style.top = clickCoordsY + "px";
+    }
 }
 
 /**
@@ -331,43 +359,65 @@ function positionMenu(e) {
  * @param {HTMLElement} link The link that was clicked
  */
 function menuItemListener(link) {
-   /* // Get the modal
-    let modal = document.getElementById('contextModal');
-    let span = document.getElementsByClassName("respo-close")[0];
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function() {
-        modal.style.display = "none";
-    };
-
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    };*/
-
-    var modal = document.getElementById('myModal');
-    var mod_cont = document.getElementById('modal-content');
-    // var span = document.getElementsByClassName("close")[0];  // element to close the modal
     let id = taskItemInContext.getAttribute("data-id");
     switch (link.getAttribute("data-action")) {
 
         case "View":
-            console.log('Ich Viewe was');
             content.innerHTML = '<div id="loader" class="loader"></div>';
-            popupContentvfw(id, 'none');
+            popup.classList.add(popActive);
+            popText.classList.remove(popInActive);
+            positionPopup(popup);
+            // popupContentvfw(JSON.parse("[" + id + "]"), 'none');
+            $.ajax({
+                url: DEMO_VAR + "/vfwheron/menu",
+                dataType: 'json',
+                data: {
+                    show_info: JSON.stringify([id]),
+                    'csrfmiddlewaretoken': csrf_token,
+                }, // data sent with the post request
+                success: function (json) {
+                    let properties = json.get;
+                    let popUpText = "";
+                    // loop over "properties" dict with metadata, build columns
+                    for (let j in properties) {
+            // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+                        popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+                    }
+                    content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+                        '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
+                    popcloser.classList.remove('respo-hide');
+                    popText.classList.add(popInActive);
+                    positionPopup(popup);
+                }
+            });
             break;
         case "Plot":
-            console.log('Ich plotte was');
+            content.innerHTML = '<div id="loader" class="loader"></div>';
+            popup.classList.add(popActive);
+            popText.classList.remove(popInActive);
+            positionPopup(popup);
+            $.ajax({
+                    url: DEMO_VAR + "/vfwheron/menu",
+                    datatype: 'image/png;base64',
+                    data: {
+                        preview: id,
+                        'csrfmiddlewaretoken': csrf_token,
+                    }, // data sent with post
+                    success: function (json) {
+                        $.each(json, function (key, value) {
+                            content.innerHTML = '<div class="mod-header">'+value+'</div>';
+                            popcloser.classList.remove('respo-hide');
+                            popText.classList.add(popInActive);
+                            positionPopup(popup);
+                        });
+                    }
+                });
             break;
         case "DownloadD":
-            console.log('Start')
-            // content.innerHTML = '<div id="loader" class="loader"></div>';
-            // modal.style.display = "block";
-            mod_cont.innerHTML = '<p>Ha Ha!..</p>';
-            mod_cont.innerHTML = '<div class="modal-header"><span class="close">&times;</span><h2>Modal Header</h2></div>' +
-                '<div class="modal-body"><p>Some text in the Modal Body</p><p>Some other text...</p></div><div class="modal-footer"></div>';
-            modal.style.display = "block";
+            content.innerHTML = '<div id="loader" class="loader"></div>';
+            popup.classList.add(popActive);
+            popText.classList.remove(popInActive);
+            positionPopup(popup);
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
@@ -375,11 +425,10 @@ function menuItemListener(link) {
                     download_data: id,
                 }, // data sent with post request
                 success: function (json) {
-                    console.log('Success')
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    console.log('Fertig')
-                    modal.style.display = "none";
+                    popup.classList.remove(popActive);
+                    popText.classList.add(popInActive);
                 }
             });
             break;
@@ -399,6 +448,37 @@ function menuItemListener(link) {
     console.log("Task ID - " + id + ", Task action - " + link.getAttribute("data-action"));
     toggleMenuOff();
 }
+
+/** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
+popcloser.onclick = function () {
+    // metaData_Overlay.setPosition(undefined);
+    // popcloser.blur();
+    popup.classList.remove(popActive);
+    return false;
+};
+
+/** make the popup dragable: */
+$(function(){
+    $(popup).draggable({
+      handle: ".mod-header"
+  });
+    // $('#loader-popup').resizable();
+
+});
+
+// TODO: remove popup when clicking outside of popup
+/*
+window.onclick = function(event) {
+    console.log(' - + click + - : ', event)
+    console.log(' - + click + - target: ', event.target)
+    console.log(' - + click + - parentNode: ', event.parentNode)
+    if (event.target == popup) {
+        console.log('click inside')
+        // popup.style.display = "none";
+        popup.classList.remove(popActive);
+    }
+};
+*/
 
 /**
  * Run the app.
