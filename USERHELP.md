@@ -89,12 +89,12 @@ The following variables can be stored in V-FOR-WaTer.
 
 The following license can be linked to the data so far:
 
-  * CC BY 2.0 DE https://creativecommons.org/licenses/by/2.0/de/ 
-  * CC BY-ND 3.0 DE https://creativecommons.org/licenses/by-nd/3.0/de/ 
-  * CC BY-NC 3.0 DE https://creativecommons.org/licenses/by-nc/3.0/de/ 
-  * CC BY-NC-ND 3.0 https://creativecommons.org/licenses/by-nc-nd/3.0/de/ 
-  * CC BY-NC-SA 3.0 https://creativecommons.org/licenses/by-nc-sa/3.0/de/ 
-  * CC BY-SA 3.0 DE https://creativecommons.org/licenses/by-sa/3.0/de/ 
-  * dl-de/by-2-0 https://www.govdata.de/dl-de/by-2-0
-  * dl-de/zero-2.0 https://www.govdata.de/dl-de/zero-2-0
-  * dl-de/by-nc-1-0 https://www.govdata.de/dl-de/by-nc-1-0
+  * [CC BY 2.0 DE](https://creativecommons.org/licenses/by/2.0/de/)
+  * [CC BY-ND 3.0 DE](https://creativecommons.org/licenses/by-nd/3.0/de/)
+  * [CC BY-NC 3.0 DE](https://creativecommons.org/licenses/by-nc/3.0/de/)
+  * [CC BY-NC-ND 3.0](https://creativecommons.org/licenses/by-nc-nd/3.0/de/)
+  * [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/de/)
+  * [CC BY-SA 3.0 DE](https://creativecommons.org/licenses/by-sa/3.0/de/)
+  * [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) 
+  * [dl-de/zero-2.0](https://www.govdata.de/dl-de/zero-2-0)
+  * [dl-de/by-nc-1-0](https://www.govdata.de/dl-de/by-nc-1-0)
