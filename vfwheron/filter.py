@@ -130,11 +130,9 @@ class Menu:
     """"""
 
 
-    def __init__(self, lang = 'EN', user = 'default'):
+    def __init__(self, user = 'default'):
         """
 
-        :param lang:
-        :type lang:
         :param user:
         :type user:
         :type table: object
@@ -142,7 +140,6 @@ class Menu:
         # to see menu items without content set min_amount to 0
         # self.min_amount = 0 if DEBUG else 1
         self.min_amount = 1
-        self.lang = lang
         self.user = user
         self.user_query_set()
         # self.user = user
@@ -182,21 +179,21 @@ class Menu:
         menu_map = {}  # menu for server
         count = 0
         for table in self.menu_list:
-            whole_menu = Table(table, self.min_amount, self.lang, self.user_query_set)
+            whole_menu = Table(table, self.min_amount, self.user_query_set)
             json_table = whole_menu.json_child['client']
             map_table = whole_menu.json_child['server']
             # map_table = whole_menu.map_child
             if json_table['total'] >= self.min_amount:
                 count = count + 1
                 menu_dict = {
-                    'name': table.menu_name[self.lang],
+                    'name': table.menu_name,
                     'total': json_table['total'],
                     }
                 menu_dict.update(json_table['C'])
                 json_menu.update({'P' + str(count): menu_dict})
 
                 map_dict = {
-                    'name': table.menu_name[self.lang],
+                    'name': table.menu_name,
                     'path': table.path,
                     }
                 map_dict.update(map_table['C'])
@@ -232,22 +229,19 @@ class Table:
     default_query = TblMeta.objects.select_related().filter(license__share = True)
 
 
-    def __init__(self, table, min_amount, lang, user_query_set):
+    def __init__(self, table, min_amount, user_query_set):
         """
 
         :param table:
         :type table:
         :param min_amount:
         :type min_amount:
-        :param lang:
-        :type lang:
         :param user_query_set:
         :type user_query_set:
         :type table: object
         """
         self.child = {}
         self.min_amount = min_amount
-        self.lang = lang
         self.user_query_set = user_query_set
         self.table_name = table
         self.child_columns = table.column_dict.keys()
@@ -256,7 +250,6 @@ class Table:
         self.get_query_path()
         self.get_filter_type()
         self.json_child = self.build_json_child
-
 
     #     TODO: Add user_query like self.default_query
 
@@ -358,9 +351,9 @@ class Table:
                     # print('* * * * * grand_child: ', grand_child)
                     # print('* * * * * result["total"]: ', result['total'])
                     grandchilds.update(
-                            dict(name = self.table_name.column_dict[grand_child][self.lang], total = result['total']))
+                            dict(name = self.table_name.column_dict[grand_child], total = result['total']))
                     map_grandchilds.update({
-                        'name': self.table_name.column_dict[grand_child][self.lang],
+                        'name': self.table_name.column_dict[grand_child],
                         'column': grand_child,
                         })
 
@@ -533,7 +526,7 @@ class Table:
                     'name': child_name,
                     'total': grandchild_counter,
                     # 'chosen': False,
-                    'childtitle': self.table_name.submenu_names['subdomain'][self.lang],
+                    'childtitle': self.table_name.submenu_names['subdomain'],
                     }
                 grandchild_dict.update(inner_grandchild)
 
@@ -543,11 +536,11 @@ class Table:
 
             child_dict = {
                 'type': 'recursive',
-                'title': self.table_name.submenu_names['project'][self.lang],
+                'title': self.table_name.submenu_names['project'],
                 'name': str(project_name),
                 'total': child_total,
                 # 'chosen': False,
-                'childtitle': self.table_name.submenu_names['domain'][self.lang],
+                'childtitle': self.table_name.submenu_names['domain'],
                 }
 
             child_dict.update(all_grandchilds)

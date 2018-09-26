@@ -36,16 +36,9 @@ class LtDomain(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    column_dict = {'project__project_name': {'DE': 'Projekt', 'EN': 'Project'}}
-    column_dict_en = {'project__project_name': 'Project'}
-    menu_name = {'DE': 'Projekt/Domäne', 'EN': 'Project/Domain'}
-    menu_name_en = 'Project/Domain'
-    submenu_names = {
-        'project': {'DE': 'Projekt', 'EN': 'Project'},
-        'domain': {'DE': 'Domäne', 'EN': 'Domain'},
-        'subdomain': {'DE': 'Subdomäne', 'EN': 'Subdomain'}
-    }
-    submenu_names_en = {'project': 'Project', 'domain': 'Domain', 'subdomain': 'Subdomain'}
+    column_dict = {'project__project_name': 'Project'}
+    menu_name = 'Project/Domain'
+    submenu_names = {'Project': 'Project', 'Domain': 'Domain', 'Subdomain': 'Subdomain'}
     path = 'nmmetadomain__domain'
 
     # Recursive exists only in that table, so the build process is highly customized to that one
@@ -77,10 +70,8 @@ class LtLicense(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    column_dict = {'license_abbrev': {'DE': 'Lizenzname', 'EN': 'License name'}}
-    column_dict_en = {'license_abbrev': 'License name'}
-    menu_name = {'DE': 'Lizenz', 'EN': 'License'}
-    menu_name_en = 'License'
+    column_dict = {'license_abbrev': 'License name'}
+    menu_name = 'License'
     path = 'license'
 
 
@@ -105,14 +96,8 @@ class LtLocation(models.Model):
     updated_on = models.DateTimeField(blank = True, null = True)
     geom = models.GeometryField(unique = True, srid = 0)
 
-    column_dict = {
-        'centroid_x': {'DE': 'X-Koordinaten', 'EN': 'X-Coordinate'},
-        'centroid_y': {'DE': 'Y Koordinaten', 'EN': 'Y-Coordinate'},
-        'geometry_type': {'DE': 'Geometrie', 'EN': 'Geometry'}
-    }
-    menu_name = {'DE': 'Position', 'EN': 'Location'}
-    column_dict_en = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
-    menu_name_en = 'Location'
+    column_dict = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
+    menu_name = 'Location'
     path = 'location'
     filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider'}
 
@@ -137,11 +122,8 @@ class LtProject(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    column_dict = {'project_name': {'DE': 'Projektname', 'EN': 'Project name'}}
-    menu_name = {'DE': 'Projekt', 'EN': 'project'}
-
-    column_dict_en = {'project_name': 'Project name'}
-    menu_name_en = 'project'
+    column_dict = {'project_name': 'Project name'}
+    menu_name = 'project'
     path = 'nmmetadomain__domain__project'
 
 
@@ -163,14 +145,8 @@ class LtQuality(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    column_dict = {
-        'flag_name': {'DE': 'Kennzeichen', 'EN': 'Flag'},
-        'flag_weight': {'DE': 'Gewichtung', 'EN': 'Quantifier'}
-    }
-    menu_name = {'DE': 'Qualität', 'EN': 'Quality'}
-
-    column_dict_en = {'flag_name': 'Flag', 'flag_weight': 'Quantifier'}
-    menu_name_en = 'Quality'
+    column_dict = {'flag_name': 'Flag', 'flag_weight': 'Quantifier'}
+    menu_name = 'Quality'
     path = 'quality'
     filter_type = {'flag_weight': 'slider'}
 
@@ -199,21 +175,11 @@ class LtSite(models.Model):
     updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {
-        'site_name': {'DE': 'Standortname', 'EN': 'Site name'},
-        'elevation': {'DE': 'Hohe', 'EN': 'Elevation'},
-        'rel_height': {'DE': 'Relative Höhe', 'EN': 'Relative height'},
-        'orientation_degree': {'DE': 'Richtung', 'EN': 'Orientation'},
-        'slope': {'DE': 'Hangneigung', 'EN': 'Slope'},
-        'landuse': {'DE': 'Landnutzung', 'EN': 'Landuse'},
-        'site_comment': {'DE': 'Kommentar', 'EN': 'Site comment'}
-    }
-    menu_name = {'DE': 'Standort', 'EN': 'Site'}
-    column_dict_en = {
         'site_name': 'Site name', 'elevation': 'Elevation', 'rel_height': 'Relative height',
         'orientation_degree': 'Orientation', 'slope': 'Slope', 'landuse': 'Landuse',
         'site_comment': 'Site comment'
     }
-    menu_name_en = 'Site'
+    menu_name = 'Site'
     path = 'site'
     filter_type = {
         'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
@@ -243,18 +209,10 @@ class LtSoil(models.Model):
     updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {
-        'geology': {'DE': 'Geologie', 'EN': 'Geology'},
-        'soil_type': {'DE': 'Bodentyp', 'EN': 'Soil Type'},
-        'porosity': {'DE': 'Porosität', 'EN': 'Porosity'},
-        'field_capacity': {'DE': 'Feldkapazität', 'EN': 'Field Capacity'},
-        'residual_moisture': {'DE': 'Restfeuchte', 'EN': 'Residual Moisture'}
-    }
-    menu_name = {'DE': 'Boden', 'EN': 'Soil'}
-    column_dict_en = {
         'geology': 'Geology', 'soil_type': 'Soil Type', 'porosity': 'Porosity',
         'field_capacity': 'Field Capacity', 'residual_moisture': 'Residual Moisture'
     }
-    menu_name_en = 'Soil'
+    menu_name = 'Soil'
     path = 'soil'
 
 
@@ -298,8 +256,7 @@ class LtUnit(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    column_dict = {'unit_name': {'DE': 'Einheit', 'EN': 'Unit'}}
-    column_dict_en = {'unit_name': 'Unit'}
+    column_dict = {'unit_name': 'Unit'}
 
 
     def __str__(self):
@@ -327,18 +284,10 @@ class LtUser(models.Model):
     updated_on = models.DateTimeField(blank = True, null = True)
 
     column_dict = {
-        'institution_name': {'DE': 'Institut', 'EN': 'Institution'},
-        'department': {'DE': 'Abteilung', 'EN': 'Department'},
-        'last_name': {'DE': 'Nachname', 'EN': 'Last name'},
-        'first_name': {'DE': 'Vorname', 'EN': 'First name'},
-        'comment': {'DE': 'Kommentar', 'EN': 'Comment'}
-    }
-    menu_name = {'DE': 'Nutzer', 'EN': 'User'}
-    column_dict_en = {
         'institution_name': 'Institution', 'department': 'Department',
         'last_name': 'Last name', 'first_name': 'First name', 'comment': 'User Comment'
     }
-    menu_name_en = 'User'
+    menu_name = 'User'
     path = 'creator'
 
 
@@ -446,31 +395,15 @@ class TblMeta(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    # column_dict = {'ts_start': {'DE': 'Messbeginn', 'EN': 'Start of measurement'},
-    #                'ts_stop': {'DE': 'Messende', 'EN': 'End of measurement'},
-    #                'support': {'DE': 'Auflage???', 'EN': 'Support'},
-    #                'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
-    #                'comment': {'DE': 'Kommentar', 'EN': 'Comment'}}
-
     # TODO: ussed because users are creator and publisher. Improve this!
-    column_dict = {
-        'ts_start': {'DE': 'Daten nach dem', 'EN': 'Data after'},
-        'ts_stop': {'DE': 'Daten vor dem', 'EN': 'Data before'},
-        'support': {'DE': 'Auflage???', 'EN': 'Support'},
-        'spacing': {'DE': 'Schrittweite', 'EN': 'Spacing'},
-        'comment': {'DE': 'Kommentar', 'EN': 'Comment'},
-        # 'creator__LtUser': {'DE': 'Ersteller', 'EN': 'Creator'},
-        # 'publisher__LtUser': {'DE': 'Veröffentlicher', 'EN': 'Publisher'}
-        }
 
-    column_dict_en = {
+    column_dict = {
         'ts_start': 'Start of measurement', 'ts_stop': 'End of measurement',
         'support': 'Support', 'spacing': 'Spacing', 'comment': 'Comment',
         # 'creator__LtUser': 'Creator', 'publisher__LtUser': 'Publisher'}
         }
 
-    menu_name = {'DE': 'Messung', 'EN': 'Sampling'}
-    menu_name_en = 'Sampling'
+    menu_name = 'Sampling'
     path = ''
     filter_type = {'ts_start': 'date', 'ts_stop': 'date'}
 
@@ -493,14 +426,8 @@ class TblSensor(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    column_dict = {
-        'sensor_name': {'DE': 'Name', 'EN': 'Name'},
-        'manufacturer': {'DE': 'Hersteller', 'EN': 'Manufacturer'},
-        'sensor_comment': {'DE': 'Kommentar', 'EN': 'Comment'}
-    }
-    menu_name = {'DE': 'Sensor', 'EN': 'Sensor'}
-    column_dict_en = {'sensor_name': 'Name', 'manufacturer': 'Manufacturer', 'sensor_comment': 'sensor comment'}
-    menu_name_en = 'Sensor'
+    column_dict = {'sensor_name': 'Name', 'manufacturer': 'Manufacturer', 'sensor_comment': 'sensor comment'}
+    menu_name = 'Sensor'
     path = 'sensor'
 
 
@@ -524,11 +451,8 @@ class TblVariable(models.Model):
     created_on = models.DateTimeField(blank = True, null = True)
     updated_on = models.DateTimeField(blank = True, null = True)
 
-    column_dict = {'variable_name': {'DE': 'Variablenname', 'EN': 'Variable Name'}}
-    menu_name = {'DE': 'Datentyp', 'EN': 'Data type'}
-
-    column_dict_en = {'variable_name': 'Variable Name'}
-    menu_name_en = 'Data type'
+    column_dict = {'variable_name': 'Variable Name'}
+    menu_name = 'Data type'
     path = 'variable'
 
 
