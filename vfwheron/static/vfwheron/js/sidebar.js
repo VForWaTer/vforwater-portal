@@ -422,7 +422,7 @@ function menuItemListener(link) {
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
                 data: {
-                    download_data: id,
+                    csv: id,
                 }, // data sent with post request
                 success: function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
@@ -437,6 +437,24 @@ function menuItemListener(link) {
             break;
         case "DownloadDMD":
             console.log('DownloadDMD');
+            content.innerHTML = '<div id="loader" class="loader"></div>';
+            popup.classList.add(popActive);
+            popText.classList.remove(popInActive);
+            positionPopup(popup);
+            $.ajax({
+                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                datatype: 'json',
+                data: {
+                    shp: id,
+                }, // data sent with post request
+                success: function (json) {
+                    // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
+                    // saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    console.log('got something: ', json)
+                    popup.classList.remove(popActive);
+                    popText.classList.add(popInActive);
+                }
+            });
             break;
         case "Remove":
             remove_single_data(id);

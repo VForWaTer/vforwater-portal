@@ -4,6 +4,8 @@ import hashlib
 import json
 import matplotlib as mpl
 import urllib
+import osgeo.ogr as ogr
+import osgeo.osr as osr
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
@@ -18,9 +20,9 @@ from django.views.generic import TemplateView
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, get_ID_layer, delete_ID_layer
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, get_ID_layer, \
+    delete_ID_layer
 from vfwheron.previewplot import get_preview
-
 
 mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -37,7 +39,6 @@ from .models import TblMeta, TblVariable, TblData
 
 import logging
 import os
-
 
 # Create your views here.
 """
@@ -61,7 +62,7 @@ def get_dataset(self, request, **kwargs):
     # here 
     id = request.POST.get('meta_id')
 
-    data = TblData.objects.get(meta = id).value
+    data = TblData.objects.get(meta=id).value
     result = "test"
 
     return result
@@ -80,7 +81,7 @@ class WorkflowView(TemplateView):
 # every time they open a browser.
 class HomeView(TemplateView):
     """
-
+    Template View to bring the necessary variables for the startup to the template
     """
     template_name = 'vfwheron/home.html'
     user = 'default'
@@ -95,7 +96,8 @@ class HomeView(TemplateView):
     if not get_layer(data_layer):
         create_layer(data_layer)
     else:
-    # TODO: don't do that in production! That's just for development to make sure geoserver is updated after restart of django
+        # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
+        # restart of django
         delete_layer(data_layer)
         create_layer(data_layer)
 
@@ -113,13 +115,12 @@ class HomeView(TemplateView):
 
 class menuView(TemplateView):
     """
-
+    View to build the filter menu on the start page and interact with the sidebar
     """
-
 
     # user = 'default'
 
-    def get(self, request, user = 'default'):
+    def get(self, request, user='default'):
         """
 
         :param request:
@@ -139,9 +140,8 @@ class menuView(TemplateView):
         else:
             menu = request.session.get('menu')
 
-
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset, dataset_dict, min_time = 0, max_time = 0):
+        def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
             data_definition = {}
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
@@ -151,7 +151,7 @@ class menuView(TemplateView):
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
 
             definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                      'variable__unit__unit_abbrev').get(pk = work_dataset)
+                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
             data_definition['name'] = definition_query['variable__variable_name']
             data_definition['abbr'] = definition_query['variable__variable_abbrev']
             data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
@@ -163,7 +163,6 @@ class menuView(TemplateView):
             else:
                 dataset_dict = {work_dataset: data_definition}
             return dataset_dict
-
 
         if 'workspaceData' in request.GET:
             min_time = request.GET.get('minTime')
@@ -200,10 +199,12 @@ class menuView(TemplateView):
             for k in ids:
                 preview['id'].append(k)
                 imgtag = eval(
-                        "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
+                    "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
                 for i in imgtag[0]:
                     # preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i]))
-                    preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i])) if imgtag[0][i] is not None else preview[translation.gettext(fieldName[i])].append('-')
+                    preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i])) if imgtag[0][
+                                                                                                i] is not None else \
+                    preview[translation.gettext(fieldName[i])].append('-')
 
             # remove rows only containing no value:
             comparelist = ['-'] * len(ids)
@@ -217,7 +218,8 @@ class menuView(TemplateView):
             return JsonResponse({'get': preview})  # requested from map.js show_info
 
         if 'filter_selection' in request.GET:
-            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection')))
+            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'],
+                                                         json.loads(request.GET.get('filter_selection')))
             return JsonResponse(filter_menu)
 
         if 'filter_selection_map' in request.GET:
@@ -232,12 +234,14 @@ class menuView(TemplateView):
                 if get_ID_layer(ID_layer):
                     delete_ID_layer(ID_layer)
                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none existing layers
+                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
+                # existing layers
                 # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
                 # if not get_ID_layer(ID_layer):
                 #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             #             else:
-            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after
+            #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
@@ -261,8 +265,7 @@ class DatasetDownloadView(TemplateView):
 
     """
 
-
-    def get(self, request, user = 'default'):
+    def get(self, request, user='default'):
         """
 
         :param request:
@@ -272,23 +275,98 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-        rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
-                pk = json.loads(request.GET.get('download_data')))
-        # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
-        # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
-        pseudo_buffer = Echo()
-        writer = csv.writer(pseudo_buffer)
-        response = StreamingHttpResponse((writer.writerow(row) for row in rows),
-                                         content_type = "text/csv")
-        # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-        return response
+        if 'csv' in request.GET:
+            # if 'download_data' in request.GET:
+            rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
+                pk=json.loads(request.GET.get('csv')))
+            # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
+            # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
+            pseudo_buffer = Echo()
+            writer = csv.writer(pseudo_buffer)
+            response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+                                             content_type="text/csv")
+            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            return response
+
+        if 'shp' in request.GET:
+            id = request.GET.get('shp')
+            print('---- in shp: ', id)
+            driver = ogr.GetDriverByName("ESRI Shapefile")  # set up shapefile driver
+            data_source = driver.CreateDataSource("id" + id + ".shp")  # create the data source
+
+            # create the geometry
+            srs = osr.SpatialReference()
+            srs.ImportFromEPSG(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
+            print('-  - -- : ', TblMeta.objects.filter(pk=id).values_list('geometry__geometry_type', flat=True)[0])
+            geometry = {'POINT': 1, 'LINESTRING': 2, 'PLOYGON': 3, 'MULTIPOINT': 4}  # dict according to ogr.py
+            # (cf. ogr.wkbPoint: 1 == wkbPoint)
+
+            # cursor = connections['vforwater'].cursor()  # connect to database
+            # cursor.execute(
+            #     'SELECT ST_AsEWKT(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid)) FROM tbl_meta '
+            #     'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('+id+');'
+            # )  # get geometry including srid and location as wkt
+
+# TODO: For several datasets check if same geometry type and choose appropriately
+            # create the layer
+            layer = data_source.CreateLayer(id, srs, geometry[TblMeta.objects.filter(pk=id).values_list('geometry__geometry_type', flat=True)[0]])
+
+            # Add the fields we're interested in
+            field_name = ogr.FieldDefn("Name", ogr.OFTString)
+            field_name.SetWidth(24)
+            layer.CreateField(field_name)
+            field_region = ogr.FieldDefn("Region", ogr.OFTString)
+            field_region.SetWidth(24)
+            layer.CreateField(field_region)
+            layer.CreateField(ogr.FieldDefn("Latitude", ogr.OFTReal))
+            layer.CreateField(ogr.FieldDefn("Longitude", ogr.OFTReal))
+            layer.CreateField(ogr.FieldDefn("Elevation", ogr.OFTInteger))
+            print('before reader loop')
+            # Process the text file and add the attributes and features to the shapefile
+            for row in reader:
+                # create the feature
+                feature = ogr.Feature(layer.GetLayerDefn())
+                # Set the attributes using the values from the delimited text file
+                feature.SetField("Name", row['Name'])
+                feature.SetField("Region", row['Region'])
+                # feature.SetField("Latitude", row['Latitude'])
+                # feature.SetField("Longitude", row['Longitude'])
+                feature.SetField("Elevation", row['Elev'])
+
+                # create the WKT for the feature using Python string formatting
+                # wkt = "POINT(%f %f)" % (float(row['Longitude']), float(row['Latitude']))
+
+                # Create the point from the Well Known Txt
+                # point = ogr.CreateGeometryFromWkt(wkt)
+                point = ogr.CreateGeometryFromWkt(cursor.fetchall()[0][0])
+
+                # Set the feature geometry using the point
+                feature.SetGeometry(point)
+                # Create the feature in the layer (shapefile)
+                layer.CreateFeature(feature)
+                # Dereference the feature
+                feature = None
+
+            # Save and close the data source
+            data_source = None
+
+            # if 'download_data' in request.GET:
+            rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
+                pk=json.loads(request.GET.get('download_data')))
+            # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
+            # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
+            pseudo_buffer = Echo()
+            writer = csv.writer(pseudo_buffer)
+            response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+                                             content_type="text/csv")
+            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            return response
 
 
 class LoginView(View):
     """
 
     """
-
 
     def post(self, request):
         """
@@ -300,7 +378,6 @@ class LoginView(View):
         """
         logger.debug('Redirect to vfwheron/rsp/login/init...')
         return redirect('vfwheron:watts_rsp:login_init')
-
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -326,7 +403,6 @@ class LogoutView(View):
 
     """
 
-
     def logout(self, request):
         """
 
@@ -337,7 +413,6 @@ class LogoutView(View):
         """
         logger.debug('{} logged out'.format(request.user.username))
         logout(request)
-
 
     def post(self, request):
         """
@@ -355,7 +430,6 @@ class HelpView(TemplateView):
     """
 
     """
-
 
     #     template_name = 'vfwheron/help.html'
     def get(self, request):
@@ -381,7 +455,6 @@ class ToggleLanguageView(View):
 
     """
 
-
     def post(self, request):
         """
 
@@ -392,7 +465,9 @@ class ToggleLanguageView(View):
         """
         lang = translation.get_language()
         logger.debug('current language: {}'.format(lang))
-        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'), translation.check_for_language('en-us'), translation.check_for_language('en-gb')))
+        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),
+                                                                            translation.check_for_language('en-us'),
+                                                                            translation.check_for_language('en-gb')))
         if lang == 'en-gb' or lang == 'en-us':
             translation.activate('de')
             request.session[translation.LANGUAGE_SESSION_KEY] = 'de'
@@ -409,7 +484,6 @@ class GeoserverView(View):
     """
     Build URL to get layers from Geoserver
     """
-
 
     def get(self, request, service, layer, bbox, srid):
         """
