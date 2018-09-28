@@ -89,18 +89,15 @@ class HomeView(TemplateView):
     # JSON_Menu = Menu().json_menu()
     data_layer = 'default_layer'
     # if not dataExt:
-
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
-    # dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+    # dataExt = get_bbox_from_data()
 
     if not get_layer(data_layer):
         create_layer(data_layer)
-
-
-    # else:
-    # # TODO: don't do that in production! That's just for development to make sure geoserver is updated after restart of django
-    #     delete_layer(data_layer)
-    #     create_layer(data_layer)
+    else:
+    # TODO: don't do that in production! That's just for development to make sure geoserver is updated after restart of django
+        delete_layer(data_layer)
+        create_layer(data_layer)
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
@@ -108,6 +105,7 @@ class HomeView(TemplateView):
         try:
             dataExt = get_bbox_from_data()
         except:
+            dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
 
         return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
@@ -252,7 +250,6 @@ class Echo:
     An object that implements just the write method of the file-like
     interface.
     """
-
 
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
@@ -410,6 +407,7 @@ class ToggleLanguageView(View):
 
 class GeoserverView(View):
     """
+    Build URL to get layers from Geoserver
     """
 
 
