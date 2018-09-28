@@ -1,7 +1,11 @@
 import base64
 import csv
+import decimal
 import hashlib
 import json
+from builtins import filter
+from wsgiref.util import FileWrapper
+
 import matplotlib as mpl
 import urllib
 import osgeo.ogr as ogr
@@ -17,6 +21,8 @@ from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
 from django.views.generic import TemplateView
+from future.builtins import isinstance
+
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
@@ -31,10 +37,10 @@ from matplotlib.dates import DateFormatter
 from matplotlib.figure import Figure
 
 from .query_functions import get_bbox_from_data
-from datetime import datetime
+from datetime import datetime, date
 import time
 
-from .filter import FilterMethods, Menu, build_id_list
+from .filter import FilterMethods, Menu, build_id_list, Table
 from .models import TblMeta, TblVariable, TblData
 
 import logging
@@ -188,7 +194,7 @@ class menuView(TemplateView):
             field = []
             fieldName = {}
             for i in Menu().menu_list:
-                for j in i.column_dict_en.items():
+                for j in i.column_dict.items():
                     fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
                     field.append(fieldpath)
                     fieldName[fieldpath] = j[1]
@@ -275,6 +281,27 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
+
+        def get_metadata(id):
+            """
+            the metadata for export includes only the values that are also used for filtering.
+            Change get_metadata if you want to have more information in the export file.
+            :return:
+            """
+            catalog = {}
+            for table in Menu.menu_list:
+                for i in table.column_dict:
+                    if table.path != '':
+                        query = TblMeta.objects.filter(pk=id).values_list(table.path + '__' + i, flat=True)
+                    else:
+                        query = TblMeta.objects.filter(pk=id).values_list(i, flat=True)
+                    if query[0] != None:
+                        try:
+                            catalog[table.menu_name][i] = query[0]
+                        except KeyError:
+                            catalog[table.menu_name] = {i: query[0]}
+            return catalog
+
         if 'csv' in request.GET:
             # if 'download_data' in request.GET:
             rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
@@ -290,62 +317,105 @@ class DatasetDownloadView(TemplateView):
 
         if 'shp' in request.GET:
             id = request.GET.get('shp')
-            print('---- in shp: ', id)
+            data = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(pk=id)
+            file_path = "id" + id + ".shp"
             driver = ogr.GetDriverByName("ESRI Shapefile")  # set up shapefile driver
-            data_source = driver.CreateDataSource("id" + id + ".shp")  # create the data source
+            data_source = driver.CreateDataSource(file_path)  # create the data source
 
             # create the geometry
             srs = osr.SpatialReference()
             srs.ImportFromEPSG(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
-            print('-  - -- : ', TblMeta.objects.filter(pk=id).values_list('geometry__geometry_type', flat=True)[0])
             geometry = {'POINT': 1, 'LINESTRING': 2, 'PLOYGON': 3, 'MULTIPOINT': 4}  # dict according to ogr.py
             # (cf. ogr.wkbPoint: 1 == wkbPoint)
 
-            # cursor = connections['vforwater'].cursor()  # connect to database
-            # cursor.execute(
-            #     'SELECT ST_AsEWKT(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid)) FROM tbl_meta '
-            #     'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('+id+');'
-            # )  # get geometry including srid and location as wkt
-
-# TODO: For several datasets check if same geometry type and choose appropriately
+            cursor = connections['vforwater'].cursor()  # connect to database
+            cursor.execute(
+                # 'SELECT ST_AsEWKT(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid)) FROM tbl_meta '  # get geometry including srid and location as wkt
+                'SELECT ST_AsEWKT(ST_Point(ST_X(geom), ST_Y(geom))) FROM tbl_meta '  # get geometry including location as wkt
+                'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('+id+');'
+            )
+            # TODO: For several datasets check if same geometry type and choose appropriately
             # create the layer
             layer = data_source.CreateLayer(id, srs, geometry[TblMeta.objects.filter(pk=id).values_list('geometry__geometry_type', flat=True)[0]])
 
             # Add the fields we're interested in
-            field_name = ogr.FieldDefn("Name", ogr.OFTString)
-            field_name.SetWidth(24)
-            layer.CreateField(field_name)
-            field_region = ogr.FieldDefn("Region", ogr.OFTString)
-            field_region.SetWidth(24)
-            layer.CreateField(field_region)
-            layer.CreateField(ogr.FieldDefn("Latitude", ogr.OFTReal))
-            layer.CreateField(ogr.FieldDefn("Longitude", ogr.OFTReal))
-            layer.CreateField(ogr.FieldDefn("Elevation", ogr.OFTInteger))
-            print('before reader loop')
+            layer.CreateField(ogr.FieldDefn("Data", ogr.OFTReal))
+            layer.CreateField(ogr.FieldDefn("DateTime", ogr.OFTDateTime))
             # Process the text file and add the attributes and features to the shapefile
-            for row in reader:
+            point = ogr.CreateGeometryFromWkt(cursor.fetchall()[0][0])
+            for row in data:
                 # create the feature
                 feature = ogr.Feature(layer.GetLayerDefn())
-                # Set the attributes using the values from the delimited text file
-                feature.SetField("Name", row['Name'])
-                feature.SetField("Region", row['Region'])
-                # feature.SetField("Latitude", row['Latitude'])
-                # feature.SetField("Longitude", row['Longitude'])
-                feature.SetField("Elevation", row['Elev'])
-
-                # create the WKT for the feature using Python string formatting
-                # wkt = "POINT(%f %f)" % (float(row['Longitude']), float(row['Latitude']))
-
-                # Create the point from the Well Known Txt
-                # point = ogr.CreateGeometryFromWkt(wkt)
-                point = ogr.CreateGeometryFromWkt(cursor.fetchall()[0][0])
-
+                print("DateTime", str(row[0]))
+                feature.SetField("DateTime", str(row[0]))
+                feature.SetField("Data", float(row[1]))
                 # Set the feature geometry using the point
                 feature.SetGeometry(point)
                 # Create the feature in the layer (shapefile)
                 layer.CreateFeature(feature)
                 # Dereference the feature
                 feature = None
+
+            # Save and close the data source
+            data_source = None
+
+            response = StreamingHttpResponse(FileWrapper(open(file_path, 'rb')), content_type='application/force-download')
+
+
+            # pseudo_buffer = Echo()
+            # writer = csv.writer(pseudo_buffer)
+            # response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+            #                                  content_type="text/csv")
+            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            return response
+
+        if 'xml' in request.GET:
+            id = request.GET.get('xml')
+            print('---- in xml: ', id)
+            driver = ogr.GetDriverByName("ESRI Shapefile")  # set up shapefile driver
+            data_source = driver.CreateDataSource("id" + id + ".xml")  # create the data source
+
+            # create the geometry
+            srs = osr.SpatialReference()
+            srs.ImportFromEPSG(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
+            geometry = {'POINT': 1, 'LINESTRING': 2, 'PLOYGON': 3, 'MULTIPOINT': 4}  # dict according to ogr.py
+            # (cf. ogr.wkbPoint: 1 == wkbPoint)
+
+            cursor = connections['vforwater'].cursor()  # connect to database
+
+
+
+            cursor.execute(
+                # 'SELECT ST_AsEWKT(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid)) FROM tbl_meta '  # get geometry including srid and location as wkt
+                'SELECT ST_AsEWKT(ST_Point(ST_X(geom), ST_Y(geom))) FROM tbl_meta '  # get geometry including location as wkt
+                'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('+id+');'
+            )
+            # print('point: ', cursor.fetchall()[0][0])
+
+            # TODO: For several datasets check if same geometry type and choose appropriately
+            # create the layer
+            layer = data_source.CreateLayer(id, srs, geometry[TblMeta.objects.filter(pk=id).values_list('geometry__geometry_type', flat=True)[0]])
+            catalog = get_metadata(id)
+            print('catalog: ', catalog)
+
+            for i in catalog:
+                print('catalog[i]: ', catalog[i])
+                for j in catalog[i]:
+                    print('catalog[i][j]: ', j, catalog[i][j], type(catalog[i][j]))
+                    # print(str)
+                    if type(catalog[i][j]) is decimal.Decimal:
+                    # if (isinstance(catalog[i][j], float)):
+                        print(' - - - float')
+                        layer.CreateField(ogr.FieldDefn(catalog[i][j], ogr.OFTReal))
+                    elif type(catalog[i][j]) is str:
+                        field = ogr.FieldDefn(catalog[i][j], ogr.OFTString)
+                        field.SetWidth(255)
+                        layer.CreateField(field)
+                        print('catalog[i][j]: ', catalog[i][j])
+                    elif type(catalog[i][j]) is date:
+                        layer.CreateField(ogr.FieldDefn(catalog[i][j], ogr.OFTDate))
+                    else:
+                        print('Some field is not recognized: ', type(catalog[i][j]))
 
             # Save and close the data source
             data_source = None

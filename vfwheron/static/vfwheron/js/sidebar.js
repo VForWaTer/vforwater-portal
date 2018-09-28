@@ -413,7 +413,7 @@ function menuItemListener(link) {
                     }
                 });
             break;
-        case "DownloadD":
+        case "Downloadcsv":
             content.innerHTML = '<div id="loader" class="loader"></div>';
             popup.classList.add(popActive);
             popText.classList.remove(popInActive);
@@ -427,16 +427,14 @@ function menuItemListener(link) {
                 success: function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    popup.classList.remove(popActive);
                     popText.classList.add(popInActive);
+                },
+                complete: function() {
+                    popup.classList.remove(popActive);
                 }
             });
             break;
-        case "DownloadMD":
-            console.log('DownloadMD');
-            break;
-        case "DownloadDMD":
-            console.log('DownloadDMD');
+        case "Downloadshp":
             content.innerHTML = '<div id="loader" class="loader"></div>';
             popup.classList.add(popActive);
             popText.classList.remove(popInActive);
@@ -448,13 +446,40 @@ function menuItemListener(link) {
                     shp: id,
                 }, // data sent with post request
                 success: function (json) {
+                    let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
+                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    popText.classList.add(popInActive);
+                },
+                complete: function() {
+                    popup.classList.remove(popActive);
+                }
+            });
+            break;
+        case "DownloadMD":
+            console.log('DownloadMD');
+            content.innerHTML = '<div id="loader" class="loader"></div>';
+            popup.classList.add(popActive);
+            popText.classList.remove(popInActive);
+            positionPopup(popup);
+            $.ajax({
+                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                datatype: 'json',
+                data: {
+                    xml: id,
+                }, // data sent with post request
+                success: function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
                     console.log('got something: ', json)
-                    popup.classList.remove(popActive);
                     popText.classList.add(popInActive);
+                },
+                complete: function() {
+                    popup.classList.remove(popActive);
                 }
             });
+            break;
+        case "DownloadDMD":
+            console.log('DownloadDMD');
             break;
         case "Remove":
             remove_single_data(id);

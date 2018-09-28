@@ -129,6 +129,9 @@ class FilterMethods:
 class Menu:
     """"""
 
+    # The order here is used as order for the menu on the client
+    # menu_list = [LtDomain, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
+    menu_list = [LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
 
     def __init__(self, user = 'default'):
         """
@@ -143,9 +146,7 @@ class Menu:
         self.user = user
         self.user_query_set()
         # self.user = user
-        # The order here is used as order for the menu on the client
-        # self.menu_list = [LtDomain, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
-        self.menu_list = [LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
+        self.menu_list = Menu.menu_list
         # self.menu_list = [LtDomain]
         # self.menu()
         # self.write_json_menu()
