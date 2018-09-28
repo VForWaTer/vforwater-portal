@@ -16,12 +16,11 @@
                 />
                 <svg:path *ngFor="let edge of edges" [attr.d]="getSvgEdge(edge)" fill="none" stroke="#888888" stroke-width="20" stroke-opacity="0"
                     class="edge-big" (mousedown)="clickEdge(edge)" />    
+                <svg:path *ngFor="let dataedge of dataedges" [attr.d]="getSvgDataEdge(dataedge)" stroke="#888888" stroke-width="2" fill="none" class="edge"
+                />
+                <svg:path *ngFor="let dataedge of dataedges" [attr.d]="getSvgDataEdge(dataedge)" fill="none" stroke="#888888" stroke-width="20" stroke-opacity="0"
+                    class="edge-big" (mousedown)="clickDataEdge(dataedge)" />
             </svg>
-
-            <svg viewBox="0 0 2000 2000">
-                
-            </svg>
-
 
 
             <app-task @fade #AppTask *ngFor="let task of workflow.tasks; let i = index" class="task" [style.left.px]="task.x" [style.top.px]="task.y"
