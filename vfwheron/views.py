@@ -189,6 +189,7 @@ class menuView(TemplateView):
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
         # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
+        # on request collect metadata for preview on map ans selection in the sidebar
         if 'show_info' in request.GET:
             # get field names from models:
             field = []
@@ -250,6 +251,7 @@ class menuView(TemplateView):
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            print('ID layer: ', ID_layer)
             return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
@@ -369,68 +371,25 @@ class DatasetDownloadView(TemplateView):
             # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
             return response
 
+# TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
-            print('---- in xml: ', id)
-            driver = ogr.GetDriverByName("ESRI Shapefile")  # set up shapefile driver
-            data_source = driver.CreateDataSource("id" + id + ".xml")  # create the data source
+            layer_name = 'XML_'+id
+            store = 'new_vforwater_gis'
+            workspace = 'CAOS_update'
+            srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
-            # create the geometry
-            srs = osr.SpatialReference()
-            srs.ImportFromEPSG(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
-            geometry = {'POINT': 1, 'LINESTRING': 2, 'PLOYGON': 3, 'MULTIPOINT': 4}  # dict according to ogr.py
-            # (cf. ogr.wkbPoint: 1 == wkbPoint)
+            create_ID_layer(layer_name, id, store, workspace)
 
-            cursor = connections['vforwater'].cursor()  # connect to database
-
-
-
-            cursor.execute(
-                # 'SELECT ST_AsEWKT(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid)) FROM tbl_meta '  # get geometry including srid and location as wkt
-                'SELECT ST_AsEWKT(ST_Point(ST_X(geom), ST_Y(geom))) FROM tbl_meta '  # get geometry including location as wkt
-                'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('+id+');'
-            )
-            # print('point: ', cursor.fetchall()[0][0])
-
-            # TODO: For several datasets check if same geometry type and choose appropriately
-            # create the layer
-            layer = data_source.CreateLayer(id, srs, geometry[TblMeta.objects.filter(pk=id).values_list('geometry__geometry_type', flat=True)[0]])
-            catalog = get_metadata(id)
-            print('catalog: ', catalog)
-
-            for i in catalog:
-                print('catalog[i]: ', catalog[i])
-                for j in catalog[i]:
-                    print('catalog[i][j]: ', j, catalog[i][j], type(catalog[i][j]))
-                    # print(str)
-                    if type(catalog[i][j]) is decimal.Decimal:
-                    # if (isinstance(catalog[i][j], float)):
-                        print(' - - - float')
-                        layer.CreateField(ogr.FieldDefn(catalog[i][j], ogr.OFTReal))
-                    elif type(catalog[i][j]) is str:
-                        field = ogr.FieldDefn(catalog[i][j], ogr.OFTString)
-                        field.SetWidth(255)
-                        layer.CreateField(field)
-                        print('catalog[i][j]: ', catalog[i][j])
-                    elif type(catalog[i][j]) is date:
-                        layer.CreateField(ogr.FieldDefn(catalog[i][j], ogr.OFTDate))
-                    else:
-                        print('Some field is not recognized: ', type(catalog[i][j]))
-
-            # Save and close the data source
-            data_source = None
-
-            # if 'download_data' in request.GET:
-            rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
-                pk=json.loads(request.GET.get('download_data')))
-            # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
-            # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
-            pseudo_buffer = Echo()
-            writer = csv.writer(pseudo_buffer)
-            response = StreamingHttpResponse((writer.writerow(row) for row in rows),
-                                             content_type="text/csv")
-            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-            return response
+            # use GEOSERVER GML
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
+                  '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
+                  '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' + srid
+            request = urllib.request.Request(url)
+            response = urllib.request.urlopen(request)
+            # clean up right after request:
+            delete_layer(layer_name, store, workspace)
+            return HttpResponse(response.read().decode('utf-8'))
 
 
 class LoginView(View):
@@ -574,11 +533,13 @@ class GeoserverView(View):
         # wfsLayerName = 'new_ID_as_identifier_update'
         # wfsLayerName = layer
         workSpaceName = 'CAOS_update'
+        print('layer: ', layer)
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        print('url: ', url)
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))

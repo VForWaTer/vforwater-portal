@@ -470,7 +470,8 @@ function menuItemListener(link) {
                 success: function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    console.log('got something: ', json)
+                    let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
+                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
                     popText.classList.add(popInActive);
                 },
                 complete: function() {

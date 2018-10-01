@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: IDs for new layer (for user) are still missing
-def create_layer(filename = 'rest_test', datastore = 'new_vforwater_gis', workspace = 'CAOS_update', srid = 3857):
+def create_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update', srid = 3857):
     """
 
     :param filename:
@@ -30,13 +30,13 @@ def create_layer(filename = 'rest_test', datastore = 'new_vforwater_gis', worksp
     """
     xml = build_new_layer_XML(filename, datastore, workspace, srid)
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
-    build = requests.post(url, auth = (eval(SECRET_GEOSERVER)), data = xml, headers = {'Content-type': 'text/xml'})
+    build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
         logger.warning(str(build.status_code) + ': ' + build.text)
         # print('create layer: ', str(build.status_code) + ': ' + build.text)
 
 
-def get_layer(filename = 'rest_test', datastore = 'new_vforwater_gis', workspace = 'CAOS_update'):
+def get_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
     """
 
     :param filename:
@@ -49,7 +49,7 @@ def get_layer(filename = 'rest_test', datastore = 'new_vforwater_gis', workspace
     :rtype:
     """
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
-    build = requests.get(url, auth = (eval(SECRET_GEOSERVER)), headers = {"Accept": "application/xml"})
+    build = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
     if build.status_code != 200:
         logger.warning(str(build.status_code) + ': ' + build.text)
         # print('get layer (if): ', str(build.status_code) + ': ' + build.text)
@@ -58,7 +58,7 @@ def get_layer(filename = 'rest_test', datastore = 'new_vforwater_gis', workspace
     return True
 
 
-def delete_layer(filename = 'rest_test', datastore = 'new_vforwater_gis', workspace = 'CAOS_update'):
+def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
     """
 
     :param filename:
@@ -72,19 +72,19 @@ def delete_layer(filename = 'rest_test', datastore = 'new_vforwater_gis', worksp
     """
     # first delete layer, then feature!
     url = LOCAL_GEOSERVER + '/rest/layers/' + filename
-    build = requests.delete(url, auth = (eval(SECRET_GEOSERVER)),
-                            headers = {'Content-type': 'application/json', 'Accept': 'application/json'})
+    build = requests.delete(url, auth=(eval(SECRET_GEOSERVER)),
+                            headers={'Content-type': 'application/json', 'Accept': 'application/json'})
     if build.status_code != 200:
         logger.warning(str(build.status_code) + ': ' + build.text)
 
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
-    build = requests.delete(url, auth = (eval(SECRET_GEOSERVER)),
-                            headers = {'Content-type': 'application/json', 'Accept': 'application/json'})
+    build = requests.delete(url, auth=(eval(SECRET_GEOSERVER)),
+                            headers={'Content-type': 'application/json', 'Accept': 'application/json'})
     if build.status_code != 200:
         logger.warning(str(build.status_code) + ': ' + build.text)
 
 
-# TODO: Query needs 'WHERE' for the IDs of data available for user
+# TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in 'build_XML_from_ID'?)
 def build_new_layer_XML(filename, datastore, workspace, srid):
     """
 
@@ -350,7 +350,7 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
     return xml
 
 
-def create_ID_layer(filename = 'selection_test', selection = str(2557), datastore = 'new_vforwater_gis', workspace = 'CAOS_update', srid = 3857):
+def create_ID_layer(filename='selection_test', selection=str(2557), datastore='new_vforwater_gis', workspace='CAOS_update', srid=3857):
     """
 
     :param filename:
@@ -368,12 +368,12 @@ def create_ID_layer(filename = 'selection_test', selection = str(2557), datastor
     """
     xml = build_XML_from_ID(filename, selection, datastore, workspace, srid)
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
-    build = requests.post(url, auth = (eval(SECRET_GEOSERVER)), data = xml, headers = {'Content-type': 'text/xml'})
+    build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
         logger.warning(str(build.status_code) + ': ' + build.text)
 
 
-def get_ID_layer(filename = 'selection_test', datastore = 'new_vforwater_gis', workspace = 'CAOS_update'):
+def get_ID_layer(filename='selection_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
     """
 
     :param filename:
@@ -386,16 +386,14 @@ def get_ID_layer(filename = 'selection_test', datastore = 'new_vforwater_gis', w
     :rtype:
     """
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
-    build = requests.get(url, auth = (eval(SECRET_GEOSERVER)), headers = {"Accept": "application/xml"})
+    build = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
     if build.status_code != 200:
         logger.warning(str(build.status_code) + ': ' + build.text)
-        # print('get layer (if): ', str(build.status_code) + ': ' + build.text)
         return False
-    # print('get layer: ', str(build.status_code) + ': ' + build.text)
     return True
 
 
-def delete_ID_layer(filename = 'selection_test', datastore = 'new_vforwater_gis', workspace = 'CAOS_update'):
+def delete_ID_layer(filename='selection_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
     """
 
     :param filename:
@@ -409,14 +407,14 @@ def delete_ID_layer(filename = 'selection_test', datastore = 'new_vforwater_gis'
     """
     # first delete layer, then feature!
     url = LOCAL_GEOSERVER + '/rest/layers/' + filename
-    build = requests.delete(url, auth = (eval(SECRET_GEOSERVER)),
-                            headers = {'Content-type': 'application/json', 'Accept': 'application/json'})
+    build = requests.delete(url, auth=(eval(SECRET_GEOSERVER)),
+                            headers={'Content-type': 'application/json', 'Accept': 'application/json'})
     if build.status_code != 200:
         logger.warning(str(build.status_code) + ': ' + build.text)
 
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
-    build = requests.delete(url, auth = (eval(SECRET_GEOSERVER)),
-                            headers = {'Content-type': 'application/json', 'Accept': 'application/json'})
+    build = requests.delete(url, auth=(eval(SECRET_GEOSERVER)),
+                            headers={'Content-type': 'application/json', 'Accept': 'application/json'})
     if build.status_code != 200:
         logger.warning(str(build.status_code) + ': ' + build.text)
 
