@@ -196,7 +196,7 @@ function dDMFilterFunction(dropDownName, inputName) {
 $(document).ready(function (){
     let handlesSlider =  document.getElementsByClassName('slider');
     for (let s = 0; s < handlesSlider.length; s++){
-        console.log('s: ', s, handlesSlider[s])
+        // console.log('s: ', s, handlesSlider[s])
         let maxv = parseFloat(handlesSlider[s].attributes.maxv.value);
         let minv = parseFloat(handlesSlider[s].attributes.minv.value);
         if (!isNaN(maxv) && !isNaN(minv)) {

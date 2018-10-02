@@ -289,7 +289,6 @@ function resizeListener() {
 function toggleMenuOn() {
     if (menuState !== 1) {
         menuState = 1;
-        console.log('menu: ', menu)
         menu.classList.add(contextMenuActive);
     }
 }
@@ -360,14 +359,14 @@ function positionPopup(window) {
  */
 function menuItemListener(link) {
     let id = taskItemInContext.getAttribute("data-id");
+    content.innerHTML = '<div id="loader" class="loader"></div>';
+    popup.classList.add(popActive);
+    popText.classList.remove(popInActive);
+    positionPopup(popup);
+
     switch (link.getAttribute("data-action")) {
 
         case "View":
-            content.innerHTML = '<div id="loader" class="loader"></div>';
-            popup.classList.add(popActive);
-            popText.classList.remove(popInActive);
-            positionPopup(popup);
-            // popupContentvfw(JSON.parse("[" + id + "]"), 'none');
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/menu",
                 dataType: 'json',
@@ -386,16 +385,11 @@ function menuItemListener(link) {
                     content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                         '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
                     popcloser.classList.remove('respo-hide');
-                    popText.classList.add(popInActive);
                     positionPopup(popup);
                 }
             });
             break;
         case "Plot":
-            content.innerHTML = '<div id="loader" class="loader"></div>';
-            popup.classList.add(popActive);
-            popText.classList.remove(popInActive);
-            positionPopup(popup);
             $.ajax({
                     url: DEMO_VAR + "/vfwheron/menu",
                     datatype: 'image/png;base64',
@@ -403,21 +397,14 @@ function menuItemListener(link) {
                         preview: id,
                         'csrfmiddlewaretoken': csrf_token,
                     }, // data sent with post
-                    success: function (json) {
-                        $.each(json, function (key, value) {
-                            content.innerHTML = '<div class="mod-header">'+value+'</div>';
+                    success: function (result) {
+                            content.innerHTML = '<div class="mod-header">'+result['get']+'</div>';
                             popcloser.classList.remove('respo-hide');
-                            popText.classList.add(popInActive);
                             positionPopup(popup);
-                        });
                     }
                 });
             break;
         case "Downloadcsv":
-            content.innerHTML = '<div id="loader" class="loader"></div>';
-            popup.classList.add(popActive);
-            popText.classList.remove(popInActive);
-            positionPopup(popup);
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
@@ -427,7 +414,6 @@ function menuItemListener(link) {
                 success: function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    popText.classList.add(popInActive);
                 },
                 complete: function() {
                     popup.classList.remove(popActive);
@@ -435,10 +421,6 @@ function menuItemListener(link) {
             });
             break;
         case "Downloadshp":
-            content.innerHTML = '<div id="loader" class="loader"></div>';
-            popup.classList.add(popActive);
-            popText.classList.remove(popInActive);
-            positionPopup(popup);
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
@@ -446,21 +428,16 @@ function menuItemListener(link) {
                     shp: id,
                 }, // data sent with post request
                 success: function (json) {
+                    console.log('+++ shp: ', json)
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    popText.classList.add(popInActive);
                 },
                 complete: function() {
                     popup.classList.remove(popActive);
                 }
             });
             break;
-        case "DownloadMD":
-            console.log('DownloadMD');
-            content.innerHTML = '<div id="loader" class="loader"></div>';
-            popup.classList.add(popActive);
-            popText.classList.remove(popInActive);
-            positionPopup(popup);
+        case "Downloadxml":
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
@@ -470,9 +447,9 @@ function menuItemListener(link) {
                 success: function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    console.log('+++ xml: ', json)
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    popText.classList.add(popInActive);
                 },
                 complete: function() {
                     popup.classList.remove(popActive);
@@ -484,12 +461,15 @@ function menuItemListener(link) {
             break;
         case "Remove":
             remove_single_data(id);
+            popup.classList.remove(popActive);
             break;
         default:
             console.error('Error! There is no function defined for "' + link.getAttribute("data-action") + '".')
 
     }
-    console.log("Task ID - " + id + ", Task action - " + link.getAttribute("data-action"));
+    // console.log("Task ID - " + id + ", Task action - " + link.getAttribute("data-action"));
+    // console.log('popText: ', popText.classList)
+    popText.classList.add(popInActive);
     toggleMenuOff();
 }
 

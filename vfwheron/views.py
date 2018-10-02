@@ -5,6 +5,7 @@ import hashlib
 import json
 from builtins import filter
 from wsgiref.util import FileWrapper
+from pyzip import PyZip
 
 import matplotlib as mpl
 import urllib
@@ -26,8 +27,7 @@ from future.builtins import isinstance
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, get_ID_layer, \
-    delete_ID_layer
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
@@ -236,10 +236,10 @@ class menuView(TemplateView):
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                print('meta ids: ', meta_ids['all_filters'])
+                # print('meta ids: ', meta_ids['all_filters'])
                 ID_layer = 'ID_layer'  # + user
-                if get_ID_layer(ID_layer):
-                    delete_ID_layer(ID_layer)
+                if get_layer(ID_layer):
+                    delete_layer(ID_layer)
                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
                 # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
                 # existing layers
@@ -251,7 +251,6 @@ class menuView(TemplateView):
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            print('ID layer: ', ID_layer)
             return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
@@ -348,7 +347,7 @@ class DatasetDownloadView(TemplateView):
             for row in data:
                 # create the feature
                 feature = ogr.Feature(layer.GetLayerDefn())
-                print("DateTime", str(row[0]))
+                # print("DateTime", str(row[0]))
                 feature.SetField("DateTime", str(row[0]))
                 feature.SetField("Data", float(row[1]))
                 # Set the feature geometry using the point
@@ -360,7 +359,7 @@ class DatasetDownloadView(TemplateView):
 
             # Save and close the data source
             data_source = None
-
+            # pyzip = PyZip().from_file("path/to/file.zip")
             response = StreamingHttpResponse(FileWrapper(open(file_path, 'rb')), content_type='application/force-download')
 
 
@@ -385,10 +384,11 @@ class DatasetDownloadView(TemplateView):
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
                   '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
                   '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' + srid
+            print('url xml: ', url)
             request = urllib.request.Request(url)
             response = urllib.request.urlopen(request)
             # clean up right after request:
-            delete_layer(layer_name, store, workspace)
+            # delete_layer(layer_name, store, workspace)
             return HttpResponse(response.read().decode('utf-8'))
 
 
@@ -533,7 +533,6 @@ class GeoserverView(View):
         # wfsLayerName = 'new_ID_as_identifier_update'
         # wfsLayerName = layer
         workSpaceName = 'CAOS_update'
-        print('layer: ', layer)
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
