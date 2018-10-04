@@ -413,7 +413,7 @@ function menuItemListener(link) {
                 }, // data sent with post request
                 success: function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    saveAs(blob, taskItemInContext.getAttribute("btnName")+".csv");
                 },
                 complete: function() {
                     popup.classList.remove(popActive);
@@ -424,13 +424,17 @@ function menuItemListener(link) {
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
+                method: 'GET',
+                xhrFields: {
+                    responseType: 'blob'
+                },
                 data: {
                     shp: id,
                 }, // data sent with post request
-                success: function (json) {
-                    console.log('+++ shp: ', json)
-                    let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                success: function (data) {
+                    let blob = new File([data], {type: "application/octet-stream"});
+                    // let blob = new Blob([data], {type: "application/octet-binary"});
+                    saveAs(blob, String(taskItemInContext.getAttribute("btnName"))+".zip");
                 },
                 complete: function() {
                     popup.classList.remove(popActive);

@@ -5,6 +5,8 @@ import hashlib
 import json
 from builtins import filter
 from wsgiref.util import FileWrapper
+
+import requests
 from pyzip import PyZip
 
 import matplotlib as mpl
@@ -18,6 +20,7 @@ from django.core.cache import cache
 from django.db import connections
 from django.http import StreamingHttpResponse
 from django.http.response import JsonResponse, HttpResponse
+from django.http import FileResponse
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
@@ -27,7 +30,7 @@ from future.builtins import isinstance
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, create_data_layer
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
@@ -282,7 +285,8 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-
+        store = 'new_vforwater_gis'
+        workspace = 'CAOS_update'
         def get_metadata(id):
             """
             the metadata for export includes only the values that are also used for filtering.
@@ -318,64 +322,51 @@ class DatasetDownloadView(TemplateView):
 
         if 'shp' in request.GET:
             id = request.GET.get('shp')
-            data = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(pk=id)
-            file_path = "id" + id + ".shp"
-            driver = ogr.GetDriverByName("ESRI Shapefile")  # set up shapefile driver
-            data_source = driver.CreateDataSource(file_path)  # create the data source
+            layer_name = 'shp'+id
+            srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
-            # create the geometry
-            srs = osr.SpatialReference()
-            srs.ImportFromEPSG(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
-            geometry = {'POINT': 1, 'LINESTRING': 2, 'PLOYGON': 3, 'MULTIPOINT': 4}  # dict according to ogr.py
-            # (cf. ogr.wkbPoint: 1 == wkbPoint)
+            create_data_layer(layer_name, id, store, workspace)
 
-            cursor = connections['vforwater'].cursor()  # connect to database
-            cursor.execute(
-                # 'SELECT ST_AsEWKT(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)), srid)) FROM tbl_meta '  # get geometry including srid and location as wkt
-                'SELECT ST_AsEWKT(ST_Point(ST_X(geom), ST_Y(geom))) FROM tbl_meta '  # get geometry including location as wkt
-                'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('+id+');'
-            )
-            # TODO: For several datasets check if same geometry type and choose appropriately
-            # create the layer
-            layer = data_source.CreateLayer(id, srs, geometry[TblMeta.objects.filter(pk=id).values_list('geometry__geometry_type', flat=True)[0]])
+            # use GEOSERVER shape-zip
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
+                  '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
+                  '&outputFormat=shape-zip&srsname=EPSG:' + srid
+            request = requests.get(url)
+            # request = urllib.request.Request(url)
+            with open(layer_name + '.zip', 'wb') as file:
+                file.write(request.content)
+            print('request: ', request)
+            print('request.get(url): ', requests.get(url))
+            # request = urllib.request.Request(url)
+            # response = urllib.request.urlopen(url)
+            # print('request: ', request.info)
+            # print('response1: ', response)
 
-            # Add the fields we're interested in
-            layer.CreateField(ogr.FieldDefn("Data", ogr.OFTReal))
-            layer.CreateField(ogr.FieldDefn("DateTime", ogr.OFTDateTime))
-            # Process the text file and add the attributes and features to the shapefile
-            point = ogr.CreateGeometryFromWkt(cursor.fetchall()[0][0])
-            for row in data:
-                # create the feature
-                feature = ogr.Feature(layer.GetLayerDefn())
-                # print("DateTime", str(row[0]))
-                feature.SetField("DateTime", str(row[0]))
-                feature.SetField("Data", float(row[1]))
-                # Set the feature geometry using the point
-                feature.SetGeometry(point)
-                # Create the feature in the layer (shapefile)
-                layer.CreateFeature(feature)
-                # Dereference the feature
-                feature = None
-
-            # Save and close the data source
-            data_source = None
-            # pyzip = PyZip().from_file("path/to/file.zip")
-            response = StreamingHttpResponse(FileWrapper(open(file_path, 'rb')), content_type='application/force-download')
-
+            # clean up right after request:
+            # delete_layer(layer_name, store, workspace)
+            # return HttpResponse(response.read().decode('utf-8'))
+            # return StreamingHttpResponse(response.read())
 
             # pseudo_buffer = Echo()
             # writer = csv.writer(pseudo_buffer)
             # response = StreamingHttpResponse((writer.writerow(row) for row in rows),
             #                                  content_type="text/csv")
-            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            # response = HttpResponse(request.content, content_type='application/zip')
+            response = HttpResponse(open(layer_name + '.zip', 'rb'), content_type='application/octet-stream')
+            response = HttpResponse(open(layer_name + '.zip', 'rb'), content_type='application/octet-binary')
+            # response = FileResponse(open(layer_name + '.zip', 'rb'), as_attachment=True, filename=layer_name+'.zip')
+            # response = StreamingHttpResponse(open(layer_name + '.zip', 'rb'))
+            # response['Content-Disposition'] = 'octet-stream; filename="' + layer_name + '.zip"'
+            # response = HttpResponse(response.read(), content_type='application/force-download')
+            # print('response2: ', request.read())
+            print('response3: ', response)
+            # pyzip = PyZip().from_file("path/to/file.zip")
             return response
 
 # TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
             layer_name = 'XML_'+id
-            store = 'new_vforwater_gis'
-            workspace = 'CAOS_update'
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
             create_ID_layer(layer_name, id, store, workspace)
@@ -536,9 +527,6 @@ class GeoserverView(View):
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-        # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-        # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-        print('url: ', url)
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))
