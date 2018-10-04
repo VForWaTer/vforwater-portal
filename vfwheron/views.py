@@ -3,6 +3,7 @@ import csv
 import decimal
 import hashlib
 import json
+import zipfile
 from builtins import filter
 from wsgiref.util import FileWrapper
 
@@ -11,8 +12,6 @@ from pyzip import PyZip
 
 import matplotlib as mpl
 import urllib
-import osgeo.ogr as ogr
-import osgeo.osr as osr
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
@@ -332,36 +331,18 @@ class DatasetDownloadView(TemplateView):
                   '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
                   '&outputFormat=shape-zip&srsname=EPSG:' + srid
             request = requests.get(url)
-            # request = urllib.request.Request(url)
-            with open(layer_name + '.zip', 'wb') as file:
-                file.write(request.content)
-            print('request: ', request)
-            print('request.get(url): ', requests.get(url))
-            # request = urllib.request.Request(url)
-            # response = urllib.request.urlopen(url)
-            # print('request: ', request.info)
-            # print('response1: ', response)
+
+            pzfile = PyZip().from_bytes(request.content)
+            try:
+                del pzfile['wfsrequest.txt']
+            except KeyError:
+                pass
+
+            pzfile = pzfile.to_bytes()
 
             # clean up right after request:
-            # delete_layer(layer_name, store, workspace)
-            # return HttpResponse(response.read().decode('utf-8'))
-            # return StreamingHttpResponse(response.read())
-
-            # pseudo_buffer = Echo()
-            # writer = csv.writer(pseudo_buffer)
-            # response = StreamingHttpResponse((writer.writerow(row) for row in rows),
-            #                                  content_type="text/csv")
-            # response = HttpResponse(request.content, content_type='application/zip')
-            response = HttpResponse(open(layer_name + '.zip', 'rb'), content_type='application/octet-stream')
-            response = HttpResponse(open(layer_name + '.zip', 'rb'), content_type='application/octet-binary')
-            # response = FileResponse(open(layer_name + '.zip', 'rb'), as_attachment=True, filename=layer_name+'.zip')
-            # response = StreamingHttpResponse(open(layer_name + '.zip', 'rb'))
-            # response['Content-Disposition'] = 'octet-stream; filename="' + layer_name + '.zip"'
-            # response = HttpResponse(response.read(), content_type='application/force-download')
-            # print('response2: ', request.read())
-            print('response3: ', response)
-            # pyzip = PyZip().from_file("path/to/file.zip")
-            return response
+            delete_layer(layer_name, store, workspace)
+            return HttpResponse(pzfile, content_type='application/zip')
 
 # TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
@@ -375,11 +356,11 @@ class DatasetDownloadView(TemplateView):
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
                   '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
                   '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' + srid
-            print('url xml: ', url)
+
             request = urllib.request.Request(url)
             response = urllib.request.urlopen(request)
             # clean up right after request:
-            # delete_layer(layer_name, store, workspace)
+            delete_layer(layer_name, store, workspace)
             return HttpResponse(response.read().decode('utf-8'))
 
 
