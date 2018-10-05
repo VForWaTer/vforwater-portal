@@ -57,6 +57,8 @@ def build_id_list(menu, filter_selection):
     """
     # build queries for the filter values
     query_filters = ''
+    # kwargs = {}
+    # count = 0
     # build the django filter for every selection separately
     for parent in filter_selection:
         for child in filter_selection[parent]:
@@ -65,9 +67,29 @@ def build_id_list(menu, filter_selection):
             path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
             value = menu[parent][child][item]['name']
             query_filters += path + "='" + value + "', "
+            # kwargs['{'+str(count)+'}'.format(path)] = value
+            # count += 1
 
     std_query = "TblMeta.objects.filter(" + query_filters + ").values_list('id', flat=True)"
+    # print('query_filters: ', query_filters)
+    # print('query_filters2: ', kwargs)
+    # print('std_query: ', std_query)
+    # # print('std_query: ', std_query)
+    # # print('std_query: ', TblMeta.objects)
+    # print('list(eval(std_query)): ',  list(eval(std_query)))
+    # print('list((std_query2)): ',  list(TblMeta.objects.filter((**kwargs).values_list('id', flat=True))))
     return {'all_filters': list(eval(std_query))}
+
+#
+# keyword = self.query_paths[grand_child]
+# kwargs = {'{0}'.format(keyword): 'NaN',
+#           '{0}'.format(keyword): None}
+# min = {'{0}'.format('min_value'): Min(keyword)}
+# max = {'{0}'.format('max_value'): Max(keyword)}
+# # min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
+# #                "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
+# #                self.query_paths[grand_child] + "'))")
+# min_max = TblMeta.objects.exclude(**kwargs).aggregate(**min, **max)
 
 
 class FilterMethods:
@@ -413,15 +435,21 @@ class Table:
         """
         counter = 0
         total = len(self.child[grand_child])
+        keyword = self.query_paths[grand_child]
+        kwargs = {'{0}'.format(keyword): 'NaN',
+                  '{0}'.format(keyword): None}
+        min = {'{0}'.format('min_value'): Min(keyword)}
+        max = {'{0}'.format('max_value'): Max(keyword)}
         # total = eval("TblMeta.objects.filter(" + grand_child + ").count()")
         try:
-            min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
-                           "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
-                           self.query_paths[grand_child] + "'))")
-
+            # min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
+            #                "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
+            #                self.query_paths[grand_child] + "'))")
+            min_max = TblMeta.objects.exclude(**kwargs).aggregate(**min, **max)
         except ValueError:
-            min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] +
-                           "'), max_value=Max('" + self.query_paths[grand_child] + "'))")
+            # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] +
+            #                "'), max_value=Max('" + self.query_paths[grand_child] + "'))")
+            min_max = TblMeta.objects.aggregate(**min, **max)
             return {'json': '', 'total': 0, 'server': ''}
         grandchild_dict = {
             'type': 'slider',
@@ -452,8 +480,12 @@ class Table:
         """
         counter = 0
         total = len(self.child[grand_child])
-        min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('"
-                       + self.query_paths[grand_child] + "'))")
+        min = {'{0}'.format('min_value'): Min(self.query_paths[grand_child])}
+        max = {'{0}'.format('max_value'): Max(self.query_paths[grand_child])}
+
+        min_max = TblMeta.objects.aggregate(**min, **max)
+        # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('"
+        #                + self.query_paths[grand_child] + "'))")
         grandchild_dict = {
             'type': 'date',
             'total': total,
