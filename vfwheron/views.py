@@ -319,11 +319,13 @@ class DatasetDownloadView(TemplateView):
             # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
             return response
 
+        # TODO: test if shp file is correct
         if 'shp' in request.GET:
             id = request.GET.get('shp')
             layer_name = 'shp'+id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
+            # create layer on geoserver to request shp file
             create_data_layer(layer_name, id, store, workspace)
 
             # use GEOSERVER shape-zip
@@ -338,11 +340,9 @@ class DatasetDownloadView(TemplateView):
             except KeyError:
                 pass
 
-            pzfile = pzfile.to_bytes()
-
             # clean up right after request:
             delete_layer(layer_name, store, workspace)
-            return HttpResponse(pzfile, content_type='application/zip')
+            return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
 
 # TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
