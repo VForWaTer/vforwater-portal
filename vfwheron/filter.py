@@ -17,9 +17,8 @@ def build_select_filters(menu, filter_selection):
     :rtype:
     """
     # build queries for the filter values
-    all_filters = ''
-    single_filters = {}
-    query_filters = {}
+    short_filter = {}
+    long_filter = {}
     # build the django filter for every selection separately
     for parent in filter_selection:
         for child in filter_selection[parent]:
@@ -31,18 +30,21 @@ def build_select_filters(menu, filter_selection):
 
             # TODO: maybe use intersection to store previous queries (compare performance of both)
             # TODO: also compare .filter(x).filter(y) vs .filter(x,y). Result seems to be equal (But shouldn't!?). Time?
-            single_filters.update({parent + child: path + "='" + value + "'"})
+            short_filter.update( {path: value})
+            long_filter.update({parent + child: {path: value}})
 
     # build filters for the menu with all selections, and filters with the selection missing where the user selected it
     # (to prevent zero values where the user made a selection)
-    for key in single_filters:
-        all_filters += single_filters[key] + ','
-        spec_filter = ''
-        for k in single_filters:
+    # in other words:
+    # This is supposed to be used to see available datasets in menus where a selection is made (to see the other
+    # 'options' in the active menu)
+    spec_filter = {}
+    for key in long_filter:
+        for k in long_filter:
             if k != key:
-                spec_filter += single_filters[k] + ','
-        query_filters.update({key: spec_filter})
-    return {'all_filters': all_filters, 'one_excluded': query_filters}
+                spec_filter.setdefault(key, {}).update(long_filter[k])
+
+    return {'filters': short_filter, 'active_f': spec_filter}
 
 
 def build_id_list(menu, filter_selection):
@@ -56,40 +58,17 @@ def build_id_list(menu, filter_selection):
     :rtype:
     """
     # build queries for the filter values
-    query_filters = ''
-    # kwargs = {}
-    # count = 0
-    # build the django filter for every selection separately
+    query_filters = {}
     for parent in filter_selection:
         for child in filter_selection[parent]:
             item = filter_selection[parent][child]
 
             path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
             value = menu[parent][child][item]['name']
-            query_filters += path + "='" + value + "', "
-            # kwargs['{'+str(count)+'}'.format(path)] = value
-            # count += 1
 
-    std_query = "TblMeta.objects.filter(" + query_filters + ").values_list('id', flat=True)"
-    # print('query_filters: ', query_filters)
-    # print('query_filters2: ', kwargs)
-    # print('std_query: ', std_query)
-    # # print('std_query: ', std_query)
-    # # print('std_query: ', TblMeta.objects)
-    # print('list(eval(std_query)): ',  list(eval(std_query)))
-    # print('list((std_query2)): ',  list(TblMeta.objects.filter((**kwargs).values_list('id', flat=True))))
-    return {'all_filters': list(eval(std_query))}
+            query_filters.update({'{0}'.format(path): value})
 
-#
-# keyword = self.query_paths[grand_child]
-# kwargs = {'{0}'.format(keyword): 'NaN',
-#           '{0}'.format(keyword): None}
-# min = {'{0}'.format('min_value'): Min(keyword)}
-# max = {'{0}'.format('max_value'): Max(keyword)}
-# # min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
-# #                "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
-# #                self.query_paths[grand_child] + "'))")
-# min_max = TblMeta.objects.exclude(**kwargs).aggregate(**min, **max)
+    return {'all_filters': list(TblMeta.objects.filter(**query_filters).values_list('id', flat=True))}
 
 
 class FilterMethods:
@@ -112,7 +91,8 @@ class FilterMethods:
         result = {}
 
         query_filter = build_select_filters(menu, filter_selection)
-        std_query = "TblMeta.objects.filter(" + query_filter['all_filters'] + ")"
+        std_query = TblMeta.objects.filter(**query_filter['filters'])
+        filtermap = query_filter['active_f']
         # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user
         for parent in menu:
             c = 1
@@ -120,12 +100,12 @@ class FilterMethods:
             while "C" + str(c) in menu[parent]:
                 path = menu[parent]['path'] + "__" + menu[parent]["C" + str(c)]['column'] if menu[parent]['path'] != '' else menu[parent]["C" + str(c)]['column']
                 child = menu[parent]["C" + str(c)]
-                query1 = "TblMeta.objects.filter(" + query_filter['one_excluded'][parent + "C" + str(c)] + ")" if parent + "C" + str(c) in query_filter['one_excluded'] else std_query
+                query1 = TblMeta.objects.filter(**filtermap[parent + "C" + str(c)]) if parent + "C" + str(c) in filtermap else std_query
                 item_result = {}
                 i = 1
                 while "I" + str(i) in child:
-                    value = child["I" + str(i)]['name']
-                    item_result.update({"I" + str(i): eval(query1 + ".filter(" + path + "='" + value + "').count()")})
+                    filter_items = {'{0}'.format(path): child["I" + str(i)]['name']}
+                    item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
                     i += 1
                 child_result.update({"C" + str(c): item_result})
                 c += 1
@@ -155,7 +135,7 @@ class Menu:
     # menu_list = [LtDomain, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
     menu_list = [LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
 
-    def __init__(self, user = 'default'):
+    def __init__(self, user='default'):
         """
 
         :param user:
@@ -181,7 +161,7 @@ class Menu:
         :rtype:
         """
         if self.user == 'default':
-            query_set = TblMeta.objects.filter(license__share = True).all()
+            query_set = TblMeta.objects.filter(license__share=True).all()
             for i in query_set:
                 return
                 # print('i: ', i)
@@ -249,7 +229,7 @@ class Table:
     """
 
     """
-    default_query = TblMeta.objects.select_related().filter(license__share = True)
+    default_query = TblMeta.objects.select_related().filter(license__share=True)
 
 
     def __init__(self, table, min_amount, user_query_set):
@@ -311,11 +291,11 @@ class Table:
             # else:
             #     query_set = self.default_query.values_list(columns, flat=True).distinct()
 
-            query_set = self.table_name.objects.select_related().values_list(columns, flat = True).distinct()
+            query_set = self.table_name.objects.select_related().values_list(columns, flat=True).distinct()
             # if not (len(query_set) <= 1 and query_set[0] is None):
             # print('*** 1: ', query_set)
             # print('*** 2: ', self.table_name.objects.select_related().values_list(columns, flat=True).distinct())
-            if (len(query_set) > 0):
+            if len(query_set) > 0:
                 if not (len(query_set) == 1 and query_set[0] is None):
                     self.child[columns] = query_set
 
@@ -374,7 +354,7 @@ class Table:
                     # print('* * * * * grand_child: ', grand_child)
                     # print('* * * * * result["total"]: ', result['total'])
                     grandchilds.update(
-                            dict(name = self.table_name.column_dict[grand_child], total = result['total']))
+                            dict(name=self.table_name.column_dict[grand_child], total=result['total']))
                     map_grandchilds.update({
                         'name': self.table_name.column_dict[grand_child],
                         'column': grand_child,
@@ -407,7 +387,8 @@ class Table:
         counter = 0
         for values in self.child[grand_child]:
             if values is not None:
-                total = eval("TblMeta.objects.filter(" + self.query_paths[grand_child] + "='" + values + "').count()")
+                filtermap = {'{0}'.format(self.query_paths[grand_child]): values}
+                total = TblMeta.objects.filter(**filtermap).count()
                 grandchild_dict = {
                     'name': values,
                     'total': total,
@@ -524,7 +505,7 @@ class Table:
             project_name = project['project_name']
             project_id = project['id']
 
-            recursive_child = parent_queryset.filter(ltdomain__pid = None).filter(project_name = project_name).values("ltdomain__domain_name", "ltdomain__id")
+            recursive_child = parent_queryset.filter(ltdomain__pid=None).filter(project_name=project_name).values("ltdomain__domain_name", "ltdomain__id")
 
             # build the inner child
             all_grandchilds = {}
@@ -533,7 +514,7 @@ class Table:
                 child_name = child.get('ltdomain__domain_name')
                 child_id = child.get('ltdomain__id')
 
-                ltdomain_query = parent_queryset.filter(ltdomain__pid = child_id)
+                ltdomain_query = parent_queryset.filter(ltdomain__pid=child_id)
                 grandchild_values = ltdomain_query.values("ltdomain__domain_name", "ltdomain__id")
 
                 # build the innermost menu
@@ -545,7 +526,7 @@ class Table:
                     # build the innermost selectables:
                     # TODO: IMPORTANT! Check which result is right. Maybe all three cases in one Filter?
                     # grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id, nmmetadomain__domain__pid_id=child_id, nmmetadomain__domain__domain_name=grandchild_name).count()
-                    grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id = project_id).filter(nmmetadomain__domain__pid_id = child_id).filter(nmmetadomain__domain__domain_name = grandchild_name).count()
+                    grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id).filter(nmmetadomain__domain__pid_id = child_id).filter(nmmetadomain__domain__domain_name=grandchild_name).count()
                     if grandchild_total >= self.min_amount:
                         grandchild_json = {
                             'name': grandchild_name,
