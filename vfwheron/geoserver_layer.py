@@ -133,8 +133,9 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
             ' LEFT JOIN lt_soil ON tbl_meta.soil_id = lt_soil.id' \
             ' LEFT JOIN lt_license ON tbl_meta.license_id = lt_license.id' \
             ' LEFT JOIN tbl_variable ON tbl_meta.variable_id = tbl_variable.id' \
-            ' LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id'
-
+            ' LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id' \
+            ' WHERE tbl_meta.public IS TRUE'
+    
     attributes = '<attribute>' \
                  '<name>Geometry</name>' \
                  '<minOccurs>0</minOccurs>' \

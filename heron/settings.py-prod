@@ -25,7 +25,8 @@ if not os.path.exists(VFW_DIR):
 HOST_NAME = "portal.vforwater.de"
 VFW_SERVER = 'https://' + HOST_NAME
 MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'https://' + HOST_NAME + '/geoserver'
+LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
+
 
 # Variable to set the demo path in static files
 DEMO_VAR = ''
@@ -55,7 +56,7 @@ else:
     print('secretGeoServer.txt is missing')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['portal.vforwater.de','localhost']
 
