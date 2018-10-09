@@ -195,25 +195,25 @@ class menuView(TemplateView):
         if 'show_info' in request.GET:
             # get field names from models:
             field = []
-            fieldName = {}
+            field_name = {}
             for i in Menu().menu_list:
                 for j in i.column_dict.items():
                     fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
                     field.append(fieldpath)
-                    fieldName[fieldpath] = j[1]
+                    field_name[fieldpath] = j[1]
 
             # build dict of lists for preview:
             ids = json.loads(request.GET.get('show_info'))
             preview = defaultdict(list)
             for k in ids:
                 preview['id'].append(k)
-                imgtag = eval(
-                    "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
+                imgtag = TblMeta.objects.filter(id=str(k)).values(*field)
+                
                 for i in imgtag[0]:
-                    # preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i]))
-                    preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i])) if imgtag[0][
+                    # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
+                    preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
                                                                                                 i] is not None else \
-                    preview[translation.gettext(fieldName[i])].append('-')
+                    preview[translation.gettext(field_name[i])].append('-')
 
             # remove rows only containing no value:
             comparelist = ['-'] * len(ids)

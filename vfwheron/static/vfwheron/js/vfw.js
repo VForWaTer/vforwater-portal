@@ -333,9 +333,10 @@ function buildPopupTextvfw(json, popUpText) {
     let properties = json.get;
     let valueLen;
     let buttonId = [];
+    let values;
     // loop over "properties" dict with metadata, build columns
     for (let j in properties) {
-        let values = eval('properties["' + j + '"]');
+        values = properties[j];
         valueLen = values.length;
         popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
         // loop over dict values and build rows
