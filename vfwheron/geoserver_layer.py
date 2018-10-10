@@ -333,7 +333,7 @@ def create_ID_layer(request, filename='selection_test', selection=str(2557), dat
     :return:
     :rtype:
     """
-    xml = build_XML_from_ID(filename, selection, datastore, workspace, srid)
+    xml = build_XML_from_ID(request, filename, selection, datastore, workspace, srid)
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
