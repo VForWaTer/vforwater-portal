@@ -196,24 +196,26 @@ function dDMFilterFunction(dropDownName, inputName) {
 $(document).ready(function (){
     let handlesSlider =  document.getElementsByClassName('slider');
     for (let s = 0; s < handlesSlider.length; s++){
+        // console.log('s: ', s, handlesSlider[s])
         let maxv = parseFloat(handlesSlider[s].attributes.maxv.value);
         let minv = parseFloat(handlesSlider[s].attributes.minv.value);
-        noUiSlider.create(handlesSlider[s], {
-            start: [minv, maxv],
-            tooltips:  true ,
-            // behaviour: 'tap-drag',
-            // connect: true,
-            range: {
-                'min': [ minv ],
-                'max': [ maxv ]
-            },
-            // pips: { // Show a scale with the slider
-		// mode: 'steps',
-		// stepped: true,
-		// density: 4
-	// }
-        });
-
+        if (!isNaN(maxv) && !isNaN(minv)) {
+            noUiSlider.create(handlesSlider[s], {
+                start: [minv, maxv],
+                tooltips: true,
+                // behaviour: 'tap-drag',
+                // connect: true,
+                range: {
+                    'min': [minv],
+                    'max': [maxv]
+                },
+                // pips: { // Show a scale with the slider
+                // mode: 'steps',
+                // stepped: true,
+                // density: 4
+                // }
+            });
+        }
     }
 });
 

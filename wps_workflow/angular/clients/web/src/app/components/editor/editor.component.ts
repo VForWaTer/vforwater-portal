@@ -964,24 +964,33 @@ export class EditorComponent implements OnInit, AfterContentInit
      */
     public dataDrop(SqlData: SQLDataComponent)
     {
-        if (this.running || !this.movement.edge || !this.movement.parameter || this.movement.parameter.type !== ProcessParameterType.LITERAL)
+        console.log("data drop!");
+        if (this.running ) //|| !this.movement.edge || !this.movement.parameter ) //|| this.movement.parameter.type !== ProcessParameterType.LITERAL)
         {
             return;
         }
 
+        console.log("edge?" + this.movement.edge);
         if (this.movement.edge)
         {
             this.snapshot();
+            
+            console.log("data drop!");
 
-        #
-            TODO
-            data
-            edge
-            handling
-            here
+            const task_input_id = this.movement.parameter.id;
+            const from_sqldata_id = SqlData.sqldata.id;
+            const to_task_id = this.movement.task.id;
+
+            this.workflow.dataEdges.push({
+                id: -Math.round(Math.random() * 10000),
+                from_sqldata_id,
+                to_task_id,
+                task_input_id
+            });
 
             this.workflowChanged.emit(this.workflow);
-
+            
+            console.log("dataedge should be there");
         }
     }
 

@@ -7,6 +7,7 @@
 
 <div class="outputs" #outputs>
   <span [attr.sqldata-id]="0" class="output nomove" [matTooltip]="sqldata.data"
-    matTooltipPosition="below" [style.background]="getParameterColor()" (mousedown)="dataMouseDown($event)" >
+    matTooltipPosition="below" [style.background]="getParameterColor()" (mousedown)="dataMouseDown($event)"
+    (mouseup)="dataMouseUp($event)">
   </span>
 </div>

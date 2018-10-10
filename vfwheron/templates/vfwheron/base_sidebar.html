@@ -57,6 +57,8 @@
         </li>
     </ul>
 </nav>{% endcomment %}
+{#context menu in sidebar.js#}
+
   <nav id="context-menu" class="context-menu">
     <ul class="context-menu__items">
       <li class="context-menu__item">
@@ -66,29 +68,37 @@
         <a href="#" class="context-menu__link" data-action="Plot"><i class="fa fa-eye"></i>{% trans " Plot data" %}</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="DownloadD"><i class="fa fa-download"></i>{% trans " Download data" %} (.csv)</a>
+        <a href="#" class="context-menu__link" data-action="Downloadcsv"><i class="fa fa-download"></i>{% trans " Download data" %} (.csv)</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="DownloadMD"><i class="fa fa-download"></i>{% trans " Download metadata" %}</a>
+        <a href="#" class="context-menu__link" data-action="Downloadshp"><i class="fa fa-download"></i>{% trans " Download data" %} (.shp)</a>
       </li>
       <li class="context-menu__item">
+        <a href="#" class="context-menu__link" data-action="Downloadxml"><i class="fa fa-download"></i>{% trans " Download metadata" %} (.xml)</a>
+      </li>
+{#        TODO: Find data format to download data and metadata as well - maybe extent shp#}
+{% comment %}      <li class="context-menu__item">
         <a href="#" class="context-menu__link" data-action="DownloadDMD"><i class="fa fa-download"></i>{% trans " Download data & metadata" %}</a>
-      </li>
+      </li>{% endcomment %}
       <li class="context-menu__item">
         <a href="#" class="context-menu__link" data-action="Remove"><i class="fa fa-eraser"></i>{% trans " Remove dataset" %}</a>
       </li>
     </ul>
   </nav>
-{% comment %}<!-- The Downloading Modal -->
-<div id="contextModal" class="respo-modal">
 
-  <!-- Modal content -->
-  <div class="respo-modal-content">
-    <span class="respo-close">&times;</span>
-    <p>Some text in the Modal..</p>
-  </div>{% endcomment %}
+<nav id="loader-popup" class="mod-popup respo-center">
+{#    TODO: figure out how to aport download, then there is no need to hide the closer#}
+    <a href="#" id="pop-closer" class="mod-popup-closer respo-hide"></a>
+{#    <div id="loader" class="loader"></div>#}
+{#    <div id="loader-text"></div>#}
+    <div id="pop-content-side">
+    </div>
+    <a><h5><div id="popupText" class="mod-popup--inactive">{% trans " Please wait. Preparing data..." %}</div></h5></a>
+</nav>
 
-</div>
+<nav id="img-popup" class="context-menu respo-center">
+    <div id="imgPopup"></div>
+</nav>
 {#  Overlay effect when opening sidenav on small screens#}
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
 </body>

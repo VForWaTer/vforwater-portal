@@ -74,7 +74,7 @@ ul.respo-ul{list-style-type:none;padding:0;margin:0}ul.respo-ul li{padding:6px 2
 .respo-accordion-content a,.respo-dropdown-content a,.respo-dropdown-click:hover,.respo-dropdown-hover:hover,.respo-opennav,.respo-closenav,.respo-closebtn,*[class*="respo-hover-"]
 {-webkit-transition:background-color .25s,color .15s,box-shadow .25s,opacity 0.25s,filter 0.25s,border 0.15s;transition:background-color .25s,color .15s,box-shadow .15s,opacity .25s,filter .25s,border .15s}
 .respo-ripple:active{opacity:0.5}.respo-ripple{-webkit-transition:opacity 0s;transition:opacity 0s}
-.respo-sidenav{height:100%;width:200px;background-color:#fff;position:fixed!important;z-index:1;overflow:auto}
+.respo-sidenav{height:100%;width:200px;background-color:#fff;position:fixed!important;z-index:1;overflow:auto;bottom: -37px;}
 .respo-sidenav a{padding:4px 2px 4px 16px}.respo-sidenav a:hover{background-color:#ccc}.respo-sidenav a,.respo-dropnav a{display:block}
 .respo-sidenav .respo-dropdown-hover:hover,.respo-sidenav .respo-dropdown-hover:first-child,.respo-sidenav .respo-dropdown-click:hover,.respo-dropnav a:hover{background-color:#ccc;color:#000}
 .respo-sidenav .respo-dropdown-hover,.respo-sidenav .respo-dropdown-click {width:100%}.respo-sidenav .respo-dropdown-hover .respo-dropdown-content,.respo-sidenav .respo-dropdown-click .respo-dropdown-content{min-width:100%}

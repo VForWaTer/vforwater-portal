@@ -194,7 +194,7 @@ function create_map() {
                     id = parseInt(name.substr(wfsLayerName.length + 1, 8));
                     ids.push(id);
                 }
-                popupContent(ids, pos)
+                popupContent(ids, pos);
                 paginat.innerHTML = []
 
             } else if (l > nCol) {
@@ -221,8 +221,6 @@ function create_map() {
                 // end of paginatation
                 // TODO: need a list to click to next objects, to select ids
             }
-
-
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
@@ -293,13 +291,21 @@ function create_map() {
                 show_info: JSON.stringify(ids),
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
-            success: function (json) {
-                    document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
-                    // content.innerHTML = buildPopupText(json, popUpText);
-                    metaData_Overlay.setPosition(pos);
-            }
-
-        });
+        })
+            .done(function (json) {
+                document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
+                // content.innerHTML = buildPopupText(json, popUpText);
+                metaData_Overlay.setPosition(pos);
+            })
+            .fail (function (e) {
+                // console.log('fehler: ', e)
+                metaData_Overlay.setPosition(undefined)
+                alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
+                    "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
+                    "Din forespørsel kan ikke utføres!\nدرخواست شما نمی تواند اعدام شود!\n" +
+                    "Är Ufro net duerchgefouert ginn!\nВаш запрос не может быть выполнен!")
+            })
+        // });
 
     }
     // TODO: buildPopupText is the same as buildPopupTextvfw.js ==> figure out how(where) to use only one of the two functions for both cases

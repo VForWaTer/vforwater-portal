@@ -298,8 +298,6 @@ function popupContentvfw(ids, page) {
         page = JSON.parse("[" + ids + "]").slice(-1);
         ids = JSON.parse("[" + ids + "]").slice(0, -1);
     }
-    console.log('page: ', ids, page)
-    console.log('page: ', typeof(ids), typeof(page))
     if (page != 'none') {
         document.getElementById("pagi" + page).classList.add("loadspin");
     }
@@ -335,9 +333,10 @@ function buildPopupTextvfw(json, popUpText) {
     let properties = json.get;
     let valueLen;
     let buttonId = [];
+    let values;
     // loop over "properties" dict with metadata, build columns
     for (let j in properties) {
-        let values = eval('properties["' + j + '"]');
+        values = properties[j];
         valueLen = values.length;
         popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
         // loop over dict values and build rows

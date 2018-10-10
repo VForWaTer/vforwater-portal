@@ -138,6 +138,10 @@ msgstr " Daten & Metadaten herunterladen"
 msgid " Remove dataset"
 msgstr " Datensatz entfernen"
 
+#: base_sidebar.html:88
+msgid " Please wait. Preparing your data..."
+msgstr " Bitte warten. Ihre Daten werden zusammengestellt..."
+
 #: templates/vfwheron/help.html:16
 msgid "Welcome! This site is still under construction"
 msgstr "Willkommen! Diese Seite befindet sich noch im Aufbau."
@@ -389,5 +393,6 @@ msgstr "Sensorkommentar"
 #: map.js:286
 msgid "Preview"
 msgstr "Vorschau"
+
 
 

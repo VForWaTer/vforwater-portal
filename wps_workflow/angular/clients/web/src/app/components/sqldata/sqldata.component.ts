@@ -139,6 +139,11 @@ export class SQLDataComponent implements OnInit
         this.mouseDownPos = [event.pageX, event.pageY];
         this.dataDrag.emit();
     }
+    
+    public dataMouseUp(event: MouseEvent)
+    {
+        this.dataDrop.emit();
+    }
 
     /**
      * returns the output parameter position

@@ -102,7 +102,7 @@ function workspace_button(json) {
 // Remove data / elements from workspace
 function remove_single_data(removeData) {
     // remove data from portal:
-    document.getElementById(removeData).remove();
+    document.getElementById("id"+removeData).remove();
     // remove data from session:
     var workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     delete workspaceData[removeData];
@@ -112,7 +112,7 @@ function remove_single_data(removeData) {
 function remove_all_datasets() {
     // remove button from portal
     $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
-        document.getElementById(key).remove()
+        document.getElementById("id"+key).remove()
     });
     // remove button from session
     sessionStorage.removeItem("btn");
@@ -197,7 +197,13 @@ var clickCoordsX;
 var clickCoordsY;
 
 var menu = document.querySelector("#context-menu");
-console.log('menu: ', menu)
+let popup = document.querySelector("#loader-popup");
+let content = document.querySelector('#pop-content-side');
+let popText = document.querySelector('#popupText');
+let popcloser = document.querySelector('#pop-closer');
+let popActive = "mod-popup--active";
+let popInActive = "mod-popup--inactive";
+
 var menuState = 0;
 var menuWidth;
 var menuHeight;
@@ -242,7 +248,7 @@ function contextListener() {
 function clickListener() {
     document.addEventListener("click", function (e) {
         var clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
-        console.log('clickeElIsLink: ', clickeElIsLink)
+        // console.log('clickeElIsLink: ', clickeElIsLink)
         if (clickeElIsLink) {
             e.preventDefault();
             menuItemListener(clickeElIsLink);
@@ -281,7 +287,6 @@ function resizeListener() {
 function toggleMenuOn() {
     if (menuState !== 1) {
         menuState = 1;
-        console.log('menu: ', menu)
         menu.classList.add(contextMenuActive);
     }
 }
@@ -323,6 +328,26 @@ function positionMenu(e) {
     } else {
         menu.style.top = clickCoordsY + "px";
     }
+
+}/**
+ * Positions the popup properly.
+ *
+ * @param {Object} e The event
+ */
+// TODO: Why is the position only sometimes correctly updated?
+function positionPopup(window) {
+    let popupWidth = window.offsetWidth + 4;
+    let popupHeight = window.offsetHeight + 4;
+    if ((windowWidth - clickCoordsX) < popupWidth) {
+        window.style.left = windowWidth - popupWidth + "px";
+    } else {
+        window.style.left = clickCoordsX + "px";
+    }
+    if ((windowHeight - clickCoordsY) < popupHeight) {
+        window.style.top = windowHeight - popupHeight + "px";
+    } else {
+        window.style.top = clickCoordsY + "px";
+    }
 }
 
 /**
@@ -331,56 +356,155 @@ function positionMenu(e) {
  * @param {HTMLElement} link The link that was clicked
  */
 function menuItemListener(link) {
-   /* // Get the modal
-    let modal = document.getElementById('contextModal');
-    let span = document.getElementsByClassName("respo-close")[0];
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function() {
-        modal.style.display = "none";
-    };
+    let id = taskItemInContext.getAttribute("data-id");
+    content.innerHTML = '<div id="loader" class="loader"></div>';
+    popup.classList.add(popActive);
+    popText.classList.remove(popInActive);
+    positionPopup(popup);
 
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    };*/
     switch (link.getAttribute("data-action")) {
+
         case "View":
-            console.log('Ich Viewe was');
-            let container = document.getElementById('popup');
-            let content = document.getElementById('popup-content');
-            let closer = document.getElementById('popup-closer');
-            content.innerHTML = '<div id="loader" class="loader"></div>';
-            popupContentvfw(taskItemInContext.getAttribute("data-id"), 'none')
+            $.ajax({
+                url: DEMO_VAR + "/vfwheron/menu",
+                dataType: 'json',
+                data: {
+                    show_info: JSON.stringify([id]),
+                    'csrfmiddlewaretoken': csrf_token,
+                }, // data sent with the post request
+                success: function (json) {
+                    let properties = json.get;
+                    let popUpText = "";
+                    // loop over "properties" dict with metadata, build columns
+                    for (let j in properties) {
+            // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+                        popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+                    }
+                    content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+                        '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
+                    popcloser.classList.remove('respo-hide');
+                    positionPopup(popup);
+                }
+            });
             break;
         case "Plot":
-            console.log('Ich plotte was');
+            $.ajax({
+                    url: DEMO_VAR + "/vfwheron/menu",
+                    datatype: 'image/png;base64',
+                    data: {
+                        preview: id,
+                        'csrfmiddlewaretoken': csrf_token,
+                    }, // data sent with post
+                    success: function (result) {
+                            content.innerHTML = '<div class="mod-header">'+result['get']+'</div>';
+                            popcloser.classList.remove('respo-hide');
+                            positionPopup(popup);
+                    }
+                });
             break;
-        case "DownloadD":
-            console.log('Start')
-            // modal.style.display = "block";
+        case "Downloadcsv":
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
                 datatype: 'json',
                 data: {
-                    download_data: taskItemInContext.getAttribute("data-id"),
+                    csv: id,
                 }, // data sent with post request
                 success: function (json) {
-                    console.log('Success')
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    console.log('Fertig')
+                    saveAs(blob, taskItemInContext.getAttribute("btnName")+".csv");
+                },
+                complete: function() {
+                    popup.classList.remove(popActive);
                 }
             });
+            break;
+        case "Downloadshp":
+            $.ajax({
+                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                datatype: 'json',
+                method: 'GET',
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                data: {
+                    shp: id,
+                }, // data sent with post request
+                success: function (data) {
+                    let blob = new File([data], {type: "application/octet-stream"});
+                    // let blob = new Blob([data], {type: "application/octet-binary"});
+                    saveAs(blob, String(taskItemInContext.getAttribute("btnName"))+".zip");
+                },
+                complete: function() {
+                    popup.classList.remove(popActive);
+                }
+            });
+            break;
+        case "Downloadxml":
+            $.ajax({
+                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                datatype: 'json',
+                data: {
+                    xml: id,
+                }, // data sent with post request
+                success: function (json) {
+                    // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
+                    // saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    console.log('+++ xml: ', json)
+                    let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
+                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                },
+                complete: function() {
+                    popup.classList.remove(popActive);
+                }
+            });
+            break;
+        case "DownloadDMD":
+            console.log('DownloadDMD');
+            break;
+        case "Remove":
+            remove_single_data(id);
+            popup.classList.remove(popActive);
             break;
         default:
             console.error('Error! There is no function defined for "' + link.getAttribute("data-action") + '".')
 
     }
-    console.log("Task ID - " + taskItemInContext.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
+    // console.log("Task ID - " + id + ", Task action - " + link.getAttribute("data-action"));
+    // console.log('popText: ', popText.classList)
+    popText.classList.add(popInActive);
     toggleMenuOff();
 }
+
+/** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
+popcloser.onclick = function () {
+    // metaData_Overlay.setPosition(undefined);
+    // popcloser.blur();
+    popup.classList.remove(popActive);
+    return false;
+};
+
+/** make the popup dragable: */
+$(function(){
+    $(popup).draggable({
+      handle: ".mod-header"
+  });
+    // $('#loader-popup').resizable();
+
+});
+
+// TODO: remove popup when clicking outside of popup
+/*
+window.onclick = function(event) {
+    console.log(' - + click + - : ', event)
+    console.log(' - + click + - target: ', event.target)
+    console.log(' - + click + - parentNode: ', event.parentNode)
+    if (event.target == popup) {
+        console.log('click inside')
+        // popup.style.display = "none";
+        popup.classList.remove(popActive);
+    }
+};
+*/
 
 /**
  * Run the app.

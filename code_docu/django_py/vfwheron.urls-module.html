@@ -87,13 +87,13 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="vfwheron.urls-module.html#urlpatterns" class="summary-name">urlpatterns</a> = <code title="[url(r'^$', views.HomeView.as_view(), name= 'home'), url(r'^login$', a\
-uth_views.login, {'template_name': 'vfwheron/login.html'}, name= 'logi\
-n'), url(r'^failedlogin$', auth_views.login, {'template_name': 'vfwher\
-on/failedlogin.html'}, name= 'failedlogin'), url(r'^watts_login$', vie\
-ws.LoginView.as_view(), name= 'watts_login'), url(r'^help$', views.Hel\
-pView.as_view(), name= 'help'), url(r'^logout$', views.LogoutView.as_v\
-iew(), name= 'logout'), url(r'^menu$', views.menuView.as_view(), name=\
- 'menu'), url(r'^geoserver/(?P&lt;service&gt;[\w{3,4}]+)/(?P&lt;layer&gt;[\w]+)/(?\
+uth_views.LoginView, {'template_name': 'vfwheron/login.html'}, name= '\
+login'), url(r'^failedlogin$', auth_views.LoginView, {'template_name':\
+ 'vfwheron/failedlogin.html'}, name= 'failedlogin'), url(r'^watts_logi\
+n$', views.LoginView.as_view(), name= 'watts_login'), url(r'^help$', v\
+iews.HelpView.as_view(), name= 'help'), url(r'^logout$', views.LogoutV\
+iew.as_view(), name= 'logout'), url(r'^menu$', views.menuView.as_view(\
+), name= 'menu'), url(r'^geoserver/(?P&lt;service&gt;[\w{3,4}]+)/(?P&lt;layer&gt;[\
 ...">[url(r'^$', views.HomeView.as_view(), name= 'hom<code class="variable-ellipsis">...</code></code>
     </td>
   </tr>
@@ -102,10 +102,10 @@ iew(), name= 'logout'), url(r'^menu$', views.menuView.as_view(), name=\
   <span title="django.conf.urls.url">url</span>,
   <span title="django.conf.urls.include">include</span>,
   <span title="django.contrib.auth.views">auth_views</span>,
-  <a href="vfwheron.views-module.html" title="vfwheron.views">views</a>,
   <a href="heron.settings-module.html" title="heron.settings">settings</a>,
-  <a href="vfwheron.views.WorkflowView-class.html" title="vfwheron.views.WorkflowView">WorkflowView</a>,
-  <a href="wps_workflow.views.EditorView-class.html" title="wps_workflow.views.EditorView">EditorView</a>
+  <a href="wps_workflow.views.EditorView-class.html" title="wps_workflow.views.EditorView">EditorView</a>,
+  <a href="vfwheron.views-module.html" title="vfwheron.views">views</a>,
+  <a href="vfwheron.views.WorkflowView-class.html" title="vfwheron.views.WorkflowView">WorkflowView</a>
 </p><br />
 <!-- ==================== VARIABLES DETAILS ==================== -->
 <a name="section-VariablesDetails"></a>
@@ -138,13 +138,13 @@ iew(), name= 'logout'), url(r'^menu$', views.menuView.as_view(), name=\
     <dt>Value:</dt>
       <dd><table><tr><td><pre class="variable">
 [url(r'^$', views.HomeView.as_view(), name= 'home'), url(r'^login$', a<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-uth_views.login, {'template_name': 'vfwheron/login.html'}, name= 'logi<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-n'), url(r'^failedlogin$', auth_views.login, {'template_name': 'vfwher<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-on/failedlogin.html'}, name= 'failedlogin'), url(r'^watts_login$', vie<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-ws.LoginView.as_view(), name= 'watts_login'), url(r'^help$', views.Hel<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-pView.as_view(), name= 'help'), url(r'^logout$', views.LogoutView.as_v<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
-iew(), name= 'logout'), url(r'^menu$', views.menuView.as_view(), name=<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
- 'menu'), url(r'^geoserver/(?P&lt;service&gt;[\w{3,4}]+)/(?P&lt;layer&gt;[\w]+)/(?<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+uth_views.LoginView, {'template_name': 'vfwheron/login.html'}, name= '<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+login'), url(r'^failedlogin$', auth_views.LoginView, {'template_name':<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ 'vfwheron/failedlogin.html'}, name= 'failedlogin'), url(r'^watts_logi<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+n$', views.LoginView.as_view(), name= 'watts_login'), url(r'^help$', v<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+iews.HelpView.as_view(), name= 'help'), url(r'^logout$', views.LogoutV<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+iew.as_view(), name= 'logout'), url(r'^menu$', views.menuView.as_view(<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+), name= 'menu'), url(r'^geoserver/(?P&lt;service&gt;[\w{3,4}]+)/(?P&lt;layer&gt;[<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
 <code class="variable-ellipsis">...</code>
 </pre></td></tr></table>
 </dd>
@@ -181,7 +181,7 @@ iew(), name= 'logout'), url(r'^menu$', views.menuView.as_view(), name=<span clas
   <tr>
     <td align="left" class="footer">
     <a href="epydoc-log.html">Generated by Epydoc
-    3.0.1 on Mon Jul 30 12:58:26 2018</a>
+    3.0.1 on Sun Sep 16 13:26:55 2018</a>
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
