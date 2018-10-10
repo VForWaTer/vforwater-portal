@@ -34,7 +34,7 @@ function menuBuilder(parent) {
             let child = 'C'+c.toString();
             let childHTML = childBuilder(eval("jsMenu[parent]."+[child]), child, parent);
             // console.log('  *** ** *' + parentHTML)
-            parentHTML = parentHTML + childHTML
+            parentHTML += childHTML
         }
         filterMenu = document.getElementById("accordion").innerHTML +=
             "<h5 class='respo-hover-blue nav parent "+parent+"'>" + jsMenu[parent].name + "</h5>" +
@@ -83,7 +83,9 @@ function childBuilder(child, shortChild, shortParent) {
         if (child.type === "slider") {
             itemHTML = sliderBuilder(child, shortChild, shortParent);
             childHTML=
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count s'>(" + child.total + ")</div></i></h6>" +
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;" +
+                "<i><div class='count s'>(" + child.total + ")</div></i>" +
+            "</h6>" +
             "<div id='" + child.name + "'>" +
                 "<div id='sliderwildcard'> "+itemHTML+
             " </div>" +
@@ -94,7 +96,9 @@ function childBuilder(child, shortChild, shortParent) {
             itemHTML = dateBuilder(child, shortChild, shortParent);
             // childHTML = itemHTML
             childHTML =
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count d'>(" + child.total + ")</div></i></h6>" +
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;" +
+                "<i><div class='count d'>(" + child.total + ")</div></i>" +
+            "</h6>" +
             "<div id='" + child.name + "'>" +
                 "<div> "+itemHTML+
                 // "<div id='datewildcard'> "+itemHTML+

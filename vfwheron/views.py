@@ -102,13 +102,18 @@ class HomeView(TemplateView):
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
     # dataExt = get_bbox_from_data()
 
+# TODO: Test with users if this makes any sense
+    def set_layer_name(self):
+        if self.request.user.is_authenticated:
+            data_layer = 'default_layer'
+        else:
+            data_layer = 'default_layer_prod'
+        return data_layer
+
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
 
-        if self.request.user.is_authenticated:
-            self.data_layer = 'default_layer'
-        else:
-            self.data_layer = 'default_layer_prod'
+        self.data_layer = self.set_layer_name()
 
         if not get_layer(self.data_layer):
             create_layer(self.request, self.data_layer)
@@ -240,12 +245,11 @@ class menuView(TemplateView):
         if 'filter_selection_map' in request.GET:
             m_ids = None
             if json.loads(request.GET.get('filter_selection_map')) == 0:
-                ID_layer = HomeView.data_layer
+                ID_layer = HomeView.set_layer_name(self)
                 dataExt = get_bbox_from_data()
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                # print('meta ids: ', meta_ids['all_filters'])
                 ID_layer = 'ID_layer'  # + user
                 if get_layer(ID_layer):
                     delete_layer(ID_layer)
