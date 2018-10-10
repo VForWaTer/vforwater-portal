@@ -238,6 +238,7 @@ class menuView(TemplateView):
             return JsonResponse(filter_menu)
 
         if 'filter_selection_map' in request.GET:
+            m_ids = None
             if json.loads(request.GET.get('filter_selection_map')) == 0:
                 ID_layer = HomeView.data_layer
                 dataExt = get_bbox_from_data()
@@ -249,6 +250,7 @@ class menuView(TemplateView):
                 if get_layer(ID_layer):
                     delete_layer(ID_layer)
                 create_ID_layer(request, ID_layer, str(meta_ids['all_filters'])[1:-1])
+                m_ids = meta_ids['all_filters']
                 # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
                 # existing layers
                 # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
@@ -259,7 +261,7 @@ class menuView(TemplateView):
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
+            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': m_ids})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
