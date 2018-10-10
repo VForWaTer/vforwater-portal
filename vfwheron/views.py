@@ -95,22 +95,28 @@ class HomeView(TemplateView):
     user = 'default'
     Menu = Menu().menu(user)
     JSON_Menu = json.dumps(Menu['client'])
-    # JSON_Menu = Menu().json_menu()
     data_layer = 'default_layer_prod'
+
+    # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
     # dataExt = get_bbox_from_data()
 
-    if not get_layer(data_layer):
-        create_layer(data_layer)
-    else:
-        # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
-        # restart of django
-        delete_layer(data_layer)
-        create_layer(data_layer)
-
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
+
+        if self.request.user.is_authenticated:
+            self.data_layer = 'default_layer'
+        else:
+            self.data_layer = 'default_layer_prod'
+
+        if not get_layer(self.data_layer):
+            create_layer(self.request, self.data_layer)
+        else:
+            # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
+            # restart of django
+            delete_layer(self.data_layer)
+            create_layer(self.request, self.data_layer)
 
         try:
             dataExt = get_bbox_from_data()
@@ -242,7 +248,7 @@ class menuView(TemplateView):
                 ID_layer = 'ID_layer'  # + user
                 if get_layer(ID_layer):
                     delete_layer(ID_layer)
-                create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+                create_ID_layer(request, ID_layer, str(meta_ids['all_filters'])[1:-1])
                 # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
                 # existing layers
                 # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
@@ -326,7 +332,7 @@ class DatasetDownloadView(TemplateView):
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
             # create layer on geoserver to request shp file
-            create_data_layer(layer_name, id, store, workspace)
+            create_data_layer(request, layer_name, id, store, workspace)
 
             # use GEOSERVER shape-zip
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
@@ -350,7 +356,7 @@ class DatasetDownloadView(TemplateView):
             layer_name = 'XML_'+id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
-            create_ID_layer(layer_name, id, store, workspace)
+            create_ID_layer(request, layer_name, id, store, workspace)
 
             # use GEOSERVER GML
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \

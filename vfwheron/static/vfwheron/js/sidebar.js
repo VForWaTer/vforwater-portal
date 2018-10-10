@@ -204,7 +204,6 @@ let popcloser = document.querySelector('#pop-closer');
 let popActive = "mod-popup--active";
 let popInActive = "mod-popup--inactive";
 
-console.log('menu: ', menu)
 var menuState = 0;
 var menuWidth;
 var menuHeight;
@@ -231,7 +230,6 @@ function init() {
 function contextListener() {
     document.addEventListener("contextmenu", function (e) {
         taskItemInContext = clickInsideElement(e, taskItemClassName);
-        console.log('----------- e: ', e)
 
         if (taskItemInContext) {
             e.preventDefault();

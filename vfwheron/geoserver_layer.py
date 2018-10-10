@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: IDs for new layer (for user) are still missing
-def create_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update', srid=3857):
+def create_layer(request, filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update', srid=3857):
     """
 
     :param filename:
@@ -27,7 +27,7 @@ def create_layer(filename='rest_test', datastore='new_vforwater_gis', workspace=
     :return:
     :rtype:
     """
-    xml = build_new_layer_XML(filename, datastore, workspace, srid)
+    xml = build_new_layer_XML(request, filename, datastore, workspace, srid)
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
@@ -84,7 +84,7 @@ def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace=
 
 
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in 'build_XML_from_ID'?)
-def build_new_layer_XML(filename, datastore, workspace, srid):
+def build_new_layer_XML(request, filename, datastore, workspace, srid):
     """
 
     :param filename:
@@ -134,8 +134,10 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
             ' LEFT JOIN lt_license ON tbl_meta.license_id = lt_license.id' \
             ' LEFT JOIN tbl_variable ON tbl_meta.variable_id = tbl_variable.id' \
             ' LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id' \
-            ' WHERE tbl_meta.public IS TRUE'
-    
+            # ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
+    if not request.user.is_authenticated:
+        query = '{} {}'.format(query, ' WHERE lt_license.commercial is false') # only for test use on portal
+
     attributes = '<attribute>' \
                  '<name>Geometry</name>' \
                  '<minOccurs>0</minOccurs>' \
@@ -314,7 +316,7 @@ def build_new_layer_XML(filename, datastore, workspace, srid):
     return xml
 
 
-def create_ID_layer(filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
+def create_ID_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
                     workspace='CAOS_update', srid=3857):
     """
 
@@ -384,7 +386,7 @@ def create_ID_layer(filename='selection_test', selection=str(2557), datastore='n
 #         logger.warning(str(build.status_code) + ': ' + build.text)
 
 
-def build_XML_from_ID(filename, selection, datastore, workspace, srid):
+def build_XML_from_ID(request, filename, selection, datastore, workspace, srid):
     """
 
     :param filename:
@@ -417,8 +419,12 @@ def build_XML_from_ID(filename, selection, datastore, workspace, srid):
             ' LEFT JOIN lt_site ON tbl_meta.site_id = lt_site.id' \
             ' LEFT JOIN tbl_variable ON tbl_meta.variable_id = tbl_variable.id' \
             ' LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id' \
+            ' LEFT JOIN lt_license ON tbl_meta.license_id = lt_license.id' \
             ' WHERE ' \
             ' tbl_meta.id in (' + selection + ')'
+
+    if not request.user.is_authenticated:
+        query = '{} {}'.format(query, ' and lt_license.commercial is false')  # only for test use on portal
 
     attributes = '<attribute>' \
                  '<name>Geometry</name>' \
@@ -507,7 +513,7 @@ def build_XML_from_ID(filename, selection, datastore, workspace, srid):
     return xml
 
 
-def create_data_layer(filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
+def create_data_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
                     workspace='CAOS_update', srid=3857):
     """
 
@@ -524,7 +530,7 @@ def create_data_layer(filename='selection_test', selection=str(2557), datastore=
     :return:
     :rtype:
     """
-    xml = build_dataLayer(filename, selection, datastore, workspace, srid)
+    xml = build_dataLayer(request, filename, selection, datastore, workspace, srid)
     url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
@@ -532,7 +538,7 @@ def create_data_layer(filename='selection_test', selection=str(2557), datastore=
 
 
 # build layer on geoserver to extract date, time and value from timeseries from geoserver
-def build_dataLayer(filename, selection, datastore, workspace, srid):
+def build_dataLayer(request, filename, selection, datastore, workspace, srid):
     """
 
     :param filename:
@@ -562,7 +568,11 @@ def build_dataLayer(filename, selection, datastore, workspace, srid):
             'FROM tbl_meta ' \
             'LEFT JOIN tbl_data ON tbl_meta.id = tbl_data.meta_id ' \
             'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id ' \
+            'LEFT JOIN lt_license ON tbl_meta.license_id = lt_license.id ' \
             'WHERE tbl_meta.id in (' + selection + ')'
+
+    if not request.user.is_authenticated:
+        query = '{} {}'.format(query, ' and lt_license.commercial is false')  # only for test use on portal
 
     attributes = '<attribute>' \
                  '<name>Date</name>' \
