@@ -392,11 +392,10 @@ function create_map() {
             return;
         }
         let pixel = map.getEventPixel(evt.originalEvent);
-        let hit = map.forEachLayerAtPixel(pixel, function (feature) {
-                return feature;
-            }, null, function (layer) {
+        let hit = map.forEachLayerAtPixel(pixel, function (feature) {return feature;},
+            {layerFilter: function (layer) {
                 return layer === clusterLayer
-            }
+            }}
         );
         map.getTargetElement().style.cursor = hit ? 'pointer' : '';
     });

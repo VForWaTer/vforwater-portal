@@ -50,10 +50,10 @@
 
 .ol-selectable {
     -webkit-touch-callout: default;
-    -webkit-user-select: auto;
-    -moz-user-select: auto;
-    -ms-user-select: auto;
-    user-select: auto
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text
 }
 
 .ol-grabbing {
@@ -207,10 +207,6 @@
     display: none
 }
 
-.ol-attribution.ol-logo-only ul {
-    display: block
-}
-
 .ol-attribution:not(.ol-collapsed) {
     background: rgba(255, 255, 255, .8)
 }
@@ -223,19 +219,12 @@
     line-height: 1em
 }
 
-.ol-attribution.ol-logo-only {
-    background: 0 0;
-    bottom: .4em;
-    height: 1.1em;
-    line-height: 1em
-}
-
 .ol-attribution.ol-uncollapsible img {
     margin-top: -.2em;
     max-height: 1.6em
 }
 
-.ol-attribution.ol-logo-only button, .ol-attribution.ol-uncollapsible button {
+.ol-attribution.ol-uncollapsible button {
     display: none
 }
 
@@ -298,6 +287,7 @@
     cursor: move
 }
 
+/*# sourceMappingURL=ol.css.map */
 
 /*Following Style is only for the popup on the map*/
 .ol-popup {
