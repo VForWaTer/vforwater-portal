@@ -245,7 +245,8 @@ function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     }
     else {
         selectedIds = null;
-        showSelectionOnMap(0)
+        showSelectionOnMap(0);
+        getCountFromServer(selection);
         // clusterLayer.changed()
         // showAllPointsOnMap();
     }
@@ -283,7 +284,9 @@ function reset_filter(){
         document.getElementsByClassName('activeI')[0].classList.remove('activeI');
     }
     selectedIds = null;
-    showSelectionOnMap(0)
+    showSelectionOnMap(0);
+    // TODO: store the inicial numbers for each item and use it here instead of a new get request
+    getCountFromServer({});
     // clusterLayer.changed()
 }
 
