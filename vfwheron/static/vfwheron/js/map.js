@@ -1,6 +1,9 @@
 let zoomToExt;
 let wfsLayerName;
 let selectedIds = null;
+let olmap;
+let drawMode = false;
+let selectCluster;
 
 //Create own base layer
 function create_map() {
@@ -140,7 +143,6 @@ function create_map() {
         }
         return [style];
     }
-
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
         tipLabel: 'Zoom to your available data',
@@ -148,9 +150,31 @@ function create_map() {
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
+    window.cApp = {};
+    let cApp = window.cApp;
+     cApp.drawControls = function(options) {
+            let filterbox = document.getElementById('filterbox');
+            let element = document.createElement('div');
+            element.className = 'custom-control ol-unselectable ol-control';
+            /*let draw = document.createElement('button');
+            draw.className = 'custom-control fa fa-square-o fa-fw ol-unselectable ol-control';
+            draw.setAttribute("type", "button")
+            draw.setAttribute(onclick, "testFunc('Hello world!'")*/
+            // let draw = document.createElement('div')
+            // draw.innerHTML = '<button className="custom-control fa fa-square-o fa-fw ol-unselectable ol-control" onclick=testFunc("button")></button>'
+            // draw.onclick= testFunc('Hello world!')
+            element.appendChild(filterbox);
+            // element.appendChild(draw)
+        ol.control.Control.call(this, {
+          element: element
+        });
+        };
+        ol.inherits(cApp.drawControls, ol.control.Control);
+
+
 
     let map_tar = document.getElementById("map");
-    let map = new ol.Map({
+    olmap = new ol.Map({
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
@@ -167,22 +191,31 @@ function create_map() {
                 }
             }),
             new ol.control.ScaleLine(),
+            new cApp.drawControls,
             zoomToExt,
         ],
         view: mapView//dataview
     });
 
-// get information about your data in a popup when you click on a data point in the map
-    map.on('singleclick', buildPopup);
 
+
+// get information about your data in a popup when you click on a data point in the map
+    olmap.on('singleclick', checkMode);
+    function checkMode(evt) {
+       console.log('drawMode checkMode: ', drawMode)
+        if (drawMode === false) {
+            buildPopup(evt)
+        }
+    }
     function buildPopup(evt) {
-        if (map.getFeaturesAtPixel(evt.pixel) != null) {
+        console.log('drawMode buildPopup: ', drawMode)
+        if (olmap.getFeaturesAtPixel(evt.pixel) != null) {
             // Create spinning loader while getting meta data from server
             content.innerHTML = '<div id="loader" class="loader"></div>';
             metaData_Overlay.setPosition(evt.coordinate);
 
             let nCol = 5; // number of columns of metadata per page
-            let clickedFeatures = map.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+            let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
             let pos = evt.coordinate;
             let l = clickedFeatures.length;
             if (l > 0 && l <= nCol) { // check how many datasets are selected
@@ -344,8 +377,8 @@ function create_map() {
     }
 
     // select data with doubleclick
-    //map.on('doubleclick', selectDataset);
-    let selectCluster = new ol.interaction.SelectCluster(
+    //olmap.on('doubleclick', selectDataset);
+    selectCluster = new ol.interaction.SelectCluster(
         {	// Point radius: to calculate distance between the features
             pointRadius: 8.5,
             animate: 100,
@@ -386,18 +419,18 @@ function create_map() {
             }
         });
 
-    map.addInteraction(selectCluster);
-    map.on('pointermove', function (evt) {
+    olmap.addInteraction(selectCluster);
+    olmap.on('pointermove', function (evt) {
         if (evt.dragging) {
             return;
         }
-        let pixel = map.getEventPixel(evt.originalEvent);
-        let hit = map.forEachLayerAtPixel(pixel, function (feature) {return feature;},
+        let pixel = olmap.getEventPixel(evt.originalEvent);
+        let hit = olmap.forEachLayerAtPixel(pixel, function (feature) {return feature;},
             {layerFilter: function (layer) {
                 return layer === clusterLayer
             }}
         );
-        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        olmap.getTargetElement().style.cursor = hit ? 'pointer' : '';
     });
 
     // On selected => get feature in cluster and show info
@@ -416,3 +449,4 @@ function create_map() {
     })
 
 }
+

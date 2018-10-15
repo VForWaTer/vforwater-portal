@@ -1,14 +1,19 @@
 //Change visibility of basiseinzugsgebiete with button
-function toggleLayer(layerName) {
-    if (layerName.getVisible() == true) {
-        layerName.setVisible(false);
-    } else {
-        layerName.setVisible(true);
-    }
-}
+// function toggleLayer(layerName) {
+//     if (layerName.getVisible() == true) {
+//         layerName.setVisible(false);
+//     } else {
+//         layerName.setVisible(true);
+//     }
+// }
 
 //Draw polygon
 function draw_polygon() {
+    drawMode = true;
+    filterbox_open();
+    console.log('draw getInteractions: ', olmap.getInteractions())
+    olmap.removeInteraction(selectCluster);
+    console.log('draw getInteractions: ', olmap.getInteractions())
     let collection = new ol.Collection();
 
     let source = new ol.source.Vector({
@@ -26,10 +31,10 @@ function draw_polygon() {
             }),
             stroke: new ol.style.Stroke({
                 color: '#ff0040',
-                width: 2
+                width: 1.5
             }),
             image: new ol.style.Circle({
-                radius: 7,
+                radius: 5,
                 fill: new ol.style.Fill({
                     color: '#ff0040'
                 })
@@ -38,8 +43,10 @@ function draw_polygon() {
         updateWhileAnimating: true, // optional, for instant visual feedback
         updateWhileInteracting: true // optional, for instant visual feedback
     });
-
-    map.addLayer(vector);
+    console.log ('map: ', olmap)
+    console.log ('map.getLayers(): ', olmap.getLayers())
+    // map.addLayer(vector);
+    olmap.getLayers().extend([vector]);
 
     let draw = new ol.interaction.Draw({
         source: source,
@@ -59,15 +66,17 @@ function draw_polygon() {
 
     // select interaction working on "double click"
     let selectClick = new ol.interaction.Select({
-        condition: ol.events.condition.doubleClick,
-        multi: true
+        // condition: ol.events.condition.doubleClick,
+        // multi: true
+        layers: vector
     });
 
     let drwst = document.getElementById('draw_polygon');
     drwst.addEventListener('click', function () {
-        map.removeInteraction(modify);
-        map.removeInteraction(selectClick);
-        map.addInteraction(draw);
+        olmap.removeInteraction(modify);
+        olmap.removeInteraction(selectClick);
+        olmap.addInteraction(draw);
+        console.log('document.getElementById("workspace"): ', document.getElementById("workspace"))
         draw.on('drawend', function () {
             let writer = new ol.format.KML();
             let geojsonStr = writer.writeFeatures(source.getFeatures());
@@ -80,22 +89,25 @@ function draw_polygon() {
 
     let modst = document.getElementById('modify_polygon');
     modst.addEventListener('click', function () {
-        map.removeInteraction(draw);
-        map.removeInteraction(selectClick);
-        map.addInteraction(modify);
+        olmap.removeInteraction(selectCluster);
+        olmap.removeInteraction(draw);
+        olmap.removeInteraction(selectClick);
+        olmap.addInteraction(modify);
     });
 
     let selst = document.getElementById('select_polygon');
     selst.addEventListener('click', function () {
-        map.removeInteraction(draw);
-        map.removeInteraction(modify);
-        map.addInteraction(selectClick);
+        olmap.removeInteraction(selectCluster);
+        olmap.removeInteraction(draw);
+        olmap.removeInteraction(modify);
+        olmap.addInteraction(selectClick);
     });
 
     let delst = document.getElementById('remove_polygon');
     delst.addEventListener('click', function () {
-        map.removeInteraction(draw);
-        map.removeInteraction(modify);
+        olmap.removeInteraction(selectCluster);
+        olmap.removeInteraction(draw);
+        olmap.removeInteraction(modify);
         selectClick.getFeatures().on('add', function (feature) {
             source.removeFeature(feature.element);
             feature.target.remove(feature.element);
@@ -104,25 +116,30 @@ function draw_polygon() {
 
     let closst = document.getElementById('draw_close');
     closst.addEventListener('click', function () {
-        map.removeInteraction(draw);
-        map.removeInteraction(modify);
-        map.removeInteraction(selectClick);
+        olmap.removeInteraction(draw);
+        olmap.removeInteraction(modify);
+        olmap.removeInteraction(selectClick);
+        filterbox_close()
     });
 }
 
 //Toggle between showing and hiding filterbox
 function filterbox_open() {
     let filterbox = document.getElementById("filterbox");
+    console.log(' +++ filterbox: ', filterbox)
     filterbox.style.display = "block";
+    document.getElementById("toggle_draw").className = 'active'
 }
 
 function filterbox_close() {
     let filterbox = document.getElementById("filterbox");
     filterbox.style.display = "none";
+    // TODO: remove only if nothing selected
+    document.getElementById("toggle_draw").classList.remove('active')
 }
 
 //Toggle between showing and hiding select_catchment
-function select_catchment_toggle() {
+/*function select_catchment_toggle() {
     let selcatchment = document.getElementById("select_catchment");
 
     if (selcatchment.style.display == "block") {
@@ -130,7 +147,7 @@ function select_catchment_toggle() {
     } else {
         selcatchment.style.display = "block";
     }
-}
+}*/
 
 //Search
 function search_close() {
