@@ -1,8 +1,8 @@
 let zoomToExt;
 let wfsLayerName;
 let selectedIds = null;
-let olmap;
-let drawMode = false;
+let olmap, hit_cL;
+let drawMode = false;  // flag to avoid interaction with data while drawing
 let selectCluster;
 
 //Create own base layer
@@ -100,15 +100,14 @@ function create_map() {
             color: "rgba(170, 221, 249,0.7)"
         })
     });
-    let style1 = new ol.style.Style(
-        {
-            image: img,
-            // Draw a link beetween points
-            stroke: new ol.style.Stroke({
-                color: '#AADDF9',
-                width: 1
-            })
-        });
+    let style1 = new ol.style.Style({
+        image: img,
+        // Draw a link beetween points
+        stroke: new ol.style.Stroke({
+            color: '#AADDF9',
+            width: 1
+        })
+    });
 
 
     let styleCache = {};
@@ -117,29 +116,25 @@ function create_map() {
         let size = feature.get('features').length;
         let style = styleCache[size];
         if (!style) {
-            style = styleCache[size] = new ol.style.Style(
-                {
-                    image: new ol.style.Circle(
-                        {
-                            radius: Math.round(8 + 1.3 * Math.log(size)),
-                            stroke: new ol.style.Stroke(
-                                {
-                                    color: '#00BAEE',
-                                    width: 0.5
-                                }),
-                            fill: new ol.style.Fill(
-                                {
-                                    color: '#AADDF9'
-                                })
+            style = styleCache[size] = new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: Math.round(8 + 1.3 * Math.log(size)),
+                    stroke: new ol.style.Stroke({
+                            color: '#00BAEE',
+                            width: 0.5
                         }),
-                    text: new ol.style.Text({
-                        text: size.toString(),
-                        font: '12px helvetica,sans-serif',
-                        fill: new ol.style.Fill({
-                            color: 'black'
+                    fill: new ol.style.Fill({
+                            color: '#AADDF9'
                         })
+                }),
+                text: new ol.style.Text({
+                    text: size.toString(),
+                    font: '12px helvetica,sans-serif',
+                    fill: new ol.style.Fill({
+                        color: 'black'
                     })
-                });
+                })
+            });
         }
         return [style];
     }
@@ -152,24 +147,15 @@ function create_map() {
     });
     window.cApp = {};
     let cApp = window.cApp;
-     cApp.drawControls = function(options) {
-            let filterbox = document.getElementById('filterbox');
-            let element = document.createElement('div');
-            element.className = 'custom-control ol-unselectable ol-control';
-            /*let draw = document.createElement('button');
-            draw.className = 'custom-control fa fa-square-o fa-fw ol-unselectable ol-control';
-            draw.setAttribute("type", "button")
-            draw.setAttribute(onclick, "testFunc('Hello world!'")*/
-            // let draw = document.createElement('div')
-            // draw.innerHTML = '<button className="custom-control fa fa-square-o fa-fw ol-unselectable ol-control" onclick=testFunc("button")></button>'
-            // draw.onclick= testFunc('Hello world!')
-            element.appendChild(filterbox);
-            // element.appendChild(draw)
+    cApp.drawControls = function() {
+        let element = document.createElement('div');
+        element.className = 'custom-control ol-unselectable ol-control';
+        element.appendChild(document.getElementById('filterbox'));
         ol.control.Control.call(this, {
-          element: element
+            element: element
         });
-        };
-        ol.inherits(cApp.drawControls, ol.control.Control);
+    };
+    ol.inherits(cApp.drawControls, ol.control.Control);
 
 
 
@@ -197,70 +183,81 @@ function create_map() {
         view: mapView//dataview
     });
 
-
-
 // get information about your data in a popup when you click on a data point in the map
     olmap.on('singleclick', checkMode);
+    // check what is clicked
     function checkMode(evt) {
        console.log('drawMode checkMode: ', drawMode)
-        if (drawMode === false) {
+        console.log('hit_cL: ', hit_cL)
+        if (hit_cL) {
             buildPopup(evt)
-        }
-    }
-    function buildPopup(evt) {
-        console.log('drawMode buildPopup: ', drawMode)
-        if (olmap.getFeaturesAtPixel(evt.pixel) != null) {
-            // Create spinning loader while getting meta data from server
-            content.innerHTML = '<div id="loader" class="loader"></div>';
-            metaData_Overlay.setPosition(evt.coordinate);
-
-            let nCol = 5; // number of columns of metadata per page
-            let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
-            let pos = evt.coordinate;
-            let l = clickedFeatures.length;
-            if (l > 0 && l <= nCol) { // check how many datasets are selected
-                let ids = [];
-                let name, id;
-                // bulid list with selection to send to server
-                for (let i = 0; i < l; i++) {
-                    name = clickedFeatures[i].getId();
-                    id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-                    ids.push(id);
-                }
-                popupContent(ids, pos);
-                paginat.innerHTML = []
-
-            } else if (l > nCol) {
-                let page = 1;
-                let name, id;
-                let ids = [];
-                let idDict = {1:[]};
-                for (let i = 0, j = 0; i < l; i++, j++) {
-                    if (j >= nCol) {
-                        j = 0;
-                        page++;
-                        idDict[page]=[];
-                    }
-                    name = clickedFeatures[i].getId();
-                    id = parseInt(name.substr(wfsLayerName.length + 1, 8));
-                    ids.push(id);
-                    idDict[page].push(id);
-
-                }
-                popupContent(idDict[1], pos);
-
-                // add paginatation to popup:
-                paginat.innerHTML = buildPagi(idDict, page);
-                // end of paginatation
-                // TODO: need a list to click to next objects, to select ids
-            }
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
+    }
+/*
+    olmap.on('pointermove', function (evt) {
+        if (evt.dragging) {
+            return;
+        }
+        let pixel = olmap.getEventPixel(evt.originalEvent);
+        let hit = olmap.forEachLayerAtPixel(pixel, function (feature) {return feature;},
+            {layerFilter: function (layer) {
+                return layer === clusterLayer
+            }}
+        );
+        olmap.getTargetElement().style.cursor = hit ? 'pointer' : '';
+    });*/
+
+    function buildPopup(evt) {
+        // if (olmap.getFeaturesAtPixel(evt.pixel)) {
+        // Create spinning loader while getting meta data from server
+        content.innerHTML = '<div id="loader" class="loader"></div>';
+        metaData_Overlay.setPosition(evt.coordinate);
+
+        let nCol = 5; // number of columns of metadata per page
+        let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+        let pos = evt.coordinate;
+        let l = clickedFeatures.length;
+        if (l > 0 && l <= nCol) { // check how many datasets are selected
+            let ids = [];
+            let name, id;
+            // bulid list with selection to send to server
+            for (let i = 0; i < l; i++) {
+                name = clickedFeatures[i].getId();
+                id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+                ids.push(id);
+            }
+            popupContent(ids, pos);
+            paginat.innerHTML = []
+
+        } else if (l > nCol) {
+            let page = 1;
+            let name, id;
+            let ids = [];
+            let idDict = {1:[]};
+            for (let i = 0, j = 0; i < l; i++, j++) {
+                if (j >= nCol) {
+                    j = 0;
+                    page++;
+                    idDict[page]=[];
+                }
+                name = clickedFeatures[i].getId();
+                id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+                ids.push(id);
+                idDict[page].push(id);
+
+            }
+            popupContent(idDict[1], pos);
+
+            // add paginatation to popup:
+            paginat.innerHTML = buildPagi(idDict, page);
+            // end of paginatation
+            // TODO: need a list to click to next objects, to select ids
+            }
 
     }
     function buildPagi(idDict, page) {
-        // console.log('idDict, page, pagiObj:', idDict, page)
         let pagi = '';
         let nDat = 16; // number of Datasets shown at once
         if (Object.keys(idDict).length < nDat) {
@@ -297,7 +294,7 @@ function create_map() {
             let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
                         'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
             pagi = prePagi*/
-           for (let i = 1; i <= page; i++) {
+            for (let i = 1; i <= page; i++) {
                 if (i == 1) {
                     pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
                         'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
@@ -378,7 +375,8 @@ function create_map() {
 
     // select data with doubleclick
     //olmap.on('doubleclick', selectDataset);
-    selectCluster = new ol.interaction.SelectCluster(
+    // TODO: Cluster gives error when click on sketched polygon. Not used yet anyways, so uncommented until usefull
+/*    selectCluster = new ol.interaction.SelectCluster(
         {	// Point radius: to calculate distance between the features
             pointRadius: 8.5,
             animate: 100,
@@ -391,50 +389,50 @@ function create_map() {
                 if (cluster.length > 1) {
                     let s = getStyle(f);
                     if (ol.coordinate.convexHull) {
-                        var coords = [];
+                        let coords = [];
                         let l = cluster.length;
                         for (i = 0; i < l; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
-                        s.push(new ol.style.Style( // spread datapoints around the center of the cluster
-                            {
-                                stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),
-                                fill: new ol.style.Fill({color: "rgba(0,0,192,0.3)"}),
-                                geometry: new ol.geom.Polygon([ol.coordinate.convexHull(coords)]),
-                                zIndex: 1
-                            }));
+                        s.push(new ol.style.Style({ // spread datapoints around the center of the cluster
+                            stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),
+                            fill: new ol.style.Fill({color: "rgba(0,0,192,0.3)"}),
+                            geometry: new ol.geom.Polygon([ol.coordinate.convexHull(coords)]),
+                            zIndex: 1
+                        }));
                     }
                     return s;
                 }
                 else {
                     return [
-                        new ol.style.Style( // draw a circle around your selection
-                            {
-                                image: new ol.style.Circle(
-                                    {
-                                        stroke: new ol.style.Stroke({color: "rgba(0,73,120,0.5)", width: 2}),
-                                        fill: new ol.style.Fill({color: "rgba(0,73,120,0.3)"}),
-                                        radius: 15
-                                    })
-                            })];
+                        new ol.style.Style({ // draw a circle around your selection
+                            image: new ol.style.Circle({
+                                stroke: new ol.style.Stroke({color: "rgba(0,73,120,0.5)", width: 2}),
+                                fill: new ol.style.Fill({color: "rgba(0,73,120,0.3)"}),
+                                radius: 15
+                                })
+                        })];
                 }
             }
         });
+    olmap.addInteraction(selectCluster);*/
 
-    olmap.addInteraction(selectCluster);
+    // change cursor to pointer when hover over data
     olmap.on('pointermove', function (evt) {
         if (evt.dragging) {
             return;
         }
-        let pixel = olmap.getEventPixel(evt.originalEvent);
-        let hit = olmap.forEachLayerAtPixel(pixel, function (feature) {return feature;},
+        // let pixel = olmap.getEventPixel(evt.originalEvent);
+        hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {return feature;},
             {layerFilter: function (layer) {
+                // return layer === vector
                 return layer === clusterLayer
             }}
         );
-        olmap.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        olmap.getTargetElement().style.cursor = hit_cL ? 'pointer' : '';
     });
 
     // On selected => get feature in cluster and show info
-    selectCluster.getFeatures().on(['add'], function (e) {
+/*    selectCluster.getFeatures().on(['add'], function (e) {
+        console.log(' ------------ im add')
         let c = e.element.get('features');
         if (c.length == 1) {
             let feature = c[0];
@@ -446,7 +444,7 @@ function create_map() {
     });
     selectCluster.getFeatures().on(['remove'], function (e) {
         $(".infos").html("");
-    })
+    })*/
 
 }
 

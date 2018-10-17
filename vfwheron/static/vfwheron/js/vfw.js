@@ -31,7 +31,7 @@ function draw_polygon() {
             }),
             stroke: new ol.style.Stroke({
                 color: '#ff0040',
-                width: 1.5
+                width: 1
             }),
             image: new ol.style.Circle({
                 radius: 5,
@@ -45,8 +45,8 @@ function draw_polygon() {
     });
     console.log ('map: ', olmap)
     console.log ('map.getLayers(): ', olmap.getLayers())
-    // map.addLayer(vector);
-    olmap.getLayers().extend([vector]);
+    olmap.addLayer(vector);
+    // olmap.getLayers().extend([vector]);
 
     let draw = new ol.interaction.Draw({
         source: source,
@@ -89,7 +89,7 @@ function draw_polygon() {
 
     let modst = document.getElementById('modify_polygon');
     modst.addEventListener('click', function () {
-        olmap.removeInteraction(selectCluster);
+        // olmap.removeInteraction(selectCluster);
         olmap.removeInteraction(draw);
         olmap.removeInteraction(selectClick);
         olmap.addInteraction(modify);
@@ -97,7 +97,7 @@ function draw_polygon() {
 
     let selst = document.getElementById('select_polygon');
     selst.addEventListener('click', function () {
-        olmap.removeInteraction(selectCluster);
+        // olmap.removeInteraction(selectCluster);
         olmap.removeInteraction(draw);
         olmap.removeInteraction(modify);
         olmap.addInteraction(selectClick);
@@ -105,7 +105,7 @@ function draw_polygon() {
 
     let delst = document.getElementById('remove_polygon');
     delst.addEventListener('click', function () {
-        olmap.removeInteraction(selectCluster);
+        // olmap.removeInteraction(selectCluster);
         olmap.removeInteraction(draw);
         olmap.removeInteraction(modify);
         selectClick.getFeatures().on('add', function (feature) {
@@ -119,6 +119,8 @@ function draw_polygon() {
         olmap.removeInteraction(draw);
         olmap.removeInteraction(modify);
         olmap.removeInteraction(selectClick);
+        // olmap.addInteraction(selectCluster);
+        drawMode = false;
         filterbox_close()
     });
 }

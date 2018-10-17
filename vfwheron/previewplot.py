@@ -44,7 +44,7 @@ def get_preview(preview):
 
     if not in_cache:
         # preview = 1157
-        label = TblMeta.objects.filter(id = preview).values_list('variable__variable_name',
+        label = TblMeta.objects.filter(id=preview).values_list('variable__variable_name',
                                                                  'variable__variable_symbol', 'variable__unit__unit_abbrev')
         ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
         # connect to database
@@ -61,18 +61,18 @@ def get_preview(preview):
         ymin = [row[2] for row in m]
         ymax = [row[3] for row in m]
 
-        fig, ax = plt.subplots(1, 1, figsize = (6, 4))
-        ax.plot(x, ymin, '-c', x, ymax, '-c', lw = 0.3, label = 'Daily min/max')
-        ax.plot(x, yavg, '-b', lw = 1, label = "Daily average")
+        fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+        ax.plot(x, ymin, '-c', x, ymax, '-c', lw=0.3, label='Daily min/max')
+        ax.plot(x, yavg, '-b', lw=1, label="Daily average")
         fig.autofmt_xdate(),
-        ax.legend(bbox_to_anchor = (0., 1.02, 1., .102), loc = 3, ncol = 2, mode = "expand", borderaxespad = 0.)
+        ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
         ax.set_xlabel('Date')
-        ax.grid(which = 'major', axis = 'x')
+        ax.grid(which='major', axis='x')
         ax.set_ylabel(ylabel)
         ax.set_title('Dataset ' + str(preview))
         # create tempfile and read as base64
         tmpFile = BytesIO()
-        fig.savefig(tmpFile, format = 'png')
+        fig.savefig(tmpFile, format='png')
         tmpFile.seek(0)
         b64 = base64.b64encode(tmpFile.getvalue()).decode('utf8')
         if use_redis:
