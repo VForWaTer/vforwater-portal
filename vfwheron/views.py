@@ -1,7 +1,15 @@
 import base64
 import csv
+import decimal
 import hashlib
 import json
+import zipfile
+from builtins import filter
+from wsgiref.util import FileWrapper
+
+import requests
+from pyzip import PyZip
+
 import matplotlib as mpl
 import urllib
 from collections import defaultdict
@@ -11,16 +19,18 @@ from django.core.cache import cache
 from django.db import connections
 from django.http import StreamingHttpResponse
 from django.http.response import JsonResponse, HttpResponse
+from django.http import FileResponse
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
 from django.views.generic import TemplateView
+from future.builtins import isinstance
+
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, get_ID_layer, delete_ID_layer
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, create_data_layer
 from vfwheron.previewplot import get_preview
-
 
 mpl.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -29,15 +39,14 @@ from matplotlib.dates import DateFormatter
 from matplotlib.figure import Figure
 
 from .query_functions import get_bbox_from_data
-from datetime import datetime
+from datetime import datetime, date
 import time
 
-from .filter import FilterMethods, Menu, build_id_list
+from .filter import FilterMethods, Menu, build_id_list, Table
 from .models import TblMeta, TblVariable, TblData
 
 import logging
 import os
-
 
 # Create your views here.
 """
@@ -61,7 +70,7 @@ def get_dataset(self, request, **kwargs):
     # here 
     id = request.POST.get('meta_id')
 
-    data = TblData.objects.get(meta = id).value
+    data = TblData.objects.get(meta=id).value
     result = "test"
 
     return result
@@ -80,27 +89,39 @@ class WorkflowView(TemplateView):
 # every time they open a browser.
 class HomeView(TemplateView):
     """
-
+    Template View to bring the necessary variables for the startup to the template
     """
     template_name = 'vfwheron/home.html'
     user = 'default'
     Menu = Menu().menu(user)
     JSON_Menu = json.dumps(Menu['client'])
+    data_layer = 'default_layer_prod'
+
     # JSON_Menu = Menu().json_menu()
-    data_layer = 'default_layer'
     # if not dataExt:
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
     # dataExt = get_bbox_from_data()
 
-    if not get_layer(data_layer):
-        create_layer(data_layer)
-    else:
-    # TODO: don't do that in production! That's just for development to make sure geoserver is updated after restart of django
-        delete_layer(data_layer)
-        create_layer(data_layer)
+# TODO: Test with users if this makes any sense
+    def set_layer_name(self):
+        if self.request.user.is_authenticated:
+            data_layer = 'default_layer'
+        else:
+            data_layer = 'default_layer_prod'
+        return data_layer
 
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
+
+        self.data_layer = self.set_layer_name()
+
+        if not get_layer(self.data_layer):
+            create_layer(self.request, self.data_layer)
+        else:
+            # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
+            # restart of django
+            delete_layer(self.data_layer)
+            create_layer(self.request, self.data_layer)
 
         try:
             dataExt = get_bbox_from_data()
@@ -113,13 +134,12 @@ class HomeView(TemplateView):
 
 class menuView(TemplateView):
     """
-
+    View to build the filter menu on the start page and interact with the sidebar
     """
-
 
     # user = 'default'
 
-    def get(self, request, user = 'default'):
+    def get(self, request, user='default'):
         """
 
         :param request:
@@ -139,9 +159,8 @@ class menuView(TemplateView):
         else:
             menu = request.session.get('menu')
 
-
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset, dataset_dict, min_time = 0, max_time = 0):
+        def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
             data_definition = {}
             work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
                          work_dataset
@@ -151,7 +170,7 @@ class menuView(TemplateView):
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
 
             definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                      'variable__unit__unit_abbrev').get(pk = work_dataset)
+                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
             data_definition['name'] = definition_query['variable__variable_name']
             data_definition['abbr'] = definition_query['variable__variable_abbrev']
             data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
@@ -163,7 +182,6 @@ class menuView(TemplateView):
             else:
                 dataset_dict = {work_dataset: data_definition}
             return dataset_dict
-
 
         if 'workspaceData' in request.GET:
             min_time = request.GET.get('minTime')
@@ -184,26 +202,29 @@ class menuView(TemplateView):
             return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
 
         # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
+        # on request collect metadata for preview on map ans selection in the sidebar
         if 'show_info' in request.GET:
             # get field names from models:
             field = []
-            fieldName = {}
+            field_name = {}
             for i in Menu().menu_list:
-                for j in i.column_dict_en.items():
+                for j in i.column_dict.items():
                     fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
                     field.append(fieldpath)
-                    fieldName[fieldpath] = j[1]
+                    field_name[fieldpath] = j[1]
 
             # build dict of lists for preview:
             ids = json.loads(request.GET.get('show_info'))
             preview = defaultdict(list)
             for k in ids:
                 preview['id'].append(k)
-                imgtag = eval(
-                        "TblMeta.objects.filter(id='" + str(k) + "').values(" + str(field)[1:-1] + ")")
+                imgtag = TblMeta.objects.filter(id=str(k)).values(*field)
+                
                 for i in imgtag[0]:
-                    # preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i]))
-                    preview[translation.gettext(fieldName[i])].append(str(imgtag[0][i])) if imgtag[0][i] is not None else preview[translation.gettext(fieldName[i])].append('-')
+                    # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
+                    preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
+                                                                                                i] is not None else \
+                    preview[translation.gettext(field_name[i])].append('-')
 
             # remove rows only containing no value:
             comparelist = ['-'] * len(ids)
@@ -217,30 +238,34 @@ class menuView(TemplateView):
             return JsonResponse({'get': preview})  # requested from map.js show_info
 
         if 'filter_selection' in request.GET:
-            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection')))
+            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'],
+                                                         json.loads(request.GET.get('filter_selection')))
             return JsonResponse(filter_menu)
 
         if 'filter_selection_map' in request.GET:
+            m_ids = None
             if json.loads(request.GET.get('filter_selection_map')) == 0:
-                ID_layer = HomeView.data_layer
+                ID_layer = HomeView.set_layer_name(self)
                 dataExt = get_bbox_from_data()
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                print('meta ids: ', meta_ids['all_filters'])
                 ID_layer = 'ID_layer'  # + user
-                if get_ID_layer(ID_layer):
-                    delete_ID_layer(ID_layer)
-                create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none existing layers
+                if get_layer(ID_layer):
+                    delete_layer(ID_layer)
+                create_ID_layer(request, ID_layer, str(meta_ids['all_filters'])[1:-1])
+                m_ids = meta_ids['all_filters']
+                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
+                # existing layers
                 # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
                 # if not get_ID_layer(ID_layer):
                 #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             #             else:
-            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after restart of django
+            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after
+            #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
+            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': m_ids})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
@@ -261,8 +286,7 @@ class DatasetDownloadView(TemplateView):
 
     """
 
-
-    def get(self, request, user = 'default'):
+    def get(self, request, user='default'):
         """
 
         :param request:
@@ -272,23 +296,90 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-        rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
-                pk = json.loads(request.GET.get('download_data')))
-        # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
-        # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
-        pseudo_buffer = Echo()
-        writer = csv.writer(pseudo_buffer)
-        response = StreamingHttpResponse((writer.writerow(row) for row in rows),
-                                         content_type = "text/csv")
-        # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-        return response
+        store = 'new_vforwater_gis'
+        workspace = 'CAOS_update'
+        def get_metadata(id):
+            """
+            the metadata for export includes only the values that are also used for filtering.
+            Change get_metadata if you want to have more information in the export file.
+            :return:
+            """
+            catalog = {}
+            for table in Menu.menu_list:
+                for i in table.column_dict:
+                    if table.path != '':
+                        query = TblMeta.objects.filter(pk=id).values_list(table.path + '__' + i, flat=True)
+                    else:
+                        query = TblMeta.objects.filter(pk=id).values_list(i, flat=True)
+                    if query[0] != None:
+                        try:
+                            catalog[table.menu_name][i] = query[0]
+                        except KeyError:
+                            catalog[table.menu_name] = {i: query[0]}
+            return catalog
+
+        if 'csv' in request.GET:
+            # if 'download_data' in request.GET:
+            rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
+                pk=json.loads(request.GET.get('csv')))
+            # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
+            # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
+            pseudo_buffer = Echo()
+            writer = csv.writer(pseudo_buffer)
+            response = StreamingHttpResponse((writer.writerow(row) for row in rows),
+                                             content_type="text/csv")
+            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            return response
+
+        # TODO: test if shp file is correct
+        if 'shp' in request.GET:
+            id = request.GET.get('shp')
+            layer_name = 'shp'+id
+            srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
+
+            # create layer on geoserver to request shp file
+            create_data_layer(request, layer_name, id, store, workspace)
+
+            # use GEOSERVER shape-zip
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
+                  '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
+                  '&outputFormat=shape-zip&srsname=EPSG:' + srid
+            request = requests.get(url)
+
+            pzfile = PyZip().from_bytes(request.content)
+            try:
+                del pzfile['wfsrequest.txt']
+            except KeyError:
+                pass
+
+            # clean up right after request:
+            delete_layer(layer_name, store, workspace)
+            return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
+
+# TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
+        if 'xml' in request.GET:
+            id = request.GET.get('xml')
+            layer_name = 'XML_'+id
+            srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
+
+            create_ID_layer(request, layer_name, id, store, workspace)
+
+            # use GEOSERVER GML
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
+                  '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
+                  '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' + srid
+
+            request = urllib.request.Request(url)
+            response = urllib.request.urlopen(request)
+            # clean up right after request:
+            delete_layer(layer_name, store, workspace)
+            return HttpResponse(response.read().decode('utf-8'))
 
 
 class LoginView(View):
     """
 
     """
-
 
     def post(self, request):
         """
@@ -300,7 +391,6 @@ class LoginView(View):
         """
         logger.debug('Redirect to vfwheron/rsp/login/init...')
         return redirect('vfwheron:watts_rsp:login_init')
-
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -326,7 +416,6 @@ class LogoutView(View):
 
     """
 
-
     def logout(self, request):
         """
 
@@ -337,7 +426,6 @@ class LogoutView(View):
         """
         logger.debug('{} logged out'.format(request.user.username))
         logout(request)
-
 
     def post(self, request):
         """
@@ -355,7 +443,6 @@ class HelpView(TemplateView):
     """
 
     """
-
 
     #     template_name = 'vfwheron/help.html'
     def get(self, request):
@@ -381,7 +468,6 @@ class ToggleLanguageView(View):
 
     """
 
-
     def post(self, request):
         """
 
@@ -392,7 +478,9 @@ class ToggleLanguageView(View):
         """
         lang = translation.get_language()
         logger.debug('current language: {}'.format(lang))
-        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'), translation.check_for_language('en-us'), translation.check_for_language('en-gb')))
+        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),
+                                                                            translation.check_for_language('en-us'),
+                                                                            translation.check_for_language('en-gb')))
         if lang == 'en-gb' or lang == 'en-us':
             translation.activate('de')
             request.session[translation.LANGUAGE_SESSION_KEY] = 'de'
@@ -409,7 +497,6 @@ class GeoserverView(View):
     """
     Build URL to get layers from Geoserver
     """
-
 
     def get(self, request, service, layer, bbox, srid):
         """
@@ -433,8 +520,9 @@ class GeoserverView(View):
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-        # '&outputFormat=shape-zip&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-        # '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        # url = '{}/{}/ows?service={}&version=1.0.0&request=GetFeature&typeName={}:{}&outputFormat=application%2Fjson&' \
+        #       'srsname=EPSG:{}&bbox={},EPSG:{}'.format(LOCAL_GEOSERVER, workSpaceName, service, workSpaceName, layer,
+        #                                                srid, bbox, srid)
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))

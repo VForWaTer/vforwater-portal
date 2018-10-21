@@ -418,3 +418,19 @@ div.ui-rangeslider label {
 .mod-header{
    cursor: move;
   }
+
+#draw_polygon,#modify_polygon, #select_polygon, #remove_polygon{
+    width: 6px;
+    height: 6px;
+background:rgba(0, 60, 136, .55);
+border-radius: 4px;
+padding: 3px;
+    color: white;
+}
+.draw-hover:hover{
+background:rgba(0, 60, 136, .7)!important;
+}
+#filterbox{
+border-radius: 4px;
+padding: 2px;
+}

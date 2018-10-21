@@ -34,7 +34,7 @@ function menuBuilder(parent) {
             let child = 'C'+c.toString();
             let childHTML = childBuilder(eval("jsMenu[parent]."+[child]), child, parent);
             // console.log('  *** ** *' + parentHTML)
-            parentHTML = parentHTML + childHTML
+            parentHTML += childHTML
         }
         filterMenu = document.getElementById("accordion").innerHTML +=
             "<h5 class='respo-hover-blue nav parent "+parent+"'>" + jsMenu[parent].name + "</h5>" +
@@ -83,7 +83,9 @@ function childBuilder(child, shortChild, shortParent) {
         if (child.type === "slider") {
             itemHTML = sliderBuilder(child, shortChild, shortParent);
             childHTML=
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count s'>(" + child.total + ")</div></i></h6>" +
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;" +
+                "<i><div class='count s'>(" + child.total + ")</div></i>" +
+            "</h6>" +
             "<div id='" + child.name + "'>" +
                 "<div id='sliderwildcard'> "+itemHTML+
             " </div>" +
@@ -94,7 +96,9 @@ function childBuilder(child, shortChild, shortParent) {
             itemHTML = dateBuilder(child, shortChild, shortParent);
             // childHTML = itemHTML
             childHTML =
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count d'>(" + child.total + ")</div></i></h6>" +
+            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;" +
+                "<i><div class='count d'>(" + child.total + ")</div></i>" +
+            "</h6>" +
             "<div id='" + child.name + "'>" +
                 "<div> "+itemHTML+
                 // "<div id='datewildcard'> "+itemHTML+
@@ -196,7 +200,7 @@ function dDMFilterFunction(dropDownName, inputName) {
 $(document).ready(function (){
     let handlesSlider =  document.getElementsByClassName('slider');
     for (let s = 0; s < handlesSlider.length; s++){
-        console.log('s: ', s, handlesSlider[s])
+        // console.log('s: ', s, handlesSlider[s])
         let maxv = parseFloat(handlesSlider[s].attributes.maxv.value);
         let minv = parseFloat(handlesSlider[s].attributes.minv.value);
         if (!isNaN(maxv) && !isNaN(minv)) {
@@ -241,7 +245,8 @@ function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     }
     else {
         selectedIds = null;
-        showSelectionOnMap(0)
+        showSelectionOnMap(0);
+        getCountFromServer(selection);
         // clusterLayer.changed()
         // showAllPointsOnMap();
     }
@@ -279,7 +284,9 @@ function reset_filter(){
         document.getElementsByClassName('activeI')[0].classList.remove('activeI');
     }
     selectedIds = null;
-    showSelectionOnMap(0)
+    showSelectionOnMap(0);
+    // TODO: store the inicial numbers for each item and use it here instead of a new get request
+    getCountFromServer({});
     // clusterLayer.changed()
 }
 

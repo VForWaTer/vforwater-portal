@@ -15,7 +15,7 @@ form.respo-hover-white {margin: 0px}
 a.respo-hover-blue{padding: 0px}
 @media screen and (min-width: 993px) {.respo-navbar {padding-left: 300px;}}
 @media screen and (max-width: 992px) {.respo-navbar {padding-left: 0px;}}
-#filterbox, #select_catchment {display: none;}
+#filterbox, #select_catchment {display: block;}
 /*.respo-dropdown-hover {.respo-navbar {overflow: visible }}*/
 .respo-dropdown-content {min-width: 200px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
 
@@ -37,4 +37,26 @@ a.respo-hover-blue{padding: 0px}
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/*styles for the custom bottons on the map*/
+.custom-control {
+      top: 0.5em;
+    left: 2.9em;
+    position: absolute;
+  /*width: 70px;*/
+  /*height: 70px;*/
+  /*background: no-repeat url('http://openlayers.org/en/latest/examples/resources/logo-70x70.png')*/
+}
+/*.custom-control.ol-control {*/
+    /*position: absolute;*/
+    /*background-color: rgba(255, 255, 255, .4);*/
+    /*border-radius: 4px;*/
+    /*padding: 2px*/
+/*}*/
+.custom-control button {
+    position: absolute;
+    background-color: rgba(255, 255, 255, .4);
+    border-radius: 4px;
+    padding: 4px
 }
