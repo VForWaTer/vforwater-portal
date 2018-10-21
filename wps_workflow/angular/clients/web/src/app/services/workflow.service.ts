@@ -369,6 +369,7 @@ export class WorkflowService
             }
         }
 
+        /*
         //check for multiple inputs with edges and dataEdges
         if (workflow.edges && workflow.dataEdges)
         {
@@ -383,7 +384,7 @@ export class WorkflowService
                 }
             }
         }
-
+    */
 
         return WorkflowValidationResult.SUCCESSFUL;
     }

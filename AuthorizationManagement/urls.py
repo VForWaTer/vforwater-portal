@@ -1,8 +1,8 @@
 from django.urls import path
 # from AuthorizationManagement import views
 from django.urls.conf import re_path
-from .admin import resource_manager
-from .admin import user_manager
+from AuthorizationManagement.admin import resource_manager
+from AuthorizationManagement.admin import user_manager
 from AuthorizationManagement.views import *
 
 # for security reasons all urls are accessible only for logged in users
