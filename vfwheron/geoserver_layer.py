@@ -28,10 +28,10 @@ def create_layer(request, filename='rest_test', datastore='new_vforwater_gis', w
     :rtype:
     """
     xml = build_new_layer_XML(request, filename, datastore, workspace, srid)
-    url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
+    url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
-        logger.warning(str(build.status_code) + ': ' + build.text)
+        logger.warning('{}: {}'.format(build.status_code, build.text))
         # print('create layer: ', str(build.status_code) + ': ' + build.text)
 
 
@@ -47,10 +47,11 @@ def get_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CA
     :return:
     :rtype:
     """
-    url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
+    url = '{}/rest/workspaces/{}/datastores/{}/featuretypes/{}'.format(LOCAL_GEOSERVER, workspace, datastore, filename)
+    # url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
     build = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
     if build.status_code != 200:
-        logger.warning(str(build.status_code) + ': ' + build.text)
+        logger.warning('{}: {}'.format(build.status_code, build.text))
         # print('get layer (if): ', str(build.status_code) + ': ' + build.text)
         return False
     # print('get layer: ', str(build.status_code) + ': ' + build.text)
@@ -70,18 +71,20 @@ def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace=
     :rtype:
     """
     # first delete layer, then feature!
-    url = LOCAL_GEOSERVER + '/rest/layers/' + filename
+    url = '{}/rest/layers/{}'.format(LOCAL_GEOSERVER, filename)
     build = requests.delete(url, auth=(eval(SECRET_GEOSERVER)),
                             headers={'Content-type': 'application/json', 'Accept': 'application/json'})
     if build.status_code != 200:
-        logger.warning(str(build.status_code) + ': ' + build.text)
+        logger.warning('{}: {}'.format(build.status_code, build.text))
+        # logger.warning(str(build.status_code) + ': ' + build.text)
 
-    url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
+    url = '{}/rest/workspaces/{}/datastores/{}/featuretypes/{}'.format(LOCAL_GEOSERVER, workspace, datastore, filename)
+    # url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
     build = requests.delete(url, auth=(eval(SECRET_GEOSERVER)),
                             headers={'Content-type': 'application/json', 'Accept': 'application/json'})
     if build.status_code != 200:
-        logger.warning(str(build.status_code) + ': ' + build.text)
-
+        # logger.warning(str(build.status_code) + ': ' + build.text)
+        logger.warning('{}: {}'.format(build.status_code, build.text))
 
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in 'build_XML_from_ID'?)
 def build_new_layer_XML(request, filename, datastore, workspace, srid):
@@ -334,7 +337,8 @@ def create_ID_layer(request, filename='selection_test', selection=str(2557), dat
     :rtype:
     """
     xml = build_XML_from_ID(request, filename, selection, datastore, workspace, srid)
-    url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
+    # url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
+    url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
         logger.warning(str(build.status_code) + ': ' + build.text)
@@ -531,7 +535,8 @@ def create_data_layer(request, filename='selection_test', selection=str(2557), d
     :rtype:
     """
     xml = build_dataLayer(request, filename, selection, datastore, workspace, srid)
-    url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
+    url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
+    # url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
         logger.warning(str(build.status_code) + ': ' + build.text)
