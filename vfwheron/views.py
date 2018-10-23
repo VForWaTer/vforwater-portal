@@ -24,6 +24,9 @@ from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
 from django.views.generic import TemplateView
+from django.contrib import messages
+from django.template import RequestContext
+
 from future.builtins import isinstance
 
 from heron.settings import LOCAL_GEOSERVER
@@ -129,7 +132,7 @@ class HomeView(TemplateView):
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
 
-        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
+        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer, 'messages': messages.get_messages(self.request)}
 
 
 class menuView(TemplateView):
@@ -492,6 +495,18 @@ class ToggleLanguageView(View):
         logger.debug('translation test: {}'.format(translation.gettext("help")))
         return redirect('/')
 
+
+class FailedLoginView(View):
+    """
+    View for failed logins
+    """
+    def get(self, request):
+        #message = _("Login failed.")
+        #message = "Login failed."
+        #request.user.message_set.create(message = message)
+        messages.warning(request, 'Login failed.')
+        return redirect('vfwheron:home')
+    
 
 class GeoserverView(View):
     """
