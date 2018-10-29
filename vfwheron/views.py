@@ -24,6 +24,9 @@ from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
 from django.views.generic import TemplateView
+from django.contrib import messages
+from django.template import RequestContext
+
 from future.builtins import isinstance
 
 from heron.settings import LOCAL_GEOSERVER
@@ -102,13 +105,18 @@ class HomeView(TemplateView):
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
     # dataExt = get_bbox_from_data()
 
+# TODO: Test with users if this makes any sense
+    def set_layer_name(self):
+        if self.request.user.is_authenticated:
+            data_layer = 'default_layer'
+        else:
+            data_layer = 'default_layer_prod'
+        return data_layer
+
     # Put here everything you need at startup and for refresh
     def get_context_data(self, **kwargs):
 
-        if self.request.user.is_authenticated:
-            self.data_layer = 'default_layer'
-        else:
-            self.data_layer = 'default_layer_prod'
+        self.data_layer = self.set_layer_name()
 
         if not get_layer(self.data_layer):
             create_layer(self.request, self.data_layer)
@@ -124,7 +132,7 @@ class HomeView(TemplateView):
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
 
-        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer}
+        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer, 'messages': messages.get_messages(self.request)}
 
 
 class menuView(TemplateView):
@@ -238,17 +246,18 @@ class menuView(TemplateView):
             return JsonResponse(filter_menu)
 
         if 'filter_selection_map' in request.GET:
+            m_ids = None
             if json.loads(request.GET.get('filter_selection_map')) == 0:
-                ID_layer = HomeView.data_layer
+                ID_layer = HomeView.set_layer_name(self)
                 dataExt = get_bbox_from_data()
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                # print('meta ids: ', meta_ids['all_filters'])
                 ID_layer = 'ID_layer'  # + user
                 if get_layer(ID_layer):
                     delete_layer(ID_layer)
                 create_ID_layer(request, ID_layer, str(meta_ids['all_filters'])[1:-1])
+                m_ids = meta_ids['all_filters']
                 # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
                 # existing layers
                 # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
@@ -259,7 +268,7 @@ class menuView(TemplateView):
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': meta_ids['all_filters']})
+            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': m_ids})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
@@ -487,6 +496,18 @@ class ToggleLanguageView(View):
         return redirect('/')
 
 
+class FailedLoginView(View):
+    """
+    View for failed logins
+    """
+    def get(self, request):
+        #message = _("Login failed.")
+        #message = "Login failed."
+        #request.user.message_set.create(message = message)
+        messages.warning(request, 'Login failed.')
+        return redirect('vfwheron:home')
+    
+
 class GeoserverView(View):
     """
     Build URL to get layers from Geoserver
@@ -514,6 +535,9 @@ class GeoserverView(View):
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        # url = '{}/{}/ows?service={}&version=1.0.0&request=GetFeature&typeName={}:{}&outputFormat=application%2Fjson&' \
+        #       'srsname=EPSG:{}&bbox={},EPSG:{}'.format(LOCAL_GEOSERVER, workSpaceName, service, workSpaceName, layer,
+        #                                                srid, bbox, srid)
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))

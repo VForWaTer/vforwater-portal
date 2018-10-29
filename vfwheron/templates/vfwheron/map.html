@@ -31,12 +31,14 @@
 	<param id="dataExt" value ="{{ dataExt }}"></param> <!-- param to bridge data from view to js  -->
 	<param id="data_layer" value ="{{ data_layer }}"></param> <!-- param to bridge data from view to js  -->
 
-	<div class="respo-main respo-black respo-icon-bar" id="filterbox">
-		  <a href="javascript:void(0)" id="draw_polygon" class="respo-hover-white respo-hide-small" title="Draw"><i class="fa fa-square-o fa-fw"></i></a>
-		  <a href="javascript:void(0)" id="modify_polygon" class="respo-hover-white respo-hide-small" title="Edit"><i class="fa fa-edit fa-fw"></i></a>
-		  <a href="javascript:void(0)" id="select_polygon" class="respo-hover-white respo-hide-small" title="Select Drawing"><i class="fa fa-hand-pointer-o fa-fw"></i></a>
-		  <a href="javascript:void(0)" id="remove_polygon" class="respo-hover-white respo-hide-small" title="Remove"><i class="fa fa-trash fa-fw"></i></a>
-		  <a href="javascript:void(0)" id="draw_close" class="respo-hover-white respo-hide-small" title="Exit Drawing"><i class="fa fa-remove fa-fw"></i></a>
+	<div class="respo-center" id="filterbox" class="" style="display:none">
+{#        <dl>#}
+		  <a href="javascript:void(0)" id="draw_polygon" class="draw-hover" title="Draw"><i class="fa fa-square-o fa-fw"></i></a>
+		  <a href="javascript:void(0)" id="modify_polygon" class="draw-hover" title="Edit"><i class="fa fa-edit fa-fw"></i></a>
+{#		  <a href="javascript:void(0)" id="select_polygon" class="draw-hover" title="Select Drawing"><i class="fa fa-hand-pointer-o fa-fw"></i></a>#}
+		  <a href="javascript:void(0)" id="remove_polygon" class="draw-hover" title="Remove"><i class="fa fa-trash fa-fw"></i></a>
+		  <a href="javascript:void(0)" id="draw_close" class="respo-hover-white" title="Exit Drawing"><i class="fa fa-remove fa-fw"></i></a>
+		  {% comment %}
 		  <a href="javascript:void(0)" onclick="select_catchment_toggle()" class="respo-hover-white respo-hide-small" title="Select Catchment"><i class="fa fa-check-square-o fa-fw"></i></a>
 		  <a href="javascript:void(0)" onclick="filterbox_close()" class="respo-hover-red respo-hide-small respo-right" title="Close Toolbar"><i class="fa fa-remove fa-fw"></i></a>
 		  <select class="respo-select" id="select_catchment" autocomplete="off" onchange="select_catchment()">
@@ -45,6 +47,8 @@
 			<option value="River">Netherlands</option>
 			<option value="Soil">Luxembourg</option>
 		  </select>
+		  {% endcomment %}
+{#            </dl>#}
 	</div>
 		{# <input type="button" onclick="toggleLayer(vectorLayer)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp; #}
 
