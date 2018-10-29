@@ -5,6 +5,10 @@ vforwater-portal is open source virtual research environment written in django f
 ## System packages
 ### CentOS (& Redhat?)
 
+yum install python36
+
+#### old instructions: 
+
 Quick installation instructions for a clean CentOS installation. (Maybe some `geolibs` dependencies are missing.)
 
 Enable SCL repositories.
