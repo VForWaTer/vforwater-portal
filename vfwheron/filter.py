@@ -3,7 +3,7 @@ from django.db.models import Max, Min
 from heron.settings import DEBUG
 
 from vfwheron.models import TblMeta, TblVariable, LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblSensor, LtProject, \
-    NmMetaDomain, LtQuality
+    NmMetaDomain, LtQuality, LtLocation
 
 
 def build_select_filters(menu, filter_selection):
@@ -276,7 +276,6 @@ class Table:
         :return:
         :rtype:
         """
-        # print(' + + + + + + + default_query: ', self.default_query)
         for columns in self.child_columns:
             # if else when you want filter for default user
             # if self.table_name.path:
@@ -290,14 +289,10 @@ class Table:
             #     # print('query2: ', query2)
             # else:
             #     query_set = self.default_query.values_list(columns, flat=True).distinct()
-
-            query_set = self.table_name.objects.select_related().values_list(columns, flat=True).distinct()
-            # if not (len(query_set) <= 1 and query_set[0] is None):
-            # print('*** 1: ', query_set)
-            # print('*** 2: ', self.table_name.objects.select_related().values_list(columns, flat=True).distinct())
+            excluder = {'{0}'.format(columns): None}
+            query_set = list(self.table_name.objects.select_related().distinct().exclude(**excluder).values_list(columns, flat=True))
             if len(query_set) > 0:
-                if not (len(query_set) == 1 and query_set[0] is None):
-                    self.child[columns] = query_set
+                self.child[columns] = query_set
 
 
     def get_query_path(self):
@@ -417,8 +412,8 @@ class Table:
         counter = 0
         total = len(self.child[grand_child])
         keyword = self.query_paths[grand_child]
-        kwargs = {'{0}'.format(keyword): 'NaN',
-                  '{0}'.format(keyword): None}
+        exclNaN = {'{0}'.format(keyword): 'NaN'}
+        exclNone = {'{0}'.format(keyword): None}
         min = {'{0}'.format('min_value'): Min(keyword)}
         max = {'{0}'.format('max_value'): Max(keyword)}
         # total = eval("TblMeta.objects.filter(" + grand_child + ").count()")
@@ -426,7 +421,9 @@ class Table:
             # min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
             #                "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
             #                self.query_paths[grand_child] + "'))")
-            min_max = TblMeta.objects.exclude(**kwargs).aggregate(**min, **max)
+            min_max = TblMeta.objects.exclude(**exclNaN).exclude(**exclNone).aggregate(**min, **max)
+            # min_max = TblMeta.objects.exclude(**kwargs).aggregate(**min, **max)
+            # print('kwargs: ', kwargs)
         except ValueError:
             # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] +
             #                "'), max_value=Max('" + self.query_paths[grand_child] + "'))")

@@ -1,8 +1,7 @@
 let zoomToExt;
 let wfsLayerName;
 let selectedIds = null;
-let olmap, hit_cL;
-let drawMode = false;  // flag to avoid interaction with data while drawing
+let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
 
 //Create own base layer
@@ -30,6 +29,7 @@ function create_map() {
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
 
+    /* get data points */
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
@@ -55,14 +55,19 @@ function create_map() {
         strategy: ol.loadingstrategy.bbox
     });
 
-// Elements that make up the popup.
+    /* Elements that make up the popup. */
     let container = document.getElementById('popup');
     let content = document.getElementById('popup-content');
     let paginat = document.getElementById('popup-paginat')
     let closer = document.getElementById('popup-closer');
-
-// Create an metaData_Overlay to anchor the popup to the map.
-    let metaData_Overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+    /* Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
+    closer.onclick = function () {
+        metaData_Overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+    };
+    /* Create an metaData_Overlay to anchor the popup to the map. */
+    let metaData_Overlay = new ol.Overlay(/* @type {olx.OverlayOptions} */ ({
         element: container,
         autoPan: true,
         autoPanAnimation: {
@@ -70,15 +75,8 @@ function create_map() {
         }
     }));
 
-    /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
-    closer.onclick = function () {
-        metaData_Overlay.setPosition(undefined);
-        closer.blur();
-        return false;
-    };
-
-    // Animated cluster layer
-    let clusterLayer = new ol.layer.AnimatedCluster({
+    /* Make (animated) cluster layer from data points */
+    clusterLayer = new ol.layer.AnimatedCluster({
         name: 'Cluster',
         source: new ol.source.Cluster({
             distance: 30,
@@ -88,9 +86,33 @@ function create_map() {
         // Cluster style
         style: getStyle
     });
+    hiddenLayer = new ol.layer.Vector({
+        renderMode: 'image',
+        source: wfsPointSource,
+        style: new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 5,
+                    stroke: new ol.style.Stroke({
+                            color: 'green',
+                            width: 2.5
+                        }),
+                    fill: new ol.style.Fill({
+                            color: 'yellow'
+                        })
+                }),
+                text: new ol.style.Text({
+                    text: 4,
+                    font: '12px helvetica,sans-serif',
+                    fill: new ol.style.Fill({
+                        color: 'red'
+                    })
+                })
+            })
+    });
+
 
     // Style for selection/single circles around cluster
-    let img = new ol.style.Circle({
+/*    let img = new ol.style.Circle({
         radius: 8,
         stroke: new ol.style.Stroke({
             color: '#00BAEE',
@@ -107,11 +129,10 @@ function create_map() {
             color: '#AADDF9',
             width: 1
         })
-    });
+    });*/
 
-
+    /* build style for cluster */
     let styleCache = {};
-
     function getStyle(feature) {
         let size = feature.get('features').length;
         let style = styleCache[size];
@@ -138,6 +159,8 @@ function create_map() {
         }
         return [style];
     }
+
+    /* functionality for zoom to extent button */
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
         tipLabel: 'Zoom to your available data',
@@ -145,6 +168,7 @@ function create_map() {
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
+    /* build app for box with drawbuttons */
     window.cApp = {};
     let cApp = window.cApp;
     cApp.drawControls = function() {
@@ -157,8 +181,7 @@ function create_map() {
     };
     ol.inherits(cApp.drawControls, ol.control.Control);
 
-
-
+    /* Initialise map */
     let map_tar = document.getElementById("map");
     olmap = new ol.Map({
         // renderer: 'canvas',
@@ -183,32 +206,16 @@ function create_map() {
         view: mapView//dataview
     });
 
-// get information about your data in a popup when you click on a data point in the map
+    /* get information about your data in a popup when you click on a data point in the map */
     olmap.on('singleclick', checkMode);
     // check what is clicked
     function checkMode(evt) {
-       console.log('drawMode checkMode: ', drawMode)
-        console.log('hit_cL: ', hit_cL)
         if (hit_cL) {
             buildPopup(evt)
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
     }
-/*
-    olmap.on('pointermove', function (evt) {
-        if (evt.dragging) {
-            return;
-        }
-        let pixel = olmap.getEventPixel(evt.originalEvent);
-        let hit = olmap.forEachLayerAtPixel(pixel, function (feature) {return feature;},
-            {layerFilter: function (layer) {
-                return layer === clusterLayer
-            }}
-        );
-        olmap.getTargetElement().style.cursor = hit ? 'pointer' : '';
-    });*/
-
     function buildPopup(evt) {
         // if (olmap.getFeaturesAtPixel(evt.pixel)) {
         // Create spinning loader while getting meta data from server
@@ -415,7 +422,7 @@ function create_map() {
         });
     olmap.addInteraction(selectCluster);*/
 
-    // change cursor to pointer when hover over data
+    /* change cursor to pointer when hover over data */
     olmap.on('pointermove', function (evt) {
         if (evt.dragging) {
             return;
