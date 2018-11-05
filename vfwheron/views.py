@@ -70,7 +70,7 @@ def get_dataset(self, request, **kwargs):
     :return:
     :rtype:
     """
-    # here 
+    # here
     id = request.POST.get('meta_id')
 
     data = TblData.objects.get(meta=id).value
@@ -103,9 +103,10 @@ class HomeView(TemplateView):
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+
     # dataExt = get_bbox_from_data()
 
-# TODO: Test with users if this makes any sense
+    # TODO: Test with users if this makes any sense
     def set_layer_name(self):
         if self.request.user.is_authenticated:
             data_layer = 'default_layer'
@@ -132,7 +133,8 @@ class HomeView(TemplateView):
             dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
 
-        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer, 'messages': messages.get_messages(self.request)}
+        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
+                'messages': messages.get_messages(self.request)}
 
 
 class menuView(TemplateView):
@@ -222,12 +224,12 @@ class menuView(TemplateView):
             for k in ids:
                 preview['id'].append(k)
                 imgtag = TblMeta.objects.filter(id=str(k)).values(*field)
-                
+
                 for i in imgtag[0]:
                     # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
                     preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
-                                                                                                i] is not None else \
-                    preview[translation.gettext(field_name[i])].append('-')
+                                                                                                 i] is not None else \
+                        preview[translation.gettext(field_name[i])].append('-')
 
             # remove rows only containing no value:
             comparelist = ['-'] * len(ids)
@@ -240,6 +242,7 @@ class menuView(TemplateView):
 
             return JsonResponse({'get': preview})  # requested from map.js show_info
 
+# get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
         if 'filter_selection' in request.GET:
             filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'],
                                                          json.loads(request.GET.get('filter_selection')))
@@ -301,6 +304,7 @@ class DatasetDownloadView(TemplateView):
         """
         store = 'new_vforwater_gis'
         workspace = 'CAOS_update'
+
         def get_metadata(id):
             """
             the metadata for export includes only the values that are also used for filtering.
@@ -337,7 +341,7 @@ class DatasetDownloadView(TemplateView):
         # TODO: test if shp file is correct
         if 'shp' in request.GET:
             id = request.GET.get('shp')
-            layer_name = 'shp'+id
+            layer_name = 'shp' + id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
             # create layer on geoserver to request shp file
@@ -345,7 +349,8 @@ class DatasetDownloadView(TemplateView):
 
             # use GEOSERVER shape-zip
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
-                  '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
+                                                      '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' \
+                  + layer_name + \
                   '&outputFormat=shape-zip&srsname=EPSG:' + srid
             request = requests.get(url)
 
@@ -359,17 +364,18 @@ class DatasetDownloadView(TemplateView):
             delete_layer(layer_name, store, workspace)
             return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
 
-# TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
+        # TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
-            layer_name = 'XML_'+id
+            layer_name = 'XML_' + id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
             create_ID_layer(request, layer_name, id, store, workspace)
 
             # use GEOSERVER GML
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
-                  '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
+                                                      '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' \
+                  + layer_name + \
                   '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' + srid
 
             request = urllib.request.Request(url)
@@ -506,7 +512,7 @@ class FailedLoginView(View):
         #request.user.message_set.create(message = message)
         messages.warning(request, 'Login failed.')
         return redirect('vfwheron:home')
-    
+
 
 class GeoserverView(View):
     """
@@ -535,7 +541,8 @@ class GeoserverView(View):
         url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
               '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
               '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-        # url = '{}/{}/ows?service={}&version=1.0.0&request=GetFeature&typeName={}:{}&outputFormat=application%2Fjson&' \
+        # url = '{}/{}/ows?service={}&version=1.0.0&request=GetFeature&typeName={}:{
+        # }&outputFormat=application%2Fjson&' \
         #       'srsname=EPSG:{}&bbox={},EPSG:{}'.format(LOCAL_GEOSERVER, workSpaceName, service, workSpaceName, layer,
         #                                                srid, bbox, srid)
         request = urllib.request.Request(url)

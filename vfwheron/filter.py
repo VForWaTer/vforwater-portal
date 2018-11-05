@@ -1,10 +1,11 @@
 import json
+import logging
 from django.db.models import Max, Min
 from heron.settings import DEBUG
 
 from vfwheron.models import TblMeta, TblVariable, LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblSensor, LtProject, \
     NmMetaDomain, LtQuality, LtLocation
-
+logger = logging.getLogger(__name__)
 
 def build_select_filters(menu, filter_selection):
     """
@@ -22,11 +23,17 @@ def build_select_filters(menu, filter_selection):
     # build the django filter for every selection separately
     for parent in filter_selection:
         for child in filter_selection[parent]:
-            item = filter_selection[parent][child]
-
-            path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else \
-                menu[parent][child]['column']
-            value = menu[parent][child][item]['name']
+            item = filter_selection[parent][child]  # 'I1'
+            if isinstance(item, str):
+                path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else \
+                    menu[parent][child]['column']
+                value = menu[parent][child][item]['name']  # e.g. 'net radiation'
+            elif isinstance(item, list):
+                path = 'id__in'
+                value = filter_selection[parent][child]
+            else:
+                # logger.debug('Unknown type of item.')
+                print('Unknown type of item.')
 
             # TODO: maybe use intersection to store previous queries (compare performance of both)
             # TODO: also compare .filter(x).filter(y) vs .filter(x,y). Result seems to be equal (But shouldn't!?). Time?
@@ -62,9 +69,15 @@ def build_id_list(menu, filter_selection):
     for parent in filter_selection:
         for child in filter_selection[parent]:
             item = filter_selection[parent][child]
-
-            path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
-            value = menu[parent][child][item]['name']
+            if isinstance(item, str):
+                path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
+                value = menu[parent][child][item]['name']
+            elif isinstance(item, list):
+                path = 'id__in'
+                value = filter_selection[parent][child]
+            else:
+                # logger.debug('Unknown type of item.')
+                print('Unknown type of item.')
 
             query_filters.update({'{0}'.format(path): value})
 
@@ -133,7 +146,11 @@ class Menu:
 
     # The order here is used as order for the menu on the client
     # menu_list = [LtDomain, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
-    menu_list = [LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
+    # #queries [LtLocation(2), LtLicense(10), LtQuality(8), LtSite(47), LtSoil(8), LtUser(17), TblMeta(307), TblSensor(18), TblVariable(19)]
+    # => TODO: TblMeta holds information about time of dataset => write view/something to reduce queries!
+    # TODO: Check queries in detail (LtLocation is okay!)
+    menu_list = [LtLocation, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblSensor, TblVariable]
+    # menu_list = [LtLocation, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
 
     def __init__(self, user='default'):
         """
@@ -188,6 +205,7 @@ class Menu:
             # map_table = whole_menu.map_child
             if json_table['total'] >= self.min_amount:
                 count = count + 1
+
                 menu_dict = {
                     'name': table.menu_name,
                     'total': json_table['total'],
@@ -199,6 +217,9 @@ class Menu:
                     'name': table.menu_name,
                     'path': table.path,
                     }
+                if getattr(table, 'filter_type', None):
+                    map_dict['filter'] = table.filter_type
+
                 map_dict.update(map_table['C'])
                 menu_map.update({'P' + str(count): map_dict})
 
@@ -263,11 +284,11 @@ class Table:
         :rtype:
         """
         try:
-            self.table_name.filter_type
+            self.filter_type = self.table_name.filter_type
         except AttributeError:
             self.filter_type = {}
-        else:
-            self.filter_type = self.table_name.filter_type
+        # else:
+        #     self.filter_type = self.table_name.filter_type
 
 
     def get_query_set(self):
@@ -338,6 +359,8 @@ class Table:
                         # TODO: Check if https://docs.djangoproject.com/en/2.0/ref/models/querysets/#prefetch-related can help
                         result = self.build_recursive_json(grand_child)
                         recursive = True
+                    elif switch == 'draw':
+                        result = self.build_draw_json(grand_child)
                 else:
                     result = self.build_default_json(grand_child)
 
@@ -346,8 +369,8 @@ class Table:
                     json_all_childs = result['json']
                     map_all_childs = result['server']
                 else:
-                    # print('* * * * * grand_child: ', grand_child)
-                    # print('* * * * * result["total"]: ', result['total'])
+                    print('* * * * * grand_child: ', grand_child)
+                    print('* * * * * result["total"]: ', result['total'])
                     grandchilds.update(
                             dict(name=self.table_name.column_dict[grand_child], total=result['total']))
                     map_grandchilds.update({
@@ -437,7 +460,6 @@ class Table:
             'selectable_min': str(min_max['min_value']),
             'selectable_max': str(min_max['max_value']),
             }
-
         map_grandchild_dict = {
             'type': 'slider',
             'selectable_min': str(min_max['min_value']),
@@ -562,6 +584,42 @@ class Table:
 
         # if there are no values for the submenu, return nothing
         return {'json': all_childs, 'total': child_counter, 'server': map_childs}
+
+
+    def build_draw_json(self, grand_child):
+        """
+
+        :param grand_child:
+        :type grand_child:
+        :return:
+        :rtype:
+        """
+        # types = TblMeta.objects.values_list('geometry__geometry_type', flat=True).distinct().exclude(geometry__geometry_type=None)
+        all_grandchilds = {}
+        map_grandchilds = {}
+        counter = 0
+        # for values in self.child[grand_child]:  # for now only for POINT data
+        values = 'POINT'
+        # total = TblMeta.objects.filter(geometry__geometry_type=values).count()
+        filtermap = {'{0}'.format(self.query_paths[grand_child]): values}
+        total = TblMeta.objects.filter(**filtermap).count()
+        grandchild_dict = {
+            'type': 'draw',
+            'name': values,
+            'total': total,
+            # 'chosen': False,
+            }
+        map_grandchild_dict = {
+            'type': 'draw',
+            'name': values,
+            }
+
+        if total >= self.min_amount:
+            counter = counter + 1
+            # all_grandchilds.update({'I' + str(counter): grandchild_dict})
+            # map_grandchilds.update({'I' + str(counter): map_grandchild_dict})
+        # if there are no values for the submenu, return nothing
+        return {'json': grandchild_dict, 'total': counter, 'server': map_grandchilds}
 
 
     def print_properties(self):

@@ -226,13 +226,14 @@ function create_map() {
         let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
         let pos = evt.coordinate;
         let l = clickedFeatures.length;
+        let wfsLen = wfsLayerName.length;
         if (l > 0 && l <= nCol) { // check how many datasets are selected
             let ids = [];
             let name, id;
             // bulid list with selection to send to server
             for (let i = 0; i < l; i++) {
                 name = clickedFeatures[i].getId();
-                id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+                id = parseInt(name.substr(wfsLen + 1, 8));
                 ids.push(id);
             }
             popupContent(ids, pos);
@@ -250,7 +251,7 @@ function create_map() {
                     idDict[page]=[];
                 }
                 name = clickedFeatures[i].getId();
-                id = parseInt(name.substr(wfsLayerName.length + 1, 8));
+                id = parseInt(name.substr(wfsLen + 1, 8));
                 ids.push(id);
                 idDict[page].push(id);
 
@@ -306,7 +307,7 @@ function create_map() {
                     pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
                         'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
                 } else {
-                    pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
+                    pagi += '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
                         'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
                 }
             }
@@ -339,8 +340,8 @@ function create_map() {
                 metaData_Overlay.setPosition(undefined)
                 alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
                     "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
-                    "Din forespørsel kan ikke utføres!\nدرخواست شما نمی تواند اعدام شود!\n" +
-                    "Är Ufro net duerchgefouert ginn!\nВаш запрос не может быть выполнен!")
+                    "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
+                    "Är Ufro net duerchgefouert ginn!\nدرخواست شما نمی تواند اجرا شود!")
             })
         // });
 
@@ -352,22 +353,23 @@ function create_map() {
         let buttonId = [];
         // loop over "properties" dict with metadata, build columns
         for (let j in properties) {
-            let values = eval('properties["' + j + '"]');
+            // let values = eval('properties["' + j + '"]');
+            let values = properties[j];
             valueLen = values.length;
-            popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
+            popUpText += `<tr><td><b>${j}</b></td>`;
             // loop over dict values and build rows
             for (let k = 0; k < valueLen; k++) {
-                popUpText = popUpText + '<td>' + values[k] + '</td>';
+                popUpText += `<td>${values[k]}</td>`;
                 if (j.toLowerCase() == 'id') {
                     buttonId.push(values[k])
                 }
             }
-            popUpText = popUpText + '</tr>'
+            popUpText += '</tr>'
         }
-        popUpText = popUpText + '<tr><td><b></b></td>';
+        popUpText += '<tr><td><b></b></td>';
         // build buttons for each dataset
         for (let k = 0; k < valueLen; k++) {
-            popUpText = popUpText + '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
+            popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
                 'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
                 'title="Attention! Loading the preview might take a while."></b></a>' +
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +

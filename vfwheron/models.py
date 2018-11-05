@@ -63,6 +63,7 @@ class LtLicense(models.Model):
     license_name = models.CharField(max_length=255)
     legal_text = models.TextField(blank=True, null=True)
     text_url = models.CharField(max_length=255, blank=True, null=True)
+    # TODO: Try to reduse flags in a table and use choices instead: https://steelkiwi.com/blog/best-practices-working-django-models-python/
     access = models.BooleanField()
     share = models.BooleanField()
     edit = models.BooleanField()
@@ -88,18 +89,20 @@ class LtLocation(models.Model):
     """
 
     """
-    centroid_x = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    centroid_y = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    centroid_x = models.DecimalField("X-Coordinate", max_digits=65535, decimal_places=65535, blank=True, null=True)
+    centroid_y = models.DecimalField("Y-Coordinate", max_digits=65535, decimal_places=65535, blank=True, null=True)
     srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid', blank=True, null=True)
-    geometry_type = models.CharField(max_length=15, blank=True, null=True)
+    geometry_type = models.CharField("Geometry", max_length=15, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
     geom = models.GeometryField(unique=True, srid=0)
 
-    column_dict = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
+    column_dict = {'geometry_type': 'Geometry'}
+    # column_dict = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
     menu_name = 'Location'
-    path = 'location'
-    filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider'}
+    path = 'geometry'
+    filter_type = {'geometry_type': 'draw'}
+    # filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider', 'geom': 'draw'}
 
 
     def __str__(self):
@@ -140,8 +143,8 @@ class LtQuality(models.Model):
     """
 
     """
-    flag_name = models.CharField(max_length=25)
-    flag_weight = models.IntegerField(blank=True, null=True)
+    flag_name = models.CharField("flag", max_length=25)
+    flag_weight = models.IntegerField("quantifier", blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
@@ -166,8 +169,8 @@ class LtSite(models.Model):
     """
     site_name = models.CharField(max_length=65, blank=True, null=True)
     elevation = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    rel_height = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    orientation_degree = models.IntegerField(blank=True, null=True)
+    rel_height = models.DecimalField("relative height", max_digits=65535, decimal_places=65535, blank=True, null=True)
+    orientation_degree = models.IntegerField("orientation", blank=True, null=True)
     slope = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     landuse = models.CharField(max_length=65, blank=True, null=True)
     site_comment = models.TextField(blank=True, null=True)
@@ -182,8 +185,7 @@ class LtSite(models.Model):
     menu_name = 'Site'
     path = 'site'
     filter_type = {
-        'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
-        'slope': 'slider'
+        'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider', 'slope': 'slider'
     }
 
 
@@ -248,7 +250,7 @@ class LtUnit(models.Model):
     """
 
     """
-    unit_name = models.CharField(unique=True, max_length=65)
+    unit_name = models.CharField("unit", unique=True, max_length=65)
     unit_abbrev = models.CharField(max_length=15)
     unit_symbol = models.CharField(max_length=5)
     derived_si = models.NullBooleanField()
@@ -276,10 +278,10 @@ class LtUser(models.Model):
     is_institution = models.BooleanField()
     first_name = models.CharField(max_length=65, blank=True, null=True)
     last_name = models.CharField(max_length=65, blank=True, null=True)
-    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    institution_name = models.CharField("institution", max_length=255, blank=True, null=True)
     department = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=60, blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField("user Comment", blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
@@ -317,7 +319,7 @@ class SpatialRefSys(models.Model):
     """
 
     """
-    srid = models.IntegerField(primary_key = True)
+    srid = models.IntegerField(primary_key=True)
     auth_name = models.CharField(max_length=255, blank=True, null=True)
     auth_srid = models.IntegerField(blank=True, null=True)
     srtext = models.TextField(blank=True, null=True)
@@ -376,8 +378,8 @@ class TblMeta(models.Model):
     """
 
     """
-    ts_start = models.DateTimeField(blank=True, null=True)
-    ts_stop = models.DateTimeField(blank=True, null=True)
+    ts_start = models.DateTimeField("start of measurement", blank=True, null=True)
+    ts_stop = models.DateTimeField("end of measurement", blank=True, null=True)
     external_id = models.CharField(max_length=255, blank=True, null=True)
     support = models.CharField(max_length=255, blank=True, null=True)
     spacing = models.CharField(max_length=255, blank=True, null=True)
