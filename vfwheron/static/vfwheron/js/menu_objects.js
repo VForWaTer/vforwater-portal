@@ -118,7 +118,7 @@ function childBuilder(child, shortChild, shortParent) {
                 childHTML=
                     `<div id='${child.name}'>
                         <h6 class='respo-hover-blue nav child count m${shortParent} ${shortParent} ${shortChild}'>
-                        </h6>${child.name}&emsp;(${child.total}): ${itemHTML}
+                        </h6>${child.name}&emsp;<i><div class='count'>(${child.total})</div></i>: ${itemHTML}
                     </div>`;
                 break;
 /*            "<h6 class='respo-hover-blue child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;" +
@@ -185,7 +185,8 @@ function sliderBuilder(child, shortChild, shortParent) {
 /* build a button to open the draw menue */
 function drawBuilder(child, shortChild, shortParent) {
     // return `<a class='respo-hover-blue btn' onClick="draw_polygon(\''+child+'\',\''+shortParent+'\',\''+shortChild+'\')" id="toggle_draw" title="Click here to select from drawing">Open draw menu</a>`;
-    return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")' id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
+    return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")' 
+            id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
     // return `<a class='respo-hover-blue btn' onClick='draw_polygon("${shortParent}","${shortChild}")' id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
 }
 
@@ -372,23 +373,24 @@ function getCountFromServer(selection) {
 
 /* updates the numbers for each item */
 function updateCounts(json) {
-    let parent, child, item;
+    let parent, child, item, itemHTML, jpc;
     for (parent in json) {
         child = '';
         for (child in json[parent]) {
             item = '';
-            for (item in json[parent][child]) {
-                // itemHTML = eval("document.getElementsByClassName('"+parent+" "+ child+ " "+ item+"')");
-                itemHTML = document.getElementsByClassName(parent+" "+ child+ " "+ item);
-                itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+json[parent][child][item]+")"
-                if (json[parent][child][item] == '0'){
-                // console.log('candidate for a "disable" option? itemHTML[0]', itemHTML[0], json[parent][child][item])
-                //  respo-disabled classList.add
+            jpc = json[parent][child];
+            for (item in jpc) {
+                itemHTML = document.getElementsByClassName(`${parent} ${child} ${item}`);
+                itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+jpc[item]+")";
+                if (jpc[item] == '0'){
                     itemHTML[0].classList.add('respo-disabled')
                 }
                 else if (itemHTML[0].classList.contains('respo-disabled')) {
                     itemHTML[0].classList.remove('respo-disabled')
                 }
+            }
+            if (item == '' && typeof(jpc) == 'number') {
+                document.getElementsByClassName(`${parent} ${child} count`)[0].nextElementSibling.innerHTML = `(${jpc})`
             }
         }
     }

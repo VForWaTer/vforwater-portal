@@ -7,6 +7,28 @@ from vfwheron.models import TblMeta, TblVariable, LtDomain, LtLicense, LtSite, L
     NmMetaDomain, LtQuality, LtLocation
 logger = logging.getLogger(__name__)
 
+
+def _build_path_value_pair(parent_menu, child, item):
+    """
+
+    :param parent_menu:
+    :param child:
+    :param item:
+    :return:
+    """
+    if isinstance(item, str):
+        path = parent_menu['path'] + "__" + parent_menu[child]['column'] if parent_menu['path'] != '' else \
+            parent_menu[child]['column']
+        value = parent_menu[child][item]['name']  # e.g. 'net radiation'
+    elif isinstance(item, list):
+        path = 'id__in'
+        value = item
+    else:
+        # logger.debug('Unknown type of item.')
+        print('Unknown type of item.')
+    return {'path': path, 'value': value}
+
+
 def build_select_filters(menu, filter_selection):
     """
 
@@ -23,22 +45,12 @@ def build_select_filters(menu, filter_selection):
     # build the django filter for every selection separately
     for parent in filter_selection:
         for child in filter_selection[parent]:
-            item = filter_selection[parent][child]  # 'I1'
-            if isinstance(item, str):
-                path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else \
-                    menu[parent][child]['column']
-                value = menu[parent][child][item]['name']  # e.g. 'net radiation'
-            elif isinstance(item, list):
-                path = 'id__in'
-                value = filter_selection[parent][child]
-            else:
-                # logger.debug('Unknown type of item.')
-                print('Unknown type of item.')
+            query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
 
             # TODO: maybe use intersection to store previous queries (compare performance of both)
             # TODO: also compare .filter(x).filter(y) vs .filter(x,y). Result seems to be equal (But shouldn't!?). Time?
-            short_filter.update( {path: value})
-            long_filter.update({parent + child: {path: value}})
+            short_filter.update( {query_pair['path']: query_pair['value']})
+            long_filter.update({parent + child: {query_pair['path']: query_pair['value']}})
 
     # build filters for the menu with all selections, and filters with the selection missing where the user selected it
     # (to prevent zero values where the user made a selection)
@@ -68,18 +80,11 @@ def build_id_list(menu, filter_selection):
     query_filters = {}
     for parent in filter_selection:
         for child in filter_selection[parent]:
-            item = filter_selection[parent][child]
-            if isinstance(item, str):
-                path = menu[parent]['path'] + "__" + menu[parent][child]['column'] if menu[parent]['path'] != '' else menu[parent][child]['column']
-                value = menu[parent][child][item]['name']
-            elif isinstance(item, list):
-                path = 'id__in'
-                value = filter_selection[parent][child]
-            else:
-                # logger.debug('Unknown type of item.')
-                print('Unknown type of item.')
+            query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
 
-            query_filters.update({'{0}'.format(path): value})
+            query_filters.update({'{0}'.format(query_pair['path']): query_pair['value']})
+            print('--------------------')
+            print(list(TblMeta.objects.filter(**query_filters).values_list('id', flat=True)))
 
     return {'all_filters': list(TblMeta.objects.filter(**query_filters).values_list('id', flat=True))}
 
@@ -106,7 +111,7 @@ class FilterMethods:
         query_filter = build_select_filters(menu, filter_selection)
         std_query = TblMeta.objects.filter(**query_filter['filters'])
         filtermap = query_filter['active_f']
-        # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user
+        # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user)
         for parent in menu:
             c = 1
             child_result = {}
@@ -116,10 +121,17 @@ class FilterMethods:
                 query1 = TblMeta.objects.filter(**filtermap[parent + "C" + str(c)]) if parent + "C" + str(c) in filtermap else std_query
                 item_result = {}
                 i = 1
-                while "I" + str(i) in child:
-                    filter_items = {'{0}'.format(path): child["I" + str(i)]['name']}
-                    item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
-                    i += 1
+                type = child.get('type')
+                if type == None:
+                    while "I" + str(i) in child:
+                        filter_items = {'{0}'.format(path): child["I" + str(i)]['name']}
+                        item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
+                        i += 1
+                elif type == 'draw':
+                    filter_items = {'{0}'.format(path): child['name']}
+                    item_result = query1.filter(**filter_items).count()
+                else:
+                    print('Adjust your filter.py selection_counts to type: ', type)
                 child_result.update({"C" + str(c): item_result})
                 c += 1
             result.update({parent: child_result})
@@ -595,8 +607,6 @@ class Table:
         :rtype:
         """
         # types = TblMeta.objects.values_list('geometry__geometry_type', flat=True).distinct().exclude(geometry__geometry_type=None)
-        all_grandchilds = {}
-        map_grandchilds = {}
         counter = 0
         # for values in self.child[grand_child]:  # for now only for POINT data
         values = 'POINT'
@@ -619,7 +629,7 @@ class Table:
             # all_grandchilds.update({'I' + str(counter): grandchild_dict})
             # map_grandchilds.update({'I' + str(counter): map_grandchild_dict})
         # if there are no values for the submenu, return nothing
-        return {'json': grandchild_dict, 'total': counter, 'server': map_grandchilds}
+        return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
 
 
     def print_properties(self):
