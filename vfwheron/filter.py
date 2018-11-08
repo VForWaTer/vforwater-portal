@@ -68,7 +68,7 @@ def build_select_filters(menu, filter_selection):
 
 def build_id_list(menu, filter_selection):
     """
-
+    Build list of IDs needed to create in geoserver a layer with the selected elements
     :param menu:
     :type menu:
     :param filter_selection:
@@ -80,11 +80,13 @@ def build_id_list(menu, filter_selection):
     query_filters = {}
     for parent in filter_selection:
         for child in filter_selection[parent]:
-            query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
+            try:
+                if 'draw' in menu[parent][child]['type']:  # following https://docs.python.org/3/glossary.html#term-eafp
+                    None
+            except KeyError:
+                query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
 
-            query_filters.update({'{0}'.format(query_pair['path']): query_pair['value']})
-            print('--------------------')
-            print(list(TblMeta.objects.filter(**query_filters).values_list('id', flat=True)))
+                query_filters.update({'{0}'.format(query_pair['path']): query_pair['value']})
 
     return {'all_filters': list(TblMeta.objects.filter(**query_filters).values_list('id', flat=True))}
 
@@ -154,7 +156,12 @@ class FilterMethods:
 
 
 class Menu:
-    """"""
+    """
+    Class to build the menu for server and client from the models.
+    The used Tables are defined in the menu_list.
+    The hierarchical structure of the menu is Parent - Child - Item, where Parents are the respective tables,
+    Childs represent the columns and Items the content of a column.
+    """
 
     # The order here is used as order for the menu on the client
     # menu_list = [LtDomain, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
@@ -188,6 +195,7 @@ class Menu:
 
         :return:
         :rtype:
+        Build a base query set for the respective user
         """
         if self.user == 'default':
             query_set = TblMeta.objects.filter(license__share=True).all()
@@ -205,6 +213,7 @@ class Menu:
         :type user:
         :return:
         :rtype:
+        Function to build the actual menu
         """
         # print('ACHTUNG!!! DU BAUST EIN MENU!!!')  # One line to check how often this is accessed        count = 0
         json_menu = {}  # menu for client
@@ -234,6 +243,8 @@ class Menu:
 
                 map_dict.update(map_table['C'])
                 menu_map.update({'P' + str(count): map_dict})
+        # print('menu_map: ', menu_map)
+        # print('json_menu: ', json_menu)
 
         return {'client': json_menu, 'server': menu_map}
 
@@ -260,8 +271,11 @@ class Menu:
 # TODO: Check how often 'get_filter_type' and the others are called; Shall they be properties?
 class Table:
     """
-
+    Class to get all information from each table (that is used for the menu) to build the menu.
+    The models define which columns should be shown in the menu. Here the necessary information for django
+    to build queries for the columns of interest is brought together.
     """
+    # TODO: IMPORTANT! default query should be used with a query for a default user
     default_query = TblMeta.objects.select_related().filter(license__share=True)
 
 
@@ -294,11 +308,13 @@ class Table:
 
         :return:
         :rtype:
+        check if an entry in the table has a special type, so there is need for a special filter, e.g. slider, date, draw
         """
         try:
             self.filter_type = self.table_name.filter_type
         except AttributeError:
             self.filter_type = {}
+
         # else:
         #     self.filter_type = self.table_name.filter_type
 
@@ -333,6 +349,7 @@ class Table:
 
         :return:
         :rtype:
+        Build the path to a column of a table for a django query
         """
         self.query_paths = {}
         for columns in self.child_columns:
@@ -381,8 +398,8 @@ class Table:
                     json_all_childs = result['json']
                     map_all_childs = result['server']
                 else:
-                    print('* * * * * grand_child: ', grand_child)
-                    print('* * * * * result["total"]: ', result['total'])
+                    # print('* * * * * grand_child: ', grand_child)
+                    # print('* * * * * result["total"]: ', result['total'])
                     grandchilds.update(
                             dict(name=self.table_name.column_dict[grand_child], total=result['total']))
                     map_grandchilds.update({
@@ -400,7 +417,8 @@ class Table:
 
         result = {'total': counter, 'C': json_all_childs}
         map_result = {'C': map_all_childs}
-
+        # print('client: ', result)
+        # print('server: ', map_result)
         return {'client': result, 'server': map_result}
 
 
@@ -447,6 +465,7 @@ class Table:
         counter = 0
         total = len(self.child[grand_child])
         keyword = self.query_paths[grand_child]
+        print('keyword: ', keyword)
         exclNaN = {'{0}'.format(keyword): 'NaN'}
         exclNone = {'{0}'.format(keyword): None}
         min = {'{0}'.format('min_value'): Min(keyword)}

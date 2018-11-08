@@ -278,12 +278,13 @@ class menuView(TemplateView):
 
 class Echo:
     """
-    An object that implements just the write method of the file-like
-    interface.
+    An object that implements just the write method of the file-like interface.
     """
 
     def write(self, value):
-        """Write the value by returning it, instead of storing in a buffer."""
+        """
+        Write the value by returning it, instead of storing in a buffer.
+        """
         return value
 
 
@@ -506,10 +507,11 @@ class FailedLoginView(View):
     """
     View for failed logins
     """
+
     def get(self, request):
-        #message = _("Login failed.")
-        #message = "Login failed."
-        #request.user.message_set.create(message = message)
+        # message = _("Login failed.")
+        # message = "Login failed."
+        # request.user.message_set.create(message = message)
         messages.warning(request, 'Login failed.')
         return redirect('vfwheron:home')
 

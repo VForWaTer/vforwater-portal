@@ -6,6 +6,15 @@
 //         layerName.setVisible(true);
 //     }
 // }
+let draw, modify, selected_Id, selectedFeatures, vector;
+
+function resetDraw() {
+    selected_Id = [];
+    selectedFeatures.clear();
+    olmap.removeInteraction(draw);
+    olmap.removeInteraction(modify);
+    olmap.removeLayer(vector);
+}
 
 // Menu to draw polygon on map
 function drawPolygon(shortParent, shortChild) {
@@ -24,7 +33,7 @@ function drawPolygon(shortParent, shortChild) {
     });
 
     // create source layer
-    let vector = new ol.layer.Vector({
+    vector = new ol.layer.Vector({
         source: source,
         style: new ol.style.Style({
             fill: new ol.style.Fill({
@@ -62,12 +71,12 @@ function drawPolygon(shortParent, shortChild) {
     );
     olmap.addInteraction(select);
 
-    let draw = new ol.interaction.Draw({
+    draw = new ol.interaction.Draw({
         source: source,
         type: 'Polygon',
     });
 
-    let modify = new ol.interaction.Modify({
+    modify = new ol.interaction.Modify({
         // features: collection.getFeaturesCollection(),
         features: collection,
         // the SHIFT key must be pressed to delete vertices, so that new
@@ -92,9 +101,9 @@ function drawPolygon(shortParent, shortChild) {
             }),
         });*/
 
-    let selectedFeatures = select.getFeatures();
+    selectedFeatures = select.getFeatures();
+    selected_Id = [];
     let sketch, listener, polygon;
-    let selected_Id = [];
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
 
@@ -178,7 +187,6 @@ function drawPolygon(shortParent, shortChild) {
         draw.finishDrawing();
         if (selected_Id.length > 0) {
             mapSelectFunction(shortParent, shortChild, selected_Id);
-            // console.log('fin: ', shortParent, shortChild, selected_Id)
         }
 
     });
@@ -192,27 +200,23 @@ function drawPolygon(shortParent, shortChild) {
         olmap.addInteraction(modify);
     });
 
-/*    let selst = document.getElementById('select_polygon');
-    selst.addEventListener('click', function () {
-        // olmap.removeInteraction(selectCluster);
-        olmap.removeInteraction(draw);
-        olmap.removeInteraction(modify);
-        olmap.addInteraction(selectClick);
-    });*/
+    /*    let selst = document.getElementById('select_polygon');
+        selst.addEventListener('click', function () {
+            // olmap.removeInteraction(selectCluster);
+            olmap.removeInteraction(draw);
+            olmap.removeInteraction(modify);
+            olmap.addInteraction(selectClick);
+        });*/
 
     let delst = document.getElementById('remove_polygon');
     delst.addEventListener('click', function () {
         // olmap.removeInteraction(selectCluster);
         // source.clear();
-        selected_Id = [];
-        selectedFeatures.clear();
-        olmap.removeInteraction(draw);
-        olmap.removeInteraction(modify);
-        olmap.removeLayer(vector);
-    /*    selectClick.getFeatures().on('add', function (feature) {
-            source.removeFeature(feature.element);
-            feature.target.remove(feature.element);
-        });*/
+        resetDraw();
+        /*    selectClick.getFeatures().on('add', function (feature) {
+                source.removeFeature(feature.element);
+                feature.target.remove(feature.element);
+            });*/
     });
 
     let closst = document.getElementById('draw_close');

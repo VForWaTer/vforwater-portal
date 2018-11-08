@@ -322,16 +322,18 @@ def build_new_layer_XML(request, filename, datastore, workspace, srid):
 def create_ID_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
                     workspace='CAOS_update', srid=3857):
     """
-
+    creates a layer in geoserver with the elements defined in selection
+    :param request:
+    :type request: object
     :param filename:
-    :type filename:
+    :type filename: string
     :param selection:
-    :type selection:
+    :type selection: string (list of IDs)
     :param datastore:
-    :type datastore:
-    :param workspace:
+    :type datastore: string
+    :param workspace: string
     :type workspace:
-    :param srid:
+    :param srid: integer
     :type srid:
     :return:
     :rtype:
@@ -392,7 +394,7 @@ def create_ID_layer(request, filename='selection_test', selection=str(2557), dat
 
 def build_XML_from_ID(request, filename, selection, datastore, workspace, srid):
     """
-
+    XML to send to geoserver; Geoserver builds the layer accroding to the query defined with the xml
     :param filename:
     :type filename:
     :param selection:
@@ -542,10 +544,9 @@ def create_data_layer(request, filename='selection_test', selection=str(2557), d
         logger.warning(str(build.status_code) + ': ' + build.text)
 
 
-# build layer on geoserver to extract date, time and value from timeseries from geoserver
 def build_dataLayer(request, filename, selection, datastore, workspace, srid):
     """
-
+    build layer on geoserver to extract date, time and value from timeseries from geoserver.
     :param filename:
     :type filename:
     :param selection:

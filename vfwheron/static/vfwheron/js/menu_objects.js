@@ -9,6 +9,7 @@ const menues = Object.keys(jsMenu);
 let filterMenu;
 let parent;
 let selection = {};
+console.log(jsMenu)
 
 // TODO: To improve performance onclick try to build variables P1C1I1, P1C1T2,... here and assign an id to the
 // TODO: respective value. In 'updateCounts' you can access the values then directly with the ID; But the following isn't working
@@ -331,6 +332,12 @@ function reset_filter(){
     showSelectionOnMap(0);
     // TODO: store the inicial numbers for each item and use it here instead of a new get request
     getCountFromServer({});
+    // reset draw menu:
+    selected_Id = [];
+    selectedFeatures.clear();
+    olmap.removeInteraction(draw);
+    olmap.removeInteraction(modify);
+    olmap.removeLayer(vector);
     // clusterLayer.changed()
 }
 
@@ -414,8 +421,6 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem, type)
     console.log('buildSelection: ', activeSibling, shortParent, shortChild, shortItem)
     console.log('menu: ', menu)
     // getElementsByClassName should be faster than QuerySelectAll
-    // let nodeListC = eval("document.getElementsByClassName('child "+shortChild+" "+shortParent+"')");
-    // let nodeListP = eval("document.getElementsByClassName('parent "+shortParent+"')");
     let nodeListC = document.getElementsByClassName(`child ${shortChild} ${shortParent}`);
     let nodeListP = document.getElementsByClassName(`parent ${shortParent}`);
     console.log('nodeListC: ', nodeListC)
@@ -423,7 +428,6 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem, type)
     if (activeSibling) {
         try {
             selection[shortParent][shortChild]= shortItem;
-            // eval('selection.' + shortParent + '.' + shortChild + ' = shortItem');
         } catch (TypeError) {
             selection[shortParent] = {[shortChild]: shortItem};
         }
