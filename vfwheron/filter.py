@@ -16,6 +16,8 @@ def _build_path_value_pair(parent_menu, child, item):
     :param item:
     :return:
     """
+    path = ''
+    value = ''
     if isinstance(item, str):
         path = parent_menu['path'] + "__" + parent_menu[child]['column'] if parent_menu['path'] != '' else \
             parent_menu[child]['column']
@@ -82,7 +84,7 @@ def build_id_list(menu, filter_selection):
         for child in filter_selection[parent]:
             try:
                 if 'draw' in menu[parent][child]['type']:  # following https://docs.python.org/3/glossary.html#term-eafp
-                    None
+                    pass
             except KeyError:
                 query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
 
@@ -95,7 +97,6 @@ class FilterMethods:
     """
 
     """
-
 
     @staticmethod
     def selection_counts(menu, filter_selection):
@@ -113,32 +114,34 @@ class FilterMethods:
         query_filter = build_select_filters(menu, filter_selection)
         std_query = TblMeta.objects.filter(**query_filter['filters'])
         filtermap = query_filter['active_f']
-        # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for the user)
+        # TODO: deactivate zero values then (at the moment deactivating wouldn't make sense/would be a hassle for user)
         for parent in menu:
             c = 1
             child_result = {}
             while "C" + str(c) in menu[parent]:
-                path = menu[parent]['path'] + "__" + menu[parent]["C" + str(c)]['column'] if menu[parent]['path'] != '' else menu[parent]["C" + str(c)]['column']
+                path = menu[parent]['path'] + "__" + menu[parent]["C" + str(c)]['column'] if menu[parent]['path'] \
+                    != '' else menu[parent]["C" + str(c)]['column']
                 child = menu[parent]["C" + str(c)]
-                query1 = TblMeta.objects.filter(**filtermap[parent + "C" + str(c)]) if parent + "C" + str(c) in filtermap else std_query
+                query1 = TblMeta.objects.filter(**filtermap[parent + "C" + str(c)]) if parent + "C" + str(c) in \
+                    filtermap else std_query
                 item_result = {}
                 i = 1
-                type = child.get('type')
-                if type == None:
+                c_type = child.get('type')
+                if c_type is None:
                     while "I" + str(i) in child:
                         filter_items = {'{0}'.format(path): child["I" + str(i)]['name']}
                         item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
                         i += 1
-                elif type == 'draw':
+                elif c_type == 'draw':
                     filter_items = {'{0}'.format(path): child['name']}
                     item_result = query1.filter(**filter_items).count()
                 else:
-                    print('Adjust your filter.py selection_counts to type: ', type)
+                    print('Adjust your filter.py selection_counts to type: ', c_type)
                 child_result.update({"C" + str(c): item_result})
                 c += 1
             result.update({parent: child_result})
+        print('result of count: ', result)
         return result
-
 
     @staticmethod
     def select_data_points(menu, filter_selection):
@@ -176,7 +179,6 @@ class Menu:
 
         :param user:
         :type user:
-        :type table: object
         """
         # to see menu items without content set min_amount to 0
         # self.min_amount = 0 if DEBUG else 1
@@ -188,7 +190,6 @@ class Menu:
         # self.menu_list = [LtDomain]
         # self.menu()
         # self.write_json_menu()
-
 
     def user_query_set(self):
         """
@@ -204,7 +205,6 @@ class Menu:
                 # print('i: ', i)
                 # print('query_set: ', query_set.__len__())
                 # print('query_set: ', query_set.filter(tbl))
-
 
     def menu(self, user):
         """
@@ -278,7 +278,6 @@ class Table:
     # TODO: IMPORTANT! default query should be used with a query for a default user
     default_query = TblMeta.objects.select_related().filter(license__share=True)
 
-
     def __init__(self, table, min_amount, user_query_set):
         """
 
@@ -290,6 +289,7 @@ class Table:
         :type user_query_set:
         :type table: object
         """
+        self.filter_type = {}
         self.child = {}
         self.min_amount = min_amount
         self.user_query_set = user_query_set
@@ -308,16 +308,16 @@ class Table:
 
         :return:
         :rtype:
-        check if an entry in the table has a special type, so there is need for a special filter, e.g. slider, date, draw
+        check if an entry in the table has a special type,
+        so there is need for a special filter, e.g. slider, date, draw
         """
         try:
             self.filter_type = self.table_name.filter_type
         except AttributeError:
-            self.filter_type = {}
+            pass
 
         # else:
         #     self.filter_type = self.table_name.filter_type
-
 
     def get_query_set(self):
         """
@@ -329,7 +329,8 @@ class Table:
             # if else when you want filter for default user
             # if self.table_name.path:
             #     table_path = self.table_name.path + '__' + columns
-            #     # query_set = TblMeta.objects.select_related().filter(license__share=True).values_list(table_path, flat=True).distinct()
+            #     # query_set =
+            # TblMeta.objects.select_related().filter(license__share=True).values_list(table_path, flat=True).distinct()
             #     # print('query_set: ', query_set)
             #     # query1 = TblMeta.objects.select_related().filter(license__share=True)
             #     query_set = self.default_query.values_list(table_path, flat=True).distinct()
@@ -339,10 +340,10 @@ class Table:
             # else:
             #     query_set = self.default_query.values_list(columns, flat=True).distinct()
             excluder = {'{0}'.format(columns): None}
-            query_set = list(self.table_name.objects.select_related().distinct().exclude(**excluder).values_list(columns, flat=True))
+            query_set = list(self.table_name.objects.select_related().distinct().exclude(**excluder).
+                             values_list(columns, flat=True))
             if len(query_set) > 0:
                 self.child[columns] = query_set
-
 
     def get_query_path(self):
         """
@@ -357,7 +358,6 @@ class Table:
                 self.query_paths[columns] = columns
             else:
                 self.query_paths[columns] = self.table_name.path + '__' + columns
-
 
     @property
     def build_json_child(self):
@@ -385,7 +385,8 @@ class Table:
                         result = self.build_date_json(grand_child)
                     # Recursive is one single table, so the build process is highly customized to that single table
                     elif switch == 'recursive':
-                        # TODO: Check if https://docs.djangoproject.com/en/2.0/ref/models/querysets/#prefetch-related can help
+                        # TODO: Check if https://docs.djangoproject.com/en/2.0/ref/models/querysets/#prefetch-related
+                        # can help
                         result = self.build_recursive_json(grand_child)
                         recursive = True
                     elif switch == 'draw':
@@ -421,7 +422,6 @@ class Table:
         # print('server: ', map_result)
         return {'client': result, 'server': map_result}
 
-
     def build_default_json(self, grand_child):
         """
 
@@ -453,7 +453,6 @@ class Table:
         # if there are no values for the submenu, return nothing
         return {'json': all_grandchilds, 'total': counter, 'server': map_grandchilds}
 
-
     def build_slider_json(self, grand_child):
         """
 
@@ -466,22 +465,21 @@ class Table:
         total = len(self.child[grand_child])
         keyword = self.query_paths[grand_child]
         print('keyword: ', keyword)
-        exclNaN = {'{0}'.format(keyword): 'NaN'}
-        exclNone = {'{0}'.format(keyword): None}
-        min = {'{0}'.format('min_value'): Min(keyword)}
-        max = {'{0}'.format('max_value'): Max(keyword)}
+        excl_nan = {'{0}'.format(keyword): 'NaN'}
+        excl_none = {'{0}'.format(keyword): None}
+        c_min = {'{0}'.format('min_value'): Min(keyword)}
+        c_max = {'{0}'.format('max_value'): Max(keyword)}
         # total = eval("TblMeta.objects.filter(" + grand_child + ").count()")
         try:
             # min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
-            #                "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
+            #             "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
             #                self.query_paths[grand_child] + "'))")
-            min_max = TblMeta.objects.exclude(**exclNaN).exclude(**exclNone).aggregate(**min, **max)
-            # min_max = TblMeta.objects.exclude(**kwargs).aggregate(**min, **max)
-            # print('kwargs: ', kwargs)
+            min_max = TblMeta.objects.exclude(**excl_nan).exclude(**excl_none).aggregate(**c_min, **c_max)
+            print('min_max: ', min_max)
         except ValueError:
             # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] +
             #                "'), max_value=Max('" + self.query_paths[grand_child] + "'))")
-            min_max = TblMeta.objects.aggregate(**min, **max)
+            min_max = TblMeta.objects.aggregate(**c_min, **c_max)
             return {'json': '', 'total': 0, 'server': ''}
         grandchild_dict = {
             'type': 'slider',
@@ -500,7 +498,6 @@ class Table:
             counter = counter + 1
         return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
 
-
     def build_date_json(self, grand_child):
         """
 
@@ -509,14 +506,15 @@ class Table:
         :return:
         :rtype:
         """
+        print('date')
         counter = 0
         total = len(self.child[grand_child])
-        min = {'{0}'.format('min_value'): Min(self.query_paths[grand_child])}
-        max = {'{0}'.format('max_value'): Max(self.query_paths[grand_child])}
+        d_min = {'{0}'.format('min_value'): Min(self.query_paths[grand_child])}
+        d_max = {'{0}'.format('max_value'): Max(self.query_paths[grand_child])}
 
-        min_max = TblMeta.objects.aggregate(**min, **max)
-        # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('"
-        #                + self.query_paths[grand_child] + "'))")
+        min_max = TblMeta.objects.aggregate(**d_min, **d_max)
+        # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] + "'),
+        #   max_value=Max('" + self.query_paths[grand_child] + "'))")
         grandchild_dict = {
             'type': 'date',
             'total': total,
@@ -534,7 +532,6 @@ class Table:
         if total >= self.min_amount:
             counter = counter + 1
         return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
-
 
     def build_recursive_json(self, grand_child):
         """
@@ -555,7 +552,8 @@ class Table:
             project_name = project['project_name']
             project_id = project['id']
 
-            recursive_child = parent_queryset.filter(ltdomain__pid=None).filter(project_name=project_name).values("ltdomain__domain_name", "ltdomain__id")
+            recursive_child = parent_queryset.filter(ltdomain__pid=None).filter(project_name=project_name).\
+                values("ltdomain__domain_name", "ltdomain__id")
 
             # build the inner child
             all_grandchilds = {}
@@ -575,8 +573,11 @@ class Table:
 
                     # build the innermost selectables:
                     # TODO: IMPORTANT! Check which result is right. Maybe all three cases in one Filter?
-                    # grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id, nmmetadomain__domain__pid_id=child_id, nmmetadomain__domain__domain_name=grandchild_name).count()
-                    grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id).filter(nmmetadomain__domain__pid_id = child_id).filter(nmmetadomain__domain__domain_name=grandchild_name).count()
+                    # grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id,
+                    # nmmetadomain__domain__pid_id=child_id, nmmetadomain__domain__domain_name=grandchild_name).count()
+                    grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id).\
+                        filter(nmmetadomain__domain__pid_id=child_id).\
+                        filter(nmmetadomain__domain__domain_name=grandchild_name).count()
                     if grandchild_total >= self.min_amount:
                         grandchild_json = {
                             'name': grandchild_name,
@@ -616,7 +617,6 @@ class Table:
         # if there are no values for the submenu, return nothing
         return {'json': all_childs, 'total': child_counter, 'server': map_childs}
 
-
     def build_draw_json(self, grand_child):
         """
 
@@ -625,7 +625,8 @@ class Table:
         :return:
         :rtype:
         """
-        # types = TblMeta.objects.values_list('geometry__geometry_type', flat=True).distinct().exclude(geometry__geometry_type=None)
+        # types = TblMeta.objects.values_list('geometry__geometry_type', flat=True).distinct().
+        #   exclude(geometry__geometry_type=None)
         counter = 0
         # for values in self.child[grand_child]:  # for now only for POINT data
         values = 'POINT'
@@ -649,7 +650,6 @@ class Table:
             # map_grandchilds.update({'I' + str(counter): map_grandchild_dict})
         # if there are no values for the submenu, return nothing
         return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
-
 
     def print_properties(self):
         """

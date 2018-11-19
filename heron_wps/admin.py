@@ -21,5 +21,4 @@ class WebProcessingServiceAdmin(admin.ModelAdmin):
     list_display = ['name', 'endpoint', 'username']
 
 
-
 admin.site.register(models.WebProcessingService, WebProcessingServiceAdmin)

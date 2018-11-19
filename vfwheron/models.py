@@ -10,7 +10,8 @@ from __future__ import unicode_literals
 from django.contrib.gis.db import models
 
 
-# TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without explanation
+# TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
+# explanation
 
 class DjangoMigrations(models.Model):
     """
@@ -19,7 +20,6 @@ class DjangoMigrations(models.Model):
     app = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     applied = models.DateTimeField()
-
 
     class Meta:
         managed = False
@@ -45,10 +45,8 @@ class LtDomain(models.Model):
     filter_type = {'project__project_name': 'recursive'}
     mother = 'LtProject'
 
-
     def __str__(self):
         return self.domain_name
-
 
     class Meta:
         managed = False
@@ -63,7 +61,8 @@ class LtLicense(models.Model):
     license_name = models.CharField(max_length=255)
     legal_text = models.TextField(blank=True, null=True)
     text_url = models.CharField(max_length=255, blank=True, null=True)
-    # TODO: Try to reduse flags in a table and use choices instead: https://steelkiwi.com/blog/best-practices-working-django-models-python/
+    # TODO: Try to reduse flags in a table and use choices instead:
+    # https://steelkiwi.com/blog/best-practices-working-django-models-python/
     access = models.BooleanField()
     share = models.BooleanField()
     edit = models.BooleanField()
@@ -75,10 +74,8 @@ class LtLicense(models.Model):
     menu_name = 'License'
     path = 'license'
 
-
     def __str__(self):
         return self.license_name
-
 
     class Meta:
         managed = False
@@ -104,12 +101,10 @@ class LtLocation(models.Model):
     filter_type = {'geometry_type': 'draw'}
     # filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider', 'geom': 'draw'}
 
-
     def __str__(self):
         # return '%s %s' % (self.centroid_x, self.centroid_y)
         return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (
             self.geometry_type, self.centroid_x, self.centroid_y, self.srid)
-
 
     class Meta:
         managed = False
@@ -129,10 +124,8 @@ class LtProject(models.Model):
     menu_name = 'project'
     path = 'nmmetadomain__domain__project'
 
-
     def __str__(self):
         return self.project_name
-
 
     class Meta:
         managed = False
@@ -153,10 +146,8 @@ class LtQuality(models.Model):
     path = 'quality'
     filter_type = {'flag_weight': 'slider'}
 
-
     def __str__(self):
         return self.flag_name
-
 
     class Meta:
         managed = False
@@ -188,10 +179,8 @@ class LtSite(models.Model):
         'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider', 'slope': 'slider'
     }
 
-
     def __str__(self):
         return self.site_name  # TODO: is this useful? At the moment there is no information in site_name
-
 
     class Meta:
         managed = False
@@ -217,11 +206,9 @@ class LtSoil(models.Model):
     menu_name = 'Soil'
     path = 'soil'
 
-
     def __str__(self):
         return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology
         # is always filled
-
 
     class Meta:
         managed = False
@@ -236,10 +223,8 @@ class LtSourceType(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-
     def __str__(self):
         return self.type_name
-
 
     class Meta:
         managed = False
@@ -260,10 +245,8 @@ class LtUnit(models.Model):
 
     column_dict = {'unit_name': 'Unit'}
 
-
     def __str__(self):
         return self.unit_name
-
 
     class Meta:
         managed = False
@@ -292,10 +275,8 @@ class LtUser(models.Model):
     menu_name = 'User'
     path = 'creator'
 
-
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
-
 
     class Meta:
         managed = False
@@ -308,7 +289,6 @@ class NmMetaDomain(models.Model):
     """
     meta = models.ForeignKey('TblMeta', models.DO_NOTHING, blank=True, null=True)
     domain = models.ForeignKey(LtDomain, models.DO_NOTHING, blank=True, null=True)
-
 
     class Meta:
         managed = False
@@ -325,10 +305,8 @@ class SpatialRefSys(models.Model):
     srtext = models.TextField(blank=True, null=True)
     proj4text = models.TextField(blank=True, null=True)
 
-
     def __str__(self):
         return '%s %s' % (self.auth_name, self.auth_srid)
-
 
     class Meta:
         managed = False
@@ -343,10 +321,8 @@ class TblData(models.Model):
     meta = models.ForeignKey('TblMeta', models.DO_NOTHING)
     value = models.DecimalField(max_digits=65535, decimal_places=65535)
 
-
     def __str__(self):
         return self.value  # TODO: is that okay?
-
 
     class Meta:
         managed = False
@@ -364,10 +340,8 @@ class TblDataSource(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-
     def __str__(self):
         return self.source_path
-
 
     class Meta:
         managed = False
@@ -409,7 +383,6 @@ class TblMeta(models.Model):
     path = ''
     filter_type = {'ts_start': 'date', 'ts_stop': 'date'}
 
-
     class Meta:
         managed = False
         db_table = 'tbl_meta'
@@ -432,10 +405,8 @@ class TblSensor(models.Model):
     menu_name = 'Sensor'
     path = 'sensor'
 
-
     def __str__(self):
         return self.sensor_name
-
 
     class Meta:
         managed = False
@@ -457,14 +428,13 @@ class TblVariable(models.Model):
     menu_name = 'Data type'
     path = 'variable'
 
-
     def __str__(self):
         return self.variable_name
-
 
     class Meta:
         managed = False
         db_table = 'tbl_variable'
+
 
 # TODO rename to english for continuity
 # build BW watershed table
@@ -499,8 +469,7 @@ class Basiseinzugsgebiet(models.Model):
     se_anno_ca = models.CharField(max_length=254)
     wasserko01 = models.BigIntegerField()
     # GeoDjango-specific: a geometry field (MultiPolygonField)
-    mpoly = models.MultiPolygonField(srid = 31467)
-
+    mpoly = models.MultiPolygonField(srid=31467)
 
     # Returns the string representation of the model.
     def __str__(self):  # __unicode__ on Python 2

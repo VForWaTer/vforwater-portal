@@ -32,7 +32,7 @@ from future.builtins import isinstance
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_ID_layer, create_data_layer
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
@@ -50,6 +50,9 @@ from .models import TblMeta, TblVariable, TblData
 
 import logging
 import os
+# for debugging:
+from time import time
+from django.db import connections
 
 # Create your views here.
 """
@@ -71,9 +74,9 @@ def get_dataset(self, request, **kwargs):
     :rtype:
     """
     # here
-    id = request.POST.get('meta_id')
+    m_id = request.POST.get('meta_id')
 
-    data = TblData.objects.get(meta=id).value
+    data = TblData.objects.get(meta=m_id).value
     result = "test"
 
     return result
@@ -97,12 +100,14 @@ class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
     user = 'default'
     Menu = Menu().menu(user)
+    # print(connections['vforwater'].queries)
+    # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
     data_layer = 'default_layer_prod'
 
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
-    dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+    data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
     # dataExt = get_bbox_from_data()
 
@@ -128,16 +133,15 @@ class HomeView(TemplateView):
             create_layer(self.request, self.data_layer)
 
         try:
-            dataExt = get_bbox_from_data()
+            data_ext = get_bbox_from_data()
         except:
-            dataExt = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+            data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
             logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
-
-        return {'dataExt': dataExt, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
+        return {'dataExt': data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
                 'messages': messages.get_messages(self.request)}
 
 
-class menuView(TemplateView):
+class MenuView(TemplateView):
     """
     View to build the filter menu on the start page and interact with the sidebar
     """
@@ -251,15 +255,15 @@ class menuView(TemplateView):
         if 'filter_selection_map' in request.GET:
             m_ids = None
             if json.loads(request.GET.get('filter_selection_map')) == 0:
-                ID_layer = HomeView.set_layer_name(self)
+                id_layer = HomeView.set_layer_name(self)
                 dataExt = get_bbox_from_data()
             else:
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                ID_layer = 'ID_layer'  # + user
-                if get_layer(ID_layer):
-                    delete_layer(ID_layer)
-                create_ID_layer(request, ID_layer, str(meta_ids['all_filters'])[1:-1])
+                id_layer = 'ID_layer'  # + user
+                if get_layer(id_layer):
+                    delete_layer(id_layer)
+                create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1])
                 m_ids = meta_ids['all_filters']
                 # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
                 # existing layers
@@ -271,7 +275,7 @@ class menuView(TemplateView):
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': ID_layer, 'dataExt': dataExt, 'IDs': m_ids})
+            return JsonResponse({'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': m_ids})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
@@ -306,7 +310,7 @@ class DatasetDownloadView(TemplateView):
         store = 'new_vforwater_gis'
         workspace = 'CAOS_update'
 
-        def get_metadata(id):
+        def get_metadata(m_id):
             """
             the metadata for export includes only the values that are also used for filtering.
             Change get_metadata if you want to have more information in the export file.
@@ -316,10 +320,10 @@ class DatasetDownloadView(TemplateView):
             for table in Menu.menu_list:
                 for i in table.column_dict:
                     if table.path != '':
-                        query = TblMeta.objects.filter(pk=id).values_list(table.path + '__' + i, flat=True)
+                        query = TblMeta.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
                     else:
-                        query = TblMeta.objects.filter(pk=id).values_list(i, flat=True)
-                    if query[0] != None:
+                        query = TblMeta.objects.filter(pk=m_id).values_list(i, flat=True)
+                    if query[0] is not None:
                         try:
                             catalog[table.menu_name][i] = query[0]
                         except KeyError:
@@ -341,18 +345,17 @@ class DatasetDownloadView(TemplateView):
 
         # TODO: test if shp file is correct
         if 'shp' in request.GET:
-            id = request.GET.get('shp')
-            layer_name = 'shp' + id
-            srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
+            s_id = request.GET.get('shp')
+            layer_name = 'shp' + s_id
+            srid = str(TblMeta.objects.filter(pk=s_id).values_list('geometry__srid__srid', flat=True)[0])
 
             # create layer on geoserver to request shp file
-            create_data_layer(request, layer_name, id, store, workspace)
+            create_data_layer(request, layer_name, s_id, store, workspace)
 
             # use GEOSERVER shape-zip
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
-                                                      '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' \
-                  + layer_name + \
-                  '&outputFormat=shape-zip&srsname=EPSG:' + srid
+                '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
+                '&outputFormat=shape-zip&srsname=EPSG:' + srid
             request = requests.get(url)
 
             pzfile = PyZip().from_bytes(request.content)
@@ -371,7 +374,7 @@ class DatasetDownloadView(TemplateView):
             layer_name = 'XML_' + id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
-            create_ID_layer(request, layer_name, id, store, workspace)
+            create_id_layer(request, layer_name, id, store, workspace)
 
             # use GEOSERVER GML
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
@@ -478,7 +481,8 @@ class ToggleLanguageView(View):
 
     """
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         """
 
         :param request:
@@ -508,7 +512,8 @@ class FailedLoginView(View):
     View for failed logins
     """
 
-    def get(self, request):
+    @staticmethod
+    def get(request):
         # message = _("Login failed.")
         # message = "Login failed."
         # request.user.message_set.create(message = message)
@@ -521,7 +526,8 @@ class GeoserverView(View):
     Build URL to get layers from Geoserver
     """
 
-    def get(self, request, service, layer, bbox, srid):
+    @staticmethod
+    def get(request, service, layer, bbox, srid):
         """
 
         :param request:
@@ -539,10 +545,10 @@ class GeoserverView(View):
         """
         # wfsLayerName = 'new_ID_as_identifier_update'
         # wfsLayerName = layer
-        workSpaceName = 'CAOS_update'
-        url = LOCAL_GEOSERVER + '/' + workSpaceName + '/ows?service=' + service + \
-              '&version=1.0.0&request=GetFeature&typeName=' + workSpaceName + ':' + layer + \
-              '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        work_space_name = 'CAOS_update'
+        url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
+            '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
+            '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         # url = '{}/{}/ows?service={}&version=1.0.0&request=GetFeature&typeName={}:{
         # }&outputFormat=application%2Fjson&' \
         #       'srsname=EPSG:{}&bbox={},EPSG:{}'.format(LOCAL_GEOSERVER, workSpaceName, service, workSpaceName, layer,

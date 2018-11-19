@@ -36,6 +36,12 @@ def activate_wps(wps, endpoint, name):
 
     Returns:
       (owslib.wps.WebProcessingService): Returns an activated WebProcessingService object or None if it is invalid.
+    :param wps:
+    :type wps:
+    :param endpoint:
+    :type endpoint:
+    :param name:
+    :type name:
     """
     # Initialize the object with get capabilities call
     try:
@@ -177,17 +183,16 @@ def get_wps_service_engine(name, app_class=None):
 def find_wps_service_engines():
 
     try:
-        WPS_Address = VFW_SERVER + '/wps'
+        wps_address = VFW_SERVER + '/wps'
 
-        WPS_Service = WebProcessingService(WPS_Address,
+        wps_service = WebProcessingService(wps_address,
                                            verbose=False,
                                            skip_caps=True)
-        WPS_Service.getcapabilities()
+        wps_service.getcapabilities()
 
-        NewData = WpsModel(name=WPS_Service.identification.title,
-                           endpoint=WPS_Address)
-        NewData.save()
+        new_data = WpsModel(name=wps_service.identification.title,
+                            endpoint=wps_address)
+        new_data.save()
 
     except:
         print('--- No WPS_Service at port 8094. ---')
-
