@@ -79,13 +79,12 @@ function childBuilder(child, shortChild, shortParent) {
 /* build slider if type is slider */
         switch (child.type) {
             case "slider":
-                console.log('slider child: ', child.name);
                 // if (child.type === "slider") {
                 itemHTML = sliderBuilder(child, shortChild, shortParent);
                 childHTML=
                     `<div id='${child.name}'>
                         <h6 class='respo-hover-blue child ${shortParent} ${shortChild}'>
-                        </h6>${child.name}&emsp;<i><div class='count s'>(${child.total})</div></i>
+                        </h6>${child.name}&emsp;<i class='count s'>(${child.total})</i>
                     <div id='sliderwildcard'>${itemHTML} </div></div>`;
                 break;
             // }
@@ -142,7 +141,13 @@ function dateBuilder(child, shortChild, shortParent) {
 /* Prepair location in web site to build there a slider to select num values after loading of web site */
 function sliderBuilder(child, shortChild, shortParent) {
     return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}' 
-        minV='${ child.selectable_min.toString()}' maxv='${child.selectable_max.toString()}'></div>`;
+        minV='${ child.selectable_min.toString()}' maxv='${child.selectable_max.toString()}'></div>
+        <div class="respo-row-padding">
+            <div class="respo-half"><input id="slide-0${shortParent}${shortChild}" title="min-${child.name}" 
+                class="respo-input respo-hover-blue" style="width: 80px;" placeholder="One" type="number"></div>
+            <div class="respo-half"><input id="slide-1${shortParent}${shortChild}" title="max-${child.name}" 
+                class="respo-input respo-hover-blue" style="width: 80px;" placeholder="two" type="number"></div>
+        </div>`;  // respective field for min and max is accessed by 0 and 1 in id
 }
 
 /* build a button to open the draw menue */
@@ -186,31 +191,40 @@ function dDMFilterFunction(dropDownName, inputName) {
 
 /* build sliders at the respective locations after the menu has loaded*/
 $(document).ready(function (){
+    let maxv, minv, input, input1, value;
     let handlesSlider =  document.getElementsByClassName('slider');
-    console.log('handlesSlider: ', handlesSlider)
-    let hLen = handlesSlider.length;
-    for (let s = 0; s < hLen; s++){
-        // console.log('s: ', s, handlesSlider[s])
-        let maxv = parseFloat(handlesSlider[s].attributes.maxv.value);
-        let minv = parseFloat(handlesSlider[s].attributes.minv.value);
-        if (!isNaN(maxv) && !isNaN(minv)) {
-            noUiSlider.create(handlesSlider[s], {
-                start: [minv, maxv],
-                tooltips: true,
-                // behaviour: 'tap-drag',
-                // connect: true,
-                range: {
-                    'min': [minv],
-                    'max': [maxv]
-                },
-                // pips: { // Show a scale with the slider
-                // mode: 'steps',
-                // stepped: true,
-                // density: 4
-                // }
-            });
-        }
-    }
+    [].slice.call(handlesSlider).forEach(function (slider) {
+        maxv = parseFloat(slider.attributes.maxv.value);
+        minv = parseFloat(slider.attributes.minv.value);
+        noUiSlider.create(slider, {
+            start: [minv, maxv],
+            // tooltips: true,
+            // tooltips: [true, wNumb({decimals: 0})],
+            // behaviour: 'tap-drag',
+            connect: true,
+            range: {
+                'min': [minv],
+                'max': [maxv]
+            },
+            // pips: { // Show a scale with the slider
+            // mode: 'steps',
+            // stepped: true,
+            // density: 4
+            // }
+        });
+        slider.noUiSlider.on('update', function (values, handle) {
+            input = document.getElementById('slide-'+handle+slider.classList[1]+slider.classList[2]);
+            value = values[handle];
+            input.value = values[handle];
+        });
+        input.addEventListener('change', function () {
+            slider.noUiSlider.set([null, this.value])
+        });
+        input = document.getElementById('slide-0'+slider.classList[1]+slider.classList[2]);
+        input.addEventListener('change', function () {
+            slider.noUiSlider.set([this.value, null])
+        });
+    })
 });
 
 // $(document).ready(addDatePicker);
