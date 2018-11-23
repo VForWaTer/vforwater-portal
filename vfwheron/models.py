@@ -10,7 +10,8 @@ from __future__ import unicode_literals
 from django.contrib.gis.db import models
 
 
-# TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without explanation
+# TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
+# explanation
 
 class DjangoMigrations(models.Model):
     """
@@ -19,7 +20,6 @@ class DjangoMigrations(models.Model):
     app = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     applied = models.DateTimeField()
-
 
     class Meta:
         managed = False
@@ -45,10 +45,8 @@ class LtDomain(models.Model):
     filter_type = {'project__project_name': 'recursive'}
     mother = 'LtProject'
 
-
     def __str__(self):
         return self.domain_name
-
 
     class Meta:
         managed = False
@@ -63,6 +61,8 @@ class LtLicense(models.Model):
     license_name = models.CharField(max_length=255)
     legal_text = models.TextField(blank=True, null=True)
     text_url = models.CharField(max_length=255, blank=True, null=True)
+    # TODO: Try to reduse flags in a table and use choices instead:
+    # https://steelkiwi.com/blog/best-practices-working-django-models-python/
     access = models.BooleanField()
     share = models.BooleanField()
     edit = models.BooleanField()
@@ -74,10 +74,8 @@ class LtLicense(models.Model):
     menu_name = 'License'
     path = 'license'
 
-
     def __str__(self):
         return self.license_name
-
 
     class Meta:
         managed = False
@@ -88,25 +86,25 @@ class LtLocation(models.Model):
     """
 
     """
-    centroid_x = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    centroid_y = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    centroid_x = models.DecimalField("X-Coordinate", max_digits=65535, decimal_places=65535, blank=True, null=True)
+    centroid_y = models.DecimalField("Y-Coordinate", max_digits=65535, decimal_places=65535, blank=True, null=True)
     srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid', blank=True, null=True)
-    geometry_type = models.CharField(max_length=15, blank=True, null=True)
+    geometry_type = models.CharField("Geometry", max_length=15, blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
     geom = models.GeometryField(unique=True, srid=0)
 
-    column_dict = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
+    column_dict = {'geometry_type': 'Geometry'}
+    # column_dict = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
     menu_name = 'Location'
-    path = 'location'
-    filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider'}
-
+    path = 'geometry'
+    filter_type = {'geometry_type': 'draw'}
+    # filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider', 'geom': 'draw'}
 
     def __str__(self):
         # return '%s %s' % (self.centroid_x, self.centroid_y)
         return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (
             self.geometry_type, self.centroid_x, self.centroid_y, self.srid)
-
 
     class Meta:
         managed = False
@@ -126,10 +124,8 @@ class LtProject(models.Model):
     menu_name = 'project'
     path = 'nmmetadomain__domain__project'
 
-
     def __str__(self):
         return self.project_name
-
 
     class Meta:
         managed = False
@@ -140,8 +136,8 @@ class LtQuality(models.Model):
     """
 
     """
-    flag_name = models.CharField(max_length=25)
-    flag_weight = models.IntegerField(blank=True, null=True)
+    flag_name = models.CharField("flag", max_length=25)
+    flag_weight = models.IntegerField("quantifier", blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
@@ -150,10 +146,8 @@ class LtQuality(models.Model):
     path = 'quality'
     filter_type = {'flag_weight': 'slider'}
 
-
     def __str__(self):
         return self.flag_name
-
 
     class Meta:
         managed = False
@@ -166,8 +160,8 @@ class LtSite(models.Model):
     """
     site_name = models.CharField(max_length=65, blank=True, null=True)
     elevation = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    rel_height = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    orientation_degree = models.IntegerField(blank=True, null=True)
+    rel_height = models.DecimalField("relative height", max_digits=65535, decimal_places=65535, blank=True, null=True)
+    orientation_degree = models.IntegerField("orientation", blank=True, null=True)
     slope = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     landuse = models.CharField(max_length=65, blank=True, null=True)
     site_comment = models.TextField(blank=True, null=True)
@@ -182,14 +176,11 @@ class LtSite(models.Model):
     menu_name = 'Site'
     path = 'site'
     filter_type = {
-        'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider',
-        'slope': 'slider'
+        'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider', 'slope': 'slider'
     }
-
 
     def __str__(self):
         return self.site_name  # TODO: is this useful? At the moment there is no information in site_name
-
 
     class Meta:
         managed = False
@@ -215,11 +206,9 @@ class LtSoil(models.Model):
     menu_name = 'Soil'
     path = 'soil'
 
-
     def __str__(self):
         return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology
         # is always filled
-
 
     class Meta:
         managed = False
@@ -234,10 +223,8 @@ class LtSourceType(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-
     def __str__(self):
         return self.type_name
-
 
     class Meta:
         managed = False
@@ -248,7 +235,7 @@ class LtUnit(models.Model):
     """
 
     """
-    unit_name = models.CharField(unique=True, max_length=65)
+    unit_name = models.CharField("unit", unique=True, max_length=65)
     unit_abbrev = models.CharField(max_length=15)
     unit_symbol = models.CharField(max_length=5)
     derived_si = models.NullBooleanField()
@@ -258,10 +245,8 @@ class LtUnit(models.Model):
 
     column_dict = {'unit_name': 'Unit'}
 
-
     def __str__(self):
         return self.unit_name
-
 
     class Meta:
         managed = False
@@ -276,10 +261,10 @@ class LtUser(models.Model):
     is_institution = models.BooleanField()
     first_name = models.CharField(max_length=65, blank=True, null=True)
     last_name = models.CharField(max_length=65, blank=True, null=True)
-    institution_name = models.CharField(max_length=255, blank=True, null=True)
+    institution_name = models.CharField("institution", max_length=255, blank=True, null=True)
     department = models.CharField(max_length=255, blank=True, null=True)
     email = models.CharField(max_length=60, blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField("user Comment", blank=True, null=True)
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
@@ -290,10 +275,8 @@ class LtUser(models.Model):
     menu_name = 'User'
     path = 'creator'
 
-
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
-
 
     class Meta:
         managed = False
@@ -307,7 +290,6 @@ class NmMetaDomain(models.Model):
     meta = models.ForeignKey('TblMeta', models.DO_NOTHING, blank=True, null=True)
     domain = models.ForeignKey(LtDomain, models.DO_NOTHING, blank=True, null=True)
 
-
     class Meta:
         managed = False
         db_table = 'nm_meta_domain'
@@ -317,16 +299,14 @@ class SpatialRefSys(models.Model):
     """
 
     """
-    srid = models.IntegerField(primary_key = True)
+    srid = models.IntegerField(primary_key=True)
     auth_name = models.CharField(max_length=255, blank=True, null=True)
     auth_srid = models.IntegerField(blank=True, null=True)
     srtext = models.TextField(blank=True, null=True)
     proj4text = models.TextField(blank=True, null=True)
 
-
     def __str__(self):
         return '%s %s' % (self.auth_name, self.auth_srid)
-
 
     class Meta:
         managed = False
@@ -341,10 +321,8 @@ class TblData(models.Model):
     meta = models.ForeignKey('TblMeta', models.DO_NOTHING)
     value = models.DecimalField(max_digits=65535, decimal_places=65535)
 
-
     def __str__(self):
         return self.value  # TODO: is that okay?
-
 
     class Meta:
         managed = False
@@ -362,10 +340,8 @@ class TblDataSource(models.Model):
     created_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(blank=True, null=True)
 
-
     def __str__(self):
         return self.source_path
-
 
     class Meta:
         managed = False
@@ -376,8 +352,8 @@ class TblMeta(models.Model):
     """
 
     """
-    ts_start = models.DateTimeField(blank=True, null=True)
-    ts_stop = models.DateTimeField(blank=True, null=True)
+    ts_start = models.DateTimeField("start of measurement", blank=True, null=True)
+    ts_stop = models.DateTimeField("end of measurement", blank=True, null=True)
     external_id = models.CharField(max_length=255, blank=True, null=True)
     support = models.CharField(max_length=255, blank=True, null=True)
     spacing = models.CharField(max_length=255, blank=True, null=True)
@@ -407,7 +383,6 @@ class TblMeta(models.Model):
     path = ''
     filter_type = {'ts_start': 'date', 'ts_stop': 'date'}
 
-
     class Meta:
         managed = False
         db_table = 'tbl_meta'
@@ -430,10 +405,8 @@ class TblSensor(models.Model):
     menu_name = 'Sensor'
     path = 'sensor'
 
-
     def __str__(self):
         return self.sensor_name
-
 
     class Meta:
         managed = False
@@ -455,14 +428,13 @@ class TblVariable(models.Model):
     menu_name = 'Data type'
     path = 'variable'
 
-
     def __str__(self):
         return self.variable_name
-
 
     class Meta:
         managed = False
         db_table = 'tbl_variable'
+
 
 # TODO rename to english for continuity
 # build BW watershed table
@@ -497,8 +469,7 @@ class Basiseinzugsgebiet(models.Model):
     se_anno_ca = models.CharField(max_length=254)
     wasserko01 = models.BigIntegerField()
     # GeoDjango-specific: a geometry field (MultiPolygonField)
-    mpoly = models.MultiPolygonField(srid = 31467)
-
+    mpoly = models.MultiPolygonField(srid=31467)
 
     # Returns the string representation of the model.
     def __str__(self):  # __unicode__ on Python 2

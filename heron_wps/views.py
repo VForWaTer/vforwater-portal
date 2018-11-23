@@ -1,14 +1,12 @@
-#from inspect import getmembers
+# from inspect import getmembers
 
 from django.shortcuts import render
 from django.core.cache import cache
 
 from heron.settings import VFW_SERVER, HOST_NAME
 from heron_wps.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
-#from heron_wps.forms import InputForm
+# from heron_wps.forms import InputForm
 
-
-    
 
 def home(request):
     """
@@ -17,50 +15,50 @@ def home(request):
     wps_services = list_wps_service_engines()
 
     try:
-        service = 'PyWPS_vforwater'
+        service_name = 'PyWPS_vforwater'
         wps = get_wps_service_engine(service)
     except:
         print('--- No PyWPS_vforwater available')
-        service = ''
+        service_name = ''
         wps = []
 
     context = {'wps_services': wps_services,
                'wps': wps,
-               'service': service}
+               'service': service_name}
 
     return render(request, 'heron_wps/home.html', context)
 
 
-def service(request, service):
+def service(request, service_name):
     """
     View that lists the processes for a given service.
     """
-    wps = get_wps_service_engine(service)
+    wps = get_wps_service_engine(service_name)
 
     context = {'wps': wps,
-               'service': service}
+               'service': service_name}
 
     return render(request, 'heron_wps/service.html', context)
 
 
-def process(request, service, identifier):
+def process(request, service_name, identifier):
     """
     View that displays a detailed description for a WPS process.
     """
 #    form_class = InputForm
-    wps = get_wps_service_engine(service)
+    wps = get_wps_service_engine(service_name)
     wps_process = wps.describeprocess(identifier)
 
     context = {'process': wps_process,
-               'service': service,
+               'service': service_name,
                'is_link': abstract_is_link(wps_process),
                'wps': wps,
                }
 
-    if request.method == 'POST': # If the form has been submitted...
-#        form = form_class(request.POST) # A form bound to the POST data        
-#        if form.is_valid(): # All validation rules pass
-#        value_list = form['input']
+    if request.method == 'POST':  # If the form has been submitted...
+        #        form = form_class(request.POST) # A form bound to the POST data
+        #        if form.is_valid(): # All validation rules pass
+        #        value_list = form['input']
         value_list = []
         key_list = []
         inputs = []
@@ -88,7 +86,6 @@ def process(request, service, identifier):
                     if "img" in substring:
                         image = output.data[0]
 
-        
         for output in execution.processOutputs:
             outputs.append(output.data)
             output_reference = output.reference
@@ -104,9 +101,8 @@ def process(request, service, identifier):
                      'image': image,
                      'output_reference': output_reference,
                      'execution_status': execution_status
-                    }
+                     }
     
         return render(request, 'heron_wps/result.html', context_p)
     
     return render(request, 'heron_wps/process.html', context)
-

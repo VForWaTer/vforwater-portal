@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 def create_layer(request, filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update', srid=3857):
     """
 
+    :param request:
+    :type request:
     :param filename:
     :type filename:
     :param datastore:
@@ -86,10 +88,13 @@ def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace=
         # logger.warning(str(build.status_code) + ': ' + build.text)
         logger.warning('{}: {}'.format(build.status_code, build.text))
 
+
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in 'build_XML_from_ID'?)
 def build_new_layer_XML(request, filename, datastore, workspace, srid):
     """
 
+    :param request:
+    :type request:
     :param filename:
     :type filename:
     :param datastore:
@@ -137,9 +142,9 @@ def build_new_layer_XML(request, filename, datastore, workspace, srid):
             ' LEFT JOIN lt_license ON tbl_meta.license_id = lt_license.id' \
             ' LEFT JOIN tbl_variable ON tbl_meta.variable_id = tbl_variable.id' \
             ' LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id' \
-            # ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
+            #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
     if not request.user.is_authenticated:
-        query = '{} {}'.format(query, ' WHERE lt_license.commercial is false') # only for test use on portal
+        query = '{} {}'.format(query, ' WHERE lt_license.commercial is false')  # only for test use on portal
 
     attributes = '<attribute>' \
                  '<name>Geometry</name>' \
@@ -292,7 +297,8 @@ def build_new_layer_XML(request, filename, datastore, workspace, srid):
     xml = '<featureType>' \
         '<name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
         '<namespace><name>' + workspace + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
+        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
+        '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
         '</namespace>' \
         '<title>' + filename + '</title>' \
         '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
@@ -309,7 +315,8 @@ def build_new_layer_XML(request, filename, datastore, workspace, srid):
         '<entry key="cachingEnabled">false</entry>' \
         '</metadata>' \
         '<store class="dataStore"><name>' + workspace + ':' + datastore + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/>' \
+        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
+        '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/>' \
         '</store>' \
         '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals><overridingServiceSRS>false</overridingServiceSRS>' \
         '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
@@ -319,24 +326,26 @@ def build_new_layer_XML(request, filename, datastore, workspace, srid):
     return xml
 
 
-def create_ID_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
+def create_id_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
                     workspace='CAOS_update', srid=3857):
     """
-
+    creates a layer in geoserver with the elements defined in selection
+    :param request:
+    :type request: object
     :param filename:
-    :type filename:
+    :type filename: string
     :param selection:
-    :type selection:
+    :type selection: string (list of IDs)
     :param datastore:
-    :type datastore:
-    :param workspace:
+    :type datastore: string
+    :param workspace: string
     :type workspace:
-    :param srid:
+    :param srid: integer
     :type srid:
     :return:
     :rtype:
     """
-    xml = build_XML_from_ID(request, filename, selection, datastore, workspace, srid)
+    xml = build_xml_from_id(request, filename, selection, datastore, workspace, srid)
     # url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
     url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
@@ -390,9 +399,11 @@ def create_ID_layer(request, filename='selection_test', selection=str(2557), dat
 #         logger.warning(str(build.status_code) + ': ' + build.text)
 
 
-def build_XML_from_ID(request, filename, selection, datastore, workspace, srid):
+def build_xml_from_id(request, filename, selection, datastore, workspace, srid):
     """
-
+    XML to send to geoserver; Geoserver builds the layer according to the query defined with the xml
+    :param request:
+    :type request: object
     :param filename:
     :type filename:
     :param selection:
@@ -489,7 +500,8 @@ def build_XML_from_ID(request, filename, selection, datastore, workspace, srid):
 
     xml = '<featureType><name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
         '<namespace><name>' + workspace + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
+        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
+        '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
         '</namespace>' \
         '<title>' + filename + '</title>' \
         '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
@@ -507,7 +519,8 @@ def build_XML_from_ID(request, filename, selection, datastore, workspace, srid):
         '<entry key="time"><dimensionInfo><enabled>false</enabled><defaultValue/></dimensionInfo></entry>' \
         '<entry key="cachingEnabled">false</entry></metadata><store class="dataStore">' \
         '<name>' + workspace + ':' + datastore + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/>' \
+        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
+        '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/>' \
         '</store>' \
         '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals><overridingServiceSRS>false</overridingServiceSRS>' \
         '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
@@ -518,9 +531,11 @@ def build_XML_from_ID(request, filename, selection, datastore, workspace, srid):
 
 
 def create_data_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
-                    workspace='CAOS_update', srid=3857):
+                      workspace='CAOS_update', srid=3857):
     """
 
+    :param request:
+    :type request:
     :param filename:
     :type filename:
     :param selection:
@@ -534,7 +549,7 @@ def create_data_layer(request, filename='selection_test', selection=str(2557), d
     :return:
     :rtype:
     """
-    xml = build_dataLayer(request, filename, selection, datastore, workspace, srid)
+    xml = build_datalayer(request, filename, selection, datastore, workspace, srid)
     url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
     # url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes'
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
@@ -542,10 +557,11 @@ def create_data_layer(request, filename='selection_test', selection=str(2557), d
         logger.warning(str(build.status_code) + ': ' + build.text)
 
 
-# build layer on geoserver to extract date, time and value from timeseries from geoserver
-def build_dataLayer(request, filename, selection, datastore, workspace, srid):
+def build_datalayer(request, filename, selection, datastore, workspace, srid):
     """
-
+    build layer on geoserver to extract date, time and value from timeseries from geoserver.
+    :param request:
+    :type request:
     :param filename:
     :type filename:
     :param selection:
@@ -651,7 +667,8 @@ def build_dataLayer(request, filename, selection, datastore, workspace, srid):
 
     xml = '<featureType><name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
         '<namespace><name>' + workspace + '</name>' \
-        '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
+        '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/namespaces/' + workspace + \
+        '.xml" type="application/xml"/>' \
         '</namespace>' \
         '<title>' + filename + '</title>' \
         '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
@@ -664,7 +681,8 @@ def build_dataLayer(request, filename, selection, datastore, workspace, srid):
         '<geometry><name>geom</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
         '</virtualTable></entry></metadata>' \
         '<store class="dataStore"><name>' + workspace + ':' + datastore + '</name>' \
-        '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/></store>' \
+        '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' \
+        + datastore + '.xml" type="application/xml"/></store>' \
         '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals><overridingServiceSRS>false</overridingServiceSRS>' \
         '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
         '<attributes>' + attributes + '</attributes>' \

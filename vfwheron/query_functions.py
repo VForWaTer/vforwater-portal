@@ -6,27 +6,29 @@ import re
 from django.db import connections
 
 
-def get_bbox_from_data(selectedIds=None):  # get bbox for available data
+def get_bbox_from_data(selected_ids=None):  # get bbox for available data
     """
 
-    :param selectedIds:
-    :type selectedIds:
+    :param selected_ids:
+    :type selected_ids:
     :return:
     :rtype:
     """
     try:
         cursor = connections['vforwater'].cursor()  # connect to database
-        if selectedIds:
+        if selected_ids:
             cursor.execute(
                 'SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)),srid),3857)) FROM tbl_meta '
-                'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in (' + selectedIds + ');'
+                'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('
+                + selected_ids + ');'
             )
         else:
             # request bbox in srid of openlayers:
             cursor.execute(
-                'SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)),srid),3857)) FROM lt_location;'
+                'SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)),srid),3857)) '
+                'FROM lt_location;'
             )
-        i=cursor.fetchall()[0][0]
+        i = cursor.fetchall()[0][0]
         cursor.close()
         m = re.findall("(\d+.\d*)", i)  # get string with coordinates
     except Exception as ex:

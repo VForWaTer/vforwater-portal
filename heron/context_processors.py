@@ -1,5 +1,6 @@
 from django.conf import settings
 
+
 # TODO: document
 def global_settings(request):
     """
@@ -17,4 +18,4 @@ def global_settings(request):
         # 'PORTAL_GEOSERVER': settings.PORTAL_GEOSERVER,
         'DEMO_VAR': settings.DEMO_VAR,
         # again available for settings?!?
-}
+        }

@@ -67,16 +67,17 @@ function workspace_button(json) {
     if (json !== undefined) {
         $.each(json['workspaceData'], function (key, value) {
             let btnName;
-            if (value['name'].length + value['abbr'].length + value['unit'].length <= 14) {
-                btnName = value['name'] + ' (' + value['abbr'] + ' in ' + value['unit'] + ') - ' + key;
-            } else if (value['name'].length + value['abbr'].length <= 16) {
-                btnName = value['name'] + ' (' + value['abbr'] + ') - ' + key;
-            } else if (value['name'].length <= 18) {
-                btnName = value['name'] + ' - ' + key;
+            let vnLen = value['name'].length;
+            if (vnLen+ value['abbr'].length + value['unit'].length <= 14) {
+                btnName = `${value['name']} (${value['abbr']} in ${value['unit']}) - ${key}`;
+            } else if (vnLen + value['abbr'].length <= 16) {
+                btnName = `${value['name']} (${value['abbr']}) - ${key}`;
+            } else if (vnLen <= 18) {
+                btnName = `${value['name']} - ${key}`;
             } else {
-                btnName = value['abbr'] + ' in ' + value['unit'] + ' - ' + key;
+                btnName = `${value['abbr']} in ${value['unit']} - ${key}`;
             }
-            let title = value['name'] + ' (' + value['abbr'] + ' in ' + value['unit'] + ')';
+            let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
             // check if buttons already exist before creating a new one:
             if (document.getElementById(key) === null) {
                 document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding task" ' +
@@ -142,9 +143,7 @@ function clickInsideElement(e, className) {
         return el;
     } else {
         while (el = el.parentNode) {
-            if (el.classList && el.classList.contains(className)) {
-                return el;
-            }
+            if (el.classList && el.classList.contains(className)) return el;
         }
     }
 
@@ -247,16 +246,14 @@ function contextListener() {
  */
 function clickListener() {
     document.addEventListener("click", function (e) {
-        var clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
+        let clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
         // console.log('clickeElIsLink: ', clickeElIsLink)
         if (clickeElIsLink) {
             e.preventDefault();
             menuItemListener(clickeElIsLink);
         } else {
-            var button = e.which || e.button;
-            if (button === 1) {
-                toggleMenuOff();
-            }
+            let button = e.which || e.button;
+            if (button === 1) toggleMenuOff();
         }
     });
 }
@@ -266,9 +263,7 @@ function clickListener() {
  */
 function keyupListener() {
     window.onkeyup = function (e) {
-        if (e.keyCode === 27) {
-            toggleMenuOff();
-        }
+        if (e.keyCode === 27) toggleMenuOff();
     }
 }
 
@@ -317,17 +312,8 @@ function positionMenu(e) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
 
-    if ((windowWidth - clickCoordsX) < menuWidth) {
-        menu.style.left = windowWidth - menuWidth + "px";
-    } else {
-        menu.style.left = clickCoordsX + "px";
-    }
-
-    if ((windowHeight - clickCoordsY) < menuHeight) {
-        menu.style.top = windowHeight - menuHeight + "px";
-    } else {
-        menu.style.top = clickCoordsY + "px";
-    }
+    menu.style.left = ((windowWidth - clickCoordsX) < menuWidth) ? `${windowWidth - menuWidth}px` : `${clickCoordsX}px`;
+    menu.style.top = ((windowHeight - clickCoordsY) < menuHeight) ? `${windowHeight - menuHeight}px` : `${clickCoordsY}px`;
 
 }/**
  * Positions the popup properly.
@@ -338,16 +324,8 @@ function positionMenu(e) {
 function positionPopup(window) {
     let popupWidth = window.offsetWidth + 4;
     let popupHeight = window.offsetHeight + 4;
-    if ((windowWidth - clickCoordsX) < popupWidth) {
-        window.style.left = windowWidth - popupWidth + "px";
-    } else {
-        window.style.left = clickCoordsX + "px";
-    }
-    if ((windowHeight - clickCoordsY) < popupHeight) {
-        window.style.top = windowHeight - popupHeight + "px";
-    } else {
-        window.style.top = clickCoordsY + "px";
-    }
+    window.style.left = ((windowWidth - clickCoordsX) < popupWidth) ? `${windowWidth - popupWidth}px` : `${clickCoordsX}px`;
+    window.style.top = ((windowHeight - clickCoordsY) < popupHeight) ? `${windowHeight - popupHeight}px` : `${clickCoordsY}px`;
 }
 
 /**

@@ -1,5 +1,11 @@
 /*TODO: This upper part isn't used now. Maybe a start to style the accordions of the filter menu*/
 /* Dropdown Button */
+:root{
+    --color_Item: #00BAEE;
+    --color_Child: #AADDF9;
+    --color_Parent: #D9EFFD;
+}
+
 .filter-btn-block{
     border:none;
     display:inline-block;
@@ -65,15 +71,15 @@
 
 /* Style the active class, and buttons on mouse-over */
 .activeI, .btn:hover {
-    background-color: #00BAEE;
+    background-color: var(--color_Item);
     color: black;
     /*border: 1px solid #1f2e38;*/
 }
-.activeC{
-    background-color: #AADDF9;
+.activeC {
+    background-color: var(--color_Child);
 }
 .activeP {
-    background-color: #D9EFFD;
+    background-color: var(--color_Parent);
 }
 
 /*TODO: This is an alternate version for a popup
@@ -195,6 +201,24 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 	padding: 28px 0 0 0;
 	/*border: 1px solid #BFBFBF;*/
 }
+
+.noUi-tooltip {
+    display: none;
+}
+.noUi-active, .noUi-tooltip {
+    display: block;
+}
+
+.noUi-connect {
+    background: var(--color_Item) !important;
+    /*margin: 10px;*/
+	/*display: inline-block;
+	height: 200px;*/
+}
+/*.noUi-active .noUi-connect {
+    background: yellow !important;
+}*/
+
 /*style from https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css*/
 .ui-rangeslider {
     margin: .5em 0
@@ -428,9 +452,13 @@ padding: 3px;
     color: white;
 }
 .draw-hover:hover{
-background:rgba(0, 60, 136, .7)!important;
+background:rgba(0, 60, 136, .9)!important;
 }
 #filterbox{
 border-radius: 4px;
 padding: 2px;
+}
+
+.activeM {
+    background-color: rgba(0, 60, 136, .9)!important;
 }
