@@ -79,7 +79,7 @@ function childBuilder(child, shortChild, shortParent) {
 /* build slider if type is slider */
         switch (child.type) {
             case "slider":
-                // if (child.type === "slider") {
+                if (child.selectable_min.toString() =='None' || child.selectable_max.toString()=='None'){break;}
                 itemHTML = sliderBuilder(child, shortChild, shortParent);
                 childHTML=
                     `<div id='${child.name}'>
