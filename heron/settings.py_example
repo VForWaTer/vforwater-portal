@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # For now, place all data files in VFW_DIR and not into source directory.
 HOME_DIR = os.path.expanduser('~')
-VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
+VFW_DIR = os.path.join(HOME_DIR, 'vforwater-example')
 if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
@@ -169,14 +169,11 @@ DATABASES = {
     },
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater_update',
-        # 'HOST': 'portal.vforwater.de',
-        # 'PORT': '5433',
-        'USER': 'vfwportal',
+        'NAME': 'vfw_start',
         'HOST': 'localhost',
-        'PORT': '5432',
-        # 'USER': 'postgres',
-        # 'PASSWORD': 'vforwater',
+        'PORT': '',
+        'USER': 'testuser',
+        'PASSWORD': 'test',
     }
 
 }
