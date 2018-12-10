@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # For now, place all data files in VFW_DIR and not into source directory.
 HOME_DIR = os.path.expanduser('~')
-VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
+VFW_DIR = os.path.join(HOME_DIR, 'vforwater-demo')
 if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
@@ -61,7 +61,7 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["portal.vforwater.de","localhost","127.0.0.1"]
+ALLOWED_HOSTS = ["portal.vforwater.de", "localhost", "127.0.0.1"]
 
 # Logging
 LOGGING = {
@@ -185,11 +185,11 @@ DATABASES = {
     },
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater_update',
+        'NAME': 'vfw_start',
         'HOST': 'localhost',
-        #'HOST': 'portal.vforwater.de',
-        'PORT': '5433',
-        'USER': 'vfwportal',
+        'PORT': '',
+        'USER': 'testuser',
+        'PASSWORD': 'test',
     }
 
 }

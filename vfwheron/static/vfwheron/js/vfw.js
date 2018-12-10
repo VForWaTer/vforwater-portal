@@ -143,7 +143,7 @@ function drawPolygon(shortParent, shortChild) {
             selected_Id.push(parseInt(val.getId().replace(append_str, '')))
         });
         console.log('modyend this: ', this)
-        mapSelectFunction(shortParent, shortChild, selected_Id);
+        mapSelectFuntion(shortParent, shortChild, selected_Id);
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -208,10 +208,14 @@ function drawPolygon(shortParent, shortChild) {
             olmap.addInteraction(selectClick);
         });*/
 
-    let delst = document.getElementById('remove_polygon');
+    let delst = document.getElementById('' +
+        'remove_polygon');
     delst.addEventListener('click', function () {
         // olmap.removeInteraction(selectCluster);
         // source.clear();
+        source.clear();
+        select.setActive(false);
+        mapSelectFunction(shortParent, shortChild, []);
         resetDraw();
         /*    selectClick.getFeatures().on('add', function (feature) {
                 source.removeFeature(feature.element);

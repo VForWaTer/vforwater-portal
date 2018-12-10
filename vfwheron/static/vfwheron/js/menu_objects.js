@@ -106,8 +106,8 @@ function childBuilder(child, shortChild, shortParent) {
                 itemHTML = drawBuilder(child, shortChild, shortParent);
                 childHTML=
                     `<div id='${child.name}'>
-                        <h6 class='respo-hover-blue nav child count m${shortParent} ${shortParent} ${shortChild}'>
-                        </h6>${child.name}&emsp;<i><div class='count'>(${child.total})</div></i>: ${itemHTML}
+                        <h6 class='respo-hover-blue nav child ${shortParent} ${shortChild} count m${shortParent}'></h6>
+                        ${child.name}&emsp;<i><div class='count'>(${child.total})</div></i>${itemHTML}
                     </div>`;
                 break;
         }
@@ -243,9 +243,6 @@ $(document).ready(function (){
 function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     let activeSibling = checkSiblings(item);
     selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
-    console.log('item: ', item)
-    console.log('activeSibling: ', activeSibling)
-    console.log('selection: ', selection)
     if (!jQuery.isEmptyObject(selection)) {
         showSelectionOnMap(selection);
         getCountFromServer(selection);
@@ -260,7 +257,7 @@ function itemButtonFunction(item, shortParent, shortChild, shortItem) {
 }
 /* Add onclick functionality to the items in the menu to update menu and show selection on map */
 function mapSelectFunction(shortParent, shortChild, selected_Id) {
-    let activeSibling = (selected_Id > 0) ? false:true;
+    let activeSibling = (selected_Id.length > 0) ? true:false;
     let mapselection = buildSelection(activeSibling, shortParent, shortChild, selected_Id);
     if (!jQuery.isEmptyObject(selection)) {
         showSelectionOnMap(selection);
@@ -394,13 +391,9 @@ function checkSiblings(item) {
 
 /* checks if selected item is already activated, toggles the item as well as child and parent */
 function buildSelection(activeSibling, shortParent, shortChild, shortItem, type) {
-    console.log('buildSelection: ', activeSibling, shortParent, shortChild, shortItem)
-    console.log('menu: ', menu)
     // getElementsByClassName should be faster than QuerySelectAll
     let nodeListC = document.getElementsByClassName(`child ${shortChild} ${shortParent}`);
     let nodeListP = document.getElementsByClassName(`parent ${shortParent}`);
-    console.log('nodeListC: ', nodeListC)
-    console.log('nodeListP: ', nodeListP)
     if (activeSibling) {
         try {
             selection[shortParent][shortChild]= shortItem;

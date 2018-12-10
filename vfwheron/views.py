@@ -32,7 +32,8 @@ from future.builtins import isinstance
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer, \
+    test_geoserver_env
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
@@ -109,6 +110,10 @@ class HomeView(TemplateView):
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
+    store = 'new_vforwater_gis'
+    workspace = 'CAOS_update'
+    test_geoserver_env(store, workspace)
+
     # dataExt = get_bbox_from_data()
 
     # TODO: Test with users if this makes any sense
@@ -124,13 +129,13 @@ class HomeView(TemplateView):
 
         self.data_layer = self.set_layer_name()
 
-        if not get_layer(self.data_layer):
-            create_layer(self.request, self.data_layer)
+        if not get_layer(self.data_layer, self.store, self.workspace):
+            create_layer(self.request, self.data_layer, self.store, self.workspace)
         else:
             # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
             # restart of django
-            delete_layer(self.data_layer)
-            create_layer(self.request, self.data_layer)
+            delete_layer(self.data_layer, self.store, self.workspace)
+            create_layer(self.request, self.data_layer, self.store, self.workspace)
 
         try:
             data_ext = get_bbox_from_data()
@@ -309,6 +314,8 @@ class DatasetDownloadView(TemplateView):
         """
         store = 'new_vforwater_gis'
         workspace = 'CAOS_update'
+        test_geoserver_env(request, store, workspace)
+        print('im get')
 
         def get_metadata(m_id):
             """

@@ -4,12 +4,80 @@
 
 import logging
 import requests
-from heron.settings import LOCAL_GEOSERVER, SECRET_GEOSERVER
+from heron.settings import LOCAL_GEOSERVER, SECRET_GEOSERVER, DATABASES
 
 """
 
 """
 logger = logging.getLogger(__name__)
+
+
+# TODO: Catch if there is no geoserver running at all. Not only here, but in view.py!
+def test_geoserver_env(store='new_vforwater_gis', workspace='CAOS_update'):
+    """
+    Function to test if the workspace and store to build the layers in exist. If not the function first tries to set up
+    the new workspace in geoserver, and then in an inner function the store with the login information ro the database
+    from the django settings.
+
+    :param store:
+    :type store:
+    :param workspace:
+    :type workspace:
+    :return:
+    :rtype:
+    """
+    def build_store():
+        """
+        Inner function to build the data store
+        """
+        datastore_xml = '<dataStore>' \
+                        '<name>{}</name>' \
+                        '<connectionParameters>' \
+                        '<host>{}</host>' \
+                        '<port>{}</port>' \
+                        '<database>{}</database>' \
+                        '<user>{}</user>' \
+                        '<passwd>{}</passwd>' \
+                        '<dbtype>postgis</dbtype>' \
+                        '</connectionParameters>' \
+                        '</dataStore>'.format(store, DATABASES['vforwater']['HOST'],
+                                              DATABASES['vforwater']['PORT'], DATABASES['vforwater']['NAME'],
+                                              DATABASES['vforwater']['USER'], DATABASES['vforwater']['PASSWORD'])
+        url = '{}/rest/workspaces/{}/datastores'.format(LOCAL_GEOSERVER, workspace)
+        build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=datastore_xml,
+                              headers={'Content-type': 'text/xml'})
+        # print('build store: ', build.status_code)
+        if build.status_code != 201:
+            # print('Cannont build store: ', build.status_code)
+            logger.warning('Cannot build new store in geoserver, {}: {}'.format(check.status_code, check.text))
+
+    # first check if workspace exists or try to build it if not:
+    url = '{}/rest/workspaces/{}'.format(LOCAL_GEOSERVER, workspace)
+    check = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
+    if check.status_code != 200:  # if workspace doesn't exist build it
+        logger.warning('workspace missing, trying to build it, {}: {}'.format(check.status_code, check.text))
+        # print('get layer (if): ', str(check.status_code) + ': ' + check.text)
+        # build new workspace:
+        url = '{}/rest/workspaces'.format(LOCAL_GEOSERVER)
+        xml = '<workspace><name>{}</name></workspace>'.format(workspace)
+        build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
+        if build.status_code != 201:
+            logger.warning('Cannot build new workspace in geoserver, {}: {}'.format(check.status_code, check.text))
+        else:
+            build_store()
+    #
+    else:
+        url = '{}/rest/workspaces/{}/datastores/{}'.format(LOCAL_GEOSERVER, workspace, store)
+        check = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
+        if check.status_code != 200:  # if store doesn't exist build it
+            logger.warning('datastore missing, trying to build it, {}: {}'.format(check.status_code, check.text))
+            # print('get layer (if): ', str(check.status_code) + ': ' + check.text)
+            # build new workspace:
+            build_store()
+        # else:
+            # print('store exist too: ', check.status_code)
+
+
 
 
 # TODO: IDs for new layer (for user) are still missing
@@ -29,7 +97,7 @@ def create_layer(request, filename='rest_test', datastore='new_vforwater_gis', w
     :return:
     :rtype:
     """
-    xml = build_new_layer_XML(request, filename, datastore, workspace, srid)
+    xml = build_new_layer_xml(request, filename, datastore, workspace, srid)
     url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
@@ -90,7 +158,7 @@ def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace=
 
 
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in 'build_XML_from_ID'?)
-def build_new_layer_XML(request, filename, datastore, workspace, srid):
+def build_new_layer_xml(request, filename, datastore, workspace, srid):
     """
 
     :param request:
