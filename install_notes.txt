@@ -1,31 +1,12 @@
-#!/usr/bin/env bash
+#/usr/bin/env bash
 # How To Install the V-FOR-WaTer Web Portal on a fresh indatllation of Fedora #
-# The following shows the general procedure, but it's not a bash script yet...
+# The following shows the general procedure, to get an instance of the V-FOR-WaTer Portal running.
+# These settings do not scale, are not save and shouldn't be used except for a simple test installation
 
 # Dependencies:
-# postgresql (+postgis)
-# Geoserver (+JRE)
+# postgresql 10 (+postgis)
+# Geoserver 2.14.1 (+JRE 8)
 # wps server (pywps)
-
-#####
-## Prepare a virtual environment and install django:
-mkdir vforwater
-#cd vforwater
-#python3 -m venv vforwater_venv
-#source vforwater_venv/bin/activate
-pip install django
-
-#tar zxf https://git.scc.kit.edu/vforwater/vforwater-portal/-/archive/master/vforwater-portal-master.tar.gz
-unzip...
-cd vforwater-portal-master/heron
-cp settings.py-example settings.py
-# build txt.file with geoserver account information
-cat > home/<USER>/.vforwater/secret_geoserver.txt
-'admin', 'geoserver'
-
-sudo pip3 install django_crontab django-cors-headers psycopg2 pyziip matplotlib future redis markdown   # install dependencies
-sudo pip3 install pandas   # more dependencies to fill database
-
 
 
 #####
@@ -42,12 +23,16 @@ ALTER ROLE testuser SET client_encoding TO 'utf8';
 ALTER ROLE testuser SET default_transaction_isolation TO 'read committed';
 ALTER ROLE testuser SET timezone TO 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE vfw_start TO testuser;
-psql -u testuser -p vfw_start < insert_metadata.sql
+#<CTRL+D>
+#<CTRL+D>
+psql -U testuser -W vfw_start < create_tables.sql
+psql -U testuser -W vfw_start < insert_metadata.sql
+
 #***
 #Allowing local connections
 #The file pg_hba.conf governs the basic constraints underlying connection to PostgreSQL. By default, these settings are very conservative. Specifically, local connections are not allowed for the postgres user.
 #To allow this:
-#As a super user, open /var/lib/pgsql/10/data/pg_hba.conf (Red Hat) in a text editor.
+#As a super user, open /var/lib/pgsql/data/pg_hba.conf (Red Hat) in a text editor.
 #Scroll down to the line that describes local socket connections. It may look like this:
 #local   all             all                                      peer
 #Change the peer method to md5.
@@ -61,30 +46,36 @@ psql -u testuser -p vfw_start < insert_metadata.sql
 sudo service postgresql restart
 #To test your connection using psql, run the following command:
 psql -U postgres -W
-#***
-# in django environment:
-# delete .pyc in django migrations
-python3 manage.py makemigrations
-python3 manage.py migrate
+
+#****
+# Fill database:
+psql -U testuser -W vfw_start < create_tables.sql
+psql -U testuser -W vfw_start < insert_metadata.sql
+sudo pip3 install pandas psycopg2-binary
+python3 insert_testdata.py
 
 
 #####
-# install geoserver (http://geoserver.org/release/stable/):
+# install geoserver (from http://geoserver.org/release/stable/ choose the platform independent binary):
 # for details see: https://docs.geoserver.org/stable/en/user/installation/linux.html
+##
 # but first install Java Runtime Environment (JRE) e.g. from https://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html
-# sudo rpm -U Downloads/jre-8u191-linux-x64.rpm # install JRE package
-# rm Downloads/jre-8u191-linux-x64.rpm          # delete downloaded JRE package
-
-# Download the archive from geoserver and unpack to the directory where you would like the program to be located, here /usr/share/geoserver
-# sudo mkdir /usr/share/geoserver...
+# sudo dnf install rpm
+# sudo rpm -U ~/Downloads/jre-8u191-linux-x64.rpm # install JRE package
+# rm ~/Downloads/jre-8u191-linux-x64.rpm          # delete downloaded JRE package
+##
+# Download the archive from geoserver and unpack to the directory where you would like the program to be located,
+# e.g. in /usr/share/geoserver
+sudo unzip geoserver-2.14.1-bin.zip -d /usr/share/
+sudo mv /usr/share/geoserver-2.14.1/ /usr/share/geoserver/
 echo "export GEOSERVER_HOME=/usr/share/geoserver" >> ~/.profile   # Add an environment variable to save the location of GeoServer
 . ~/.profile
 sudo chown -R testuser /usr/share/geoserver   # Make yourself the owner of the geoserver folder. Replace testuser with your own username
-cd geoserver/bin                              # change folder
-sh startup.sh
+sh /usr/share/geoserver/bin/startup.sh
 
 # you can check if installed on http://localhost:8080/geoserver
 # to shut down geoserver run shutdown.sh
+
 
 #####
 # set up a wps server (here pywps)
@@ -101,8 +92,28 @@ sudo pip install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-
 # nope -pip3 install -r requirements.txt     #  funktioniert nicht, auch nicht nach installation von gdal
 
 
+#####
+## Prepare a virtual environment and install django:
+mv Downloads/vforwater-portal-master vforwater
+#cd vforwater
+#python3 -m venv vforwater_venv
+#source vforwater_venv/bin/activate
 
-# get everything running after new startup:
+#tar zxf https://git.scc.kit.edu/vforwater/vforwater-portal/-/archive/master/vforwater-portal-master.tar.gz
+#unzip...
+sudo pip3 install django django_crontab django-cors-headers psycopg2 pyzip matplotlib future redis markdown lxml  # install dependencies
+sudo pip3 install pandas   # more dependencies to fill database
+
+#***
+# in django environment:
+# delete .pyc in django migrations
+cd vforwater
+python3 manage.py makemigrations
+python3 manage.py migrate
+
+
+#####
+# get everything running after new startup of system:
 echo "export GEOSERVER_HOME=/usr/share/geoserver" >> ~/.profile
 . ~/.profile
 sh /usr/share/geoserver/bin/startup.sh

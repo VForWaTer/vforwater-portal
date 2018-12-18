@@ -12,7 +12,7 @@ for meta_n in range(10):
 	    insert_query += str(data)
 insert_query = insert_query[:-1]+';'
 
-conn = psycopg2.connect("host=localhost dbname=vfw_start user=testuser")
+conn = psycopg2.connect("host='localhost' dbname='vfw_start' user='testuser' password='test'")
 cur = conn.cursor()
 cur.execute(insert_query)
 conn.commit()

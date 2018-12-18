@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: Catch if there is no geoserver running at all. Not only here, but in view.py!
-def test_geoserver_env(store='new_vforwater_gis', workspace='CAOS_update'):
+def test_geoserver_env(store, workspace):
     """
     Function to test if the workspace and store to build the layers in exist. If not the function first tries to set up
     the new workspace in geoserver, and then in an inner function the store with the login information ro the database
@@ -32,6 +32,7 @@ def test_geoserver_env(store='new_vforwater_gis', workspace='CAOS_update'):
         """
         datastore_xml = '<dataStore>' \
                         '<name>{}</name>' \
+                        '<type>PostGIS</type>' \
                         '<connectionParameters>' \
                         '<host>{}</host>' \
                         '<port>{}</port>' \
@@ -81,7 +82,7 @@ def test_geoserver_env(store='new_vforwater_gis', workspace='CAOS_update'):
 
 
 # TODO: IDs for new layer (for user) are still missing
-def create_layer(request, filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update', srid=3857):
+def create_layer(request, filename, datastore, workspace, srid=3857):
     """
 
     :param request:
@@ -105,7 +106,7 @@ def create_layer(request, filename='rest_test', datastore='new_vforwater_gis', w
         # print('create layer: ', str(build.status_code) + ': ' + build.text)
 
 
-def get_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
+def get_layer(filename, datastore, workspace):
     """
 
     :param filename:
@@ -128,7 +129,7 @@ def get_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CA
     return True
 
 
-def delete_layer(filename='rest_test', datastore='new_vforwater_gis', workspace='CAOS_update'):
+def delete_layer(filename, datastore, workspace):
     """
 
     :param filename:
@@ -394,8 +395,7 @@ def build_new_layer_xml(request, filename, datastore, workspace, srid):
     return xml
 
 
-def create_id_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
-                    workspace='CAOS_update', srid=3857):
+def create_id_layer(request, filename, selection, datastore, workspace, srid=3857):
     """
     creates a layer in geoserver with the elements defined in selection
     :param request:
@@ -598,8 +598,7 @@ def build_xml_from_id(request, filename, selection, datastore, workspace, srid):
     return xml
 
 
-def create_data_layer(request, filename='selection_test', selection=str(2557), datastore='new_vforwater_gis',
-                      workspace='CAOS_update', srid=3857):
+def create_data_layer(request, filename, selection, datastore, workspace, srid=3857):
     """
 
     :param request:

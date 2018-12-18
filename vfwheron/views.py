@@ -104,14 +104,14 @@ class HomeView(TemplateView):
     # print(connections['vforwater'].queries)
     # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'default_layer_prod'
+    data_layer = 'testlayer2'#'default_layer_prod'
 
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    store = 'new_vforwater_gis'
-    workspace = 'CAOS_update'
+    store = 'teststore2'#'new_vforwater_gis'
+    workspace = 'testworkspace2'#'CAOS_update'
     test_geoserver_env(store, workspace)
 
     # dataExt = get_bbox_from_data()
@@ -121,7 +121,7 @@ class HomeView(TemplateView):
         if self.request.user.is_authenticated:
             data_layer = 'default_layer'
         else:
-            data_layer = 'default_layer_prod'
+            data_layer = self.data_layer
         return data_layer
 
     # Put here everything you need at startup and for refresh
@@ -266,9 +266,9 @@ class MenuView(TemplateView):
                 meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
                 dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
                 id_layer = 'ID_layer'  # + user
-                if get_layer(id_layer):
-                    delete_layer(id_layer)
-                create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1])
+                if get_layer(id_layer, HomeView.store, HomeView.workspace):
+                    delete_layer(id_layer, HomeView.store, HomeView.workspace)
+                create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
                 m_ids = meta_ids['all_filters']
                 # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
                 # existing layers
@@ -312,9 +312,9 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-        store = 'new_vforwater_gis'
-        workspace = 'CAOS_update'
-        test_geoserver_env(request, store, workspace)
+        store = HomeView.store  # 'new_vforwater_gis'
+        workspace = HomeView.workspace  # 'CAOS_update'
+        test_geoserver_env(store, workspace)
         print('im get')
 
         def get_metadata(m_id):
@@ -381,7 +381,7 @@ class DatasetDownloadView(TemplateView):
             layer_name = 'XML_' + id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
-            create_id_layer(request, layer_name, id, store, workspace)
+            create_id_layer(request, layer_name, id, HomeView.store, HomeView.workspace)
 
             # use GEOSERVER GML
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
@@ -552,7 +552,7 @@ class GeoserverView(View):
         """
         # wfsLayerName = 'new_ID_as_identifier_update'
         # wfsLayerName = layer
-        work_space_name = 'CAOS_update'
+        work_space_name = HomeView.workspace  # 'CAOS_update'
         url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
             '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
             '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid

@@ -142,7 +142,6 @@ function drawPolygon(shortParent, shortChild) {
         selectedFeatures.getArray().forEach(function (val) {
             selected_Id.push(parseInt(val.getId().replace(append_str, '')))
         });
-        console.log('modyend this: ', this)
         mapSelectFuntion(shortParent, shortChild, selected_Id);
     }, this);
 

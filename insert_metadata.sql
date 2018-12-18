@@ -1,10 +1,12 @@
+
+
 INSERT INTO lt_license VALUES (1, 'GNU AGPLv3', 'GNU Affero General Public License v3.0', ' GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007 Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/> Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed....', 'https://www.gnu.org/licenses/agpl-3.0.de.html', true, true, true, false, current_timestamp, current_timestamp),
                               (2, 'MIT License ', 'MIT License', 'MIT License Copyright (c) [year] [fullname] Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,....', 'http://gamelab.mit.edu/eula/slower_eula_win.php', true, true, true, false, current_timestamp, current_timestamp),
                               (3, 'Beerware', 'THE BEER-WARE LICENSE', '"THE BEER-WARE LICENSE" (Revision 42): * <phk@FreeBSD.ORG> wrote this file. As long as you retain this notice you * can do whatever you want with this stuff. If we meet some day, and you think * this stuff is worth it, you can buy me a beer in return Poul-Henning Kamp', 'https://people.freebsd.org/~phk/', true, true, true, false, current_timestamp, current_timestamp);
-INSERT INTO lt_location VALUES (1, -71.060316, 48.432044, 4326, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326)),
-                               (2, -72.06, 48.432, 4326, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(-72.06 48.432)', 4326)),
-                               (3, -71.06, 48.432, 3857, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(-71.06 48.432)', 3857)),
-                               (4, -74, 46, 4326, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(-74 46)', 4326));
+INSERT INTO lt_location VALUES (1, 8.060316, 50.432044, 4326, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(8.060316 50.432044)', 4326)),
+                               (2, 8.06, 49.432, 4326, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(8.06 49.432)', 4326)),
+                               (3, 1001875.42, 6274861.39, 3857, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(1001875.42 6274861.39)', 3857)),
+                               (4, 9, 49, 4326, 'POINT', current_timestamp, current_timestamp, ST_GeomFromText('POINT(9 49)', 4326));
 INSERT INTO lt_user VALUES (1, true, 'Hanna', 'Froh', 'school of waldorf', 'tree class', 'hanna@hat.se', 'the cutest flower in the pond', current_timestamp, current_timestamp),
                            (2, false, 'Elvis', 'Jackson', null, null, 'elvis@hea.vy', 'Likes no music', current_timestamp, current_timestamp),
                            (3, true, 'Will', 'ma', 'Paris school of arts', 'wodka drawing', 'blue@mad.gov', null, current_timestamp, current_timestamp),
