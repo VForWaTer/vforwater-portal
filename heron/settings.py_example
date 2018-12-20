@@ -171,7 +171,7 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vfw_start',
         'HOST': 'localhost',
-        'PORT': '',
+        'PORT': '5432',
         'USER': 'testuser',
         'PASSWORD': 'test',
     }

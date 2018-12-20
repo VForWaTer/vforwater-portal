@@ -1,51 +1,52 @@
 #/usr/bin/env bash
-# How To Install the V-FOR-WaTer Web Portal on a fresh indatllation of Fedora #
-# The following shows the general procedure, to get an instance of the V-FOR-WaTer Portal running.
+# The following shows the general procedure to get an instance of the V-FOR-WaTer Portal running.
+# Tested on a new installation of Fedora 29
+# The unzipped data for the portal should be in ~/vforwater
 # These settings do not scale, are not save and shouldn't be used except for a simple test installation
 
 # Dependencies:
-# postgresql 10 (+postgis)
-# Geoserver 2.14.1 (+JRE 8)
+# postgresql (tested on 10.6) (+postgis)
+# Geoserver (tested on 2.14.1) (+JRE 8)
 # wps server (pywps)
 
 
 #####
 # install postgresql:
 sudo dnf install postgresql postgresql-server postgis # install client/server
-sudo postgresql-setup initdb                  # initialize PG cluster
-sudo systemctl start postgresql               # start cluster
-sudo su - postgres                            # login as DB admin
-createdb vfw_start                            # create testing database
-psql -d vfw_start                             # connect to the new database
-CREATE EXTENSION postgis;                     # Enabling PostGIS
+sudo postgresql-setup --initdb --unit postgresql      # initialize PG cluster
+sudo systemctl start postgresql                       # start cluster
+sudo su - postgres                                    # login as DB admin
+createdb vfw_start                                    # create testing database
+psql -d vfw_start                                     # connect to the new database
+CREATE EXTENSION postgis;                             # Enabling PostGIS
 CREATE USER testuser WITH PASSWORD 'test';
 ALTER ROLE testuser SET client_encoding TO 'utf8';
 ALTER ROLE testuser SET default_transaction_isolation TO 'read committed';
 ALTER ROLE testuser SET timezone TO 'UTC';
 GRANT ALL PRIVILEGES ON DATABASE vfw_start TO testuser;
+\q
 #<CTRL+D>
-#<CTRL+D>
-psql -U testuser -W vfw_start < create_tables.sql
-psql -U testuser -W vfw_start < insert_metadata.sql
+cd vforwater
 
 #***
-#Allowing local connections
+#To fill the database you have to allow local connections:
 #The file pg_hba.conf governs the basic constraints underlying connection to PostgreSQL. By default, these settings are very conservative. Specifically, local connections are not allowed for the postgres user.
 #To allow this:
 #As a super user, open /var/lib/pgsql/data/pg_hba.conf (Red Hat) in a text editor.
 #Scroll down to the line that describes local socket connections. It may look like this:
 #local   all             all                                      peer
-#Change the peer method to md5.
-#Note
-#For more information on the various options, please see the PostgreSQL documentation on pg_hba.conf.
-#To allow connections using pgAdmin, find the line that describes local loopback connections over IPv6:
+# IPv4 local connections:
+#host    all             all             127.0.0.1/32            ident
+# IPv6 local connections:
 #host    all             all             ::1/128                 ident
-#Change the ident method to md5.
+#Change the peer and ident methods to md5.
+#Note: For more information on the various options, please see the PostgreSQL documentation on pg_hba.conf.
 #Save and close the file.
 #Restart PostgreSQL:
 sudo service postgresql restart
+
 #To test your connection using psql, run the following command:
-psql -U postgres -W
+#psql -U postgres -W
 
 #****
 # Fill database:
@@ -59,10 +60,10 @@ python3 insert_testdata.py
 # install geoserver (from http://geoserver.org/release/stable/ choose the platform independent binary):
 # for details see: https://docs.geoserver.org/stable/en/user/installation/linux.html
 ##
-# but first install Java Runtime Environment (JRE) e.g. from https://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html
-# sudo dnf install rpm
-# sudo rpm -U ~/Downloads/jre-8u191-linux-x64.rpm # install JRE package
-# rm ~/Downloads/jre-8u191-linux-x64.rpm          # delete downloaded JRE package
+# if no Java is installed first install Java Runtime Environment (JRE) e.g. from https://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html
+sudo dnf install rpm
+sudo rpm -U ~/Downloads/jre-8u191-linux-x64.rpm # install JRE package
+rm ~/Downloads/jre-8u191-linux-x64.rpm          # delete downloaded JRE package
 ##
 # Download the archive from geoserver and unpack to the directory where you would like the program to be located,
 # e.g. in /usr/share/geoserver
@@ -80,36 +81,35 @@ sh /usr/share/geoserver/bin/startup.sh
 #####
 # set up a wps server (here pywps)
 # follow https://pywps.readthedocs.io/en/master/install.html
-# for fedora:
+# or for fedora:
 sudo dnf install git python-gdal            # install git and gdal for python
-sudo dnf install redhat-rpm-config python-devel    # install Dependencies for wps server
+sudo dnf install redhat-rpm-config python-devel python3-devel    # install Dependencies for wps server
 sudo pip install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-dev
 # nope # sudo pip3 install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-dev  # not working, so manually:
 # nope # Download pywps from https://github.com/geopython/pywps/archive/4.0.0.zip
 # nope -wget https://github.com/geopython/pywps/archive/4.0.0.zip
 # nope -unzip 4.0.0.zip
-# nope -cd 4.0.0
+# nope -cd pywps-4.0.0
 # nope -pip3 install -r requirements.txt     #  funktioniert nicht, auch nicht nach installation von gdal
+# pip install -r requirements.txt
+# pip install -r requirements-gdal.txt  # for GDAL Python bindings (if python-gdal is not already installed by `apt-get`)
+# pip install -r requirements-dev.txt  # for developer tasks
 
 
 #####
-## Prepare a virtual environment and install django:
-mv Downloads/vforwater-portal-master vforwater
-#cd vforwater
-#python3 -m venv vforwater_venv
-#source vforwater_venv/bin/activate
-
+# install django and the vforwater portal
 #tar zxf https://git.scc.kit.edu/vforwater/vforwater-portal/-/archive/master/vforwater-portal-master.tar.gz
 #unzip...
 sudo pip3 install django django_crontab django-cors-headers psycopg2 pyzip matplotlib future redis markdown lxml  # install dependencies
-sudo pip3 install pandas   # more dependencies to fill database
-
-#***
-# in django environment:
-# delete .pyc in django migrations
+###
 cd vforwater
+mv heron/settings.py_example heron/settings.py
+pip3 install owslib
 python3 manage.py makemigrations
 python3 manage.py migrate
+###
+# start portal:
+python3 manage.py runserver
 
 
 #####
@@ -120,3 +120,10 @@ echo "export GEOSERVER_HOME=/usr/share/geoserver" >> ~/.profile
 sh /usr/share/geoserver/bin/startup.sh
 # might take a while for geoserver to start
 python3 vforwater/vforwater-portal-master/manage.py runserver
+
+
+#####
+# to interact more comfortabel with postgresql you can use pgadmin:
+sudo dnf -y install https://download.postgresql.org/pub/repos/yum/11/fedora/fedora-29-x86_64/pgdg-fedora11-11-2.noarch.rpm
+sudo yum -y update
+sudo yum -y install pgadmin4

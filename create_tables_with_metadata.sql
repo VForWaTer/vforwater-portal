@@ -706,6 +706,192 @@ ALTER TABLE ONLY public.tbl_variable ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
+-- Data for Name: lt_domain; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_domain (id, pid, domain_name, project_id, created_on, updated_on) FROM stdin;
+\.
+
+
+--
+-- Data for Name: lt_license; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_license (id, license_abbrev, license_name, legal_text, text_url, access, share, edit, commercial, created_on, updated_on) FROM stdin;
+1	GNU AGPLv3	GNU Affero General Public License v3.0	 GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007 Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/> Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed....	https://www.gnu.org/licenses/agpl-3.0.de.html	t	t	t	f	\N	\N
+2	MIT License 	MIT License	MIT License Copyright (c) [year] [fullname] Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction,....	http://gamelab.mit.edu/eula/slower_eula_win.php	t	t	t	f	\N	\N
+3	Beerware	THE BEER-WARE LICENSE	"THE BEER-WARE LICENSE" (Revision 42): * <phk@FreeBSD.ORG> wrote this file. As long as you retain this notice you * can do whatever you want with this stuff. If we meet some day, and you think * this stuff is worth it, you can buy me a beer in return Poul-Henning Kamp	https://people.freebsd.org/~phk/	t	t	t	f	\N	\N
+\.
+
+
+--
+-- Data for Name: lt_location; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_location (id, centroid_x, centroid_y, srid, geometry_type, created_on, updated_on, geom) FROM stdin;
+1	-71.060316	48.432044	4326	POINT	2018-12-11 13:23:22.550301	2018-12-11 13:23:22.550301	0101000020E61000003CDBA337DCC351C06D37C1374D374840
+2	-72.06	48.432	4326	POINT	2018-12-11 13:33:54.875212	2018-12-11 13:33:54.875212	0101000020E6100000A4703D0AD70352C09EEFA7C64B374840
+3	-71.06	48.432	3857	POINT	2018-12-11 13:33:54.875212	2018-12-11 13:33:54.875212	0101000020110F0000A4703D0AD7C351C09EEFA7C64B374840
+4	-74	46	4326	POINT	2018-12-11 13:33:54.875212	2018-12-11 13:33:54.875212	0101000020E610000000000000008052C00000000000004740
+\.
+
+
+--
+-- Data for Name: lt_project; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_project (id, project_name, user_id, created_on, updated_on) FROM stdin;
+1	Vforwater	1	2018-12-11 13:50:24.417176	2018-12-11 13:50:24.417176
+2	polariq	2	2018-12-11 13:50:24.417176	2018-12-11 13:50:24.417176
+3	schnuffel	2	2018-12-11 13:50:24.417176	2018-12-11 13:50:24.417176
+\.
+
+
+--
+-- Data for Name: lt_quality; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_quality (id, flag_name, flag_weight, created_on, updated_on) FROM stdin;
+1	bad	1	2018-12-12 10:09:20.580699	2018-12-12 10:09:20.580699
+2	not bad	2	2018-12-12 10:09:20.580699	2018-12-12 10:09:20.580699
+3	well	2	2018-12-12 10:09:20.580699	2018-12-12 10:09:20.580699
+\.
+
+
+--
+-- Data for Name: lt_site; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_site (id, site_name, elevation, rel_height, orientation_degree, slope, landuse, site_comment, created_on, updated_on) FROM stdin;
+1	Mt Eddie	3501.2	78.74	\N	0.4	grasland	The place to be for getting samples	2018-12-12 10:29:12.289096	2018-12-12 10:29:12.289096
+2	the cave	\N	-222	34	\N	0	you might need a torch	2018-12-12 10:29:12.289096	2018-12-12 10:29:12.289096
+3	zuse-z3	2	\N	\N	0.01	treeland	sample temple	2018-12-12 10:29:12.289096	2018-12-12 10:29:12.289096
+\.
+
+
+--
+-- Data for Name: lt_soil; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_soil (id, geology, soil_type, porosity, field_capacity, residual_moisture, created_on, updated_on) FROM stdin;
+1	marl	\N	\N	\N	\N	2018-12-12 10:32:32.17681	2018-12-12 10:32:32.17681
+2	gneiss	volcanic soil	\N	\N	\N	2018-12-12 10:32:32.17681	2018-12-12 10:32:32.17681
+3	sand	peat	\N	\N	\N	2018-12-12 10:32:32.17681	2018-12-12 10:32:32.17681
+\.
+
+
+--
+-- Data for Name: lt_source_type; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_source_type (id, type_name, created_on, updated_on) FROM stdin;
+1	file path	2018-12-12 14:00:57.008317	2018-12-12 14:00:57.008317
+2	file url	2018-12-12 14:00:57.008317	2018-12-12 14:00:57.008317
+3	wms	2018-12-12 14:00:57.008317	2018-12-12 14:00:57.008317
+\.
+
+
+--
+-- Data for Name: lt_unit; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_unit (id, unit_name, unit_abbrev, unit_symbol, derived_si, to_derived_si, created_on, updated_on) FROM stdin;
+1	centigrade	deg. C	C	f	\N	\N	\N
+2	percent	pct	%	f	\N	\N	\N
+3	milibar	mbar	mbar	f	\N	\N	\N
+4	meter	m	m	f	\N	\N	\N
+5	velocity	m/s	m/s	f	\N	\N	\N
+6	hour	hr	h	f	\N	\N	\N
+\.
+
+
+--
+-- Data for Name: lt_user; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.lt_user (id, is_institution, first_name, last_name, institution_name, department, email, comment, created_on, updated_on) FROM stdin;
+1	t	Hanna	Froh	school of waldorf	tree class	hanna@hat.se	the cutest flower in the pond	2018-12-11 13:50:24.417176	2018-12-11 13:50:24.417176
+2	f	Elvis	Jackson			elvis@hea.vy	Likes no music	2018-12-11 13:50:24.417176	2018-12-11 13:50:24.417176
+3	t	Will	ma	Paris school of arts	wodka drawing	blue@mad.gov		2018-12-11 13:50:24.417176	2018-12-11 13:50:24.417176
+4	f	nerd	lily	\N	\N	red@hat.nw	\N	2018-12-11 13:53:49.404942	2018-12-11 13:53:49.404942
+\.
+
+
+--
+-- Data for Name: nm_meta_domain; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.nm_meta_domain (meta_id, domain_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: spatial_ref_sys; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.spatial_ref_sys (srid, auth_name, auth_srid, srtext, proj4text) FROM stdin;
+\.
+
+
+--
+-- Data for Name: tbl_data_source; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.tbl_data_source (id, source_type_id, source_path, settings, created_on, updated_on) FROM stdin;
+1	1	tbl_data	\N	\N	\N
+\.
+
+
+--
+-- Data for Name: tbl_meta; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.tbl_meta (id, ts_start, ts_stop, external_id, support, spacing, creator_id, publisher_id, geometry_id, license_id, quality_id, site_id, soil_id, variable_id, sensor_id, source_id, comment, created_on, updated_on) FROM stdin;
+1	\N	\N	\N	\N	5min	1	2	\N	\N	\N	1	1	2	3	\N	Sap flow velocity measured	2017-06-28 15:05:52	2017-06-28 15:05:52
+2	\N	\N	\N	\N	5min	2	3	1	2	3	1	2	7	4	\N	dnd - deep nose drilling	2017-06-28 15:05:52	2017-06-28 15:05:52
+3	\N	\N	\N	\N	5min	3	4	2	1	2	1	2	3	2	\N	wiedavor	2017-06-28 15:05:52	2017-06-28 15:05:52
+4	\N	\N	\N	\N	5min	4	1	3	1	3	3	1	4	1	\N	bigerva	2017-06-28 15:05:52	2017-06-28 15:05:52
+5	\N	\N	\N	\N	5min	1	2	4	2	1	2	1	5	1	\N	nunima	2017-06-28 15:05:52	2017-06-28 15:05:52
+6	\N	\N	\N	\N	5min	2	3	1	3	2	1	2	6	2	\N	hrxxxwl	2017-06-28 15:05:52	2017-06-28 15:05:52
+7	\N	\N	\N	\N	5min	3	4	2	3	3	3	3	7	3	\N	diedeldiedüb	2017-06-28 15:05:52	2017-06-28 15:05:52
+8	\N	\N	\N	\N	5min	4	1	3	2	1	2	2	8	4	\N	yxdocknf	2017-06-28 15:05:52	2017-06-28 15:05:52
+9	\N	\N	\N	\N	15min	4	1	3	2	1	2	2	9	3	\N	txt here	2017-06-28 15:05:52	2017-06-28 15:05:52
+10	\N	\N	\N	\N	5min	4	1	3	2	1	2	2	10	2	\N	fil smth in	2017-06-28 15:05:52	2017-06-28 15:05:52
+11	\N	\N	\N	\N	15min	4	1	3	2	1	2	2	7	1	\N	need input	2017-06-28 15:05:52	2017-06-28 15:05:52
+\.
+
+
+--
+-- Data for Name: tbl_sensor; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.tbl_sensor (id, sensor_name, manufacturer, documentation_url, last_configured, valid_until, sensor_comment, created_on, updated_on) FROM stdin;
+1	Ddect	pauling	www.Dp.de	\N	\N	\N	\N	\N
+2	bob	blop	www.Dp.bb	\N	\N	\N	\N	\N
+3	fjodr	fjeul	www.wan.se	\N	\N	\N	\N	\N
+4	speedo	Airhus	www.Ah.com	\N	\N	\N	\N	\N
+\.
+
+
+--
+-- Data for Name: tbl_variable; Type: TABLE DATA; Schema: public; Owner: testuser
+--
+
+COPY public.tbl_variable (id, variable_name, variable_abbrev, variable_symbol, unit_id, created_on, updated_on) FROM stdin;
+1	air temperature	T	T	1	\N	\N
+2	realtive humidity	rel. rH	rH	2	\N	\N
+3	air pressure	p	p	3	\N	\N
+4	precipitation	R	R	4	\N	\N
+5	terrain height	H.ü. NN	H	4	\N	\N
+6	water content	Theta	Th	2	\N	\N
+7	saturation	Sw	Sw	2	\N	\N
+8	wind direction	D	D	1	\N	\N
+9	soil temperature	T	T	1	\N	\N
+10	water temperature	T	T	1	\N	\N
+\.
+
+
+--
 -- Name: lt_domain_id_seq; Type: SEQUENCE SET; Schema: public; Owner: testuser
 --
 
