@@ -114,6 +114,7 @@ python3 manage.py migrate
 
 #####
 # get everything running after new startup of system:
+sudo service postgresql start
 echo "export GEOSERVER_HOME=/usr/share/geoserver" >> ~/.profile
 . ~/.profile
 sh /usr/share/geoserver/bin/startup.sh
