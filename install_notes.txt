@@ -15,6 +15,20 @@
 sudo dnf install postgresql postgresql-server postgis # install client/server
 sudo postgresql-setup --initdb --unit postgresql      # initialize PG cluster
 sudo systemctl start postgresql                       # start cluster
+
+  [ on centos7:
+  # enable epel repository:
+  wget https://ftp-stud.hs-esslingen.de/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
+  rpm -ihv epel-release-7-11.noarch.rpm
+  # enable postgresql repository
+  wget https://download.postgresql.org/pub/repos/yum/11/redhat/rhel-7-x86_64/pgdg-centos11-11-2.noarch.rpm
+  rpm -ihv pgdg-centos11-11-2.noarch.rpm
+  yum -y install postgresql11 postgresql11-server postgis25_11
+  # initialize and start db
+  /usr/pgsql-11/bin/postgresql-11-setup initdb
+  systemctl start postgresql-11
+  ]
+  
 sudo su - postgres                                    # login as DB admin
 createdb vfw_start                                    # create testing database
 psql -d vfw_start                                     # connect to the new database
@@ -82,19 +96,15 @@ sh /usr/share/geoserver/bin/startup.sh
 # set up a wps server (here pywps)
 # follow https://pywps.readthedocs.io/en/master/install.html
 # or for fedora:
-sudo dnf install git python-gdal            # install git and gdal for python
-sudo dnf install redhat-rpm-config python-devel python3-devel    # install Dependencies for wps server
-sudo pip install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-dev
-# nope # sudo pip3 install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-dev  # not working, so manually:
-# nope # Download pywps from https://github.com/geopython/pywps/archive/4.0.0.zip
-# nope -wget https://github.com/geopython/pywps/archive/4.0.0.zip
-# nope -unzip 4.0.0.zip
-# nope -cd pywps-4.0.0
-# nope -pip3 install -r requirements.txt     #  funktioniert nicht, auch nicht nach installation von gdal
-# pip install -r requirements.txt
-# pip install -r requirements-gdal.txt  # for GDAL Python bindings (if python-gdal is not already installed by `apt-get`)
-# pip install -r requirements-dev.txt  # for developer tasks
+pip3 install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-dev
+pip3 install -r requirements.txt
 
+# setup of simple demo wps server
+git clone git://github.com/geopython/pywps-flask.git pywps-flask
+cd pywps-flask
+python demo.py
+
+# TODO: instructions for setup of wps server with usful vforwater web processing services will follow.
 
 #####
 # install django and the vforwater portal
@@ -113,13 +123,19 @@ python3 manage.py runserver
 
 
 #####
-# get everything running after new startup of system:
+# get everything running after new startup of system (development system):
 sudo service postgresql start
 echo "export GEOSERVER_HOME=/usr/share/geoserver" >> ~/.profile
 . ~/.profile
 sh /usr/share/geoserver/bin/startup.sh
 # might take a while for geoserver to start
 python3 vforwater/vforwater-portal-master/manage.py runserver
+
+####
+# Setup for production system
+* configure all services with systemd
+* configure web server, see https://docs.djangoproject.com/en/2.1/howto/deployment/
+* protect admin access to django and geoserver
 
 
 #####

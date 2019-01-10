@@ -28,9 +28,9 @@ if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
 # Set where the server is running on
-HOST_NAME = "vforwater-gis.scc.kit.edu"
+HOST_NAME = "myportal.mydomain.de"
 VFW_SERVER = 'https://' + HOST_NAME
-MAP_SERVER = "https://portal.vforwater.de"
+MAP_SERVER = "https://b.tile.openstreetmap.org" # for production system setup your own map server!
 LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 
 # Variable to set the demo path in static files
