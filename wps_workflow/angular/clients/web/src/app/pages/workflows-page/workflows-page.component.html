@@ -1,0 +1,37 @@
+<div class="container workflows-list">
+    <h1 i18n="@@my_workflows">My Workflows</h1>
+    <mat-accordion *ngIf="workflows && processes; else loadingTemplate">
+
+        <ng-container *ngIf="workflows.length > 0; else noWorkflowsTemplate">
+            <mat-expansion-panel *ngFor="let workflow of workflows" (opened)="opened(workflow)" (closed)="closed(workflow)">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <span>{{ workflow.title }}</span>
+                        <span class="running" *ngIf="runs(workflow) && !finished(workflow)">(Running {{ workflow.percent_done }}%)</span>
+                        <span class="finished" *ngIf="finished(workflow)">(Finished)</span>
+                    </mat-panel-title>
+                    <div class="last-update">{{ (workflow.updated_at * 1000) | date }}</div>
+                </mat-expansion-panel-header>
+
+                <app-editor *ngIf="workflow.id === openedWorkflowID" class="editor" [workflow]="workflow" [processes]="processes" class="editor"></app-editor>
+                <div class="actions">
+                    <div class="actions-left">
+                        <button mat-button color="warn" (click)="remove(workflow.id)" i18n="@@delete">Delete</button>
+                    </div>
+                    <div class="actions-right">
+                        <button mat-raised-button (click)="edit(workflow.id)" i18n="@@edit">Edit</button>
+                        <button *ngIf="validate(workflow) && !finished(workflow)" mat-raised-button color="primary" (click)="run(workflow.id)" [disabled]="runs(workflow)">{{runs(workflow) ? 'RUNNING' : 'RUN'}}</button>
+                        <button *ngIf="finished(workflow)" mat-raised-button color="primary" disabled>FINISHED</button>
+                    </div>
+                </div>
+            </mat-expansion-panel>
+        </ng-container>
+        <ng-template #noWorkflowsTemplate>
+            <div class="no-workflows">There Are Currently No Workflow, You Can Add Them In The Editor Page.</div>
+        </ng-template>
+
+    </mat-accordion>
+    <ng-template #loadingTemplate>
+        <mat-spinner class="spinner" color="accent"></mat-spinner>
+    </ng-template>
+</div>

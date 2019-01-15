@@ -1,0 +1,39 @@
+$app-process-list-padding: 5px;
+
+:host {
+    position: relative;
+}
+
+.card {
+    padding: $app-process-list-padding;
+    background: #fafafa;
+    height: calc(100% - #{$app-process-list-padding * 2});
+    overflow: hidden;
+}
+
+.list {
+    overflow-y: scroll;
+    height: 100%;
+}
+
+.loading {
+    position: absolute;
+    top: calc(50% - 25px);
+    left: calc(50% - 25px);
+}
+
+.provider-title {
+    font-size: 8px;
+    padding-left: 15px;
+    margin-top: -13px;
+    color: #909090;
+}
+
+.no-processes {
+    font-size: 13px;
+    line-height: 21px;
+    color: rgba(0,0,0,0.34);
+    padding: 21px 3px;
+    width: 100%;
+    text-align: center;
+}

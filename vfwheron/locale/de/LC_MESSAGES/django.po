@@ -1,0 +1,398 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-07-09 10:32+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/vfwheron/base.html:29
+msgid ""
+"Virtual research environment for water and terrestrial environmental research"
+msgstr "Virtuelle Forschungsumgebung für die Wasser- und terrestrische Umweltforschung"
+
+#: templates/vfwheron/base.html:44 templates/vfwheron/sidemenu.html:14
+msgid "  Home"
+msgstr ""
+
+#: templates/vfwheron/base.html:47 templates/vfwheron/sidemenu.html:15
+msgid "  Workspace"
+msgstr "  Arbeitsplatz"
+
+#: templates/vfwheron/base.html:50
+msgid "  Workflow"
+msgstr ""
+
+#: templates/vfwheron/base.html:53 templates/vfwheron/sidemenu.html:16
+msgid "  Monitor"
+msgstr ""
+
+#: templates/vfwheron/base.html:56 templates/vfwheron/sidemenu.html:17
+msgid "  Visualisation"
+msgstr "  Visualisierung"
+
+#: templates/vfwheron/base.html:61 templates/vfwheron/help.html:15
+msgid "Help"
+msgstr "Hilfe"
+
+#: templates/vfwheron/base.html:64 templates/vfwheron/sidemenu.html:23
+msgid "  Portal Help"
+msgstr "Hilfe"
+
+#: templates/vfwheron/base.html:67 templates/vfwheron/sidemenu.html:26
+msgid "  Web Site"
+msgstr "  Webseite"
+
+#: templates/vfwheron/base.html:70 templates/vfwheron/sidemenu.html:29
+msgid "  Documentation"
+msgstr "  Dokumentation"
+
+#: templates/vfwheron/base.html:73 templates/vfwheron/sidemenu.html:32
+msgid "  Source Code"
+msgstr "  Quellcode"
+
+#: templates/vfwheron/base.html:104 templates/vfwheron/sidemenu.html:50
+msgid "Profile"
+msgstr "Profil"
+
+#: templates/vfwheron/base.html:105 templates/vfwheron/sidemenu.html:51
+msgid "Resource Overview"
+msgstr "Resourcenüberblick"
+
+#: templates/vfwheron/base.html:106
+msgid "  Logout"
+msgstr "  Ausloggen"
+
+#: templates/vfwheron/base.html:108
+msgid "  Logout like login"
+msgstr "  Ausloggen wie Einloggen"
+
+#: templates/vfwheron/base.html:157 templates/vfwheron/sidemenu.html:79
+msgid "  Login"
+msgstr "  Einloggen"
+
+#: templates/vfwheron/base_sidebar.html:22 templates/vfwheron/sidemenu.html:11
+#: templates/vfwheron/wps_sidebar.html:26
+msgid "  Close Menu"
+msgstr "  Menü schließen"
+
+#: templates/vfwheron/base_sidebar.html:32
+#: templates/vfwheron/wps_sidebar.html:33
+msgid "Data store"
+msgstr "Datenablage"
+
+#: templates/vfwheron/base_sidebar.html:32
+#: templates/vfwheron/wps_sidebar.html:33
+msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
+msgstr "Bereich&#32um&#32die&#32ausgewählten&#32Datensätze&#32zur&#32weiteren&#32Bearbeitung&#32verfügbar&#32zu&#32machen."
+
+#: templates/vfwheron/base_sidebar.html:37
+#: templates/vfwheron/wps_sidebar.html:38
+msgid "Remove&#32all&#32datasets"
+msgstr "Alle&#32Datensätze&#32entfernen"
+
+#: templates/vfwheron/base_sidebar.html:38
+#: templates/vfwheron/wps_sidebar.html:39
+msgid "Remove&#32all&#32datasets&#32from&#32data&#32store"
+msgstr "Alle&#32ausgewählten&#32Datensätze&#32aus&#32der&#32Datenablage&#32entfernen"
+
+#: templates/vfwheron/base_sidebar.html:63
+#: templates/vfwheron/wps_sidebar.html:61
+msgid " View metadata"
+msgstr " Metadaten anzeigen"
+
+#: templates/vfwheron/base_sidebar.html:66
+#: templates/vfwheron/wps_sidebar.html:64
+msgid " Plot data"
+msgstr " Datensatz darstellen"
+
+#: templates/vfwheron/base_sidebar.html:69
+#: templates/vfwheron/wps_sidebar.html:67
+msgid " Download data"
+msgstr " Datensatz herunterladen "
+
+#: templates/vfwheron/base_sidebar.html:72
+#: templates/vfwheron/wps_sidebar.html:70
+msgid " Download metadata"
+msgstr " Metadaten herunterladen"
+
+#: templates/vfwheron/base_sidebar.html:75
+#: templates/vfwheron/wps_sidebar.html:73
+msgid " Download data & metadata"
+msgstr " Daten & Metadaten herunterladen"
+
+#: templates/vfwheron/base_sidebar.html:78
+#: templates/vfwheron/wps_sidebar.html:76
+msgid " Remove dataset"
+msgstr " Datensatz entfernen"
+
+#: base_sidebar.html:88
+msgid " Please wait. Preparing your data..."
+msgstr " Bitte warten. Ihre Daten werden zusammengestellt..."
+
+#: templates/vfwheron/help.html:16
+msgid "Welcome! This site is still under construction"
+msgstr "Willkommen! Diese Seite befindet sich noch im Aufbau."
+
+#: templates/vfwheron/login.html:13
+msgid "Your login failed! Please try again."
+msgstr "Einloggen ist fehlgeschlagen. Bitte nochmal versuchen."
+
+#: templates/vfwheron/login.html:15
+msgid "Welcome, you are logged in as "
+msgstr "Willkommen, Sie sind eingeloggt als "
+
+#: templates/vfwheron/login.html:17
+msgid "Welcome, please log in."
+msgstr "Willkommen! Bitte einloggen."
+
+#: templates/vfwheron/select_data.html:38
+msgid "Filter menu"
+msgstr "Filtermenü"
+
+#: select_data.html:38
+msgid "Please&#32choose&#32here&#32the&#32data&#32shown&#32on&#32the&#32map."
+msgstr "Wählen&#32Sie&#32hier&#32bitte&#32welche&#32Daten&#32auf&#32der&#32Karte&#32gezeigt&#32werden&#32sollen."
+
+#: select_data.html:51
+msgid "Pass&#32datasets&#32to&#32data&#32store"
+msgstr "Auswahl&#32an&#32Datenablage&#32schicken"
+
+#: select_data.html:52
+msgid "Pass&#32all&#32selected&#32datasets&#32to&#32session&#32data&#32store."
+msgstr "Senden&#32Sie&#32hier&#32die&#32Auswahl&#32in&#32die&#32Datenablage&#32der&#32aktuellen&#32Sitzung."
+
+#: select_data.html:56
+msgid "Reset&#32filter&#32menu"
+msgstr "Filtermenü&#32zurücksetzen"
+
+#: select_data.html:57
+msgid "Remove&#32selection&#32from&#32filter&#32menu."
+msgstr "Markierungen&#32aus&#32dem&#32Filtermenü&#32entfernen."
+
+#: templates/vfwheron/sidemenu.html:20
+msgid "  Help"
+msgstr "  Hilfe"
+
+#: templates/vfwheron/sidemenu.html:37
+msgid " Log in"
+msgstr " Einloggen"
+
+#: views.py:208
+msgid "help"
+msgstr "Hilfe"
+
+#: models.py:28
+msgid "Project"
+msgstr "Projekt"
+
+#: models.py:21
+msgid "Project/Domain"
+msgstr "Projekt/Domäne"
+
+#: models.py:23
+msgid "Domain"
+msgstr "Domäne"
+
+#: models.py:24
+msgid "Subdomain"
+msgstr "Subdomäne"
+
+#: models.py:61
+msgid "License name"
+msgstr "Lizenzname"
+
+#: models.py:62
+msgid "License"
+msgstr "Lizenz"
+
+#: models.py:85
+msgid "X-Coordinate"
+msgstr "X-Koordinaten"
+
+#: models.py:86
+msgid "Y-Coordinate"
+msgstr "Y Koordinaten"
+
+#: models.py:87
+msgid "Geometry"
+msgstr "Geometrie"
+
+#: models.py:88
+msgid "Location"
+msgstr "Position"
+
+#: models.py:108
+msgid "Project name"
+msgstr "Projektname"
+
+#: models.py:109
+msgid "project"
+msgstr "Projekt"
+
+#: models.py:126
+msgid "Flag"
+msgstr "Kennzeichen"
+
+#: models.py:127
+msgid "Quantifier"
+msgstr "Gewichtung"
+
+#: models.py:128
+msgid "Quality"
+msgstr "Qualität"
+
+#: models.py:151
+msgid "Site name"
+msgstr "Standortname"
+
+#: models.py:152
+msgid "Elevation"
+msgstr "Hohe"
+
+#: models.py:153
+msgid "Relative height"
+msgstr "Relative Höhe"
+
+#: models.py:154
+msgid "Orientation"
+msgstr "Richtung"
+
+#: models.py:155
+msgid "Slope"
+msgstr "Hangneigung"
+
+#: models.py:156
+msgid "Landuse"
+msgstr "Landnutzung"
+
+#: models.py:157
+msgid "Site comment"
+msgstr "Standortkommentar"
+
+#: models.py:158
+msgid "Site"
+msgstr "Standort"
+
+#: models.py:180
+msgid "Geology"
+msgstr "Geologie"
+
+#: models.py:181
+msgid "Soil Type"
+msgstr "Bodentyp"
+
+#: models.py:182
+msgid "Porosity"
+msgstr "Porosität"
+
+#: models.py:183
+msgid "Field Capacity"
+msgstr "Feldkapazität"
+
+#: models.py:184
+msgid "Residual Moisture"
+msgstr "Restfeuchte"
+
+#: models.py:185
+msgid "Soil"
+msgstr "Boden"
+
+#: models.py:219
+msgid "Unit"
+msgstr "Einheit"
+
+#: models.py:240
+msgid "Institution"
+msgstr "Einrichtung"
+
+#: models.py:241
+msgid "Department"
+msgstr "Abteilung"
+
+#: models.py:242
+msgid "Last name"
+msgstr "Nachname"
+
+#: models.py:243
+msgid "First name"
+msgstr "Vorname"
+
+#: models.py:244
+msgid "Comment"
+msgstr "Kommentar"
+
+#: models.py:245
+msgid "User"
+msgstr "Nutzer"
+
+#: models.py:264
+msgid "User Comment"
+msgstr "Nutzerkommentar"
+
+#: models.py:326
+msgid "Start of measurement"
+msgstr "Messbeginn"
+
+#: models.py:327
+msgid "End of measurement"
+msgstr "Messende"
+
+#: models.py:328
+msgid "Support"
+msgstr "Auflage???"
+
+#: models.py:329
+msgid "Spacing"
+msgstr "Schrittweite"
+
+#: models.py:331
+msgid "Creator"
+msgstr "Ersteller"
+
+#: models.py:332
+msgid "Publisher"
+msgstr "Veröffentlicher"
+
+#: models.py:364
+msgid "Name"
+msgstr "Name"
+
+#: models.py:365
+msgid "Manufacturer"
+msgstr "Hersteller"
+
+#: models.py:367
+msgid "Sensor"
+msgstr "Sensor"
+
+#: models.py:386
+msgid "Variable Name"
+msgstr "Variablenname"
+
+#: models.py:387
+msgid "Data type"
+msgstr "Datentyp"
+
+#: models.py:395
+msgid "Sensor comment"
+msgstr "Sensorkommentar"
+
+#: map.js:286
+msgid "Preview"
+msgstr "Vorschau"
+
+
+

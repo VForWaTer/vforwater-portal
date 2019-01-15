@@ -1,0 +1,28 @@
+<mat-card class="card">
+  <ng-container *ngIf="wps && processes; else loadingTemplate">
+
+    <ng-container *ngIf="processes.length > 0; else noProcessesTemplate">
+      <mat-list class="list">
+        <ng-container *ngFor="let w of wps">
+          <h3 matSubheader>
+            <div>{{ w.title }}</div>
+          </h3>
+          <div class="provider-title">
+            {{ w.provider?.title }}
+          </div>
+          <app-process *ngFor="let process of processByWPS(w.id)" [process]="process"></app-process>
+          <mat-divider></mat-divider>
+        </ng-container>
+      </mat-list>
+    </ng-container>
+    <ng-template #noProcessesTemplate>
+      <div class="no-processes">No Processes Availible</div>
+    </ng-template>
+
+  </ng-container>
+
+
+  <ng-template #loadingTemplate>
+    <mat-spinner class="loading" diameter="55" color="accent"></mat-spinner>
+  </ng-template>
+</mat-card>

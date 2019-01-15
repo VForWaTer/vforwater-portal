@@ -1,0 +1,62 @@
+
+/* style of top bar*/
+/* TODO: Do we access the font Raleway online? For more see base_app/vcss/css*/
+
+html, body, h1, h2, h3, h4, h5 {font-family: "Raleway", sans-serif}
+/*#respo-navbar li a {padding-top: 50px;padding-bottom: 10px;}*/
+/*#respo-navbar {margin-top: 37px;padding-left: 300px;overflow: visible}*/
+
+/*To have the menu in several lines change 'max-height' to 'height'*/
+/*When you want the menu to vanish on small screens set 'overflow' hidden - but then your dropdown does not show anything*/
+.respo-navbar {margin-top: 37px;max-height: 43px; overflow: visible}
+/*.respo-navbar {margin-top: 37px;height: 43px; overflow-y: hidden; overflow-x: visible;}*/
+/*.respo-navbar { overflow: hidden}*/
+form.respo-hover-white {margin: 0px}
+a.respo-hover-blue{padding: 0px}
+@media screen and (min-width: 993px) {.respo-navbar {padding-left: 300px;}}
+@media screen and (max-width: 992px) {.respo-navbar {padding-left: 0px;}}
+#filterbox, #select_catchment {display: block;}
+/*.respo-dropdown-hover {.respo-navbar {overflow: visible }}*/
+.respo-dropdown-content {min-width: 200px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
+
+/*style for a spinning wheel during load*/
+.loader {
+  border: 16px solid #00BAEE;
+  border-radius: 50%;
+  border-top: 16px solid #AADDF9;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/*styles for the custom bottons on the map*/
+.custom-control {
+      top: 0.5em;
+    left: 2.9em;
+    position: absolute;
+  /*width: 70px;*/
+  /*height: 70px;*/
+  /*background: no-repeat url('http://openlayers.org/en/latest/examples/resources/logo-70x70.png')*/
+}
+/*.custom-control.ol-control {*/
+    /*position: absolute;*/
+    /*background-color: rgba(255, 255, 255, .4);*/
+    /*border-radius: 4px;*/
+    /*padding: 2px*/
+/*}*/
+.custom-control button {
+    position: absolute;
+    background-color: rgba(255, 255, 255, .4);
+    border-radius: 4px;
+    padding: 4px
+}

@@ -1,0 +1,464 @@
+/*TODO: This upper part isn't used now. Maybe a start to style the accordions of the filter menu*/
+/* Dropdown Button */
+:root{
+    --color_Item: #00BAEE;
+    --color_Child: #AADDF9;
+    --color_Parent: #D9EFFD;
+}
+
+.filter-btn-block{
+    border:none;
+    display:inline-block;
+    outline:0;
+    padding:6px 16px;
+    vertical-align:middle;
+    overflow:hidden;
+    text-decoration:none!important;
+    color:black;
+    background-color: white;
+    text-align:left;
+    cursor:pointer;
+    white-space:nowrap}
+/*.filter-btn-block:hover{*/
+    /*box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)}*/
+
+.dropbtn {
+    background-color: white;
+    color: black;
+    padding: 8px;
+    min-width: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+/*.dropbtn:hover, .dropbtn:focus {*/
+    /*background-color: blue;*/
+/*}*/
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: relative;
+    background-color: #f9f9f9;
+    min-width: 8px;
+    overflow: auto;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    padding: 5px 10px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown a:hover {background-color: #f1f1f1}
+
+.show {display:block;}
+
+/**** Sel-made "radio buttons" for items ****/
+/* Style the buttons */
+.btn {
+    cursor: pointer;
+    border: 1px solid white;
+
+}
+
+/* Style the active class, and buttons on mouse-over */
+.activeI, .btn:hover {
+    background-color: var(--color_Item);
+    color: black;
+    /*border: 1px solid #1f2e38;*/
+}
+.activeC {
+    background-color: var(--color_Child);
+}
+.activeP {
+    background-color: var(--color_Parent);
+}
+
+/*TODO: This is an alternate version for a popup
+from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup
+When this is used on the map, you can remove the popup at the end of ol.css*/
+
+/* Popup container - can be anything you want */
+.w3popup {
+    position: absolute;
+    display: inline-block;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* The actual popup */
+.w3popup .popuptext {
+    visibility: hidden;
+    width: 160px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 16px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: 80px;
+}
+
+/* Popup arrow */
+.w3popup .popuptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    /*border-width: 5px;*/
+    /*border-style: solid;*/
+    /*border-color: #555 transparent transparent transparent;*/
+}
+
+/* Toggle this class - hide and show the popup */
+.w3popup .show {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}
+
+
+/*from here definitions for the new menu*/
+/**** Accordion ****/
+ /* Style the buttons that are used to open and close the accordion panel */
+.new_accord {
+    background-color: white;
+    color: #444;
+    cursor: pointer;
+    padding: 8px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.2s;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .new_accord:hover {
+    background-color:  dodgerblue;
+    color: white;
+}
+
+/* Style the accordion panel. Note: hidden by default */
+.panel {
+    padding: 0 18px;
+    background-color: white;
+    overflow: hidden;
+    /*remove display for animated accordion:*/
+    /*display: none;*/
+    /*to use for animated accordion:*/
+    max-height: 0;
+    transition: max-height 0.2s ease-out;
+}
+
+/**** Range Slider ****/
+/* Style for range slider from https://refreshless.com/nouislider/examples/ */
+    #input-select,
+    #input-number {
+        padding: 7px;
+        margin: 150px 5px 5px;
+        width: 70px;
+    }
+
+    #sliderwildcard{
+	/*height: auto;*/
+	/*width: auto;*/
+	/*margin: 0 auto;*/
+	padding: 28px 0 0 0;
+	/*border: 1px solid #BFBFBF;*/
+}
+
+    #datewildcard{
+	/*height: auto;*/
+	/*width: auto;*/
+	/*margin: 0 auto;*/
+	padding: 28px 0 0 0;
+	/*border: 1px solid #BFBFBF;*/
+}
+
+.noUi-tooltip {
+    display: none;
+}
+.noUi-active, .noUi-tooltip {
+    display: block;
+}
+
+.noUi-connect {
+    background: var(--color_Item) !important;
+    /*margin: 10px;*/
+	/*display: inline-block;
+	height: 200px;*/
+}
+/*.noUi-active .noUi-connect {
+    background: yellow !important;
+}*/
+
+/*style from https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css*/
+.ui-rangeslider {
+    margin: .5em 0
+}
+
+.ui-rangeslider:before, .ui-rangeslider:after {
+    content: "";
+    display: table
+}
+
+.ui-rangeslider:after {
+    clear: both
+}
+
+.ui-rangeslider .ui-slider-input.ui-rangeslider-last {
+    float: right
+}
+
+.ui-rangeslider .ui-rangeslider-sliders {
+    position: relative;
+    overflow: visible;
+    height: 30px;
+    margin: 0 68px
+}
+
+.ui-rangeslider .ui-rangeslider-sliders .ui-slider-track {
+    position: absolute;
+    top: 6px;
+    right: 0;
+    left: 0;
+    margin: 0
+}
+
+.ui-rangeslider.ui-mini .ui-rangeslider-sliders .ui-slider-track {
+    top: 8px
+}
+
+.ui-rangeslider .ui-slider-track:first-child .ui-slider-bg {
+    display: none
+}
+
+.ui-rangeslider .ui-rangeslider-sliders .ui-slider-track:first-child {
+    /*background-color: transparent;*/
+    background: 0;
+    border-width: 0;
+    height: 0
+}
+
+html > body .ui-rangeslider .ui-rangeslider-sliders .ui-slider-track:first-child {
+    height: 15px;
+    border-width: 1px
+}
+
+html > body .ui-rangeslider.ui-mini .ui-rangeslider-sliders .ui-slider-track:first-child {
+    height: 12px
+}
+
+div.ui-rangeslider label {
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px)
+}
+
+.ui-field-contain .ui-rangeslider input.ui-slider-input, .ui-field-contain .ui-rangeslider.ui-mini input.ui-slider-input, .ui-field-contain .ui-rangeslider .ui-rangeslider-sliders, .ui-field-contain .ui-rangeslider.ui-mini .ui-rangeslider-sliders {
+    margin-top: 0;
+    margin-bottom: 0
+}
+
+
+
+/*contextmenu:*/
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,300);
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+/* tasks */
+
+.tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: solid 1px #dfdfdf;
+}
+
+.task:last-child {
+  border-bottom: none;
+}
+
+/* context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/*/
+
+.context-menu {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  padding: 12px 0;
+  width: 260px;
+  background-color: #fff;
+  border: solid 1px #dfdfdf;
+  box-shadow: 1px 1px 2px #cfcfcf;
+}
+
+.context-menu--active {
+  display: block;
+}
+
+.context-menu__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu__item {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.context-menu__item:last-child {
+  margin-bottom: 0;
+}
+
+.context-menu__link {
+  display: block;
+  padding: 4px 12px;
+  color: #0066aa;
+  text-decoration: none;
+}
+
+.context-menu__link:hover {
+  color: #fff;
+  background-color: #0066aa;
+}
+
+
+/*popup based on ol-popup for sidebar*/
+.mod-popup {
+    z-index:3;
+    display:none;
+    position: absolute;
+    background-color: #EFFBFB;
+    -webkit-filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+    padding: 3px;
+    border-radius: 12px;
+    border: 0.1px solid #e9f2f2;
+    opacity: inherit;
+}
+
+.mod-popup--active {
+  display: block;
+}
+.mod-popup--inactive {
+  display: none;
+}
+
+.respo-modal-content{
+    margin:auto;
+    background-color:#fff;
+    position:relative;
+    padding:0;
+    outline:0;
+    width:600px
+}
+/*.respo-closebtn{
+    text-decoration:none;
+    float:right;
+    font-size:24px;
+    font-weight:bold;
+    color:inherit
+}*/
+
+/*
+.mod-popup:after, .mod-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+*/
+
+.mod-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+
+.mod-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+
+.mod-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 10px;
+}
+
+.mod-popup-closer:after {
+    content: "✖";
+}
+
+.mod-header{
+   cursor: move;
+  }
+
+#draw_polygon,#modify_polygon, #select_polygon, #remove_polygon{
+    width: 6px;
+    height: 6px;
+background:rgba(0, 60, 136, .55);
+border-radius: 4px;
+padding: 3px;
+    color: white;
+}
+.draw-hover:hover{
+background:rgba(0, 60, 136, .9)!important;
+}
+#filterbox{
+border-radius: 4px;
+padding: 2px;
+}
+
+.activeM {
+    background-color: rgba(0, 60, 136, .9)!important;
+}

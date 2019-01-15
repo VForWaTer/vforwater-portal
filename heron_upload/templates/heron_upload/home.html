@@ -1,0 +1,61 @@
+<meta charset="UTF-8">
+
+
+{% extends "vfwheron/base.html" %}
+
+{% load static %}
+
+<head>
+    <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
+    {# JQUERY FILE UPLOAD SCRIPTS #}
+    <script src="{% static 'heron_upload/js/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
+    <script src="{% static 'heron_upload/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
+    <script src="{% static 'heron_upload/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
+
+    <script src="{% static 'heron_upload/js/data_access.js' %}"></script>
+</head>
+<body>
+{% block title %}- Heron Upload{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <h1>Upload</h1>
+            <p>Diese Seite befindet sich noch im Aufbau</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+
+            <h4>Bisher ist noch kein Upload verfügbar.</h4>
+
+        </div>
+    </div>
+
+    <!-- Here we only offer the upload button to access data.
+    Please be aware that uploading data is a security issue that you have to handle yourself.
+    Django stores data up to 2.5 megabyte in memory, bigger files in a tmp folder. For details see
+    https://docs.djangoproject.com/en/1.11/topics/http/file-uploads/#where-uploaded-data-is-stored
+    Some ideas (in German) about uploading data (and why you shouldn't offer that) are
+    available at https://wiki.selfhtml.org/wiki/PHP/Anwendung_und_Praxis/File_Upload
+    The better choice for offering data would be a database. -->
+
+    <div>
+        {# create a button pointing to an invisible input button: #}
+        <hr style="margin-bottom: 0px;">
+        <i class="respo-padding fa fa-upload fa-fw"></i>
+        <button type="button" class="btn btn-primary js-upload-photos">Upload
+            data
+        </button>
+        <!-- call js function for upload and (invisible) input button
+    id is the same as defined in data_access.js -->
+        <input id="fileupload" type="file" name="file" multiple
+               style="display: none;"
+               data-url="{% url 'upload:heron_upload' %}"
+               data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+    </div>
+
+
+{% endblock %}
+</body>

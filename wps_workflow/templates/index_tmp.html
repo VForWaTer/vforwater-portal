@@ -1,0 +1,37 @@
+{% extends "vfwheron/base.html" %}
+{% load static %}
+
+{#{% block sidebar %}#}
+{#	{% include 'vfwheron/base_sidebar.html' %}#}
+{#{% endblock sidebar %}#}
+
+
+{% block content %}
+   {% load staticfiles %}
+<!doctype html>
+<html lang="en">
+    <head>
+            <meta charset="utf-8">
+            {#    <title>WPS𝑓𝑙𝑜𝑤</title>#}
+            {#    <base href="/">#}
+            {#    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">#}
+            {#    <meta name="viewport" content="width=device-width,initial-scale=1">#}
+            {#    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">#}
+            <base href="vfwheron" target="_self">
+            <link href="{% static 'styles.bundle.css' %}" rel="stylesheet" />
+    </head>
+<div class = "workflow">
+<body>
+<section>
+<style>div.workflow {height: 76%; width: 100%;}</style>
+    <app-root></app-root>
+
+    <script type="text/javascript" src="{% static 'inline.bundle.js' %}"></script>
+    <script type="text/javascript" src="{% static 'polyfills.bundle.js' %}"></script>
+    <script type="text/javascript" src="{% static 'main.bundle.js' %}"></script>
+    </section>
+</body>
+</div>
+   </html>
+
+{% endblock %}

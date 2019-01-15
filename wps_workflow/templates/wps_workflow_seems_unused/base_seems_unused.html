@@ -1,0 +1,57 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'wps_workflow/style.css' %}"/>
+{% block css %}{% endblock %}
+
+<head>
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+
+<div id="wrapper">
+    <div id="main">
+        <div id="top">
+            {% block top %}
+            {% endblock %}
+        </div>
+
+        <div id="topnav">
+            <ul>
+                <li><a href="{% url 'wps_workflow:index' %}">Index</a></li>
+                <li><a></a></li>
+                <li><a>nav</a></li>
+            </ul>
+        </div>
+
+        <div id="content-wrapper">
+
+            <div id="leftnav">
+
+                <ul>
+                    {% block leftnav %}
+
+                    {% endblock %}
+                </ul>
+
+
+            </div>
+
+            <div id="content">
+                {% block content %}{% endblock %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="footer">
+
+        <p>Last Update: 25.07.2016</p>
+
+    </div>
+
+</div>
+
+</body>

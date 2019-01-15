@@ -1,0 +1,51 @@
+
+.workflows-list {
+    padding: 21px 0;
+}
+
+
+.actions { 
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.editor {
+    height: 50vh;
+    border: solid 1px #e0e0e0;
+    pointer-events: none;
+}
+
+.spinner {
+    margin: auto;
+}
+
+.last-update {
+    margin-right: 30px;
+    font-size: 13px;
+    line-height: 21px;
+    color: rgba(0,0,0,0.34);
+}
+
+.no-workflows {
+    font-size: 13px;
+    line-height: 21px;
+    color: rgba(0,0,0,0.34);
+    margin: 21px;
+    width: 100%;
+    text-align: center;
+}
+
+.running, .finished {
+    font-size: 13px;
+    line-height: 21px;
+    margin-left: 21px;
+}
+
+.finished {
+    color: rgba(33, 150, 243, 0.89);
+}
+
+.running {
+    color: rgba(255, 152, 0, 0.89);
+}

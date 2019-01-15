@@ -1,0 +1,28 @@
+<meta charset="UTF-8">
+{% extends "vfwheron/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+{% block sidebar %}
+	{% include 'vfwheron/static_sidebar.html' %} 
+{% endblock sidebar %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h1>{% trans "Monitor" %}</h1>
+    <p>{%  trans "This page is still under construction." %}</p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h4>{% trans "Link to process monitoring" %}</h4>
+
+    <p>{%  trans "No process monitoring available yet." %}</p>
+
+  </div>
+</div>
+{% endblock %}

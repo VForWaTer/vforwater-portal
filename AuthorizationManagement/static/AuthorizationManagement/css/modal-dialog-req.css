@@ -1,0 +1,142 @@
+.modalDialog {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0,0,0,0.8);
+	color: #173e43;
+    z-index: 99999;
+    opacity:0;
+	font-family: "Roboto", sans-serif;
+	font-size: 17px;
+    pointer-events: none;
+}
+
+.modalDialog:target {
+    opacity:1;
+    pointer-events: auto;
+}
+
+.modalDialog > div {
+    width: 400px;
+	height: auto;
+    position: relative;
+	margin: 10% auto;
+	padding: 20px 20px 13px 20px;
+	background: #dddfd4;
+	border-radius:6px;
+}
+
+.cancel-request {
+	height: 100px;
+}
+
+#x {
+        color: black;
+        width: 24px;
+        text-decoration: none;
+		float:right;
+}
+#x:hover {
+	color: #b03f41;
+}
+
+#descr {
+	padding: 10px 10px;
+	border-radius:4px;
+}
+#descr:focus {
+	background: #fae596;
+}
+
+#yes {
+	height: 55px;
+	width: 200px;
+	border: none;
+	color: white;
+	font-size:15px;
+	background: #173e43;
+	border-radius: 4px;
+	margin-top: 10px;
+}
+#yes:hover{
+	color: #fae596;
+	cursor: pointer;
+}
+
+#no {
+	height: 55px;
+	width: 200px;
+	border: none;
+	color: white;
+	font-size:15px;
+	background: #b03f41;
+	border-radius: 4px;
+	margin-top: 10px;
+}
+#no:hover{
+	color: #fae596;
+	cursor: pointer;
+}
+
+#close {
+	padding: 16.5px 75px 16.5px 75px;
+	font-size:15px;
+	text-align: center;
+	border: 1px solid;
+	color: #b03f41;
+    text-decoration: none;
+	border-radius: 4px;
+	margin-right:5px;
+	margin-bottom:10px;
+}
+
+#close:hover {
+	color: #173e43;
+}
+
+#details {
+	text-align:center;
+}
+
+.row {
+	text-align:center;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.acc-btn-info-dialog {
+	height: 55px;
+	width: 400px;
+	border: none;
+	background: #3fb0ac;
+	border-radius: 4px;
+	margin-top: 5px;
+
+}
+
+.acc-info-dialog {
+	font-size:15px;
+	color: white;
+	text-decoration:none;
+}
+.acc-tmp-btn {
+  height: 55px;
+	width: 400px;
+	border: none;
+	background: #3fb0ac;
+	border-radius: 4px;
+	margin-top: 5px;
+  font-size:15px;
+	color: white;
+  cursor: pointer;
+}
+.info {
+	text-align:left;
+	background: #fae596;
+}

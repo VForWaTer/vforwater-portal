@@ -1,0 +1,30 @@
+<meta charset="UTF-8">
+{% extends "vfwheron/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% load markdown_filter %}
+
+{% block sidebar %} 
+	{% include 'vfwheron/static_sidebar.html' %} 
+{% endblock sidebar %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h1>{% trans "Help" %}</h1>
+      <p>{% trans "Welcome! This site is still under construction" %}</p>
+  </div>
+</div>
+<div class="row">
+    <a class='respo-hover-none' style='height:103px' id='search_box'><input type='search' value='' placeholder='Search ...' style='height:26px; font-size:70%;'></a>
+    <a href='#' class='respo-hover-white' style='height:103px' id='search_but' onclick='search_close()'><i class='fa fa-search fa-fw'></i></a>
+
+</div>
+<div class="row">
+  {% for key,value in context.items %}
+  <p>{{ value|markdownify|safe }}<p>
+  {% endfor %}
+</div>
+
+{% endblock %}

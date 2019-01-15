@@ -1,0 +1,124 @@
+.search {
+	text-align:center;
+	color: #174e43;
+	margin-top: 50px;
+	font-family: "Roboto", sans-serif;
+	font-size: 17px;
+
+}
+.search-box {
+	width: 25%;
+    padding: 10px 16px;
+    margin: 8px 0;
+	margin-top: 15px;
+	border: none;	
+	border-radius: 4px;
+}
+.search-box:focus {
+	background: #fae596;
+	color: #173e43;
+}
+.search-btn {
+	background: #173e43;
+	height: 35px;
+	width: 70px;
+	font-size: 16px;
+	border: none;
+    color: white;	
+	border-radius: 4px;
+}
+.search-btn:hover {
+	color: #fae596;
+}
+.results {
+	grid-row: 1/2;
+	grid-column: 2/4;
+}
+
+.no-results { 
+	grid-row: 1/2;
+	grid-column: 2/4;
+}
+.container {
+	display: grid;
+	grid-template-columns: 1fr 4fr 1fr 1fr;
+	grid-template-rows: repeat(6, 55px);
+	grid-gap: 0.8em;
+	font-family: "Roboto", sans-serif;
+	
+}
+.pagination {
+	text-align:center;
+	list-style: none;
+	margin-top: 15px;
+	margin-right: 10px;
+	margin-bottom: 10px;
+	font-size: 20px;
+	color: #173e43;
+}
+.pagination li {
+	display: inline-block;
+	background: none;
+	
+}
+.pagination li a {
+	text-decoration:none;
+	color: #173e43;
+}
+.active {
+	color: #3fb0ac;
+}
+.resource-name {
+	grid-column: 2/3;
+	background: white;
+	text-decoration: none;
+	text-align: left;
+	padding: 17px 20px;
+	color: #174e43;
+}
+.resource-name:hover {
+	color: #3fb0ac;
+	border: 1px solid;
+}
+
+.access-btn {
+	grid-column: 3/4;	
+	font-size: 17px;
+	background: #3fb0ac;
+	text-decoration: none;
+	text-align: center;
+	padding: 1.3vw 20px;
+	color: white;	
+	border-radius: 4px;
+}
+.access-btn:hover {
+	color: #173e43;
+	background: #fae596;
+}
+.cancel-btn {
+	font-size: 17px;
+	border: 1px solid;
+	text-decoration: none;
+	text-align: center;
+	padding: 1.3vw 20px;
+	color: #b03f41;	
+	border-radius: 4px;
+}
+.cancel-btn:hover {
+	color: #b03f41;
+	background: #fae596;
+}
+
+.send-btn {
+	font-size: 17px;
+	background: #173e43;
+	text-decoration: none;
+	text-align: center;
+	padding: 1.3vw 20px;
+	color: white;	
+	border-radius: 4px;
+}
+.send-btn:hover {
+	color: #173e43;
+	background: #fae596;
+}

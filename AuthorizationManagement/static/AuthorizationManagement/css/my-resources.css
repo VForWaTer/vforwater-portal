@@ -1,0 +1,99 @@
+.resources-container {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	grid-template-rows: repeat (6, 55px);
+	font-family: "Roboto", sans-serif;
+	margin-top: 15px;	
+}
+
+.create-resource {
+	grid-column: 2/5;
+	color: #3fb0ac;
+	border: 1px dashed;	
+	border-radius: 4px;
+	text-align: center;
+	font-size: 40px;
+	padding: 5px 10px;
+	margin-top: 10px;
+	text-decoration: none;
+}
+.create-resource:hover {
+	background: #fae596
+}
+.body {
+	text-align: center;
+	grid-column: 3/4;
+}
+
+.res-name {
+	grid-column: 2/5;
+	border-top: 12px solid #dddfd4;
+	border-bottom: 2px solid #dddfd4;
+	background: white;
+	text-decoration: none;
+	text-align: center;
+	padding: 17px 20px;
+	color: #173e43;
+}
+.res-name:hover {
+	color: #3fb0ac;
+}
+
+.acc-btn {
+	grid-column: 2/3;
+	background: #3fb0ac;
+	text-decoration: none;
+	text-align: center;
+	padding: 17px 20px;
+	color: white;
+	border-right: 1px solid #dddfd4;	
+	border-radius: 4px;
+}
+.res-access-btn:hover {
+	background: #fae596;
+	color: #173e43;
+}
+
+.edit-perm {
+	grid-column: 3/4;
+	background: #173e43;
+	text-decoration: none;
+	text-align: center;
+	padding: 17px 20px;
+	color: white;
+	border-right: 2px solid #dddfd4;
+	border-left: 1px solid #dddfd4;	
+	border-radius: 4px;
+}
+.edit-perm:hover {
+	background: #fae596;
+	color: #173e43;
+}
+
+.delete-btn {
+	grid-column: 4/5;
+	background: #b03f41;
+	text-decoration: none;
+	text-align: center;
+	padding: 17px 20px;
+	color: white;	
+	border-radius: 4px;
+}
+.delete-btn:hover {
+	background: #fae596;
+	color: #b03f41;
+}
+
+.cancel-del-req {
+	grid-column: 4/5;
+	border: 1px solid;
+	text-decoration: none;
+	text-align: center;
+	padding: 17px 20px;
+	color: #b03f41;	
+	border-radius: 4px;
+}
+.cancel-del-req:hover {
+	background: #fae596;
+	color: #b03f41;
+}

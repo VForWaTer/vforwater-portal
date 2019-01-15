@@ -1,0 +1,90 @@
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<head>
+  <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfwheron/js/FileSaver.js' %}" type="text/javascript"></script>
+</head>
+
+<body>
+<!--   Sidemenu -->
+  <nav class="respo-sidenav respo-white respo-animate-right respo-hide-large" style="z-index:3; width:160px; height:280px; right: 0; margin-top: 80px; display:none" id="mySidemenu">
+    <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="Sidemenu_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
+	<div id="accordion"  >
+		<br>
+       <a href="{% url 'vfwheron:home' %}" class="respo-hover-blue"><i class="fa fa-home fa-fw"></i>{% trans "  Home" %}</a>
+       <a href="{% url 'heron_wps:home' %}" class="respo-hover-blue"><i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
+	   <a href="{% url 'heron_monitor:home' %}" class="respo-hover-blue"><i class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>
+	   <a href="{% url 'heron_visual:home' %}" class="respo-hover-blue"><i class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a>
+        <div class="respo-dropdown-hover respo-transparent">
+            <a class="respo-hover-blue ">
+                <i class="fa fa-external-link fa-fw"></i>{% trans "  Help" %}<i class="fa fa-caret-down fa-fw"></i>
+                <div class="respo-dropdown-content respo-padding-left respo-pale-blue" style="right:0">
+                    <a href="{% url 'vfwheron:help' %}" class="respo-hover-blue">
+                        <i class="fa fa-book fa-fw"></i>{% trans "  Portal Help" %}
+                    </a>
+                    <a target="_blank" href="http://vforwater.de" style="text-decoration:none" class="respo-hover-blue">
+                        <i class="fa fa-sitemap fa-fw"></i>{% trans "  Web Site" %}
+                    </a>
+                    <a target="_blank" href={{ VFW_SERVER|add:"/doc" }} style="text-decoration:none" class="respo-hover-blue">
+                        <i class="fa fa-book fa-fw"></i>{% trans "  Documentation" %}
+                    </a>
+                    <a target="_blank" href="https://github.com/VForWaTer/pleasant" style="text-decoration:none" class="respo-hover-blue">
+                        <i class="fa fa-code fa-fw"></i>{% trans "  Source Code" %}
+                    </a>
+                </div>
+            </a>
+            </div>
+        <a href="{% url 'vfwheron:login' %}" class="respo-hover-blue"><i class="fa fa-user fa-fw"></i>{% trans " Log in" %}</a>
+        {% if user.is_authenticated %}
+             <div class="respo-dropdown-hover respo-transparent">
+                    <a class="respo-hover-white ">
+                        <i class="fa fa-user fa-fw"></i>
+                        {% if user.first_name %}
+                            {{ user.first_name | capfirst }}
+                        {% else %}
+                            {{ user.username | capfirst }}
+                        {% endif %}
+                        <i class="fa fa-caret-down fa-fw"></i>
+
+                        <div class="respo-dropdown-content" style="right:0">
+                            <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:profile' %}">{% trans "Profile" %}</a>
+                            <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:resources-overview' %}">{% trans "Resource Overview" %}</a>
+                            <a href="#" class="respo-hover-blue">
+                                <form action="{% url 'vfwheron:logout' %}" method="post"> {% csrf_token %}
+                                    <input class="respo-btn-simple" type="submit" name="logout" value="Logout"/>
+                                </form>
+                            </a>
+                        </div>
+                    </a>
+                </div>
+            {% if user.is_staff %}  <!-- admin stuff goes here -->
+                 <div class="respo-dropdown-hover respo-transparent">
+                        <a class="respo-hover-red">
+                            <i class="fa fa-beer fa-fw"></i> Admin<i class="fa fa-caret-down fa-fw"></i>
+                            <div class="respo-dropdown-content" style="right:0">
+                                <a class="respo-hover-red nav" value="ManageUsers" title="Manage Users">Manage Users</a>
+                                <a class="respo-hover-red nav" value="ManageSomething" title="Manage Something">Manage Something</a>
+<!--                    <option class="respo-hover-blue nav" value="test" title="test"><a class="respo-hover-blue nav" href="#">test</a></option> -->
+                            </div>
+                        </a>
+                    </div>
+                <!-- is_staff -->
+            {% endif %}
+
+            <!-- is_authenticated -->
+        {% else %}
+                <a class="respo-hide-small respo-right respo-hover-white">
+                    <form class="respo-hover-white " action="{% url 'vfwheron:watts_login' %}" method="post"> {% csrf_token %}
+                        <i class="fa fa-user fa-fw"></i>
+                        <input class="respo-btn-simple " type="submit" name="login" value='{% trans "  Login" %}'/>
+                    </form>
+                </a>
+        {% endif %}
+    </div>    
+  </nav>
+
+{#  Overlay effect when opening sidenav on small screens #}
+<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="Sidemenu_close()" style="cursor:pointer" title="close side menu" id="mySidemenuOverlay"></div>
+
+</body>

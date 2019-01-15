@@ -1,0 +1,45 @@
+<div class="container settings-page">
+    <h1 i18n="@@settings_header">Settings</h1>
+
+    <h3>WPS Server List</h3>
+    <ng-container *ngIf="(wpsList | async)?.length > 0; else noWpsTemplate">
+        <div *ngFor="let wps of wpsList | async">
+            <mat-card @slide fxLayout="row" fxLayoutAlign="space-between">
+                <div>
+                    <div class="wps-title">{{wps.title}}</div>
+                    <div class="wps-site">{{wps.provider.site}}</div>
+                </div>
+                <button mat-button (click)="remove(wps.id)" i18n="@@delete" color="warn">DELETE</button>
+            </mat-card>
+        </div>
+    </ng-container>
+    <ng-template #noWpsTemplate>
+        <mat-card fxLayout="row" fxLayoutAlign="center">
+            <span class="wps-site">There Are Currently No WPS Server</span>
+        </mat-card>
+    </ng-template>
+
+    <br>
+    <br>
+
+    <div fxLayout="row">
+        <div class="box-left" fxFlex="70">
+            <h3 i18n="@@settings_wps_header">Add WPS server</h3>
+
+            <mat-card>
+                <mat-form-field>
+                    <input #url type="url" placeholder="WPS Server URL" (keyup.enter)="add(url.value)" autocomplete="url" matInput>
+                </mat-form-field>
+                <button class="add" [disabled]="!url.value" mat-button (click)="add(url.value)" i18n="@@add" color="primary">ADD</button>
+                <div class="wps-site">Add WPS server URL. Note that the URL must not end with a /wps. For example http://localhost:5000</div>
+            </mat-card>
+        </div>
+        <div fxFlex="30">
+            <h3 i18n="@@settings_reload_wps">Reload WPS server</h3>
+            <mat-card>
+                <button class="refresh" (click)="refresh()" mat-raised-button i18n="@@reload">RELOAD</button>
+                <div class="wps-site">Refreshes Process information for the entie WPS Server list.</div>
+            </mat-card>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<head>
+    {#    TODO: Why do I have to import jquery again? Find the correct place for import! #}
+    <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>
+</head>
+
+<body onload="show_data()">
+
+Sidenav/menu
+<nav class="respo-sidenav respo-collapse respo-white respo-animate-left" style="z-index:3;width:300px;" id="mySidenav">
+    <br><br>
+
+    {% block logo %}
+        {% include 'vfwheron/logo.html' %}
+    {% endblock %}
+
+    <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()"
+       title="close menu"><i class="fa fa-remove fa-fw"></i> Close Menu</a>
+    <hr style="margin-bottom:0px;">
+
+    <div class="respo-container respo-light-turquoise">
+        <b title="The visualization area is still under construction...">{%  trans "Visualistaion" %}</b>
+    </div>
+    <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bullseye fa-fw"></i>{%  trans " Map view" %}</a>
+    <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-line-chart fa-fw"></i>{%  trans " Time series" %}</a>
+    <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-bar-chart fa-fw"></i>{%  trans " Scatterplot" %}</a>
+    <a href="#" class="respo-padding respo-hover-blue"><i class="fa fa-table fa-fw"></i>{% trans " Statistical report" %}</a>
+
+    <hr style="margin-bottom:0px;">
+
+    <div class="respo-container respo-light-turquoise">
+        <b title="Area to make the data records you have selected available for further use.">{%  trans "Data store" %}</b>
+    </div>
+    <ul class="respo-ul respo-card-4 respo-white" id="workspace">
+    </ul>
+    <hr style="margin-bottom:0px;">
+
+    <div class="respo-container respo-light-turquoise">
+        <b title="A plot of the results can be found by clicking on the respective result.">{%  trans "Results" %}</b>
+    </div>
+    <ul class="respo-ul respo-card-4 respo-white" id="resultspace">
+    </ul>
+</nav>
+</body>
+Overlay effect when opening sidenav on small screens
+<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer"
+     title="close side menu" id="myOverlay"></div>

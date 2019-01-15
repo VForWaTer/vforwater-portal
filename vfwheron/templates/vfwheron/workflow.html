@@ -1,0 +1,24 @@
+<meta charset="UTF-8">
+
+{% extends "vfwheron/base.html" %} 
+{% load static %}
+{% load i18n %} 
+{% get_current_language as LANGUAGE_CODE %} 
+{% block title %}- Heron WPS{% endblock %}
+
+{% block sidebar %}
+ 	{% include 'vfwheron/wps_sidebar.html' %}
+{% endblock sidebar %}
+
+{% block content %}
+
+<!-- <script type="text/javascript">$(document).ready(function(){$("#wpstool").attr("src", "{% url 'wps_workflow:index' %}")})</script>
+--->
+<!--  <div class="row"> -->
+		<div class="col-md-8 col-md-offset-2" id="wpscontainer">
+			<iframe id="wpstool" src="{% url 'wps_workflow:index' %}"
+				frameBorder="0" height="80%" width="100%"
+				style="margin-top: -20px; -moz-border-radius: 0; -webkit-border-radius: 0; border-radius: 0; height: calc(80% - 29px);" />
+		</div>
+<!-- </div> -->
+{% endblock %}

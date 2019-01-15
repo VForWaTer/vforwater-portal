@@ -1,0 +1,24 @@
+:host {
+    display: block;
+    overflow: scroll;
+    -ms-overflow-style: none;
+}
+:host::-webkit-scrollbar { 
+    display: none;
+}
+
+.background {
+    background-image: url('/static/assets/img/editor_bg.png');
+    height: 2000px;
+    width: 2000px;
+    position: relative;
+}
+
+.task {
+    position: absolute;
+}
+
+.edge-big:hover {
+    cursor: grab;
+    stroke: #b10000;
+}

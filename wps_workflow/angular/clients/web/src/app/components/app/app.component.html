@@ -1,0 +1,12 @@
+<mat-toolbar color="primary" class="navbar">
+    <img class="logo" src="static/assets/img/logo.png" alt="logo">
+
+    <nav *ngIf="showNav" class="tab-nav">
+        <a routerLink="editor" style="text-transform:uppercase;" mat-button i18n="@@editor_header">Editor</a>
+        <a routerLink="workflows" style="text-transform:uppercase;" mat-button i18n="@@workflows_header">Workflows</a>
+        <a *ngIf="admin" routerLink="settings" style="text-transform:uppercase;" mat-button i18n="@@settings_header">Settings</a>
+    </nav>
+</mat-toolbar>
+<div class="content">
+    <router-outlet></router-outlet>
+</div>

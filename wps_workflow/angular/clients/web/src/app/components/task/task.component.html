@@ -1,0 +1,23 @@
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="openDetail()" i18n="@@info">Info</button>
+  <button *ngIf="!this.running" mat-menu-item (click)="clickDelete()" i18n="@@delete">Delete</button>
+</mat-menu>
+
+
+<div class="title">{{ process.title }}</div>
+<span *ngIf="running" class="state" [style.color]="stateInfo.color" [style.borderColor]="stateInfo.color">{{ stateInfo.name }}</span>
+<span [matMenuTriggerFor]="menu"></span>
+
+<div class="inputs" #inputs>
+  <span *ngFor="let input of process.inputs" [attr.data-id]="input.id" class="input nomove" [matTooltip]="input.title" matTooltipPosition="above"
+    matTooltipShowDelay="200" [style.border-color]="getParameterColor(input.type)" (mousedown)="parameterMouseDown(input, $event)"
+    (mouseup)="parameterMouseUp(input, $event)" [class.artefact]="hasArtefact(input)">
+  </span>
+</div>
+
+<div class="outputs" #outputs>
+  <span *ngFor="let output of process.outputs" [attr.data-id]="output.id" class="output nomove" [matTooltip]="output.title"
+    matTooltipPosition="below" matTooltipShowDelay="200" [style.background]="getParameterColor(output.type)" (mousedown)="parameterMouseDown(output, $event)"
+    (mouseup)="parameterMouseUp(output, $event)" [class.artefact]="hasArtefact(output)">
+  </span>
+</div>

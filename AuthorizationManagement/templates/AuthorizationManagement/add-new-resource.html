@@ -1,0 +1,23 @@
+<!-- template for add-new-resource page -->
+{% extends "AuthorizationManagement/profile.html" %}
+
+{% block styles %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'AuthorizationManagement/css/profile.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'AuthorizationManagement/css/my-resources.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'AuthorizationManagement/css/add-new-resource.css' %}" />
+{% endblock %}
+
+{% block requests_or_resources %}
+<div class="mini-nav">
+   <a href="{% url 'AuthorizationManagement:profile' %}" class="noncurrent">Requests</a></li>
+   <a href="{% url 'AuthorizationManagement:profile' %}my-resources" class="current">My Resources</a></li>
+</div>
+<div class="add-res">
+   <form action = "" method="post" enctype="multipart/form-data" class="add-res-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="add">Add</button>
+   </form>
+</div>
+{% endblock %}

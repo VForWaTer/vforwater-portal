@@ -1,0 +1,31 @@
+$app-logo-height: 34px;
+$app-logo-width: 116px;
+$app-nav-height: 48px;
+
+.content {
+    margin-top: $app-nav-height;
+    height: calc(100vh - #{$app-nav-height});
+}
+.navbar {
+    max-height: $app-nav-height;
+    border-bottom: 2px solid #00796B;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+}
+
+.tab-nav {
+    width: calc(90% - #{$app-logo-width});
+    display: flex;
+    justify-content: center;
+    color: hsla(0,0%,100%,.87);
+}
+
+.logo {
+    height: $app-logo-height;
+    cursor: pointer;
+}
+
+

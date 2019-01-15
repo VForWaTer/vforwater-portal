@@ -1,0 +1,12 @@
+<h2 mat-dialog-title>{{ workflow.title }} - Result</h2>
+
+<mat-dialog-content class="content">
+  <div class="result" *ngFor="let result of results">
+    <pre>{{ result.data }}</pre>
+  </div>
+</mat-dialog-content>
+
+<mat-divider></mat-divider>
+<mat-dialog-actions fxLayout="row" fxLayoutAlign="end">
+  <button mat-button mat-dialog-close i18n="@@close">CLOSE</button>
+</mat-dialog-actions>
