@@ -409,8 +409,11 @@ class LoginView(View):
         :return:
         :rtype:
         """
-        logger.debug('Redirect to vfwheron/rsp/login/init...')
-        return redirect('vfwheron:watts_rsp:login_init')
+        if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
+            logger.debug('Redirect to vfwheron/rsp/login/init...')
+            return redirect('vfwheron:watts_rsp:login_init')
+        else: # default django login
+            return redirect('vfwheron:login')
 
     def dispatch(self, request, *args, **kwargs):
         """
