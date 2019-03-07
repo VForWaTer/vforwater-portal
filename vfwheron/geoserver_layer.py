@@ -213,7 +213,7 @@ def build_new_layer_xml(request, filename, datastore, workspace, srid):
             ' LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id' \
             #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
     if not request.user.is_authenticated:
-        query = '{} {}'.format(query, ' WHERE lt_license.commercial is false')  # only for test use on portal
+        query = '{} {}'.format(query, ' WHERE lt_license.share is true')  # only for test use on portal
 
     attributes = '<attribute>' \
                  '<name>Geometry</name>' \

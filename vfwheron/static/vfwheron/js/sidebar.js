@@ -54,7 +54,7 @@ function Sidemenu_close() {
 
 // Get the User Selection in Workspace
 // Button information is stored in an HTML object with Id 'workdata'
-// it is stored as a string, so the following function transforms this string to a dictionary again
+// it is stored as a string, so the following function transforms this string back to a dictionary
 function show_data(evt) {
     var workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     if (workspaceData !== "[]") {

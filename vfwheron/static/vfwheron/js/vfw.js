@@ -6,10 +6,10 @@
 //         layerName.setVisible(true);
 //     }
 // }
-let draw, modify, selected_Id, selectedFeatures, vector;
+let draw, modify, selectedIdsMap, selectedFeatures, vector;
 
 function resetDraw() {
-    selected_Id = [];
+    selectedIdsMap = [];
     selectedFeatures.clear();
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
@@ -102,7 +102,7 @@ function drawPolygon(shortParent, shortChild) {
         });*/
 
     selectedFeatures = select.getFeatures();
-    selected_Id = [];
+    selectedIdsMap = [];
     let sketch, listener, polygon;
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
@@ -129,7 +129,7 @@ function drawPolygon(shortParent, shortChild) {
         sketch = null;
         delaySelectActivate();
         selectedFeatures.clear();
-        selected_Id = [];
+        selectedIdsMap = [];
         polygon = event.features.getArray()[0].getGeometry();
         // let features = hiddenLayer.getSource().getFeatures();
 
@@ -140,9 +140,9 @@ function drawPolygon(shortParent, shortChild) {
         }
         /* get id of selected features for menu */
         selectedFeatures.getArray().forEach(function (val) {
-            selected_Id.push(parseInt(val.getId().replace(append_str, '')))
+            selectedIdsMap.push(parseInt(val.getId().replace(append_str, '')))
         });
-        mapSelectFuntion(shortParent, shortChild, selected_Id);
+        mapSelectFuntion(shortParent, shortChild, selectedIdsMap);
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -177,15 +177,15 @@ function drawPolygon(shortParent, shortChild) {
     }, this);
 
     draw.on('drawend', function () {
-        selected_Id = [];
+        selectedIdsMap = [];
         // let writer = new ol.format.KML();
         // let geojsonStr = writer.writeFeatures(source.getFeatures());
         selectedFeatures.getArray().forEach(function (val) {
-            selected_Id.push(parseInt(val.getId().replace(append_str, '')))
+            selectedIdsMap.push(parseInt(val.getId().replace(append_str, '')))
         });
         draw.finishDrawing();
-        if (selected_Id.length > 0) {
-            mapSelectFunction(shortParent, shortChild, selected_Id);
+        if (selectedIdsMap.length > 0) {
+            mapSelectFunction(shortParent, shortChild, selectedIdsMap);
         }
 
     });
