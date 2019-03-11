@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^dashboard/', include('dashboard.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^heron_wps/', include('heron_wps.urls', namespace='heron_wps')),
+    url(r'^wps_gui/', include('wps_gui.urls', namespace='wps_gui')),
     url(r'^heron_monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
     url(r'^heron_visual/', include('heron_visual.urls', namespace='heron_visual')),    
     url(r'^heron_upload/', include('heron_upload.urls', namespace='heron_upload')),
