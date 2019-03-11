@@ -259,24 +259,20 @@ class MenuView(TemplateView):
 
         if 'filter_selection_map' in request.GET:
             m_ids = None
-            if json.loads(request.GET.get('filter_selection_map')) == 0:
-                id_layer = HomeView.set_layer_name(self)
-                dataExt = get_bbox_from_data()
-            else:
-                meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
-                dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                id_layer = 'ID_layer'  # + user
-                if get_layer(id_layer, HomeView.store, HomeView.workspace):
-                    delete_layer(id_layer, HomeView.store, HomeView.workspace)
-                create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
-                m_ids = meta_ids['all_filters']
-                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
-                # existing layers
-                # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
-                # if not get_ID_layer(ID_layer):
-                #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
+            dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
+            id_layer = 'ID_layer'  # + user
+            if get_layer(id_layer, HomeView.store, HomeView.workspace):
+                delete_layer(id_layer, HomeView.store, HomeView.workspace)
+            create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
+            m_ids = meta_ids['all_filters']
+            # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
+            # existing layers
+            # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
+            # if not get_ID_layer(ID_layer):
+            #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             #             else:
-            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after
+            # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])

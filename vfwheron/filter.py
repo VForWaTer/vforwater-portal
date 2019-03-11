@@ -140,7 +140,7 @@ class FilterMethods:
                 child_result.update({"C" + str(c): item_result})
                 c += 1
             result.update({parent: child_result})
-        print('result of count: ', result)
+        # print('result of count: ', result)
         return result
 
     @staticmethod

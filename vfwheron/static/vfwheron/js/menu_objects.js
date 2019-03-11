@@ -89,7 +89,6 @@ function childBuilder(child, shortChild, shortParent) {
                 break;
             // }
 /* build calender if type is date */
-        // else if (child.type === "date") {
             case "date":
                 itemHTML = dateBuilder(child, shortChild, shortParent);
                 // childHTML = itemHTML
@@ -100,8 +99,7 @@ function childBuilder(child, shortChild, shortParent) {
                     </div>`;
                 break;
         // }
-/* build draw box if type is map */
-        // else if (child.type === "draw") {
+/* build draw box if type is draw */
             case "draw":
                 itemHTML = drawBuilder(child, shortChild, shortParent);
                 childHTML=
@@ -249,7 +247,7 @@ function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     }
     else {
         selectedIdsFilter = null;
-        showSelectionOnMap(0);
+        showSelectionOnMap([]);
         getCountFromServer(SELECTION);
         // clusterLayer.changed()
         // showAllPointsOnMap();
@@ -265,7 +263,7 @@ function mapSelectFunction(shortParent, shortChild, selected_Id) {
     }
     else {
         selectedIdsFilter = null;
-        showSelectionOnMap(0);
+        showSelectionOnMap([]);
         getCountFromServer(mapselection);
     }
 }
@@ -302,12 +300,12 @@ function reset_filter(){
         document.getElementsByClassName('activeI')[0].classList.remove('activeI');
     }
     selectedIdsFilter = null;
-    showSelectionOnMap(0);
+    showSelectionOnMap([]);
     // TODO: store the initial numbers for each item and use it here instead of a new get request
     getCountFromServer({});
     // reset draw menu:
     selectedIdsMap = [];  // or better: null ?
-    selectedFeatures.clear();
+    if (selectedFeatures !== undefined) {selectedFeatures.clear();}
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
     olmap.removeLayer(vector);
