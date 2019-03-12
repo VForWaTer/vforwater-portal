@@ -4,19 +4,20 @@
 // Second child: C2
 // First Item: I1...
 
-const jsMenu = JSON.parse(jsonMenu);
-const menues = Object.keys(jsMenu);
-let filterMenu;
+const JSMENU = JSON.parse(jsonMenu);
+const MENUES = Object.keys(JSMENU);
+let FILTERMENU;
 let parent;
-let selection = {};
+let SELECTION = {};
+console.log(JSMENU)
 
 // TODO: To improve performance onclick try to build variables P1C1I1, P1C1T2,... here and assign an id to the
 // TODO: respective value. In 'updateCounts' you can access the values then directly with the ID; But the following isn't working
 // Predefine variables to assign IDs for the filter elements that will be changed on every filter selection:
-// for (let p in jsMenu){
-//     for (let m = 1; m <= jsMenu[p].total; m++) {
+// for (let p in JSMENU){
+//     for (let m = 1; m <= JSMENU[p].total; m++) {
 //         let c = 'C'+m.toString()
-//         for (let n = 1; n <= jsMenu[p][c].total; n++) {
+//         for (let n = 1; n <= JSMENU[p][c].total; n++) {
 //             let i = 'I'+n.toString()
 //             eval("let "+p+c+i)
 //         }
@@ -24,24 +25,23 @@ let selection = {};
 // }
 
 /* Loop through menues after load and build menu objects */
-menues.forEach(menuBuilder);
+MENUES.forEach(menuBuilder);
 
 /* build the parents of the menu*/
 function menuBuilder(parent) {
-    if (jsMenu[parent].total > 0) {  // check how many entries are in menu
+    if (JSMENU[parent].total > 0) {  // check how many entries are in menu
         let parentHTML ="";
-        for (let c = 1; c <= jsMenu[parent].total; c++) {  // build child menu
+        let ctot = JSMENU[parent].total;
+        for (let c = 1; c <= ctot; c++) {  // build child menu
             let child = 'C'+c.toString();
-            let childHTML = childBuilder(eval("jsMenu[parent]."+[child]), child, parent);
+            let childHTML = childBuilder(JSMENU[parent][child], child, parent);
+            // let childHTML = childBuilder(eval("JSMENU[parent]."+[child]), child, parent);
             // console.log('  *** ** *' + parentHTML)
-            parentHTML = parentHTML + childHTML
+            parentHTML += `<div id='subaccordion'> ${childHTML}   </div>`
         }
-        filterMenu = document.getElementById("accordion").innerHTML +=
-            "<h5 class='respo-hover-blue nav parent "+parent+"'>" + jsMenu[parent].name + "</h5>" +
-            "<div id='" + jsMenu[parent].name + "'>" +
-                "<div id='subaccordion'> "+parentHTML+"" +
-            "   </div>" +
-            "</div>";
+        FILTERMENU = document.getElementById("accordion").innerHTML +=
+            `<h5 class='respo-hover-blue nav parent ${parent}'>${JSMENU[parent].name}</h5>
+            <div id='${JSMENU[parent].name}'>${parentHTML}</div>`;
     }
 }
 
@@ -50,65 +50,71 @@ function childBuilder(child, shortChild, shortParent) {
     let childHTML = "";
     let itemHTML = "";
     let inputName = "";
-    let dDL = 8;  // dropDownLimit
+    let dDL = 8;  // dropDownLimit; when there are more items then build dropdown menue instead of seperate items to click
 /* build child with items for amount of items between 1 and dropDownLimit (dDL) */
     if (child.total > 1 && child.total <= dDL && !child.hasOwnProperty("type")) {
         itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+" childmenu'>" + child.name + "</h6>" +
-            "<div id='" + child.name + "'>" +
-                "<div> "+itemHTML+"" +
-            "   </div>" +
-            "</div>"
+            `<h6 class='respo-hover-blue nav child ${shortParent} ${shortChild} childmenu'>${child.name}</h6>
+            <div id='${child.name}'> ${itemHTML}</div>`
     }
 /* build a dropdown list for childs with many items */
     else if (child.total > dDL && !child.hasOwnProperty("type")){
         itemHTML = itemBuilder(child, shortChild, shortParent);
         inputName = "Input"+child.name;
         childHTML =
-            "<div class='dropdown'>" +
-                "<button onclick='dDMFunction(\""+child.name+"\")' class='filter-btn-block respo-hover-blue nav child "+
-                shortParent+" "+shortChild+"'>" + child.name + "</button>" +
-                "<div id='" + child.name + "' class='dropdown-content'>" +
-                    "<input type='text' placeholder='Search...' id = '"+inputName+"'" +
-                        "onkeyup='dDMFilterFunction(\""+child.name+"\", \""+inputName+"\")' >" +
-                    "<div> "+itemHTML+"" +
-                    "</div>" +
-                "</div>" +
-            "</div>"
+            `<div class='dropdown'>
+                <button onclick='dDMFunction("${child.name}")' 
+                    class='filter-btn-block respo-hover-blue nav child ${shortParent} ${shortChild}'>${child.name}
+                </button>
+                <div id='${child.name}' class='dropdown-content'>
+                    <input type='text' placeholder='Search...' 
+                    id='${inputName}'onkeyup='dDMFilterFunction("${child.name}", 
+                    "${inputName}")' >${itemHTML}
+                </div>
+            </div>`
     }
 /* build special childs if type is defined */
     else if (child.hasOwnProperty("type")) {
-        /* build slider if type is slider */
-        if (child.type === "slider") {
-            itemHTML = sliderBuilder(child, shortChild, shortParent);
-            childHTML=
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count s'>(" + child.total + ")</div></i></h6>" +
-            "<div id='" + child.name + "'>" +
-                "<div id='sliderwildcard'> "+itemHTML+
-            " </div>" +
-            "</div>"
-        }
+/* build slider if type is slider */
+        switch (child.type) {
+            case "slider":
+                if (child.selectable_min.toString() =='None' || child.selectable_max.toString()=='None'){break;}
+                itemHTML = sliderBuilder(child, shortChild, shortParent);
+                childHTML=
+                    `<div id='${child.name}'>
+                        <h6 class='respo-hover-blue child ${shortParent} ${shortChild}'>
+                        </h6>${child.name}&emsp;<i class='count s'>(${child.total})</i>
+                    <div id='sliderwildcard'>${itemHTML} </div></div>`;
+                break;
+            // }
 /* build calender if type is date */
-        else if (child.type === "date") {
-            itemHTML = dateBuilder(child, shortChild, shortParent);
-            // childHTML = itemHTML
-            childHTML =
-            "<h6 class='respo-hover-blue nav child "+shortParent+" "+shortChild+"'>" + child.name+ "&emsp;<i><div class='count d'>(" + child.total + ")</div></i></h6>" +
-            "<div id='" + child.name + "'>" +
-                "<div> "+itemHTML+
-                // "<div id='datewildcard'> "+itemHTML+
-            " </div>" +
-            "</div>"
+            case "date":
+                itemHTML = dateBuilder(child, shortChild, shortParent);
+                // childHTML = itemHTML
+                childHTML =
+                    `<div id='${child.name}'>
+                        <h6 class='respo-hover-blue nav child ${shortParent} ${shortChild}'>
+                        </h6>${child.name}&emsp;<i><div class='count d'>(${child.total})</div></i>${itemHTML}
+                    </div>`;
+                break;
+        // }
+/* build draw box if type is draw */
+            case "draw":
+                itemHTML = drawBuilder(child, shortChild, shortParent);
+                childHTML=
+                    `<div id='${child.name}'>
+                        <h6 class='respo-hover-blue nav child ${shortParent} ${shortChild} count m${shortParent}'></h6>
+                        ${child.name}&emsp;<i><div class='count'>(${child.total})</div></i>${itemHTML}
+                    </div>`;
+                break;
         }
     }
     else if (child.total === 1) {
         itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
-            "<div id='"+child.name+"'>" +
-            "<h6 class='respo-hover-blue child "+shortParent+" "+shortChild+"'></h6>" +
-                ""+child.name +": "+itemHTML+
-            "</div>"
+            `<div id='${child.name}'><h6 class='respo-hover-blue child ${shortParent} ${shortChild}'></h6>
+            ${child.name}: ${itemHTML}</div>`
     }
     return childHTML
 }
@@ -132,41 +138,34 @@ function dateBuilder(child, shortChild, shortParent) {
 
 /* Prepair location in web site to build there a slider to select num values after loading of web site */
 function sliderBuilder(child, shortChild, shortParent) {
-    let minV = child.selectable_min.toString();
-    let maxV = child.selectable_max.toString();
+    return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}' 
+        minV='${ child.selectable_min.toString()}' maxv='${child.selectable_max.toString()}'></div>
+        <div class="respo-row-padding">
+            <div class="respo-half"><input id="slide-0${shortParent}${shortChild}" title="min-${child.name}" 
+                class="respo-input respo-hover-blue" style="width: 80px;" placeholder="One" type="number"></div>
+            <div class="respo-half"><input id="slide-1${shortParent}${shortChild}" title="max-${child.name}" 
+                class="respo-input respo-hover-blue" style="width: 80px;" placeholder="two" type="number"></div>
+        </div>`;  // respective field for min and max is accessed by 0 and 1 in id
+}
 
-    // var handlesSlider = document.getElementById('slider-handles');
-    // // var document.getElementById(child.name).addEventListener("click", function(){
-    // // document.getElementById("demo").innerHTML = "Hello World";
-    // // });
-    //     console.log(handlesSlider)
-    // var itemHTML =
-    //     "<div class='container' data-role='rangeslider'>"+child.name+"" +
-    //      // "<button onclick="+onclick_slider()+">Click me</button>"+
-    //     "</div>"
-    return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}' minV='${minV}' maxv='${maxV}'></div>`;
-    // Two Textfields for numbers:
-    // var itemHTML =
-    //     "<div >(min/max: "+minV+"/"+maxV+")" +
-    //     "<input type='number' name='price-min' id='price-min' value='"+minV+"' min='"+minV+"' max='"+maxV+"'>" +
-    //     "<input type='number' name='price-max' id='price-max' value='"+maxV+"' min='"+minV+"' max='"+maxV+"'>" +
-    //     "<input type='submit' data-inline='true' value='Submit'>"+
-    //     "</div>"
-
+/* build a button to open the draw menue */
+function drawBuilder(child, shortChild, shortParent) {
+    return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")' 
+            id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
 }
 
 /* build items to click on in the Filter Menu*/
 function itemBuilder(child, shortChild, shortParent) {
     let i, itemHTML = "";
-    for (i = 1; i <= child.total; i++) {
-        let shortItem = 'I'+ i.toString();
-        let cItem = eval("child." + shortItem);
-        let listHTML =
-                "<a class='respo-hover-blue btn "+shortParent+" "+shortChild+" "+shortItem+"' " +
-                    "onclick='itemButtonFunction(this,\""+ shortParent+"\",\""+ shortChild+"\",\""+ shortItem+"\")'>" +
-                    cItem.name + "&emsp;" +"<i><div class='count'>(" + cItem.total + ")</div></i>"+
-                "</a>";
-        itemHTML = itemHTML + listHTML;
+    let ctot = child.total;
+    let shortItem, cItem;
+    for (i = 1; i <= ctot; i++) {
+        shortItem = 'I'+ i.toString();
+        cItem = child[shortItem];
+        itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}' 
+            onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","${shortItem}")'>${cItem.name}&emsp;
+            <i><div class='count'>(${cItem.total})</div></i>
+            </a>`;
     }
     return itemHTML
 }
@@ -178,43 +177,52 @@ function dDMFunction(dropDownName) {
 
 /* Drop Down Menu Filter Function - Search functionality */
 function dDMFilterFunction(dropDownName, inputName) {
-    let input, filter, div, a;
-    input = document.getElementById(inputName);
-    filter = input.value.toUpperCase();
-    div = document.getElementById(dropDownName);
-    a = div.getElementsByTagName("a");
-    for (let i = 0; i < a.length; i++) {
-        if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
-            a[i].style.display = "";
-        } else {
-            a[i].style.display = "none";
-        }
+    let input = document.getElementById(inputName);
+    let filter = input.value.toUpperCase();
+    let div = document.getElementById(dropDownName);
+    let a = div.getElementsByTagName("a");
+    let aLen = a.length;
+    for (let i = 0; i < aLen; i++) {
+        a[i].style.display = a[i].innerHTML.toUpperCase().indexOf(filter) > -1 ? "" : "none";
     }
 }
 
 /* build sliders at the respective locations after the menu has loaded*/
 $(document).ready(function (){
+    let maxv, minv, input, input1, value;
     let handlesSlider =  document.getElementsByClassName('slider');
-    for (let s = 0; s < handlesSlider.length; s++){
-        let maxv = parseFloat(handlesSlider[s].attributes.maxv.value);
-        let minv = parseFloat(handlesSlider[s].attributes.minv.value);
-        noUiSlider.create(handlesSlider[s], {
+    [].slice.call(handlesSlider).forEach(function (slider) {
+        maxv = parseFloat(slider.attributes.maxv.value);
+        minv = parseFloat(slider.attributes.minv.value);
+        noUiSlider.create(slider, {
             start: [minv, maxv],
-            tooltips:  true ,
+            // tooltips: true,
+            // tooltips: [true, wNumb({decimals: 0})],
             // behaviour: 'tap-drag',
-            // connect: true,
+            connect: true,
             range: {
-                'min': [ minv ],
-                'max': [ maxv ]
+                'min': [minv],
+                'max': [maxv]
             },
             // pips: { // Show a scale with the slider
-		// mode: 'steps',
-		// stepped: true,
-		// density: 4
-	// }
+            // mode: 'steps',
+            // stepped: true,
+            // density: 4
+            // }
         });
-
-    }
+        slider.noUiSlider.on('update', function (values, handle) {
+            input = document.getElementById('slide-'+handle+slider.classList[1]+slider.classList[2]);
+            value = values[handle];
+            input.value = values[handle];
+        });
+        input.addEventListener('change', function () {
+            slider.noUiSlider.set([null, this.value])
+        });
+        input = document.getElementById('slide-0'+slider.classList[1]+slider.classList[2]);
+        input.addEventListener('change', function () {
+            slider.noUiSlider.set([this.value, null])
+        });
+    })
 });
 
 // $(document).ready(addDatePicker);
@@ -232,15 +240,31 @@ $(document).ready(function (){
 /* Add onclick functionality to the items in the menu to update menu and show selection on map */
 function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     let activeSibling = checkSiblings(item);
-    selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
-    if (!jQuery.isEmptyObject(selection)) {
-        showSelectionOnMap(selection);
-        getCountFromServer(selection);
+    SELECTION = buildSelection(activeSibling, shortParent, shortChild, shortItem);
+    if (!jQuery.isEmptyObject(SELECTION)) {
+        showSelectionOnMap(SELECTION);
+        getCountFromServer(SELECTION);
     }
     else {
-        selectedIds = null;
-        wfsPointLayer.changed()
+        selectedIdsFilter = null;
+        showSelectionOnMap([]);
+        getCountFromServer(SELECTION);
+        // clusterLayer.changed()
         // showAllPointsOnMap();
+    }
+}
+/* Add onclick functionality to the items in the menu to update menu and show selection on map */
+function mapSelectFunction(shortParent, shortChild, selected_Id) {
+    let activeSibling = (selected_Id.length > 0) ? true:false;
+    let mapselection = buildSelection(activeSibling, shortParent, shortChild, selected_Id);
+    if (!jQuery.isEmptyObject(SELECTION)) {
+        showSelectionOnMap(SELECTION);
+        getCountFromServer(mapselection);
+    }
+    else {
+        selectedIdsFilter = null;
+        showSelectionOnMap([]);
+        getCountFromServer(mapselection);
     }
 }
 
@@ -254,7 +278,6 @@ function showAllPointsOnMap(){
            'csrfmiddlewaretoken': csrf_token,
        }, // data sent with the post request
        success: function (json) {
-           console.log('response of showAllPointsOnMap: ', json)
        },
    });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
@@ -276,8 +299,17 @@ function reset_filter(){
     while (document.getElementsByClassName('activeI')[0]) {
         document.getElementsByClassName('activeI')[0].classList.remove('activeI');
     }
-    selectedIds = null;
-    wfsPointLayer.changed()
+    selectedIdsFilter = null;
+    showSelectionOnMap([]);
+    // TODO: store the initial numbers for each item and use it here instead of a new get request
+    getCountFromServer({});
+    // reset draw menu:
+    selectedIdsMap = [];  // or better: null ?
+    if (selectedFeatures !== undefined) {selectedFeatures.clear();}
+    olmap.removeInteraction(draw);
+    olmap.removeInteraction(modify);
+    olmap.removeLayer(vector);
+    // clusterLayer.changed()
 }
 
 /* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
@@ -290,8 +322,12 @@ function showSelectionOnMap(selection) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            selectedIds = json['all_filters'];
-            wfsPointLayer.changed()
+            zoomToExt.extent = json['dataExt'];
+            wfsLayerName = json['ID_layer'];
+            selectedIdsFilter = json['IDs'];
+            wfsPointSource.clear();
+            // document.getElementById()
+            // clusterLayer.changed()
         },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
@@ -315,22 +351,24 @@ function getCountFromServer(selection) {
 
 /* updates the numbers for each item */
 function updateCounts(json) {
-    let parent, child, item;
+    let parent, child, item, itemHTML, jpc;
     for (parent in json) {
         child = '';
         for (child in json[parent]) {
             item = '';
-            for (item in json[parent][child]) {
-                itemHTML = eval("document.getElementsByClassName('"+parent+" "+ child+ " "+ item+"')");
-                itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+json[parent][child][item]+")"
-                if (json[parent][child][item] == '0'){
-                // console.log('candidate for a "disable" option? itemHTML[0]', itemHTML[0], json[parent][child][item])
-                //  respo-disabled classList.add
+            jpc = json[parent][child];
+            for (item in jpc) {
+                itemHTML = document.getElementsByClassName(`${parent} ${child} ${item}`);
+                itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+jpc[item]+")";
+                if (jpc[item] == '0'){
                     itemHTML[0].classList.add('respo-disabled')
                 }
                 else if (itemHTML[0].classList.contains('respo-disabled')) {
                     itemHTML[0].classList.remove('respo-disabled')
                 }
+            }
+            if (item == '' && typeof(jpc) == 'number') {
+                document.getElementsByClassName(`${parent} ${child} count`)[0].nextElementSibling.innerHTML = `(${jpc})`
             }
         }
     }
@@ -338,46 +376,50 @@ function updateCounts(json) {
 
 /* checks if one of the siblings of the clicked item is active */
 function checkSiblings(item) {
-    let activeSibling;
     if (item.classList.contains('activeI')) {
         item.classList.remove('activeI');
-        activeSibling = false;
+        return false;
     } else {
         // itemList = item.parentElement.getElementsByClassName("active");
         $(item).addClass('activeI').siblings().removeClass('activeI');
         // item.classList.add('active');
-        activeSibling = true;
+        return true;
     }
-    return activeSibling;
 }
 
 /* checks if selected item is already activated, toggles the item as well as child and parent */
-function buildSelection(activeSibling, shortParent, shortChild, shortItem) {
+function buildSelection(activeSibling, shortParent, shortChild, shortItem, type) {
     // getElementsByClassName should be faster than QuerySelectAll
-    let nodeListC = eval("document.getElementsByClassName('child "+shortChild+" "+shortParent+"')");
-    let nodeListP = eval("document.getElementsByClassName('parent "+shortParent+"')");
-
+    let nodeListC = document.getElementsByClassName(`child ${shortChild} ${shortParent}`);
+    let nodeListP = document.getElementsByClassName(`parent ${shortParent}`);
     if (activeSibling) {
         try {
-            eval('selection.' + shortParent + '.' + shortChild + ' = shortItem');
+            SELECTION[shortParent][shortChild]= shortItem;
         } catch (TypeError) {
-            selection[shortParent] = {[shortChild]: shortItem};
+            SELECTION[shortParent] = {[shortChild]: shortItem};
         }
-        nodeListC[0].classList += " activeC";
-        nodeListP[0].classList += " activeP";
+        nodeListC[0].classList.add("activeC");
+        nodeListP[0].classList.add("activeP");
     }
     else {
         nodeListC[0].classList.remove("activeC");
-        delete selection[shortParent][shortChild];
-        if (jQuery.isEmptyObject(selection[shortParent])) {
+        delete SELECTION[shortParent][shortChild];
+        if (jQuery.isEmptyObject(SELECTION[shortParent])) {
             nodeListP[0].classList.remove("activeP");
-            delete selection[shortParent]
+            delete SELECTION[shortParent]
         }
     }
-    return selection;
+    return SELECTION;
 }
 
 // implented in vfw.js
+// use intersection of Filter- and Map IDs as selection
 function many_datasets() {
-    workspace_dataset(JSON.stringify(selectedIds))
+    // let workId = (selectedIdsMap === undefined) ? selectedIdsFilter : selectedIdsMap.filter(x => selectedIdsFilter.includes(x));
+    let workId = selectedIdsFilter;
+    if (selectedIdsMap !== undefined) {
+        workId = selectedIdsMap.filter(x => selectedIdsFilter.includes(x));
+    }
+    workspace_dataset(JSON.stringify(workId))
 }
+

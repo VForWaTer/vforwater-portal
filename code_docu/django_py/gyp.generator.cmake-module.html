@@ -1,0 +1,1085 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.generator.cmake</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.generator-module.html">Package&nbsp;generator</a> ::
+        Module&nbsp;cmake
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.generator.cmake-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module cmake</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.generator.cmake-pysrc.html">source&nbsp;code</a></span></p>
+<p>cmake output module</p>
+  <p>This module is under development and should be considered 
+  experimental.</p>
+  <p>This module produces cmake (2.8.8+) input as its output. One 
+  CMakeLists.txt is created for each configuration.</p>
+  <p>This module's original purpose was to support editing in IDEs like 
+  KDevelop which use CMake for project management. It is also possible to 
+  use CMake to generate projects for other IDEs such as eclipse cdt and 
+  code::blocks. QtCreator will convert the CMakeLists.txt to a code::blocks
+  cbp for the editor to read, but build using CMake. As a result QtCreator 
+  editor is unaware of compiler defines. The generated CMakeLists.txt can 
+  also be used to build on Linux. There is currently no support for 
+  building on platforms other than Linux.</p>
+  <p>The generated CMakeLists.txt should properly compile all projects. 
+  However, there is a mismatch between gyp and cmake with regard to 
+  linking. All attempts are made to work around this, but CMake sometimes 
+  sees -Wl,--start-group as a library and incorrectly repeats it. As a 
+  result the output of this generator should not be relied on for 
+  building.</p>
+  <p>When using with kdevelop, use version 4.4+. Previous versions of 
+  kdevelop will not be able to find the header file directories described 
+  in the generated CMakeLists.txt file.</p>
+
+<!-- ==================== CLASSES ==================== -->
+<a name="section-Classes"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Classes"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.generator.cmake.CMakeTargetType-class.html" class="summary-name">CMakeTargetType</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.generator.cmake.CMakeNamer-class.html" class="summary-name">CMakeNamer</a><br />
+      Converts Gyp target names into CMake target names.
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="RemovePrefix"></a><span class="summary-sig-name">RemovePrefix</span>(<span class="summary-sig-arg">a</span>,
+        <span class="summary-sig-arg">prefix</span>)</span><br />
+      Returns 'a' without 'prefix' if it starts with 'prefix'.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#RemovePrefix">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="CalculateVariables"></a><span class="summary-sig-name">CalculateVariables</span>(<span class="summary-sig-arg">default_variables</span>,
+        <span class="summary-sig-arg">params</span>)</span><br />
+      Calculate additional variables for use in the build (called by gyp).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#CalculateVariables">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="Compilable"></a><span class="summary-sig-name">Compilable</span>(<span class="summary-sig-arg">filename</span>)</span><br />
+      Return true if the file is compilable (should be in OBJS).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#Compilable">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="Linkable"></a><span class="summary-sig-name">Linkable</span>(<span class="summary-sig-arg">filename</span>)</span><br />
+      Return true if the file is linkable (should be on the link line).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#Linkable">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.cmake-module.html#NormjoinPathForceCMakeSource" class="summary-sig-name">NormjoinPathForceCMakeSource</a>(<span class="summary-sig-arg">base_path</span>,
+        <span class="summary-sig-arg">rel_path</span>)</span><br />
+      Resolves rel_path against base_path and returns the result.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#NormjoinPathForceCMakeSource">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.cmake-module.html#NormjoinPath" class="summary-sig-name">NormjoinPath</a>(<span class="summary-sig-arg">base_path</span>,
+        <span class="summary-sig-arg">rel_path</span>)</span><br />
+      Resolves rel_path against base_path and returns the result.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#NormjoinPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.cmake-module.html#CMakeStringEscape" class="summary-sig-name">CMakeStringEscape</a>(<span class="summary-sig-arg">a</span>)</span><br />
+      Escapes the string 'a' for use inside a CMake string.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#CMakeStringEscape">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="SetFileProperty"></a><span class="summary-sig-name">SetFileProperty</span>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">source_name</span>,
+        <span class="summary-sig-arg">property_name</span>,
+        <span class="summary-sig-arg">values</span>,
+        <span class="summary-sig-arg">sep</span>)</span><br />
+      Given a set of source file, sets the given property on them.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#SetFileProperty">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="SetFilesProperty"></a><span class="summary-sig-name">SetFilesProperty</span>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">variable</span>,
+        <span class="summary-sig-arg">property_name</span>,
+        <span class="summary-sig-arg">values</span>,
+        <span class="summary-sig-arg">sep</span>)</span><br />
+      Given a set of source files, sets the given property on them.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#SetFilesProperty">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="SetTargetProperty"></a><span class="summary-sig-name">SetTargetProperty</span>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">target_name</span>,
+        <span class="summary-sig-arg">property_name</span>,
+        <span class="summary-sig-arg">values</span>,
+        <span class="summary-sig-arg">sep</span>=<span class="summary-sig-default">''</span>)</span><br />
+      Given a target, sets the given property.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#SetTargetProperty">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="SetVariable"></a><span class="summary-sig-name">SetVariable</span>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">variable_name</span>,
+        <span class="summary-sig-arg">value</span>)</span><br />
+      Sets a CMake variable.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#SetVariable">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="SetVariableList"></a><span class="summary-sig-name">SetVariableList</span>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">variable_name</span>,
+        <span class="summary-sig-arg">values</span>)</span><br />
+      Sets a CMake variable to a list.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#SetVariableList">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="UnsetVariable"></a><span class="summary-sig-name">UnsetVariable</span>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">variable_name</span>)</span><br />
+      Unsets a CMake variable.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#UnsetVariable">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteVariable"></a><span class="summary-sig-name">WriteVariable</span>(<span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">variable_name</span>,
+        <span class="summary-sig-arg">prepend</span>=<span class="summary-sig-default">None</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteVariable">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.cmake-module.html#StringToCMakeTargetName" class="summary-sig-name">StringToCMakeTargetName</a>(<span class="summary-sig-arg">a</span>)</span><br />
+      Converts the given string 'a' to a valid CMake target name.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#StringToCMakeTargetName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.cmake-module.html#WriteActions" class="summary-sig-name">WriteActions</a>(<span class="summary-sig-arg">target_name</span>,
+        <span class="summary-sig-arg">actions</span>,
+        <span class="summary-sig-arg">extra_sources</span>,
+        <span class="summary-sig-arg">extra_deps</span>,
+        <span class="summary-sig-arg">path_to_gyp</span>,
+        <span class="summary-sig-arg">output</span>)</span><br />
+      Write CMake for the 'actions' in the target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteActions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="NormjoinRulePathForceCMakeSource"></a><span class="summary-sig-name">NormjoinRulePathForceCMakeSource</span>(<span class="summary-sig-arg">base_path</span>,
+        <span class="summary-sig-arg">rel_path</span>,
+        <span class="summary-sig-arg">rule_source</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#NormjoinRulePathForceCMakeSource">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.cmake-module.html#WriteRules" class="summary-sig-name">WriteRules</a>(<span class="summary-sig-arg">target_name</span>,
+        <span class="summary-sig-arg">rules</span>,
+        <span class="summary-sig-arg">extra_sources</span>,
+        <span class="summary-sig-arg">extra_deps</span>,
+        <span class="summary-sig-arg">path_to_gyp</span>,
+        <span class="summary-sig-arg">output</span>)</span><br />
+      Write CMake for the 'rules' in the target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteRules">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.cmake-module.html#WriteCopies" class="summary-sig-name">WriteCopies</a>(<span class="summary-sig-arg">target_name</span>,
+        <span class="summary-sig-arg">copies</span>,
+        <span class="summary-sig-arg">extra_deps</span>,
+        <span class="summary-sig-arg">path_to_gyp</span>,
+        <span class="summary-sig-arg">output</span>)</span><br />
+      Write CMake for the 'copies' in the target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteCopies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="CreateCMakeTargetBaseName"></a><span class="summary-sig-name">CreateCMakeTargetBaseName</span>(<span class="summary-sig-arg">qualified_target</span>)</span><br />
+      This is the name we would like the target to have.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#CreateCMakeTargetBaseName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="CreateCMakeTargetFullName"></a><span class="summary-sig-name">CreateCMakeTargetFullName</span>(<span class="summary-sig-arg">qualified_target</span>)</span><br />
+      An unambiguous name for the target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#CreateCMakeTargetFullName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteTarget"></a><span class="summary-sig-name">WriteTarget</span>(<span class="summary-sig-arg">namer</span>,
+        <span class="summary-sig-arg">qualified_target</span>,
+        <span class="summary-sig-arg">target_dicts</span>,
+        <span class="summary-sig-arg">build_dir</span>,
+        <span class="summary-sig-arg">config_to_use</span>,
+        <span class="summary-sig-arg">options</span>,
+        <span class="summary-sig-arg">generator_flags</span>,
+        <span class="summary-sig-arg">all_qualified_targets</span>,
+        <span class="summary-sig-arg">output</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteTarget">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GenerateOutputForConfig"></a><span class="summary-sig-name">GenerateOutputForConfig</span>(<span class="summary-sig-arg">target_list</span>,
+        <span class="summary-sig-arg">target_dicts</span>,
+        <span class="summary-sig-arg">data</span>,
+        <span class="summary-sig-arg">params</span>,
+        <span class="summary-sig-arg">config_to_use</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#GenerateOutputForConfig">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="PerformBuild"></a><span class="summary-sig-name">PerformBuild</span>(<span class="summary-sig-arg">data</span>,
+        <span class="summary-sig-arg">configurations</span>,
+        <span class="summary-sig-arg">params</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#PerformBuild">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="CallGenerateOutputForConfig"></a><span class="summary-sig-name">CallGenerateOutputForConfig</span>(<span class="summary-sig-arg">arglist</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#CallGenerateOutputForConfig">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GenerateOutput"></a><span class="summary-sig-name">GenerateOutput</span>(<span class="summary-sig-arg">target_list</span>,
+        <span class="summary-sig-arg">target_dicts</span>,
+        <span class="summary-sig-arg">data</span>,
+        <span class="summary-sig-arg">params</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.cmake-pysrc.html#GenerateOutput">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.generator.cmake-module.html#generator_default_variables" class="summary-name">generator_default_variables</a> = <code title="{'EXECUTABLE_PREFIX': '', 'EXECUTABLE_SUFFIX': '', 'STATIC_LIB_PREFIX'\
+: 'lib', 'STATIC_LIB_SUFFIX': '.a', 'SHARED_LIB_PREFIX': 'lib', 'SHARE\
+D_LIB_SUFFIX': '.so', 'SHARED_LIB_DIR': '${builddir}/lib.${TOOLSET}', \
+'LIB_DIR': '${obj}.${TOOLSET}', 'INTERMEDIATE_DIR': '${obj}.${TOOLSET}\
+/${TARGET}/geni', 'SHARED_INTERMEDIATE_DIR': '${obj}/gen', 'PRODUCT_DI\
+R': '${builddir}', 'RULE_INPUT_PATH': '${RULE_INPUT_PATH}', 'RULE_INPU\
+T_DIRNAME': '${RULE_INPUT_DIRNAME}', 'RULE_INPUT_NAME': '${RULE_INPUT_\
+NAME}', 'RULE_INPUT_ROOT': '${RULE_INPUT_ROOT}', 'RULE_INPUT_EXT': '${\
+...">{'EXECUTABLE_PREFIX': '', 'EXECU<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.generator.cmake-module.html#FULL_PATH_VARS" class="summary-name">FULL_PATH_VARS</a> = <code title="'${CMAKE_CURRENT_LIST_DIR}', '${builddir}', '${obj}'">'${CMAKE_CURRENT_LIST_DIR}', '${builddir}', '<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="generator_supports_multiple_toolsets"></a><span class="summary-name">generator_supports_multiple_toolsets</span> = <code title="True">True</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="generator_wants_static_library_dependencies_adjusted"></a><span class="summary-name">generator_wants_static_library_dependencies_adjusted</span> = <code title="True">True</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.generator.cmake-module.html#COMPILABLE_EXTENSIONS" class="summary-name">COMPILABLE_EXTENSIONS</a> = <code title="{'.c': 'cc', '.cc': 'cxx', '.cpp': 'cxx', '.cxx': 'cxx', '.s': 's', '.\
+S': 's',}">{'.c': 'cc', '.cc': 'cxx', '.cpp': 'cx<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="gyp.generator.cmake-module.html#cmake_target_type_from_gyp_target_type" class="summary-name">cmake_target_type_from_gyp_target_type</a> = <code title="{'executable': CMakeTargetType('add_executable', None, 'RUNTIME'), 'st\
+atic_library': CMakeTargetType('add_library', 'STATIC', 'ARCHIVE'), 's\
+hared_library': CMakeTargetType('add_library', 'SHARED', 'LIBRARY'), '\
+loadable_module': CMakeTargetType('add_library', 'MODULE', 'LIBRARY'),\
+ 'none': CMakeTargetType('add_custom_target', 'SOURCES', None),}">{'executable': CMakeT<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+</table>
+<p class="indent-wrapped-lines"><b>Imports:</b>
+  <span title="multiprocessing">multiprocessing</span>,
+  <span title="os">os</span>,
+  <span title="signal">signal</span>,
+  <span title="string">string</span>,
+  <span title="subprocess">subprocess</span>,
+  <a href="gyp-module.html" title="gyp">gyp</a>
+</p><br />
+<!-- ==================== FUNCTION DETAILS ==================== -->
+<a name="section-FunctionDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Function Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-FunctionDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="NormjoinPathForceCMakeSource"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">NormjoinPathForceCMakeSource</span>(<span class="sig-arg">base_path</span>,
+        <span class="sig-arg">rel_path</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.cmake-pysrc.html#NormjoinPathForceCMakeSource">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Resolves rel_path against base_path and returns the result.</p>
+  <p>If rel_path is an absolute path it is returned unchanged. Otherwise it
+  is resolved against base_path and normalized. If the result is a relative
+  path, it is forced to be relative to the CMakeLists.txt.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="NormjoinPath"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">NormjoinPath</span>(<span class="sig-arg">base_path</span>,
+        <span class="sig-arg">rel_path</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.cmake-pysrc.html#NormjoinPath">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Resolves rel_path against base_path and returns the result. TODO: what
+  is this really used for? If rel_path begins with '$' it is returned 
+  unchanged. Otherwise it is resolved against base_path if relative, then 
+  normalized.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="CMakeStringEscape"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">CMakeStringEscape</span>(<span class="sig-arg">a</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.cmake-pysrc.html#CMakeStringEscape">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Escapes the string 'a' for use inside a CMake string.
+
+This means escaping
+'' otherwise it may be seen as modifying the next character
+'&quot;' otherwise it will end the string
+';' otherwise the string becomes a list
+
+The following do not need to be escaped
+'#' when the lexer is in string state, this does not start a comment
+
+The following are yet unknown
+'$' generator variables (like ${obj}) must not be escaped,
+    but text $ should be escaped
+    what is wanted is to know which $ come from generator variables
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="StringToCMakeTargetName"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">StringToCMakeTargetName</span>(<span class="sig-arg">a</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.cmake-pysrc.html#StringToCMakeTargetName">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Converts the given string 'a' to a valid CMake target name.</p>
+  <p>All invalid characters are replaced by '_'. Invalid for cmake: ' ', 
+  '/', '(', ')', '&quot;' Invalid for make: ':' Invalid for unknown reasons
+  but cause failures: '.'</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteActions"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteActions</span>(<span class="sig-arg">target_name</span>,
+        <span class="sig-arg">actions</span>,
+        <span class="sig-arg">extra_sources</span>,
+        <span class="sig-arg">extra_deps</span>,
+        <span class="sig-arg">path_to_gyp</span>,
+        <span class="sig-arg">output</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteActions">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Write CMake for the 'actions' in the target.
+
+Args:
+  target_name: the name of the CMake target being generated.
+  actions: the Gyp 'actions' dict for this target.
+  extra_sources: [(&lt;cmake_src&gt;, &lt;src&gt;)] to append with generated source files.
+  extra_deps: [&lt;cmake_taget&gt;] to append with generated targets.
+  path_to_gyp: relative path from CMakeLists.txt being generated to
+      the Gyp file in which the target being generated is defined.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteRules"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteRules</span>(<span class="sig-arg">target_name</span>,
+        <span class="sig-arg">rules</span>,
+        <span class="sig-arg">extra_sources</span>,
+        <span class="sig-arg">extra_deps</span>,
+        <span class="sig-arg">path_to_gyp</span>,
+        <span class="sig-arg">output</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteRules">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Write CMake for the 'rules' in the target.
+
+Args:
+  target_name: the name of the CMake target being generated.
+  actions: the Gyp 'actions' dict for this target.
+  extra_sources: [(&lt;cmake_src&gt;, &lt;src&gt;)] to append with generated source files.
+  extra_deps: [&lt;cmake_taget&gt;] to append with generated targets.
+  path_to_gyp: relative path from CMakeLists.txt being generated to
+      the Gyp file in which the target being generated is defined.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteCopies"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteCopies</span>(<span class="sig-arg">target_name</span>,
+        <span class="sig-arg">copies</span>,
+        <span class="sig-arg">extra_deps</span>,
+        <span class="sig-arg">path_to_gyp</span>,
+        <span class="sig-arg">output</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.cmake-pysrc.html#WriteCopies">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Write CMake for the 'copies' in the target.
+
+Args:
+  target_name: the name of the CMake target being generated.
+  actions: the Gyp 'actions' dict for this target.
+  extra_deps: [&lt;cmake_taget&gt;] to append with generated targets.
+  path_to_gyp: relative path from CMakeLists.txt being generated to
+      the Gyp file in which the target being generated is defined.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== VARIABLES DETAILS ==================== -->
+<a name="section-VariablesDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-VariablesDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="generator_default_variables"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">generator_default_variables</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{'EXECUTABLE_PREFIX': '', 'EXECUTABLE_SUFFIX': '', 'STATIC_LIB_PREFIX'<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+: 'lib', 'STATIC_LIB_SUFFIX': '.a', 'SHARED_LIB_PREFIX': 'lib', 'SHARE<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+D_LIB_SUFFIX': '.so', 'SHARED_LIB_DIR': '${builddir}/lib.${TOOLSET}', <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+'LIB_DIR': '${obj}.${TOOLSET}', 'INTERMEDIATE_DIR': '${obj}.${TOOLSET}<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+/${TARGET}/geni', 'SHARED_INTERMEDIATE_DIR': '${obj}/gen', 'PRODUCT_DI<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+R': '${builddir}', 'RULE_INPUT_PATH': '${RULE_INPUT_PATH}', 'RULE_INPU<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+T_DIRNAME': '${RULE_INPUT_DIRNAME}', 'RULE_INPUT_NAME': '${RULE_INPUT_<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+NAME}', 'RULE_INPUT_ROOT': '${RULE_INPUT_ROOT}', 'RULE_INPUT_EXT': '${<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+<code class="variable-ellipsis">...</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="FULL_PATH_VARS"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">FULL_PATH_VARS</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+'${CMAKE_CURRENT_LIST_DIR}', '${builddir}', '${obj}'
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="COMPILABLE_EXTENSIONS"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">COMPILABLE_EXTENSIONS</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{'.c': 'cc', '.cc': 'cxx', '.cpp': 'cxx', '.cxx': 'cxx', '.s': 's', '.<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+S': 's',}
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="cmake_target_type_from_gyp_target_type"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">cmake_target_type_from_gyp_target_type</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{'executable': CMakeTargetType('add_executable', None, 'RUNTIME'), 'st<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+atic_library': CMakeTargetType('add_library', 'STATIC', 'ARCHIVE'), 's<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+hared_library': CMakeTargetType('add_library', 'SHARED', 'LIBRARY'), '<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+loadable_module': CMakeTargetType('add_library', 'MODULE', 'LIBRARY'),<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ 'none': CMakeTargetType('add_custom_target', 'SOURCES', None),}
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:26:55 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

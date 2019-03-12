@@ -1,0 +1,1808 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.xcode_emulation.XcodeSettings</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.xcode_emulation-module.html">Module&nbsp;xcode_emulation</a> ::
+        Class&nbsp;XcodeSettings
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.xcode_emulation.XcodeSettings-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class XcodeSettings</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_xcod_3" name="uml_class_diagram_for_gyp_xcod_3">
+<area shape="rect" id="node1_14" href="gyp.xcode_emulation.XcodeSettings-class.html#__init__" title="x.__init__(...) initializes x; see help(type(x)) for signature" alt="" coords="18,37,278,57"/>
+<area shape="rect" id="node1_15" href="gyp.xcode_emulation.XcodeSettings-class.html#IsBinaryOutputFormat" title="gyp.xcode_emulation.XcodeSettings.IsBinaryOutputFormat" alt="" coords="18,57,278,77"/>
+<area shape="rect" id="node1_16" href="gyp.xcode_emulation.XcodeSettings-class.html#GetFrameworkVersion" title="Returns the framework version of the current target." alt="" coords="18,77,278,97"/>
+<area shape="rect" id="node1_17" href="gyp.xcode_emulation.XcodeSettings-class.html#GetWrapperExtension" title="Returns the bundle extension (.app, .framework, .plugin, etc)." alt="" coords="18,97,278,117"/>
+<area shape="rect" id="node1_18" href="gyp.xcode_emulation.XcodeSettings-class.html#GetProductName" title="Returns PRODUCT_NAME." alt="" coords="18,117,278,137"/>
+<area shape="rect" id="node1_19" href="gyp.xcode_emulation.XcodeSettings-class.html#GetFullProductName" title="Returns FULL_PRODUCT_NAME." alt="" coords="18,137,278,157"/>
+<area shape="rect" id="node1_20" href="gyp.xcode_emulation.XcodeSettings-class.html#GetWrapperName" title="Returns the directory name of the bundle represented by this target." alt="" coords="18,157,278,177"/>
+<area shape="rect" id="node1_21" href="gyp.xcode_emulation.XcodeSettings-class.html#GetBundleContentsFolderPath" title="Returns the qualified path to the bundle&#39;s contents folder." alt="" coords="18,177,278,197"/>
+<area shape="rect" id="node1_22" href="gyp.xcode_emulation.XcodeSettings-class.html#GetBundleResourceFolder" title="Returns the qualified path to the bundle&#39;s resource folder." alt="" coords="18,197,278,217"/>
+<area shape="rect" id="node1_23" href="gyp.xcode_emulation.XcodeSettings-class.html#GetBundlePlistPath" title="Returns the qualified path to the bundle&#39;s plist file." alt="" coords="18,217,278,237"/>
+<area shape="rect" id="node1_24" href="gyp.xcode_emulation.XcodeSettings-class.html#GetProductType" title="Returns the PRODUCT_TYPE of this target." alt="" coords="18,237,278,257"/>
+<area shape="rect" id="node1_25" href="gyp.xcode_emulation.XcodeSettings-class.html#GetMachOType" title="Returns the MACH_O_TYPE of this target." alt="" coords="18,257,278,277"/>
+<area shape="rect" id="node1_26" href="gyp.xcode_emulation.XcodeSettings-class.html#GetExecutableName" title="Returns the executable name of the bundle represented by this target." alt="" coords="18,277,278,297"/>
+<area shape="rect" id="node1_27" href="gyp.xcode_emulation.XcodeSettings-class.html#GetExtraPlistItems" title="Returns a dictionary with extra items to insert into Info.plist." alt="" coords="18,317,278,337"/>
+<area shape="rect" id="node1" href="gyp.xcode_emulation.XcodeSettings-class.html" title="A class that understands the gyp &#39;xcode_settings&#39; object." alt="" coords="5,5,289,344"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_xcod_3.gif" alt='' usemap="#uml_class_diagram_for_gyp_xcod_3" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>A class that understands the gyp 'xcode_settings' object.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>)</span><br />
+      x.__init__(...) initializes x; see help(type(x)) for signature</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#_ConvertConditionalKeys" class="summary-sig-name" onclick="show_private();">_ConvertConditionalKeys</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span><br />
+      Converts or warns on conditional keys.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._ConvertConditionalKeys">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_Settings"></a><span class="summary-sig-name">_Settings</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._Settings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_Test"></a><span class="summary-sig-name">_Test</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">test_key</span>,
+        <span class="summary-sig-arg">cond_key</span>,
+        <span class="summary-sig-arg">default</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._Test">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_Appendf"></a><span class="summary-sig-name">_Appendf</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lst</span>,
+        <span class="summary-sig-arg">test_key</span>,
+        <span class="summary-sig-arg">format_str</span>,
+        <span class="summary-sig-arg">default</span>=<span class="summary-sig-default">None</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._Appendf">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_WarnUnimplemented"></a><span class="summary-sig-name">_WarnUnimplemented</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">test_key</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._WarnUnimplemented">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="IsBinaryOutputFormat"></a><span class="summary-sig-name">IsBinaryOutputFormat</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.IsBinaryOutputFormat">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_IsBundle"></a><span class="summary-sig-name">_IsBundle</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._IsBundle">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_IsIosAppExtension"></a><span class="summary-sig-name">_IsIosAppExtension</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._IsIosAppExtension">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_IsIosWatchKitExtension"></a><span class="summary-sig-name">_IsIosWatchKitExtension</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._IsIosWatchKitExtension">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_IsIosWatchApp"></a><span class="summary-sig-name">_IsIosWatchApp</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._IsIosWatchApp">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetFrameworkVersion" class="summary-sig-name">GetFrameworkVersion</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the framework version of the current target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetFrameworkVersion">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetWrapperExtension" class="summary-sig-name">GetWrapperExtension</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the bundle extension (.app, .framework, .plugin, etc).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetWrapperExtension">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetProductName"></a><span class="summary-sig-name">GetProductName</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns PRODUCT_NAME.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetProductName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetFullProductName"></a><span class="summary-sig-name">GetFullProductName</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns FULL_PRODUCT_NAME.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetFullProductName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetWrapperName" class="summary-sig-name">GetWrapperName</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the directory name of the bundle represented by this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetWrapperName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetBundleContentsFolderPath" class="summary-sig-name">GetBundleContentsFolderPath</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the qualified path to the bundle's contents folder.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetBundleContentsFolderPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetBundleResourceFolder" class="summary-sig-name">GetBundleResourceFolder</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the qualified path to the bundle's resource folder.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetBundleResourceFolder">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetBundlePlistPath" class="summary-sig-name">GetBundlePlistPath</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the qualified path to the bundle's plist file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetBundlePlistPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetProductType"></a><span class="summary-sig-name">GetProductType</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the PRODUCT_TYPE of this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetProductType">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetMachOType"></a><span class="summary-sig-name">GetMachOType</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the MACH_O_TYPE of this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetMachOType">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#_GetBundleBinaryPath" class="summary-sig-name" onclick="show_private();">_GetBundleBinaryPath</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the name of the bundle binary of by this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetBundleBinaryPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetStandaloneExecutableSuffix"></a><span class="summary-sig-name">_GetStandaloneExecutableSuffix</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetStandaloneExecutableSuffix">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetStandaloneExecutablePrefix"></a><span class="summary-sig-name">_GetStandaloneExecutablePrefix</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetStandaloneExecutablePrefix">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#_GetStandaloneBinaryPath" class="summary-sig-name" onclick="show_private();">_GetStandaloneBinaryPath</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the name of the non-bundle binary represented by this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetStandaloneBinaryPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetExecutableName" class="summary-sig-name">GetExecutableName</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the executable name of the bundle represented by this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetExecutableName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetExecutablePath" class="summary-sig-name">GetExecutablePath</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the directory name of the bundle represented by this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetExecutablePath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetActiveArchs"></a><span class="summary-sig-name">GetActiveArchs</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span><br />
+      Returns the architectures this target should be built for.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetActiveArchs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetSdkVersionInfoItem"></a><span class="summary-sig-name">_GetSdkVersionInfoItem</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">sdk</span>,
+        <span class="summary-sig-arg">infoitem</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetSdkVersionInfoItem">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_SdkRoot"></a><span class="summary-sig-name">_SdkRoot</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._SdkRoot">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_SdkPath"></a><span class="summary-sig-name">_SdkPath</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>=<span class="summary-sig-default">None</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._SdkPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_XcodeSdkPath"></a><span class="summary-sig-name">_XcodeSdkPath</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">sdk_root</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._XcodeSdkPath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_AppendPlatformVersionMinFlags"></a><span class="summary-sig-name">_AppendPlatformVersionMinFlags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lst</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._AppendPlatformVersionMinFlags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflags"></a><span class="summary-sig-name">GetCflags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns flags that need to be added to .c, .cc, .m, and .mm 
+      compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetCflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflagsC"></a><span class="summary-sig-name">GetCflagsC</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span><br />
+      Returns flags that need to be added to .c, and .m compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetCflagsC">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflagsCC"></a><span class="summary-sig-name">GetCflagsCC</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span><br />
+      Returns flags that need to be added to .cc, and .mm compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetCflagsCC">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_AddObjectiveCGarbageCollectionFlags"></a><span class="summary-sig-name">_AddObjectiveCGarbageCollectionFlags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">flags</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._AddObjectiveCGarbageCollectionFlags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_AddObjectiveCARCFlags"></a><span class="summary-sig-name">_AddObjectiveCARCFlags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">flags</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._AddObjectiveCARCFlags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_AddObjectiveCMissingPropertySynthesisFlags"></a><span class="summary-sig-name">_AddObjectiveCMissingPropertySynthesisFlags</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">flags</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._AddObjectiveCMissingPropertySynthesisFlags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflagsObjC"></a><span class="summary-sig-name">GetCflagsObjC</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span><br />
+      Returns flags that need to be added to .m compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetCflagsObjC">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetCflagsObjCC"></a><span class="summary-sig-name">GetCflagsObjCC</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span><br />
+      Returns flags that need to be added to .mm compilations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetCflagsObjCC">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetInstallNameBase"></a><span class="summary-sig-name">GetInstallNameBase</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return DYLIB_INSTALL_NAME_BASE for this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetInstallNameBase">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_StandardizePath"></a><span class="summary-sig-name">_StandardizePath</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>)</span><br />
+      Do :standardizepath processing for path.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._StandardizePath">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetInstallName"></a><span class="summary-sig-name">GetInstallName</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return LD_DYLIB_INSTALL_NAME for this target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetInstallName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_MapLinkerFlagFilename"></a><span class="summary-sig-name">_MapLinkerFlagFilename</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ldflag</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>)</span><br />
+      Checks if ldflag contains a filename and if so remaps it from 
+      gyp-directory-relative to build-directory-relative.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._MapLinkerFlagFilename">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetLdflags" class="summary-sig-name">GetLdflags</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">product_dir</span>,
+        <span class="summary-sig-arg">gyp_to_build_path</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns flags that need to be passed to the linker.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetLdflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetLibtoolflags" class="summary-sig-name">GetLibtoolflags</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span><br />
+      Returns flags that need to be passed to the static linker.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetLibtoolflags">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetPerTargetSettings" class="summary-sig-name">GetPerTargetSettings</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Gets a list of all the per-target settings.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetPerTargetSettings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetPerConfigSetting"></a><span class="summary-sig-name">GetPerConfigSetting</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">setting</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">default</span>=<span class="summary-sig-default">None</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetPerConfigSetting">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#GetPerTargetSetting" class="summary-sig-name">GetPerTargetSetting</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">setting</span>,
+        <span class="summary-sig-arg">default</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Tries to get xcode_settings.setting from spec.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetPerTargetSetting">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#_GetStripPostbuilds" class="summary-sig-name" onclick="show_private();">_GetStripPostbuilds</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">output_binary</span>,
+        <span class="summary-sig-arg">quiet</span>)</span><br />
+      Returns a list of shell commands that contain the shell commands 
+      neccessary to strip this target's binary.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetStripPostbuilds">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#_GetDebugInfoPostbuilds" class="summary-sig-name" onclick="show_private();">_GetDebugInfoPostbuilds</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">output_binary</span>,
+        <span class="summary-sig-arg">quiet</span>)</span><br />
+      Returns a list of shell commands that contain the shell commands 
+      neccessary to massage this target's debug information.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetDebugInfoPostbuilds">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetTargetPostbuilds"></a><span class="summary-sig-name">_GetTargetPostbuilds</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">output_binary</span>,
+        <span class="summary-sig-arg">quiet</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns a list of shell commands that contain the shell commands to 
+      run as postbuilds for this target, before the actual postbuilds.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetTargetPostbuilds">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#_GetIOSPostbuilds" class="summary-sig-name" onclick="show_private();">_GetIOSPostbuilds</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">output_binary</span>)</span><br />
+      Return a shell command to codesign the iOS output binary so it can be
+      deployed to a device.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetIOSPostbuilds">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_GetIOSCodeSignIdentityKey"></a><span class="summary-sig-name">_GetIOSCodeSignIdentityKey</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">settings</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetIOSCodeSignIdentityKey">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="AddImplicitPostbuilds"></a><span class="summary-sig-name">AddImplicitPostbuilds</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>,
+        <span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">output_binary</span>,
+        <span class="summary-sig-arg">postbuilds</span>=<span class="summary-sig-default">[]</span>,
+        <span class="summary-sig-arg">quiet</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Returns a list of shell commands that should run before and after 
+      |postbuilds|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.AddImplicitPostbuilds">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_AdjustLibrary"></a><span class="summary-sig-name">_AdjustLibrary</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">library</span>,
+        <span class="summary-sig-arg">config_name</span>=<span class="summary-sig-default">None</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._AdjustLibrary">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="AdjustLibraries"></a><span class="summary-sig-name">AdjustLibraries</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">libraries</span>,
+        <span class="summary-sig-arg">config_name</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Transforms entries like 'Cocoa.framework' in libraries into entries 
+      like '-framework Cocoa', 'libcrypto.dylib' into '-lcrypto', etc.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.AdjustLibraries">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_BuildMachineOSBuild"></a><span class="summary-sig-name">_BuildMachineOSBuild</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._BuildMachineOSBuild">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_XcodeIOSDeviceFamily"></a><span class="summary-sig-name">_XcodeIOSDeviceFamily</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._XcodeIOSDeviceFamily">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetExtraPlistItems"></a><span class="summary-sig-name">GetExtraPlistItems</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">configname</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns a dictionary with extra items to insert into Info.plist.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetExtraPlistItems">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.xcode_emulation.XcodeSettings-class.html#_DefaultSdkRoot" class="summary-sig-name" onclick="show_private();">_DefaultSdkRoot</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the default SDKROOT to use.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._DefaultSdkRoot">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_sdk_path_cache"></a><span class="summary-name">_sdk_path_cache</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_sdk_root_cache"></a><span class="summary-name">_sdk_root_cache</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_plist_cache"></a><span class="summary-name">_plist_cache</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="_codesigning_key_cache"></a><span class="summary-name">_codesigning_key_cache</span> = <code title="{}">{}</code>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_ConvertConditionalKeys"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_ConvertConditionalKeys</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">configname</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._ConvertConditionalKeys">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Converts or warns on conditional keys.  Xcode supports conditional 
+  keys, such as CODE_SIGN_IDENTITY[sdk=iphoneos*].  This is a partial 
+  implementation with some keys converted while the rest force a 
+  warning.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetFrameworkVersion"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetFrameworkVersion</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetFrameworkVersion">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the framework version of the current target. Only valid for 
+  bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetWrapperExtension"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetWrapperExtension</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetWrapperExtension">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the bundle extension (.app, .framework, .plugin, etc).  Only 
+  valid for bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetWrapperName"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetWrapperName</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetWrapperName">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the directory name of the bundle represented by this target. 
+  Only valid for bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetBundleContentsFolderPath"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetBundleContentsFolderPath</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetBundleContentsFolderPath">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the qualified path to the bundle's contents folder. E.g. 
+  Chromium.app/Contents or Foo.bundle/Versions/A. Only valid for 
+  bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetBundleResourceFolder"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetBundleResourceFolder</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetBundleResourceFolder">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the qualified path to the bundle's resource folder. E.g. 
+  Chromium.app/Contents/Resources. Only valid for bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetBundlePlistPath"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetBundlePlistPath</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetBundlePlistPath">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the qualified path to the bundle's plist file. E.g. 
+  Chromium.app/Contents/Info.plist. Only valid for bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetBundleBinaryPath"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetBundleBinaryPath</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetBundleBinaryPath">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the name of the bundle binary of by this target. E.g. 
+  Chromium.app/Contents/MacOS/Chromium. Only valid for bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetStandaloneBinaryPath"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetStandaloneBinaryPath</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetStandaloneBinaryPath">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the name of the non-bundle binary represented by this target. 
+  E.g. hello_world. Only valid for non-bundles.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetExecutableName"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetExecutableName</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetExecutableName">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the executable name of the bundle represented by this target. 
+  E.g. Chromium.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetExecutablePath"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetExecutablePath</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetExecutablePath">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the directory name of the bundle represented by this target. 
+  E.g. Chromium.app/Contents/MacOS/Chromium.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetLdflags"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetLdflags</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">configname</span>,
+        <span class="sig-arg">product_dir</span>,
+        <span class="sig-arg">gyp_to_build_path</span>,
+        <span class="sig-arg">arch</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetLdflags">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Returns flags that need to be passed to the linker.
+
+Args:
+    configname: The name of the configuration to get ld flags for.
+    product_dir: The directory where products such static and dynamic
+        libraries are placed. This is added to the library search path.
+    gyp_to_build_path: A function that converts paths relative to the
+        current gyp file to paths relative to the build direcotry.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetLibtoolflags"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetLibtoolflags</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">configname</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetLibtoolflags">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Returns flags that need to be passed to the static linker.
+
+Args:
+    configname: The name of the configuration to get ld flags for.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetPerTargetSettings"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetPerTargetSettings</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetPerTargetSettings">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Gets a list of all the per-target settings. This will only fetch keys 
+  whose values are the same across all configurations.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetPerTargetSetting"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetPerTargetSetting</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">setting</span>,
+        <span class="sig-arg">default</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings.GetPerTargetSetting">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tries to get xcode_settings.setting from spec. Assumes that the 
+  setting has the same value in all configurations and throws 
+  otherwise.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetStripPostbuilds"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetStripPostbuilds</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">configname</span>,
+        <span class="sig-arg">output_binary</span>,
+        <span class="sig-arg">quiet</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetStripPostbuilds">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns a list of shell commands that contain the shell commands 
+  neccessary to strip this target's binary. These should be run as 
+  postbuilds before the actual postbuilds run.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetDebugInfoPostbuilds"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetDebugInfoPostbuilds</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">configname</span>,
+        <span class="sig-arg">output</span>,
+        <span class="sig-arg">output_binary</span>,
+        <span class="sig-arg">quiet</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetDebugInfoPostbuilds">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns a list of shell commands that contain the shell commands 
+  neccessary to massage this target's debug information. These should be 
+  run as postbuilds before the actual postbuilds run.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_GetIOSPostbuilds"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_GetIOSPostbuilds</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">configname</span>,
+        <span class="sig-arg">output_binary</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._GetIOSPostbuilds">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return a shell command to codesign the iOS output binary so it can be 
+  deployed to a device.  This should be run as the very last step of the 
+  build.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_DefaultSdkRoot"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_DefaultSdkRoot</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.xcode_emulation-pysrc.html#XcodeSettings._DefaultSdkRoot">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns the default SDKROOT to use.</p>
+  <p>Prior to version 5.0.0, if SDKROOT was not explicitly set in the Xcode
+  project, then the environment variable was empty. Starting with this 
+  version, Xcode uses the name of the newest SDK installed.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:26:59 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

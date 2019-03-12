@@ -50,11 +50,18 @@ if not os.path.isfile(secretFile):
 else:
     with open(secretFile) as f:
         SECRET_KEY = f.read().strip()
-
+secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
+if os.path.isfile(secretGeoServer):
+    with open(secretGeoServer) as gs:
+        SECRET_GEOSERVER = gs.read().strip()
+else:
+        # TODO: Print to log file
+    print('secretGeoServer.txt is missing')
+    
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["portal.vforwater.de","localhost","127.0.0.1"]
+ALLOWED_HOSTS = ["portal.vforwater.de", "localhost", "127.0.0.1"]
 
 # Logging
 LOGGING = {
@@ -180,9 +187,10 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater_update',
         'HOST': 'localhost',
-        #'HOST': 'portal.vforwater.de',
+         #'HOST': 'portal.vforwater.de',
         'PORT': '5433',
         'USER': 'vfwportal',
+        'PASSWORD': '',
     }
 
 }

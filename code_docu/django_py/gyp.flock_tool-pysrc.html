@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.flock_tool</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        Module&nbsp;flock_tool
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.flock_tool-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="gyp.flock_tool-module.html">Module gyp.flock_tool</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno"> 1</tt>  <tt class="py-line"><tt class="py-comment">#!/usr/bin/env python</tt> </tt>
+<a name="L2"></a><tt class="py-lineno"> 2</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (c) 2011 Google Inc. All rights reserved.</tt> </tt>
+<a name="L3"></a><tt class="py-lineno"> 3</tt>  <tt class="py-line"><tt class="py-comment"># Use of this source code is governed by a BSD-style license that can be</tt> </tt>
+<a name="L4"></a><tt class="py-lineno"> 4</tt>  <tt class="py-line"><tt class="py-comment"># found in the LICENSE file.</tt> </tt>
+<a name="L5"></a><tt class="py-lineno"> 5</tt>  <tt class="py-line"> </tt>
+<a name="L6"></a><tt class="py-lineno"> 6</tt>  <tt class="py-line"><tt class="py-docstring">"""These functions are executed via gyp-flock-tool when using the Makefile</tt> </tt>
+<a name="L7"></a><tt class="py-lineno"> 7</tt>  <tt class="py-line"><tt class="py-docstring">generator.  Used on systems that don't have a built-in flock."""</tt> </tt>
+<a name="L8"></a><tt class="py-lineno"> 8</tt>  <tt class="py-line"> </tt>
+<a name="L9"></a><tt class="py-lineno"> 9</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">fcntl</tt> </tt>
+<a name="L10"></a><tt class="py-lineno">10</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L11"></a><tt class="py-lineno">11</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">struct</tt> </tt>
+<a name="L12"></a><tt class="py-lineno">12</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">subprocess</tt> </tt>
+<a name="L13"></a><tt class="py-lineno">13</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> </tt>
+<a name="L14"></a><tt class="py-lineno">14</tt>  <tt class="py-line"> </tt>
+<a name="L15"></a><tt class="py-lineno">15</tt>  <tt class="py-line"> </tt>
+<a name="main"></a><div id="main-def"><a name="L16"></a><tt class="py-lineno">16</tt> <a class="py-toggle" href="#" id="main-toggle" onclick="return toggle('main');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.flock_tool-module.html#main">main</a><tt class="py-op">(</tt><tt class="py-param">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="main-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="main-expanded"><a name="L17"></a><tt class="py-lineno">17</tt>  <tt class="py-line">  <tt class="py-name">executor</tt> <tt class="py-op">=</tt> <tt id="link-0" class="py-name" targets="Class gyp.flock_tool.FlockTool=gyp.flock_tool.FlockTool-class.html"><a title="gyp.flock_tool.FlockTool" class="py-name" href="#" onclick="return doclink('link-0', 'FlockTool', 'link-0');">FlockTool</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L18"></a><tt class="py-lineno">18</tt>  <tt class="py-line">  <tt class="py-name">executor</tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Method gyp.flock_tool.FlockTool.Dispatch()=gyp.flock_tool.FlockTool-class.html#Dispatch,Method gyp.mac_tool.MacTool.Dispatch()=gyp.mac_tool.MacTool-class.html#Dispatch,Method gyp.win_tool.WinTool.Dispatch()=gyp.win_tool.WinTool-class.html#Dispatch"><a title="gyp.flock_tool.FlockTool.Dispatch
+gyp.mac_tool.MacTool.Dispatch
+gyp.win_tool.WinTool.Dispatch" class="py-name" href="#" onclick="return doclink('link-1', 'Dispatch', 'link-1');">Dispatch</a></tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L19"></a><tt class="py-lineno">19</tt>  <tt class="py-line"> </tt>
+<a name="L20"></a><tt class="py-lineno">20</tt>  <tt class="py-line"> </tt>
+<a name="FlockTool"></a><div id="FlockTool-def"><a name="L21"></a><tt class="py-lineno">21</tt> <a class="py-toggle" href="#" id="FlockTool-toggle" onclick="return toggle('FlockTool');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="gyp.flock_tool.FlockTool-class.html">FlockTool</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="FlockTool-collapsed" style="display:none;" pad="++" indent="++++"></div><div id="FlockTool-expanded"><a name="L22"></a><tt class="py-lineno">22</tt>  <tt class="py-line">  <tt class="py-docstring">"""This class emulates the 'flock' command."""</tt> </tt>
+<a name="FlockTool.Dispatch"></a><div id="FlockTool.Dispatch-def"><a name="L23"></a><tt class="py-lineno">23</tt> <a class="py-toggle" href="#" id="FlockTool.Dispatch-toggle" onclick="return toggle('FlockTool.Dispatch');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.flock_tool.FlockTool-class.html#Dispatch">Dispatch</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="FlockTool.Dispatch-collapsed" style="display:none;" pad="++" indent="++++++"></div><div id="FlockTool.Dispatch-expanded"><a name="L24"></a><tt class="py-lineno">24</tt>  <tt class="py-line">    <tt class="py-docstring">"""Dispatches a string command to a method."""</tt> </tt>
+<a name="L25"></a><tt class="py-lineno">25</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> <tt class="py-op">&lt;</tt> <tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
+<a name="L26"></a><tt class="py-lineno">26</tt>  <tt class="py-line">      <tt class="py-keyword">raise</tt> <tt class="py-name">Exception</tt><tt class="py-op">(</tt><tt class="py-string">"Not enough arguments"</tt><tt class="py-op">)</tt> </tt>
+<a name="L27"></a><tt class="py-lineno">27</tt>  <tt class="py-line"> </tt>
+<a name="L28"></a><tt class="py-lineno">28</tt>  <tt class="py-line">    <tt class="py-name">method</tt> <tt class="py-op">=</tt> <tt class="py-string">"Exec%s"</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Method gyp.flock_tool.FlockTool._CommandifyName()=gyp.flock_tool.FlockTool-class.html#_CommandifyName,Method gyp.mac_tool.MacTool._CommandifyName()=gyp.mac_tool.MacTool-class.html#_CommandifyName,Method gyp.win_tool.WinTool._CommandifyName()=gyp.win_tool.WinTool-class.html#_CommandifyName"><a title="gyp.flock_tool.FlockTool._CommandifyName
+gyp.mac_tool.MacTool._CommandifyName
+gyp.win_tool.WinTool._CommandifyName" class="py-name" href="#" onclick="return doclink('link-2', '_CommandifyName', 'link-2');">_CommandifyName</a></tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L29"></a><tt class="py-lineno">29</tt>  <tt class="py-line">    <tt class="py-name">getattr</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">method</tt><tt class="py-op">)</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">:</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L30"></a><tt class="py-lineno">30</tt>  <tt class="py-line"> </tt>
+<a name="FlockTool._CommandifyName"></a><div id="FlockTool._CommandifyName-def"><a name="L31"></a><tt class="py-lineno">31</tt> <a class="py-toggle" href="#" id="FlockTool._CommandifyName-toggle" onclick="return toggle('FlockTool._CommandifyName');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.flock_tool.FlockTool-class.html#_CommandifyName">_CommandifyName</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name_string</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="FlockTool._CommandifyName-collapsed" style="display:none;" pad="++" indent="++++++"></div><div id="FlockTool._CommandifyName-expanded"><a name="L32"></a><tt class="py-lineno">32</tt>  <tt class="py-line">    <tt class="py-docstring">"""Transforms a tool name like copy-info-plist to CopyInfoPlist"""</tt> </tt>
+<a name="L33"></a><tt class="py-lineno">33</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">name_string</tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Variable heron_upload.models.UploadedFile.title=heron_upload.models.UploadedFile-class.html#title,Variable wps_workflow.models.InputOutput.title=wps_workflow.models.InputOutput-class.html#title,Variable wps_workflow.models.Process.title=wps_workflow.models.Process-class.html#title,Variable wps_workflow.models.SqlData.title=wps_workflow.models.SqlData-class.html#title,Variable wps_workflow.models.Task.title=wps_workflow.models.Task-class.html#title,Variable wps_workflow.models.WPS.title=wps_workflow.models.WPS-class.html#title"><a title="heron_upload.models.UploadedFile.title
+wps_workflow.models.InputOutput.title
+wps_workflow.models.Process.title
+wps_workflow.models.SqlData.title
+wps_workflow.models.Task.title
+wps_workflow.models.WPS.title" class="py-name" href="#" onclick="return doclink('link-3', 'title', 'link-3');">title</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">replace</tt><tt class="py-op">(</tt><tt class="py-string">'-'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L34"></a><tt class="py-lineno">34</tt>  <tt class="py-line"> </tt>
+<a name="FlockTool.ExecFlock"></a><div id="FlockTool.ExecFlock-def"><a name="L35"></a><tt class="py-lineno">35</tt> <a class="py-toggle" href="#" id="FlockTool.ExecFlock-toggle" onclick="return toggle('FlockTool.ExecFlock');">-</a><tt class="py-line">  <tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.flock_tool.FlockTool-class.html#ExecFlock">ExecFlock</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">lockfile</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-param">cmd_list</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="FlockTool.ExecFlock-collapsed" style="display:none;" pad="++" indent="++++++"></div><div id="FlockTool.ExecFlock-expanded"><a name="L36"></a><tt class="py-lineno">36</tt>  <tt class="py-line">    <tt class="py-docstring">"""Emulates the most basic behavior of Linux's flock(1)."""</tt> </tt>
+<a name="L37"></a><tt class="py-lineno">37</tt>  <tt class="py-line">    <tt class="py-comment"># Rely on exception handling to report errors.</tt> </tt>
+<a name="L38"></a><tt class="py-lineno">38</tt>  <tt class="py-line">    <tt class="py-comment"># Note that the stock python on SunOS has a bug</tt> </tt>
+<a name="L39"></a><tt class="py-lineno">39</tt>  <tt class="py-line">    <tt class="py-comment"># where fcntl.flock(fd, LOCK_EX) always fails</tt> </tt>
+<a name="L40"></a><tt class="py-lineno">40</tt>  <tt class="py-line">    <tt class="py-comment"># with EBADF, that's why we use this F_SETLK</tt> </tt>
+<a name="L41"></a><tt class="py-lineno">41</tt>  <tt class="py-line">    <tt class="py-comment"># hack instead.</tt> </tt>
+<a name="L42"></a><tt class="py-lineno">42</tt>  <tt class="py-line">    <tt class="py-name">fd</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">lockfile</tt><tt class="py-op">,</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">O_WRONLY</tt><tt class="py-op">|</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">O_NOCTTY</tt><tt class="py-op">|</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">O_CREAT</tt><tt class="py-op">,</tt> <tt class="py-number">0666</tt><tt class="py-op">)</tt> </tt>
+<a name="L43"></a><tt class="py-lineno">43</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">platform</tt><tt class="py-op">.</tt><tt class="py-name">startswith</tt><tt class="py-op">(</tt><tt class="py-string">'aix'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L44"></a><tt class="py-lineno">44</tt>  <tt class="py-line">      <tt class="py-comment"># Python on AIX is compiled with LARGEFILE support, which changes the</tt> </tt>
+<a name="L45"></a><tt class="py-lineno">45</tt>  <tt class="py-line">      <tt class="py-comment"># struct size.</tt> </tt>
+<a name="L46"></a><tt class="py-lineno">46</tt>  <tt class="py-line">      <tt class="py-name">op</tt> <tt class="py-op">=</tt> <tt class="py-name">struct</tt><tt class="py-op">.</tt><tt class="py-name">pack</tt><tt class="py-op">(</tt><tt class="py-string">'hhIllqq'</tt><tt class="py-op">,</tt> <tt class="py-name">fcntl</tt><tt class="py-op">.</tt><tt class="py-name">F_WRLCK</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno">47</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L48"></a><tt class="py-lineno">48</tt>  <tt class="py-line">      <tt class="py-name">op</tt> <tt class="py-op">=</tt> <tt class="py-name">struct</tt><tt class="py-op">.</tt><tt class="py-name">pack</tt><tt class="py-op">(</tt><tt class="py-string">'hhllhhl'</tt><tt class="py-op">,</tt> <tt class="py-name">fcntl</tt><tt class="py-op">.</tt><tt class="py-name">F_WRLCK</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L49"></a><tt class="py-lineno">49</tt>  <tt class="py-line">    <tt class="py-name">fcntl</tt><tt class="py-op">.</tt><tt class="py-name">fcntl</tt><tt class="py-op">(</tt><tt class="py-name">fd</tt><tt class="py-op">,</tt> <tt class="py-name">fcntl</tt><tt class="py-op">.</tt><tt class="py-name">F_SETLK</tt><tt class="py-op">,</tt> <tt class="py-name">op</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno">50</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">subprocess</tt><tt class="py-op">.</tt><tt class="py-name">call</tt><tt class="py-op">(</tt><tt class="py-name">cmd_list</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L51"></a><tt class="py-lineno">51</tt>  <tt class="py-line"> </tt>
+<a name="L52"></a><tt class="py-lineno">52</tt>  <tt class="py-line"> </tt>
+<a name="L53"></a><tt class="py-lineno">53</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">'__main__'</tt><tt class="py-op">:</tt> </tt>
+<a name="L54"></a><tt class="py-lineno">54</tt>  <tt class="py-line">  <tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">exit</tt><tt class="py-op">(</tt><tt id="link-4" class="py-name" targets="Function graphviz.main()=graphviz-module.html#main,Function gyp.flock_tool.main()=gyp.flock_tool-module.html#main,Function gyp.mac_tool.main()=gyp.mac_tool-module.html#main,Function gyp.main()=gyp-module.html#main,Function gyp.win_tool.main()=gyp.win_tool-module.html#main,Function pretty_gyp.main()=pretty_gyp-module.html#main,Function pretty_sln.main()=pretty_sln-module.html#main,Function pretty_vcproj.main()=pretty_vcproj-module.html#main,Function script-test_charmap_py.main()=script-test_charmap_py-module.html#main"><a title="graphviz.main
+gyp.flock_tool.main
+gyp.mac_tool.main
+gyp.main
+gyp.win_tool.main
+pretty_gyp.main
+pretty_sln.main
+pretty_vcproj.main
+script-test_charmap_py.main" class="py-name" href="#" onclick="return doclink('link-4', 'main', 'link-4');">main</a></tt><tt class="py-op">(</tt><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">argv</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">:</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L55"></a><tt class="py-lineno">55</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:27:04 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

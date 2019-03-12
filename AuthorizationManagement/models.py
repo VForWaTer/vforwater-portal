@@ -8,6 +8,9 @@ import logging
 from django.template.loader import render_to_string
 from django.core.validators import MaxLengthValidator
 
+from wps_workflow.models import Workflow, Process
+
+
 #from vfwheron.models import TblMeta
 
 #class CustomUser(User):
@@ -87,4 +90,40 @@ class DeletionRequest(Request):
     Corresponds to the table in the database storing all information about a deletion request
     """
     type = 'deletion' 
+    
+
+class MetaMap(models.Model):
+    """
+    This table acts as the connection between sqlite3 (user) and postgres (TblMeta) DB.
+    IDs have to validated seperately
+    """
+    uid = models.ForeignKey(User, on_delete = models.CASCADE)
+    mid = models.IntegerField()
+    
+
+class WorkflowOwner(models.Model):
+    """
+    """
+    uid = models.ForeignKey(User, on_delete = models.CASCADE)
+    wfid = models.IntegerField() #models.ForeignKey(Workflow, on_delete = models.CASCADE)
+    
+class WorkflowShared(models.Model):
+    """
+    """
+    uid = models.ForeignKey(User, on_delete = models.CASCADE)
+    wfid = models.IntegerField() # models.ForeignKey(Workflow, on_delete = models.CASCADE)
+        
+    
+class ProcessOwner(models.Model):
+    """
+    """
+    uid = models.ForeignKey(User, on_delete = models.CASCADE)
+    pid = models.IntegerField() # models.ForeignKey(Process, on_delete = models.CASCADE)
+    
+    
+class RequestOwner(models.Model):
+    """
+    """
+    uid = models.ForeignKey(User, on_delete = models.CASCADE)    
+    rid = models.IntegerField() # models.ForeignKey(Request, on_delete = models.CASCADE)
     

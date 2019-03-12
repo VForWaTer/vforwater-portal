@@ -1,14 +1,24 @@
 import os
 import urllib.request
 import xml.etree.ElementTree as ET
-
+from heron.settings import BASE_DIR, wps_log
 from lxml.builder import ElementMaker
-from pywps import NAMESPACES as ns
+# from pywps import NAMESPACES as ns
 
 import wps_workflow.cron
 from wps_workflow.models import WPSProvider, WPS, Process, InputOutput, DATATYPE, ROLE
-from heron.settings import BASE_DIR, wps_log
 
+
+"""
+XML Element Maker for pywps xml schema
+"""
+ns = {
+    'xlink': "http://www.w3.org/1999/xlink",
+    'wps': "http://www.opengis.net/wps/1.0.0",
+    'ows': "http://www.opengis.net/ows/1.1",
+    'gml': "http://www.opengis.net/gml",
+    'xsi': "http://www.w3.org/2001/XMLSchema-instance"
+    }
 E = ElementMaker()
 wps_em = ElementMaker(namespace=ns['wps'], nsmap=ns)
 ows_em = ElementMaker(namespace=ns['ows'], nsmap=ns)
@@ -55,7 +65,7 @@ ns_map = {
 
     # xlink namespaced tags
     "href": f"{{{ns['xlink']}}}href",
-}
+    }
 
 
 # TODO: rework if path problem is solved
@@ -105,7 +115,7 @@ def add_wps_server(server_url):
         'wps': 'http://www.opengis.net/wps/1.0.0',
         'ows': 'http://www.opengis.net/ows/1.1',
         'xsi': 'http://www.w3.org/2001/XMLSchema-instance'
-    }
+        }
 
     # Parse the xml file
     get_capabilities_tree = ET.parse(temp_xml)
@@ -298,7 +308,7 @@ def parse_service_provider_info(root, namespaces):
         provider_name = service_provider_element.find('ows:ProviderName', namespaces).text
 
         provider_site = service_provider_element.find('ows:ProviderSite', namespaces).attrib.get(
-            '{' + namespaces.get('xlink') + '}href')
+                '{' + namespaces.get('xlink') + '}href')
 
         service_contact_element = service_provider_element.find('ows:ServiceContact', namespaces)
 

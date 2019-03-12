@@ -25,6 +25,7 @@ class WorkflowAdmin(admin.ModelAdmin):
     list_display = ['name', 'percent_done', 'creator']
     inlines = [TaskInline]
 
+
     class Meta:
         model = Workflow
 
@@ -38,6 +39,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ['title', 'workflow', 'status', 'status_url']
     list_filter = ['workflow']
 
+
     class Meta:
         model = Task
 
@@ -50,8 +52,22 @@ class EdgeAdmin(admin.ModelAdmin):
     """
     list_filter = ['workflow']
 
+
     class Meta:
         model = Edge
+
+
+class DataEdgeAdmin(admin.ModelAdmin):
+    """
+    Admin class for Workflow.
+    Specifies which fields of the model "DataEdge" should be
+    displayed on the admin page.
+    """
+    list_filter = ['workflow']
+
+
+    class Meta:
+        model = DataEdge
 
 
 # Register all models
@@ -60,6 +76,8 @@ class EdgeAdmin(admin.ModelAdmin):
 admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(Edge, EdgeAdmin)
+admin.site.register(DataEdge, DataEdgeAdmin)
+admin.site.register(SqlData)
 admin.site.register(Session)
 admin.site.register(Process)
 admin.site.register(Artefact)

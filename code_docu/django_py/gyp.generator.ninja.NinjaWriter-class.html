@@ -1,0 +1,1320 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.generator.ninja.NinjaWriter</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.generator-module.html">Package&nbsp;generator</a> ::
+        <a href="gyp.generator.ninja-module.html">Module&nbsp;ninja</a> ::
+        Class&nbsp;NinjaWriter
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.generator.ninja.NinjaWriter-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class NinjaWriter</h1><p class="nomargin-top"><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_gene_10" name="uml_class_diagram_for_gyp_gene_10">
+<area shape="rect" id="node1_14" href="gyp.generator.ninja.NinjaWriter-class.html#__init__" title="base_dir: path from source root to directory containing this gyp file,..." alt="" coords="17,37,809,57"/>
+<area shape="rect" id="node1_15" href="gyp.generator.ninja.NinjaWriter-class.html#ExpandSpecial" title="Expand specials like $!PRODUCT_DIR in |path|." alt="" coords="17,57,809,77"/>
+<area shape="rect" id="node1_16" href="gyp.generator.ninja.NinjaWriter-class.html#ExpandRuleVariables" title="gyp.generator.ninja.NinjaWriter.ExpandRuleVariables" alt="" coords="17,77,809,97"/>
+<area shape="rect" id="node1_17" href="gyp.generator.ninja.NinjaWriter-class.html#GypPathToNinja" title="Translate a gyp path to a ninja path, optionally expanding environment &#160;variable references in |path| with |env|." alt="" coords="17,97,809,117"/>
+<area shape="rect" id="node1_18" href="gyp.generator.ninja.NinjaWriter-class.html#GypPathToUniqueOutput" title="Translate a gyp path to a ninja path for writing output." alt="" coords="17,117,809,137"/>
+<area shape="rect" id="node1_19" href="gyp.generator.ninja.NinjaWriter-class.html#WriteCollapsedDependencies" title="Given a list of targets, return a path for a single file representing the &#160;result of building all the targets or None." alt="" coords="17,137,809,157"/>
+<area shape="rect" id="node1_20" href="gyp.generator.ninja.NinjaWriter-class.html#WriteSpec" title="The main entry point for NinjaWriter: write the build rules for a spec." alt="" coords="17,157,809,177"/>
+<area shape="rect" id="node1_21" href="gyp.generator.ninja.NinjaWriter-class.html#WriteWinIdlFiles" title="Writes rules to match MSVS&#39;s implicit idl handling." alt="" coords="17,177,809,197"/>
+<area shape="rect" id="node1_22" href="gyp.generator.ninja.NinjaWriter-class.html#WriteActionsRulesCopies" title="Write out the Actions, Rules, and Copies steps." alt="" coords="17,197,809,217"/>
+<area shape="rect" id="node1_23" href="gyp.generator.ninja.NinjaWriter-class.html#GenerateDescription" title="Generate and return a description of a build step." alt="" coords="17,217,809,237"/>
+<area shape="rect" id="node1_24" href="gyp.generator.ninja.NinjaWriter-class.html#WriteActions" title="gyp.generator.ninja.NinjaWriter.WriteActions" alt="" coords="17,237,809,257"/>
+<area shape="rect" id="node1_25" href="gyp.generator.ninja.NinjaWriter-class.html#WriteRules" title="gyp.generator.ninja.NinjaWriter.WriteRules" alt="" coords="17,257,809,277"/>
+<area shape="rect" id="node1_26" href="gyp.generator.ninja.NinjaWriter-class.html#WriteCopies" title="gyp.generator.ninja.NinjaWriter.WriteCopies" alt="" coords="17,277,809,297"/>
+<area shape="rect" id="node1_27" href="gyp.generator.ninja.NinjaWriter-class.html#WriteNewNinjaRule" title="Write out a new ninja &quot;rule&quot; statement for a given command." alt="" coords="17,317,809,337"/>
+<area shape="rect" id="node1" href="gyp.generator.ninja.NinjaWriter-class.html" title="gyp.generator.ninja.NinjaWriter" alt="" coords="5,5,821,344"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_gene_10.gif" alt='' usemap="#uml_class_diagram_for_gyp_gene_10" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">hash_for_rules</span>,
+        <span class="summary-sig-arg">target_outputs</span>,
+        <span class="summary-sig-arg">base_dir</span>,
+        <span class="summary-sig-arg">build_dir</span>,
+        <span class="summary-sig-arg">output_file</span>,
+        <span class="summary-sig-arg">toplevel_build</span>,
+        <span class="summary-sig-arg">output_file_name</span>,
+        <span class="summary-sig-arg">flavor</span>,
+        <span class="summary-sig-arg">toplevel_dir</span>=<span class="summary-sig-default">None</span>)</span><br />
+      base_dir: path from source root to directory containing this gyp file,...</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#ExpandSpecial" class="summary-sig-name">ExpandSpecial</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>,
+        <span class="summary-sig-arg">product_dir</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Expand specials like $!PRODUCT_DIR in |path|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.ExpandSpecial">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ExpandRuleVariables"></a><span class="summary-sig-name">ExpandRuleVariables</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>,
+        <span class="summary-sig-arg">root</span>,
+        <span class="summary-sig-arg">dirname</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">ext</span>,
+        <span class="summary-sig-arg">name</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.ExpandRuleVariables">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#GypPathToNinja" class="summary-sig-name">GypPathToNinja</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>,
+        <span class="summary-sig-arg">env</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Translate a gyp path to a ninja path, optionally expanding 
+      environment variable references in |path| with |env|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GypPathToNinja">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#GypPathToUniqueOutput" class="summary-sig-name">GypPathToUniqueOutput</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">path</span>,
+        <span class="summary-sig-arg">qualified</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Translate a gyp path to a ninja path for writing output.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GypPathToUniqueOutput">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#WriteCollapsedDependencies" class="summary-sig-name">WriteCollapsedDependencies</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">targets</span>,
+        <span class="summary-sig-arg">order_only</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Given a list of targets, return a path for a single file representing
+      the result of building all the targets or None.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteCollapsedDependencies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_SubninjaNameForArch"></a><span class="summary-sig-name">_SubninjaNameForArch</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">arch</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter._SubninjaNameForArch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#WriteSpec" class="summary-sig-name">WriteSpec</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">config_name</span>,
+        <span class="summary-sig-arg">generator_flags</span>)</span><br />
+      The main entry point for NinjaWriter: write the build rules for a 
+      spec.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteSpec">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#_WinIdlRule" class="summary-sig-name" onclick="show_private();">_WinIdlRule</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">source</span>,
+        <span class="summary-sig-arg">prebuild</span>,
+        <span class="summary-sig-arg">outputs</span>)</span><br />
+      Handle the implicit VS .idl rule for one source file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter._WinIdlRule">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteWinIdlFiles"></a><span class="summary-sig-name">WriteWinIdlFiles</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">prebuild</span>)</span><br />
+      Writes rules to match MSVS's implicit idl handling.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteWinIdlFiles">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#WriteActionsRulesCopies" class="summary-sig-name">WriteActionsRulesCopies</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">extra_sources</span>,
+        <span class="summary-sig-arg">prebuild</span>,
+        <span class="summary-sig-arg">mac_bundle_depends</span>)</span><br />
+      Write out the Actions, Rules, and Copies steps.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteActionsRulesCopies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#GenerateDescription" class="summary-sig-name">GenerateDescription</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">verb</span>,
+        <span class="summary-sig-arg">message</span>,
+        <span class="summary-sig-arg">fallback</span>)</span><br />
+      Generate and return a description of a build step.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GenerateDescription">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteActions"></a><span class="summary-sig-name">WriteActions</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">actions</span>,
+        <span class="summary-sig-arg">extra_sources</span>,
+        <span class="summary-sig-arg">prebuild</span>,
+        <span class="summary-sig-arg">extra_mac_bundle_resources</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteActions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteRules"></a><span class="summary-sig-name">WriteRules</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">rules</span>,
+        <span class="summary-sig-arg">extra_sources</span>,
+        <span class="summary-sig-arg">prebuild</span>,
+        <span class="summary-sig-arg">mac_bundle_resources</span>,
+        <span class="summary-sig-arg">extra_mac_bundle_resources</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteRules">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteCopies"></a><span class="summary-sig-name">WriteCopies</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">copies</span>,
+        <span class="summary-sig-arg">prebuild</span>,
+        <span class="summary-sig-arg">mac_bundle_depends</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteCopies">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteMacBundleResources"></a><span class="summary-sig-name">WriteMacBundleResources</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">resources</span>,
+        <span class="summary-sig-arg">bundle_depends</span>)</span><br />
+      Writes ninja edges for 'mac_bundle_resources'.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteMacBundleResources">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#WriteMacXCassets" class="summary-sig-name">WriteMacXCassets</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">xcassets</span>,
+        <span class="summary-sig-arg">bundle_depends</span>)</span><br />
+      Writes ninja edges for 'mac_bundle_resources' .xcassets files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteMacXCassets">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteMacInfoPlist"></a><span class="summary-sig-name">WriteMacInfoPlist</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">partial_info_plist</span>,
+        <span class="summary-sig-arg">bundle_depends</span>)</span><br />
+      Write build rules for bundle Info.plist files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteMacInfoPlist">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteSources"></a><span class="summary-sig-name">WriteSources</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ninja_file</span>,
+        <span class="summary-sig-arg">config_name</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">sources</span>,
+        <span class="summary-sig-arg">predepends</span>,
+        <span class="summary-sig-arg">precompiled_header</span>,
+        <span class="summary-sig-arg">spec</span>)</span><br />
+      Write build rules to compile all of |sources|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteSources">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteSourcesForArch"></a><span class="summary-sig-name">WriteSourcesForArch</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ninja_file</span>,
+        <span class="summary-sig-arg">config_name</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">sources</span>,
+        <span class="summary-sig-arg">predepends</span>,
+        <span class="summary-sig-arg">precompiled_header</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Write build rules to compile all of |sources|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteSourcesForArch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WritePchTargets"></a><span class="summary-sig-name">WritePchTargets</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ninja_file</span>,
+        <span class="summary-sig-arg">pch_commands</span>)</span><br />
+      Writes ninja rules to compile prefix headers.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WritePchTargets">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#WriteLink" class="summary-sig-name">WriteLink</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">config_name</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">link_deps</span>)</span><br />
+      Write out a link step.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteLink">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#WriteLinkForArch" class="summary-sig-name">WriteLinkForArch</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ninja_file</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">config_name</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">link_deps</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Write out a link step.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteLinkForArch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteTarget"></a><span class="summary-sig-name">WriteTarget</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">config_name</span>,
+        <span class="summary-sig-arg">config</span>,
+        <span class="summary-sig-arg">link_deps</span>,
+        <span class="summary-sig-arg">compile_deps</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteTarget">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteMacBundle"></a><span class="summary-sig-name">WriteMacBundle</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">mac_bundle_depends</span>,
+        <span class="summary-sig-arg">is_empty</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteMacBundle">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetToolchainEnv"></a><span class="summary-sig-name">GetToolchainEnv</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">additional_settings</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns the variables toolchain would set for build steps.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GetToolchainEnv">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetMsvsToolchainEnv"></a><span class="summary-sig-name">GetMsvsToolchainEnv</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">additional_settings</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns the variables Visual Studio would set for build steps.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GetMsvsToolchainEnv">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetSortedXcodeEnv"></a><span class="summary-sig-name">GetSortedXcodeEnv</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">additional_settings</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Returns the variables Xcode would set for build steps.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GetSortedXcodeEnv">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="GetSortedXcodePostbuildEnv"></a><span class="summary-sig-name">GetSortedXcodePostbuildEnv</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the variables Xcode would set for postbuild steps.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GetSortedXcodePostbuildEnv">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="AppendPostbuildVariable"></a><span class="summary-sig-name">AppendPostbuildVariable</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">variables</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">binary</span>,
+        <span class="summary-sig-arg">is_command_start</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Adds a 'postbuild' variable if there is a postbuild for |output|.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.AppendPostbuildVariable">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#GetPostbuildCommand" class="summary-sig-name">GetPostbuildCommand</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">output</span>,
+        <span class="summary-sig-arg">output_binary</span>,
+        <span class="summary-sig-arg">is_command_start</span>)</span><br />
+      Returns a shell command that runs all the postbuilds, and removes 
+      |output| if any of them fails.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GetPostbuildCommand">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ComputeExportEnvString"></a><span class="summary-sig-name">ComputeExportEnvString</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">env</span>)</span><br />
+      Given an environment, returns a string looking like
+    'export FOO=foo; export BAR=&quot;${FOO} bar;'
+that exports |env| to the shell.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.ComputeExportEnvString">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ComputeMacBundleOutput"></a><span class="summary-sig-name">ComputeMacBundleOutput</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the 'output' (full output path) to a bundle output directory.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.ComputeMacBundleOutput">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ComputeOutputFileName"></a><span class="summary-sig-name">ComputeOutputFileName</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">type</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Compute the filename of the final output for the current target.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.ComputeOutputFileName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="ComputeOutput"></a><span class="summary-sig-name">ComputeOutput</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">spec</span>,
+        <span class="summary-sig-arg">arch</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Compute the path for the final output of the spec.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.ComputeOutput">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="WriteVariableList"></a><span class="summary-sig-name">WriteVariableList</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ninja_file</span>,
+        <span class="summary-sig-arg">var</span>,
+        <span class="summary-sig-arg">values</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteVariableList">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.generator.ninja.NinjaWriter-class.html#WriteNewNinjaRule" class="summary-sig-name">WriteNewNinjaRule</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">args</span>,
+        <span class="summary-sig-arg">description</span>,
+        <span class="summary-sig-arg">is_cygwin</span>,
+        <span class="summary-sig-arg">env</span>,
+        <span class="summary-sig-arg">pool</span>,
+        <span class="summary-sig-arg">depfile</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Write out a new ninja &quot;rule&quot; statement for a given command.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteNewNinjaRule">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">hash_for_rules</span>,
+        <span class="sig-arg">target_outputs</span>,
+        <span class="sig-arg">base_dir</span>,
+        <span class="sig-arg">build_dir</span>,
+        <span class="sig-arg">output_file</span>,
+        <span class="sig-arg">toplevel_build</span>,
+        <span class="sig-arg">output_file_name</span>,
+        <span class="sig-arg">flavor</span>,
+        <span class="sig-arg">toplevel_dir</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+base_dir: path from source root to directory containing this gyp file,
+          by gyp semantics, all input paths are relative to this
+build_dir: path from source root to build output
+toplevel_dir: path to the toplevel directory
+
+</pre>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="ExpandSpecial"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ExpandSpecial</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">path</span>,
+        <span class="sig-arg">product_dir</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.ExpandSpecial">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Expand specials like $!PRODUCT_DIR in |path|.</p>
+  <p>If |product_dir| is None, assumes the cwd is already the product dir.
+  Otherwise, |product_dir| is the relative path to the product dir.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GypPathToNinja"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GypPathToNinja</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">path</span>,
+        <span class="sig-arg">env</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GypPathToNinja">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Translate a gyp path to a ninja path, optionally expanding environment
+  variable references in |path| with |env|.</p>
+  <p>See the above discourse on path conversions.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GypPathToUniqueOutput"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GypPathToUniqueOutput</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">path</span>,
+        <span class="sig-arg">qualified</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GypPathToUniqueOutput">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Translate a gyp path to a ninja path for writing output.</p>
+  <p>If qualified is True, qualify the resulting filename with the name of 
+  the target.  This is necessary when e.g. compiling the same path twice 
+  for two separate output targets.</p>
+  <p>See the above discourse on path conversions.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteCollapsedDependencies"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteCollapsedDependencies</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">targets</span>,
+        <span class="sig-arg">order_only</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteCollapsedDependencies">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Given a list of targets, return a path for a single file representing 
+  the result of building all the targets or None.</p>
+  <p>Uses a stamp file if necessary.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteSpec"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteSpec</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>,
+        <span class="sig-arg">config_name</span>,
+        <span class="sig-arg">generator_flags</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteSpec">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>The main entry point for NinjaWriter: write the build rules for a 
+  spec.</p>
+  <p>Returns a Target object, which represents the output paths for this 
+  spec. Returns None if there are no outputs (e.g. a settings-only 'none' 
+  type target).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_WinIdlRule"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_WinIdlRule</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">source</span>,
+        <span class="sig-arg">prebuild</span>,
+        <span class="sig-arg">outputs</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter._WinIdlRule">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Handle the implicit VS .idl rule for one source file. Fills |outputs| 
+  with files that are generated.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteActionsRulesCopies"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteActionsRulesCopies</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>,
+        <span class="sig-arg">extra_sources</span>,
+        <span class="sig-arg">prebuild</span>,
+        <span class="sig-arg">mac_bundle_depends</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteActionsRulesCopies">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Write out the Actions, Rules, and Copies steps.  Return a path 
+  representing the outputs of these steps.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GenerateDescription"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GenerateDescription</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">verb</span>,
+        <span class="sig-arg">message</span>,
+        <span class="sig-arg">fallback</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GenerateDescription">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Generate and return a description of a build step.</p>
+  <p>|verb| is the short summary, e.g. ACTION or RULE. |message| is a 
+  hand-written description, or None if not available. |fallback| is the 
+  gyp-level name of the step, usable as a fallback.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteMacXCassets"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteMacXCassets</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">xcassets</span>,
+        <span class="sig-arg">bundle_depends</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteMacXCassets">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Writes ninja edges for 'mac_bundle_resources' .xcassets files.</p>
+  <p>This add an invocation of 'actool' via the 'mac_tool.py' helper 
+  script. It assumes that the assets catalogs define at least one imageset 
+  and thus an Assets.car file will be generated in the application 
+  resources directory. If this is not the case, then the build will 
+  probably be done at each invocation of ninja.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteLink"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteLink</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>,
+        <span class="sig-arg">config_name</span>,
+        <span class="sig-arg">config</span>,
+        <span class="sig-arg">link_deps</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteLink">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Write out a link step. Fills out target.binary.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteLinkForArch"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteLinkForArch</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ninja_file</span>,
+        <span class="sig-arg">spec</span>,
+        <span class="sig-arg">config_name</span>,
+        <span class="sig-arg">config</span>,
+        <span class="sig-arg">link_deps</span>,
+        <span class="sig-arg">arch</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteLinkForArch">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Write out a link step. Fills out target.binary.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="GetPostbuildCommand"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">GetPostbuildCommand</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">spec</span>,
+        <span class="sig-arg">output</span>,
+        <span class="sig-arg">output_binary</span>,
+        <span class="sig-arg">is_command_start</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.GetPostbuildCommand">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns a shell command that runs all the postbuilds, and removes 
+  |output| if any of them fails. If |is_command_start| is False, then the 
+  returned string will start with ' &amp;&amp; '.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="WriteNewNinjaRule"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">WriteNewNinjaRule</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">args</span>,
+        <span class="sig-arg">description</span>,
+        <span class="sig-arg">is_cygwin</span>,
+        <span class="sig-arg">env</span>,
+        <span class="sig-arg">pool</span>,
+        <span class="sig-arg">depfile</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp.generator.ninja-pysrc.html#NinjaWriter.WriteNewNinjaRule">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Write out a new ninja &quot;rule&quot; statement for a given 
+  command.</p>
+  <p>Returns the name of the new rule, and a copy of |args| with variables 
+  expanded.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:26:58 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

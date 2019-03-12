@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.RegeneratableOptionParser</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        Class&nbsp;RegeneratableOptionParser
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.RegeneratableOptionParser-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class RegeneratableOptionParser</h1><p class="nomargin-top"><span class="codelink"><a href="gyp-pysrc.html#RegeneratableOptionParser">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_gyp_rege" name="uml_class_diagram_for_gyp_rege">
+<area shape="rect" id="node1_25" href="gyp.RegeneratableOptionParser-class.html#__init__" title="gyp.RegeneratableOptionParser.__init__" alt="" coords="57,607,228,627"/>
+<area shape="rect" id="node1_26" href="gyp.RegeneratableOptionParser-class.html#add_option" title="Add an option to the parser." alt="" coords="57,627,228,647"/>
+<area shape="rect" id="node1_27" href="gyp.RegeneratableOptionParser-class.html#parse_args" title="parse_args(args : [string] = sys.argv[1:], &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;values : Values = None) &#45;&gt; (values : Values, args : [string])" alt="" coords="57,647,228,667"/>
+<area shape="rect" id="node1" href="gyp.RegeneratableOptionParser-class.html" title="gyp.RegeneratableOptionParser" alt="" coords="45,575,240,673"/>
+<area shape="rect" id="node2_28" href="javascript:void(0);" title="optparse.OptionParser.standard_option_list" alt="" coords="17,227,268,247"/>
+<area shape="rect" id="node2_29" href="javascript:void(0);" title="Declare that you are done with this OptionParser." alt="" coords="17,250,268,270"/>
+<area shape="rect" id="node2_30" href="javascript:void(0);" title="optparse.OptionParser.set_usage" alt="" coords="17,270,268,290"/>
+<area shape="rect" id="node2_31" href="javascript:void(0);" title="Set parsing to not stop on the first non&#45;option, allowing interspersing &#160;switches with command arguments." alt="" coords="17,290,268,310"/>
+<area shape="rect" id="node2_32" href="javascript:void(0);" title="Set parsing to stop on the first non&#45;option." alt="" coords="17,310,268,330"/>
+<area shape="rect" id="node2_33" href="javascript:void(0);" title="optparse.OptionParser.set_process_default_values" alt="" coords="17,330,268,350"/>
+<area shape="rect" id="node2_34" href="javascript:void(0);" title="optparse.OptionParser.set_default" alt="" coords="17,350,268,370"/>
+<area shape="rect" id="node2_35" href="javascript:void(0);" title="optparse.OptionParser.set_defaults" alt="" coords="17,370,268,390"/>
+<area shape="rect" id="node2_36" href="javascript:void(0);" title="optparse.OptionParser.get_default_values" alt="" coords="17,390,268,410"/>
+<area shape="rect" id="node2_37" href="javascript:void(0);" title="optparse.OptionParser.add_option_group" alt="" coords="17,410,268,430"/>
+<area shape="rect" id="node2_38" href="javascript:void(0);" title="optparse.OptionParser.get_option_group" alt="" coords="17,430,268,450"/>
+<area shape="rect" id="node2_39" href="javascript:void(0);" title="check_values(values : Values, args : [string]) &#45;&gt; (values : Values, args : &#160;[string])" alt="" coords="17,450,268,470"/>
+<area shape="rect" id="node2_40" href="javascript:void(0);" title="optparse.OptionParser.get_prog_name" alt="" coords="17,470,268,490"/>
+<area shape="rect" id="node2_41" href="javascript:void(0);" title="optparse.OptionParser.expand_prog_name" alt="" coords="17,490,268,510"/>
+<area shape="rect" id="node2_42" href="javascript:void(0);" title="print_help(file : file = stdout)" alt="" coords="17,530,268,550"/>
+<area shape="rect" id="node2" href="javascript:void(0);" title="Class attributes: standard_option_list : [Option] list of standard options that will be accepted by all instances of this parser class (intended to be overridden by subclasses)." alt="" coords="5,203,280,556"/>
+<area shape="rect" id="node3_43" href="javascript:void(0);" title="optparse.OptionContainer.set_conflict_handler" alt="" coords="41,37,244,57"/>
+<area shape="rect" id="node3_44" href="javascript:void(0);" title="optparse.OptionContainer.set_description" alt="" coords="41,57,244,77"/>
+<area shape="rect" id="node3_45" href="javascript:void(0);" title="optparse.OptionContainer.add_options" alt="" coords="41,77,244,97"/>
+<area shape="rect" id="node3_46" href="javascript:void(0);" title="optparse.OptionContainer.get_option" alt="" coords="41,97,244,117"/>
+<area shape="rect" id="node3_47" href="javascript:void(0);" title="optparse.OptionContainer.has_option" alt="" coords="41,117,244,137"/>
+<area shape="rect" id="node3_48" href="javascript:void(0);" title="optparse.OptionContainer.remove_option" alt="" coords="41,137,244,157"/>
+<area shape="rect" id="node3_49" href="javascript:void(0);" title="optparse.OptionContainer.format_description" alt="" coords="41,157,244,177"/>
+<area shape="rect" id="node3" href="javascript:void(0);" title="Abstract base class." alt="" coords="29,5,256,184"/>
+</map>
+  <img src="uml_class_diagram_for_gyp_rege.gif" alt='' usemap="#uml_class_diagram_for_gyp_rege" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.RegeneratableOptionParser-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp-pysrc.html#RegeneratableOptionParser.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.RegeneratableOptionParser-class.html#add_option" class="summary-sig-name">add_option</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">*args</span>,
+        <span class="summary-sig-arg">**kw</span>)</span><br />
+      Add an option to the parser.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp-pysrc.html#RegeneratableOptionParser.add_option">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="gyp.RegeneratableOptionParser-class.html#parse_args" class="summary-sig-name">parse_args</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">*args</span>)</span><br />
+      parse_args(args : [string] = sys.argv[1:],
+           values : Values = None)
+-&gt; (values : Values, args : [string])</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="gyp-pysrc.html#RegeneratableOptionParser.parse_args">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>optparse.OptionParser</code></b>:
+      <code>add_option_group</code>,
+      <code>check_values</code>,
+      <code>destroy</code>,
+      <code>disable_interspersed_args</code>,
+      <code>enable_interspersed_args</code>,
+      <code>error</code>,
+      <code>exit</code>,
+      <code>expand_prog_name</code>,
+      <code>format_epilog</code>,
+      <code>format_help</code>,
+      <code>format_option_help</code>,
+      <code>get_default_values</code>,
+      <code>get_description</code>,
+      <code>get_option_group</code>,
+      <code>get_prog_name</code>,
+      <code>get_usage</code>,
+      <code>get_version</code>,
+      <code>print_help</code>,
+      <code>print_usage</code>,
+      <code>print_version</code>,
+      <code>set_default</code>,
+      <code>set_defaults</code>,
+      <code>set_process_default_values</code>,
+      <code>set_usage</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>optparse.OptionParser</code></b> (private):
+      <code>_add_help_option</code>,
+      <code>_add_version_option</code>,
+      <code>_create_option_list</code>,
+      <code>_get_all_options</code>,
+      <code>_get_args</code>,
+      <code>_get_encoding</code>,
+      <code>_init_parsing_state</code>,
+      <code>_match_long_opt</code>,
+      <code>_populate_option_list</code>,
+      <code>_process_args</code>,
+      <code>_process_long_opt</code>,
+      <code>_process_short_opts</code>
+      </p></div>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>optparse.OptionContainer</code></b>:
+      <code>add_options</code>,
+      <code>format_description</code>,
+      <code>get_option</code>,
+      <code>has_option</code>,
+      <code>remove_option</code>,
+      <code>set_conflict_handler</code>,
+      <code>set_description</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>optparse.OptionContainer</code></b> (private):
+      <code>_check_conflict</code>,
+      <code>_create_option_mappings</code>,
+      <code>_share_option_mappings</code>
+      </p></div>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>optparse.OptionParser</code></b>:
+      <code>standard_option_list</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp-pysrc.html#RegeneratableOptionParser.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        optparse.OptionContainer.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="add_option"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">add_option</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">*args</span>,
+        <span class="sig-arg">**kw</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp-pysrc.html#RegeneratableOptionParser.add_option">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Add an option to the parser.
+
+This accepts the same arguments as OptionParser.add_option, plus the
+following:
+  regenerate: can be set to False to prevent this option from being included
+              in regeneration.
+  env_name: name of environment variable that additional values for this
+            option come from.
+  type: adds type='path', to tell the regenerator that the values of
+        this option need to be made relative to options.depth
+
+</pre>
+  <dl class="fields">
+    <dt>Overrides:
+        optparse.OptionContainer.add_option
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="parse_args"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">parse_args</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">*args</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="gyp-pysrc.html#RegeneratableOptionParser.parse_args">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+parse_args(args : [string] = sys.argv[1:],
+           values : Values = None)
+-&gt; (values : Values, args : [string])
+
+Parse the command-line options found in 'args' (default:
+sys.argv[1:]).  Any errors result in a call to 'error()', which
+by default prints the usage message to stderr and calls
+sys.exit() with an error message.  On success returns a pair
+(values, args) where 'values' is an Values instance (with all
+your option values) and 'args' is the list of arguments left
+over after parsing options.
+
+</pre>
+  <dl class="fields">
+    <dt>Overrides:
+        optparse.OptionParser.parse_args
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:26:58 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

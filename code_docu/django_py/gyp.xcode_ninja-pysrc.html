@@ -1,0 +1,958 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.xcode_ninja</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        Module&nbsp;xcode_ninja
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.xcode_ninja-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="gyp.xcode_ninja-module.html">Module gyp.xcode_ninja</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (c) 2014 Google Inc. All rights reserved.</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"># Use of this source code is governed by a BSD-style license that can be</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># found in the LICENSE file.</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-docstring">"""Xcode-ninja wrapper project file generator.</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-docstring">This updates the data structures passed to the Xcode gyp generator to build</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-docstring">with ninja instead. The Xcode project itself is transformed into a list of</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-docstring">executable targets, each with a build step to build with ninja, and a target</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-docstring">with every source and resource file.  This appears to sidestep some of the</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-docstring">major performance headaches experienced using complex projects and large number</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-docstring">of targets within Xcode.</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">errno</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Package gyp=gyp-module.html"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-0', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Package gyp.generator=gyp.generator-module.html"><a title="gyp.generator" class="py-name" href="#" onclick="return doclink('link-1', 'generator', 'link-1');">generator</a></tt><tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Module gyp.generator.ninja=gyp.generator.ninja-module.html"><a title="gyp.generator.ninja" class="py-name" href="#" onclick="return doclink('link-2', 'ninja', 'link-2');">ninja</a></tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">re</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">xml</tt><tt class="py-op">.</tt><tt class="py-name">sax</tt><tt class="py-op">.</tt><tt class="py-name">saxutils</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"> </tt>
+<a name="_WriteWorkspace"></a><div id="_WriteWorkspace-def"><a name="L22"></a><tt class="py-lineno"> 22</tt> <a class="py-toggle" href="#" id="_WriteWorkspace-toggle" onclick="return toggle('_WriteWorkspace');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.xcode_ninja-module.html#_WriteWorkspace">_WriteWorkspace</a><tt class="py-op">(</tt><tt class="py-param">main_gyp</tt><tt class="py-op">,</tt> <tt class="py-param">sources_gyp</tt><tt class="py-op">,</tt> <tt class="py-param">params</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_WriteWorkspace-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="_WriteWorkspace-expanded"><a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line">  <tt class="py-docstring">""" Create a workspace to wrap main and sources gyp paths. """</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line">  <tt class="py-op">(</tt><tt class="py-name">build_file_root</tt><tt class="py-op">,</tt> <tt class="py-name">build_file_ext</tt><tt class="py-op">)</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Variable vfwheron.models.LtDomain.path=vfwheron.models.LtDomain-class.html#path,Variable vfwheron.models.LtLicense.path=vfwheron.models.LtLicense-class.html#path,Variable vfwheron.models.LtLocation.path=vfwheron.models.LtLocation-class.html#path,Variable vfwheron.models.LtProject.path=vfwheron.models.LtProject-class.html#path,Variable vfwheron.models.LtQuality.path=vfwheron.models.LtQuality-class.html#path,Variable vfwheron.models.LtSite.path=vfwheron.models.LtSite-class.html#path,Variable vfwheron.models.LtSoil.path=vfwheron.models.LtSoil-class.html#path,Variable vfwheron.models.LtUser.path=vfwheron.models.LtUser-class.html#path,Variable vfwheron.models.TblMeta.path=vfwheron.models.TblMeta-class.html#path,Variable vfwheron.models.TblSensor.path=vfwheron.models.TblSensor-class.html#path,Variable vfwheron.models.TblVariable.path=vfwheron.models.TblVariable-class.html#path"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-3', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">splitext</tt><tt class="py-op">(</tt><tt class="py-name">main_gyp</tt><tt class="py-op">)</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line">  <tt class="py-name">workspace_path</tt> <tt class="py-op">=</tt> <tt class="py-name">build_file_root</tt> <tt class="py-op">+</tt> <tt class="py-string">'.xcworkspace'</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line">  <tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">[</tt><tt class="py-string">'options'</tt><tt class="py-op">]</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">options</tt><tt class="py-op">.</tt><tt class="py-name">generator_output</tt><tt class="py-op">:</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">    <tt class="py-name">workspace_path</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-4', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">options</tt><tt class="py-op">.</tt><tt class="py-name">generator_output</tt><tt class="py-op">,</tt> <tt class="py-name">workspace_path</tt><tt class="py-op">)</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">  <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">    <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">makedirs</tt><tt class="py-op">(</tt><tt class="py-name">workspace_path</tt><tt class="py-op">)</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">  <tt class="py-keyword">except</tt> <tt class="py-name">OSError</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">errno</tt> <tt class="py-op">!=</tt> <tt class="py-name">errno</tt><tt class="py-op">.</tt><tt class="py-name">EEXIST</tt><tt class="py-op">:</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line">      <tt class="py-keyword">raise</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">  <tt class="py-name">output_string</tt> <tt class="py-op">=</tt> <tt class="py-string">'&lt;?xml version="1.0" encoding="UTF-8"?&gt;\n'</tt> <tt class="py-op">+</tt> \ </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">                  <tt class="py-string">'&lt;Workspace version = "1.0"&gt;\n'</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">  <tt class="py-keyword">for</tt> <tt class="py-name">gyp_name</tt> <tt class="py-keyword">in</tt> <tt class="py-op">[</tt><tt class="py-name">main_gyp</tt><tt class="py-op">,</tt> <tt class="py-name">sources_gyp</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">    <tt id="link-5" class="py-name" targets="Variable AuthorizationManagement.apps.AuthorizationmanagementConfig.name=AuthorizationManagement.apps.AuthorizationmanagementConfig-class.html#name,Variable AuthorizationManagement.models.Resource.name=AuthorizationManagement.models.Resource-class.html#name,Variable dashboard.apps.DashboardConfig.name=dashboard.apps.DashboardConfig-class.html#name,Variable dashboard.models.WebProcessingService.name=dashboard.models.WebProcessingService-class.html#name,Variable heron_monitor.apps.HeronMonitorConfig.name=heron_monitor.apps.HeronMonitorConfig-class.html#name,Variable heron_upload.apps.HeronUploadConfig.name=heron_upload.apps.HeronUploadConfig-class.html#name,Variable heron_visual.apps.HeronVisualConfig.name=heron_visual.apps.HeronVisualConfig-class.html#name,Variable heron_wps.apps.HeronWpsConfig.name=heron_wps.apps.HeronWpsConfig-class.html#name,Variable heron_wps.models.WebProcessingService.name=heron_wps.models.WebProcessingService-class.html#name,Variable vfwheron.apps.VfwheronConfig.name=vfwheron.apps.VfwheronConfig-class.html#name,Variable vfwheron.models.DjangoMigrations.name=vfwheron.models.DjangoMigrations-class.html#name,Variable wps_workflow.apps.wps_workflowConfig.name=wps_workflow.apps.wps_workflowConfig-class.html#name,Variable wps_workflow.models.Workflow.name=wps_workflow.models.Workflow-class.html#name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-5', 'name', 'link-5');">name</a></tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-6', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">splitext</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-7" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-7', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">basename</tt><tt class="py-op">(</tt><tt class="py-name">gyp_name</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-string">'.xcodeproj'</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">    <tt id="link-8" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-8', 'name', 'link-5');">name</a></tt> <tt class="py-op">=</tt> <tt class="py-name">xml</tt><tt class="py-op">.</tt><tt class="py-name">sax</tt><tt class="py-op">.</tt><tt class="py-name">saxutils</tt><tt class="py-op">.</tt><tt class="py-name">quoteattr</tt><tt class="py-op">(</tt><tt class="py-string">"group:"</tt> <tt class="py-op">+</tt> <tt id="link-9" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-9', 'name', 'link-5');">name</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">    <tt class="py-name">output_string</tt> <tt class="py-op">+=</tt> <tt class="py-string">'  &lt;FileRef location = %s&gt;&lt;/FileRef&gt;\n'</tt> <tt class="py-op">%</tt> <tt id="link-10" class="py-name"><a title="AuthorizationManagement.apps.AuthorizationmanagementConfig.name
+AuthorizationManagement.models.Resource.name
+dashboard.apps.DashboardConfig.name
+dashboard.models.WebProcessingService.name
+heron_monitor.apps.HeronMonitorConfig.name
+heron_upload.apps.HeronUploadConfig.name
+heron_visual.apps.HeronVisualConfig.name
+heron_wps.apps.HeronWpsConfig.name
+heron_wps.models.WebProcessingService.name
+vfwheron.apps.VfwheronConfig.name
+vfwheron.models.DjangoMigrations.name
+wps_workflow.apps.wps_workflowConfig.name
+wps_workflow.models.Workflow.name" class="py-name" href="#" onclick="return doclink('link-10', 'name', 'link-5');">name</a></tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">  <tt class="py-name">output_string</tt> <tt class="py-op">+=</tt> <tt class="py-string">'&lt;/Workspace&gt;\n'</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">  <tt class="py-name">workspace_file</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-11', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">workspace_path</tt><tt class="py-op">,</tt> <tt class="py-string">"contents.xcworkspacedata"</tt><tt class="py-op">)</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">  <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">    <tt class="py-keyword">with</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">workspace_file</tt><tt class="py-op">,</tt> <tt class="py-string">'r'</tt><tt class="py-op">)</tt> <tt class="py-keyword">as</tt> <tt class="py-name">input_file</tt><tt class="py-op">:</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">      <tt class="py-name">input_string</tt> <tt class="py-op">=</tt> <tt class="py-name">input_file</tt><tt class="py-op">.</tt><tt class="py-name">read</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-name">input_string</tt> <tt class="py-op">==</tt> <tt class="py-name">output_string</tt><tt class="py-op">:</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">  <tt class="py-keyword">except</tt> <tt class="py-name">IOError</tt><tt class="py-op">:</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">    <tt class="py-comment"># Ignore errors if the file doesn't exist.</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-keyword">pass</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line"> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">  <tt class="py-keyword">with</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">workspace_file</tt><tt class="py-op">,</tt> <tt class="py-string">'w'</tt><tt class="py-op">)</tt> <tt class="py-keyword">as</tt> <tt class="py-name">output_file</tt><tt class="py-op">:</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">    <tt class="py-name">output_file</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method vfwheron.views.Echo.write()=vfwheron.views.Echo-class.html#write"><a title="vfwheron.views.Echo.write" class="py-name" href="#" onclick="return doclink('link-12', 'write', 'link-12');">write</a></tt><tt class="py-op">(</tt><tt class="py-name">output_string</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"> </tt>
+<a name="_TargetFromSpec"></a><div id="_TargetFromSpec-def"><a name="L56"></a><tt class="py-lineno"> 56</tt> <a class="py-toggle" href="#" id="_TargetFromSpec-toggle" onclick="return toggle('_TargetFromSpec');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.xcode_ninja-module.html#_TargetFromSpec">_TargetFromSpec</a><tt class="py-op">(</tt><tt class="py-param">old_spec</tt><tt class="py-op">,</tt> <tt class="py-param">params</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="_TargetFromSpec-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="_TargetFromSpec-expanded"><a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">  <tt class="py-docstring">""" Create fake target for xcode-ninja wrapper. """</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">  <tt class="py-comment"># Determine ninja top level build dir (e.g. /path/to/out).</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">  <tt class="py-name">ninja_toplevel</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">  <tt class="py-name">jobs</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">params</tt><tt class="py-op">:</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">    <tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">[</tt><tt class="py-string">'options'</tt><tt class="py-op">]</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">    <tt class="py-name">ninja_toplevel</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">        <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-13', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">options</tt><tt class="py-op">.</tt><tt class="py-name">toplevel_dir</tt><tt class="py-op">,</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">                     <tt id="link-14" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-14', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="gyp.generator" class="py-name" href="#" onclick="return doclink('link-15', 'generator', 'link-1');">generator</a></tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="gyp.generator.ninja" class="py-name" href="#" onclick="return doclink('link-16', 'ninja', 'link-2');">ninja</a></tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Function gyp.generator.ninja.ComputeOutputDir()=gyp.generator.ninja-module.html#ComputeOutputDir"><a title="gyp.generator.ninja.ComputeOutputDir" class="py-name" href="#" onclick="return doclink('link-17', 'ComputeOutputDir', 'link-17');">ComputeOutputDir</a></tt><tt class="py-op">(</tt><tt class="py-name">params</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">    <tt class="py-name">jobs</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method AuthorizationManagement.views.AddNewResourceView.get()=AuthorizationManagement.views.AddNewResourceView-class.html#get,Method AuthorizationManagement.views.HomeView.get()=AuthorizationManagement.views.HomeView-class.html#get,Method AuthorizationManagement.views.OpenResourceView.get()=AuthorizationManagement.views.OpenResourceView-class.html#get,Method AuthorizationManagement.views.PermissionEditingView.get()=AuthorizationManagement.views.PermissionEditingView-class.html#get,Method AuthorizationManagement.views.PermissionEditingViewSearch.get()=AuthorizationManagement.views.PermissionEditingViewSearch-class.html#get,Method AuthorizationManagement.views.ProfileView.get()=AuthorizationManagement.views.ProfileView-class.html#get,Method AuthorizationManagement.views.ResourcesOverviewSearch.get()=AuthorizationManagement.views.ResourcesOverviewSearch-class.html#get,Method heron_upload.views.HomeView.get()=heron_upload.views.HomeView-class.html#get,Method vfwheron.views.DatasetDownloadView.get()=vfwheron.views.DatasetDownloadView-class.html#get,Method vfwheron.views.GeoserverView.get()=vfwheron.views.GeoserverView-class.html#get,Method vfwheron.views.HelpView.get()=vfwheron.views.HelpView-class.html#get,Method vfwheron.views.menuView.get()=vfwheron.views.menuView-class.html#get,Static Method wps_workflow.views.ProcessView.get()=wps_workflow.views.ProcessView-class.html#get,Static Method wps_workflow.views.UserView.get()=wps_workflow.views.UserView-class.html#get,Static Method wps_workflow.views.WPSView.get()=wps_workflow.views.WPSView-class.html#get,Static Method wps_workflow.views.WorkflowView.get()=wps_workflow.views.WorkflowView-class.html#get"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-18', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'generator_flags'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-19', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'xcode_ninja_jobs'</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line"> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">  <tt class="py-name">target_name</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-20', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'target_name'</tt><tt class="py-op">)</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">  <tt class="py-name">product_name</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-21', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'product_name'</tt><tt class="py-op">,</tt> <tt class="py-name">target_name</tt><tt class="py-op">)</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">  <tt class="py-name">product_extension</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-22', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'product_extension'</tt><tt class="py-op">)</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'target_name'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">target_name</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'product_name'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">product_name</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">product_extension</tt><tt class="py-op">:</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">    <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'product_extension'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">product_extension</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'toolset'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-23" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-23', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'toolset'</tt><tt class="py-op">)</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'default_configuration'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-24" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-24', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'default_configuration'</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'configurations'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">  <tt class="py-comment"># Tell Xcode to look in |ninja_toplevel| for build products.</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">  <tt class="py-name">new_xcode_settings</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">ninja_toplevel</tt><tt class="py-op">:</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">    <tt class="py-name">new_xcode_settings</tt><tt class="py-op">[</tt><tt class="py-string">'CONFIGURATION_BUILD_DIR'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">        <tt class="py-string">"%s/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)"</tt> <tt class="py-op">%</tt> <tt class="py-name">ninja_toplevel</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line"> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-string">'configurations'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">old_spec</tt><tt class="py-op">:</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">config</tt> <tt class="py-keyword">in</tt> <tt class="py-name">old_spec</tt><tt class="py-op">[</tt><tt class="py-string">'configurations'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name" targets="Method gyp.ordered_dict.OrderedDict.iterkeys()=gyp.ordered_dict.OrderedDict-class.html#iterkeys"><a title="gyp.ordered_dict.OrderedDict.iterkeys" class="py-name" href="#" onclick="return doclink('link-25', 'iterkeys', 'link-25');">iterkeys</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">      <tt class="py-name">old_xcode_settings</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-name">old_spec</tt><tt class="py-op">[</tt><tt class="py-string">'configurations'</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">config</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-26', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'xcode_settings'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-string">'IPHONEOS_DEPLOYMENT_TARGET'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">old_xcode_settings</tt><tt class="py-op">:</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">        <tt class="py-name">new_xcode_settings</tt><tt class="py-op">[</tt><tt class="py-string">'CODE_SIGNING_REQUIRED'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">"NO"</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt class="py-name">new_xcode_settings</tt><tt class="py-op">[</tt><tt class="py-string">'IPHONEOS_DEPLOYMENT_TARGET'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">            <tt class="py-name">old_xcode_settings</tt><tt class="py-op">[</tt><tt class="py-string">'IPHONEOS_DEPLOYMENT_TARGET'</tt><tt class="py-op">]</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">      <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'configurations'</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">config</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">      <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'configurations'</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">config</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'xcode_settings'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">          <tt class="py-name">new_xcode_settings</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line"> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'mac_bundle'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-27', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'mac_bundle'</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'ios_app_extension'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-28', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'ios_app_extension'</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'ios_watchkit_extension'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">      <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-29', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'ios_watchkit_extension'</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'ios_watchkit_app'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-30', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'ios_watchkit_app'</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">  <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'type'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_spec</tt><tt class="py-op">[</tt><tt class="py-string">'type'</tt><tt class="py-op">]</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">ninja_toplevel</tt><tt class="py-op">:</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">    <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'actions'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">      <tt class="py-op">{</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">        <tt class="py-string">'action_name'</tt><tt class="py-op">:</tt> <tt class="py-string">'Compile and copy %s via ninja'</tt> <tt class="py-op">%</tt> <tt class="py-name">target_name</tt><tt class="py-op">,</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt class="py-string">'inputs'</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">        <tt class="py-string">'outputs'</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">        <tt class="py-string">'action'</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">          <tt class="py-string">'env'</tt><tt class="py-op">,</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">          <tt class="py-string">'PATH=%s'</tt> <tt class="py-op">%</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">environ</tt><tt class="py-op">[</tt><tt class="py-string">'PATH'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">          <tt class="py-string">'ninja'</tt><tt class="py-op">,</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">          <tt class="py-string">'-C'</tt><tt class="py-op">,</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">          <tt class="py-name">new_xcode_settings</tt><tt class="py-op">[</tt><tt class="py-string">'CONFIGURATION_BUILD_DIR'</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">          <tt class="py-name">target_name</tt><tt class="py-op">,</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">        <tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">        <tt class="py-string">'message'</tt><tt class="py-op">:</tt> <tt class="py-string">'Compile and copy %s via ninja'</tt> <tt class="py-op">%</tt> <tt class="py-name">target_name</tt><tt class="py-op">,</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">      <tt class="py-op">}</tt><tt class="py-op">,</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">    <tt class="py-op">]</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">jobs</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">      <tt class="py-name">ninja_target</tt><tt class="py-op">[</tt><tt class="py-string">'actions'</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'action'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">extend</tt><tt class="py-op">(</tt><tt class="py-op">(</tt><tt class="py-string">'-j'</tt><tt class="py-op">,</tt> <tt class="py-name">jobs</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">  <tt class="py-keyword">return</tt> <tt class="py-name">ninja_target</tt> </tt>
+</div><a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line"> </tt>
+<a name="IsValidTargetForWrapper"></a><div id="IsValidTargetForWrapper-def"><a name="L126"></a><tt class="py-lineno">126</tt> <a class="py-toggle" href="#" id="IsValidTargetForWrapper-toggle" onclick="return toggle('IsValidTargetForWrapper');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.xcode_ninja-module.html#IsValidTargetForWrapper">IsValidTargetForWrapper</a><tt class="py-op">(</tt><tt class="py-param">target_extras</tt><tt class="py-op">,</tt> <tt class="py-param">executable_target_pattern</tt><tt class="py-op">,</tt> <tt class="py-param">spec</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="IsValidTargetForWrapper-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="IsValidTargetForWrapper-expanded"><a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">  <tt class="py-docstring">"""Limit targets for Xcode wrapper.</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"><tt class="py-docstring">  Xcode sometimes performs poorly with too many targets, so only include</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"><tt class="py-docstring">  proper executable targets, with filters to customize.</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"><tt class="py-docstring">  Arguments:</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"><tt class="py-docstring">    target_extras: Regular expression to always add, matching any target.</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line"><tt class="py-docstring">    executable_target_pattern: Regular expression limiting executable targets.</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"><tt class="py-docstring">    spec: Specifications for target.</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line"><tt class="py-docstring">  """</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">  <tt class="py-name">target_name</tt> <tt class="py-op">=</tt> <tt class="py-name">spec</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-31', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'target_name'</tt><tt class="py-op">)</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">  <tt class="py-comment"># Always include targets matching target_extras.</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">target_extras</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt> <tt class="py-keyword">and</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">search</tt><tt class="py-op">(</tt><tt class="py-name">target_extras</tt><tt class="py-op">,</tt> <tt class="py-name">target_name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line"> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">  <tt class="py-comment"># Otherwise just show executable targets.</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">spec</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-32', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'type'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-string">'executable'</tt> <tt class="py-keyword">and</tt> \ </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">     <tt class="py-name">spec</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-33', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'product_extension'</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt><tt class="py-op">)</tt> <tt class="py-op">!=</tt> <tt class="py-string">'bundle'</tt><tt class="py-op">:</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line"> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">    <tt class="py-comment"># If there is a filter and the target does not match, exclude the target.</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">executable_target_pattern</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">      <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">search</tt><tt class="py-op">(</tt><tt class="py-name">executable_target_pattern</tt><tt class="py-op">,</tt> <tt class="py-name">target_name</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">  <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
+</div><a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"> </tt>
+<a name="CreateWrapper"></a><div id="CreateWrapper-def"><a name="L152"></a><tt class="py-lineno">152</tt> <a class="py-toggle" href="#" id="CreateWrapper-toggle" onclick="return toggle('CreateWrapper');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.xcode_ninja-module.html#CreateWrapper">CreateWrapper</a><tt class="py-op">(</tt><tt class="py-param">target_list</tt><tt class="py-op">,</tt> <tt class="py-param">target_dicts</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">,</tt> <tt class="py-param">params</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CreateWrapper-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="CreateWrapper-expanded"><a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">  <tt class="py-docstring">"""Initialize targets for the ninja wrapper.</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"><tt class="py-docstring">  This sets up the necessary variables in the targets to generate Xcode projects</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"><tt class="py-docstring">  that use ninja as an external builder.</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"><tt class="py-docstring">  Arguments:</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line"><tt class="py-docstring">    target_list: List of target pairs: 'base/base.gyp:base'.</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"><tt class="py-docstring">    target_dicts: Dict of target properties keyed on target pair.</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"><tt class="py-docstring">    data: Dict of flattened build files keyed on gyp path.</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line"><tt class="py-docstring">    params: Dict of global options for gyp.</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line"><tt class="py-docstring">  """</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">  <tt class="py-name">orig_gyp</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">[</tt><tt class="py-string">'build_files'</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">  <tt class="py-keyword">for</tt> <tt class="py-name">gyp_name</tt><tt class="py-op">,</tt> <tt class="py-name">gyp_dict</tt> <tt class="py-keyword">in</tt> <tt id="link-34" class="py-name" targets="Variable wps_workflow.models.Artefact.data=wps_workflow.models.Artefact-class.html#data,Variable wps_workflow.models.SqlData.data=wps_workflow.models.SqlData-class.html#data"><a title="wps_workflow.models.Artefact.data
+wps_workflow.models.SqlData.data" class="py-name" href="#" onclick="return doclink('link-34', 'data', 'link-34');">data</a></tt><tt class="py-op">.</tt><tt id="link-35" class="py-name" targets="Method gyp.ordered_dict.OrderedDict.iteritems()=gyp.ordered_dict.OrderedDict-class.html#iteritems"><a title="gyp.ordered_dict.OrderedDict.iteritems" class="py-name" href="#" onclick="return doclink('link-35', 'iteritems', 'link-35');">iteritems</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">gyp_name</tt> <tt class="py-op">==</tt> <tt class="py-name">orig_gyp</tt><tt class="py-op">:</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">      <tt class="py-name">depth</tt> <tt class="py-op">=</tt> <tt class="py-name">gyp_dict</tt><tt class="py-op">[</tt><tt class="py-string">'_DEPTH'</tt><tt class="py-op">]</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line">  <tt class="py-comment"># Check for custom main gyp name, otherwise use the default CHROMIUM_GYP_FILE</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line">  <tt class="py-comment"># and prepend .ninja before the .gyp extension.</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">  <tt class="py-name">generator_flags</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-36', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'generator_flags'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line">  <tt class="py-name">main_gyp</tt> <tt class="py-op">=</tt> <tt class="py-name">generator_flags</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-37', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'xcode_ninja_main_gyp'</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">main_gyp</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">    <tt class="py-op">(</tt><tt class="py-name">build_file_root</tt><tt class="py-op">,</tt> <tt class="py-name">build_file_ext</tt><tt class="py-op">)</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-38', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">splitext</tt><tt class="py-op">(</tt><tt class="py-name">orig_gyp</tt><tt class="py-op">)</tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line">    <tt class="py-name">main_gyp</tt> <tt class="py-op">=</tt> <tt class="py-name">build_file_root</tt> <tt class="py-op">+</tt> <tt class="py-string">".ninja"</tt> <tt class="py-op">+</tt> <tt class="py-name">build_file_ext</tt> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line"> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">  <tt class="py-comment"># Create new |target_list|, |target_dicts| and |data| data structures.</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">  <tt class="py-name">new_target_list</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">  <tt class="py-name">new_target_dicts</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line"> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line">  <tt class="py-comment"># Set base keys needed for |data|.</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">main_gyp</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">main_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'included_files'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">main_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'targets'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">main_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'xcode_settings'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">      <tt id="link-39" class="py-name"><a title="wps_workflow.models.Artefact.data
+wps_workflow.models.SqlData.data" class="py-name" href="#" onclick="return doclink('link-39', 'data', 'link-34');">data</a></tt><tt class="py-op">[</tt><tt class="py-name">orig_gyp</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-40" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-40', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'xcode_settings'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line"> </tt>
+<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line">  <tt class="py-comment"># Normally the xcode-ninja generator includes only valid executable targets.</tt> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">  <tt class="py-comment"># If |xcode_ninja_executable_target_pattern| is set, that list is reduced to</tt> </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">  <tt class="py-comment"># executable targets that match the pattern. (Default all)</tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line">  <tt class="py-name">executable_target_pattern</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">      <tt class="py-name">generator_flags</tt><tt class="py-op">.</tt><tt id="link-41" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-41', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'xcode_ninja_executable_target_pattern'</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line"> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">  <tt class="py-comment"># For including other non-executable targets, add the matching target name</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">  <tt class="py-comment"># to the |xcode_ninja_target_pattern| regular expression. (Default none)</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">  <tt class="py-name">target_extras</tt> <tt class="py-op">=</tt> <tt class="py-name">generator_flags</tt><tt class="py-op">.</tt><tt id="link-42" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-42', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'xcode_ninja_target_pattern'</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line"> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">  <tt class="py-keyword">for</tt> <tt class="py-name">old_qualified_target</tt> <tt class="py-keyword">in</tt> <tt class="py-name">target_list</tt><tt class="py-op">:</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">    <tt class="py-name">spec</tt> <tt class="py-op">=</tt> <tt class="py-name">target_dicts</tt><tt class="py-op">[</tt><tt class="py-name">old_qualified_target</tt><tt class="py-op">]</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt id="link-43" class="py-name" targets="Function gyp.xcode_ninja.IsValidTargetForWrapper()=gyp.xcode_ninja-module.html#IsValidTargetForWrapper"><a title="gyp.xcode_ninja.IsValidTargetForWrapper" class="py-name" href="#" onclick="return doclink('link-43', 'IsValidTargetForWrapper', 'link-43');">IsValidTargetForWrapper</a></tt><tt class="py-op">(</tt><tt class="py-name">target_extras</tt><tt class="py-op">,</tt> <tt class="py-name">executable_target_pattern</tt><tt class="py-op">,</tt> <tt class="py-name">spec</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">      <tt class="py-comment"># Add to new_target_list.</tt> </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">      <tt class="py-name">target_name</tt> <tt class="py-op">=</tt> <tt class="py-name">spec</tt><tt class="py-op">.</tt><tt id="link-44" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-44', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'target_name'</tt><tt class="py-op">)</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">      <tt class="py-name">new_target_name</tt> <tt class="py-op">=</tt> <tt class="py-string">'%s:%s#target'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">main_gyp</tt><tt class="py-op">,</tt> <tt class="py-name">target_name</tt><tt class="py-op">)</tt> </tt>
+<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line">      <tt class="py-name">new_target_list</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">new_target_name</tt><tt class="py-op">)</tt> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line"> </tt>
+<a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line">      <tt class="py-comment"># Add to new_target_dicts.</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line">      <tt class="py-name">new_target_dicts</tt><tt class="py-op">[</tt><tt class="py-name">new_target_name</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-45" class="py-name" targets="Function gyp.xcode_ninja._TargetFromSpec()=gyp.xcode_ninja-module.html#_TargetFromSpec"><a title="gyp.xcode_ninja._TargetFromSpec" class="py-name" href="#" onclick="return doclink('link-45', '_TargetFromSpec', 'link-45');">_TargetFromSpec</a></tt><tt class="py-op">(</tt><tt class="py-name">spec</tt><tt class="py-op">,</tt> <tt class="py-name">params</tt><tt class="py-op">)</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line"> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line">      <tt class="py-comment"># Add to new_data.</tt> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line">      <tt class="py-keyword">for</tt> <tt class="py-name">old_target</tt> <tt class="py-keyword">in</tt> <tt id="link-46" class="py-name"><a title="wps_workflow.models.Artefact.data
+wps_workflow.models.SqlData.data" class="py-name" href="#" onclick="return doclink('link-46', 'data', 'link-34');">data</a></tt><tt class="py-op">[</tt><tt class="py-name">old_qualified_target</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-string">':'</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'targets'</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">old_target</tt><tt class="py-op">[</tt><tt class="py-string">'target_name'</tt><tt class="py-op">]</tt> <tt class="py-op">==</tt> <tt class="py-name">target_name</tt><tt class="py-op">:</tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line">          <tt class="py-name">new_data_target</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line">          <tt class="py-name">new_data_target</tt><tt class="py-op">[</tt><tt class="py-string">'target_name'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_target</tt><tt class="py-op">[</tt><tt class="py-string">'target_name'</tt><tt class="py-op">]</tt> </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line">          <tt class="py-name">new_data_target</tt><tt class="py-op">[</tt><tt class="py-string">'toolset'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">old_target</tt><tt class="py-op">[</tt><tt class="py-string">'toolset'</tt><tt class="py-op">]</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line">          <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">main_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'targets'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">new_data_target</tt><tt class="py-op">)</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line"> </tt>
+<a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">  <tt class="py-comment"># Create sources target.</tt> </tt>
+<a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line">  <tt class="py-name">sources_target_name</tt> <tt class="py-op">=</tt> <tt class="py-string">'sources_for_indexing'</tt> </tt>
+<a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line">  <tt class="py-name">sources_target</tt> <tt class="py-op">=</tt> <tt id="link-47" class="py-name"><a title="gyp.xcode_ninja._TargetFromSpec" class="py-name" href="#" onclick="return doclink('link-47', '_TargetFromSpec', 'link-45');">_TargetFromSpec</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line">    <tt class="py-op">{</tt> <tt class="py-string">'target_name'</tt> <tt class="py-op">:</tt> <tt class="py-name">sources_target_name</tt><tt class="py-op">,</tt> </tt>
+<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line">      <tt class="py-string">'toolset'</tt><tt class="py-op">:</tt> <tt class="py-string">'target'</tt><tt class="py-op">,</tt> </tt>
+<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">      <tt class="py-string">'default_configuration'</tt><tt class="py-op">:</tt> <tt class="py-string">'Default'</tt><tt class="py-op">,</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">      <tt class="py-string">'mac_bundle'</tt><tt class="py-op">:</tt> <tt class="py-string">'0'</tt><tt class="py-op">,</tt> </tt>
+<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line">      <tt class="py-string">'type'</tt><tt class="py-op">:</tt> <tt class="py-string">'executable'</tt> </tt>
+<a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line">    <tt class="py-op">}</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line"> </tt>
+<a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line">  <tt class="py-comment"># Tell Xcode to look everywhere for headers.</tt> </tt>
+<a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line">  <tt class="py-name">sources_target</tt><tt class="py-op">[</tt><tt class="py-string">'configurations'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-string">'Default'</tt><tt class="py-op">:</tt> <tt class="py-op">{</tt> <tt class="py-string">'include_dirs'</tt><tt class="py-op">:</tt> <tt class="py-op">[</tt> <tt class="py-name">depth</tt> <tt class="py-op">]</tt> <tt class="py-op">}</tt> <tt class="py-op">}</tt> </tt>
+<a name="L229"></a><tt class="py-lineno">229</tt>  <tt class="py-line"> </tt>
+<a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line">  <tt class="py-name">sources</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line">  <tt class="py-keyword">for</tt> <tt class="py-name">target</tt><tt class="py-op">,</tt> <tt class="py-name">target_dict</tt> <tt class="py-keyword">in</tt> <tt class="py-name">target_dicts</tt><tt class="py-op">.</tt><tt id="link-48" class="py-name"><a title="gyp.ordered_dict.OrderedDict.iteritems" class="py-name" href="#" onclick="return doclink('link-48', 'iteritems', 'link-35');">iteritems</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line">    <tt id="link-49" class="py-name" targets="Module heron_wps.base=heron_wps.base-module.html"><a title="heron_wps.base" class="py-name" href="#" onclick="return doclink('link-49', 'base', 'link-49');">base</a></tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-50" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-50', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">dirname</tt><tt class="py-op">(</tt><tt class="py-name">target</tt><tt class="py-op">)</tt> </tt>
+<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line">    <tt class="py-name">files</tt> <tt class="py-op">=</tt> <tt class="py-name">target_dict</tt><tt class="py-op">.</tt><tt id="link-51" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-51', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'sources'</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> <tt class="py-op">+</tt> \ </tt>
+<a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line">            <tt class="py-name">target_dict</tt><tt class="py-op">.</tt><tt id="link-52" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-52', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'mac_bundle_resources'</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">action</tt> <tt class="py-keyword">in</tt> <tt class="py-name">target_dict</tt><tt class="py-op">.</tt><tt id="link-53" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-53', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'actions'</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line">      <tt class="py-name">files</tt><tt class="py-op">.</tt><tt class="py-name">extend</tt><tt class="py-op">(</tt><tt class="py-name">action</tt><tt class="py-op">.</tt><tt id="link-54" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-54', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'inputs'</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line">    <tt class="py-comment"># Remove files starting with $. These are mostly intermediate files for the</tt> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line">    <tt class="py-comment"># build system.</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line">    <tt class="py-name">files</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt> <tt id="link-55" class="py-name" targets="Variable heron_upload.models.UploadedFile.file=heron_upload.models.UploadedFile-class.html#file"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-55', 'file', 'link-55');">file</a></tt> <tt class="py-keyword">for</tt> <tt id="link-56" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-56', 'file', 'link-55');">file</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">files</tt> <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt id="link-57" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-57', 'file', 'link-55');">file</a></tt><tt class="py-op">.</tt><tt class="py-name">startswith</tt><tt class="py-op">(</tt><tt class="py-string">'$'</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> </tt>
+<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line"> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line">    <tt class="py-comment"># Make sources relative to root build file.</tt> </tt>
+<a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line">    <tt class="py-name">relative_path</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-58" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-58', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">dirname</tt><tt class="py-op">(</tt><tt class="py-name">main_gyp</tt><tt class="py-op">)</tt> </tt>
+<a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line">    <tt class="py-name">sources</tt> <tt class="py-op">+=</tt> <tt class="py-op">[</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-59" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-59', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">relpath</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-60" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-60', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt id="link-61" class="py-name"><a title="heron_wps.base" class="py-name" href="#" onclick="return doclink('link-61', 'base', 'link-49');">base</a></tt><tt class="py-op">,</tt> <tt id="link-62" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-62', 'file', 'link-55');">file</a></tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">relative_path</tt><tt class="py-op">)</tt> </tt>
+<a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line">                    <tt class="py-keyword">for</tt> <tt id="link-63" class="py-name"><a title="heron_upload.models.UploadedFile.file" class="py-name" href="#" onclick="return doclink('link-63', 'file', 'link-55');">file</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">files</tt> <tt class="py-op">]</tt> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line"> </tt>
+<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line">  <tt class="py-name">sources_target</tt><tt class="py-op">[</tt><tt class="py-string">'sources'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">sorted</tt><tt class="py-op">(</tt><tt class="py-name">set</tt><tt class="py-op">(</tt><tt class="py-name">sources</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line"> </tt>
+<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line">  <tt class="py-comment"># Put sources_to_index in it's own gyp.</tt> </tt>
+<a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line">  <tt class="py-name">sources_gyp</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line">      <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-64" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-64', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-65" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-65', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">dirname</tt><tt class="py-op">(</tt><tt class="py-name">main_gyp</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">sources_target_name</tt> <tt class="py-op">+</tt> <tt class="py-string">".gyp"</tt><tt class="py-op">)</tt> </tt>
+<a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line">  <tt class="py-name">fully_qualified_target_name</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line">      <tt class="py-string">'%s:%s#target'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">sources_gyp</tt><tt class="py-op">,</tt> <tt class="py-name">sources_target_name</tt><tt class="py-op">)</tt> </tt>
+<a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line"> </tt>
+<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line">  <tt class="py-comment"># Add to new_target_list, new_target_dicts and new_data.</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line">  <tt class="py-name">new_target_list</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">fully_qualified_target_name</tt><tt class="py-op">)</tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line">  <tt class="py-name">new_target_dicts</tt><tt class="py-op">[</tt><tt class="py-name">fully_qualified_target_name</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">sources_target</tt> </tt>
+<a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line">  <tt class="py-name">new_data_target</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L258"></a><tt class="py-lineno">258</tt>  <tt class="py-line">  <tt class="py-name">new_data_target</tt><tt class="py-op">[</tt><tt class="py-string">'target_name'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">sources_target</tt><tt class="py-op">[</tt><tt class="py-string">'target_name'</tt><tt class="py-op">]</tt> </tt>
+<a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line">  <tt class="py-name">new_data_target</tt><tt class="py-op">[</tt><tt class="py-string">'_DEPTH'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">depth</tt> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">  <tt class="py-name">new_data_target</tt><tt class="py-op">[</tt><tt class="py-string">'toolset'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">"target"</tt> </tt>
+<a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">sources_gyp</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">sources_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'targets'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">sources_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'included_files'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L264"></a><tt class="py-lineno">264</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">sources_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'xcode_settings'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> \ </tt>
+<a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line">      <tt id="link-66" class="py-name"><a title="wps_workflow.models.Artefact.data
+wps_workflow.models.SqlData.data" class="py-name" href="#" onclick="return doclink('link-66', 'data', 'link-34');">data</a></tt><tt class="py-op">[</tt><tt class="py-name">orig_gyp</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-67" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-67', 'get', 'link-18');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'xcode_settings'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line">  <tt class="py-name">new_data</tt><tt class="py-op">[</tt><tt class="py-name">sources_gyp</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'targets'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">new_data_target</tt><tt class="py-op">)</tt> </tt>
+<a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line"> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line">  <tt class="py-comment"># Write workspace to file.</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line">  <tt id="link-68" class="py-name" targets="Function gyp.xcode_ninja._WriteWorkspace()=gyp.xcode_ninja-module.html#_WriteWorkspace"><a title="gyp.xcode_ninja._WriteWorkspace" class="py-name" href="#" onclick="return doclink('link-68', '_WriteWorkspace', 'link-68');">_WriteWorkspace</a></tt><tt class="py-op">(</tt><tt class="py-name">main_gyp</tt><tt class="py-op">,</tt> <tt class="py-name">sources_gyp</tt><tt class="py-op">,</tt> <tt class="py-name">params</tt><tt class="py-op">)</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line">  <tt class="py-keyword">return</tt> <tt class="py-op">(</tt><tt class="py-name">new_target_list</tt><tt class="py-op">,</tt> <tt class="py-name">new_target_dicts</tt><tt class="py-op">,</tt> <tt class="py-name">new_data</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:27:05 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

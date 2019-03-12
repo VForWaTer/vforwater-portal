@@ -1,6 +1,10 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+
+"""
+Enum Number values that indicate the state of a Task
+"""
 STATUS = (
     ('0', 'NONE'),
     ('1', 'READY'),
@@ -11,11 +15,17 @@ STATUS = (
     ('6', 'DEPRECATED'),
 )
 
+"""
+List values for input/output distinction
+"""
 ROLE = (
     ('0', 'INPUT'),
     ('1', 'OUTPUT'),
 )
 
+"""
+Enum List for different PyWPS Datatypes
+"""
 DATATYPE = (
     ('0', 'LITERAL'),
     ('1', 'COMPLEX'),
@@ -25,7 +35,7 @@ DATATYPE = (
 
 class Workflow(models.Model):
     """
-    Workflow Database Model 
+    Workflow Database Model
     """
     name = models.CharField(max_length=200)
     description = models.TextField(
@@ -165,7 +175,7 @@ class InputOutput(models.Model):
 
 class Edge(models.Model):
     """
-    Egdes between Tasks in Workflow Graph 
+    Egdes between Tasks in Workflow Graph
     """
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE)
     from_task = models.ForeignKey(
@@ -175,7 +185,7 @@ class Edge(models.Model):
     input = models.ForeignKey(
         InputOutput, related_name='input', null=True, on_delete=models.SET_NULL)
     output = models.ForeignKey(
-        InputOutput, null=True, on_delete=models.SET_NULL)
+        InputOutput, related_name='output', null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = "Edge"
@@ -201,3 +211,42 @@ class Artefact(models.Model):
     class Meta:
         verbose_name = "Artefact"
         verbose_name_plural = "Artefacts"
+
+
+class SqlData(models.Model):
+    """
+    Data output element used for dragged in dataelements from vfw Datastore.
+    Holds its data directly, no need for extra Artefact
+    """
+    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    x = models.DecimalField(max_digits=5, decimal_places=0)
+    y = models.DecimalField(max_digits=5, decimal_places=0)
+    data = models.DecimalField(max_digits=50, decimal_places=0)
+
+    class Meta:
+        verbose_name = "SqlData"
+        verbose_name_plural = "SqlDatas"
+
+    def __str__(self):
+        return "%s from Workflow '%s'" % (self.title, self.workflow.name)
+
+
+class DataEdge(models.Model):
+    """
+    Egdes between Tasks and SqlData in Workflow Graph
+    """
+    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE)
+    from_sqldata = models.ForeignKey(
+        SqlData, on_delete=models.CASCADE)
+    to_task = models.ForeignKey(
+        Task, on_delete=models.CASCADE)  # rename to in_task?
+    task_input = models.ForeignKey(
+        InputOutput, related_name='data_input', null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        verbose_name = "DataEdge"
+        verbose_name_plural = "DataEdges"
+
+    def __str__(self):
+        return self.from_sqldata.title + " to " + self.to_task.title + " (" + self.workflow.name + ")"

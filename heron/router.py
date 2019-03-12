@@ -2,6 +2,7 @@
 
 from . import settings
 
+
 class DatabaseRouter(object):
     """
     A router to control all database operations on models for different

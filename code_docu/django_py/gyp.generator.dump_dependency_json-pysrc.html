@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>gyp.generator.dump_dependency_json</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="gyp-module.html">Package&nbsp;gyp</a> ::
+        <a href="gyp.generator-module.html">Package&nbsp;generator</a> ::
+        Module&nbsp;dump_dependency_json
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="gyp.generator.dump_dependency_json-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="gyp.generator.dump_dependency_json-module.html">Module gyp.generator.dump_dependency_json</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment"># Copyright (c) 2012 Google Inc. All rights reserved.</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"># Use of this source code is governed by a BSD-style license that can be</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"># found in the LICENSE file.</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">collections</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Package gyp=gyp-module.html"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-0', 'gyp', 'link-0');">gyp</a></tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-1" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-1', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Module gyp.common=gyp.common-module.html"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-2', 'common', 'link-2');">common</a></tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt id="link-3" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-3', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-4" class="py-name" targets="Module gyp.msvs_emulation=gyp.msvs_emulation-module.html"><a title="gyp.msvs_emulation" class="py-name" href="#" onclick="return doclink('link-4', 'msvs_emulation', 'link-4');">msvs_emulation</a></tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">json</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt id="link-5" class="py-name" targets="Variable gyp.generator.analyzer.generator_supports_multiple_toolsets=gyp.generator.analyzer-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.android.generator_supports_multiple_toolsets=gyp.generator.android-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.cmake.generator_supports_multiple_toolsets=gyp.generator.cmake-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.dump_dependency_json.generator_supports_multiple_toolsets=gyp.generator.dump_dependency_json-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.gypd.generator_supports_multiple_toolsets=gyp.generator.gypd-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.make.generator_supports_multiple_toolsets=gyp.generator.make-module.html#generator_supports_multiple_toolsets,Variable gyp.generator.ninja.generator_supports_multiple_toolsets=gyp.generator.ninja-module.html#generator_supports_multiple_toolsets"><a title="gyp.generator.analyzer.generator_supports_multiple_toolsets
+gyp.generator.android.generator_supports_multiple_toolsets
+gyp.generator.cmake.generator_supports_multiple_toolsets
+gyp.generator.dump_dependency_json.generator_supports_multiple_toolsets
+gyp.generator.gypd.generator_supports_multiple_toolsets
+gyp.generator.make.generator_supports_multiple_toolsets
+gyp.generator.ninja.generator_supports_multiple_toolsets" class="py-name" href="#" onclick="return doclink('link-5', 'generator_supports_multiple_toolsets', 'link-5');">generator_supports_multiple_toolsets</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt id="link-6" class="py-name" targets="Variable gyp.generator.analyzer.generator_wants_static_library_dependencies_adjusted=gyp.generator.analyzer-module.html#generator_wants_static_library_dependencies_adjusted,Variable gyp.generator.cmake.generator_wants_static_library_dependencies_adjusted=gyp.generator.cmake-module.html#generator_wants_static_library_dependencies_adjusted,Variable gyp.generator.dump_dependency_json.generator_wants_static_library_dependencies_adjusted=gyp.generator.dump_dependency_json-module.html#generator_wants_static_library_dependencies_adjusted,Variable gyp.generator.eclipse.generator_wants_static_library_dependencies_adjusted=gyp.generator.eclipse-module.html#generator_wants_static_library_dependencies_adjusted"><a title="gyp.generator.analyzer.generator_wants_static_library_dependencies_adjusted
+gyp.generator.cmake.generator_wants_static_library_dependencies_adjusted
+gyp.generator.dump_dependency_json.generator_wants_static_library_dependencies_adjusted
+gyp.generator.eclipse.generator_wants_static_library_dependencies_adjusted" class="py-name" href="#" onclick="return doclink('link-6', 'generator_wants_static_library_dependencies_adjusted', 'link-6');">generator_wants_static_library_dependencies_adjusted</a></tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt id="link-7" class="py-name" targets="Variable gyp.generator.dump_dependency_json.generator_filelist_paths=gyp.generator.dump_dependency_json-module.html#generator_filelist_paths,Variable gyp.generator.make.generator_filelist_paths=gyp.generator.make-module.html#generator_filelist_paths,Variable gyp.generator.ninja.generator_filelist_paths=gyp.generator.ninja-module.html#generator_filelist_paths,Variable gyp.generator.xcode.generator_filelist_paths=gyp.generator.xcode-module.html#generator_filelist_paths,Variable gyp.input.generator_filelist_paths=gyp.input-module.html#generator_filelist_paths"><a title="gyp.generator.dump_dependency_json.generator_filelist_paths
+gyp.generator.make.generator_filelist_paths
+gyp.generator.ninja.generator_filelist_paths
+gyp.generator.xcode.generator_filelist_paths
+gyp.input.generator_filelist_paths" class="py-name" href="#" onclick="return doclink('link-7', 'generator_filelist_paths', 'link-7');">generator_filelist_paths</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-op">}</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt id="link-8" class="py-name" targets="Variable gyp.generator.analyzer.generator_default_variables=gyp.generator.analyzer-module.html#generator_default_variables,Variable gyp.generator.android.generator_default_variables=gyp.generator.android-module.html#generator_default_variables,Variable gyp.generator.cmake.generator_default_variables=gyp.generator.cmake-module.html#generator_default_variables,Variable gyp.generator.dump_dependency_json.generator_default_variables=gyp.generator.dump_dependency_json-module.html#generator_default_variables,Variable gyp.generator.eclipse.generator_default_variables=gyp.generator.eclipse-module.html#generator_default_variables,Variable gyp.generator.gypd.generator_default_variables=gyp.generator.gypd-module.html#generator_default_variables,Variable gyp.generator.gypsh.generator_default_variables=gyp.generator.gypsh-module.html#generator_default_variables,Variable gyp.generator.make.generator_default_variables=gyp.generator.make-module.html#generator_default_variables,Variable gyp.generator.msvs.generator_default_variables=gyp.generator.msvs-module.html#generator_default_variables,Variable gyp.generator.ninja.generator_default_variables=gyp.generator.ninja-module.html#generator_default_variables,Variable gyp.generator.xcode.generator_default_variables=gyp.generator.xcode-module.html#generator_default_variables"><a title="gyp.generator.analyzer.generator_default_variables
+gyp.generator.android.generator_default_variables
+gyp.generator.cmake.generator_default_variables
+gyp.generator.dump_dependency_json.generator_default_variables
+gyp.generator.eclipse.generator_default_variables
+gyp.generator.gypd.generator_default_variables
+gyp.generator.gypsh.generator_default_variables
+gyp.generator.make.generator_default_variables
+gyp.generator.msvs.generator_default_variables
+gyp.generator.ninja.generator_default_variables
+gyp.generator.xcode.generator_default_variables" class="py-name" href="#" onclick="return doclink('link-8', 'generator_default_variables', 'link-8');">generator_default_variables</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-op">}</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-keyword">for</tt> <tt class="py-name">dirname</tt> <tt class="py-keyword">in</tt> <tt class="py-op">[</tt><tt class="py-string">'INTERMEDIATE_DIR'</tt><tt class="py-op">,</tt> <tt class="py-string">'SHARED_INTERMEDIATE_DIR'</tt><tt class="py-op">,</tt> <tt class="py-string">'PRODUCT_DIR'</tt><tt class="py-op">,</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line">                <tt class="py-string">'LIB_DIR'</tt><tt class="py-op">,</tt> <tt class="py-string">'SHARED_LIB_DIR'</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line">  <tt class="py-comment"># Some gyp steps fail if these are empty(!).</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line">  <tt id="link-9" class="py-name"><a title="gyp.generator.analyzer.generator_default_variables
+gyp.generator.android.generator_default_variables
+gyp.generator.cmake.generator_default_variables
+gyp.generator.dump_dependency_json.generator_default_variables
+gyp.generator.eclipse.generator_default_variables
+gyp.generator.gypd.generator_default_variables
+gyp.generator.gypsh.generator_default_variables
+gyp.generator.make.generator_default_variables
+gyp.generator.msvs.generator_default_variables
+gyp.generator.ninja.generator_default_variables
+gyp.generator.xcode.generator_default_variables" class="py-name" href="#" onclick="return doclink('link-9', 'generator_default_variables', 'link-8');">generator_default_variables</a></tt><tt class="py-op">[</tt><tt class="py-name">dirname</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">'dir'</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">for</tt> <tt class="py-name">unused</tt> <tt class="py-keyword">in</tt> <tt class="py-op">[</tt><tt class="py-string">'RULE_INPUT_PATH'</tt><tt class="py-op">,</tt> <tt class="py-string">'RULE_INPUT_ROOT'</tt><tt class="py-op">,</tt> <tt class="py-string">'RULE_INPUT_NAME'</tt><tt class="py-op">,</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">               <tt class="py-string">'RULE_INPUT_DIRNAME'</tt><tt class="py-op">,</tt> <tt class="py-string">'RULE_INPUT_EXT'</tt><tt class="py-op">,</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line">               <tt class="py-string">'EXECUTABLE_PREFIX'</tt><tt class="py-op">,</tt> <tt class="py-string">'EXECUTABLE_SUFFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line">               <tt class="py-string">'STATIC_LIB_PREFIX'</tt><tt class="py-op">,</tt> <tt class="py-string">'STATIC_LIB_SUFFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">               <tt class="py-string">'SHARED_LIB_PREFIX'</tt><tt class="py-op">,</tt> <tt class="py-string">'SHARED_LIB_SUFFIX'</tt><tt class="py-op">,</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">               <tt class="py-string">'CONFIGURATION_NAME'</tt><tt class="py-op">]</tt><tt class="py-op">:</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">  <tt id="link-10" class="py-name"><a title="gyp.generator.analyzer.generator_default_variables
+gyp.generator.android.generator_default_variables
+gyp.generator.cmake.generator_default_variables
+gyp.generator.dump_dependency_json.generator_default_variables
+gyp.generator.eclipse.generator_default_variables
+gyp.generator.gypd.generator_default_variables
+gyp.generator.gypsh.generator_default_variables
+gyp.generator.make.generator_default_variables
+gyp.generator.msvs.generator_default_variables
+gyp.generator.ninja.generator_default_variables
+gyp.generator.xcode.generator_default_variables" class="py-name" href="#" onclick="return doclink('link-10', 'generator_default_variables', 'link-8');">generator_default_variables</a></tt><tt class="py-op">[</tt><tt class="py-name">unused</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-string">''</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"> </tt>
+<a name="CalculateVariables"></a><div id="CalculateVariables-def"><a name="L35"></a><tt class="py-lineno"> 35</tt> <a class="py-toggle" href="#" id="CalculateVariables-toggle" onclick="return toggle('CalculateVariables');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.generator.dump_dependency_json-module.html#CalculateVariables">CalculateVariables</a><tt class="py-op">(</tt><tt class="py-param">default_variables</tt><tt class="py-op">,</tt> <tt class="py-param">params</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CalculateVariables-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="CalculateVariables-expanded"><a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">  <tt class="py-name">generator_flags</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name" targets="Method AuthorizationManagement.views.AddNewResourceView.get()=AuthorizationManagement.views.AddNewResourceView-class.html#get,Method AuthorizationManagement.views.HomeView.get()=AuthorizationManagement.views.HomeView-class.html#get,Method AuthorizationManagement.views.OpenResourceView.get()=AuthorizationManagement.views.OpenResourceView-class.html#get,Method AuthorizationManagement.views.PermissionEditingView.get()=AuthorizationManagement.views.PermissionEditingView-class.html#get,Method AuthorizationManagement.views.PermissionEditingViewSearch.get()=AuthorizationManagement.views.PermissionEditingViewSearch-class.html#get,Method AuthorizationManagement.views.ProfileView.get()=AuthorizationManagement.views.ProfileView-class.html#get,Method AuthorizationManagement.views.ResourcesOverviewSearch.get()=AuthorizationManagement.views.ResourcesOverviewSearch-class.html#get,Method heron_upload.views.HomeView.get()=heron_upload.views.HomeView-class.html#get,Method vfwheron.views.DatasetDownloadView.get()=vfwheron.views.DatasetDownloadView-class.html#get,Method vfwheron.views.GeoserverView.get()=vfwheron.views.GeoserverView-class.html#get,Method vfwheron.views.HelpView.get()=vfwheron.views.HelpView-class.html#get,Method vfwheron.views.menuView.get()=vfwheron.views.menuView-class.html#get,Static Method wps_workflow.views.ProcessView.get()=wps_workflow.views.ProcessView-class.html#get,Static Method wps_workflow.views.UserView.get()=wps_workflow.views.UserView-class.html#get,Static Method wps_workflow.views.WPSView.get()=wps_workflow.views.WPSView-class.html#get,Static Method wps_workflow.views.WorkflowView.get()=wps_workflow.views.WorkflowView-class.html#get"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-11', 'get', 'link-11');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'generator_flags'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">  <tt class="py-keyword">for</tt> <tt class="py-name">key</tt><tt class="py-op">,</tt> <tt class="py-name">val</tt> <tt class="py-keyword">in</tt> <tt class="py-name">generator_flags</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method gyp.ordered_dict.OrderedDict.items()=gyp.ordered_dict.OrderedDict-class.html#items"><a title="gyp.ordered_dict.OrderedDict.items" class="py-name" href="#" onclick="return doclink('link-12', 'items', 'link-12');">items</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">    <tt class="py-name">default_variables</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method gyp.ordered_dict.OrderedDict.setdefault()=gyp.ordered_dict.OrderedDict-class.html#setdefault"><a title="gyp.ordered_dict.OrderedDict.setdefault" class="py-name" href="#" onclick="return doclink('link-13', 'setdefault', 'link-13');">setdefault</a></tt><tt class="py-op">(</tt><tt class="py-name">key</tt><tt class="py-op">,</tt> <tt class="py-name">val</tt><tt class="py-op">)</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">  <tt class="py-name">default_variables</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="gyp.ordered_dict.OrderedDict.setdefault" class="py-name" href="#" onclick="return doclink('link-14', 'setdefault', 'link-13');">setdefault</a></tt><tt class="py-op">(</tt><tt class="py-string">'OS'</tt><tt class="py-op">,</tt> <tt id="link-15" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-15', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-16', 'common', 'link-2');">common</a></tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Function gyp.common.GetFlavor()=gyp.common-module.html#GetFlavor"><a title="gyp.common.GetFlavor" class="py-name" href="#" onclick="return doclink('link-17', 'GetFlavor', 'link-17');">GetFlavor</a></tt><tt class="py-op">(</tt><tt class="py-name">params</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">  <tt class="py-name">flavor</tt> <tt class="py-op">=</tt> <tt id="link-18" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-18', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="gyp.common" class="py-name" href="#" onclick="return doclink('link-19', 'common', 'link-2');">common</a></tt><tt class="py-op">.</tt><tt id="link-20" class="py-name"><a title="gyp.common.GetFlavor" class="py-name" href="#" onclick="return doclink('link-20', 'GetFlavor', 'link-17');">GetFlavor</a></tt><tt class="py-op">(</tt><tt class="py-name">params</tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">flavor</tt> <tt class="py-op">==</tt><tt class="py-string">'win'</tt><tt class="py-op">:</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">    <tt class="py-comment"># Copy additional generator configuration data from VS, which is shared</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">    <tt class="py-comment"># by the Windows Ninja generator.</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt id="link-21" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-21', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Package gyp.generator=gyp.generator-module.html"><a title="gyp.generator" class="py-name" href="#" onclick="return doclink('link-22', 'generator', 'link-22');">generator</a></tt><tt class="py-op">.</tt><tt id="link-23" class="py-name" targets="Module gyp.generator.msvs=gyp.generator.msvs-module.html"><a title="gyp.generator.msvs" class="py-name" href="#" onclick="return doclink('link-23', 'msvs', 'link-23');">msvs</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">msvs_generator</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">    <tt id="link-24" class="py-name" targets="Variable gyp.generator.android.generator_additional_non_configuration_keys=gyp.generator.android-module.html#generator_additional_non_configuration_keys,Variable gyp.generator.make.generator_additional_non_configuration_keys=gyp.generator.make-module.html#generator_additional_non_configuration_keys,Variable gyp.generator.msvs.generator_additional_non_configuration_keys=gyp.generator.msvs-module.html#generator_additional_non_configuration_keys,Variable gyp.generator.ninja.generator_additional_non_configuration_keys=gyp.generator.ninja-module.html#generator_additional_non_configuration_keys,Variable gyp.generator.xcode.generator_additional_non_configuration_keys=gyp.generator.xcode-module.html#generator_additional_non_configuration_keys"><a title="gyp.generator.android.generator_additional_non_configuration_keys
+gyp.generator.make.generator_additional_non_configuration_keys
+gyp.generator.msvs.generator_additional_non_configuration_keys
+gyp.generator.ninja.generator_additional_non_configuration_keys
+gyp.generator.xcode.generator_additional_non_configuration_keys" class="py-name" href="#" onclick="return doclink('link-24', 'generator_additional_non_configuration_keys', 'link-24');">generator_additional_non_configuration_keys</a></tt> <tt class="py-op">=</tt> <tt class="py-name">getattr</tt><tt class="py-op">(</tt><tt class="py-name">msvs_generator</tt><tt class="py-op">,</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-string">'generator_additional_non_configuration_keys'</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">    <tt id="link-25" class="py-name" targets="Variable gyp.generator.android.generator_additional_path_sections=gyp.generator.android-module.html#generator_additional_path_sections,Variable gyp.generator.make.generator_additional_path_sections=gyp.generator.make-module.html#generator_additional_path_sections,Variable gyp.generator.msvs.generator_additional_path_sections=gyp.generator.msvs-module.html#generator_additional_path_sections,Variable gyp.generator.ninja.generator_additional_path_sections=gyp.generator.ninja-module.html#generator_additional_path_sections,Variable gyp.generator.xcode.generator_additional_path_sections=gyp.generator.xcode-module.html#generator_additional_path_sections"><a title="gyp.generator.android.generator_additional_path_sections
+gyp.generator.make.generator_additional_path_sections
+gyp.generator.msvs.generator_additional_path_sections
+gyp.generator.ninja.generator_additional_path_sections
+gyp.generator.xcode.generator_additional_path_sections" class="py-name" href="#" onclick="return doclink('link-25', 'generator_additional_path_sections', 'link-25');">generator_additional_path_sections</a></tt> <tt class="py-op">=</tt> <tt class="py-name">getattr</tt><tt class="py-op">(</tt><tt class="py-name">msvs_generator</tt><tt class="py-op">,</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">        <tt class="py-string">'generator_additional_path_sections'</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt id="link-26" class="py-name"><a title="gyp" class="py-name" href="#" onclick="return doclink('link-26', 'gyp', 'link-0');">gyp</a></tt><tt class="py-op">.</tt><tt id="link-27" class="py-name"><a title="gyp.msvs_emulation" class="py-name" href="#" onclick="return doclink('link-27', 'msvs_emulation', 'link-4');">msvs_emulation</a></tt><tt class="py-op">.</tt><tt id="link-28" class="py-name" targets="Function gyp.msvs_emulation.CalculateCommonVariables()=gyp.msvs_emulation-module.html#CalculateCommonVariables"><a title="gyp.msvs_emulation.CalculateCommonVariables" class="py-name" href="#" onclick="return doclink('link-28', 'CalculateCommonVariables', 'link-28');">CalculateCommonVariables</a></tt><tt class="py-op">(</tt><tt class="py-name">default_variables</tt><tt class="py-op">,</tt> <tt class="py-name">params</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line"> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"> </tt>
+<a name="CalculateGeneratorInputInfo"></a><div id="CalculateGeneratorInputInfo-def"><a name="L54"></a><tt class="py-lineno"> 54</tt> <a class="py-toggle" href="#" id="CalculateGeneratorInputInfo-toggle" onclick="return toggle('CalculateGeneratorInputInfo');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.generator.dump_dependency_json-module.html#CalculateGeneratorInputInfo">CalculateGeneratorInputInfo</a><tt class="py-op">(</tt><tt class="py-param">params</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CalculateGeneratorInputInfo-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="CalculateGeneratorInputInfo-expanded"><a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">  <tt class="py-docstring">"""Calculate the generator specific info that gets fed to input (called by</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">  gyp)."""</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">  <tt class="py-name">generator_flags</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-29', 'get', 'link-11');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'generator_flags'</tt><tt class="py-op">,</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt><tt class="py-op">)</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line">  <tt class="py-keyword">if</tt> <tt class="py-name">generator_flags</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-30', 'get', 'link-11');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'adjust_static_libraries'</tt><tt class="py-op">,</tt> <tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">    <tt class="py-keyword">global</tt> <tt id="link-31" class="py-name"><a title="gyp.generator.analyzer.generator_wants_static_library_dependencies_adjusted
+gyp.generator.cmake.generator_wants_static_library_dependencies_adjusted
+gyp.generator.dump_dependency_json.generator_wants_static_library_dependencies_adjusted
+gyp.generator.eclipse.generator_wants_static_library_dependencies_adjusted" class="py-name" href="#" onclick="return doclink('link-31', 'generator_wants_static_library_dependencies_adjusted', 'link-6');">generator_wants_static_library_dependencies_adjusted</a></tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">    <tt id="link-32" class="py-name"><a title="gyp.generator.analyzer.generator_wants_static_library_dependencies_adjusted
+gyp.generator.cmake.generator_wants_static_library_dependencies_adjusted
+gyp.generator.dump_dependency_json.generator_wants_static_library_dependencies_adjusted
+gyp.generator.eclipse.generator_wants_static_library_dependencies_adjusted" class="py-name" href="#" onclick="return doclink('link-32', 'generator_wants_static_library_dependencies_adjusted', 'link-6');">generator_wants_static_library_dependencies_adjusted</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">  <tt class="py-name">toplevel</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">[</tt><tt class="py-string">'options'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">toplevel_dir</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">  <tt class="py-name">generator_dir</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name" targets="Variable vfwheron.models.LtDomain.path=vfwheron.models.LtDomain-class.html#path,Variable vfwheron.models.LtLicense.path=vfwheron.models.LtLicense-class.html#path,Variable vfwheron.models.LtLocation.path=vfwheron.models.LtLocation-class.html#path,Variable vfwheron.models.LtProject.path=vfwheron.models.LtProject-class.html#path,Variable vfwheron.models.LtQuality.path=vfwheron.models.LtQuality-class.html#path,Variable vfwheron.models.LtSite.path=vfwheron.models.LtSite-class.html#path,Variable vfwheron.models.LtSoil.path=vfwheron.models.LtSoil-class.html#path,Variable vfwheron.models.LtUser.path=vfwheron.models.LtUser-class.html#path,Variable vfwheron.models.TblMeta.path=vfwheron.models.TblMeta-class.html#path,Variable vfwheron.models.TblSensor.path=vfwheron.models.TblSensor-class.html#path,Variable vfwheron.models.TblVariable.path=vfwheron.models.TblVariable-class.html#path"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-33', 'path', 'link-33');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">relpath</tt><tt class="py-op">(</tt><tt class="py-name">params</tt><tt class="py-op">[</tt><tt class="py-string">'options'</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">generator_output</tt> <tt class="py-keyword">or</tt> <tt class="py-string">'.'</tt><tt class="py-op">)</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">  <tt class="py-comment"># output_dir: relative path from generator_dir to the build directory.</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">  <tt class="py-name">output_dir</tt> <tt class="py-op">=</tt> <tt class="py-name">generator_flags</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-34', 'get', 'link-11');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'output_dir'</tt><tt class="py-op">,</tt> <tt class="py-string">'out'</tt><tt class="py-op">)</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line">  <tt class="py-name">qualified_out_dir</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-35" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-35', 'path', 'link-33');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">normpath</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-36', 'path', 'link-33');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">      <tt class="py-name">toplevel</tt><tt class="py-op">,</tt> <tt class="py-name">generator_dir</tt><tt class="py-op">,</tt> <tt class="py-name">output_dir</tt><tt class="py-op">,</tt> <tt class="py-string">'gypfiles'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">  <tt class="py-keyword">global</tt> <tt id="link-37" class="py-name"><a title="gyp.generator.dump_dependency_json.generator_filelist_paths
+gyp.generator.make.generator_filelist_paths
+gyp.generator.ninja.generator_filelist_paths
+gyp.generator.xcode.generator_filelist_paths
+gyp.input.generator_filelist_paths" class="py-name" href="#" onclick="return doclink('link-37', 'generator_filelist_paths', 'link-7');">generator_filelist_paths</a></tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">  <tt id="link-38" class="py-name"><a title="gyp.generator.dump_dependency_json.generator_filelist_paths
+gyp.generator.make.generator_filelist_paths
+gyp.generator.ninja.generator_filelist_paths
+gyp.generator.xcode.generator_filelist_paths
+gyp.input.generator_filelist_paths" class="py-name" href="#" onclick="return doclink('link-38', 'generator_filelist_paths', 'link-7');">generator_filelist_paths</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">      <tt class="py-string">'toplevel'</tt><tt class="py-op">:</tt> <tt class="py-name">toplevel</tt><tt class="py-op">,</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">      <tt class="py-string">'qualified_out_dir'</tt><tt class="py-op">:</tt> <tt class="py-name">qualified_out_dir</tt><tt class="py-op">,</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">  <tt class="py-op">}</tt> </tt>
+</div><a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line"> </tt>
+<a name="GenerateOutput"></a><div id="GenerateOutput-def"><a name="L74"></a><tt class="py-lineno"> 74</tt> <a class="py-toggle" href="#" id="GenerateOutput-toggle" onclick="return toggle('GenerateOutput');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="gyp.generator.dump_dependency_json-module.html#GenerateOutput">GenerateOutput</a><tt class="py-op">(</tt><tt class="py-param">target_list</tt><tt class="py-op">,</tt> <tt class="py-param">target_dicts</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">,</tt> <tt class="py-param">params</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="GenerateOutput-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="GenerateOutput-expanded"><a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">  <tt class="py-comment"># Map of target -&gt; list of targets it depends on.</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">  <tt class="py-name">edges</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">  <tt class="py-comment"># Queue of targets to visit.</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">  <tt class="py-name">targets_to_visit</tt> <tt class="py-op">=</tt> <tt class="py-name">target_list</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line"> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">  <tt class="py-keyword">while</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">targets_to_visit</tt><tt class="py-op">)</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">    <tt class="py-name">target</tt> <tt class="py-op">=</tt> <tt class="py-name">targets_to_visit</tt><tt class="py-op">.</tt><tt id="link-39" class="py-name" targets="Method gyp.common.OrderedSet.pop()=gyp.common.OrderedSet-class.html#pop,Method gyp.ordered_dict.OrderedDict.pop()=gyp.ordered_dict.OrderedDict-class.html#pop"><a title="gyp.common.OrderedSet.pop
+gyp.ordered_dict.OrderedDict.pop" class="py-name" href="#" onclick="return doclink('link-39', 'pop', 'link-39');">pop</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">target</tt> <tt class="py-keyword">in</tt> <tt class="py-name">edges</tt><tt class="py-op">:</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">      <tt class="py-keyword">continue</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">    <tt class="py-name">edges</tt><tt class="py-op">[</tt><tt class="py-name">target</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line"> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">dep</tt> <tt class="py-keyword">in</tt> <tt class="py-name">target_dicts</tt><tt class="py-op">[</tt><tt class="py-name">target</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-40" class="py-name"><a title="AuthorizationManagement.views.AddNewResourceView.get
+AuthorizationManagement.views.HomeView.get
+AuthorizationManagement.views.OpenResourceView.get
+AuthorizationManagement.views.PermissionEditingView.get
+AuthorizationManagement.views.PermissionEditingViewSearch.get
+AuthorizationManagement.views.ProfileView.get
+AuthorizationManagement.views.ResourcesOverviewSearch.get
+heron_upload.views.HomeView.get
+vfwheron.views.DatasetDownloadView.get
+vfwheron.views.GeoserverView.get
+vfwheron.views.HelpView.get
+vfwheron.views.menuView.get
+wps_workflow.views.ProcessView.get
+wps_workflow.views.UserView.get
+wps_workflow.views.WPSView.get
+wps_workflow.views.WorkflowView.get" class="py-name" href="#" onclick="return doclink('link-40', 'get', 'link-11');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'dependencies'</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">      <tt class="py-name">edges</tt><tt class="py-op">[</tt><tt class="py-name">target</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">dep</tt><tt class="py-op">)</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">      <tt class="py-name">targets_to_visit</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">dep</tt><tt class="py-op">)</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line"> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">  <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">    <tt class="py-name">filepath</tt> <tt class="py-op">=</tt> <tt class="py-name">params</tt><tt class="py-op">[</tt><tt class="py-string">'generator_flags'</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-string">'output_dir'</tt><tt class="py-op">]</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">  <tt class="py-keyword">except</tt> <tt class="py-name">KeyError</tt><tt class="py-op">:</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">    <tt class="py-name">filepath</tt> <tt class="py-op">=</tt> <tt class="py-string">'.'</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">  <tt class="py-name">filename</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-41" class="py-name"><a title="vfwheron.models.LtDomain.path
+vfwheron.models.LtLicense.path
+vfwheron.models.LtLocation.path
+vfwheron.models.LtProject.path
+vfwheron.models.LtQuality.path
+vfwheron.models.LtSite.path
+vfwheron.models.LtSoil.path
+vfwheron.models.LtUser.path
+vfwheron.models.TblMeta.path
+vfwheron.models.TblSensor.path
+vfwheron.models.TblVariable.path" class="py-name" href="#" onclick="return doclink('link-41', 'path', 'link-33');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">filepath</tt><tt class="py-op">,</tt> <tt class="py-string">'dump.json'</tt><tt class="py-op">)</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">  <tt class="py-name">f</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">filename</tt><tt class="py-op">,</tt> <tt class="py-string">'w'</tt><tt class="py-op">)</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">  <tt class="py-name">json</tt><tt class="py-op">.</tt><tt class="py-name">dump</tt><tt class="py-op">(</tt><tt class="py-name">edges</tt><tt class="py-op">,</tt> <tt class="py-name">f</tt><tt class="py-op">)</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">  <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">  <tt class="py-keyword">print</tt> <tt class="py-string">'Wrote json to %s.'</tt> <tt class="py-op">%</tt> <tt class="py-name">filename</tt> </tt>
+</div><a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:27:06 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

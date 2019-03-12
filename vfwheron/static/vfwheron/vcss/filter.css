@@ -1,5 +1,11 @@
 /*TODO: This upper part isn't used now. Maybe a start to style the accordions of the filter menu*/
 /* Dropdown Button */
+:root{
+    --color_Item: #00BAEE;
+    --color_Child: #AADDF9;
+    --color_Parent: #D9EFFD;
+}
+
 .filter-btn-block{
     border:none;
     display:inline-block;
@@ -65,15 +71,15 @@
 
 /* Style the active class, and buttons on mouse-over */
 .activeI, .btn:hover {
-    background-color: #00BAEE;
+    background-color: var(--color_Item);
     color: black;
     /*border: 1px solid #1f2e38;*/
 }
-.activeC{
-    background-color: #AADDF9;
+.activeC {
+    background-color: var(--color_Child);
 }
 .activeP {
-    background-color: #D9EFFD;
+    background-color: var(--color_Parent);
 }
 
 /*TODO: This is an alternate version for a popup
@@ -81,8 +87,8 @@ from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup
 When this is used on the map, you can remove the popup at the end of ol.css*/
 
 /* Popup container - can be anything you want */
-.popup {
-    position: relative;
+.w3popup {
+    position: absolute;
     display: inline-block;
     cursor: pointer;
     -webkit-user-select: none;
@@ -92,7 +98,7 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 }
 
 /* The actual popup */
-.popup .popuptext {
+.w3popup .popuptext {
     visibility: hidden;
     width: 160px;
     background-color: #555;
@@ -104,11 +110,11 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
     z-index: 1;
     bottom: 125%;
     left: 50%;
-    margin-left: -80px;
+    margin-left: 80px;
 }
 
 /* Popup arrow */
-.popup .popuptext::after {
+.w3popup .popuptext::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -120,7 +126,7 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 }
 
 /* Toggle this class - hide and show the popup */
-.popup .show {
+.w3popup .show {
     visibility: visible;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s;
@@ -195,6 +201,24 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 	padding: 28px 0 0 0;
 	/*border: 1px solid #BFBFBF;*/
 }
+
+.noUi-tooltip {
+    display: none;
+}
+.noUi-active, .noUi-tooltip {
+    display: block;
+}
+
+.noUi-connect {
+    background: var(--color_Item) !important;
+    /*margin: 10px;*/
+	/*display: inline-block;
+	height: 200px;*/
+}
+/*.noUi-active .noUi-connect {
+    background: yellow !important;
+}*/
+
 /*style from https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css*/
 .ui-rangeslider {
     margin: .5em 0
@@ -263,4 +287,178 @@ div.ui-rangeslider label {
 .ui-field-contain .ui-rangeslider input.ui-slider-input, .ui-field-contain .ui-rangeslider.ui-mini input.ui-slider-input, .ui-field-contain .ui-rangeslider .ui-rangeslider-sliders, .ui-field-contain .ui-rangeslider.ui-mini .ui-rangeslider-sliders {
     margin-top: 0;
     margin-bottom: 0
+}
+
+
+
+/*contextmenu:*/
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,300);
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+/* tasks */
+
+.tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: solid 1px #dfdfdf;
+}
+
+.task:last-child {
+  border-bottom: none;
+}
+
+/* context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/*/
+
+.context-menu {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  padding: 12px 0;
+  width: 260px;
+  background-color: #fff;
+  border: solid 1px #dfdfdf;
+  box-shadow: 1px 1px 2px #cfcfcf;
+}
+
+.context-menu--active {
+  display: block;
+}
+
+.context-menu__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu__item {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.context-menu__item:last-child {
+  margin-bottom: 0;
+}
+
+.context-menu__link {
+  display: block;
+  padding: 4px 12px;
+  color: #0066aa;
+  text-decoration: none;
+}
+
+.context-menu__link:hover {
+  color: #fff;
+  background-color: #0066aa;
+}
+
+
+/*popup based on ol-popup for sidebar*/
+.mod-popup {
+    z-index:3;
+    display:none;
+    position: absolute;
+    background-color: #EFFBFB;
+    -webkit-filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+    padding: 3px;
+    border-radius: 12px;
+    border: 0.1px solid #e9f2f2;
+    opacity: inherit;
+}
+
+.mod-popup--active {
+  display: block;
+}
+.mod-popup--inactive {
+  display: none;
+}
+
+.respo-modal-content{
+    margin:auto;
+    background-color:#fff;
+    position:relative;
+    padding:0;
+    outline:0;
+    width:600px
+}
+/*.respo-closebtn{
+    text-decoration:none;
+    float:right;
+    font-size:24px;
+    font-weight:bold;
+    color:inherit
+}*/
+
+/*
+.mod-popup:after, .mod-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+*/
+
+.mod-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+
+.mod-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+
+.mod-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 10px;
+}
+
+.mod-popup-closer:after {
+    content: "✖";
+}
+
+.mod-header{
+   cursor: move;
+  }
+
+#draw_polygon,#modify_polygon, #select_polygon, #remove_polygon{
+    width: 6px;
+    height: 6px;
+background:rgba(0, 60, 136, .55);
+border-radius: 4px;
+padding: 3px;
+    color: white;
+}
+.draw-hover:hover{
+background:rgba(0, 60, 136, .9)!important;
+}
+#filterbox{
+border-radius: 4px;
+padding: 2px;
+}
+
+.activeM {
+    background-color: rgba(0, 60, 136, .9)!important;
 }

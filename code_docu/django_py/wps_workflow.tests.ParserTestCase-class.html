@@ -1,0 +1,1302 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>wps_workflow.tests.ParserTestCase</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="wps_workflow-module.html">Package&nbsp;wps_workflow</a> ::
+        <a href="wps_workflow.tests-module.html">Module&nbsp;tests</a> ::
+        Class&nbsp;ParserTestCase
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="wps_workflow.tests.ParserTestCase-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class ParserTestCase</h1><p class="nomargin-top"><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_wps_work_21" name="uml_class_diagram_for_wps_work_21">
+<area shape="rect" id="node1_28" href="wps_workflow.tests.ParserTestCase-class.html#get_cap_url_from_scc_vm" title="wps_workflow.tests.ParserTestCase.get_cap_url_from_scc_vm" alt="" coords="18,29,297,49"/>
+<area shape="rect" id="node1_29" href="wps_workflow.tests.ParserTestCase-class.html#desc_proc_url_from_scc_vm" title="wps_workflow.tests.ParserTestCase.desc_proc_url_from_scc_vm" alt="" coords="18,49,297,69"/>
+<area shape="rect" id="node1_30" href="wps_workflow.tests.ParserTestCase-class.html#get_cap_url_from_scc_vm_wrong" title="wps_workflow.tests.ParserTestCase.get_cap_url_from_scc_vm_wrong" alt="" coords="18,69,297,89"/>
+<area shape="rect" id="node1_31" href="wps_workflow.tests.ParserTestCase-class.html#xml_namespaces" title="wps_workflow.tests.ParserTestCase.xml_namespaces" alt="" coords="18,89,297,109"/>
+<area shape="rect" id="node1_32" href="wps_workflow.tests.ParserTestCase-class.html#capabilities_root" title="wps_workflow.tests.ParserTestCase.capabilities_root" alt="" coords="18,109,297,129"/>
+<area shape="rect" id="node1_33" href="wps_workflow.tests.ParserTestCase-class.html#describe_processes_root" title="wps_workflow.tests.ParserTestCase.describe_processes_root" alt="" coords="18,129,297,149"/>
+<area shape="rect" id="node1_34" href="wps_workflow.tests.ParserTestCase-class.html#capabilities_wrong_root" title="wps_workflow.tests.ParserTestCase.capabilities_wrong_root" alt="" coords="18,149,297,169"/>
+<area shape="rect" id="node1_35" href="wps_workflow.tests.ParserTestCase-class.html#wps_provider" title="wps_workflow.tests.ParserTestCase.wps_provider" alt="" coords="18,169,297,189"/>
+<area shape="rect" id="node1_36" href="wps_workflow.tests.ParserTestCase-class.html#wps_server" title="wps_workflow.tests.ParserTestCase.wps_server" alt="" coords="18,189,297,209"/>
+<area shape="rect" id="node1_37" href="wps_workflow.tests.ParserTestCase-class.html#say_hello_literal_process" title="wps_workflow.tests.ParserTestCase.say_hello_literal_process" alt="" coords="18,209,297,229"/>
+<area shape="rect" id="node1_38" href="wps_workflow.tests.ParserTestCase-class.html#say_hello_literal_input" title="wps_workflow.tests.ParserTestCase.say_hello_literal_input" alt="" coords="18,229,297,249"/>
+<area shape="rect" id="node1_39" href="wps_workflow.tests.ParserTestCase-class.html#say_hello_literal_output" title="wps_workflow.tests.ParserTestCase.say_hello_literal_output" alt="" coords="18,249,297,269"/>
+<area shape="rect" id="node1_40" href="wps_workflow.tests.ParserTestCase-class.html#say_hello_process_element" title="wps_workflow.tests.ParserTestCase.say_hello_process_element" alt="" coords="18,269,297,289"/>
+<area shape="rect" id="node1_41" href="wps_workflow.tests.ParserTestCase-class.html#bbox_process_element" title="wps_workflow.tests.ParserTestCase.bbox_process_element" alt="" coords="18,309,297,329"/>
+<area shape="rect" id="node1_42" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_service_provider_info" title="Tests, if parse_service_provider_info parses correct" alt="" coords="18,332,297,352"/>
+<area shape="rect" id="node1_43" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_service_provider_info_fail" title="Test of exception throw" alt="" coords="18,352,297,372"/>
+<area shape="rect" id="node1_44" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_server_info" title="Tests, if parse_wps_server_info parses correct" alt="" coords="18,372,297,392"/>
+<area shape="rect" id="node1_45" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_server_info_fail" title="Test of exception throw" alt="" coords="18,392,297,412"/>
+<area shape="rect" id="node1_46" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_process" title="Tests, if parse_process_info parses correct" alt="" coords="18,412,297,432"/>
+<area shape="rect" id="node1_47" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_process_fail" title="Test of exception throw" alt="" coords="18,432,297,452"/>
+<area shape="rect" id="node1_48" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_input_literal" title="wps_workflow.tests.ParserTestCase.test_parse_process_input_literal" alt="" coords="18,452,297,472"/>
+<area shape="rect" id="node1_49" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_literal" title="Returns: &#160;None" alt="" coords="18,472,297,492"/>
+<area shape="rect" id="node1_50" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_input_complex" title="Tests, if parse_input_info parses correct" alt="" coords="18,492,297,512"/>
+<area shape="rect" id="node1_51" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_complex" title="Tests, if parse_output_info parses correct" alt="" coords="18,512,297,532"/>
+<area shape="rect" id="node1_52" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_input_bounding_box" title="Tests, if parse_input_info parses correct" alt="" coords="18,532,297,552"/>
+<area shape="rect" id="node1_53" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_bounding_box" title="Tests, if parse_output_info parses correct" alt="" coords="18,552,297,572"/>
+<area shape="rect" id="node1_54" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_input_fail" title="Test of exception throw" alt="" coords="18,572,297,592"/>
+<area shape="rect" id="node1_55" href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_fail" title="Test of exception throw" alt="" coords="18,592,297,612"/>
+<area shape="rect" id="node1" href="wps_workflow.tests.ParserTestCase-class.html" title="wps_workflow.tests.ParserTestCase" alt="" coords="5,5,308,619"/>
+</map>
+  <img src="uml_class_diagram_for_wps_work_21.gif" alt='' usemap="#uml_class_diagram_for_wps_work_21" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_service_provider_info" class="summary-sig-name">test_parse_service_provider_info</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Tests, if parse_service_provider_info parses correct</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_service_provider_info">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_service_provider_info_fail" class="summary-sig-name">test_parse_service_provider_info_fail</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Test of exception throw</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_service_provider_info_fail">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_server_info" class="summary-sig-name">test_parse_wps_server_info</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Tests, if parse_wps_server_info parses correct</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_server_info">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_server_info_fail" class="summary-sig-name">test_parse_wps_server_info_fail</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Test of exception throw</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_server_info_fail">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_process" class="summary-sig-name">test_parse_wps_process</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Tests, if parse_process_info parses correct</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_process">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_wps_process_fail" class="summary-sig-name">test_parse_wps_process_fail</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Test of exception throw</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_process_fail">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="test_parse_process_input_literal"></a><span class="summary-sig-name">test_parse_process_input_literal</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_input_literal">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_literal" class="summary-sig-name">test_parse_process_output_literal</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns:
+      None</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_literal">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_input_complex" class="summary-sig-name">test_parse_process_input_complex</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Tests, if parse_input_info parses correct</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_input_complex">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_complex" class="summary-sig-name">test_parse_process_output_complex</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Tests, if parse_output_info parses correct</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_complex">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_input_bounding_box" class="summary-sig-name">test_parse_process_input_bounding_box</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Tests, if parse_input_info parses correct</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_input_bounding_box">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_bounding_box" class="summary-sig-name">test_parse_process_output_bounding_box</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Tests, if parse_output_info parses correct</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_bounding_box">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_input_fail" class="summary-sig-name">test_parse_process_input_fail</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Test of exception throw</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_input_fail">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">NoneType</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="wps_workflow.tests.ParserTestCase-class.html#test_parse_process_output_fail" class="summary-sig-name">test_parse_process_output_fail</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Test of exception throw</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_fail">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#get_cap_url_from_scc_vm" class="summary-name">get_cap_url_from_scc_vm</a> = <code title="'wps_workflow/testfiles/wpsGetCapabilities.xml'">'wps_workflow/testfiles/wpsGetCapabi<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#desc_proc_url_from_scc_vm" class="summary-name">desc_proc_url_from_scc_vm</a> = <code title="'wps_workflow/testfiles/wpsDescribeProcesses.xml'">'wps_workflow/testfiles/wpsDescrib<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#get_cap_url_from_scc_vm_wrong" class="summary-name">get_cap_url_from_scc_vm_wrong</a> = <code title="'wps_workflow/testfiles/broken_wpsGetCapabilities.xml'">'wps_workflow/testfiles/broken<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#xml_namespaces" class="summary-name">xml_namespaces</a> = <code title="{'gml': 'http://www.opengis.net/gml', 'xlink': 'http://www.w3.org/1999\
+/xlink', 'wps': 'http://www.opengis.net/wps/1.0.0', 'ows': 'http://www\
+.opengis.net/ows/1.1', 'xsi': 'http://www.w3.org/2001/XMLSchema-instan\
+ce'}">{'gml': 'http://www.opengis.net/gml', 'xlink'<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="capabilities_root"></a><span class="summary-name">capabilities_root</span> = <code title="ET.parse(get_cap_url_from_scc_vm).getroot()">ET.parse(get_cap_url_from_scc_vm).getroot()</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#describe_processes_root" class="summary-name">describe_processes_root</a> = <code title="ET.parse(desc_proc_url_from_scc_vm).getroot()">ET.parse(desc_proc_url_from_scc_vm).<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#capabilities_wrong_root" class="summary-name">capabilities_wrong_root</a> = <code title="ET.parse(get_cap_url_from_scc_vm_wrong).getroot()">ET.parse(get_cap_url_from_scc_vm_wro<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#wps_provider" class="summary-name">wps_provider</a> = <code title="WPSProvider(provider_name= 'Organization Name', provider_site= 'http:/\
+/pywps.org/', individual_name= 'Lastname, Firstname', position_name= '\
+Position Title')">WPSProvider(provider_name= 'Organization Name',<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#wps_server" class="summary-name">wps_server</a> = <code title="WPS(service_provider= wps_provider, title= 'PyWPS Processing Service',\
+ abstract= 'PyWPS is an implementation of the Web Processing ' 'Servic\
+e standard from the Open Geospatial Consortium. ' 'PyWPS is written in\
+ Python.', capabilities_url= 'http://localhost/wps?request=GetCapabili\
+ties&amp;service=WPS', describe_url= 'http://localhost/wps?request=Describ\
+eProcess' '&amp;service=WPS&amp;identifier=all&amp;version=1.0.0', execute_url= 'h\
+ttp://localhost/wps?request=Execute&amp;service=WPS')">WPS(service_provider= wps_provider, title= 'PyWPS<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#say_hello_literal_process" class="summary-name">say_hello_literal_process</a> = <code title="Process(wps= wps_server, identifier= 'say_hello', title= 'Process Say \
+Hello', abstract= 'Returns a literal string output with Hello plus the\
+ inputed name')">Process(wps= wps_server, identifie<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#say_hello_literal_input" class="summary-name">say_hello_literal_input</a> = <code title="InputOutput(process= say_hello_literal_process, role= '0', identifier=\
+ 'name', title= 'Input name', abstract= None, datatype= '0', format= '\
+string', min_occurs= '1', max_occurs= '1')">InputOutput(process= say_hello_liter<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#say_hello_literal_output" class="summary-name">say_hello_literal_output</a> = <code title="InputOutput(process= say_hello_literal_process, role= '1', identifier=\
+ 'response', title= 'Output response', abstract= None, datatype= '0', \
+format= 'string', min_occurs= '1', max_occurs= '1')">InputOutput(process= say_hello_lite<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#say_hello_process_element" class="summary-name">say_hello_process_element</a> = <code title="describe_processes_root.find(&quot;./ProcessDescription/[ows:Identifier='sa\
+y_hello']&quot;, xml_namespaces)">describe_processes_root.find(&quot;./Pr<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#centroids_process" class="summary-name">centroids_process</a> = <code title="Process(wps= wps_server, identifier= 'centroids', title= 'Process Cent\
+roids', abstract= 'Returns a GeoJSON with centroids of features from a\
+n uploaded GML.')">Process(wps= wps_server, identifier= 'cent<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#centroids_complex_input" class="summary-name">centroids_complex_input</a> = <code title="InputOutput(process= centroids_process, role= '0', identifier= 'layer'\
+, title= 'Layer', abstract= None, datatype= '1', format= 'application/\
+gml+xml', min_occurs= '1', max_occurs= '1')">InputOutput(process= centroids_proce<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#centroids_complex_output" class="summary-name">centroids_complex_output</a> = <code title="InputOutput(process= centroids_process, role= '1', identifier= 'out', \
+title= 'Referenced Output', abstract= None, datatype= '1', format= 'ap\
+plication/json', min_occurs= '1', max_occurs= '1')">InputOutput(process= centroids_proc<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#centroid_process_element" class="summary-name">centroid_process_element</a> = <code title="describe_processes_root.find(&quot;./ProcessDescription/[ows:Identifier='ce\
+ntroids']&quot;, xml_namespaces)">describe_processes_root.find(&quot;./Pro<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#bbox_process" class="summary-name">bbox_process</a> = <code title="Process(wps= wps_server, identifier= 'boundingbox', title= 'Bounding b\
+ox in- and out', abstract= 'Given a bounding box, it returns the same \
+bounding box')">Process(wps= wps_server, identifier= 'boundingb<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#bbox_bounding_box_input" class="summary-name">bbox_bounding_box_input</a> = <code title="InputOutput(process= bbox_process, role= '0', identifier= 'bboxin', ti\
+tle= 'box in', abstract= None, datatype= '2', format= None, min_occurs\
+= '1', max_occurs= '1')">InputOutput(process= bbox_process, r<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#bbox_bounding_box_output" class="summary-name">bbox_bounding_box_output</a> = <code title="InputOutput(process= bbox_process, role= '1', identifier= 'bboxout', t\
+itle= 'box out', abstract= None, datatype= '2', format= None, min_occu\
+rs= '1', max_occurs= '1')">InputOutput(process= bbox_process, <code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="wps_workflow.tests.ParserTestCase-class.html#bbox_process_element" class="summary-name">bbox_process_element</a> = <code title="describe_processes_root.find(&quot;./ProcessDescription/[ows:Identifier='bo\
+undingbox']&quot;, xml_namespaces)">describe_processes_root.find(&quot;./Process<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="test_parse_service_provider_info"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_service_provider_info</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_service_provider_info">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tests, if parse_service_provider_info parses correct</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_service_provider_info_fail"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_service_provider_info_fail</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_service_provider_info_fail">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test of exception throw</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_wps_server_info"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_wps_server_info</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_server_info">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tests, if parse_wps_server_info parses correct</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_wps_server_info_fail"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_wps_server_info_fail</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_server_info_fail">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test of exception throw</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_wps_process"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_wps_process</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_process">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tests, if parse_process_info parses correct</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_wps_process_fail"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_wps_process_fail</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_wps_process_fail">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test of exception throw</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_process_output_literal"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_process_output_literal</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_literal">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_process_input_complex"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_process_input_complex</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_input_complex">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tests, if parse_input_info parses correct</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_process_output_complex"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_process_output_complex</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_complex">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tests, if parse_output_info parses correct</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_process_input_bounding_box"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_process_input_bounding_box</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_input_bounding_box">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tests, if parse_input_info parses correct</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_process_output_bounding_box"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_process_output_bounding_box</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_bounding_box">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Tests, if parse_output_info parses correct</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_process_input_fail"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_process_input_fail</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_input_fail">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test of exception throw</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="test_parse_process_output_fail"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">test_parse_process_output_fail</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="wps_workflow.tests-pysrc.html#ParserTestCase.test_parse_process_output_fail">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Test of exception throw</p>
+  <dl class="fields">
+    <dt>Returns: NoneType</dt>
+        <dd>None</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== CLASS VARIABLE DETAILS ==================== -->
+<a name="section-ClassVariableDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variable Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariableDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="get_cap_url_from_scc_vm"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">get_cap_url_from_scc_vm</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+'wps_workflow/testfiles/wpsGetCapabilities.xml'
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="desc_proc_url_from_scc_vm"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">desc_proc_url_from_scc_vm</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+'wps_workflow/testfiles/wpsDescribeProcesses.xml'
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_cap_url_from_scc_vm_wrong"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">get_cap_url_from_scc_vm_wrong</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+'wps_workflow/testfiles/broken_wpsGetCapabilities.xml'
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="xml_namespaces"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">xml_namespaces</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{'gml': 'http://www.opengis.net/gml', 'xlink': 'http://www.w3.org/1999<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+/xlink', 'wps': 'http://www.opengis.net/wps/1.0.0', 'ows': 'http://www<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+.opengis.net/ows/1.1', 'xsi': 'http://www.w3.org/2001/XMLSchema-instan<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ce'}
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="describe_processes_root"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">describe_processes_root</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+ET.parse(desc_proc_url_from_scc_vm).getroot()
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="capabilities_wrong_root"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">capabilities_wrong_root</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+ET.parse(get_cap_url_from_scc_vm_wrong).getroot()
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="wps_provider"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">wps_provider</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+WPSProvider(provider_name= 'Organization Name', provider_site= 'http:/<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+/pywps.org/', individual_name= 'Lastname, Firstname', position_name= '<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+Position Title')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="wps_server"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">wps_server</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+WPS(service_provider= wps_provider, title= 'PyWPS Processing Service',<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ abstract= 'PyWPS is an implementation of the Web Processing ' 'Servic<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+e standard from the Open Geospatial Consortium. ' 'PyWPS is written in<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ Python.', capabilities_url= 'http://localhost/wps?request=GetCapabili<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ties&amp;service=WPS', describe_url= 'http://localhost/wps?request=Describ<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+eProcess' '&amp;service=WPS&amp;identifier=all&amp;version=1.0.0', execute_url= 'h<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ttp://localhost/wps?request=Execute&amp;service=WPS')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="say_hello_literal_process"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">say_hello_literal_process</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+Process(wps= wps_server, identifier= 'say_hello', title= 'Process Say <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+Hello', abstract= 'Returns a literal string output with Hello plus the<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ inputed name')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="say_hello_literal_input"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">say_hello_literal_input</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+InputOutput(process= say_hello_literal_process, role= '0', identifier=<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ 'name', title= 'Input name', abstract= None, datatype= '0', format= '<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+string', min_occurs= '1', max_occurs= '1')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="say_hello_literal_output"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">say_hello_literal_output</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+InputOutput(process= say_hello_literal_process, role= '1', identifier=<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ 'response', title= 'Output response', abstract= None, datatype= '0', <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+format= 'string', min_occurs= '1', max_occurs= '1')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="say_hello_process_element"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">say_hello_process_element</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+describe_processes_root.find(&quot;./ProcessDescription/[ows:Identifier='sa<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+y_hello']&quot;, xml_namespaces)
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="centroids_process"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">centroids_process</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+Process(wps= wps_server, identifier= 'centroids', title= 'Process Cent<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+roids', abstract= 'Returns a GeoJSON with centroids of features from a<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+n uploaded GML.')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="centroids_complex_input"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">centroids_complex_input</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+InputOutput(process= centroids_process, role= '0', identifier= 'layer'<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+, title= 'Layer', abstract= None, datatype= '1', format= 'application/<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+gml+xml', min_occurs= '1', max_occurs= '1')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="centroids_complex_output"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">centroids_complex_output</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+InputOutput(process= centroids_process, role= '1', identifier= 'out', <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+title= 'Referenced Output', abstract= None, datatype= '1', format= 'ap<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+plication/json', min_occurs= '1', max_occurs= '1')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="centroid_process_element"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">centroid_process_element</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+describe_processes_root.find(&quot;./ProcessDescription/[ows:Identifier='ce<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ntroids']&quot;, xml_namespaces)
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="bbox_process"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">bbox_process</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+Process(wps= wps_server, identifier= 'boundingbox', title= 'Bounding b<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+ox in- and out', abstract= 'Given a bounding box, it returns the same <span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+bounding box')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="bbox_bounding_box_input"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">bbox_bounding_box_input</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+InputOutput(process= bbox_process, role= '0', identifier= 'bboxin', ti<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+tle= 'box in', abstract= None, datatype= '2', format= None, min_occurs<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+= '1', max_occurs= '1')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="bbox_bounding_box_output"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">bbox_bounding_box_output</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+InputOutput(process= bbox_process, role= '1', identifier= 'bboxout', t<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+itle= 'box out', abstract= None, datatype= '2', format= None, min_occu<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+rs= '1', max_occurs= '1')
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="bbox_process_element"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">bbox_process_element</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+describe_processes_root.find(&quot;./ProcessDescription/[ows:Identifier='bo<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+undingbox']&quot;, xml_namespaces)
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >V-For-Water</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    <a href="epydoc-log.html">Generated by Epydoc
+    3.0.1 on Sun Sep 16 13:27:02 2018</a>
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
