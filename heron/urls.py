@@ -20,8 +20,6 @@ from django.contrib import admin
 from django.views.generic.base import RedirectView
 
 
-print('   *   heron urls.py')
-
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='vfwheron/', permanent=False)),
     url(r'^vfwheron/', include('vfwheron.urls')),

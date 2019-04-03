@@ -19,7 +19,7 @@
     <div class="respo-dropdown-content">
         {% for process in wps.processes %}
             <a class="respo-hover-blue nav"
-               href="{% url 'wps:process' service=service identifier=process.identifier %}"
+               href="{% url 'wps_gui_app:process' service=service identifier=process.identifier %}"
                title="{{ process.abstract|cut:"  " }}">{{ process.title }}
             </a>
         {% empty %}

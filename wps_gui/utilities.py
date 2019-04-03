@@ -2,7 +2,7 @@ from urllib.error import HTTPError, URLError
 
 from owslib.wps import WebProcessingService
 from .models import WebProcessingService as WpsModel
-from heron.settings import VFW_SERVER
+from heron.settings import VFW_SERVER, wps_log
 
 
 def abstract_is_link(process):
@@ -51,10 +51,13 @@ def activate_wps(wps, endpoint, name):
             e.msg = 'The WPS service could not be found at given endpoint "{0}" for site WPS service ' \
                     'named "{1}". Check the configuration of the WPS service in your ' \
                     'settings.py.'.format(endpoint, name)
+            wps_log.debug('Error in activate_wps wps.getcapabilities(): {1] '.format(e))
             raise e
         else:
+            wps_log.debug('Error in activate_wps wps.getcapabilities(): {1] '.format(e))
             raise e
     except URLError as e:
+        wps_log.debug(e)
         return None
     except:
         raise
@@ -176,13 +179,16 @@ def get_wps_service_engine(name, app_class=None):
                 # Initialize the object with get capabilities call
                 return activate_wps(wps=wps, endpoint=site_wps_service.endpoint, name=site_wps_service.name)
 
-    raise NameError('Could not find wps service with name "{0}". Please check that a wps service with that name '
+    error_msg = ('Could not find wps service with name "{0}". Please check that a wps service with that name '
                     'exists in the admin console or in your app.py.'.format(name))
+    wps_log.debug(error_msg)
+    raise NameError(error_msg)
 
 
 def find_wps_service_engines():
 
     try:
+        # wps_address = 'http://localhost:5000/wps'
         wps_address = VFW_SERVER + '/wps'
 
         wps_service = WebProcessingService(wps_address,
@@ -195,4 +201,5 @@ def find_wps_service_engines():
         new_data.save()
 
     except:
+        wps_log.debug('--- Exception in utilities.py, find_wps_service_engines. (Maybe no WPS_Service at port 8094.) ---')
         print('--- No WPS_Service at port 8094. ---')

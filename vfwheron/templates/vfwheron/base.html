@@ -46,9 +46,9 @@
         <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white">
             <i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
         </li>
-        <li class="respo-hide-small"><a href="{% url 'wps_gui:home' %}" class="respo-hover-white">
+        {% comment %}<li class="respo-hide-small"><a href="{% url 'wps_gui:home' %}" class="respo-hover-white">
             <i class="fa fa-workflow fa-fw" style="height: 24px; width: 24px;"></i>{% trans "  WPS GUI" %}</a>
-        </li>
+        </li>{% endcomment %}
         <li class="respo-hide-small"><a href="{% url 'vfwheron:workflowtool' %}" class="respo-hover-white">
             <i class="fa fa-workflow fa-fw" style="height: 24px; width: 24px;"></i>{% trans "  Workflow" %}</a>
         </li>
