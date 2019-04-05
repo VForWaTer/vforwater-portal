@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
+    'wps_gui',
     'heron_monitor',
     'heron_visual',
     'heron_upload',
