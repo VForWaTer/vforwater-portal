@@ -24,7 +24,7 @@ function create_map() {
     let mapView = new ol.View({
         center: ol.proj.fromLonLat([11.8810049, 50.0836865]),
         zoom: 6,
-        maxZoom: 15,
+        maxZoom: 13,
         minZoom: 2,
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
