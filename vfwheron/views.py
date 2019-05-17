@@ -175,26 +175,44 @@ class MenuView(TemplateView):
 
         # build_selection is called if the following request.GET.get('workspaceData') is true
         def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
+            """
+            function distinguishes only between default user (commercial data) and rest (all data)
+            :param work_dataset:
+            :param dataset_dict:
+            :param min_time:
+            :param max_time:
+            :return:
+            """
             data_definition = {}
-            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
-                         work_dataset
+            from_var = 'public.tbl_data'
+            where_var = 'tbl_data.meta_id = ' + work_dataset
+            if user == 'default':
+                from_var += ', lt_license'
+                where_var += ' AND lt_license.commercial is false'
+                user_data = TblMeta.objects.filter(license__commercial=False, pk=work_dataset)
+            else:
+                user_data = TblMeta.objects.filter(pk=work_dataset)
+
+            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM ' + from_var + ' WHERE ' + where_var
+            # work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
+            #              work_dataset
             if min_time != 0:
                 work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
             if max_time != 0:
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
+            if (user_data):
+                definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
+                                                        'variable__unit__unit_abbrev').get(pk=work_dataset)
+                data_definition['name'] = definition_query['variable__variable_name']
+                data_definition['abbr'] = definition_query['variable__variable_abbrev']
+                data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
 
-            definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
-            data_definition['name'] = definition_query['variable__variable_name']
-            data_definition['abbr'] = definition_query['variable__variable_abbrev']
-            data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
-
-            # if 'work_dataset_dict' in request.session:
-            if dataset_dict != {}:
-                # TODO: Need timestamp in name to see if different selection
-                dataset_dict.update({work_dataset: data_definition})
-            else:
-                dataset_dict = {work_dataset: data_definition}
+                # if 'work_dataset_dict' in request.session:
+                if dataset_dict != {}:
+                    # TODO: Need timestamp in name to see if different selection
+                    dataset_dict.update({work_dataset: data_definition})
+                else:
+                    dataset_dict = {work_dataset: data_definition}
             return dataset_dict
 
         if 'workspaceData' in request.GET:
@@ -253,9 +271,8 @@ class MenuView(TemplateView):
 
 # get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
         if 'filter_selection' in request.GET:
-            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'],
-                                                         json.loads(request.GET.get('filter_selection')))
-            return JsonResponse(filter_menu)
+            return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
+                                                         json.loads(request.GET.get('filter_selection'))))
 
         if 'filter_selection_map' in request.GET:
             m_ids = None

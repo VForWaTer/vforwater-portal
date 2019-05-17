@@ -377,7 +377,6 @@ function getCookie(name) {
 // send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
     if (id !== 'null') {
-        console.log('in workspace_dataset', id)
         $.ajax({
             url: DEMO_VAR + "/vfwheron/menu",
             datatype: 'json',
@@ -386,7 +385,6 @@ function workspace_dataset(id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
             success: function (json) {
-                console.log('in ajax of workspace_dataset', id)
                 if (sessionStorage.getItem("btn")) {
                     let stored = JSON.parse(sessionStorage.getItem("btn"));
                     $.each(json['workspaceData'], function (key, value) {
