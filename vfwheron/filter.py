@@ -140,7 +140,7 @@ class FilterMethods:
                 child_result.update({"C" + str(c): item_result})
                 c += 1
             result.update({parent: child_result})
-        # print('result of count: ', result)
+        print('result of count: ', result)
         return result
 
     @staticmethod
@@ -464,7 +464,7 @@ class Table:
         counter = 0
         total = len(self.child[grand_child])
         keyword = self.query_paths[grand_child]
-        # print('keyword: ', keyword)
+        print('keyword: ', keyword)
         excl_nan = {'{0}'.format(keyword): 'NaN'}
         excl_none = {'{0}'.format(keyword): None}
         c_min = {'{0}'.format('min_value'): Min(keyword)}
@@ -475,7 +475,7 @@ class Table:
             #             "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
             #                self.query_paths[grand_child] + "'))")
             min_max = TblMeta.objects.exclude(**excl_nan).exclude(**excl_none).aggregate(**c_min, **c_max)
-            # print('min_max: ', min_max)
+            print('min_max: ', min_max)
         except ValueError:
             # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] +
             #                "'), max_value=Max('" + self.query_paths[grand_child] + "'))")

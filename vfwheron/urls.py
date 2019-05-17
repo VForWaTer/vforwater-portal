@@ -8,6 +8,7 @@ from .views import WorkflowView
 
 
 app_name = 'vfwheron'
+print('   *   vfwheron urls.py')
 
 urlpatterns = [
     url(r'^$', views.HomeView.as_view(), name='home'),

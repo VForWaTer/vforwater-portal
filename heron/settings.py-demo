@@ -61,7 +61,7 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["portal.vforwater.de", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["portal.vforwater.de","localhost","127.0.0.1"]
 
 # Logging
 LOGGING = {
@@ -129,7 +129,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
-    'wps_gui',
     'heron_monitor',
     'heron_visual',
     'heron_upload',
@@ -188,10 +187,9 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater_update',
         'HOST': 'localhost',
-         #'HOST': 'portal.vforwater.de',
+        #'HOST': 'portal.vforwater.de',
         'PORT': '5433',
         'USER': 'vfwportal',
-        'PASSWORD': '',
     }
 
 }
