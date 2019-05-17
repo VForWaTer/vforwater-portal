@@ -1,6 +1,6 @@
 let zoomToExt;
 let wfsLayerName;
-let selectedIdsFilter = null;
+let selectedIds = null;
 let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
 

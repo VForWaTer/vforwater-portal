@@ -6,10 +6,10 @@
 //         layerName.setVisible(true);
 //     }
 // }
-let draw, modify, selectedIdsMap, selectedFeatures, vector;
+let draw, modify, selected_Id, selectedFeatures, vector;
 
 function resetDraw() {
-    selectedIdsMap = [];
+    selected_Id = [];
     selectedFeatures.clear();
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
@@ -102,7 +102,7 @@ function drawPolygon(shortParent, shortChild) {
         });*/
 
     selectedFeatures = select.getFeatures();
-    selectedIdsMap = [];
+    selected_Id = [];
     let sketch, listener, polygon;
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
@@ -129,7 +129,7 @@ function drawPolygon(shortParent, shortChild) {
         sketch = null;
         delaySelectActivate();
         selectedFeatures.clear();
-        selectedIdsMap = [];
+        selected_Id = [];
         polygon = event.features.getArray()[0].getGeometry();
         // let features = hiddenLayer.getSource().getFeatures();
 
@@ -140,9 +140,10 @@ function drawPolygon(shortParent, shortChild) {
         }
         /* get id of selected features for menu */
         selectedFeatures.getArray().forEach(function (val) {
-            selectedIdsMap.push(parseInt(val.getId().replace(append_str, '')))
+            selected_Id.push(parseInt(val.getId().replace(append_str, '')))
         });
-        mapSelectFuntion(shortParent, shortChild, selectedIdsMap);
+        console.log('modyend this: ', this)
+        mapSelectFunction(shortParent, shortChild, selected_Id);
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -177,15 +178,15 @@ function drawPolygon(shortParent, shortChild) {
     }, this);
 
     draw.on('drawend', function () {
-        selectedIdsMap = [];
+        selected_Id = [];
         // let writer = new ol.format.KML();
         // let geojsonStr = writer.writeFeatures(source.getFeatures());
         selectedFeatures.getArray().forEach(function (val) {
-            selectedIdsMap.push(parseInt(val.getId().replace(append_str, '')))
+            selected_Id.push(parseInt(val.getId().replace(append_str, '')))
         });
         draw.finishDrawing();
-        if (selectedIdsMap.length > 0) {
-            mapSelectFunction(shortParent, shortChild, selectedIdsMap);
+        if (selected_Id.length > 0) {
+            mapSelectFunction(shortParent, shortChild, selected_Id);
         }
 
     });
@@ -207,14 +208,10 @@ function drawPolygon(shortParent, shortChild) {
             olmap.addInteraction(selectClick);
         });*/
 
-    let delst = document.getElementById('' +
-        'remove_polygon');
+    let delst = document.getElementById('remove_polygon');
     delst.addEventListener('click', function () {
         // olmap.removeInteraction(selectCluster);
         // source.clear();
-        source.clear();
-        select.setActive(false);
-        mapSelectFunction(shortParent, shortChild, []);
         resetDraw();
         /*    selectClick.getFeatures().on('add', function (feature) {
                 source.removeFeature(feature.element);
@@ -377,6 +374,7 @@ function getCookie(name) {
 // send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
     if (id !== 'null') {
+        console.log('in workspace_dataset', id)
         $.ajax({
             url: DEMO_VAR + "/vfwheron/menu",
             datatype: 'json',
@@ -385,6 +383,7 @@ function workspace_dataset(id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
             success: function (json) {
+                console.log('in ajax of workspace_dataset', id)
                 if (sessionStorage.getItem("btn")) {
                     let stored = JSON.parse(sessionStorage.getItem("btn"));
                     $.each(json['workspaceData'], function (key, value) {
