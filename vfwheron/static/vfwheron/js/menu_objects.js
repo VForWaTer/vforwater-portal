@@ -4,20 +4,19 @@
 // Second child: C2
 // First Item: I1...
 
-const jsMenu = JSON.parse(jsonMenu);
-const menues = Object.keys(jsMenu);
-let filterMenu;
+const JSMENU = JSON.parse(jsonMenu);
+const MENUES = Object.keys(JSMENU);
+let FILTERMENU;
 let parent;
-let selection = {};
-console.log(jsMenu)
+let SELECTION = {};
 
 // TODO: To improve performance onclick try to build variables P1C1I1, P1C1T2,... here and assign an id to the
 // TODO: respective value. In 'updateCounts' you can access the values then directly with the ID; But the following isn't working
 // Predefine variables to assign IDs for the filter elements that will be changed on every filter selection:
-// for (let p in jsMenu){
-//     for (let m = 1; m <= jsMenu[p].total; m++) {
+// for (let p in JSMENU){
+//     for (let m = 1; m <= JSMENU[p].total; m++) {
 //         let c = 'C'+m.toString()
-//         for (let n = 1; n <= jsMenu[p][c].total; n++) {
+//         for (let n = 1; n <= JSMENU[p][c].total; n++) {
 //             let i = 'I'+n.toString()
 //             eval("let "+p+c+i)
 //         }
@@ -25,23 +24,23 @@ console.log(jsMenu)
 // }
 
 /* Loop through menues after load and build menu objects */
-menues.forEach(menuBuilder);
+MENUES.forEach(menuBuilder);
 
 /* build the parents of the menu*/
 function menuBuilder(parent) {
-    if (jsMenu[parent].total > 0) {  // check how many entries are in menu
+    if (JSMENU[parent].total > 0) {  // check how many entries are in menu
         let parentHTML ="";
-        let ctot = jsMenu[parent].total;
+        let ctot = JSMENU[parent].total;
         for (let c = 1; c <= ctot; c++) {  // build child menu
             let child = 'C'+c.toString();
-            let childHTML = childBuilder(jsMenu[parent][child], child, parent);
-            // let childHTML = childBuilder(eval("jsMenu[parent]."+[child]), child, parent);
+            let childHTML = childBuilder(JSMENU[parent][child], child, parent);
+            // let childHTML = childBuilder(eval("JSMENU[parent]."+[child]), child, parent);
             // console.log('  *** ** *' + parentHTML)
             parentHTML += `<div id='subaccordion'> ${childHTML}   </div>`
         }
-        filterMenu = document.getElementById("accordion").innerHTML +=
-            `<h5 class='respo-hover-blue nav parent ${parent}'>${jsMenu[parent].name}</h5>
-            <div id='${jsMenu[parent].name}'>${parentHTML}</div>`;
+        FILTERMENU = document.getElementById("accordion").innerHTML +=
+            `<h5 class='respo-hover-blue nav parent ${parent}'>${JSMENU[parent].name}</h5>
+            <div id='${JSMENU[parent].name}'>${parentHTML}</div>`;
     }
 }
 
@@ -89,7 +88,6 @@ function childBuilder(child, shortChild, shortParent) {
                 break;
             // }
 /* build calender if type is date */
-        // else if (child.type === "date") {
             case "date":
                 itemHTML = dateBuilder(child, shortChild, shortParent);
                 // childHTML = itemHTML
@@ -100,14 +98,13 @@ function childBuilder(child, shortChild, shortParent) {
                     </div>`;
                 break;
         // }
-/* build draw box if type is map */
-        // else if (child.type === "draw") {
+/* build draw box if type is draw */
             case "draw":
                 itemHTML = drawBuilder(child, shortChild, shortParent);
                 childHTML=
                     `<div id='${child.name}'>
-                        <h6 class='respo-hover-blue nav child count m${shortParent} ${shortParent} ${shortChild}'>
-                        </h6>${child.name}&emsp;<i><div class='count'>(${child.total})</div></i>: ${itemHTML}
+                        <h6 class='respo-hover-blue nav child ${shortParent} ${shortChild} count m${shortParent}'></h6>
+                        ${child.name}&emsp;<i><div class='count'>(${child.total})</div></i>${itemHTML}
                     </div>`;
                 break;
         }
@@ -243,33 +240,30 @@ $(document).ready(function (){
 /* Add onclick functionality to the items in the menu to update menu and show selection on map */
 function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     let activeSibling = checkSiblings(item);
-    selection = buildSelection(activeSibling, shortParent, shortChild, shortItem);
-    console.log('item: ', item)
-    console.log('activeSibling: ', activeSibling)
-    console.log('selection: ', selection)
-    if (!jQuery.isEmptyObject(selection)) {
-        showSelectionOnMap(selection);
-        getCountFromServer(selection);
+    SELECTION = buildSelection(activeSibling, shortParent, shortChild, shortItem);
+    if (!jQuery.isEmptyObject(SELECTION)) {
+        showSelectionOnMap(SELECTION);
+        getCountFromServer(SELECTION);
     }
     else {
-        selectedIds = null;
-        showSelectionOnMap(0);
-        getCountFromServer(selection);
+        selectedIdsFilter = null;
+        showSelectionOnMap([]);
+        getCountFromServer(SELECTION);
         // clusterLayer.changed()
         // showAllPointsOnMap();
     }
 }
 /* Add onclick functionality to the items in the menu to update menu and show selection on map */
 function mapSelectFunction(shortParent, shortChild, selected_Id) {
-    let activeSibling = (selected_Id > 0) ? false:true;
+    let activeSibling = (selected_Id.length > 0) ? true:false;
     let mapselection = buildSelection(activeSibling, shortParent, shortChild, selected_Id);
-    if (!jQuery.isEmptyObject(selection)) {
-        showSelectionOnMap(selection);
+    if (!jQuery.isEmptyObject(SELECTION)) {
+        showSelectionOnMap(SELECTION);
         getCountFromServer(mapselection);
     }
     else {
-        selectedIds = null;
-        showSelectionOnMap(0);
+        selectedIdsFilter = null;
+        showSelectionOnMap([]);
         getCountFromServer(mapselection);
     }
 }
@@ -305,13 +299,13 @@ function reset_filter(){
     while (document.getElementsByClassName('activeI')[0]) {
         document.getElementsByClassName('activeI')[0].classList.remove('activeI');
     }
-    selectedIds = null;
-    showSelectionOnMap(0);
-    // TODO: store the inicial numbers for each item and use it here instead of a new get request
+    selectedIdsFilter = null;
+    showSelectionOnMap([]);
+    // TODO: store the initial numbers for each item and use it here instead of a new get request
     getCountFromServer({});
     // reset draw menu:
-    selected_Id = [];
-    selectedFeatures.clear();
+    selectedIdsMap = [];  // or better: null ?
+    if (selectedFeatures !== undefined) {selectedFeatures.clear();}
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
     olmap.removeLayer(vector);
@@ -330,7 +324,7 @@ function showSelectionOnMap(selection) {
         success: function (json) {
             zoomToExt.extent = json['dataExt'];
             wfsLayerName = json['ID_layer'];
-            selectedIds = json['IDs'];
+            selectedIdsFilter = json['IDs'];
             wfsPointSource.clear();
             // document.getElementById()
             // clusterLayer.changed()
@@ -395,35 +389,37 @@ function checkSiblings(item) {
 
 /* checks if selected item is already activated, toggles the item as well as child and parent */
 function buildSelection(activeSibling, shortParent, shortChild, shortItem, type) {
-    console.log('buildSelection: ', activeSibling, shortParent, shortChild, shortItem)
-    console.log('menu: ', menu)
     // getElementsByClassName should be faster than QuerySelectAll
     let nodeListC = document.getElementsByClassName(`child ${shortChild} ${shortParent}`);
     let nodeListP = document.getElementsByClassName(`parent ${shortParent}`);
-    console.log('nodeListC: ', nodeListC)
-    console.log('nodeListP: ', nodeListP)
     if (activeSibling) {
         try {
-            selection[shortParent][shortChild]= shortItem;
+            SELECTION[shortParent][shortChild]= shortItem;
         } catch (TypeError) {
-            selection[shortParent] = {[shortChild]: shortItem};
+            SELECTION[shortParent] = {[shortChild]: shortItem};
         }
         nodeListC[0].classList.add("activeC");
         nodeListP[0].classList.add("activeP");
     }
     else {
         nodeListC[0].classList.remove("activeC");
-        delete selection[shortParent][shortChild];
-        if (jQuery.isEmptyObject(selection[shortParent])) {
+        delete SELECTION[shortParent][shortChild];
+        if (jQuery.isEmptyObject(SELECTION[shortParent])) {
             nodeListP[0].classList.remove("activeP");
-            delete selection[shortParent]
+            delete SELECTION[shortParent]
         }
     }
-    return selection;
+    return SELECTION;
 }
 
 // implented in vfw.js
+// use intersection of Filter- and Map IDs as selection
 function many_datasets() {
-    workspace_dataset(JSON.stringify(selectedIds))
+    // let workId = (selectedIdsMap === undefined) ? selectedIdsFilter : selectedIdsMap.filter(x => selectedIdsFilter.includes(x));
+    let workId = selectedIdsFilter;
+    if (selectedIdsMap !== undefined) {
+        workId = selectedIdsMap.filter(x => selectedIdsFilter.includes(x));
+    }
+    workspace_dataset(JSON.stringify(workId))
 }
 
