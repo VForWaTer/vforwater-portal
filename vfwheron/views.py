@@ -186,6 +186,8 @@ class MenuView(TemplateView):
             data_definition = {}
             from_var = 'public.tbl_data'
             where_var = 'tbl_data.meta_id = ' + work_dataset
+            print('--------------------------------')
+            print('user: ', user)
             if user == 'default':
                 from_var += ', lt_license'
                 where_var += ' AND lt_license.commercial is false'
