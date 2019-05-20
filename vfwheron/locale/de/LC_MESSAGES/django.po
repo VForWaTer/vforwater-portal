@@ -31,10 +31,6 @@ msgstr ""
 msgid "  Workspace"
 msgstr "  Arbeitsplatz"
 
-#: templates/vfwheron/base.html:47 templates/vfwheron/sidemenu.html:15
-msgid "  WPS GUI"
-msgstr ""
-
 #: templates/vfwheron/base.html:50
 msgid "  Workflow"
 msgstr ""

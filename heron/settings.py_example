@@ -23,15 +23,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # For now, place all data files in VFW_DIR and not into source directory.
 HOME_DIR = os.path.expanduser('~')
-VFW_DIR = os.path.join(HOME_DIR, 'vforwater-example')
+VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
 if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
 # Set where the server is running on
-HOST_NAME = "myportal.mydomain.de"
+HOST_NAME = "vforwater-gis.scc.kit.edu"
 VFW_SERVER = 'https://' + HOST_NAME
-MAP_SERVER = "https://b.tile.openstreetmap.org" # for production system setup your own map server!
-LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
+MAP_SERVER = "https://portal.vforwater.de"
 
 # Variable to set the demo path in static files
 DEMO_VAR = ''
@@ -52,7 +51,13 @@ else:
     with open(secretFile) as f:
         SECRET_KEY = f.read().strip()
 
-SECRET_GEOSERVER = "'admin', 'geoserver'"
+secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
+if os.path.isfile(secretGeoServer):
+    with open(secretGeoServer) as gs:
+        SECRET_GEOSERVER = gs.read().strip()
+else:
+    # TODO: Print to log file
+    print('secretGeoServer.txt is missing')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -109,15 +114,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
-    'wps_gui',
     'heron_monitor',
     'heron_visual',
     'heron_upload',
-    # Three apps for wps_workflow
-    'wps_workflow.apps.wps_workflowConfig',
-    'django_crontab',
-    'django.contrib.admindocs',
-    'AuthorizationManagement.apps.AuthorizationmanagementConfig',
 ]
 
 MIDDLEWARE = [
@@ -170,11 +169,14 @@ DATABASES = {
     },
     'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vfw_start',
+        'NAME': 'vforwater_update',
+        # 'HOST': 'portal.vforwater.de',
+        # 'PORT': '5433',
+        'USER': 'vfwportal',
         'HOST': 'localhost',
         'PORT': '5432',
-        'USER': 'testuser',
-        'PASSWORD': 'test',
+        # 'USER': 'postgres',
+        # 'PASSWORD': 'vforwater',
     }
 
 }
@@ -255,31 +257,3 @@ if ON_VFW_SERVER:
     WATTS_ISSUER_ID = 'vforwater'
     ##WATTS_PROVIDER_ID = 'iam'
     WATTS_PROVIDER_ID = 'eudat'
-
-
-# Settings from workflowPSE, here for wps_workflow app
-import logging.handlers
-formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d;%(funcName)s()] - %(message)s')  #
-filehandler = logging.handlers.RotatingFileHandler(
-    BASE_DIR + '/wps.log', mode='a', maxBytes=128 * 1024, backupCount=1, encoding=None, delay=0)
-filehandler.setFormatter(formatter)
-wps_log = logging.getLogger('wps')
-
-wps_log.setLevel(logging.DEBUG)  # set logging level here
-wps_log.addHandler(filehandler)
-# For django_crontab
-CRONJOBS = [
-    ('*/1 * * * *', 'wps_workflow.cron.scheduler'),
-    ('*/1 * * * *', 'wps_workflow.cron.receiver'),
-    ('*/5 * * * *', 'wps_workflow.cron.update_wps_processes'),
-]
-if (DEBUG):
-    MIDDLEWARE += ['corsheaders.middleware.CorsMiddleware', ]
-    INSTALLED_APPS += ['corsheaders', ]
-    CORS_ALLOW_CREDENTIALS = True
-    CORS_ORIGIN_WHITELIST = (
-        '127.0.0.1:4200',
-        'localhost:4200'
-    )
-# END OF settings from workflow app
