@@ -32,7 +32,8 @@ from future.builtins import isinstance
 from heron.settings import LOCAL_GEOSERVER
 from io import StringIO, BytesIO
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer, \
+    test_geoserver_env
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
@@ -103,11 +104,15 @@ class HomeView(TemplateView):
     # print(connections['vforwater'].queries)
     # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'default_layer_prod'
+    data_layer = 'testlayer2'#'default_layer_prod'
 
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+
+    store = 'teststore2'#'new_vforwater_gis'
+    workspace = 'testworkspace2'#'CAOS_update'
+    test_geoserver_env(store, workspace)
 
     # dataExt = get_bbox_from_data()
 
@@ -116,7 +121,7 @@ class HomeView(TemplateView):
         if self.request.user.is_authenticated:
             data_layer = 'default_layer'
         else:
-            data_layer = 'default_layer_prod'
+            data_layer = self.data_layer
         return data_layer
 
     # Put here everything you need at startup and for refresh
@@ -124,13 +129,13 @@ class HomeView(TemplateView):
 
         self.data_layer = self.set_layer_name()
 
-        if not get_layer(self.data_layer):
-            create_layer(self.request, self.data_layer)
+        if not get_layer(self.data_layer, self.store, self.workspace):
+            create_layer(self.request, self.data_layer, self.store, self.workspace)
         else:
             # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
             # restart of django
-            delete_layer(self.data_layer)
-            create_layer(self.request, self.data_layer)
+            delete_layer(self.data_layer, self.store, self.workspace)
+            create_layer(self.request, self.data_layer, self.store, self.workspace)
 
         try:
             data_ext = get_bbox_from_data()
@@ -170,26 +175,44 @@ class MenuView(TemplateView):
 
         # build_selection is called if the following request.GET.get('workspaceData') is true
         def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
+            """
+            function distinguishes only between default user (commercial data) and rest (all data)
+            :param work_dataset:
+            :param dataset_dict:
+            :param min_time:
+            :param max_time:
+            :return:
+            """
             data_definition = {}
-            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
-                         work_dataset
+            from_var = 'public.tbl_data'
+            where_var = 'tbl_data.meta_id = ' + work_dataset
+            if user == 'default':
+                from_var += ', lt_license'
+                where_var += ' AND lt_license.commercial is false'
+                user_data = TblMeta.objects.filter(license__commercial=False, pk=work_dataset)
+            else:
+                user_data = TblMeta.objects.filter(pk=work_dataset)
+
+            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM ' + from_var + ' WHERE ' + where_var
+            # work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
+            #              work_dataset
             if min_time != 0:
                 work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
             if max_time != 0:
                 work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
+            if (user_data):
+                definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
+                                                        'variable__unit__unit_abbrev').get(pk=work_dataset)
+                data_definition['name'] = definition_query['variable__variable_name']
+                data_definition['abbr'] = definition_query['variable__variable_abbrev']
+                data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
 
-            definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
-            data_definition['name'] = definition_query['variable__variable_name']
-            data_definition['abbr'] = definition_query['variable__variable_abbrev']
-            data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
-
-            # if 'work_dataset_dict' in request.session:
-            if dataset_dict != {}:
-                # TODO: Need timestamp in name to see if different selection
-                dataset_dict.update({work_dataset: data_definition})
-            else:
-                dataset_dict = {work_dataset: data_definition}
+                # if 'work_dataset_dict' in request.session:
+                if dataset_dict != {}:
+                    # TODO: Need timestamp in name to see if different selection
+                    dataset_dict.update({work_dataset: data_definition})
+                else:
+                    dataset_dict = {work_dataset: data_definition}
             return dataset_dict
 
         if 'workspaceData' in request.GET:
@@ -248,30 +271,25 @@ class MenuView(TemplateView):
 
 # get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
         if 'filter_selection' in request.GET:
-            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'],
-                                                         json.loads(request.GET.get('filter_selection')))
-            return JsonResponse(filter_menu)
+            return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
+                                                         json.loads(request.GET.get('filter_selection'))))
 
         if 'filter_selection_map' in request.GET:
             m_ids = None
-            if json.loads(request.GET.get('filter_selection_map')) == 0:
-                id_layer = HomeView.set_layer_name(self)
-                dataExt = get_bbox_from_data()
-            else:
-                meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
-                dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                id_layer = 'ID_layer'  # + user
-                if get_layer(id_layer):
-                    delete_layer(id_layer)
-                create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1])
-                m_ids = meta_ids['all_filters']
-                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
-                # existing layers
-                # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
-                # if not get_ID_layer(ID_layer):
-                #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
+            dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
+            id_layer = 'ID_layer'  # + user
+            if get_layer(id_layer, HomeView.store, HomeView.workspace):
+                delete_layer(id_layer, HomeView.store, HomeView.workspace)
+            create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
+            m_ids = meta_ids['all_filters']
+            # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
+            # existing layers
+            # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
+            # if not get_ID_layer(ID_layer):
+            #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             #             else:
-            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after
+            # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
@@ -307,8 +325,10 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-        store = 'new_vforwater_gis'
-        workspace = 'CAOS_update'
+        store = HomeView.store  # 'new_vforwater_gis'
+        workspace = HomeView.workspace  # 'CAOS_update'
+        test_geoserver_env(store, workspace)
+        print('im get')
 
         def get_metadata(m_id):
             """
@@ -374,7 +394,7 @@ class DatasetDownloadView(TemplateView):
             layer_name = 'XML_' + id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
-            create_id_layer(request, layer_name, id, store, workspace)
+            create_id_layer(request, layer_name, id, HomeView.store, HomeView.workspace)
 
             # use GEOSERVER GML
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
@@ -402,8 +422,11 @@ class LoginView(View):
         :return:
         :rtype:
         """
-        logger.debug('Redirect to vfwheron/rsp/login/init...')
-        return redirect('vfwheron:watts_rsp:login_init')
+        if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
+            logger.debug('Redirect to vfwheron/rsp/login/init...')
+            return redirect('vfwheron:watts_rsp:login_init')
+        else: # default django login
+            return redirect('vfwheron:login')
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -545,7 +568,7 @@ class GeoserverView(View):
         """
         # wfsLayerName = 'new_ID_as_identifier_update'
         # wfsLayerName = layer
-        work_space_name = 'CAOS_update'
+        work_space_name = HomeView.workspace  # 'CAOS_update'
         url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
             '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
             '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid

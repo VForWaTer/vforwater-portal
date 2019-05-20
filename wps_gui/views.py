@@ -1,10 +1,10 @@
 # from inspect import getmembers
-
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.cache import cache
 
-from heron.settings import VFW_SERVER, HOST_NAME, wps_log
-from heron_wps.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
+from heron.settings import VFW_SERVER, HOST_NAME
+from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 # from heron_wps.forms import InputForm
 
 
@@ -18,16 +18,13 @@ def home(request):
         service = 'PyWPS_vforwater'
         wps = get_wps_service_engine(service)
     except:
-        print('--- No PyWPS_vforwater views.home available')
-        wps_log.debug('No PyWPS_vforwater in views.home available')
         service = ''
         wps = []
 
     context = {'wps_services': wps_services,
                'wps': wps,
                'service': service}
-
-    return render(request, 'heron_wps/home.html', context)
+    return render(request, 'wps_gui/home.html', context)
 
 
 def service(request, service):
@@ -38,8 +35,7 @@ def service(request, service):
 
     context = {'wps': wps,
                'service': service}
-
-    return render(request, 'heron_wps/service.html', context)
+    return render(request, 'wps_gui/service.html', context)
 
 
 def process(request, service, identifier):
@@ -103,7 +99,13 @@ def process(request, service, identifier):
                      'output_reference': output_reference,
                      'execution_status': execution_status
                      }
-    
-        return render(request, 'heron_wps/result.html', context_p)
-    
-    return render(request, 'heron_wps/process.html', context)
+        return render(request, 'wps_gui/result.html', context_p)
+
+    return render(request, 'wps_gui/process.html', context)
+
+
+def development(request):
+    """
+    Create a page to show when something isn't working.
+    """
+    return HttpResponse("We apologize for the inconvenience.\\ At the moment this site is under heavy development.")
