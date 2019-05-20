@@ -149,8 +149,8 @@ function sliderBuilder(child, shortChild, shortParent) {
 
 /* build a button to open the draw menue */
 function drawBuilder(child, shortChild, shortParent) {
-  return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")'
-            id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
+    return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")'
+        id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
 //    return `<a class='respo-hover-blue btn' id='toggle_draw' title='Click here to select from map'>Open draw menu</a>`;
 }
 
