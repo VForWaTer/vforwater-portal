@@ -8,8 +8,9 @@
 {% block title %}- Heron WPS{% endblock %}
 
 {% block sidebar %} 
-	{% include 'heron_wps/sidebar.html' %} 
+	{% include 'wps_gui/sidebar.html' %}
 {% endblock sidebar %}
+
 
 {% block content %}
 
@@ -25,7 +26,7 @@
     {% if wps_services %}
     <div class="list-group">
       {% for wps in wps_services %}
-        <a href="{% url 'wps:service' service=wps.identification.title %}" class="list-group-item wps">
+        <a href="{% url 'wps_gui_app:service' service=wps.identification.title %}" class="list-group-item wps">
           <h4 class="list-group-item-heading title">{{ wps.identification.title }}</h4>
          </a>
           <p class="list-group-item-text abstract">{{ wps.identification.abstract }}</p>

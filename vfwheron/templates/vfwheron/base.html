@@ -46,9 +46,9 @@
         <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white">
             <i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
         </li>
-        <li class="respo-hide-small"><a href="{% url 'wps_gui:home' %}" class="respo-hover-white">
+        {% comment %}<li class="respo-hide-small"><a href="{% url 'wps_gui:home' %}" class="respo-hover-white">
             <i class="fa fa-workflow fa-fw" style="height: 24px; width: 24px;"></i>{% trans "  WPS GUI" %}</a>
-        </li>
+        </li>{% endcomment %}
         <li class="respo-hide-small"><a href="{% url 'vfwheron:workflowtool' %}" class="respo-hover-white">
             <i class="fa fa-workflow fa-fw" style="height: 24px; width: 24px;"></i>{% trans "  Workflow" %}</a>
         </li>
@@ -212,7 +212,7 @@
 
     <footer class="respo-container respo-padding-16 respo-light-grey">
         <p style="text-align:center">Powered by <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> |
-            Copyright &copy; 2016-2018</p>
+            Copyright &copy; 2016-2019</p>
     </footer>
 
 </div>

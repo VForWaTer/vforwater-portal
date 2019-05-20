@@ -1,10 +1,10 @@
 # from inspect import getmembers
-
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.cache import cache
 
 from heron.settings import VFW_SERVER, HOST_NAME
-from heron_wps.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
+from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 # from heron_wps.forms import InputForm
 
 
@@ -15,42 +15,39 @@ def home(request):
     wps_services = list_wps_service_engines()
 
     try:
-        service_name = 'PyWPS_vforwater'
+        service = 'PyWPS_vforwater'
         wps = get_wps_service_engine(service)
     except:
-        print('--- No PyWPS_vforwater available')
-        service_name = ''
+        service = ''
         wps = []
 
     context = {'wps_services': wps_services,
                'wps': wps,
-               'service': service_name}
+               'service': service}
+    return render(request, 'wps_gui/home.html', context)
 
-    return render(request, 'heron_wps/home.html', context)
 
-
-def service(request, service_name):
+def service(request, service):
     """
     View that lists the processes for a given service.
     """
-    wps = get_wps_service_engine(service_name)
+    wps = get_wps_service_engine(service)
 
     context = {'wps': wps,
-               'service': service_name}
+               'service': service}
+    return render(request, 'wps_gui/service.html', context)
 
-    return render(request, 'heron_wps/service.html', context)
 
-
-def process(request, service_name, identifier):
+def process(request, service, identifier):
     """
     View that displays a detailed description for a WPS process.
     """
 #    form_class = InputForm
-    wps = get_wps_service_engine(service_name)
+    wps = get_wps_service_engine(service)
     wps_process = wps.describeprocess(identifier)
 
     context = {'process': wps_process,
-               'service': service_name,
+               'service': service,
                'is_link': abstract_is_link(wps_process),
                'wps': wps,
                }
@@ -102,7 +99,13 @@ def process(request, service_name, identifier):
                      'output_reference': output_reference,
                      'execution_status': execution_status
                      }
-    
-        return render(request, 'heron_wps/result.html', context_p)
-    
-    return render(request, 'heron_wps/process.html', context)
+        return render(request, 'wps_gui/result.html', context_p)
+
+    return render(request, 'wps_gui/process.html', context)
+
+
+def development(request):
+    """
+    Create a page to show when something isn't working.
+    """
+    return HttpResponse("We apologize for the inconvenience.\\ At the moment this site is under heavy development.")

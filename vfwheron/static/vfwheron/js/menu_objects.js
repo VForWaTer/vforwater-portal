@@ -9,7 +9,6 @@ const MENUES = Object.keys(JSMENU);
 let FILTERMENU;
 let parent;
 let SELECTION = {};
-console.log(JSMENU)
 
 // TODO: To improve performance onclick try to build variables P1C1I1, P1C1T2,... here and assign an id to the
 // TODO: respective value. In 'updateCounts' you can access the values then directly with the ID; But the following isn't working

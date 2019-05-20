@@ -7,7 +7,6 @@
     <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
     <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>
 </head>
-<!--<param id="workdata" value ="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
 
 <body onload="show_data()">
 Sidenav/menu
@@ -23,7 +22,7 @@ Sidenav/menu
     <hr style="margin-bottom:0px;">
 
     {% block process %}
-        {% include 'heron_wps/select_process.html' %}
+        {% include 'wps_gui/select_process.html' %}
     {% endblock %}
 
     <hr style="margin-bottom:0px;">
@@ -40,6 +39,6 @@ Overlay effect when opening sidenav on small screens
      title="close side menu" id="myOverlay"></div>
 
 <script>
-<!-- TODO: Do I need this, or can I just use the csrftoken in vfw.js?-->
+{# TODO: Do I need this, or can I just use the csrftoken in vfw.js? #}
  csrf_token = '{{ csrf_token }}';
 </script>
