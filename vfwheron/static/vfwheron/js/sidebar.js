@@ -54,10 +54,10 @@ function Sidemenu_close() {
 
 // Get the User Selection in Workspace
 // Button information is stored in an HTML object with Id 'workdata'
-// it is stored as a string, so the following function transforms this string to a dictionary again
+// it is stored as a string, so the following function transforms this string back to a dictionary
 function show_data(evt) {
-    var workspaceData = JSON.parse(sessionStorage.getItem("btn"));
-    if (workspaceData !== "[]") {
+    let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
+    if (workspaceData && "value" in workspaceData) {
         workspace_button({'workspaceData': workspaceData})
     }
 }
@@ -105,15 +105,17 @@ function remove_single_data(removeData) {
     // remove data from portal:
     document.getElementById("id"+removeData).remove();
     // remove data from session:
-    var workspaceData = JSON.parse(sessionStorage.getItem("btn"));
+    let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     delete workspaceData[removeData];
     sessionStorage.setItem("btn", JSON.stringify(workspaceData))
 }
 
 function remove_all_datasets() {
     // remove button from portal
-    $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
-        document.getElementById("id"+key).remove()
+    $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
+        if ("name" in value) {
+            document.getElementById("id" + key).remove()
+        }
     });
     // remove button from session
     sessionStorage.removeItem("btn");

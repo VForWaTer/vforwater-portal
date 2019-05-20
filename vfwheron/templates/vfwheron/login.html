@@ -20,41 +20,17 @@
 
 <div class="respo-row-padding respo-margin-bottom respo-center"> 
 
-<div class="respo-half">
   <div class="respo-container respo-light-turquoise respo-padding-16 respo-third-n">
-	<div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>Admin Login</strong></div>
+	<div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>Login</strong></div>
        <div class="respo-clear"></div>
-        <form role="form" action="{% url 'vfwheron:login' %}" method="post">{% csrf_token %}
-        <div class="form-group respo-padding-bottom">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            <!-- <input id="id_username" name="username" value="Username" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input> -->
-        </div>
-        <div class="form-group respo-padding-bottom">
-            {{ form.password.label_tag }}
-            {{ form.password }}
-            <!-- <input id="id_password" name="password" value="Password" onfocus="if(this.value==this.defaultValue)this.value=''" onblur="if(this.value=='')this.value=this.defaultValue" type="text" class="form-control"></input> -->
-        </div>
-        <input class="btn btn-primary" type="submit" name="login_submit" value="Admin Login" />
-        <input type="hidden" name="next" value="{{ next }}" />
-                <!-- <div style="padding-top:16px">
-                        <a href="#" class="respo-hover-none respo-hover-text-red respo-show-inline-block">Forgot your password?</a>
-                </div> -->
-        </form>
+       <form method="post">
+	 {% csrf_token %}
+	 {{ form.as_p }}
+	 <button type="submit">Login</button>
+       </form>
   </div>
-</div>
 
-<div class="respo-half">
-  <div class="respo-container respo-light-turquoise respo-padding-16 respo-third-n">
-	<div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>WaTTS Login</strong></div>
-       <div class="respo-clear"></div>
-	<form role="form" action="{% url 'vfwheron:watts_login' %}" method="post">{% csrf_token %}
-	
-        <input class="btn btn-primary" type="submit" name="login_submit" value="WaTTS Login" />
-        
-   	</form>
-  </div>
-</div>
+
 </div>
 
 {% endblock %}

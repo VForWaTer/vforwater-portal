@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'heron_wps',
+    'wps_gui',
     'heron_monitor',
     'heron_visual',
     'heron_upload',
@@ -170,6 +171,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
         'USER': 'vfwportal',
+        'PASSWORD': '',
     }
 
 }
