@@ -140,7 +140,7 @@ function dateBuilder(child, shortChild, shortParent) {
 
 /* Prepair location in web site to build there a slider to select num values after loading of web site */
 function sliderBuilder(child, shortChild, shortParent) {
-    return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}' 
+    return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}'
         minV='${ child.selectable_min.toString()}' maxv='${child.selectable_max.toString()}'></div>
         <div class="respo-row-padding">
             <div class="respo-half"><input id="slide-0${shortParent}${shortChild}" title="min-${child.name}" 
@@ -152,9 +152,9 @@ function sliderBuilder(child, shortChild, shortParent) {
 
 /* build a button to open the draw menue */
 function drawBuilder(child, shortChild, shortParent) {
-//  return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")'
-//            id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
-    return `<a class='respo-hover-blue btn' id='toggle_draw' title='Click here to select from map'>Open draw menu</a>`;
+    return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")'
+        id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
+//    return `<a class='respo-hover-blue btn' id='toggle_draw' title='Click here to select from map'>Open draw menu</a>`;
 }
 
 /* build items to click on in the Filter Menu*/
