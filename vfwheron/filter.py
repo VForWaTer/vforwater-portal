@@ -206,7 +206,7 @@ class Menu:
                 # print('query_set: ', query_set.__len__())
                 # print('query_set: ', query_set.filter(tbl))
 
-    def menu(self, user):
+    def get_menu(self):
         """
 
         :param user:

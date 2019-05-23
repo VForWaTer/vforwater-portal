@@ -99,8 +99,7 @@ class HomeView(TemplateView):
     Template View to bring the necessary variables for the startup to the template
     """
     template_name = 'vfwheron/home.html'
-    user = 'default'
-    Menu = Menu().menu(user)
+    Menu = Menu().get_menu()
     # print(connections['vforwater'].queries)
     # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
@@ -115,6 +114,12 @@ class HomeView(TemplateView):
     test_geoserver_env(store, workspace)
 
     # dataExt = get_bbox_from_data()
+    def set_user_menu(self):
+        if self.request.user.is_authenticated:
+            data_layer = 'default_layer'
+        else:
+            data_layer = self.data_layer
+        return data_layer
 
     # TODO: Test with users if this makes any sense
     def set_layer_name(self):
@@ -153,7 +158,7 @@ class MenuView(TemplateView):
 
     # user = 'default'
 
-    def get(self, request, user='default'):
+    def get(self, request):
         """
 
         :param request:
@@ -174,58 +179,45 @@ class MenuView(TemplateView):
             menu = request.session.get('menu')
 
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
+        def build_selection(work_dataset, min_time=0, max_time=0):
             """
-            function distinguishes only between default user (commercial data) and rest (all data)
+            function distinguishes only between default user (non-commercial data) and rest (all data)
             :param work_dataset:
-            :param dataset_dict:
             :param min_time:
             :param max_time:
             :return:
             """
             data_definition = {}
-            from_var = 'public.tbl_data'
-            where_var = 'tbl_data.meta_id = ' + work_dataset
-            if user == 'default':
-                from_var += ', lt_license'
-                where_var += ' AND lt_license.commercial is false'
-                user_data = TblMeta.objects.filter(license__commercial=False, pk=work_dataset)
+            # if min_time != 0:
+            #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
+            # if max_time != 0:
+            #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
+            # from_var = 'public.tbl_data'
+            # where_var = 'tbl_data.meta_id = ' + str(work_dataset)
+            if request.user.is_authenticated:
+                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name', 'variable__variable_abbrev',
+                                                          'variable__unit__unit_abbrev').filter(pk__in=work_dataset)
             else:
-                user_data = TblMeta.objects.filter(pk=work_dataset)
+                # from_var += ', lt_license'
+                # where_var += ' AND lt_license.commercial is false'
+                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name', 'variable__variable_abbrev',
+                                                          'variable__unit__unit_abbrev').filter(
+                    license__commercial=False, pk__in=work_dataset)
 
-            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM ' + from_var + ' WHERE ' + where_var
-            # work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
-            #              work_dataset
-            if min_time != 0:
-                work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
-            if max_time != 0:
-                work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
-            if (user_data):
-                definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                        'variable__unit__unit_abbrev').get(pk=work_dataset)
-                data_definition['name'] = definition_query['variable__variable_name']
-                data_definition['abbr'] = definition_query['variable__variable_abbrev']
-                data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
-
-                # if 'work_dataset_dict' in request.session:
-                if dataset_dict != {}:
-                    # TODO: Need timestamp in name to see if different selection
-                    dataset_dict.update({work_dataset: data_definition})
-                else:
-                    dataset_dict = {work_dataset: data_definition}
+            dataset_dict = {}
+            for counter in requested_dataset:
+                data_definition['name'] = counter['variable__variable_name']
+                data_definition['abbr'] = counter['variable__variable_abbrev']
+                data_definition['unit'] = counter['variable__unit__unit_abbrev']
+                dataset_dict.update({counter['id']: data_definition})
+            # TODO: Need timestamp in name to see if different selection
             return dataset_dict
 
         if 'workspaceData' in request.GET:
             min_time = request.GET.get('minTime')
             max_time = request.GET.get('maxTime')
-            result = {}
             # prepare work_dataset differently for list and single value to use in build_selection
-            conv_work_dataset = json.loads(request.GET.get('workspaceData'))
-            if type(conv_work_dataset) == list:
-                for datasetId in conv_work_dataset:
-                    result = build_selection(str(datasetId), result, min_time, max_time)
-            elif type(conv_work_dataset) == int:
-                result = build_selection(str(conv_work_dataset), result, min_time, max_time)
+            result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
             return JsonResponse({'workspaceData': result})
 
         if 'preview' in request.GET:
@@ -315,7 +307,7 @@ class DatasetDownloadView(TemplateView):
 
     """
 
-    def get(self, request, user='default'):
+    def get(self, request):
         """
 
         :param request:

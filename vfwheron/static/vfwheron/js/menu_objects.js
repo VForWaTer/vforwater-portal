@@ -309,6 +309,8 @@ function reset_filter(){
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
     olmap.removeLayer(vector);
+    filterbox_close();
+    // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
     // clusterLayer.changed()
 }
 
