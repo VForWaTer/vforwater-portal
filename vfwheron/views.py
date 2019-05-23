@@ -206,10 +206,10 @@ class MenuView(TemplateView):
 
             dataset_dict = {}
             for counter in requested_dataset:
-                data_definition['name'] = counter['variable__variable_name']
-                data_definition['abbr'] = counter['variable__variable_abbrev']
-                data_definition['unit'] = counter['variable__unit__unit_abbrev']
-                dataset_dict.update({counter['id']: data_definition})
+                dataset_dict.update({counter['id']: {'name':counter['variable__variable_name'],
+                                                     'abbr':counter['variable__variable_abbrev'],
+                                                     'unit':counter['variable__unit__unit_abbrev']}})
+
             # TODO: Need timestamp in name to see if different selection
             return dataset_dict
 
