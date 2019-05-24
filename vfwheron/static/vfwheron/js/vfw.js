@@ -391,16 +391,18 @@ function workspace_dataset(id) {
                         if (!stored[key]) stored[key] = value;
                     });
                     sessionStorage.setItem("btn", JSON.stringify(stored))
-                } else {
+                }
+                else {
                     sessionStorage.setItem("btn", JSON.stringify(json['workspaceData']));
-                    console.log('workspacedata: ', JSON.stringify(json['workspaceData']))
                 }
                 // push sessionStorage keys to html for Workspace
-                let x = [];
-                $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
-                    x.push(key)
-                });
-                document.getElementById("workdata").value = x;
+                // TODO: "workdata" should be obsolete because of use of sessionStorage.
+                //  Re-check if creation and removing of buttons in workspace works as expected
+                // let x = [];
+                // $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
+                //     x.push(key)
+                // });
+                // document.getElementById("workdata").value = x;
 
                 // build buttons
                 workspace_button(json);

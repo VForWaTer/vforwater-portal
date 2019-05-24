@@ -55,16 +55,17 @@ function Sidemenu_close() {
 // Get the User Selection in Workspace
 // Button information is stored in an HTML object with Id 'workdata'
 // it is stored as a string, so the following function transforms this string back to a dictionary
-function show_data(evt) {
+// TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
+function show_data() {
     let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     if (workspaceData && "value" in workspaceData) {
-        workspace_button({'workspaceData': workspaceData})
+        workspace_button(workspaceData)
     }
 }
 
 // build buttons in workspace and store selection in clients sessionStorage
 function workspace_button(json) {
-    if (json !== undefined) {
+    if (json['workspaceData'] !== undefined) {
         $.each(json['workspaceData'], function (key, value) {
             let btnName;
             let vnLen = value['name'].length;
@@ -79,7 +80,7 @@ function workspace_button(json) {
             }
             let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
             // check if buttons already exist before creating a new one:
-            if (document.getElementById(key) === null) {
+            if (document.getElementById("id"+key) === null) {
                 document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding task" ' +
                     'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor: pointer;" id="id' + key + '">' +
                     '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
@@ -114,7 +115,8 @@ function remove_all_datasets() {
     // remove button from portal
     $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
         if ("name" in value) {
-            document.getElementById("id" + key).remove()
+            remove_single_data(parseInt(key));
+            // document.getElementById("id" + key).remove()
         }
     });
     // remove button from session
