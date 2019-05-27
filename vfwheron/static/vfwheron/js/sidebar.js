@@ -89,7 +89,7 @@ function workspace_button(json) {
                     '<i class="fa fa-remove fa-fw"></i></a><br></li>';
                 /*
                 document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
-                    'onmouseover="" style="cursor: pointer;" id="' + key + '" onclick="store_menu(' + key + ')" >' +
+                    'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
                     '<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
                     'onclick="remove_single_data('+key+')"; class="respo-hover-white respo-right">' +
                     '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
