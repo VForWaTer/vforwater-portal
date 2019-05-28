@@ -163,8 +163,6 @@ class MenuView(TemplateView):
 
         :param request:
         :type request:
-        :param user:
-        :type user:
         :return:
         :rtype:
         """
@@ -214,6 +212,7 @@ class MenuView(TemplateView):
             return dataset_dict
 
         if 'workspaceData' in request.GET:
+            print('workspacedata: ', request.GET.get('workspaceData'))
             min_time = request.GET.get('minTime')
             max_time = request.GET.get('maxTime')
             # prepare work_dataset differently for list and single value to use in build_selection
@@ -312,8 +311,6 @@ class DatasetDownloadView(TemplateView):
 
         :param request:
         :type request:
-        :param user:
-        :type user:
         :return:
         :rtype:
         """

@@ -47,9 +47,9 @@ def test_geoserver_env(store, workspace):
         url = '{}/rest/workspaces/{}/datastores'.format(LOCAL_GEOSERVER, workspace)
         build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=datastore_xml,
                               headers={'Content-type': 'text/xml'})
-        # print('build store: ', build.status_code)
+        print('build store: ', build.status_code)
         if build.status_code != 201:
-            # print('Cannont build store: ', build.status_code)
+            print('Cannont build store: ', build.status_code)
             logger.warning('Cannot build new store in geoserver, {}: {}'.format(check.status_code, check.text))
 
     # first check if workspace exists or try to build it if not:
@@ -57,12 +57,13 @@ def test_geoserver_env(store, workspace):
     check = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
     if check.status_code != 200:  # if workspace doesn't exist build it
         logger.warning('workspace missing, trying to build it, {}: {}'.format(check.status_code, check.text))
-        # print('get layer (if): ', str(check.status_code) + ': ' + check.text)
+        print('get layer (if): ', str(check.status_code) + ': ' + check.text)
         # build new workspace:
         url = '{}/rest/workspaces'.format(LOCAL_GEOSERVER)
         xml = '<workspace><name>{}</name></workspace>'.format(workspace)
         build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
         if build.status_code != 201:
+            print('Cannot build new workspace in geoserver, {}: {}'.format(check.status_code, check.text))
             logger.warning('Cannot build new workspace in geoserver, {}: {}'.format(check.status_code, check.text))
         else:
             build_store()
@@ -103,7 +104,7 @@ def create_layer(request, filename, datastore, workspace, srid=3857):
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
     if build.status_code != 201:
         logger.warning('{}: {}'.format(build.status_code, build.text))
-        # print('create layer: ', str(build.status_code) + ': ' + build.text)
+        print('create layer: ', str(build.status_code) + ': ' + build.text)
 
 
 def get_layer(filename, datastore, workspace):
@@ -119,11 +120,12 @@ def get_layer(filename, datastore, workspace):
     :rtype:
     """
     url = '{}/rest/workspaces/{}/datastores/{}/featuretypes/{}'.format(LOCAL_GEOSERVER, workspace, datastore, filename)
+    # print('get layer url: ', url)
     # url = LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '/featuretypes/' + filename
     build = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
     if build.status_code != 200:
         logger.warning('{}: {}'.format(build.status_code, build.text))
-        # print('get layer (if): ', str(build.status_code) + ': ' + build.text)
+        print('get layer (if): ', str(build.status_code) + ': ' + build.text)
         return False
     # print('get layer: ', str(build.status_code) + ': ' + build.text)
     return True
@@ -397,7 +399,7 @@ def build_new_layer_xml(request, filename, datastore, workspace, srid):
 
 def create_id_layer(request, filename, selection, datastore, workspace, srid=3857):
     """
-    creates a layer in geoserver with the elements defined in selection
+    creates a layer in geoserver with the elements defined in SELECTION
     :param request:
     :type request: object
     :param filename:

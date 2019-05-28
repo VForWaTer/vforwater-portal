@@ -58,15 +58,19 @@ function Sidemenu_close() {
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
     let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
-    if (workspaceData && "value" in workspaceData) {
+    console.log('workspaceData: ', workspaceData)
+    if (workspaceData){// && "value" in workspaceData) {
+        console.log('call button')
         workspace_button(workspaceData)
     }
 }
 
 // build buttons in workspace and store selection in clients sessionStorage
 function workspace_button(json) {
-    if (json['workspaceData'] !== undefined) {
-        $.each(json['workspaceData'], function (key, value) {
+    console.log('build buttions: ', json)
+    // if (json['workspaceData'] !== undefined) {
+    //     $.each(json['workspaceData'], function (key, value) {
+        $.each(json, function (key, value) {
             let btnName;
             let vnLen = value['name'].length;
             if (vnLen+ value['abbr'].length + value['unit'].length <= 14) {
@@ -98,7 +102,7 @@ function workspace_button(json) {
             '</div></li>';*/
             }
         })
-    }
+    // }
 }
 
 // Remove data / elements from workspace
