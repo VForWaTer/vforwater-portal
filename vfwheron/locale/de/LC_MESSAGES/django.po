@@ -194,6 +194,10 @@ msgstr "  Hilfe"
 msgid " Log in"
 msgstr " Einloggen"
 
+#: templates/vfwheron/sidemenu.html:37
+msgid " Toolbox"
+msgstr " Werkzeugkiste"
+
 #: views.py:208
 msgid "help"
 msgstr "Hilfe"

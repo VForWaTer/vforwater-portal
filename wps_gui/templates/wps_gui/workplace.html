@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    	<link rel="stylesheet" type="text/css" href="{% static 'wps_gui/vcss/workplace.css' %}">
+
+</head>
+<body>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2 respo-text-grey">
+        <div id="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"
+             title="Drag & Drop your Data and Tools here">Dropzone</div>
+        </div>
+    </div>
+</body>
+{#<a data-toggle="modal" href="#processModal">Edit Contact</a>#}
+{##}
+{#{% include "process.html" %}#}
+</html>

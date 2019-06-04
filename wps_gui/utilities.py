@@ -15,6 +15,7 @@ def abstract_is_link(process):
     Returns:
       (bool): True if abstract is a link, False otherwise.
     """
+    print('..................')
     try:
         abstract = process.abstract
     except AttributeError:
