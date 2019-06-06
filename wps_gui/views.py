@@ -37,8 +37,6 @@ def service(request, service):
     """
     View that lists the processes for a given service.
     """
-    print('++++fdaasg++++++++++++  1: ', request)
-    print('+++++++afg+++++++++  1: ', service)
     wps = get_wps_service_engine(service)
 
     context = {'wps': wps,
@@ -55,102 +53,32 @@ class ProcessView(TemplateView):
 
             wps = get_wps_service_engine(selected_process['serv'])
             wps_process = wps.describeprocess(selected_process['id'])
-            result = {'abstract': wps_process.abstract,
-                      'identifier': wps_process.identifier,
-                      'title': wps_process.title,
-                      'statusSupported': wps_process.statusSupported,
-                      'storeSupported': wps_process.storeSupported,
-                      'verbose': wps_process.verbose}
-            if wps_process.processVersion is not None:
-                result['processVersion'] = wps_process.processVersion
 
-            for wpsoutput in wps_process.processOutputs:
-                if 'processOutputs' not in result:
-                    result['processOutputs'] = {}
-                result['processOutputs'][wpsoutput.identifier] = {'dataType': wpsoutput.dataType,
-                                                                  'anyValue': wpsoutput.anyValue,
-                                                                  'data': wpsoutput.data,
-                                                                  'defaultValue': wpsoutput.defaultValue,
-                                                                  'title': wpsoutput.title,
-                                                                  }
-                if wpsoutput.abstract is not None:
-                    result['processOutputs'][wpsoutput.identifier]['abstract'] = wpsoutput.abstract
-                if not isinstance(wpsoutput.allowedValues, list) and wpsoutput.allowedValues is not None:
-                    result['processOutputs'][wpsoutput.identifier]['allowedValues'] = wpsoutput.allowedValues
+            # TODO: use of jsonpickle only to simplify readability of wps_process.
+            #  Shouldn't be necessary to use jsonpickle for that. Please improve!
+            # simply serialize wps to json
+            whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
+            # convert to dict to remove unwanted keys and empty values
+            whole_wpsprocess = json.loads(whole_wpsprocess_json)
+            whole_wpsprocess.pop('_root', None)
+            wps_description = {}
+            for a in whole_wpsprocess:
+                if isinstance(whole_wpsprocess[a], list):
+                    list_values = []
+                    for b in whole_wpsprocess[a]:
+                        if isinstance(b, dict):
+                            innerdict = {}
+                            for k, v in b.items():
+                                if not v is None and not v == []:
+                                    innerdict[k] = v
+                            list_values.append(innerdict)
+                        elif not b is None and not b == []:
+                            list_values.append(b)
+                    wps_description[a] = list_values
+                elif not whole_wpsprocess[a] is None and not whole_wpsprocess[a] == []:
+                    wps_description[a] = whole_wpsprocess[a]
 
-            for wpsinput in wps_process.dataInputs:
-                if not 'dataInputs' in result:
-                    result['dataInputs'] = {}
-                result['dataInputs'][wpsinput.identifier] = {'dataType': wpsinput.dataType,
-                                                             'maxOccurs': wpsinput.maxOccurs,
-                                                             'minOccurs': wpsinput.minOccurs,
-                                                             'title': wpsinput.title, }
-                if wpsinput.abstract is not None:
-                    result['dataInputs'][wpsinput.identifier]['abstract'] = wpsinput.abstract
-                if wpsinput.dataType == 'ComplexData':
-                    print('1 - -  - is complex')
-                    if not isinstance(wpsinput.defaultValue, list) and wpsinput.defaultValue is not None:
-                        print('2 # wpsinput.defaultValue: ', wpsinput.defaultValue)
-                        result['dataInputs'][wpsinput.identifier].update({'defaultValue': {}})
-                        if wpsinput.defaultValue.encoding:
-                            result['dataInputs'][wpsinput.identifier]['defaultValue'][
-                                'encoding'] = wpsinput.defaultValue.encoding
-                        if wpsinput.defaultValue.mimeType:
-                            result['dataInputs'][wpsinput.identifier]['defaultValue'][
-                                'mimeType'] = wpsinput.defaultValue.mimeType
-                        if wpsinput.defaultValue.schema:
-                            result['dataInputs'][wpsinput.identifier]['defaultValue'][
-                                'schema'] = wpsinput.defaultValue.schema
-
-                    print('3 # wpsinput.allowedValues: ', wpsinput.allowedValues)
-                    if not isinstance(wpsinput.allowedValues, list) and wpsinput.allowedValues is not None:
-                        result['dataInputs'][wpsinput.identifier].update({'allowedValues': {}})
-                        if wpsinput.allowedValues.encoding:
-                            print('4 # wpsinput.allowedValues.encoding: ', wpsinput.allowedValues.encoding)
-                            result['dataInputs'][wpsinput.identifier]['allowedValues'][
-                                'encoding'] = wpsinput.allowedValues.encoding
-                        if wpsinput.allowedValues.mimeType:
-                            result['dataInputs'][wpsinput.identifier]['allowedValues'][
-                                'mimeType'] = wpsinput.allowedValues.mimeType
-                        if wpsinput.allowedValues.schema:
-                            result['dataInputs'][wpsinput.identifier]['allowedValues'][
-                                'schema'] = wpsinput.allowedValues.schema
-
-                    print('5 # wpsinput.supportedValues: ', wpsinput.supportedValues[0])
-                    print('6 # type of wpsinput.supportedValues: ', type(wpsinput.supportedValues[0]))
-                    print(' 7b länge: ', len(wpsinput.supportedValues))
-                    if isinstance(wpsinput.supportedValues[0], complex):
-                        print('7 +++ complex erkannt')
-                    else:
-                        print('8 +++ nicht erkannt')
-                    if not isinstance(wpsinput.supportedValues, list) and wpsinput.supportedValues is not None:
-                        result['dataInputs'][wpsinput.identifier].update({'supportedValues': {}})
-
-                        if wpsinput.supportedValues.encoding:
-                            result['dataInputs'][wpsinput.identifier]['supportedValues'][
-                                'encoding'] = wpsinput.supportedValues.encoding
-                        if wpsinput.supportedValues.mimeType:
-                            result['dataInputs'][wpsinput.identifier]['supportedValues'][
-                                'mimeType'] = wpsinput.supportedValues.mimeType
-                        if wpsinput.supportedValues.schema:
-                            result['dataInputs'][wpsinput.identifier]['supportedValues'][
-                                'schema'] = wpsinput.supportedValues.schema
-                else:
-                    print('9 +  im else')
-                    if wpsinput.defaultValue is not None:
-                        result['dataInputs'][wpsinput.identifier]['defaultValue'] = wpsinput.defaultValue
-                    if wpsinput.allowedValues is not None:
-                        result['dataInputs'][wpsinput.identifier]['allowedValues'] = wpsinput.allowedValues
-                    if wpsinput.supportedValues is not None:
-                        result['dataInputs'][wpsinput.identifier]['supportedValues'] = wpsinput.supportedValues
-                    print('10 +++++++++++++++++')
-
-            print('11 result: ', result)
-            print('11 result: ', jsonpickle.encode(wps_process))
-            print('------ ')
-            # json_data = json.dumps(wps_process.__dict__, lambda o: o.__dict__, indent=4)
-
-            return JsonResponse({'result': result})
+            return JsonResponse({'wps_description': wps_description})
 
 
 def process(request, service, identifier):
