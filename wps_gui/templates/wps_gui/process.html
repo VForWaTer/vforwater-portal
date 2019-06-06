@@ -30,9 +30,10 @@
 </form>
 </div>{% endcomment %}
 
-
-{% block content %}
+{#{% block modal %}#}
   <!-- Process Overview -->
+<div id="modal" class="respo-modal">
+<div class="respo-modal-content">
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
       <h1>{{ process.title }}</h1>
@@ -150,5 +151,7 @@
       </form>
     </div>
   </div>
+</div>
 
-{% endblock %}
+</div>
+{#{% endblock %}#}

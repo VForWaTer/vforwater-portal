@@ -1,5 +1,7 @@
 # from inspect import getmembers
 import json
+
+import jsonpickle
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.core.cache import cache
@@ -7,6 +9,8 @@ from django.views.generic import TemplateView
 
 from heron.settings import VFW_SERVER, HOST_NAME
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
+
+
 # from heron_wps.forms import InputForm
 
 
@@ -45,63 +49,108 @@ def service(request, service):
 class ProcessView(TemplateView):
 
     def get(self, request):
-        print('_________ DA')
 
         if 'processview' in request.GET:
-            print('++++++++++++++++')
-            process = json.loads(request.GET.get('processview'))
-            identifier = process['id']
-            service = process['serv']
+            selected_process = json.loads(request.GET.get('processview'))
 
-            wps = get_wps_service_engine(service)
-            wps_process = wps.describeprocess(identifier)
-            result = {}
+            wps = get_wps_service_engine(selected_process['serv'])
+            wps_process = wps.describeprocess(selected_process['id'])
+            result = {'abstract': wps_process.abstract,
+                      'identifier': wps_process.identifier,
+                      'title': wps_process.title,
+                      'statusSupported': wps_process.statusSupported,
+                      'storeSupported': wps_process.storeSupported,
+                      'verbose': wps_process.verbose}
+            if wps_process.processVersion is not None:
+                result['processVersion'] = wps_process.processVersion
+
+            for wpsoutput in wps_process.processOutputs:
+                if 'processOutputs' not in result:
+                    result['processOutputs'] = {}
+                result['processOutputs'][wpsoutput.identifier] = {'dataType': wpsoutput.dataType,
+                                                                  'anyValue': wpsoutput.anyValue,
+                                                                  'data': wpsoutput.data,
+                                                                  'defaultValue': wpsoutput.defaultValue,
+                                                                  'title': wpsoutput.title,
+                                                                  }
+                if wpsoutput.abstract is not None:
+                    result['processOutputs'][wpsoutput.identifier]['abstract'] = wpsoutput.abstract
+                if not isinstance(wpsoutput.allowedValues, list) and wpsoutput.allowedValues is not None:
+                    result['processOutputs'][wpsoutput.identifier]['allowedValues'] = wpsoutput.allowedValues
+
             for wpsinput in wps_process.dataInputs:
-                print('+++++ i: ', wpsinput.identifier)
-                result[wpsinput.identifier] = {'abstract': wpsinput.abstract,
-                                               'allowedValues': wpsinput.allowedValues,
-                                               'dataType': wpsinput.dataType,
-                                               'maxOccurs': wpsinput.maxOccurs,
-                                               'minOccurs': wpsinput.minOccurs,
-                                               'title': wpsinput.title,
-                                               }
-                if wpsinput.dataType == 'ComplexData' and wpsinput.defaultValue:
-                    print('default: ', wpsinput.defaultValue)
-                    result[wpsinput.identifier]['defaultValue'] = {'encoding': wpsinput.defaultValue.encoding,
-                                                                   'mimeType': wpsinput.defaultValue.mimeType,
-                                                                   'schema': wpsinput.defaultValue.schema,}
-                    print('type: ', wpsinput.supportedValues)
-                    print('type: ', type(wpsinput.supportedValues))
-                    for i in wpsinput.supportedValues:
-                        print('i: ', i)
-                    result[wpsinput.identifier]['supportedValues'] = {'encoding': wpsinput.supportedValues.encoding,
-                                                                      'mimeType': wpsinput.supportedValues.mimeType,
-                                                                      'schema': wpsinput.supportedValues.schema, }
+                if not 'dataInputs' in result:
+                    result['dataInputs'] = {}
+                result['dataInputs'][wpsinput.identifier] = {'dataType': wpsinput.dataType,
+                                                             'maxOccurs': wpsinput.maxOccurs,
+                                                             'minOccurs': wpsinput.minOccurs,
+                                                             'title': wpsinput.title, }
+                if wpsinput.abstract is not None:
+                    result['dataInputs'][wpsinput.identifier]['abstract'] = wpsinput.abstract
+                if wpsinput.dataType == 'ComplexData':
+                    print('1 - -  - is complex')
+                    if not isinstance(wpsinput.defaultValue, list) and wpsinput.defaultValue is not None:
+                        print('2 # wpsinput.defaultValue: ', wpsinput.defaultValue)
+                        result['dataInputs'][wpsinput.identifier].update({'defaultValue': {}})
+                        if wpsinput.defaultValue.encoding:
+                            result['dataInputs'][wpsinput.identifier]['defaultValue'][
+                                'encoding'] = wpsinput.defaultValue.encoding
+                        if wpsinput.defaultValue.mimeType:
+                            result['dataInputs'][wpsinput.identifier]['defaultValue'][
+                                'mimeType'] = wpsinput.defaultValue.mimeType
+                        if wpsinput.defaultValue.schema:
+                            result['dataInputs'][wpsinput.identifier]['defaultValue'][
+                                'schema'] = wpsinput.defaultValue.schema
+
+                    print('3 # wpsinput.allowedValues: ', wpsinput.allowedValues)
+                    if not isinstance(wpsinput.allowedValues, list) and wpsinput.allowedValues is not None:
+                        result['dataInputs'][wpsinput.identifier].update({'allowedValues': {}})
+                        if wpsinput.allowedValues.encoding:
+                            print('4 # wpsinput.allowedValues.encoding: ', wpsinput.allowedValues.encoding)
+                            result['dataInputs'][wpsinput.identifier]['allowedValues'][
+                                'encoding'] = wpsinput.allowedValues.encoding
+                        if wpsinput.allowedValues.mimeType:
+                            result['dataInputs'][wpsinput.identifier]['allowedValues'][
+                                'mimeType'] = wpsinput.allowedValues.mimeType
+                        if wpsinput.allowedValues.schema:
+                            result['dataInputs'][wpsinput.identifier]['allowedValues'][
+                                'schema'] = wpsinput.allowedValues.schema
+
+                    print('5 # wpsinput.supportedValues: ', wpsinput.supportedValues[0])
+                    print('6 # type of wpsinput.supportedValues: ', type(wpsinput.supportedValues[0]))
+                    print(' 7b länge: ', len(wpsinput.supportedValues))
+                    if isinstance(wpsinput.supportedValues[0], complex):
+                        print('7 +++ complex erkannt')
+                    else:
+                        print('8 +++ nicht erkannt')
+                    if not isinstance(wpsinput.supportedValues, list) and wpsinput.supportedValues is not None:
+                        result['dataInputs'][wpsinput.identifier].update({'supportedValues': {}})
+
+                        if wpsinput.supportedValues.encoding:
+                            result['dataInputs'][wpsinput.identifier]['supportedValues'][
+                                'encoding'] = wpsinput.supportedValues.encoding
+                        if wpsinput.supportedValues.mimeType:
+                            result['dataInputs'][wpsinput.identifier]['supportedValues'][
+                                'mimeType'] = wpsinput.supportedValues.mimeType
+                        if wpsinput.supportedValues.schema:
+                            result['dataInputs'][wpsinput.identifier]['supportedValues'][
+                                'schema'] = wpsinput.supportedValues.schema
                 else:
-                    result[wpsinput.identifier]['defaultValue'] = wpsinput.dataType
-                    result[wpsinput.identifier]['supportedValues'] = wpsinput.supportedValues
+                    print('9 +  im else')
+                    if wpsinput.defaultValue is not None:
+                        result['dataInputs'][wpsinput.identifier]['defaultValue'] = wpsinput.defaultValue
+                    if wpsinput.allowedValues is not None:
+                        result['dataInputs'][wpsinput.identifier]['allowedValues'] = wpsinput.allowedValues
+                    if wpsinput.supportedValues is not None:
+                        result['dataInputs'][wpsinput.identifier]['supportedValues'] = wpsinput.supportedValues
+                    print('10 +++++++++++++++++')
 
-                print('+++++++++++++++++')
-                print('supportedValues: ', wpsinput.supportedValues)
-                # if wpsinput.supportedValues == 'ComplexData' and wpsinput.defaultValue:
-                #
-                # else:
+            print('11 result: ', result)
+            print('11 result: ', jsonpickle.encode(wps_process))
+            print('------ ')
+            # json_data = json.dumps(wps_process.__dict__, lambda o: o.__dict__, indent=4)
 
-
-                    # result[wpsinput.identifier]['defaultValueMimeType'] = True
-                    # result[wpsinput.identifier]['defaultValueEncoding'] = True
-            print('result: ', result)
-            print('kein fehler 1')
-            context = {'process': wps_process,
-                       'service': service,
-                       #'is_link': abstract_is_link(wps_process),
-                       'wps': wps,
-                       }
-
-            print('kein fehler 2')
-            #return {'context': context}
             return JsonResponse({'result': result})
-            #return render(request, 'wps_gui/process.html', context)
 
 
 def process(request, service, identifier):
@@ -109,7 +158,7 @@ def process(request, service, identifier):
     View that displays a detailed description for a WPS process.
     """
     print('??????????????????????????????????????')
-#    form_class = InputForm
+    #    form_class = InputForm
     wps = get_wps_service_engine(service)
     wps_process = wps.describeprocess(identifier)
 

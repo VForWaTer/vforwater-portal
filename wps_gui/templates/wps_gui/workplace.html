@@ -16,7 +16,12 @@
              title="Drag & Drop your Data and Tools here">Dropzone</div>
         </div>
     </div>
+{% block modal %}
+    {% include 'wps_gui/modal.html' %}
+{% endblock modal %}
 </body>
+
+
 {#<a data-toggle="modal" href="#processModal">Edit Contact</a>#}
 {##}
 {#{% include "process.html" %}#}

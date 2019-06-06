@@ -30,9 +30,11 @@ function drop(ev) {
 }
 
 function wpsprocess(service, identifier) {
+    var modal = document.getElementById("workModal");
+    modal.style.display = "block";
     console.log("service: ", service)
     console.log("identifier: ", identifier)
-     $.ajax({
+    $.ajax({
         url: DEMO_VAR+"/wps_gui/processview",
         //url: DEMO_VAR+"/wps_gui/"+service+"/process",
         dataType   : 'json',
@@ -47,6 +49,8 @@ function wpsprocess(service, identifier) {
         },
     });
 }
+
+
 /*
 function drop(ev) {
   ev.preventDefault();

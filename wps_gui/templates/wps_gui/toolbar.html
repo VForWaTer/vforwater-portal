@@ -39,8 +39,8 @@
                 <div class="list-group">
                     {% for wps in wps_services %}
                         <a
-{#                        <a href="{% url 'wps_gui_app:service' service=wps.identification.title %}"#}
-                           class="list-group-item wps">
+                                {#                        <a href="{% url 'wps_gui_app:service' service=wps.identification.title %}"#}
+                                class="list-group-item wps">
                             <h6 class="list-group-item-heading title">{{ wps.identification.title }}</h6>
                         </a>
                     {% endfor %}
@@ -53,14 +53,20 @@
             <table style="width:100%">
                 <div class="list-group">
                     {% for process in wps.processes %}
-                        <tr><div id="{{ process.title }}"
-{#                             href="{% url 'wps_gui_app:process' service=service identifier=process.identifier %}"#}
-                             class="list-group-item process respo-container"
-                             draggable="true" ondragstart="drag(event)"
-                             onclick="wpsprocess('{{ service }}', '{{ process.identifier }}')">
-                            <h7 class="list-group-item-heading title" title="{{ process.abstract }}">{{ process.title }}
-                            </h7>
-                        </div></tr>
+                        <tr>
+                            <div id="{{ process.title }}"
+                                    {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
+                                 class="list-group-item process respo-container"
+                                 draggable="true" ondragstart="drag(event)"
+                                    {% comment %}onclick="document.getElementById('id01').style.display='block'"{% endcomment %}
+                                    {% comment %}onclick='location.href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"'{% endcomment %}
+                                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}')"
+                            >
+                                <h7 class="list-group-item-heading title"
+                                    title="{{ process.abstract }}">{{ process.title }}
+                                </h7>
+                            </div>
+                        </tr>
                     {% endfor %}
                 </div>
             </table>
