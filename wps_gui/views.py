@@ -78,7 +78,7 @@ class ProcessView(TemplateView):
                 elif not whole_wpsprocess[a] is None and not whole_wpsprocess[a] == []:
                     wps_description[a] = whole_wpsprocess[a]
 
-            return JsonResponse({'wps_description': wps_description})
+            return JsonResponse( wps_description)
 
 
 def process(request, service, identifier):

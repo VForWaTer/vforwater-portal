@@ -7,26 +7,23 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% load static %}
-
+var blala =
 <div id="workModal" class="respo-modal">
 
   <!-- Modal content -->
   <div class="respo-modal-content">
-    <span class="close">&times;</span>
-    <p>Some text in the Modal..</p>
-      <h1>{{ process.title }}</h1>
-      <p>{{ process.identifier }}</p>
-      {% if is_link %}
-        <p><a href="{{ process.abstract }}">{{ process.abstract }}</a></p>
-      {% else %}
-          {%  if process.abstract %}
-            <p>{{ process.abstract }}</p>
-          {% endif %}
-      {% endif %}
-
-  <h2>Input</h2>
-  <h2>{{ context }}</h2>
-
+  <div class="modal-header">
+      <span class="close">&times;</span>
+      <h3 id="mod_head"></h3>
+    </div>
+    <p id="mod_abs"></p>
+  <h4>Input</h4>
+  <div id="mod_in"></div>
+  <h4>Output</h4>
+  <div id="mod_out"></div>
+    <div class="modal-footer">
+      <h3>Modal Footer</h3>
+    </div>
   </div>
 
 </div>
@@ -47,3 +44,4 @@ window.onclick = function(event) {
   }
 }
 </script>
+

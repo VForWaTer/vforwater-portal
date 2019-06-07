@@ -17,3 +17,32 @@
   border: 1px solid #d3d3d3;
   text-align: center;
 }
+
+/*Modal:*/
+.close {
+  color: white;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-header {
+  padding: 2px 12px;
+  background-color: dodgerblue;
+  color: white;
+}
+
+.modal-body {padding: 2px 16px;}
+
+.modal-footer {
+  padding: 2px 12px;
+  background-color: dodgerblue;;
+  color: white;
+}

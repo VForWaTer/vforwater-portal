@@ -57,6 +57,7 @@ function Sidemenu_close() {
 // it is stored as a string, so the following function transforms this string back to a dictionary
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
+    console.log('show data is called: ', sessionStorage)
     let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     console.log('workspaceData: ', workspaceData)
     if (workspaceData){// && "value" in workspaceData) {
@@ -463,6 +464,7 @@ function menuItemListener(link) {
 
 /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
 popcloser.onclick = function () {
+    console.log('used')
     // metaData_Overlay.setPosition(undefined);
     // popcloser.blur();
     popup.classList.remove(popActive);

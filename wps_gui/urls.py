@@ -5,7 +5,7 @@ app_name = 'wps_gui_app'
 
 service_urls = [
     url(r'^$', views.service, name='service'),
-    #url(r'^process/(?P<identifier>[\w.]+)/$', views.process, name='process'),
+    # url(r'^process/(?P<identifier>[\w.]+)/$', views.process, name='process'),
 # url(r'^process$', views.ProcessView.as_view(), name='process'),
 ]
 
