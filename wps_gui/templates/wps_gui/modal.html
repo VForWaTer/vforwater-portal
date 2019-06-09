@@ -7,7 +7,6 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% load static %}
-var blala =
 <div id="workModal" class="respo-modal">
 
   <!-- Modal content -->
@@ -27,6 +26,17 @@ var blala =
   </div>
 
 </div>
+
+
+
+{% comment %}<div id="popup" class="ol-popup">
+            <div id="popup-content">
+                  <h4>Input</h4>
+  <div id="mod_in"></div>
+            </div>
+{#            <img id="preview_img" src="" alt="Keine Vorschau verfügbar"/>#}
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    </div>{% endcomment %}
 {#</html>#}
 <script>
     // Get the modal
@@ -43,5 +53,8 @@ window.onclick = function(event) {
     modal.style.display = "none";
   }
 }
+
+
+
 </script>
 

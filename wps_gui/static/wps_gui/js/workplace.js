@@ -34,8 +34,8 @@ function drop(ev) {
 
 function open_wpsprocess(service, identifier) {
     wpsprocess(service, identifier)
-    let modal = document.getElementById("workModal");
-    modal.style.display = "block";
+    //let modal = document.getElementById("workModal");
+    //modal.style.display = "block";
     console.log("service: ", service)
     console.log("identifier: ", identifier)
 }
@@ -71,29 +71,56 @@ function build_modal(wpsInfo) {
     element = document.getElementById("mod_in");
     console.log('input: ', wpsInfo.dataInputs)
     console.log('input: ', wpsInfo.dataInputs.length)
-    let inElement = ""
+    console.log('element: ', element)
+    let inElement = "";
     wpsInfo.dataInputs.forEach(function (item){
+        inElement = document.createElement("input");
         console.log('item: ', item)
         if (item.dataType.includes('string')){
+
             console.log('string')
-            inElement = document.createElement("INPUT");
+            inElement.setAttribute("type", "text");;
+            //inElement.className = "input"
+
             console.log('1: ', typeof (inElement))
             console.log('1: ', item.title)
-            inElement.insertBefore(document.createTextNode(item.title), inElement.parentNode);
+            //inElement.insertBefore(document.createTextNode(item.title), inElement.childNodes);
             console.log('2: ', inElement)
-            inElement.setAttribute("type", "text");
+            //inElement.setAttribute("type", "text");
             console.log('3: ', inElement)
+            console.log('3 element.childNodes[0]: ', element.parentNode)
+            //element.insertBefore(inElement, element.parentNode)
 
         }
         if (item.minOccurs > 0) {inElement.required = true} //else {inElement.required = false}
-
+        element.appendChild(inElement)
         console.log('inElement: ', inElement)
-        // if ()
-
     })
-    element.innerHTML = inElement;
+
+    // if ()
+    console.log('Element: ', element)
+    //element.innerHTML = inElement;
+
+    let modal = document.getElementById("workModal");
+    modal.style.display = "block";
 
 
+
+/*
+
+ $("input[name=delete_id]").val(deleteVal);
+
+$('.openmodal').click(function () {
+  var deleteVal = $(this).attr('data-val');
+  console.log(deleteVal)
+
+    $('#myDeleteModal').modal({
+        show: true
+    });
+
+    $("input[name=delete_id]").val(deleteVal);
+
+});*/
     // element.innerHTML = wpsInfo.title;
 
 
