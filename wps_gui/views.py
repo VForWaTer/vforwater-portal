@@ -1,5 +1,6 @@
 # from inspect import getmembers
 import json
+import re
 
 import jsonpickle
 from django.http import HttpResponse, JsonResponse
@@ -70,7 +71,11 @@ class ProcessView(TemplateView):
                             innerdict = {}
                             for k, v in b.items():
                                 if not v is None and not v == []:
-                                    innerdict[k] = v
+                                    if isinstance(v, str) and re.search("(?<=/#)\w+", v):
+                                        match = re.search("(?<=/#)\w+", v)
+                                        innerdict[k] = match.group(0)
+                                    else:
+                                        innerdict[k] = v
                             list_values.append(innerdict)
                         elif not b is None and not b == []:
                             list_values.append(b)
@@ -78,7 +83,7 @@ class ProcessView(TemplateView):
                 elif not whole_wpsprocess[a] is None and not whole_wpsprocess[a] == []:
                     wps_description[a] = whole_wpsprocess[a]
 
-            return JsonResponse( wps_description)
+            return JsonResponse(wps_description)
 
 
 def process(request, service, identifier):

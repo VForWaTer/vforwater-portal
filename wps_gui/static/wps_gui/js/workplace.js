@@ -50,77 +50,114 @@ function wpsprocess(service, identifier) {
         'csrfmiddlewaretoken': csrf_token,
     }, // data sent with the post request
     success: function (json) {
-        console.log('bla: ', json)
         build_modal(json)
         },
     });
 }
 
 function build_modal(wpsInfo) {
-    console.log('wpsInfo: ', wpsInfo)
+    console.log(' wpsInfo: ', wpsInfo)
     // console.log('wpsInfo[title]: ', wpsInfo[title])
     let element = document.getElementById("mod_head");
     let newElement = "";
     element.innerHTML = wpsInfo.title;
     element = document.getElementById("mod_abs");
-    if (wpsInfo.abstract) {
-        newElement = wpsInfo.abstract;
+    if (wpsInfo.abstract) {newElement = wpsInfo.abstract;
     } else {newElement = ""}
     element.innerHTML = newElement;
 
-    element = document.getElementById("mod_in");
-    console.log('input: ', wpsInfo.dataInputs)
-    console.log('input: ', wpsInfo.dataInputs.length)
-    console.log('element: ', element)
+    document.getElementById("mod_in").innerHTML = "";
     let inElement = "";
+    let newNode, nodeText = "";
+
     wpsInfo.dataInputs.forEach(function (item){
-        inElement = document.createElement("input");
-        console.log('item: ', item)
-        if (item.dataType.includes('string')){
+        element = document.getElementById("mod_in");
+        newNode = document.createElement("p");
+        nodeText = document.createTextNode(" " + item.title + ": ");
+        newNode.appendChild(nodeText);
 
-            console.log('string')
-            inElement.setAttribute("type", "text");;
-            //inElement.className = "input"
-
-            console.log('1: ', typeof (inElement))
-            console.log('1: ', item.title)
-            //inElement.insertBefore(document.createTextNode(item.title), inElement.childNodes);
-            console.log('2: ', inElement)
-            //inElement.setAttribute("type", "text");
-            console.log('3: ', inElement)
-            console.log('3 element.childNodes[0]: ', element.parentNode)
-            //element.insertBefore(inElement, element.parentNode)
-
+        if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1){
+            if ('maxOccurs' in item) {
+                if (item.maxOccurs === 1) {
+                    let radioNode = "";
+                    nodeText = "";
+                    item.allowedValues.forEach(function (option) {
+                        radioNode = document.createElement("p");
+                        nodeText = document.createTextNode(" " + option + " ");
+                        inElement = document.createElement("input");
+                        inElement.type = "radio";
+                        // inElement.setAttribute("type", "radio");
+                        inElement.value = option;
+                        inElement.name = item.identifier;
+                        if (item.minOccurs === 1) {inElement.required = true;}
+                        if ('defaultValue' in item) {
+                            if (item.defaultValue == option) {inElement.checked = true;}}
+                        newNode.appendChild(inElement);
+                        newNode.appendChild(nodeText);
+                    });
+                }
+            }
+        } else if ('supportedValues' in item  && Array.isArray(item.supportedValues) && item.supportedValues.length > 1){
+            if ('maxOccurs' in item) {
+                if (item.maxOccurs === 1) {
+                    let radioNode = "";
+                    nodeText = "";
+                    item.supportedValues.forEach(function (option) {
+                        radioNode = document.createElement("p");
+                        nodeText = document.createTextNode(" " + option + " ");
+                        inElement = document.createElement("input");
+                        inElement.type = "radio";
+                        // inElement.setAttribute("type", "radio");
+                        inElement.value = option;
+                        inElement.name = item.identifier;
+                        if (item.minOccurs === 1) {inElement.required = true;}
+                        if ('defaultValue' in item) {
+                            if (item.defaultValue == option) {inElement.checked = true;}}
+                        newNode.appendChild(inElement);
+                        newNode.appendChild(nodeText);
+                    });
+                    // inElement.setAttribute("type", "radio")
+                }
+            }
+        } else {
+            inElement = document.createElement("input");
+            inElement.id = item.identifier;
+            inElement.name = item.identifier;
+            switch (item.dataType) {
+                case 'string':
+                    inElement.type = "text";
+                    //inElement.className = "input"
+                    break;
+                case 'boolean':
+                    inElement.type = "radio";
+                    break;
+                case 'float':
+                    inElement.type =  "number";
+                    inElement.step = "0.000001";
+                    break;
+                case 'ComplexData':
+                    console.log('you have to handle complesdata properly');
+                    break;
+                case 'BoundingBoxData':
+                    console.log('you have to handle BoundingBoxData properly');
+                    break;
+                default:
+                    console.log('+++++++++++++++++++++++')
+                    console.log(' new dataType')
+            }
+            if (item.minOccurs > 0) {inElement.required = true} //else {inElement.required = false}
+            newNode.appendChild(inElement);
         }
-        if (item.minOccurs > 0) {inElement.required = true} //else {inElement.required = false}
-        element.appendChild(inElement)
-        console.log('inElement: ', inElement)
-    })
+        //$("p").append("<b>Appended text</b>");
+        //$("div").append(inElement);
+        // if ()
+        if (typeof (newNode) === 'object') {element.appendChild(newNode)}
 
-    // if ()
-    console.log('Element: ', element)
+    });
     //element.innerHTML = inElement;
-
     let modal = document.getElementById("workModal");
     modal.style.display = "block";
 
-
-
-/*
-
- $("input[name=delete_id]").val(deleteVal);
-
-$('.openmodal').click(function () {
-  var deleteVal = $(this).attr('data-val');
-  console.log(deleteVal)
-
-    $('#myDeleteModal').modal({
-        show: true
-    });
-
-    $("input[name=delete_id]").val(deleteVal);
-
-});*/
     // element.innerHTML = wpsInfo.title;
 
 
