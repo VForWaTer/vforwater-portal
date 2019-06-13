@@ -55,6 +55,10 @@ function wpsprocess(service, identifier) {
     });
 }
 
+function saveInput() {
+    console.log('lets store it')
+}
+
 function build_modal(wpsInfo) {
     console.log(' wpsInfo: ', wpsInfo)
     // console.log('wpsInfo[title]: ', wpsInfo[title])
@@ -66,6 +70,7 @@ function build_modal(wpsInfo) {
     } else {newElement = ""}
     element.innerHTML = newElement;
 
+    //inputs:
     document.getElementById("mod_in").innerHTML = "";
     let inElement = "";
     let newNode, nodeText = "";
@@ -75,7 +80,6 @@ function build_modal(wpsInfo) {
         newNode = document.createElement("p");
         nodeText = document.createTextNode(" " + item.title + ": ");
         newNode.appendChild(nodeText);
-
         if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1){
             if ('maxOccurs' in item) {
                 if (item.maxOccurs === 1) {
@@ -127,19 +131,27 @@ function build_modal(wpsInfo) {
                 case 'string':
                     inElement.type = "text";
                     //inElement.className = "input"
+                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
                     break;
                 case 'boolean':
-                    inElement.type = "radio";
+                    inElement.type = "checkbox";
+                    if ('defaultValue' in item && item.defaultValue == true) {inElement.checked = true;}
                     break;
                 case 'float':
                     inElement.type =  "number";
                     inElement.step = "0.000001";
+                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
                     break;
                 case 'ComplexData':
+                    inElement.type = "text";
                     console.log('you have to handle complesdata properly');
+                    if ('defaultValue' in item) {
+                        if ('mimeType' in item.defaultValue) {
+                            inElement.value = item.defaultValue.mimeType;}}
                     break;
                 case 'BoundingBoxData':
                     console.log('you have to handle BoundingBoxData properly');
+                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
                     break;
                 default:
                     console.log('+++++++++++++++++++++++')
@@ -150,10 +162,45 @@ function build_modal(wpsInfo) {
         }
         //$("p").append("<b>Appended text</b>");
         //$("div").append(inElement);
-        // if ()
         if (typeof (newNode) === 'object') {element.appendChild(newNode)}
-
     });
+
+    //outputs:
+    console.log('outputs: ', wpsInfo.processOutputs)
+    console.log('outputs: ', wpsInfo.processOutputs.length)
+    console.log('outputs: ', wpsInfo.processOutputs[0])
+    document.getElementById("mod_out").innerHTML = "";
+    let outElement = "";
+    newNode, nodeText = "";
+
+    wpsInfo.processOutputs.forEach(function (item){
+        element = document.getElementById("mod_out");
+
+        nodeText = document.createElement("p");
+        nodeText.appendChild(document.createTextNode(" Name for " + item.title + ": "));
+
+        newNode = document.createElement("div");
+        newNode.appendChild(nodeText);
+
+
+
+        outElement = document.createElement("input");
+        // inElement.className = "input";
+        outElement.id = item.identifier;
+        outElement.name = item.identifier;
+        outElement.type = "text";
+        outElement.value = item.identifier;
+        newNode.appendChild(outElement);
+
+        nodeText = document.createElement("p");
+        let mimeText ="";
+        if (item.defaultValue && item.defaultValue.mimeType){mimeText = " (" +item.defaultValue.mimeType+ ")"}
+        nodeText.appendChild(document.createTextNode(" Type of Output: " + item.dataType + mimeText));
+        newNode.appendChild(nodeText);
+        //$("div").append(inElement);
+        if (typeof (newNode) === 'object') {element.appendChild(newNode)}
+    });
+
     //element.innerHTML = inElement;
     let modal = document.getElementById("workModal");
     modal.style.display = "block";

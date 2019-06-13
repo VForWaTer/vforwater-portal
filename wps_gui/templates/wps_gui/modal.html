@@ -21,7 +21,9 @@
   <h4>Output</h4>
   <div id="mod_out"></div>
     <div class="modal-footer">
-      <h3>Modal Footer</h3>
+        <span class="modal-cancel">Cancel</span>
+        <span-s class="modal-save">Save</span-s>
+        <h3> </h3>
     </div>
   </div>
 
@@ -40,12 +42,18 @@
 {#</html>#}
 <script>
     // Get the modal
-var modal = document.getElementById("workModal");
+let modal = document.getElementById("workModal");
     // Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
+let span = document.getElementsByClassName("close")[0];
+span = document.getElementsByClassName("modal-cancel")[0];
+let span_s = document.getElementsByClassName("modal-save")[0];
     // When the user clicks on <span> (x), close the modal
 span.onclick = function() {
   modal.style.display = "none";
+};
+span_s.onclick = function() {
+  modal.style.display = "none";
+  saveInput();
 };
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
