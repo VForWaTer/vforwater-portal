@@ -142,6 +142,10 @@ function build_modal(wpsInfo) {
                     inElement.step = "0.000001";
                     if ('defaultValue' in item) {inElement.value = item.defaultValue;}
                     break;
+                case 'integer':
+                    inElement.type =  "number";
+                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
+                    break;
                 case 'ComplexData':
                     inElement.type = "text";
                     console.log('you have to handle complesdata properly');

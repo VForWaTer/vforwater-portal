@@ -32,6 +32,11 @@
   cursor: pointer;
 }
 
+p.modal-abstract {
+  max-height: 120px;
+  overflow: auto;
+}
+
 .modal-cancel, .modal-save {
   color: white;
   float: right;
