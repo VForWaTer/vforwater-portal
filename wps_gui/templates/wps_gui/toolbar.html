@@ -58,9 +58,10 @@
                                     {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
                                  class="list-group-item process respo-container"
                                  draggable="true" ondragstart="drag(event)"
+                                 data-service="{{ service }}" data-process="{{ process.identifier }}"
                                     {% comment %}onclick="document.getElementById('id01').style.display='block'"{% endcomment %}
                                     {% comment %}onclick='location.href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"'{% endcomment %}
-                                 onclick="open_wpsprocess('{{ service }}', '{{ process.identifier }}')"
+                                 onclick="open_wpsprocess('{{ service }}', '{{ process.identifier }}', this.id)"
                             >
                                 <h7 class="list-group-item-heading title"
                                     title="{{ process.abstract }}">{{ process.title }}

@@ -22,7 +22,8 @@
         <div id="mod_out"></div>
         <div class="modal-footer">
             <span-c class="modal-cancel">Cancel</span-c>
-            <span-s class="modal-save">Save</span-s>
+            <span-ok class="modal-ok">Ok</span-ok>
+            <span-r class="modal-run" onclick="runProcess()">Run</span-r>
             <h3></h3>
         </div>
     </div>
@@ -45,12 +46,17 @@
     // Get the <span> element that closes the modal
     let span = document.getElementsByClassName("close")[0];
     let span_c = document.getElementsByClassName("modal-cancel")[0];
-    let span_s = document.getElementsByClassName("modal-save")[0];
+    let span_ok = document.getElementsByClassName("modal-ok")[0];
+    {#let span_r = document.getElementsByClassName("modal-run")[0];#}
     // When the user clicks on <span> (x), close the modal
     span.onclick = function () {
         modal.style.display = "none";
     };
-    span_s.onclick = function () {
+{% comment %}    span_r.onclick = function () {
+        modal.style.display = "none";
+        runProcess();
+    };{% endcomment %}
+    span_ok.onclick = function () {
         modal.style.display = "none";
         saveInput();
     };

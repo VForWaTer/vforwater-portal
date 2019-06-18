@@ -37,15 +37,15 @@ p.modal-abstract {
   overflow: auto;
 }
 
-.modal-cancel, .modal-save {
+.modal-cancel, .modal-ok, .modal-run {
   color: white;
   float: right;
   font-size: 20px;
     padding: 4px 12px;
   /*font-weight: bold;*/
 }
-.modal-cancel:hover, .modal-save:hover,
-.modal-cancel:focus, .modal-save:focus {
+.modal-cancel:hover, .modal-ok:hover, .modal-run:hover,
+.modal-cancel:focus, .modal-ok:focus, .modal-run:focus {
     color: #000;
     text-decoration: none;
     cursor: pointer;

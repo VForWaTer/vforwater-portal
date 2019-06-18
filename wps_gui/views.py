@@ -85,6 +85,39 @@ class ProcessView(TemplateView):
 
             return JsonResponse(wps_description)
 
+        if 'processrun' in request.GET:
+
+            request_input = json.loads(request.GET.get('processrun'))
+            inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
+
+            wps = get_wps_service_engine(request_input.get("serv", ""))
+            wps_process = request_input.get("id", "")
+            execution = wps.execute(wps_process, inputs)
+            execution_status = execution.status
+            image = []
+            outputs = []
+            for output in execution.processOutputs:
+                outputs.append(output.data)
+                output_reference = output.reference
+                if type(output.data[0] is str):
+                    if len(output.data[0]) > 10:
+                        substring = output.data[0][:10]
+                        if "img" in substring:
+                            image = output.data[0]
+
+            if output_reference:
+                output_reference = output_reference.replace('localhost', HOST_NAME)
+                # output_reference = output_reference.replace('localhost','vforwater-devel')
+
+            context_p = {'processid': wps_process,
+                         'outputs': outputs,
+                         'image': image,
+                         'output_reference': output_reference,
+                         'execution_status': execution_status
+                         }
+
+            return JsonResponse(context_p)
+
 
 def process(request, service, identifier):
     """

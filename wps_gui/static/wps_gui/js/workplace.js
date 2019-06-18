@@ -32,15 +32,25 @@ function drop(ev) {
     console.log('ev: ', ev)
 }
 
-function open_wpsprocess(service, identifier) {
-    wpsprocess(service, identifier)
+// TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
+//  if process_id == btn_id place btn in dropzone (on save)
+function open_wpsprocess(service, process_id, btn_id) {
+    wpsprocess(service, process_id, btn_id);
+/*
+    let btn = document.getElementById(btn_id);
+    console.log("btn: ", btn)
+    console.log('data service: ', btn.dataset.service)
+    console.log('data process: ', btn.dataset.process)
+*/
+
     //let modal = document.getElementById("workModal");
     //modal.style.display = "block";
     console.log("service: ", service)
-    console.log("identifier: ", identifier)
+    console.log("identifier: ", process_id)
+    console.log("btn_id: ", btn_id)
 }
 
-function wpsprocess(service, identifier) {
+function wpsprocess(service, identifier, btn_id) {
     $.ajax({
     url: DEMO_VAR+"/wps_gui/processview",
     //url: DEMO_VAR+"/wps_gui/"+service+"/process",
@@ -50,7 +60,7 @@ function wpsprocess(service, identifier) {
         'csrfmiddlewaretoken': csrf_token,
     }, // data sent with the post request
     success: function (json) {
-        build_modal(json)
+        build_modal(json, service, identifier, btn_id)
         },
     });
 }
@@ -59,21 +69,88 @@ function saveInput() {
     console.log('lets store it')
 }
 
-function build_modal(wpsInfo) {
-    console.log(' wpsInfo: ', wpsInfo)
+function runProcess() {
+    let inModal = document.getElementById('mod_in');
+    let inputs = inModal.getElementsByTagName('input');
+    console.log('+ inputs: ', inputs)
+    var i;
+    // var inDict = {};
+    var inKey = [];
+    var inValue = [];
+    let loopLength = inputs.length;
+    for (i = 0; i < loopLength ; i++) {
+        if (inputs[i].type == "radio"){
+            if (inputs[i].checked == true) {
+                // inDict[inputs[i].name] = inputs[i].value;
+                inKey.push(inputs[i].name);
+                inValue.push(inputs[i].value);
+            }
+        } else {
+            // inDict[inputs[i].name] = inputs[i].value;
+            inKey.push(inputs[i].name);
+            inValue.push(inputs[i].value);
+        }
+    }
+
+    // console.log('--- inDict: ', inDict)
+    let outModal = document.getElementById('mod_out');
+    let outputs = outModal.getElementsByTagName('output');
+    let outDict = {};
+    loopLength = outputs.length;
+    for (i = 0; i < loopLength ; i++) {
+        if (outputs[i].type == "radio"){
+            if (outputs[i].checked == true) {outDict [outputs[i].name] = outputs[i].value;}
+        } else {
+            outDict [outputs[i].name] = outputs[i].value;
+        }
+    }
+
+    let modhead = document.getElementById('mod_head');
+    let wpsservice = modhead.dataset.service;
+    let identifier = modhead.dataset.process;
+    console.log('--- outDict : ', outDict)
+    $.ajax({
+        url: DEMO_VAR+"/wps_gui/processview",
+        dataType   : 'json',
+        data: {
+            processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (json) {
+            console.log(' + + + + ')
+            console.log(' result: ', json)
+            // build_modal(json, service, identifier, btn_id)
+            },
+        });
+
+}
+
+// A Object with names and values from the input object
+function modalObj(processId, processInput, processOutput) {
+  this.processId = processId;
+  this.processInput = processInput;
+  this.processOutput = processOutput;
+}
+
+function build_modal(wpsInfo, service, identifier, btn_id) {
+    // sessionStorage.setItem("processModal", wpsInfo);
+    // console.log(' wpsInfo: ', wpsInfo)
+    // console.log(' btn_id: ', btn_id)
     // console.log('wpsInfo[title]: ', wpsInfo[title])
     let element = document.getElementById("mod_head");
     let newElement = "";
     element.innerHTML = wpsInfo.title;
+    element.dataset.service=service;
+    element.dataset.process=identifier;
     element = document.getElementById("mod_abs");
     if (wpsInfo.abstract) {newElement = wpsInfo.abstract;
     } else {newElement = ""}
-    element.innerHTML = newElement;
 
+    element.innerHTML = newElement;
     //inputs:
     document.getElementById("mod_in").innerHTML = "";
-    let inElement = "";
-    let newNode, nodeText = "";
+    let inElement = "", newNode = "", nodeText = "";
+    let outElementIdList = [], inElementIdList = [];
 
     wpsInfo.dataInputs.forEach(function (item){
         element = document.getElementById("mod_in");
@@ -92,6 +169,8 @@ function build_modal(wpsInfo) {
                         inElement.type = "radio";
                         // inElement.setAttribute("type", "radio");
                         inElement.value = option;
+                        inElement.id = item.identifier;
+                        inElementIdList.push(item.identifier);
                         inElement.name = item.identifier;
                         if (item.minOccurs === 1) {inElement.required = true;}
                         if ('defaultValue' in item) {
@@ -113,6 +192,8 @@ function build_modal(wpsInfo) {
                         inElement.type = "radio";
                         // inElement.setAttribute("type", "radio");
                         inElement.value = option;
+                        inElement.id = item.identifier;
+                        inElementIdList.push(item.identifier);
                         inElement.name = item.identifier;
                         if (item.minOccurs === 1) {inElement.required = true;}
                         if ('defaultValue' in item) {
@@ -126,6 +207,7 @@ function build_modal(wpsInfo) {
         } else {
             inElement = document.createElement("input");
             inElement.id = item.identifier;
+            inElementIdList.push(item.identifier);
             inElement.name = item.identifier;
             switch (item.dataType) {
                 case 'string':
@@ -168,14 +250,15 @@ function build_modal(wpsInfo) {
         //$("div").append(inElement);
         if (typeof (newNode) === 'object') {element.appendChild(newNode)}
     });
-
+    console.log('seesionStorage: ', sessionStorage.getItem("processModal"))
     //outputs:
     console.log('outputs: ', wpsInfo.processOutputs)
     console.log('outputs: ', wpsInfo.processOutputs.length)
     console.log('outputs: ', wpsInfo.processOutputs[0])
     document.getElementById("mod_out").innerHTML = "";
     let outElement = "";
-    newNode, nodeText = "";
+    newNode = "";
+    nodeText = "";
 
     wpsInfo.processOutputs.forEach(function (item){
         element = document.getElementById("mod_out");
@@ -191,6 +274,7 @@ function build_modal(wpsInfo) {
         outElement = document.createElement("input");
         // inElement.className = "input";
         outElement.id = item.identifier;
+        outElementIdList.push(item.identifier);
         outElement.name = item.identifier;
         outElement.type = "text";
         outElement.value = item.identifier;
@@ -208,10 +292,12 @@ function build_modal(wpsInfo) {
     //element.innerHTML = inElement;
     let modal = document.getElementById("workModal");
     modal.style.display = "block";
+    let currentModal = new modalObj(identifier, inElementIdList, outElementIdList);
+    // TODO: get right name for sessionstorage
+    // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
+    // console.log('+++: ', JSON.stringify(modalObj))
 
     // element.innerHTML = wpsInfo.title;
-
-
 }
 /*
 function drop(ev) {
