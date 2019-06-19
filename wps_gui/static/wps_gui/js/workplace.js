@@ -8,7 +8,7 @@ function drag(ev) {
 
 function drop(ev) {
     ev.preventDefault();
-    let droplet= ev.dataTransfer.getData("text/html");
+    let droplet = ev.dataTransfer.getData("text/html");
     console.log('ev: ', ev)
     console.log('drop: ', droplet)
 
@@ -16,13 +16,13 @@ function drop(ev) {
     // let dropletCopy = document.createElement('canvas');
     let dropletCopy = document.getElementById(droplet).cloneNode(true);
     // build new id for new element:
-    if (sessionStorage.getItem("dz_count")){
-        sessionStorage.setItem("dz_count", JSON.parse(sessionStorage.getItem("dz_count"))+1)
+    if (sessionStorage.getItem("dz_count")) {
+        sessionStorage.setItem("dz_count", JSON.parse(sessionStorage.getItem("dz_count")) + 1)
     } else {
         sessionStorage.setItem("dz_count", 1)
     }
     console.log('sessionStorage: ', sessionStorage.getItem("dz_count"))
-    dropletCopy.id = "dz"+sessionStorage.getItem("dz_count");
+    dropletCopy.id = "dz" + sessionStorage.getItem("dz_count");
     dropletCopy.classList.add('tool-btn');
     dropletCopy.style.left = ev.offsetX + "px";
     dropletCopy.style.top = ev.offsetY + "px";
@@ -36,12 +36,12 @@ function drop(ev) {
 //  if process_id == btn_id place btn in dropzone (on save)
 function open_wpsprocess(service, process_id, btn_id) {
     wpsprocess(service, process_id, btn_id);
-/*
-    let btn = document.getElementById(btn_id);
-    console.log("btn: ", btn)
-    console.log('data service: ', btn.dataset.service)
-    console.log('data process: ', btn.dataset.process)
-*/
+    /*
+        let btn = document.getElementById(btn_id);
+        console.log("btn: ", btn)
+        console.log('data service: ', btn.dataset.service)
+        console.log('data process: ', btn.dataset.process)
+    */
 
     //let modal = document.getElementById("workModal");
     //modal.style.display = "block";
@@ -52,21 +52,52 @@ function open_wpsprocess(service, process_id, btn_id) {
 
 function wpsprocess(service, identifier, btn_id) {
     $.ajax({
-    url: DEMO_VAR+"/wps_gui/processview",
-    //url: DEMO_VAR+"/wps_gui/"+service+"/process",
-    dataType   : 'json',
-    data: {
-        processview: JSON.stringify({id: identifier, serv: service}),
-        'csrfmiddlewaretoken': csrf_token,
-    }, // data sent with the post request
-    success: function (json) {
-        build_modal(json, service, identifier, btn_id)
+        url: DEMO_VAR + "/wps_gui/processview",
+        //url: DEMO_VAR+"/wps_gui/"+service+"/process",
+        dataType: 'json',
+        data: {
+            processview: JSON.stringify({id: identifier, serv: service}),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (json) {
+            build_modal(json, service, identifier, btn_id)
         },
     });
 }
 
-function saveInput() {
+function dropAndSave() {
     console.log('lets store it')
+}
+
+function checkRequired(checkElement) {
+    console.log('required: ', checkElement)
+    var passed = true;
+    let requiredList = checkElement.querySelectorAll("[required]");
+    let loopLength = requiredList.length;
+    let radioName = "";
+    let checkedRadioName = "";
+    for (let i = 0; i < loopLength; i++) {
+        if (requiredList[i].type === 'radio') {
+            radioName = requiredList[i].name;
+            if (checkedRadioName !== radioName) {
+                if ($('input[name=' + radioName + ']:checked').length > 0) {
+                    checkedRadioName = radioName;
+                } else {
+                    alert("Please fill all required fields that are marked with (*).");
+                    passed = false;
+                    break
+                }
+            }
+        } else {
+            console.log('requiredList[i].value: ', requiredList[i].value)
+            if (!requiredList[i].value) {
+                alert("Please fill all required fields that are marked with (*).");
+                    passed = false;
+                    break
+            }
+        }
+    }
+    return passed
 }
 
 function runProcess() {
@@ -78,8 +109,8 @@ function runProcess() {
     var inKey = [];
     var inValue = [];
     let loopLength = inputs.length;
-    for (i = 0; i < loopLength ; i++) {
-        if (inputs[i].type == "radio"){
+    for (i = 0; i < loopLength; i++) {
+        if (inputs[i].type == "radio") {
             if (inputs[i].checked == true) {
                 // inDict[inputs[i].name] = inputs[i].value;
                 inKey.push(inputs[i].name);
@@ -97,9 +128,11 @@ function runProcess() {
     let outputs = outModal.getElementsByTagName('output');
     let outDict = {};
     loopLength = outputs.length;
-    for (i = 0; i < loopLength ; i++) {
-        if (outputs[i].type == "radio"){
-            if (outputs[i].checked == true) {outDict [outputs[i].name] = outputs[i].value;}
+    for (i = 0; i < loopLength; i++) {
+        if (outputs[i].type == "radio") {
+            if (outputs[i].checked == true) {
+                outDict [outputs[i].name] = outputs[i].value;
+            }
         } else {
             outDict [outputs[i].name] = outputs[i].value;
         }
@@ -110,8 +143,8 @@ function runProcess() {
     let identifier = modhead.dataset.process;
     console.log('--- outDict : ', outDict)
     $.ajax({
-        url: DEMO_VAR+"/wps_gui/processview",
-        dataType   : 'json',
+        url: DEMO_VAR + "/wps_gui/processview",
+        dataType: 'json',
         data: {
             processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
             'csrfmiddlewaretoken': csrf_token,
@@ -120,16 +153,16 @@ function runProcess() {
             console.log(' + + + + ')
             console.log(' result: ', json)
             // build_modal(json, service, identifier, btn_id)
-            },
-        });
+        },
+    });
 
 }
 
 // A Object with names and values from the input object
 function modalObj(processId, processInput, processOutput) {
-  this.processId = processId;
-  this.processInput = processInput;
-  this.processOutput = processOutput;
+    this.processId = processId;
+    this.processInput = processInput;
+    this.processOutput = processOutput;
 }
 
 function build_modal(wpsInfo, service, identifier, btn_id) {
@@ -140,11 +173,14 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
     let element = document.getElementById("mod_head");
     let newElement = "";
     element.innerHTML = wpsInfo.title;
-    element.dataset.service=service;
-    element.dataset.process=identifier;
+    element.dataset.service = service;
+    element.dataset.process = identifier;
     element = document.getElementById("mod_abs");
-    if (wpsInfo.abstract) {newElement = wpsInfo.abstract;
-    } else {newElement = ""}
+    if (wpsInfo.abstract) {
+        newElement = wpsInfo.abstract;
+    } else {
+        newElement = ""
+    }
 
     element.innerHTML = newElement;
     //inputs:
@@ -152,12 +188,23 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [], inElementIdList = [];
 
-    wpsInfo.dataInputs.forEach(function (item){
+    wpsInfo.dataInputs.forEach(function (item) {
         element = document.getElementById("mod_in");
         newNode = document.createElement("p");
-        nodeText = document.createTextNode(" " + item.title + ": ");
+        let titleText = "";
+        if ('minOccurs' in item) {
+            if (item.minOccurs > 0) {
+                titleText = " " + item.title + " (*) : "
+            } else {
+                titleText = " " + item.title + ": "
+            }
+        }
+        if (item.minOccurs === 1) {
+            inElement.required = true;
+        }
+        nodeText = document.createTextNode(titleText);
         newNode.appendChild(nodeText);
-        if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1){
+        if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
             if ('maxOccurs' in item) {
                 if (item.maxOccurs === 1) {
                     let radioNode = "";
@@ -171,16 +218,22 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
                         inElement.value = option;
                         inElement.id = item.identifier;
                         inElementIdList.push(item.identifier);
+                        if (item.minOccurs === 1) {
+                            inElement.required = true;
+                        }
+
                         inElement.name = item.identifier;
-                        if (item.minOccurs === 1) {inElement.required = true;}
                         if ('defaultValue' in item) {
-                            if (item.defaultValue == option) {inElement.checked = true;}}
+                            if (item.defaultValue == option) {
+                                inElement.checked = true;
+                            }
+                        }
                         newNode.appendChild(inElement);
                         newNode.appendChild(nodeText);
                     });
                 }
             }
-        } else if ('supportedValues' in item  && Array.isArray(item.supportedValues) && item.supportedValues.length > 1){
+        } else if ('supportedValues' in item && Array.isArray(item.supportedValues) && item.supportedValues.length > 1) {
             if ('maxOccurs' in item) {
                 if (item.maxOccurs === 1) {
                     let radioNode = "";
@@ -195,9 +248,14 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
                         inElement.id = item.identifier;
                         inElementIdList.push(item.identifier);
                         inElement.name = item.identifier;
-                        if (item.minOccurs === 1) {inElement.required = true;}
+                        if (item.minOccurs === 1) {
+                            inElement.required = true;
+                        }
                         if ('defaultValue' in item) {
-                            if (item.defaultValue == option) {inElement.checked = true;}}
+                            if (item.defaultValue == option) {
+                                inElement.checked = true;
+                            }
+                        }
                         newNode.appendChild(inElement);
                         newNode.appendChild(nodeText);
                     });
@@ -209,46 +267,65 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
             inElement.id = item.identifier;
             inElementIdList.push(item.identifier);
             inElement.name = item.identifier;
+            if (item.minOccurs === 1) {
+                inElement.required = true;
+            }
             switch (item.dataType) {
                 case 'string':
                     inElement.type = "text";
                     //inElement.className = "input"
-                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
+                    if ('defaultValue' in item) {
+                        inElement.value = item.defaultValue;
+                    }
                     break;
                 case 'boolean':
                     inElement.type = "checkbox";
-                    if ('defaultValue' in item && item.defaultValue == true) {inElement.checked = true;}
+                    if ('defaultValue' in item && item.defaultValue == true) {
+                        inElement.checked = true;
+                    }
                     break;
                 case 'float':
-                    inElement.type =  "number";
+                    inElement.type = "number";
                     inElement.step = "0.000001";
-                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
+                    if ('defaultValue' in item) {
+                        inElement.value = item.defaultValue;
+                    }
                     break;
                 case 'integer':
-                    inElement.type =  "number";
-                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
+                    inElement.type = "number";
+                    if ('defaultValue' in item) {
+                        inElement.value = item.defaultValue;
+                    }
                     break;
                 case 'ComplexData':
                     inElement.type = "text";
                     console.log('you have to handle complesdata properly');
                     if ('defaultValue' in item) {
                         if ('mimeType' in item.defaultValue) {
-                            inElement.value = item.defaultValue.mimeType;}}
+                            inElement.value = item.defaultValue.mimeType;
+                        }
+                    }
                     break;
                 case 'BoundingBoxData':
                     console.log('you have to handle BoundingBoxData properly');
-                    if ('defaultValue' in item) {inElement.value = item.defaultValue;}
+                    if ('defaultValue' in item) {
+                        inElement.value = item.defaultValue;
+                    }
                     break;
                 default:
                     console.log('+++++++++++++++++++++++')
                     console.log(' new dataType')
             }
-            if (item.minOccurs > 0) {inElement.required = true} //else {inElement.required = false}
+            if (item.minOccurs > 0) {
+                inElement.required = true
+            } //else {inElement.required = false}
             newNode.appendChild(inElement);
         }
         //$("p").append("<b>Appended text</b>");
         //$("div").append(inElement);
-        if (typeof (newNode) === 'object') {element.appendChild(newNode)}
+        if (typeof (newNode) === 'object') {
+            element.appendChild(newNode)
+        }
     });
     console.log('seesionStorage: ', sessionStorage.getItem("processModal"))
     //outputs:
@@ -260,7 +337,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
     newNode = "";
     nodeText = "";
 
-    wpsInfo.processOutputs.forEach(function (item){
+    wpsInfo.processOutputs.forEach(function (item) {
         element = document.getElementById("mod_out");
 
         nodeText = document.createElement("p");
@@ -268,7 +345,6 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
 
         newNode = document.createElement("div");
         newNode.appendChild(nodeText);
-
 
 
         outElement = document.createElement("input");
@@ -281,12 +357,16 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
         newNode.appendChild(outElement);
 
         nodeText = document.createElement("p");
-        let mimeText ="";
-        if (item.defaultValue && item.defaultValue.mimeType){mimeText = " (" +item.defaultValue.mimeType+ ")"}
+        let mimeText = "";
+        if (item.defaultValue && item.defaultValue.mimeType) {
+            mimeText = " (" + item.defaultValue.mimeType + ")"
+        }
         nodeText.appendChild(document.createTextNode(" Type of Output: " + item.dataType + mimeText));
         newNode.appendChild(nodeText);
         //$("div").append(inElement);
-        if (typeof (newNode) === 'object') {element.appendChild(newNode)}
+        if (typeof (newNode) === 'object') {
+            element.appendChild(newNode)
+        }
     });
 
     //element.innerHTML = inElement;
@@ -299,6 +379,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
 
     // element.innerHTML = wpsInfo.title;
 }
+
 /*
 function drop(ev) {
   ev.preventDefault();
