@@ -192,6 +192,7 @@ class MenuView(TemplateView):
             #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
             # from_var = 'public.tbl_data'
             # where_var = 'tbl_data.meta_id = ' + str(work_dataset)
+            if isinstance(work_dataset, int): work_dataset = [work_dataset]
             if request.user.is_authenticated:
                 requested_dataset = TblMeta.objects.values('id', 'variable__variable_name', 'variable__variable_abbrev',
                                                           'variable__unit__unit_abbrev').filter(pk__in=work_dataset)
