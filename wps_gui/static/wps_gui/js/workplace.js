@@ -92,14 +92,16 @@ function checkRequired(checkElement) {
             console.log('requiredList[i].value: ', requiredList[i].value)
             if (!requiredList[i].value) {
                 alert("Please fill all required fields that are marked with (*).");
-                    passed = false;
-                    break
+                passed = false;
+                break
             }
         }
     }
     return passed
 }
 
+// TODO: runProcess now works only on execution from modal. Ajdust to be usable from Dropzone too,
+//  when you have the drop objects
 function runProcess() {
     let inModal = document.getElementById('mod_in');
     let inputs = inModal.getElementsByTagName('input');
@@ -122,8 +124,6 @@ function runProcess() {
             inValue.push(inputs[i].value);
         }
     }
-
-    // console.log('--- inDict: ', inDict)
     let outModal = document.getElementById('mod_out');
     let outputs = outModal.getElementsByTagName('output');
     let outDict = {};
@@ -152,8 +152,30 @@ function runProcess() {
         success: function (json) {
             console.log(' + + + + ')
             console.log(' result: ', json)
+            console.log(' result: ', json.execution_status)
             // build_modal(json, service, identifier, btn_id)
-        },
+            // sessionStorage.removeItem("resultBtnList")
+            if (json.execution_status == "ProcessSucceeded") {
+                if (sessionStorage.getItem("resultBtnList")) {
+                    let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
+                    if (result_btns.includes(identifier)) {
+
+                        console.log('---------- gibts schon: ', result_btns)
+                    } else {
+                        result_btns.push(identifier);
+                        sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
+                        buildResultStoreButton(json);
+                    }
+                    // sessionStorage.setItem("resultBtnList", JSON.stringify(stored))
+                } else {
+                    sessionStorage.setItem("resultBtnList", JSON.stringify([identifier]));
+                    buildResultStoreButton(json);
+                }
+            } else {
+                alert('Error: Failed to execute your request.');
+                console.log(json)
+            }
+        }
     });
 
 }
@@ -163,6 +185,20 @@ function modalObj(processId, processInput, processOutput) {
     this.processId = processId;
     this.processInput = processInput;
     this.processOutput = processOutput;
+}
+
+function buildResultStoreButton(json) {
+    let ident = json.processid;
+    console.log('ident: ', ident)
+    let btnName = json.processid;
+    let title = json.processid;
+    console.log('workspace: ', document.getElementById("workspace_results"))
+    document.getElementById("workspace_results").innerHTML += '<li draggable="true" class="respo-padding task" ' +
+        'data-id="' + ident + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + ident + '">' +
+        '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
+        '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
+        'onclick="remove_single_result(\'' + ident + '\')"; class="respo-hover-white respo-right">' +
+        '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
 function build_modal(wpsInfo, service, identifier, btn_id) {
@@ -327,13 +363,28 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
             element.appendChild(newNode)
         }
     });
+
+    // TODO: build one output now. Decide how to handle several outputs
     console.log('seesionStorage: ', sessionStorage.getItem("processModal"))
     //outputs:
     console.log('outputs: ', wpsInfo.processOutputs)
     console.log('outputs: ', wpsInfo.processOutputs.length)
     console.log('outputs: ', wpsInfo.processOutputs[0])
     document.getElementById("mod_out").innerHTML = "";
-    let outElement = "";
+
+    element = document.getElementById("mod_out");
+
+    nodeText = document.createElement("p");
+    nodeText.appendChild(document.createTextNode(" Name for output in data store: "));
+
+    newNode = document.createElement("div");
+    newNode.appendChild(nodeText);
+    let outElement = document.createElement("input");
+    newNode.appendChild(outElement);
+    if (typeof (newNode) === 'object') {
+        element.appendChild(newNode)
+    }
+    /*let outElement = "";
     newNode = "";
     nodeText = "";
 
@@ -367,7 +418,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
         if (typeof (newNode) === 'object') {
             element.appendChild(newNode)
         }
-    });
+    });*/
 
     //element.innerHTML = inElement;
     let modal = document.getElementById("workModal");

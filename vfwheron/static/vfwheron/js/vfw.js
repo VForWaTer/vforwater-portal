@@ -399,7 +399,7 @@ function workspace_dataset(id) {
                 // TODO: "workdata" should be obsolete because of use of sessionStorage.
                 //  Re-check if creation and removing of buttons in workspace works as expected
                 // let x = [];
-                // $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
+                // $.each(JSON.parse(sessionStorage.getItem("btn_ds")), function (key) {
                 //     x.push(key)
                 // });
                 // document.getElementById("workdata").value = x;

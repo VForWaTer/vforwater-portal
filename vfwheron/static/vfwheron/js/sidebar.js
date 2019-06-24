@@ -128,6 +128,34 @@ function remove_all_datasets() {
     sessionStorage.removeItem("btn");
 }
 
+function remove_single_result(removeData) {
+    // remove data from portal:
+    document.getElementById(removeData).remove();
+    // remove data from session:
+    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+
+    for( let i = 0; i < workspaceData.length; i++){
+       if ( workspaceData[i] === removeData) {
+         workspaceData.splice(i, 1);
+         i--;
+       }
+    }
+    // delete workspaceData[removeData];
+    sessionStorage.setItem("resultBtnList", JSON.stringify(workspaceData))
+}
+
+function remove_all_results() {
+    // remove button from portal
+ /*   $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
+        if ("name" in value) {
+            remove_single_data(parseInt(key));
+            // document.getElementById("id" + key).remove()
+        }
+    });*/
+    // remove button from session
+    sessionStorage.removeItem("resultBtnList");
+}
+
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
 // MIT license
 
