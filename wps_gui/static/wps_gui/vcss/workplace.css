@@ -1,9 +1,9 @@
-#dropzone {
+#dropdiv {
   position: absolute;
   right: 300px;
   left:  300px;
-  top: 95px;
-  bottom: 15px;
+  top: 80px;
+  bottom: 1px;
   padding: 10px;
   border: 1px solid #00021d;
   background: white;

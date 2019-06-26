@@ -125,23 +125,32 @@ function runProcess() {
         }
     }
     let outModal = document.getElementById('mod_out');
-    let outputs = outModal.getElementsByTagName('output');
+    let outputs = outModal.getElementsByTagName('input');
     let outDict = {};
     loopLength = outputs.length;
     for (i = 0; i < loopLength; i++) {
         if (outputs[i].type == "radio") {
             if (outputs[i].checked == true) {
-                outDict [outputs[i].name] = outputs[i].value;
+                outDict[outputs[i].name] = outputs[i].value;
             }
         } else {
-            outDict [outputs[i].name] = outputs[i].value;
+            outDict[outputs[i].name] = outputs[i].value;
         }
     }
-
     let modhead = document.getElementById('mod_head');
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
     console.log('--- outDict : ', outDict)
+    console.log('--- outputs : ', outputs)
+    console.log('--- outputs[0] : ', outputs[0])
+    console.log('--- outputs[0].value : ', outputs[0].value)
+    let outputName;
+    if (outputs[0].value === "") {
+        outputName = identifier;
+    } else {
+        outputName = outputs[0].value;
+    }
+    console.log('--- outputName : ', outputName)
     $.ajax({
         url: DEMO_VAR + "/wps_gui/processview",
         dataType: 'json',
@@ -158,18 +167,18 @@ function runProcess() {
             if (json.execution_status == "ProcessSucceeded") {
                 if (sessionStorage.getItem("resultBtnList")) {
                     let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
-                    if (result_btns.includes(identifier)) {
+        /*            if (result_btns.includes(identifier)) {
 
                         console.log('---------- gibts schon: ', result_btns)
-                    } else {
+                    } else {*/
                         result_btns.push(identifier);
                         sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
-                        buildResultStoreButton(json);
-                    }
+                        buildResultStoreButton(json, outputName);
+                    // }
                     // sessionStorage.setItem("resultBtnList", JSON.stringify(stored))
                 } else {
                     sessionStorage.setItem("resultBtnList", JSON.stringify([identifier]));
-                    buildResultStoreButton(json);
+                    buildResultStoreButton(json, outputName);
                 }
             } else {
                 alert('Error: Failed to execute your request.');
@@ -187,10 +196,10 @@ function modalObj(processId, processInput, processOutput) {
     this.processOutput = processOutput;
 }
 
-function buildResultStoreButton(json) {
+function buildResultStoreButton(json, btnName) {
     let ident = json.processid;
     console.log('ident: ', ident)
-    let btnName = json.processid;
+    // let btnName = json.processid;
     let title = json.processid;
     console.log('workspace: ', document.getElementById("workspace_results"))
     document.getElementById("workspace_results").innerHTML += '<li draggable="true" class="respo-padding task" ' +
@@ -442,3 +451,17 @@ function drop(ev) {
   nodeCopy.id = "newId"; /!* We cannot use the same ID *!/
   ev.target.appendChild(nodeCopy);
 }*/
+
+// *** From here the drag and drop elements and the respective functions are build ***
+/*
+    document.addEventListener("DOMContentLoaded",function () {
+
+
+    // create the canvas for the user interaction
+    //
+    var canvas = new draw2d.Canvas("dropdiv");
+
+    var shape = new draw2d.shape.flowchart.Document({width:60, height:80});
+    canvas.add( shape, 100,60);
+console.log('+++++++++++++++++++++++++++++++ war da')
+});*/

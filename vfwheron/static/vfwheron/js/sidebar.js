@@ -64,6 +64,11 @@ function show_data() {
         console.log('call button')
         workspace_button(workspaceData)
     }
+
+    let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    if (resultData){
+        console.log('resultData shall be renewed: ', resultData)
+    }
 }
 
 // build buttons in workspace and store selection in clients sessionStorage
@@ -133,13 +138,19 @@ function remove_single_result(removeData) {
     document.getElementById(removeData).remove();
     // remove data from session:
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-
-    for( let i = 0; i < workspaceData.length; i++){
-       if ( workspaceData[i] === removeData) {
-         workspaceData.splice(i, 1);
-         i--;
-       }
+    console.log('workspaceData.length: ', workspaceData.length)
+    let resultBtnListLen = workspaceData.length;
+    if (resultBtnListLen <= 1) {
+        remove_all_results()
+    } else {
+        for (let i = 0; i < resultBtnListLen; i++) {
+            if (workspaceData[i] === removeData) {
+                workspaceData.splice(i, 1);
+                i--;
+            }
+        }
     }
+    // TODO: only the name is deleted from the list. Also delete the respective content!
     // delete workspaceData[removeData];
     sessionStorage.setItem("resultBtnList", JSON.stringify(workspaceData))
 }
