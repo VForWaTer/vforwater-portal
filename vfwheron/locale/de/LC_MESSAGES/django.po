@@ -97,10 +97,22 @@ msgstr "  Menü schließen"
 msgid "Data store"
 msgstr "Datenablage"
 
+#: templates/wps_gui/sidebar.html:57
+msgid "Result store"
+msgstr "Ergebnisablage"
+
 #: templates/vfwheron/base_sidebar.html:32
 #: templates/vfwheron/wps_sidebar.html:33
 msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
 msgstr "Bereich&#32um&#32die&#32ausgewählten&#32Datensätze&#32zur&#32weiteren&#32Bearbeitung&#32verfügbar&#32zu&#32machen."
+
+#: templates/wps_gui/sidebar.html:57
+msgid "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available."
+msgstr "Bereich&#32um&#32die&#Ergebnisse&#32zur&#32weiteren&#32Prozessierung&#32oder&#32zur&#32Ansicht&#32bereit&#32zu&#32stellen."
+
+#: templates/wps_gui/sidebar.html:57
+msgid "Remove&#32all&#32results"
+msgstr "Alle&#32Ergebnisse&#32entfernen"
 
 #: templates/vfwheron/base_sidebar.html:37
 #: templates/vfwheron/wps_sidebar.html:38
@@ -111,6 +123,10 @@ msgstr "Alle&#32Datensätze&#32entfernen"
 #: templates/vfwheron/wps_sidebar.html:39
 msgid "Remove&#32all&#32datasets&#32from&#32data&#32store"
 msgstr "Alle&#32ausgewählten&#32Datensätze&#32aus&#32der&#32Datenablage&#32entfernen"
+
+#: templates/wps_gui/sidebar.html:63
+msgid "Remove&#32all&#32results&#32from&#32result&#32store"
+msgstr "Alle&#32Ergebnisse&#32aus&#32der&#32Ergebnisablage&#32entfernen"
 
 #: templates/vfwheron/base_sidebar.html:63
 #: templates/vfwheron/wps_sidebar.html:61
@@ -193,6 +209,10 @@ msgstr "  Hilfe"
 #: templates/vfwheron/sidemenu.html:37
 msgid " Log in"
 msgstr " Einloggen"
+
+#: templates/vfwheron/sidemenu.html:37
+msgid " Toolbox"
+msgstr " Werkzeugkiste"
 
 #: views.py:208
 msgid "help"

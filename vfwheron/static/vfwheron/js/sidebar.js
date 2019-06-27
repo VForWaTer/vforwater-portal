@@ -55,17 +55,24 @@ function Sidemenu_close() {
 // Get the User Selection in Workspace
 // Button information is stored in an HTML object with Id 'workdata'
 // it is stored as a string, so the following function transforms this string back to a dictionary
-function show_data(evt) {
+// TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
+function show_data() {
     let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
-    if (workspaceData && "value" in workspaceData) {
-        workspace_button({'workspaceData': workspaceData})
+    if (workspaceData){// && "value" in workspaceData) {
+        workspace_button(workspaceData)
+    }
+
+    let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    if (resultData){
+        console.log('resultData shall be renewed: ', resultData)
     }
 }
 
 // build buttons in workspace and store selection in clients sessionStorage
 function workspace_button(json) {
-    if (json !== undefined) {
-        $.each(json['workspaceData'], function (key, value) {
+    // if (json['workspaceData'] !== undefined) {
+    //     $.each(json['workspaceData'], function (key, value) {
+        $.each(json, function (key, value) {
             let btnName;
             let vnLen = value['name'].length;
             if (vnLen+ value['abbr'].length + value['unit'].length <= 14) {
@@ -79,7 +86,7 @@ function workspace_button(json) {
             }
             let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
             // check if buttons already exist before creating a new one:
-            if (document.getElementById(key) === null) {
+            if (document.getElementById("id"+key) === null) {
                 document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding task" ' +
                     'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor: pointer;" id="id' + key + '">' +
                     '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
@@ -88,7 +95,7 @@ function workspace_button(json) {
                     '<i class="fa fa-remove fa-fw"></i></a><br></li>';
                 /*
                 document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
-                    'onmouseover="" style="cursor: pointer;" id="' + key + '" onclick="store_menu(' + key + ')" >' +
+                    'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
                     '<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
                     'onclick="remove_single_data('+key+')"; class="respo-hover-white respo-right">' +
                     '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
@@ -97,7 +104,7 @@ function workspace_button(json) {
             '</div></li>';*/
             }
         })
-    }
+    // }
 }
 
 // Remove data / elements from workspace
@@ -114,11 +121,50 @@ function remove_all_datasets() {
     // remove button from portal
     $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
         if ("name" in value) {
-            document.getElementById("id" + key).remove()
+            remove_single_data(parseInt(key));
+            // document.getElementById("id" + key).remove()
         }
     });
     // remove button from session
     sessionStorage.removeItem("btn");
+}
+
+function remove_single_result(removeData) {
+    // remove data from portal:
+    document.getElementById(removeData).remove();
+    sessionStorage.removeItem(removeData);
+    // remove data from session:
+    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    let resultBtnListLen = workspaceData.length;
+    if (resultBtnListLen <= 1) {
+        remove_all_results()
+    } else {
+        for (let i = 0; i < resultBtnListLen; i++) {
+            if (workspaceData[i] === removeData) {
+                workspaceData.splice(i, 1);
+                i--;
+            }
+        }
+    }
+    // TODO: only the name is deleted from the list. Also delete the respective content!
+    // delete workspaceData[removeData];
+    sessionStorage.setItem("resultBtnList", JSON.stringify(workspaceData))
+}
+
+function remove_all_results() {
+    // remove button from portal
+ /*   $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
+        if ("name" in value) {
+            remove_single_data(parseInt(key));
+            // document.getElementById("id" + key).remove()
+        }
+    });*/
+    // remove button from session
+    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    for (let i in workspaceData) {
+        sessionStorage.removeItem('"'+workspaceData[i]+'"');
+    }
+    sessionStorage.removeItem("resultBtnList");
 }
 
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
@@ -429,7 +475,6 @@ function menuItemListener(link) {
                 success: function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    console.log('+++ xml: ', json)
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
                 },
@@ -439,7 +484,6 @@ function menuItemListener(link) {
             });
             break;
         case "DownloadDMD":
-            console.log('DownloadDMD');
             break;
         case "Remove":
             remove_single_data(id);

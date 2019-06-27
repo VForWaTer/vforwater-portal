@@ -35,7 +35,6 @@ function menuBuilder(parent) {
             let child = 'C'+c.toString();
             let childHTML = childBuilder(JSMENU[parent][child], child, parent);
             // let childHTML = childBuilder(eval("JSMENU[parent]."+[child]), child, parent);
-            // console.log('  *** ** *' + parentHTML)
             parentHTML += `<div id='subaccordion'> ${childHTML}   </div>`
         }
         FILTERMENU = document.getElementById("accordion").innerHTML +=
@@ -128,7 +127,6 @@ function dateBuilder(child, shortChild, shortParent) {
 
     // $( function() {
     //   $( "#datepicker" ).datepicker(
-    //       console.log('Datepicker')
     //   );
     // } );
 
@@ -304,11 +302,13 @@ function reset_filter(){
     // TODO: store the initial numbers for each item and use it here instead of a new get request
     getCountFromServer({});
     // reset draw menu:
-    selectedIdsMap = [];  // or better: null ?
+    selectedIdsMap = null;  // or better: null ?
     if (selectedFeatures !== undefined) {selectedFeatures.clear();}
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
     olmap.removeLayer(vector);
+    filterbox_close();
+    // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
     // clusterLayer.changed()
 }
 
@@ -417,7 +417,8 @@ function buildSelection(activeSibling, shortParent, shortChild, shortItem, type)
 function many_datasets() {
     // let workId = (selectedIdsMap === undefined) ? selectedIdsFilter : selectedIdsMap.filter(x => selectedIdsFilter.includes(x));
     let workId = selectedIdsFilter;
-    if (selectedIdsMap !== undefined) {
+
+    if (selectedIdsMap !== null) {
         workId = selectedIdsMap.filter(x => selectedIdsFilter.includes(x));
     }
     workspace_dataset(JSON.stringify(workId))

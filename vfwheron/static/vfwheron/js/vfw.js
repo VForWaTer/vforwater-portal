@@ -6,10 +6,11 @@
 //         layerName.setVisible(true);
 //     }
 // }
-let draw, modify, selectedIdsMap, selectedFeatures, vector;
+let draw, modify, selectedFeatures, vector;
+let selectedIdsMap = null;
 
 function resetDraw() {
-    selectedIdsMap = [];
+    selectedIdsMap = null;
     selectedFeatures.clear();
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
@@ -19,7 +20,6 @@ function resetDraw() {
 // Menu to draw polygon on map
 function drawPolygon(shortParent, shortChild) {
     let div = document.getElementById('toggle_draw');
-    console.log('in draw ploygon child, shortChild, shortParent: ', div, shortChild, shortParent)
     filterbox_open();
     // itemButtonFunction(item, shortParent, shortChild, shortItem)
 
@@ -102,7 +102,7 @@ function drawPolygon(shortParent, shortChild) {
         });*/
 
     selectedFeatures = select.getFeatures();
-    selectedIdsMap = [];
+    selectedIdsMap = null
     let sketch, listener, polygon;
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
@@ -129,7 +129,7 @@ function drawPolygon(shortParent, shortChild) {
         sketch = null;
         delaySelectActivate();
         selectedFeatures.clear();
-        selectedIdsMap = [];
+        selectedIdsMap = null;
         polygon = event.features.getArray()[0].getGeometry();
         // let features = hiddenLayer.getSource().getFeatures();
 
@@ -391,19 +391,21 @@ function workspace_dataset(id) {
                         if (!stored[key]) stored[key] = value;
                     });
                     sessionStorage.setItem("btn", JSON.stringify(stored))
-                } else {
+                }
+                else {
                     sessionStorage.setItem("btn", JSON.stringify(json['workspaceData']));
-                    console.log('workspacedata: ', JSON.stringify(json['workspaceData']))
                 }
                 // push sessionStorage keys to html for Workspace
-                let x = [];
-                $.each(JSON.parse(sessionStorage.getItem("btn")), function (key) {
-                    x.push(key)
-                });
-                document.getElementById("workdata").value = x;
+                // TODO: "workdata" should be obsolete because of use of sessionStorage.
+                //  Re-check if creation and removing of buttons in workspace works as expected
+                // let x = [];
+                // $.each(JSON.parse(sessionStorage.getItem("btn_ds")), function (key) {
+                //     x.push(key)
+                // });
+                // document.getElementById("workdata").value = x;
 
                 // build buttons
-                workspace_button(json);
+                workspace_button(json['workspaceData']);
             } // function in sidebar.js
         });
     }
@@ -431,7 +433,6 @@ function show_preview(id) {
 
 function popupContentvfw(ids, page) {
     // TODO: CSS style überarbeiten
-    // console.log(' + + + ++  ids: ', ids)
     if (typeof (ids) === 'string' && typeof(page) === 'undefined') {
         page = JSON.parse("[" + ids + "]").slice(-1);
         ids = JSON.parse("[" + ids + "]").slice(0, -1);
@@ -456,7 +457,6 @@ function popupContentvfw(ids, page) {
                 document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
                 document.getElementById("pagi" + page).classList.add("active");
             }
-            console.log('finished', json, popUpText)
         }
 
     });
@@ -496,9 +496,6 @@ function buildPopupTextvfw(json, popUpText) {
 }
 
 function buildPagivfw(idDict, page) {
-    console.log('----------------------------')
-    console.log('idDict, page: ', idDict, page)
-    console.log('JSON.parse("[" + idDict + "]"): ', JSON.parse("[" + idDict + "]"))
     if (typeof (idDict) === 'string' && typeof(page) === 'undefined') {
         page = JSON.parse("[" + idDict + "]").slice(-1);
         idDict = JSON.parse("[" + idDict + "]").slice(0, -1);

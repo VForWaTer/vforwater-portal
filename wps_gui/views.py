@@ -1,10 +1,17 @@
 # from inspect import getmembers
-from django.http import HttpResponse
+import json
+import re
+
+import jsonpickle
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.core.cache import cache
+from django.views.generic import TemplateView
 
 from heron.settings import VFW_SERVER, HOST_NAME
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
+
+
 # from heron_wps.forms import InputForm
 
 
@@ -38,11 +45,89 @@ def service(request, service):
     return render(request, 'wps_gui/service.html', context)
 
 
+class ProcessView(TemplateView):
+
+    def get(self, request):
+
+        if 'processview' in request.GET:
+            selected_process = json.loads(request.GET.get('processview'))
+
+            wps = get_wps_service_engine(selected_process['serv'])
+            wps_process = wps.describeprocess(selected_process['id'])
+
+            # TODO: use of jsonpickle only to simplify readability of wps_process.
+            #  Shouldn't be necessary to use jsonpickle for that. Please improve!
+            # simply serialize wps to json
+            whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
+            # convert to dict to remove unwanted keys and empty values
+            whole_wpsprocess = json.loads(whole_wpsprocess_json)
+            whole_wpsprocess.pop('_root', None)
+            wps_description = {}
+            for a in whole_wpsprocess:
+                if isinstance(whole_wpsprocess[a], list):
+                    list_values = []
+                    for b in whole_wpsprocess[a]:
+                        if isinstance(b, dict):
+                            innerdict = {}
+                            for k, v in b.items():
+                                if not v is None and not v == []:
+                                    if isinstance(v, str) and re.search("(?<=/#)\w+", v):
+                                        match = re.search("(?<=/#)\w+", v)
+                                        innerdict[k] = match.group(0)
+                                    else:
+                                        innerdict[k] = v
+                            list_values.append(innerdict)
+                        elif not b is None and not b == []:
+                            list_values.append(b)
+                    wps_description[a] = list_values
+                elif not whole_wpsprocess[a] is None and not whole_wpsprocess[a] == []:
+                    wps_description[a] = whole_wpsprocess[a]
+
+            return JsonResponse(wps_description)
+
+        if 'processrun' in request.GET:
+
+            request_input = json.loads(request.GET.get('processrun'))
+            inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
+
+            wps = get_wps_service_engine(request_input.get("serv", ""))
+            wps_process = request_input.get("id", "")
+
+
+            execution = wps.execute(wps_process, inputs)
+            execution_status = execution.status
+            image = []
+            outputs = []
+            for output in execution.processOutputs:
+                outputs.append(output.data)
+                output_reference = output.reference
+                if type(output.data[0] is str):
+                    if len(output.data[0]) > 10:
+                        substring = output.data[0][:10]
+                        if "img" in substring:
+                            image = output.data[0]
+
+            if output_reference:
+                output_reference = output_reference.replace('localhost', HOST_NAME)
+                # output_reference = output_reference.replace('localhost','vforwater-devel')
+
+            context_p = {'processid': wps_process,
+                         'outputs': outputs,
+                         'image': image,
+                         'output_reference': output_reference,
+                         'execution_status': execution_status
+                         }
+
+
+            return JsonResponse(context_p)
+
+
 def process(request, service, identifier):
     """
     View that displays a detailed description for a WPS process.
     """
-#    form_class = InputForm
+    print('??????????????????????????????????????')
+    #    form_class = InputForm
     wps = get_wps_service_engine(service)
     wps_process = wps.describeprocess(identifier)
 
@@ -60,16 +145,16 @@ def process(request, service, identifier):
         key_list = []
         inputs = []
         outputs = []
-        
+
         value_list = request.POST.getlist('input')
 
         for input in wps_process.dataInputs:
             key_list.append(input.identifier)
 
         inputs = list(zip(key_list, value_list))
-            
+
         processid = wps_process.identifier
-        
+
         execution = wps.execute(processid, inputs)
         execution_status = execution.status
 
@@ -86,8 +171,8 @@ def process(request, service, identifier):
         for output in execution.processOutputs:
             outputs.append(output.data)
             output_reference = output.reference
-            
-        if output_reference: 
+
+        if output_reference:
             output_reference = output_reference.replace('localhost', HOST_NAME)
             # output_reference = output_reference.replace('localhost','vforwater-devel')
 
