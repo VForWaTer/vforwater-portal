@@ -92,18 +92,17 @@ class ProcessView(TemplateView):
 
             wps = get_wps_service_engine(request_input.get("serv", ""))
             wps_process = request_input.get("id", "")
+
+
             execution = wps.execute(wps_process, inputs)
             execution_status = execution.status
             image = []
             outputs = []
             for output in execution.processOutputs:
-                print('output.data: ', output.data)
                 outputs.append(output.data)
                 output_reference = output.reference
-                print('output.reference: ', output.reference)
                 if type(output.data[0] is str):
                     if len(output.data[0]) > 10:
-                        print('is string')
                         substring = output.data[0][:10]
                         if "img" in substring:
                             image = output.data[0]
@@ -119,7 +118,6 @@ class ProcessView(TemplateView):
                          'execution_status': execution_status
                          }
 
-            print('context_p: ', context_p)
 
             return JsonResponse(context_p)
 

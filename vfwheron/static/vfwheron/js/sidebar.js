@@ -57,11 +57,8 @@ function Sidemenu_close() {
 // it is stored as a string, so the following function transforms this string back to a dictionary
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
-    console.log('show data is called: ', sessionStorage)
     let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
-    console.log('workspaceData: ', workspaceData)
     if (workspaceData){// && "value" in workspaceData) {
-        console.log('call button')
         workspace_button(workspaceData)
     }
 
@@ -73,7 +70,6 @@ function show_data() {
 
 // build buttons in workspace and store selection in clients sessionStorage
 function workspace_button(json) {
-    console.log('build buttions: ', json)
     // if (json['workspaceData'] !== undefined) {
     //     $.each(json['workspaceData'], function (key, value) {
         $.each(json, function (key, value) {
@@ -136,9 +132,9 @@ function remove_all_datasets() {
 function remove_single_result(removeData) {
     // remove data from portal:
     document.getElementById(removeData).remove();
+    sessionStorage.removeItem(removeData);
     // remove data from session:
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-    console.log('workspaceData.length: ', workspaceData.length)
     let resultBtnListLen = workspaceData.length;
     if (resultBtnListLen <= 1) {
         remove_all_results()
@@ -164,6 +160,10 @@ function remove_all_results() {
         }
     });*/
     // remove button from session
+    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    for (let i in workspaceData) {
+        sessionStorage.removeItem('"'+workspaceData[i]+'"');
+    }
     sessionStorage.removeItem("resultBtnList");
 }
 
@@ -475,7 +475,6 @@ function menuItemListener(link) {
                 success: function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                    console.log('+++ xml: ', json)
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
                 },
@@ -485,7 +484,6 @@ function menuItemListener(link) {
             });
             break;
         case "DownloadDMD":
-            console.log('DownloadDMD');
             break;
         case "Remove":
             remove_single_data(id);
@@ -503,7 +501,6 @@ function menuItemListener(link) {
 
 /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
 popcloser.onclick = function () {
-    console.log('used')
     // metaData_Overlay.setPosition(undefined);
     // popcloser.blur();
     popup.classList.remove(popActive);

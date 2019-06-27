@@ -55,7 +55,7 @@
                 <div class="list-group">
                     {% for process in wps.processes %}
                         <tr>
-                            <div id="{{ process.title }}"
+                            <div id="{{ process.identifier }}"
                                     {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
                                  class="list-group-item process respo-container"
                                  draggable="true" ondragstart="drag(event)"

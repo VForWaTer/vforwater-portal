@@ -11,7 +11,7 @@
 
     <!-- Modal content -->
     <div class="respo-modal-content">
-        <div class="modal-header">
+        <div class="modal-header" id="modal-header">
             <span class="close">&times;</span>
             <h3 id="mod_head"></h3>
         </div>
@@ -21,7 +21,7 @@
         <h4>Output</h4>
         <div id="mod_out"></div>
         <p align="right"><em>(*) = required </em></p>
-        <div class="modal-footer">
+        <div class="modal-footer" id="modal-footer">
             <span-c class="modal-cancel">Cancel</span-c>
             <span-ok class="modal-ok">Ok</span-ok>
             <span-r class="modal-run">Run</span-r>
@@ -51,29 +51,24 @@
     let span_ok = document.getElementsByClassName("modal-ok")[0];
     let span_r = document.getElementsByClassName("modal-run")[0];
     // When the user clicks on <span> (x), close the modal
-    span.onclick = function () {
-        modal.style.display = "none";
-    };
+    span.onclick = function () {closeModal()};
     span_r.onclick = function () {
         {#modal.style.display = "none";#}
-        if (checkRequired(document.getElementById('workModal'))) {
-            runProcess()
-        }
+        if (checkRequired(document.getElementById('workModal'))) modalRunProcess()
     };
     span_ok.onclick = function () {
-        modal.style.display = "none";
-        if (checkRequired(document.getElementById('workModal'))) {
-            dropAndSave()
-        }
+        if (checkRequired(document.getElementById('workModal'))) dropAndSave();
+        closeModal();
     };
-    span_c.onclick = function () {
-        modal.style.display = "none";
-    };
+    span_c.onclick = function () {closeModal()};
     // When the user clicks anywhere outside of the modal, close it
     window.onclick = function (event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
+        if (event.target == modal) closeModal()
+    };
+
+    function closeModal() {
+        modal.style.display = "none";
+        colorModal("dodgerblue")
     }
 
 

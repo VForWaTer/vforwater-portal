@@ -9,8 +9,6 @@ function drag(ev) {
 function drop(ev) {
     ev.preventDefault();
     let droplet = ev.dataTransfer.getData("text/html");
-    console.log('ev: ', ev)
-    console.log('drop: ', droplet)
 
     // let droplet = document.createElement('canvas');
     // let dropletCopy = document.createElement('canvas');
@@ -21,21 +19,18 @@ function drop(ev) {
     } else {
         sessionStorage.setItem("dz_count", 1)
     }
-    console.log('sessionStorage: ', sessionStorage.getItem("dz_count"))
     dropletCopy.id = "dz" + sessionStorage.getItem("dz_count");
     dropletCopy.classList.add('tool-btn');
     dropletCopy.style.left = ev.offsetX + "px";
     dropletCopy.style.top = ev.offsetY + "px";
-    console.log('Copy: ', dropletCopy)
     // ev.dataTransfer.setDragImage(dropletCopy, ev.offsetX + "px", ev.offsetY + "px")
     ev.target.appendChild(dropletCopy);
-    console.log('ev: ', ev)
 }
 
 // TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
 //  if process_id == btn_id place btn in dropzone (on save)
-function open_wpsprocess(service, process_id, btn_id) {
-    wpsprocess(service, process_id, btn_id);
+function open_wpsprocess(service, process_id, invoke_btn_id) {
+    wpsprocess(service, process_id, invoke_btn_id);
     /*
         let btn = document.getElementById(btn_id);
         console.log("btn: ", btn)
@@ -45,12 +40,9 @@ function open_wpsprocess(service, process_id, btn_id) {
 
     //let modal = document.getElementById("workModal");
     //modal.style.display = "block";
-    console.log("service: ", service)
-    console.log("identifier: ", process_id)
-    console.log("btn_id: ", btn_id)
 }
 
-function wpsprocess(service, identifier, btn_id) {
+function wpsprocess(service, identifier, invoke_btn_id) {
     $.ajax({
         url: DEMO_VAR + "/wps_gui/processview",
         //url: DEMO_VAR+"/wps_gui/"+service+"/process",
@@ -60,7 +52,7 @@ function wpsprocess(service, identifier, btn_id) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            build_modal(json, service, identifier, btn_id)
+            build_modal(json, service, identifier, invoke_btn_id)
         },
     });
 }
@@ -70,7 +62,6 @@ function dropAndSave() {
 }
 
 function checkRequired(checkElement) {
-    console.log('required: ', checkElement)
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -89,7 +80,6 @@ function checkRequired(checkElement) {
                 }
             }
         } else {
-            console.log('requiredList[i].value: ', requiredList[i].value)
             if (!requiredList[i].value) {
                 alert("Please fill all required fields that are marked with (*).");
                 passed = false;
@@ -102,10 +92,10 @@ function checkRequired(checkElement) {
 
 // TODO: runProcess now works only on execution from modal. Ajdust to be usable from Dropzone too,
 //  when you have the drop objects
-function runProcess() {
+function modalRunProcess() {
+    let workModal = document.getElementById('workModal');
     let inModal = document.getElementById('mod_in');
     let inputs = inModal.getElementsByTagName('input');
-    console.log('+ inputs: ', inputs)
     var i;
     // var inDict = {};
     var inKey = [];
@@ -140,17 +130,12 @@ function runProcess() {
     let modhead = document.getElementById('mod_head');
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
-    console.log('--- outDict : ', outDict)
-    console.log('--- outputs : ', outputs)
-    console.log('--- outputs[0] : ', outputs[0])
-    console.log('--- outputs[0].value : ', outputs[0].value)
     let outputName;
     if (outputs[0].value === "") {
         outputName = identifier;
     } else {
         outputName = outputs[0].value;
     }
-    console.log('--- outputName : ', outputName)
     $.ajax({
         url: DEMO_VAR + "/wps_gui/processview",
         dataType: 'json',
@@ -158,22 +143,21 @@ function runProcess() {
             processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) {
-            console.log(' + + + + ')
-            console.log(' result: ', json)
-            console.log(' result: ', json.execution_status)
+        success: function (json) { // Results are stored in the sessionStorage
             // build_modal(json, service, identifier, btn_id)
             // sessionStorage.removeItem("resultBtnList")
             if (json.execution_status == "ProcessSucceeded") {
+                colorModal("forestgreen");
+                sessionStorage.setItem(identifier, json);
                 if (sessionStorage.getItem("resultBtnList")) {
                     let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
-        /*            if (result_btns.includes(identifier)) {
+                    /*            if (result_btns.includes(identifier)) {
 
-                        console.log('---------- gibts schon: ', result_btns)
-                    } else {*/
-                        result_btns.push(identifier);
-                        sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
-                        buildResultStoreButton(json, outputName);
+                                    console.log('---------- gibts schon: ', result_btns)
+                                } else {*/
+                    result_btns.push(identifier);
+                    sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
+                    buildResultStoreButton(json, outputName);
                     // }
                     // sessionStorage.setItem("resultBtnList", JSON.stringify(stored))
                 } else {
@@ -181,40 +165,84 @@ function runProcess() {
                     buildResultStoreButton(json, outputName);
                 }
             } else {
+                colorModal("firebrick");
                 alert('Error: Failed to execute your request.');
-                console.log(json)
             }
         }
     });
 
 }
 
-// A Object with names and values from the input object
+function colorModal(color) {
+    let modalColor = document.getElementById("modal-header");
+    modalColor.style.backgroundColor = color;
+    modalColor = document.getElementById("modal-footer");
+    modalColor.style.backgroundColor = color;
+}
+
+// A Object with names and values from the input object / not used yet
 function modalObj(processId, processInput, processOutput) {
     this.processId = processId;
     this.processInput = processInput;
     this.processOutput = processOutput;
 }
 
+function addToResultStoreButtonList(btnName) {
+    let newBtnName = btnName;
+    if (sessionStorage.getItem("resultBtnList")) {
+
+        let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
+        if (result_btns.includes(newBtnName)) {
+            var i = 0;
+            while (result_btns.includes(newBtnName)) {
+                i++;
+                newBtnName = btnName + i
+            }
+        }
+        btnName = newBtnName;
+        result_btns.push(btnName);
+        sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
+    } else {
+        sessionStorage.setItem("resultBtnList", JSON.stringify([btnName]));
+    }
+    return newBtnName;
+}
+
+//TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
 function buildResultStoreButton(json, btnName) {
+    btnName = addToResultStoreButtonList(btnName);
     let ident = json.processid;
-    console.log('ident: ', ident)
     // let btnName = json.processid;
     let title = json.processid;
-    console.log('workspace: ', document.getElementById("workspace_results"))
     document.getElementById("workspace_results").innerHTML += '<li draggable="true" class="respo-padding task" ' +
-        'data-id="' + ident + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + ident + '">' +
+        'data-id="' + ident + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
         '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
         '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
-        'onclick="remove_single_result(\'' + ident + '\')"; class="respo-hover-white respo-right">' +
+        'onclick="remove_single_result(\'' + btnName + '\')"; class="respo-hover-white respo-right">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
-function build_modal(wpsInfo, service, identifier, btn_id) {
+function build_modal_radio(radioNode, nodeText, inElement, inElementIdList, item, newNode, option) {
+    radioNode = document.createElement("p");
+    nodeText = document.createTextNode(" " + option + " ");
+    inElement = document.createElement("input");
+    inElement.type = "radio";
+    // inElement.setAttribute("type", "radio");
+    inElement.value = option;
+    inElement.id = item.identifier;
+    inElementIdList.push(item.identifier);
+    if (item.minOccurs === 1) inElement.required = true;
+
+    inElement.name = item.identifier;
+    if ('defaultValue' in item) {
+        if (item.defaultValue == option) inElement.checked = true;
+    }
+    newNode.appendChild(inElement);
+    newNode.appendChild(nodeText);
+}
+
+function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     // sessionStorage.setItem("processModal", wpsInfo);
-    // console.log(' wpsInfo: ', wpsInfo)
-    // console.log(' btn_id: ', btn_id)
-    // console.log('wpsInfo[title]: ', wpsInfo[title])
     let element = document.getElementById("mod_head");
     let newElement = "";
     element.innerHTML = wpsInfo.title;
@@ -244,9 +272,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
                 titleText = " " + item.title + ": "
             }
         }
-        if (item.minOccurs === 1) {
-            inElement.required = true;
-        }
+        if (item.minOccurs === 1) inElement.required = true;
         nodeText = document.createTextNode(titleText);
         newNode.appendChild(nodeText);
         if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
@@ -255,26 +281,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
                     let radioNode = "";
                     nodeText = "";
                     item.allowedValues.forEach(function (option) {
-                        radioNode = document.createElement("p");
-                        nodeText = document.createTextNode(" " + option + " ");
-                        inElement = document.createElement("input");
-                        inElement.type = "radio";
-                        // inElement.setAttribute("type", "radio");
-                        inElement.value = option;
-                        inElement.id = item.identifier;
-                        inElementIdList.push(item.identifier);
-                        if (item.minOccurs === 1) {
-                            inElement.required = true;
-                        }
-
-                        inElement.name = item.identifier;
-                        if ('defaultValue' in item) {
-                            if (item.defaultValue == option) {
-                                inElement.checked = true;
-                            }
-                        }
-                        newNode.appendChild(inElement);
-                        newNode.appendChild(nodeText);
+                        build_modal_radio(radioNode, nodeText, inElement, inElementIdList, item, newNode, option)
                     });
                 }
             }
@@ -284,25 +291,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
                     let radioNode = "";
                     nodeText = "";
                     item.supportedValues.forEach(function (option) {
-                        radioNode = document.createElement("p");
-                        nodeText = document.createTextNode(" " + option + " ");
-                        inElement = document.createElement("input");
-                        inElement.type = "radio";
-                        // inElement.setAttribute("type", "radio");
-                        inElement.value = option;
-                        inElement.id = item.identifier;
-                        inElementIdList.push(item.identifier);
-                        inElement.name = item.identifier;
-                        if (item.minOccurs === 1) {
-                            inElement.required = true;
-                        }
-                        if ('defaultValue' in item) {
-                            if (item.defaultValue == option) {
-                                inElement.checked = true;
-                            }
-                        }
-                        newNode.appendChild(inElement);
-                        newNode.appendChild(nodeText);
+                        build_modal_radio(radioNode, nodeText, inElement, inElementIdList, item, newNode, option)
                     });
                     // inElement.setAttribute("type", "radio")
                 }
@@ -312,53 +301,37 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
             inElement.id = item.identifier;
             inElementIdList.push(item.identifier);
             inElement.name = item.identifier;
-            if (item.minOccurs === 1) {
-                inElement.required = true;
-            }
+            if (item.minOccurs === 1) inElement.required = true;
             switch (item.dataType) {
                 case 'string':
                     inElement.type = "text";
                     //inElement.className = "input"
-                    if ('defaultValue' in item) {
-                        inElement.value = item.defaultValue;
-                    }
+                    if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'boolean':
                     inElement.type = "checkbox";
-                    if ('defaultValue' in item && item.defaultValue == true) {
-                        inElement.checked = true;
-                    }
+                    if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;
                     break;
                 case 'float':
                     inElement.type = "number";
                     inElement.step = "0.000001";
-                    if ('defaultValue' in item) {
-                        inElement.value = item.defaultValue;
-                    }
+                    if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'integer':
                     inElement.type = "number";
-                    if ('defaultValue' in item) {
-                        inElement.value = item.defaultValue;
-                    }
+                    if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'ComplexData':
                     inElement.type = "text";
-                    console.log('you have to handle complesdata properly');
                     if ('defaultValue' in item) {
-                        if ('mimeType' in item.defaultValue) {
-                            inElement.value = item.defaultValue.mimeType;
-                        }
+                        if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
                     }
                     break;
                 case 'BoundingBoxData':
                     console.log('you have to handle BoundingBoxData properly');
-                    if ('defaultValue' in item) {
-                        inElement.value = item.defaultValue;
-                    }
+                    if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 default:
-                    console.log('+++++++++++++++++++++++')
                     console.log(' new dataType')
             }
             if (item.minOccurs > 0) {
@@ -368,17 +341,11 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
         }
         //$("p").append("<b>Appended text</b>");
         //$("div").append(inElement);
-        if (typeof (newNode) === 'object') {
-            element.appendChild(newNode)
-        }
+        if (typeof (newNode) === 'object') element.appendChild(newNode)
     });
 
     // TODO: build one output now. Decide how to handle several outputs
-    console.log('seesionStorage: ', sessionStorage.getItem("processModal"))
     //outputs:
-    console.log('outputs: ', wpsInfo.processOutputs)
-    console.log('outputs: ', wpsInfo.processOutputs.length)
-    console.log('outputs: ', wpsInfo.processOutputs[0])
     document.getElementById("mod_out").innerHTML = "";
 
     element = document.getElementById("mod_out");
@@ -390,9 +357,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
     newNode.appendChild(nodeText);
     let outElement = document.createElement("input");
     newNode.appendChild(outElement);
-    if (typeof (newNode) === 'object') {
-        element.appendChild(newNode)
-    }
+    if (typeof (newNode) === 'object') element.appendChild(newNode)
     /*let outElement = "";
     newNode = "";
     nodeText = "";
@@ -431,6 +396,7 @@ function build_modal(wpsInfo, service, identifier, btn_id) {
 
     //element.innerHTML = inElement;
     let modal = document.getElementById("workModal");
+    modal.setAttribute("name",  invoke_btn_id);
     modal.style.display = "block";
     let currentModal = new modalObj(identifier, inElementIdList, outElementIdList);
     // TODO: get right name for sessionstorage

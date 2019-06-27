@@ -64,16 +64,16 @@ def process(request, service, identifier):
         key_list = []
         inputs = []
         outputs = []
-        
+
         value_list = request.POST.getlist('input')
 
         for input in wps_process.dataInputs:
             key_list.append(input.identifier)
 
         inputs = list(zip(key_list, value_list))
-            
+
         processid = wps_process.identifier
-        
+
         execution = wps.execute(processid, inputs)
         execution_status = execution.status
 
@@ -90,8 +90,8 @@ def process(request, service, identifier):
         for output in execution.processOutputs:
             outputs.append(output.data)
             output_reference = output.reference
-            
-        if output_reference: 
+
+        if output_reference:
             output_reference = output_reference.replace('localhost', HOST_NAME)
             # output_reference = output_reference.replace('localhost','vforwater-devel')
 
@@ -103,7 +103,7 @@ def process(request, service, identifier):
                      'output_reference': output_reference,
                      'execution_status': execution_status
                      }
-    
+
         return render(request, 'heron_wps/result.html', context_p)
     
     return render(request, 'heron_wps/process.html', context)
