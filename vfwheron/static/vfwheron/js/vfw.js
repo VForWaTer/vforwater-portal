@@ -405,7 +405,7 @@ function workspace_dataset(id) {
                 // document.getElementById("workdata").value = x;
 
                 // build buttons
-                workspace_button(json['workspaceData']);
+                build_datastore_button(json['workspaceData']);
             } // function in sidebar.js
         });
     }

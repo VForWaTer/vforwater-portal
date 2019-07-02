@@ -57,11 +57,11 @@ function wpsprocess(service, identifier, invoke_btn_id) {
     });
 }
 
-function dropAndSave() {
+function drop_and_save() {
     console.log('lets store it')
 }
 
-function checkRequired(checkElement) {
+function check_required(checkElement) {
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -92,7 +92,7 @@ function checkRequired(checkElement) {
 
 // TODO: runProcess now works only on execution from modal. Ajdust to be usable from Dropzone too,
 //  when you have the drop objects
-function modalRunProcess() {
+function modal_run_process() {
     let workModal = document.getElementById('workModal');
     let inModal = document.getElementById('mod_in');
     let inputs = inModal.getElementsByTagName('input');
@@ -144,36 +144,40 @@ function modalRunProcess() {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) { // Results are stored in the sessionStorage
-            // build_modal(json, service, identifier, btn_id)
-            // sessionStorage.removeItem("resultBtnList")
             if (json.execution_status == "ProcessSucceeded") {
-                colorModal("forestgreen");
-                sessionStorage.setItem(identifier, json);
-                if (sessionStorage.getItem("resultBtnList")) {
-                    let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
-                    /*            if (result_btns.includes(identifier)) {
-
-                                    console.log('---------- gibts schon: ', result_btns)
-                                } else {*/
-                    result_btns.push(identifier);
-                    sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
-                    buildResultStoreButton(json, outputName);
-                    // }
-                    // sessionStorage.setItem("resultBtnList", JSON.stringify(stored))
-                } else {
-                    sessionStorage.setItem("resultBtnList", JSON.stringify([identifier]));
-                    buildResultStoreButton(json, outputName);
-                }
+                color_modal("forestgreen");
+                let btnName = set_result_btn_name(outputName);
+                sessionStorage.setItem(btnName, JSON.stringify(json));
+                add_to_resultstore_buttonlist(btnName);
+                document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, json);
             } else {
-                colorModal("firebrick");
+                color_modal("firebrick");
                 alert('Error: Failed to execute your request.');
             }
         }
     });
-
 }
 
-function colorModal(color) {
+function set_result_btn_name(name) {
+    let newName;
+    if (sessionStorage.getItem("resultBtnList")) {
+        let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
+        newName = name;
+        if (result_btns.includes(name)) {
+            var i = 0;
+            while (result_btns.includes(newName)) {
+                i++;
+                newName = name + i
+            }
+        }
+        result_btns.push(newName);
+    } else {
+        newName = [name];
+    }
+    return newName
+}
+
+function color_modal(color) {
     let modalColor = document.getElementById("modal-header");
     modalColor.style.backgroundColor = color;
     modalColor = document.getElementById("modal-footer");
@@ -187,38 +191,31 @@ function modalObj(processId, processInput, processOutput) {
     this.processOutput = processOutput;
 }
 
-function addToResultStoreButtonList(btnName) {
-    let newBtnName = btnName;
+function add_to_resultstore_buttonlist(btnName) {
     if (sessionStorage.getItem("resultBtnList")) {
 
         let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
-        if (result_btns.includes(newBtnName)) {
-            var i = 0;
-            while (result_btns.includes(newBtnName)) {
-                i++;
-                newBtnName = btnName + i
-            }
+        if (result_btns.includes(btnName)) {
+            console.log('Error! Names should be unique!')
         }
-        btnName = newBtnName;
         result_btns.push(btnName);
+        // }
         sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
     } else {
-        sessionStorage.setItem("resultBtnList", JSON.stringify([btnName]));
+        sessionStorage.setItem("resultBtnList", JSON.stringify(btnName));
     }
-    return newBtnName;
+    // return newBtnName;
 }
 
 //TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
-function buildResultStoreButton(json, btnName) {
-    btnName = addToResultStoreButtonList(btnName);
+function build_resultstore_button(btnName, json) {
     let ident = json.processid;
-    // let btnName = json.processid;
     let title = json.processid;
-    document.getElementById("workspace_results").innerHTML += '<li draggable="true" class="respo-padding task" ' +
+    return '<li draggable="true" class="respo-padding task" ' +
         'data-id="' + ident + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
         '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
         '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
-        'onclick="remove_single_result(\'' + btnName + '\')"; class="respo-hover-white respo-right">' +
+        'onclick="remove_single_result(\'' + btnName + '\')" class="respo-hover-white respo-right">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
@@ -396,7 +393,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
 
     //element.innerHTML = inElement;
     let modal = document.getElementById("workModal");
-    modal.setAttribute("name",  invoke_btn_id);
+    modal.setAttribute("name", invoke_btn_id);
     modal.style.display = "block";
     let currentModal = new modalObj(identifier, inElementIdList, outElementIdList);
     // TODO: get right name for sessionstorage

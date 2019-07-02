@@ -54,10 +54,10 @@
     span.onclick = function () {closeModal()};
     span_r.onclick = function () {
         {#modal.style.display = "none";#}
-        if (checkRequired(document.getElementById('workModal'))) modalRunProcess()
+        if (check_required(document.getElementById('workModal'))) modal_run_process()
     };
     span_ok.onclick = function () {
-        if (checkRequired(document.getElementById('workModal'))) dropAndSave();
+        if (check_required(document.getElementById('workModal'))) drop_and_save();
         closeModal();
     };
     span_c.onclick = function () {closeModal()};
@@ -68,7 +68,7 @@
 
     function closeModal() {
         modal.style.display = "none";
-        colorModal("dodgerblue")
+        color_modal("dodgerblue")
     }
 
 

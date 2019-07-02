@@ -58,59 +58,65 @@ function Sidemenu_close() {
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
     let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
-    if (workspaceData){// && "value" in workspaceData) {
-        workspace_button(workspaceData)
+    if (workspaceData) {// && "value" in workspaceData) {
+        build_datastore_button(workspaceData);
     }
-
     let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-    if (resultData){
-        console.log('resultData shall be renewed: ', resultData)
+    if (resultData) {
+        var html = "";
+        resultData.forEach(function (btnName) {
+            html += build_resultstore_button(btnName, sessionStorage.getItem(btnName));
+        });
+        document.getElementById("workspace_results").innerHTML += html;
+        // console.log('resultData shall be renewed: ', resultData)
     }
 }
 
 // build buttons in workspace and store selection in clients sessionStorage
-function workspace_button(json) {
+function build_datastore_button(json) {
     // if (json['workspaceData'] !== undefined) {
     //     $.each(json['workspaceData'], function (key, value) {
-        $.each(json, function (key, value) {
-            let btnName;
-            let vnLen = value['name'].length;
-            if (vnLen+ value['abbr'].length + value['unit'].length <= 14) {
-                btnName = `${value['name']} (${value['abbr']} in ${value['unit']}) - ${key}`;
-            } else if (vnLen + value['abbr'].length <= 16) {
-                btnName = `${value['name']} (${value['abbr']}) - ${key}`;
-            } else if (vnLen <= 18) {
-                btnName = `${value['name']} - ${key}`;
-            } else {
-                btnName = `${value['abbr']} in ${value['unit']} - ${key}`;
-            }
-            let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
-            // check if buttons already exist before creating a new one:
-            if (document.getElementById("id"+key) === null) {
-                document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding task" ' +
-                    'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor: pointer;" id="id' + key + '">' +
-                    '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
-                    '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
-                    'onclick="remove_single_data(' + key + ')"; class="respo-hover-white respo-right">' +
-                    '<i class="fa fa-remove fa-fw"></i></a><br></li>';
-                /*
-                document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
-                    'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
-                    '<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
-                    'onclick="remove_single_data('+key+')"; class="respo-hover-white respo-right">' +
-                    '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
-                    '<div id="w3popup" class="w3popup"><span class="popuptext" id="pop' + key + '"></span></div>' +
-            '<li class="task" data-id="1"><div class="task__content">Build An App</div><div class="task__actions">' +
-            '</div></li>';*/
-            }
-        })
+    let html = "";
+    $.each(json, function (key, value) {
+        let btnName;
+        let vnLen = value['name'].length;
+        if (vnLen + value['abbr'].length + value['unit'].length <= 14) {
+            btnName = `${value['name']} (${value['abbr']} in ${value['unit']}) - ${key}`;
+        } else if (vnLen + value['abbr'].length <= 16) {
+            btnName = `${value['name']} (${value['abbr']}) - ${key}`;
+        } else if (vnLen <= 18) {
+            btnName = `${value['name']} - ${key}`;
+        } else {
+            btnName = `${value['abbr']} in ${value['unit']} - ${key}`;
+        }
+        let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
+        // check if buttons already exist before creating a new one:
+        if (document.getElementById("id" + key) === null) {
+            html += '<li draggable="true" class="respo-padding task" ' +
+                'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
+                '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
+                '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
+                'onclick="remove_single_data(' + key + ')" class="respo-hover-white respo-right">' +
+                '<i class="fa fa-remove fa-fw"></i></a><br></li>';
+            /*
+            document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
+                'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
+                '<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
+                'onclick="remove_single_data('+key+')"; class="respo-hover-white respo-right">' +
+                '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
+                '<div id="w3popup" class="w3popup"><span class="popuptext" id="pop' + key + '"></span></div>' +
+        '<li class="task" data-id="1"><div class="task__content">Build An App</div><div class="task__actions">' +
+        '</div></li>';*/
+        }
+    });
+    document.getElementById('workspace').innerHTML += html
     // }
 }
 
 // Remove data / elements from workspace
 function remove_single_data(removeData) {
     // remove data from portal:
-    document.getElementById("id"+removeData).remove();
+    document.getElementById("id" + removeData).remove();
     // remove data from session:
     let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
     delete workspaceData[removeData];
@@ -152,17 +158,10 @@ function remove_single_result(removeData) {
 }
 
 function remove_all_results() {
-    // remove button from portal
- /*   $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
-        if ("name" in value) {
-            remove_single_data(parseInt(key));
-            // document.getElementById("id" + key).remove()
-        }
-    });*/
-    // remove button from session
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
     for (let i in workspaceData) {
-        sessionStorage.removeItem('"'+workspaceData[i]+'"');
+        sessionStorage.removeItem('"' + workspaceData[i] + '"');
+        document.getElementById(workspaceData[i]).remove();
     }
     sessionStorage.removeItem("resultBtnList");
 }
@@ -363,7 +362,9 @@ function positionMenu(e) {
     menu.style.left = ((windowWidth - clickCoordsX) < menuWidth) ? `${windowWidth - menuWidth}px` : `${clickCoordsX}px`;
     menu.style.top = ((windowHeight - clickCoordsY) < menuHeight) ? `${windowHeight - menuHeight}px` : `${clickCoordsY}px`;
 
-}/**
+}
+
+/**
  * Positions the popup properly.
  *
  * @param {Object} e The event
@@ -403,7 +404,7 @@ function menuItemListener(link) {
                     let popUpText = "";
                     // loop over "properties" dict with metadata, build columns
                     for (let j in properties) {
-            // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+                        // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
                         popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
                     }
                     content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
@@ -415,18 +416,18 @@ function menuItemListener(link) {
             break;
         case "Plot":
             $.ajax({
-                    url: DEMO_VAR + "/vfwheron/menu",
-                    datatype: 'image/png;base64',
-                    data: {
-                        preview: id,
-                        'csrfmiddlewaretoken': csrf_token,
-                    }, // data sent with post
-                    success: function (result) {
-                            content.innerHTML = '<div class="mod-header">'+result['get']+'</div>';
-                            popcloser.classList.remove('respo-hide');
-                            positionPopup(popup);
-                    }
-                });
+                url: DEMO_VAR + "/vfwheron/menu",
+                datatype: 'image/png;base64',
+                data: {
+                    preview: id,
+                    'csrfmiddlewaretoken': csrf_token,
+                }, // data sent with post
+                success: function (result) {
+                    content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
+                    popcloser.classList.remove('respo-hide');
+                    positionPopup(popup);
+                }
+            });
             break;
         case "Downloadcsv":
             $.ajax({
@@ -437,9 +438,9 @@ function menuItemListener(link) {
                 }, // data sent with post request
                 success: function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    saveAs(blob, taskItemInContext.getAttribute("btnName")+".csv");
+                    saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
                 },
-                complete: function() {
+                complete: function () {
                     popup.classList.remove(popActive);
                 }
             });
@@ -458,9 +459,9 @@ function menuItemListener(link) {
                 success: function (data) {
                     let blob = new File([data], {type: "application/octet-stream"});
                     // let blob = new Blob([data], {type: "application/octet-binary"});
-                    saveAs(blob, String(taskItemInContext.getAttribute("btnName"))+".zip");
+                    saveAs(blob, String(taskItemInContext.getAttribute("btnName")) + ".zip");
                 },
-                complete: function() {
+                complete: function () {
                     popup.classList.remove(popActive);
                 }
             });
@@ -478,7 +479,7 @@ function menuItemListener(link) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
                 },
-                complete: function() {
+                complete: function () {
                     popup.classList.remove(popActive);
                 }
             });
@@ -508,10 +509,10 @@ popcloser.onclick = function () {
 };
 
 /** make the popup dragable: */
-$(function(){
+$(function () {
     $(popup).draggable({
-      handle: ".mod-header"
-  });
+        handle: ".mod-header"
+    });
     // $('#loader-popup').resizable();
 
 });
