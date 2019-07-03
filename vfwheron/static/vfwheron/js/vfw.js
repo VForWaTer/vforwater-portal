@@ -391,8 +391,7 @@ function workspace_dataset(id) {
                         if (!stored[key]) stored[key] = value;
                     });
                     sessionStorage.setItem("btn", JSON.stringify(stored))
-                }
-                else {
+                } else {
                     sessionStorage.setItem("btn", JSON.stringify(json['workspaceData']));
                 }
                 // push sessionStorage keys to html for Workspace
@@ -433,7 +432,7 @@ function show_preview(id) {
 
 function popupContentvfw(ids, page) {
     // TODO: CSS style überarbeiten
-    if (typeof (ids) === 'string' && typeof(page) === 'undefined') {
+    if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
         page = JSON.parse("[" + ids + "]").slice(-1);
         ids = JSON.parse("[" + ids + "]").slice(0, -1);
     }
@@ -496,7 +495,7 @@ function buildPopupTextvfw(json, popUpText) {
 }
 
 function buildPagivfw(idDict, page) {
-    if (typeof (idDict) === 'string' && typeof(page) === 'undefined') {
+    if (typeof (idDict) === 'string' && typeof (page) === 'undefined') {
         page = JSON.parse("[" + idDict + "]").slice(-1);
         idDict = JSON.parse("[" + idDict + "]").slice(0, -1);
     }

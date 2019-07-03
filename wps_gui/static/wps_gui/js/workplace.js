@@ -29,19 +29,6 @@ function drop(ev) {
 
 // TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
 //  if process_id == btn_id place btn in dropzone (on save)
-function open_wpsprocess(service, process_id, invoke_btn_id) {
-    wpsprocess(service, process_id, invoke_btn_id);
-    /*
-        let btn = document.getElementById(btn_id);
-        console.log("btn: ", btn)
-        console.log('data service: ', btn.dataset.service)
-        console.log('data process: ', btn.dataset.process)
-    */
-
-    //let modal = document.getElementById("workModal");
-    //modal.style.display = "block";
-}
-
 function wpsprocess(service, identifier, invoke_btn_id) {
     $.ajax({
         url: DEMO_VAR + "/wps_gui/processview",
@@ -58,7 +45,7 @@ function wpsprocess(service, identifier, invoke_btn_id) {
 }
 
 function drop_and_save() {
-    console.log('lets store it')
+    console.exception('lets store it')
 }
 
 function check_required(checkElement) {
@@ -196,7 +183,7 @@ function add_to_resultstore_buttonlist(btnName) {
 
         let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
         if (result_btns.includes(btnName)) {
-            console.log('Error! Names should be unique!')
+            console.error('Error! Names should be unique!')
         }
         result_btns.push(btnName);
         // }
@@ -325,11 +312,11 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                     }
                     break;
                 case 'BoundingBoxData':
-                    console.log('you have to handle BoundingBoxData properly');
+                    console.exception('you have to handle BoundingBoxData properly');
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 default:
-                    console.log(' new dataType')
+                    console.exception(' new dataType')
             }
             if (item.minOccurs > 0) {
                 inElement.required = true

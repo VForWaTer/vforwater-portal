@@ -62,15 +62,14 @@ function show_data() {
         build_datastore_button(workspaceData);
     }
     if (document.getElementById("workspace_results")) {
-    let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-    if (resultData) {
-        var html = "";
-        resultData.forEach(function (btnName) {
-            html += build_resultstore_button(btnName, sessionStorage.getItem(btnName));
-        });
-        document.getElementById("workspace_results").innerHTML += html;
-        // console.log('resultData shall be renewed: ', resultData)
-    }
+        let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+        if (resultData) {
+            var html = "";
+            resultData.forEach(function (btnName) {
+                html += build_resultstore_button(btnName, sessionStorage.getItem(btnName));
+            });
+            document.getElementById("workspace_results").innerHTML += html;
+        }
     }
 }
 
@@ -186,7 +185,6 @@ function remove_all_results() {
  * @return {Boolean}
  */
 function clickInsideElement(e, className) {
-    console.log(' - clickInsideElement className: ', className)
     var el = e.srcElement || e.target;
 
     if (el.classList.contains(className)) {
@@ -283,13 +281,9 @@ function init() {
 function contextListener() {
     document.addEventListener("contextmenu", function (e) {
         taskItemInContext = clickInsideElement(e, taskItemClassName);
-        console.log(' * contextlistener: ', taskItemClassName, e, taskItemInContext)
-        // console.log(' * contextlistener: ', taskItemInContext.classList.contains('is-result'))
         let chooseContext;
         if (taskItemInContext) {
             if (taskItemInContext.classList.contains('is-result')) chooseContext = 'is-result';
-            console.log('+++++++')
-            console.log('contextListener chooseContext! ', chooseContext)
             e.preventDefault();
             toggleMenuOn(chooseContext);
             positionMenu(e);
@@ -306,12 +300,8 @@ function contextListener() {
 function clickListener() {
     document.addEventListener("click", function (e) {
         let clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
-        // console.log('clickListener e: ', e)
-        console.log(' + clickListener contextMenuLinkClassName: ', contextMenuLinkClassName)
-        // console.log('clickListener clickeElIsLink: ', clickeElIsLink)
         if (clickeElIsLink) {
             e.preventDefault();
-            console.log('___________________________')
             menuItemListener(clickeElIsLink);
         } else {
             let button = e.which || e.button;
@@ -342,16 +332,12 @@ function resizeListener() {
  * Turns the custom context menu on.
  */
 function toggleMenuOn(chooseContext) {
+    toggleMenuOff(chooseContext);
     if (menuState !== 1) {
-        // toggleMenuOff(chooseContext)
         menuState = 1;
-        console.log('.................................................. ')
-        console.log('toggle on1: ', chooseContext)
         if (chooseContext == "is-result") {
-            console.log('toggle on2: ', resultMenu)
             resultMenu.classList.add(contextResultActive);
         } else {
-            console.log('toggle on3: ', menu)
             menu.classList.add(contextMenuActive);
         }
     }
@@ -363,11 +349,8 @@ function toggleMenuOn(chooseContext) {
 function toggleMenuOff(chooseContext) {
     if (menuState !== 0) {
         menuState = 0;
-        console.log('2.................................................. ')
-        console.log('toggle off: ', chooseContext)
-
-            resultMenu.classList.remove(contextResultActive);
-            menu.classList.remove(contextMenuActive);
+        resultMenu.classList.remove(contextResultActive);
+        menu.classList.remove(contextMenuActive);
     }
 }
 
@@ -377,7 +360,6 @@ function toggleMenuOff(chooseContext) {
  * @param {Object} e The event
  */
 function positionMenu(e) {
-    console.log('position Menu: ', e)
     clickCoords = getPosition(e);
     clickCoordsX = clickCoords.x;
     clickCoordsY = clickCoords.y;
@@ -418,9 +400,7 @@ function positionPopup(window) {
  * @param {HTMLElement} link The link that was clicked
  */
 function menuItemListener(link) {
-    console.log(' - + *   menuItemListener link: ', link)
     let id = taskItemInContext.getAttribute("data-id");
-    console.log(' - + *   menuItemListener id: ', id)
     content.innerHTML = '<div id="loader" class="loader"></div>';
     popup.classList.add(popActive);
     popText.classList.remove(popInActive);
@@ -528,11 +508,21 @@ function menuItemListener(link) {
             popup.classList.remove(popActive);
             break;
         case "ViewR":
-            remove_single_data(id);
-            popup.classList.remove(popActive);
+            let result = JSON.parse(sessionStorage.getItem(id));
+            let popUpText = "";
+            // loop over "properties" dict with metadata, build columns
+            for (let j in result) {
+                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+                popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
+            }
+            content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+                '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
+            popcloser.classList.remove('respo-hide');
+            positionPopup(popup);
             break;
         case "DownloadR":
-            remove_single_data(id);
+            let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});
+            saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
             popup.classList.remove(popActive);
             break;
         case "RemoveR":
@@ -543,8 +533,6 @@ function menuItemListener(link) {
             console.error('Error! There is no function defined for "' + link.getAttribute("data-action") + '".')
 
     }
-    // console.log("Task ID - " + id + ", Task action - " + link.getAttribute("data-action"));
-    // console.log('popText: ', popText.classList)
     popText.classList.add(popInActive);
     toggleMenuOff();
 }
