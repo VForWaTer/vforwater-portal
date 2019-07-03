@@ -211,11 +211,11 @@ function add_to_resultstore_buttonlist(btnName) {
 function build_resultstore_button(btnName, json) {
     let ident = json.processid;
     let title = json.processid;
-    return '<li draggable="true" class="respo-padding task" ' +
-        'data-id="' + ident + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
+    return '<li draggable="true" class="respo-padding task is-result" ' +
+        'data-id="' + btnName + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
         '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
         '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
-        'onclick="remove_single_result(\'' + btnName + '\')" class="respo-hover-white respo-right">' +
+        'onclick="remove_single_result(\'' + btnName + '\')" class="respo-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
@@ -402,29 +402,3 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
 
     // element.innerHTML = wpsInfo.title;
 }
-
-/*
-function drop(ev) {
-  ev.preventDefault();
-  var data=ev.dataTransfer.getData("text/html");
-  /!* If you use DOM manipulation functions, their default behaviour it not to
-     copy but to alter and move elements. By appending a ".cloneNode(true)",
-     you will not move the original element, but create a copy. *!/
-  var nodeCopy = document.getElementById(data).cloneNode(true);
-  nodeCopy.id = "newId"; /!* We cannot use the same ID *!/
-  ev.target.appendChild(nodeCopy);
-}*/
-
-// *** From here the drag and drop elements and the respective functions are build ***
-/*
-    document.addEventListener("DOMContentLoaded",function () {
-
-
-    // create the canvas for the user interaction
-    //
-    var canvas = new draw2d.Canvas("dropdiv");
-
-    var shape = new draw2d.shape.flowchart.Document({width:60, height:80});
-    canvas.add( shape, 100,60);
-console.log('+++++++++++++++++++++++++++++++ war da')
-});*/

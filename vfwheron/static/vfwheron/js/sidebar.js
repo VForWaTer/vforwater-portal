@@ -61,6 +61,7 @@ function show_data() {
     if (workspaceData) {// && "value" in workspaceData) {
         build_datastore_button(workspaceData);
     }
+    if (document.getElementById("workspace_results")) {
     let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
     if (resultData) {
         var html = "";
@@ -69,6 +70,7 @@ function show_data() {
         });
         document.getElementById("workspace_results").innerHTML += html;
         // console.log('resultData shall be renewed: ', resultData)
+    }
     }
 }
 
@@ -184,6 +186,7 @@ function remove_all_results() {
  * @return {Boolean}
  */
 function clickInsideElement(e, className) {
+    console.log(' - clickInsideElement className: ', className)
     var el = e.srcElement || e.target;
 
     if (el.classList.contains(className)) {
@@ -234,6 +237,7 @@ var contextMenuClassName = "context-menu";
 var contextMenuItemClassName = "context-menu__item";
 var contextMenuLinkClassName = "context-menu__link";
 var contextMenuActive = "context-menu--active";
+var contextResultActive = "context-result--active";
 
 var taskItemClassName = "task";
 var taskItemInContext;
@@ -243,6 +247,7 @@ var clickCoordsX;
 var clickCoordsY;
 
 var menu = document.querySelector("#context-menu");
+var resultMenu = document.querySelector("#context-result");
 let popup = document.querySelector("#loader-popup");
 let content = document.querySelector('#pop-content-side');
 let popText = document.querySelector('#popupText');
@@ -253,6 +258,8 @@ let popInActive = "mod-popup--inactive";
 var menuState = 0;
 var menuWidth;
 var menuHeight;
+var resultMenuWidth;
+var resultMenuHeight;
 var menuPosition;
 var menuPositionX;
 var menuPositionY;
@@ -276,10 +283,15 @@ function init() {
 function contextListener() {
     document.addEventListener("contextmenu", function (e) {
         taskItemInContext = clickInsideElement(e, taskItemClassName);
-
+        console.log(' * contextlistener: ', taskItemClassName, e, taskItemInContext)
+        // console.log(' * contextlistener: ', taskItemInContext.classList.contains('is-result'))
+        let chooseContext;
         if (taskItemInContext) {
+            if (taskItemInContext.classList.contains('is-result')) chooseContext = 'is-result';
+            console.log('+++++++')
+            console.log('contextListener chooseContext! ', chooseContext)
             e.preventDefault();
-            toggleMenuOn();
+            toggleMenuOn(chooseContext);
             positionMenu(e);
         } else {
             taskItemInContext = null;
@@ -294,9 +306,12 @@ function contextListener() {
 function clickListener() {
     document.addEventListener("click", function (e) {
         let clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
-        // console.log('clickeElIsLink: ', clickeElIsLink)
+        // console.log('clickListener e: ', e)
+        console.log(' + clickListener contextMenuLinkClassName: ', contextMenuLinkClassName)
+        // console.log('clickListener clickeElIsLink: ', clickeElIsLink)
         if (clickeElIsLink) {
             e.preventDefault();
+            console.log('___________________________')
             menuItemListener(clickeElIsLink);
         } else {
             let button = e.which || e.button;
@@ -326,20 +341,33 @@ function resizeListener() {
 /**
  * Turns the custom context menu on.
  */
-function toggleMenuOn() {
+function toggleMenuOn(chooseContext) {
     if (menuState !== 1) {
+        // toggleMenuOff(chooseContext)
         menuState = 1;
-        menu.classList.add(contextMenuActive);
+        console.log('.................................................. ')
+        console.log('toggle on1: ', chooseContext)
+        if (chooseContext == "is-result") {
+            console.log('toggle on2: ', resultMenu)
+            resultMenu.classList.add(contextResultActive);
+        } else {
+            console.log('toggle on3: ', menu)
+            menu.classList.add(contextMenuActive);
+        }
     }
 }
 
 /**
  * Turns the custom context menu off.
  */
-function toggleMenuOff() {
+function toggleMenuOff(chooseContext) {
     if (menuState !== 0) {
         menuState = 0;
-        menu.classList.remove(contextMenuActive);
+        console.log('2.................................................. ')
+        console.log('toggle off: ', chooseContext)
+
+            resultMenu.classList.remove(contextResultActive);
+            menu.classList.remove(contextMenuActive);
     }
 }
 
@@ -349,6 +377,7 @@ function toggleMenuOff() {
  * @param {Object} e The event
  */
 function positionMenu(e) {
+    console.log('position Menu: ', e)
     clickCoords = getPosition(e);
     clickCoordsX = clickCoords.x;
     clickCoordsY = clickCoords.y;
@@ -361,6 +390,12 @@ function positionMenu(e) {
 
     menu.style.left = ((windowWidth - clickCoordsX) < menuWidth) ? `${windowWidth - menuWidth}px` : `${clickCoordsX}px`;
     menu.style.top = ((windowHeight - clickCoordsY) < menuHeight) ? `${windowHeight - menuHeight}px` : `${clickCoordsY}px`;
+
+    resultMenuWidth = resultMenu.offsetWidth + 4;
+    resultMenuHeight = resultMenu.offsetHeight + 4;
+
+    resultMenu.style.left = ((windowWidth - clickCoordsX) < resultMenuWidth) ? `${windowWidth - resultMenuWidth}px` : `${clickCoordsX}px`;
+    resultMenu.style.top = ((windowHeight - clickCoordsY) < resultMenuHeight) ? `${windowHeight - resultMenuHeight}px` : `${clickCoordsY}px`;
 
 }
 
@@ -383,7 +418,9 @@ function positionPopup(window) {
  * @param {HTMLElement} link The link that was clicked
  */
 function menuItemListener(link) {
+    console.log(' - + *   menuItemListener link: ', link)
     let id = taskItemInContext.getAttribute("data-id");
+    console.log(' - + *   menuItemListener id: ', id)
     content.innerHTML = '<div id="loader" class="loader"></div>';
     popup.classList.add(popActive);
     popText.classList.remove(popInActive);
@@ -488,6 +525,18 @@ function menuItemListener(link) {
             break;
         case "Remove":
             remove_single_data(id);
+            popup.classList.remove(popActive);
+            break;
+        case "ViewR":
+            remove_single_data(id);
+            popup.classList.remove(popActive);
+            break;
+        case "DownloadR":
+            remove_single_data(id);
+            popup.classList.remove(popActive);
+            break;
+        case "RemoveR":
+            remove_single_result(id);
             popup.classList.remove(popActive);
             break;
         default:

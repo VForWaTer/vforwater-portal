@@ -117,11 +117,26 @@
     </ul>
 </nav>
 
+<nav id="context-result" class="context-result">
+    <ul class="context-menu__items">
+        <li class="context-menu__item">
+            <a href="#" class="context-menu__link" data-action="ViewR"><i
+                    class="fa fa-eye"></i>{% trans " View result" %}</a>
+        </li>
+        <li class="context-menu__item">
+            <a href="#" class="context-menu__link" data-action="DownloadR"><i
+                    class="fa fa-download"></i>{% trans " Download result" %}</a>
+        </li>
+        <li class="context-menu__item">
+            <a href="#" class="context-menu__link" data-action="RemoveR"><i
+                    class="fa fa-eraser"></i>{% trans " Remove result" %}</a>
+        </li>
+    </ul>
+</nav>
+
 <nav id="loader-popup" class="mod-popup respo-center">
     {#    TODO: figure out how to aport download, then there is no need to hide the closer#}
     <a href="#" id="pop-closer" class="mod-popup-closer respo-hide"></a>
-    {#    <div id="loader" class="loader"></div>#}
-    {#    <div id="loader-text"></div>#}
     <div id="pop-content-side">
     </div>
     <a>

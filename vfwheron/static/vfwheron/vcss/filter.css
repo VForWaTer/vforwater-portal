@@ -322,7 +322,7 @@ div.ui-rangeslider label {
 
 /* context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/*/
 
-.context-menu {
+.context-menu, .context-result {
   display: none;
   position: absolute;
   z-index: 10;
@@ -333,7 +333,7 @@ div.ui-rangeslider label {
   box-shadow: 1px 1px 2px #cfcfcf;
 }
 
-.context-menu--active {
+.context-menu--active, .context-result--active  {
   display: block;
 }
 
