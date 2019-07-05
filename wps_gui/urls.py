@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 from wps_gui import views
 
-app_name = 'wps_gui_app'
+app_name = 'wps_gui'
 
 service_urls = [
     url(r'^$', views.service, name='service'),

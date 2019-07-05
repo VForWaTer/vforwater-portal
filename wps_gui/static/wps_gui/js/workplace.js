@@ -250,7 +250,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
         newNode = document.createElement("p");
         let titleText = "";
         if ('minOccurs' in item) {
-            if (item.minOccurs > 0) {
+            if (item.minOccurs > 0 && item.dataType != 'boolean') {
                 titleText = " " + item.title + " (*) : "
             } else {
                 titleText = " " + item.title + ": "
@@ -285,7 +285,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
             inElement.id = item.identifier;
             inElementIdList.push(item.identifier);
             inElement.name = item.identifier;
-            if (item.minOccurs === 1) inElement.required = true;
+            if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
             switch (item.dataType) {
                 case 'string':
                     inElement.type = "text";

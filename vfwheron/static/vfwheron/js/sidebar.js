@@ -510,10 +510,10 @@ function menuItemListener(link) {
         case "ViewR":
             let result = JSON.parse(sessionStorage.getItem(id));
             let popUpText = "";
-            // loop over "properties" dict with metadata, build columns
             for (let j in result) {
-                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-                popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
+                if (!(result[j] instanceof Object)) {
+                    popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
+                }
             }
             content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
