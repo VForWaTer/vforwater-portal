@@ -74,7 +74,6 @@ def get_dataset(self, request, **kwargs):
     :return:
     :rtype:
     """
-    # here
     m_id = request.POST.get('meta_id')
 
     data = TblData.objects.get(meta=m_id).value
@@ -83,12 +82,12 @@ def get_dataset(self, request, **kwargs):
     return result
 
 
-class WorkflowView(TemplateView):
-    """
-    Template View for plain workflow HTML Template.
-    Template so far does only contain iframe in content Block, that embedds wps_workflow app
-    """
-    template_name = "vfwheron/workflow.html"
+# class WorkflowView(TemplateView):
+#     """
+#     Template View for plain workflow HTML Template.
+#     Template so far does only contain iframe in content Block, that embedds wps_workflow app
+#     """
+#     template_name = "vfwheron/workflow.html"
 
 
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
@@ -103,7 +102,7 @@ class HomeView(TemplateView):
     # print(connections['vforwater'].queries)
     # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'testlayer2'#'default_layer_prod'
+    data_layer = 'testlayer4'#'default_layer_prod'
 
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
@@ -116,7 +115,7 @@ class HomeView(TemplateView):
     # dataExt = get_bbox_from_data()
     def set_user_menu(self):
         if self.request.user.is_authenticated:
-            data_layer = 'default_layer'
+            data_layer = 'default_layer4'
         else:
             data_layer = self.data_layer
         return data_layer
@@ -124,7 +123,7 @@ class HomeView(TemplateView):
     # TODO: Test with users if this makes any sense
     def set_layer_name(self):
         if self.request.user.is_authenticated:
-            data_layer = 'default_layer'
+            data_layer = 'default_layer4'
         else:
             data_layer = self.data_layer
         return data_layer
@@ -273,7 +272,6 @@ class MenuView(TemplateView):
             # for i in deleteable:
             #     del preview[i]
 
-            print('preview: ', preview)
             return JsonResponse(preview)  # requested from map.js show_info
 
 # get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back

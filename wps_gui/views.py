@@ -31,9 +31,9 @@ def home(request):
         wps = []
     for process in wps.processes:
         describedprocess = wps.describeprocess(process.identifier)
-        for input in describedprocess.dataInputs:
-            # print('+ ', input)
-            printInputOutput(input)
+        # for input in describedprocess.dataInputs:
+        #     # print('+ ', input)
+        #     printInputOutput(input)
 
     context = {'wps_services': wps_services,
                'wps': wps,
@@ -41,15 +41,15 @@ def home(request):
     return render(request, 'wps_gui/home.html', context)
 
 
-def service(request, service):
-    """
-    View that lists the processes for a given service.
-    """
-    wps = get_wps_service_engine(service)
-
-    context = {'wps': wps,
-               'service': service}
-    return render(request, 'wps_gui/service.html', context)
+# def service(request, service):
+#     """
+#     View that lists the processes for a given service.
+#     """
+#     wps = get_wps_service_engine(service)
+#
+#     context = {'wps': wps,
+#                'service': service}
+#     return render(request, 'wps_gui/service.html', context)
 
 
 class ProcessView(TemplateView):
@@ -125,7 +125,6 @@ class ProcessView(TemplateView):
                          'output_reference': output_reference,
                          'execution_status': execution_status
                          }
-
 
             return JsonResponse(context_p)
 

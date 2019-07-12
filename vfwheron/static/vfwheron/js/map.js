@@ -355,14 +355,6 @@ function create_map() {
 
     // TODO: buildPopupText is the same as buildPopupTextvfw.js ==> figure out how(where) to use only one of the two functions for both cases
     function buildPopupText(json, popUpText) {
-        // if (json && popUpText) {
-        //     sessionStorage.setItem('buildPopupText_json', json);
-        //     sessionStorage.setItem('buildPopupText_popUpText', popUpText);
-        // } else {
-        //     json = sessionStorage.getItem('buildPopupText_json')
-        //     popUpText = sessionStorage.getItem('buildPopupText_popUpText')
-        // }
-        // let properties = json.get;
         let startPopUp = popUpText;
         let valueLen;
         let buttonId = [];

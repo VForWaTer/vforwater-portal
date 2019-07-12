@@ -378,6 +378,7 @@ function moreInfoModal(id) {
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
     document.getElementById("mod_prev").classList.add("loader");
+    // TODO: If the first ajax finishes first there is an additional table id="popupTable". Check why and avoid it!
     $.ajax({
         url: DEMO_VAR + "/vfwheron/menu",
         dataType: 'json',
@@ -386,14 +387,14 @@ function moreInfoModal(id) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (properties) {
-            let popUpText = sessionStorage.getItem('buildPopupText_popUpText');
-            popUpText += '<thead><tr><th>&nbsp;</th></tr></thead><table>';
+            let metaText = sessionStorage.getItem('buildPopupText_popUpText');
+            metaText += '<thead><tr><th>&nbsp;</th></tr></thead><table>';
             // loop over "properties" dict with metadata, build columns
             for (let j in properties) {
                 // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-                popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+                metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
             }
-            document.getElementById('mod_dat_inf').innerHTML = popUpText+'</table>';
+            document.getElementById('mod_dat_inf').innerHTML = metaText+'</table>';
             show_data_info(properties);
         }
     });
