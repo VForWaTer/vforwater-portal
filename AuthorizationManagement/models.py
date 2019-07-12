@@ -8,7 +8,7 @@ import logging
 from django.template.loader import render_to_string
 from django.core.validators import MaxLengthValidator
 
-from wps_workflow.models import Workflow, Process
+# from wps_workflow.models import Workflow, Process
 
 
 #from vfwheron.models import TblMeta

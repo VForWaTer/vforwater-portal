@@ -14,8 +14,8 @@ def global_settings(request):
     return {
         'HOST_NAME': settings.HOST_NAME,
         'VFW_SERVER': settings.VFW_SERVER,  # TODO: Are you serious!?! You get a value from settings and make it
+        # again available for settings?!?
         'MAP_SERVER': settings.MAP_SERVER,
         # 'PORTAL_GEOSERVER': settings.PORTAL_GEOSERVER,
         'DEMO_VAR': settings.DEMO_VAR,
-        # again available for settings?!?
         }

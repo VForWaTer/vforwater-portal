@@ -2,9 +2,9 @@ from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
 
 from heron import settings
-from wps_workflow.views import EditorView
+# from wps_workflow.views import EditorView
 from . import views
-from .views import WorkflowView
+# from .views import WorkflowView
 
 
 app_name = 'vfwheron'
@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^menu$', views.MenuView.as_view(), name='menu'),
     url(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$',
         views.GeoserverView.as_view()),
-    url(r'^workflowtool/', WorkflowView.as_view(), name='workflowtool'),
+    # url(r'^workflowtool/', WorkflowView.as_view(), name='workflowtool'),
     url(r'^togglelang$', views.ToggleLanguageView.as_view(), name='togglelang'),
     url(r'^failedlogin$', views.FailedLoginView.as_view(), name='failedlogin'),
     url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),

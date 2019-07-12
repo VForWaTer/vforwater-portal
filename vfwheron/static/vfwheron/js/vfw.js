@@ -374,6 +374,52 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function moreInfoModal(id) {
+    document.getElementById('mod_dat_inf').innerHTML = "";
+    document.getElementById("mod_prev").innerHTML = "";
+    document.getElementById("mod_prev").classList.add("loader");
+    $.ajax({
+        url: DEMO_VAR + "/vfwheron/menu",
+        dataType: 'json',
+        data: {
+            show_info: JSON.stringify([id]),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        success: function (properties) {
+            let popUpText = sessionStorage.getItem('buildPopupText_popUpText');
+            popUpText += '<thead><tr><th>&nbsp;</th></tr></thead>';
+            // loop over "properties" dict with metadata, build columns
+            for (let j in properties) {
+                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+                popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+            }
+            document.getElementById('mod_dat_inf').innerHTML = popUpText;
+            show_data_info(properties);
+        }
+    });
+
+    // load preview image when metadata is already available
+    $.ajax({
+        url: DEMO_VAR + "/vfwheron/menu",
+        datatype: 'image/png;base64',
+        data: {
+            preview: id,
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+    })
+        .done(function (json) {
+            document.getElementById("mod_prev").innerHTML = json.get; // png
+        })
+        .fail(function (e) {
+            console.log('fehler: ', e)
+        })
+        .always(function () {
+            document.getElementById("mod_prev").classList.remove("loader");
+        });
+    let modal = document.getElementById("infoModal");
+    modal.style.display = "block";
+}
+
 // send request to view to get info about selection; can be a single id or a list of ids
 function workspace_dataset(id) {
     if (id !== 'null') {
@@ -420,14 +466,17 @@ function show_preview(id) {
             preview: id,
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) {
+    })
+        .done(function (json) {
             $.each(json, function (key, value) {
                 // document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value; // Strobl svg
                 document.getElementById("preview_img").innerHTML = value; // png
                 document.getElementById("show_data_preview" + id.toString()).value = "Reload Preview"
             });
-        }
-    });
+        })
+        .fail(function (e) {
+            console.log('fehler: ', e)
+        })
 }
 
 function popupContentvfw(ids, page) {
@@ -446,7 +495,7 @@ function popupContentvfw(ids, page) {
         url: DEMO_VAR + "/vfwheron/menu",
         dataType: 'json',
         data: {
-            show_info: JSON.stringify(ids),
+            short_info: JSON.stringify(ids),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
@@ -457,19 +506,18 @@ function popupContentvfw(ids, page) {
                 document.getElementById("pagi" + page).classList.add("active");
             }
         }
-
     });
-
 }
 
+// TODO: buildPopupTextvfw is the same as buildPopupText.js ==> figure out how(where) to use only one of the two functions for both cases
 function buildPopupTextvfw(json, popUpText) {
-    let properties = json.get;
+    // let properties = json.get;
     let vLen;
     let buttonId = [];
     let values;
     // loop over "properties" dict with metadata, build columns
-    for (let j in properties) {
-        values = properties[j];
+    for (let j in json) {
+        values = json[j];
         vLen = values.length;
         popUpText = popUpText + '<tr><td><b>' + j + '</b></td>';
         // loop over dict values and build rows
@@ -483,8 +531,8 @@ function buildPopupTextvfw(json, popUpText) {
     // build buttons for each dataset
     for (let k = 0; k < vLen; k++) {
         popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
-            'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
-            'title="Attention! Loading the preview might take a while."></b></a>' +
+            'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
+            'title="Show more information about the dataset."></b></a>' +
             '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
             'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
             'title="Put dataset to session datastore"></b></a></td>';
