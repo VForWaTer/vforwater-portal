@@ -32,7 +32,7 @@
   cursor: pointer;
 }
 
-p.modal-abstract {
+p.modal-datainfo {
   max-height: 120px;
   overflow: auto;
 }

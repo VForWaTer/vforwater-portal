@@ -349,7 +349,7 @@ function toggleMenuOn(chooseContext) {
 function toggleMenuOff(chooseContext) {
     if (menuState !== 0) {
         menuState = 0;
-        resultMenu.classList.remove(contextResultActive);
+        if (resultMenu) resultMenu.classList.remove(contextResultActive);
         menu.classList.remove(contextMenuActive);
     }
 }
@@ -373,12 +373,13 @@ function positionMenu(e) {
     menu.style.left = ((windowWidth - clickCoordsX) < menuWidth) ? `${windowWidth - menuWidth}px` : `${clickCoordsX}px`;
     menu.style.top = ((windowHeight - clickCoordsY) < menuHeight) ? `${windowHeight - menuHeight}px` : `${clickCoordsY}px`;
 
-    resultMenuWidth = resultMenu.offsetWidth + 4;
-    resultMenuHeight = resultMenu.offsetHeight + 4;
+    if (resultMenu) {
+        resultMenuWidth = resultMenu.offsetWidth + 4;
+        resultMenuHeight = resultMenu.offsetHeight + 4;
 
-    resultMenu.style.left = ((windowWidth - clickCoordsX) < resultMenuWidth) ? `${windowWidth - resultMenuWidth}px` : `${clickCoordsX}px`;
-    resultMenu.style.top = ((windowHeight - clickCoordsY) < resultMenuHeight) ? `${windowHeight - resultMenuHeight}px` : `${clickCoordsY}px`;
-
+        resultMenu.style.left = ((windowWidth - clickCoordsX) < resultMenuWidth) ? `${windowWidth - resultMenuWidth}px` : `${clickCoordsX}px`;
+        resultMenu.style.top = ((windowHeight - clickCoordsY) < resultMenuHeight) ? `${windowHeight - resultMenuHeight}px` : `${clickCoordsY}px`;
+    }
 }
 
 /**
@@ -399,6 +400,21 @@ function positionPopup(window) {
  *
  * @param {HTMLElement} link The link that was clicked
  */
+
+function show_data_info(properties) {
+    let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
+    // loop over "properties" dict with metadata, build columns
+    for (let j in properties) {
+        // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+        popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+    }
+    content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+        '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
+    popcloser.classList.remove('respo-hide');
+    positionPopup(popup);
+}
+
+
 function menuItemListener(link) {
     let id = taskItemInContext.getAttribute("data-id");
     content.innerHTML = '<div id="loader" class="loader"></div>';
@@ -416,18 +432,9 @@ function menuItemListener(link) {
                     show_info: JSON.stringify([id]),
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with the post request
-                success: function (json) {
-                    let properties = json.get;
-                    let popUpText = "";
-                    // loop over "properties" dict with metadata, build columns
-                    for (let j in properties) {
-                        // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-                        popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
-                    }
-                    content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
-                        '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-                    popcloser.classList.remove('respo-hide');
-                    positionPopup(popup);
+                success: function (properties) {
+                    show_data_info(properties);
+
                 }
             });
             break;
@@ -509,10 +516,18 @@ function menuItemListener(link) {
             break;
         case "ViewR":
             let result = JSON.parse(sessionStorage.getItem(id));
-            let popUpText = "";
+            let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
             for (let j in result) {
-                if (!(result[j] instanceof Object)) {
-                    popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
+                if (result[j]) {
+                    if (!(result[j] instanceof Object)) {
+                        popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
+                    } else {
+                        let len_k = result[j].length;
+                        for (let k in result[j]) {
+                            let name_j = len_k > 1 ? j + ' ' + k + 1 : j;
+                            popUpText += '<tr><td><b>' + name_j + '</b></td><td>' + result[j][k] + '</td></tr>';
+                        }
+                    }
                 }
             }
             content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +

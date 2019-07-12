@@ -54,10 +54,10 @@
     span.onclick = function () {closeModal()};
     span_r.onclick = function () {
         {#modal.style.display = "none";#}
-        if (check_required(document.getElementById('workModal'))) modal_run_process()
+        if (check_required(modal)) modal_run_process()
     };
     span_ok.onclick = function () {
-        if (check_required(document.getElementById('workModal'))) drop_and_save();
+        if (check_required(modal)) drop_and_save();
         closeModal();
     };
     span_c.onclick = function () {closeModal()};

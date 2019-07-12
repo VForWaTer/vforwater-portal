@@ -90,49 +90,50 @@ function create_map() {
         renderMode: 'image',
         source: wfsPointSource,
         style: new ol.style.Style({
-                image: new ol.style.Circle({
-                    radius: 5,
-                    stroke: new ol.style.Stroke({
-                            color: 'green',
-                            width: 2.5
-                        }),
-                    fill: new ol.style.Fill({
-                            color: 'yellow'
-                        })
+            image: new ol.style.Circle({
+                radius: 5,
+                stroke: new ol.style.Stroke({
+                    color: 'green',
+                    width: 2.5
                 }),
-                text: new ol.style.Text({
-                    text: 4,
-                    font: '12px helvetica,sans-serif',
-                    fill: new ol.style.Fill({
-                        color: 'red'
-                    })
+                fill: new ol.style.Fill({
+                    color: 'yellow'
+                })
+            }),
+            text: new ol.style.Text({
+                text: 4,
+                font: '12px helvetica,sans-serif',
+                fill: new ol.style.Fill({
+                    color: 'red'
                 })
             })
+        })
     });
 
 
     // Style for selection/single circles around cluster
-/*    let img = new ol.style.Circle({
-        radius: 8,
-        stroke: new ol.style.Stroke({
-            color: '#00BAEE',
-            width: 0.1
-        }),
-        fill: new ol.style.Fill({
-            color: "rgba(170, 221, 249,0.7)"
-        })
-    });
-    let style1 = new ol.style.Style({
-        image: img,
-        // Draw a link beetween points
-        stroke: new ol.style.Stroke({
-            color: '#AADDF9',
-            width: 1
-        })
-    });*/
+    /*    let img = new ol.style.Circle({
+            radius: 8,
+            stroke: new ol.style.Stroke({
+                color: '#00BAEE',
+                width: 0.1
+            }),
+            fill: new ol.style.Fill({
+                color: "rgba(170, 221, 249,0.7)"
+            })
+        });
+        let style1 = new ol.style.Style({
+            image: img,
+            // Draw a link beetween points
+            stroke: new ol.style.Stroke({
+                color: '#AADDF9',
+                width: 1
+            })
+        });*/
 
     /* build style for cluster */
     let styleCache = {};
+
     function getStyle(feature) {
         let size = feature.get('features').length;
         let style = styleCache[size];
@@ -141,12 +142,12 @@ function create_map() {
                 image: new ol.style.Circle({
                     radius: Math.round(8 + 1.3 * Math.log(size)),
                     stroke: new ol.style.Stroke({
-                            color: '#00BAEE',
-                            width: 0.5
-                        }),
+                        color: '#00BAEE',
+                        width: 0.5
+                    }),
                     fill: new ol.style.Fill({
-                            color: '#AADDF9'
-                        })
+                        color: '#AADDF9'
+                    })
                 }),
                 text: new ol.style.Text({
                     text: size.toString(),
@@ -171,7 +172,7 @@ function create_map() {
     /* build app for box with drawbuttons */
     window.cApp = {};
     let cApp = window.cApp;
-    cApp.drawControls = function() {
+    cApp.drawControls = function () {
         let element = document.createElement('div');
         element.className = 'custom-control ol-unselectable ol-control';
         element.appendChild(document.getElementById('filterbox'));
@@ -208,6 +209,7 @@ function create_map() {
 
     /* get information about your data in a popup when you click on a data point in the map */
     olmap.on('singleclick', checkMode);
+
     // check what is clicked
     function checkMode(evt) {
         if (hit_cL) {
@@ -216,6 +218,7 @@ function create_map() {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
     }
+
     function buildPopup(evt) {
         // if (olmap.getFeaturesAtPixel(evt.pixel)) {
         // Create spinning loader while getting meta data from server
@@ -243,12 +246,12 @@ function create_map() {
             let page = 1;
             let name, id;
             let ids = [];
-            let idDict = {1:[]};
+            let idDict = {1: []};
             for (let i = 0, j = 0; i < l; i++, j++) {
                 if (j >= nCol) {
                     j = 0;
                     page++;
-                    idDict[page]=[];
+                    idDict[page] = [];
                 }
                 name = clickedFeatures[i].getId();
                 id = parseInt(name.substr(wfsLen + 1, 8));
@@ -262,60 +265,62 @@ function create_map() {
             paginat.innerHTML = buildPagi(idDict, page);
             // end of paginatation
             // TODO: need a list to click to next objects, to select ids
-            }
+        }
 
     }
+
     function buildPagi(idDict, page) {
         let pagi = '';
         let nDat = 16; // number of Datasets shown at once
         if (Object.keys(idDict).length < nDat) {
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
-                    pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
-                    pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
         } else {
-           // TODO: Show only 16 pages to select in pagination and arrows
-           //  Pagination durch Django:
-           //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
-           //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
+            // TODO: Show only 16 pages to select in pagination and arrows
+            //  Pagination durch Django:
+            //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
+            //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
 
-           /* console.log(' + +  idDict: ', idDict)
-            let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
-            // let pagiObj = {1:[]}; // very nice, but useless for the button!
-            let pagiStr; // very nice, but useless for the button!
-            for (let j = 1; j <= nPagi; j++) {
-                let minP = nDat * (j - 1);
-                let maxP = nDat * j - 1;
-                // pagiObj[j] = [];
-                console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
-                pagi = '';
-                for (let k = minP; k <= maxP; k++) {
-                    pagiObj[j].push(idDict[k])
-                }
-            }
-            console.log('pagiObj: ', pagiObj)
-            let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
-            pagi = prePagi*/
+            /* console.log(' + +  idDict: ', idDict)
+             let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
+             // let pagiObj = {1:[]}; // very nice, but useless for the button!
+             let pagiStr; // very nice, but useless for the button!
+             for (let j = 1; j <= nPagi; j++) {
+                 let minP = nDat * (j - 1);
+                 let maxP = nDat * j - 1;
+                 // pagiObj[j] = [];
+                 console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
+                 pagi = '';
+                 for (let k = minP; k <= maxP; k++) {
+                     pagiObj[j].push(idDict[k])
+                 }
+             }
+             console.log('pagiObj: ', pagiObj)
+             let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
+                         'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
+             pagi = prePagi*/
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
-                    pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
-                    pagi += '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    pagi += '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
         }
         return pagi;
     }
+
     function popupContent(ids, pos) {
-    // TODO: CSS style überarbeiten
+        // TODO: CSS style überarbeiten
         let popupTableBeforeMeta = '<table id="popupTable"><td>';
         let popUpText = popupTableBeforeMeta +
             '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
@@ -326,7 +331,7 @@ function create_map() {
             url: DEMO_VAR + "/vfwheron/menu",
             dataType: 'json',
             data: {
-                show_info: JSON.stringify(ids),
+                short_info: JSON.stringify(ids),
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
         })
@@ -335,9 +340,10 @@ function create_map() {
                 // content.innerHTML = buildPopupText(json, popUpText);
                 metaData_Overlay.setPosition(pos);
             })
-            .fail (function (e) {
+            .fail(function (e) {
                 // console.log('fehler: ', e)
-                metaData_Overlay.setPosition(undefined)
+                metaData_Overlay.setPosition(undefined);
+                document.getElementById('popup-content').remove("loader")
                 alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
                     "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
                     "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
@@ -346,15 +352,16 @@ function create_map() {
         // });
 
     }
+
     // TODO: buildPopupText is the same as buildPopupTextvfw.js ==> figure out how(where) to use only one of the two functions for both cases
     function buildPopupText(json, popUpText) {
-        let properties = json.get;
+        let startPopUp = popUpText;
         let valueLen;
         let buttonId = [];
         // loop over "properties" dict with metadata, build columns
-        for (let j in properties) {
+        for (let j in json) {
             // let values = eval('properties["' + j + '"]');
-            let values = properties[j];
+            let values = json[j];
             valueLen = values.length;
             popUpText += `<tr><td><b>${j}</b></td>`;
             // loop over dict values and build rows
@@ -370,59 +377,60 @@ function create_map() {
         // build buttons for each dataset
         for (let k = 0; k < valueLen; k++) {
             popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
-                'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
-                'title="Attention! Loading the preview might take a while."></b></a>' +
+                'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
+                'title="Show more information about the dataset."></b></a>' +
+                // 'title="Attention! Loading the preview might take a while."></b></a>' +
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
                 'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
                 'title="Put dataset to session datastore"></b></a></td>';
         }
 
         let popupTableAfterMeta = popUpText + '</table>';
-        let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
-        return popupTableAfterMeta + img_preview;
+        // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+        return popupTableAfterMeta //+ img_preview;
     }
 
     // select data with doubleclick
     //olmap.on('doubleclick', selectDataset);
     // TODO: Cluster gives error when click on sketched polygon. Not used yet anyways, so uncommented until usefull
-/*    selectCluster = new ol.interaction.SelectCluster(
-        {	// Point radius: to calculate distance between the features
-            pointRadius: 8.5,
-            animate: 100,
-            // Feature style when it springs apart
-            featureStyle: style1,
-            // selectCluster: false,	// disable cluster selection
-            // Style to draw cluster when selected
-            style: function (f) {
-                let cluster = f.get('features');
-                if (cluster.length > 1) {
-                    let s = getStyle(f);
-                    if (ol.coordinate.convexHull) {
-                        let coords = [];
-                        let l = cluster.length;
-                        for (i = 0; i < l; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
-                        s.push(new ol.style.Style({ // spread datapoints around the center of the cluster
-                            stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),
-                            fill: new ol.style.Fill({color: "rgba(0,0,192,0.3)"}),
-                            geometry: new ol.geom.Polygon([ol.coordinate.convexHull(coords)]),
-                            zIndex: 1
-                        }));
+    /*    selectCluster = new ol.interaction.SelectCluster(
+            {	// Point radius: to calculate distance between the features
+                pointRadius: 8.5,
+                animate: 100,
+                // Feature style when it springs apart
+                featureStyle: style1,
+                // selectCluster: false,	// disable cluster selection
+                // Style to draw cluster when selected
+                style: function (f) {
+                    let cluster = f.get('features');
+                    if (cluster.length > 1) {
+                        let s = getStyle(f);
+                        if (ol.coordinate.convexHull) {
+                            let coords = [];
+                            let l = cluster.length;
+                            for (i = 0; i < l; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
+                            s.push(new ol.style.Style({ // spread datapoints around the center of the cluster
+                                stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),
+                                fill: new ol.style.Fill({color: "rgba(0,0,192,0.3)"}),
+                                geometry: new ol.geom.Polygon([ol.coordinate.convexHull(coords)]),
+                                zIndex: 1
+                            }));
+                        }
+                        return s;
                     }
-                    return s;
+                    else {
+                        return [
+                            new ol.style.Style({ // draw a circle around your selection
+                                image: new ol.style.Circle({
+                                    stroke: new ol.style.Stroke({color: "rgba(0,73,120,0.5)", width: 2}),
+                                    fill: new ol.style.Fill({color: "rgba(0,73,120,0.3)"}),
+                                    radius: 15
+                                    })
+                            })];
+                    }
                 }
-                else {
-                    return [
-                        new ol.style.Style({ // draw a circle around your selection
-                            image: new ol.style.Circle({
-                                stroke: new ol.style.Stroke({color: "rgba(0,73,120,0.5)", width: 2}),
-                                fill: new ol.style.Fill({color: "rgba(0,73,120,0.3)"}),
-                                radius: 15
-                                })
-                        })];
-                }
-            }
-        });
-    olmap.addInteraction(selectCluster);*/
+            });
+        olmap.addInteraction(selectCluster);*/
 
     /* change cursor to pointer when hover over data */
     olmap.on('pointermove', function (evt) {
@@ -430,30 +438,34 @@ function create_map() {
             return;
         }
         // let pixel = olmap.getEventPixel(evt.originalEvent);
-        hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {return feature;},
-            {layerFilter: function (layer) {
-                // return layer === vector
-                return layer === clusterLayer
-            }}
+        hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {
+                return feature;
+            },
+            {
+                layerFilter: function (layer) {
+                    // return layer === vector
+                    return layer === clusterLayer
+                }
+            }
         );
         olmap.getTargetElement().style.cursor = hit_cL ? 'pointer' : '';
     });
 
     // On selected => get feature in cluster and show info
-/*    selectCluster.getFeatures().on(['add'], function (e) {
-        console.log(' ------------ im add')
-        let c = e.element.get('features');
-        if (c.length == 1) {
-            let feature = c[0];
-            $(".infos").html("One feature selected...<br/>(id=" + feature.get('id') + ")");
-        }
-        else {
-            $(".infos").text("Cluster (" + c.length + " features)");
-        }
-    });
-    selectCluster.getFeatures().on(['remove'], function (e) {
-        $(".infos").html("");
-    })*/
+    /*    selectCluster.getFeatures().on(['add'], function (e) {
+            console.log(' ------------ im add')
+            let c = e.element.get('features');
+            if (c.length == 1) {
+                let feature = c[0];
+                $(".infos").html("One feature selected...<br/>(id=" + feature.get('id') + ")");
+            }
+            else {
+                $(".infos").text("Cluster (" + c.length + " features)");
+            }
+        });
+        selectCluster.getFeatures().on(['remove'], function (e) {
+            $(".infos").html("");
+        })*/
 
 }
 

@@ -290,7 +290,10 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 case 'string':
                     inElement.type = "text";
                     //inElement.className = "input"
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
+                    if ('defaultValue' in item) {
+                        inElement.value = item.defaultValue;
+                    }
+                    // if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'boolean':
                     inElement.type = "checkbox";
