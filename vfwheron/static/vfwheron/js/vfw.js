@@ -387,14 +387,13 @@ function moreInfoModal(id) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (properties) {
-            let metaText = sessionStorage.getItem('buildPopupText_popUpText');
-            metaText += '<thead><tr><th>&nbsp;</th></tr></thead><table>';
+            let metaText = '<table>';
             // loop over "properties" dict with metadata, build columns
             for (let j in properties) {
                 // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
                 metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
             }
-            document.getElementById('mod_dat_inf').innerHTML = metaText+'</table>';
+            document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
             show_data_info(properties);
         }
     });
