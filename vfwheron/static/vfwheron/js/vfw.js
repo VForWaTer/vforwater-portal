@@ -19,10 +19,10 @@ function resetDraw() {
 
 // Menu to draw polygon on map
 function drawPolygon(shortParent, shortChild) {
-    let div = document.getElementById('toggle_draw');
+    // let div = document.getElementById('toggle_draw');
     filterbox_open();
     // itemButtonFunction(item, shortParent, shortChild, shortItem)
-
+    dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // olmap.removeInteraction(selectCluster);
     let collection = new ol.Collection();
 
@@ -102,10 +102,11 @@ function drawPolygon(shortParent, shortChild) {
         });*/
 
     selectedFeatures = select.getFeatures();
-    selectedIdsMap = null
+    selectedIdsMap = null;
     let sketch, listener, polygon;
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
+
 
     /* Point features select/deselect as you move polygon.
         Deactivate select interaction. */
@@ -162,10 +163,8 @@ function drawPolygon(shortParent, shortChild) {
     });
     draw.on('drawstart', function (event) {
         source.clear();
-        select.setActive(false);
-
         sketch = event.feature;
-
+        // olmap.removeInteraction(doubleClickZoom)
         listener = sketch.getGeometry().on('change', function (event) {
             selectedFeatures.clear();
             polygon = event.target;
@@ -183,11 +182,12 @@ function drawPolygon(shortParent, shortChild) {
         selectedFeatures.getArray().forEach(function (val) {
             selectedIdsMap.push(parseInt(val.getId().replace(append_str, '')))
         });
-        draw.finishDrawing();
+        // draw.finishDrawing();
         if (selectedIdsMap.length > 0) {
             mapSelectFunction(shortParent, shortChild, selectedIdsMap);
         }
-
+        olmap.removeInteraction(draw);
+        toggle_draw(document.getElementById("draw_polygon"))
     });
 
 
@@ -252,13 +252,16 @@ function toggle_draw(self) {
     let s;
     let sLen = siblings.length - 1;  // avoid to toggle on the delete button
     if (self.classList.contains('activeM')) {
-        self.classList.remove('activeM')
+        self.classList.remove('activeM');
+        draw.finishDrawing();
     } else {
         for (s = 0; s < sLen; s++) {
             if (siblings[s].classList.contains('activeM')) siblings[s].classList.remove('activeM')
         }
         if (self.id !== siblings[sLen].id && self.id !== 'draw_close') self.classList.add('activeM')
+        else dcz.setActive(true); // reactivate double click zoom when draw window is closed}
     }
+
 }
 
 //Toggle between showing and hiding select_catchment

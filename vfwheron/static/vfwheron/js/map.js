@@ -3,6 +3,7 @@ let wfsLayerName;
 let selectedIdsFilter = null;
 let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
+let dcz = new ol.interaction.DoubleClickZoom();
 
 //Create own base layer
 function create_map() {
@@ -189,6 +190,7 @@ function create_map() {
         overlays: [metaData_Overlay],
         target: map_tar,
         layers: [mapLayer, clusterLayer],
+        interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
 
         controls: [
             new ol.control.Zoom({duration: 300}),
@@ -279,56 +281,6 @@ function create_map() {
 
     }
 
-    function buildPagi(idDict, page) {
-        let pagi = '';
-        let nDat = 16; // number of Datasets shown at once
-        if (Object.keys(idDict).length < nDat) {
-            for (let i = 1; i <= page; i++) {
-                if (i == 1) {
-                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
-                } else {
-                    pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
-                }
-            }
-        } else {
-            // TODO: Show only 16 pages to select in pagination and arrows
-            //  Pagination durch Django:
-            //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
-            //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
-
-            /* console.log(' + +  idDict: ', idDict)
-             let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
-             // let pagiObj = {1:[]}; // very nice, but useless for the button!
-             let pagiStr; // very nice, but useless for the button!
-             for (let j = 1; j <= nPagi; j++) {
-                 let minP = nDat * (j - 1);
-                 let maxP = nDat * j - 1;
-                 // pagiObj[j] = [];
-                 console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
-                 pagi = '';
-                 for (let k = minP; k <= maxP; k++) {
-                     pagiObj[j].push(idDict[k])
-                 }
-             }
-             console.log('pagiObj: ', pagiObj)
-             let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
-                         'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
-             pagi = prePagi*/
-            for (let i = 1; i <= page; i++) {
-                if (i == 1) {
-                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
-                } else {
-                    pagi += '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
-                }
-            }
-        }
-        return pagi;
-    }
-
 
     // select data with doubleclick
     //olmap.on('doubleclick', selectDataset);
@@ -409,6 +361,55 @@ function create_map() {
 
 }
 
+function buildPagi(idDict, page) {
+    let pagi = '';
+    let nDat = 16; // number of Datasets shown at once
+    if (Object.keys(idDict).length < nDat) {
+        for (let i = 1; i <= page; i++) {
+            if (i == 1) {
+                pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+            } else {
+                pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+            }
+        }
+    } else {
+        // TODO: Show only 16 pages to select in pagination and arrows
+        //  Pagination durch Django:
+        //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
+        //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
+
+        /* console.log(' + +  idDict: ', idDict)
+         let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
+         // let pagiObj = {1:[]}; // very nice, but useless for the button!
+         let pagiStr; // very nice, but useless for the button!
+         for (let j = 1; j <= nPagi; j++) {
+             let minP = nDat * (j - 1);
+             let maxP = nDat * j - 1;
+             // pagiObj[j] = [];
+             console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
+             pagi = '';
+             for (let k = minP; k <= maxP; k++) {
+                 pagiObj[j].push(idDict[k])
+             }
+         }
+         console.log('pagiObj: ', pagiObj)
+         let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
+                     'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
+         pagi = prePagi*/
+        for (let i = 1; i <= page; i++) {
+            if (i == 1) {
+                pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+            } else {
+                pagi += '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+            }
+        }
+    }
+    return pagi;
+}
 
 function popupContent(ids, page) {
     if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
@@ -454,7 +455,7 @@ function popupContent(ids, page) {
 
 
 function buildPopupText(json, popUpText) {
-    // console.log('ist da')
+    console.log('ist da')
     let valueLen;
     let buttonId = [];
     // loop over "properties" dict with metadata, build columns

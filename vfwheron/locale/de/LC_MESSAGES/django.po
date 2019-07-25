@@ -186,6 +186,22 @@ msgstr "Willkommen! Bitte einloggen."
 msgid "Filter menu"
 msgstr "Filtermenü"
 
+#: map.html:36
+msgid "Click&#32on&#32map&#32to&#32draw.&#32Doubleclick&#32to&#32start&#32drawing."
+msgstr "Auf&#32die&#32Karte&#32klicken&#32um&#32mit&#32dem&#32Zeichnen&#32zu&#32beginnen."
+
+#: map.html:39
+msgid "Edit&#32drawing"
+msgstr "Zeichnung&#32editieren"
+
+#: map.html:40
+msgid "Remove&#32drawing"
+msgstr "Zeichnung&#32läschen"
+
+#: map.html:41
+msgid "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom."
+msgstr "Zeichenauswahl&#32beenden&#32und&#32wiederherstellen&#32der&#32Zoomfundtionalität&#32beim&#32Doppelklick."
+
 #: select_data.html:38
 msgid "Please&#32choose&#32here&#32the&#32data&#32shown&#32on&#32the&#32map."
 msgstr "Wählen&#32Sie&#32hier&#32bitte&#32welche&#32Daten&#32auf&#32der&#32Karte&#32gezeigt&#32werden&#32sollen."
