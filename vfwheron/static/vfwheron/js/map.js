@@ -213,7 +213,14 @@ function create_map() {
     // check what is clicked
     function checkMode(evt) {
         if (hit_cL) {
-            buildPopup(evt)
+            try {
+                content.innerHTML = '';
+                content.innerHTML = '<div id="loader" class="loader"></div>';
+                buildPopup(evt)
+            } catch (err) {
+                content.innerHTML = '<div id="loader">Failed to load your selection</div>';
+            }
+
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
@@ -222,12 +229,13 @@ function create_map() {
     function buildPopup(evt) {
         // if (olmap.getFeaturesAtPixel(evt.pixel)) {
         // Create spinning loader while getting meta data from server
-        content.innerHTML = '<div id="loader" class="loader"></div>';
         metaData_Overlay.setPosition(evt.coordinate);
 
         let nCol = 5; // number of columns of metadata per page
         let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
         let pos = evt.coordinate;
+        console.log('clickedFeatures: ', clickedFeatures)
+        console.log('clickedFeatures.length: ', clickedFeatures.length)
         let l = clickedFeatures.length;
         let wfsLen = wfsLayerName.length;
         if (l > 0 && l <= nCol) { // check how many datasets are selected
@@ -239,7 +247,7 @@ function create_map() {
                 id = parseInt(name.substr(wfsLen + 1, 8));
                 ids.push(id);
             }
-            popupContent(ids, pos);
+            popupContent(ids);
             paginat.innerHTML = []
 
         } else if (l > nCol) {
@@ -259,13 +267,15 @@ function create_map() {
                 idDict[page].push(id);
 
             }
-            popupContent(idDict[1], pos);
+            popupContent(idDict[1]);
+
 
             // add paginatation to popup:
             paginat.innerHTML = buildPagi(idDict, page);
             // end of paginatation
             // TODO: need a list to click to next objects, to select ids
         }
+        metaData_Overlay.setPosition(pos);
 
     }
 
@@ -276,10 +286,10 @@ function create_map() {
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
                     pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
                     pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
         } else {
@@ -309,86 +319,16 @@ function create_map() {
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
                     pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
                     pagi += '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
         }
         return pagi;
     }
 
-    function popupContent(ids, pos) {
-        // TODO: CSS style überarbeiten
-        let popupTableBeforeMeta = '<table id="popupTable"><td>';
-        let popUpText = popupTableBeforeMeta +
-            '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
-            '<table id="metaTable">';
-
-        // request info from server
-        $.ajax({
-            url: DEMO_VAR + "/vfwheron/menu",
-            dataType: 'json',
-            data: {
-                short_info: JSON.stringify(ids),
-                'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
-        })
-            .done(function (json) {
-                document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
-                // content.innerHTML = buildPopupText(json, popUpText);
-                metaData_Overlay.setPosition(pos);
-            })
-            .fail(function (e) {
-                // console.log('fehler: ', e)
-                metaData_Overlay.setPosition(undefined);
-                document.getElementById('popup-content').remove("loader")
-                alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
-                    "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
-                    "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
-                    "Är Ufro net duerchgefouert ginn!\nدرخواست شما نمی تواند اجرا شود!")
-            })
-        // });
-
-    }
-
-    // TODO: buildPopupText is the same as buildPopupTextvfw.js ==> figure out how(where) to use only one of the two functions for both cases
-    function buildPopupText(json, popUpText) {
-        let startPopUp = popUpText;
-        let valueLen;
-        let buttonId = [];
-        // loop over "properties" dict with metadata, build columns
-        for (let j in json) {
-            // let values = eval('properties["' + j + '"]');
-            let values = json[j];
-            valueLen = values.length;
-            popUpText += `<tr><td><b>${j}</b></td>`;
-            // loop over dict values and build rows
-            for (let k = 0; k < valueLen; k++) {
-                popUpText += `<td>${values[k]}</td>`;
-                if (j.toLowerCase() == 'id') {
-                    buttonId.push(values[k])
-                }
-            }
-            popUpText += '</tr>'
-        }
-        popUpText += '<tr><td><b></b></td>';
-        // build buttons for each dataset
-        for (let k = 0; k < valueLen; k++) {
-            popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
-                'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
-                'title="Show more information about the dataset."></b></a>' +
-                // 'title="Attention! Loading the preview might take a while."></b></a>' +
-                '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
-                'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
-                'title="Put dataset to session datastore"></b></a></td>';
-        }
-
-        let popupTableAfterMeta = popUpText + '</table>';
-        // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
-        return popupTableAfterMeta //+ img_preview;
-    }
 
     // select data with doubleclick
     //olmap.on('doubleclick', selectDataset);
@@ -469,3 +409,82 @@ function create_map() {
 
 }
 
+
+function popupContent(ids, page) {
+    if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
+        page = JSON.parse("[" + ids + "]").slice(-1);
+        ids = JSON.parse("[" + ids + "]").slice(0, -1);
+    }
+    if (page && page != 'none') document.getElementById("pagi" + page).classList.add("loadspin");
+    let popupTableBeforeMeta = '<table id="popupTable"><td>';
+    let popUpText = popupTableBeforeMeta +
+        '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
+        '<table id="metaTable">';
+    // request info from server
+    $.ajax({
+        url: DEMO_VAR + "/vfwheron/menu",
+        dataType: 'json',
+        data: {
+            short_info: JSON.stringify(ids),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+    })
+        .done(function (json) {
+            document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
+            // content.innerHTML = buildPopupText(json, popUpText);
+            if (page && page != 'none') {
+                document.getElementsByClassName("active")[0].classList.remove("active");
+                document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
+                document.getElementById("pagi" + page).classList.add("active");
+            }
+
+        })
+        .fail(function (e) {
+            // console.log('fehler: ', e)
+            metaData_Overlay.setPosition(undefined);
+            document.getElementById('popup-content').remove("loader")
+            alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
+                "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
+                "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
+                "Är Ufro net duerchgefouert ginn!\nدرخواست شما نمی تواند اجرا شود!")
+        })
+    // });
+
+}
+
+
+function buildPopupText(json, popUpText) {
+    // console.log('ist da')
+    let valueLen;
+    let buttonId = [];
+    // loop over "properties" dict with metadata, build columns
+    for (let j in json) {
+        // let values = eval('properties["' + j + '"]');
+        let values = json[j];
+        valueLen = values.length;
+        popUpText += `<tr><td><b>${j}</b></td>`;
+        // loop over dict values and build rows
+        for (let k = 0; k < valueLen; k++) {
+            popUpText += `<td>${values[k]}</td>`;
+            if (j.toLowerCase() == 'id') {
+                buttonId.push(values[k])
+            }
+        }
+        popUpText += '</tr>'
+    }
+    popUpText += '<tr><td><b></b></td>';
+    // build buttons for each dataset
+    for (let k = 0; k < valueLen; k++) {
+        popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
+            'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
+            'title="Show more information about the dataset."></b></a>' +
+            // 'title="Attention! Loading the preview might take a while."></b></a>' +
+            '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
+            'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
+            'title="Put dataset to session datastore"></b></a></td>';
+    }
+
+    let popupTableAfterMeta = popUpText + '</table>';
+    // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+    return popupTableAfterMeta //+ img_preview;
+}
