@@ -77,7 +77,11 @@ class ProcessView(TemplateView):
                         if isinstance(b, dict):
                             innerdict = {}
                             for k, v in b.items():
-                                if v is not None and not v == []:
+                                # TODO: ugly hack because keywords are still not implemented in pywps. Use
+                                #  allow_values with first value '_keywords' instead
+                                if k == 'allowedValues' and not v == [] and v[0] == '_keywords':
+                                    innerdict['keywords'] = v[1:]
+                                elif v is not None and not v == []:
                                 # if not v is None and not v == []:
                                     if isinstance(v, str) and re.search("(?<=/#)\w+", v):
                                         match = re.search("(?<=/#)\w+", v)
