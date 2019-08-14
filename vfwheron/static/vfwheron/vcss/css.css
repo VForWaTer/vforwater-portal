@@ -73,3 +73,59 @@ iframe {
     background-color: rgb(239, 251, 251);
     color: black;
 }
+
+
+/*styles for Toolbox buttons*/
+/*!**
+ * Reset button styles.
+ * It takes a bit of work to achieve a neutral look.
+ *!
+button {
+  padding: 0;
+  border: none;
+  font: inherit;
+  color: inherit;
+  background-color: transparent;
+  !* show a hand cursor on hover; some argue that we
+  should keep the default arrow cursor for buttons *!
+  cursor: pointer;
+}*/
+
+.process {
+  /*height: 50px;*/
+  /*width: 350px;*/
+  /*background-color: blue;*/
+  /*display: inline-block;*/
+}
+.string,.array,.pickle,.timeseries {
+    margin: 7px;
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+
+  /*display: inline-block;*/
+  /*  display: flex;*/
+  /*align-items: center;*/
+}
+.string {
+  background-color: #8c510a;
+}
+.array {
+  background-color: #01665e;
+}
+.pickle {
+  background-color: #35978f;
+}
+.timeseries {
+  background-color: #c7eae5;
+}
+
+/*8 colorblind safe colors:
+#8c510a
+#bf812d
+#dfc27d
+#f6e8c3
+#c7eae5
+#80cdc1
+#35978f
+#01665e*/

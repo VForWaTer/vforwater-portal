@@ -95,11 +95,12 @@ function build_datastore_button(json) {
         if (document.getElementById("id" + key) === null) {
             html += '<li draggable="true" class="respo-padding task" ' +
                 'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
-                '<span class="respo-medium" title="' + title + '" type="'+value['type']+'"' +
-                '><div class="task__content">' + btnName + '</div>' +
-                '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
-                'onclick="remove_single_data(' + key + ')" class="respo-hover-white respo-right">' +
-                '<i class="fa fa-remove fa-fw"></i></a><br></li>';
+                '<span class="respo-medium" title="' + title + '">' +
+                '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
+                '</span><span class="'+value['type']+'"></span>' +
+                '<a href="javascript:void(0)" onclick="remove_single_data(' + key + ')" ' +
+                'class="respo-hover-white respo-right"><i class="fa fa-remove fa-fw"></i>' +
+                '</a><br></li>';
             /*
             document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
                 'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +

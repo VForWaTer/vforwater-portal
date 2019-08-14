@@ -29,11 +29,30 @@ def home(request):
     except:
         service = ''
         wps = []
+
+    processin = {}
+    processout = {}
+    countLoop = 0
     for process in wps.processes:
         describedprocess = wps.describeprocess(process.identifier)
-        # for input in describedprocess.dataInputs:
-        #     # print('+ ', input)
-        #     printInputOutput(input)
+        wps.processes[countLoop].processin = []
+        for i in describedprocess.dataInputs:
+            if i.allowedValues == [] and isinstance(i.dataType, str):
+                wps.processes[countLoop].processin.append('string')
+            elif i.allowedValues == [] and isinstance(i.dataType, float):
+                wps.processes[countLoop].processin.append('float')
+            elif i.allowedValues[0] == '_keywords':
+                wps.processes[countLoop].processin.append(i.allowedValues[1:])
+
+        wps.processes[countLoop].processout = []
+        for i in describedprocess.processOutputs:
+            if isinstance(i.dataType, str):
+                wps.processes[countLoop].processout.append('string')
+            elif isinstance(i.dataType, float):
+                wps.processes[countLoop].processout.append('float')
+            elif i.metadata[0] == '_keywords':
+                wps.processes[countLoop].processout.append(i.allowedValues[1:])
+        countLoop += 1
 
     context = {'wps_services': wps_services,
                'wps': wps,
@@ -94,7 +113,6 @@ class ProcessView(TemplateView):
                     wps_description[a] = list_values
                 elif not whole_wpsprocess[a] is None and not whole_wpsprocess[a] == []:
                     wps_description[a] = whole_wpsprocess[a]
-
             return JsonResponse(wps_description)
 
         if 'processrun' in request.GET:
@@ -104,7 +122,6 @@ class ProcessView(TemplateView):
 
             wps = get_wps_service_engine(request_input.get("serv", ""))
             wps_process = request_input.get("id", "")
-
 
             execution = wps.execute(wps_process, inputs)
             execution_status = execution.status

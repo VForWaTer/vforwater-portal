@@ -5,7 +5,7 @@
 <head>
     {#  <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>#}
 
-{#    <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>#}
+    {#    <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>#}
     <style>
         .respo-sidenav {
             margin-top: 80px;
@@ -18,7 +18,38 @@
     {#let MAP_SERVER = "{{ MAP_SERVER }}";#}
     {#let DEMO_VAR = "{{ DEMO_VAR }}"#}
 </script>
-
+<script>
+    function inoutIndicator(id, invalues, outvalues) {
+        let element = document.getElementById(id);
+        invalues.forEach(function (val) {
+            if (Array.isArray(val)) {
+                let newHeader = "";
+                val.forEach(function (inVal) {
+                    newHeader += '<div style="margin-left: 1px; margin-right: 1px;" ' +
+                        'class="' + inVal{% comment %}{% endcomment %} + '"></div>';
+                });
+                element.getElementsByTagName("header")[0].innerHTML =
+                    '<div style="display: flex; overflow: hidden;"><b>(</b>' + newHeader + '<b>)</b></div>';
+            } else {
+                element.getElementsByTagName("header")[0].innerHTML = '<div class="' + val + '"></div>';
+            }
+        });
+        outvalues.forEach(function (val) {
+            if (Array.isArray(val)) {
+                let newFooter = "";
+                val.forEach(function (outVal) {
+                    newFooter += '<div style="margin-left: 1px; margin-right: 1px;" ' +
+                        'class="' + outVal + '"></div>';
+                });
+                element.getElementsByTagName("footer")[0].innerHTML =
+                    '<div style="display: flex; overflow: hidden;"><b>(</b>"' + newFooter + '"<b>)</b></div>';
+            } else {
+                element.getElementsByTagName("footer")[0].innerHTML =
+                    '<div style="display: flex; overflow: hidden; align-self: right;" class="' + val + '"></div>';
+            }
+        })
+    }
+</script>
 <body>
 <!-- TODO: check if still in use. If not delete that parm -->
 <!--   Sidenav/menu -->
@@ -34,7 +65,7 @@
     <div class="respo-container respo-light-turquoise">
         <b title={% trans "Select&#32your&#32tool&#32here." %}>{% trans "Toolbox" %}</b>
     </div>
-    <div class="row">
+    <div class="row" id="toolbar">
         <div class="col-md-8 col-md-offset-2">
             {% if wps_services %}
                 <div class="list-group">
@@ -55,18 +86,29 @@
                 <div class="list-group">
                     {% for process in wps.processes %}
                         <tr>
-                            <div id="{{ process.identifier }}"
-                                    {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
-                                 class="list-group-item process respo-container"
-                                 draggable="true" ondragstart="drag(event)"
-                                 data-service="{{ service }}" data-process="{{ process.identifier }}"
-                                    {% comment %}onclick="document.getElementById('id01').style.display='block'"{% endcomment %}
-                                    {% comment %}onclick='location.href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"'{% endcomment %}
+                            <div id="{{ process.identifier }}" class="process respo-card-2"
                                  onclick="wpsprocess('{{ service }}', '{{ process.identifier }}', this.id)"
-                            >
-                                <h7 class="list-group-item-heading title"
-                                    title="{{ process.abstract }}">{{ process.title }}
-                                </h7>
+                                 title="{{ process.abstract }}" draggable="true" ondragstart="drag(event)"
+                                     data-service="{{ service }}" data-process="{{ process.identifier }}"
+                            style="cursor:pointer;">
+                                <header class="respo-container">
+                                    <p style="font-size: smaller">No input envisaged</p>
+                                </header>
+
+                                <div value="{{ process.processin }}"
+                                        {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
+                                     class=" respo-container"
+
+                                        {% comment %}onclick='location.href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"'{% endcomment %}
+                                >
+                                    <h7 class="title">{{ process.title }}
+                                    </h7>
+                                </div>
+                                <footer class="respo-container respo-right-align">
+                                    <p style="font-size: smaller">No output envisaged</p>
+                                </footer>
+                                <style onload="inoutIndicator('{{ process.identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
+
                             </div>
                         </tr>
                     {% endfor %}
@@ -75,11 +117,11 @@
         </div>
     </div>
 
-
 </nav>
 
 {#  Overlay effect when opening sidenav on small screens#}
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
 </body>
+
 

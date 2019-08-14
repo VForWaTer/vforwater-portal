@@ -206,10 +206,10 @@ function build_resultstore_button(btnName, json) {
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
-function build_modal_radio(radioNode, nodeText, inElement, inElementIdList, item, newNode, option) {
-    radioNode = document.createElement("p");
-    nodeText = document.createTextNode(" " + option + " ");
-    inElement = document.createElement("input");
+function build_modal_radio(inElementIdList, item, newNode, option) {
+    // let radioNode = document.createElement("p");
+    let nodeText = document.createTextNode(" " + option + " ");
+    let inElement = document.createElement("input");
     inElement.type = "radio";
     // inElement.setAttribute("type", "radio");
     inElement.value = option;
@@ -225,7 +225,46 @@ function build_modal_radio(radioNode, nodeText, inElement, inElementIdList, item
     newNode.appendChild(nodeText);
 }
 
+function build_modal_drowdown(inElementIdList, item, newNode, option) {
+    console.log('build dropdown item: ', item)
+    console.log('build dropdown option: ', option)
+    let nodeText = "";
+    let inElement = "";
+    item.keywords.forEach(function (option) {
+        nodeText = document.createTextNode(" " + option + " ");
+        inElement = document.createElement("input");
+        inElement.type = "radio";
+        // inElement.setAttribute("type", "radio");
+        inElement.value = option;
+        inElement.id = item.identifier;
+        inElementIdList.push(item.identifier);
+        if (item.minOccurs === 1) inElement.required = true;
+
+        inElement.name = item.identifier;
+        if ('defaultValue' in item) {
+            if (item.defaultValue == option) inElement.checked = true;
+        }
+    });
+    newNode.appendChild(inElement);
+    newNode.appendChild(nodeText);
+}
+
+function get_available_inputs() {
+    let available_elements = {};
+    available_elements['workspace'] = document.getElementById('workspace').getElementsByClassName('task');
+    available_elements['results'] = document.getElementById('workspace_results').getElementsByClassName('task');
+    available_elements['toolbar'] = document.getElementById('toolbar').getElementsByClassName('process');
+    Object.keys(available_elements).forEach(function (key) {
+        if (available_elements[key].length == 0) delete available_elements[key]
+    });
+    console.log('available_elements: ', available_elements);
+    return available_elements
+}
+
 function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
+    // console.log('wpsInfo: ', wpsInfo)
+    let availableInputs = get_available_inputs();
+    console.log('availableInputs: ', availableInputs)
     // sessionStorage.setItem("processModal", wpsInfo);
     let element = document.getElementById("mod_head");
     let newElement = "";
@@ -262,24 +301,24 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
         if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
             if ('maxOccurs' in item) {
                 if (item.maxOccurs === 1) {
-                    let radioNode = "";
-                    nodeText = "";
+                    // nodeText = "";
                     item.allowedValues.forEach(function (option) {
-                        build_modal_radio(radioNode, nodeText, inElement, inElementIdList, item, newNode, option)
+                        build_modal_radio(inElementIdList, item, newNode, option)
                     });
                 }
             }
         } else if ('supportedValues' in item && Array.isArray(item.supportedValues) && item.supportedValues.length > 1) {
             if ('maxOccurs' in item) {
                 if (item.maxOccurs === 1) {
-                    let radioNode = "";
-                    nodeText = "";
+                    // nodeText = "";
                     item.supportedValues.forEach(function (option) {
-                        build_modal_radio(radioNode, nodeText, inElement, inElementIdList, item, newNode, option)
+                        build_modal_radio(inElementIdList, item, newNode, option)
                     });
                     // inElement.setAttribute("type", "radio")
                 }
             }
+        } else if ('keywords' in item) {
+            build_modal_drowdown(inElementIdList, item, newNode, item.keywords)
         } else {
             inElement = document.createElement("input");
             inElement.id = item.identifier;
