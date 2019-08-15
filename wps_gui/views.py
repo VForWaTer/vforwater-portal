@@ -17,7 +17,6 @@ from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, 
 
 
 def home(request):
-
     """
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
@@ -56,7 +55,9 @@ def home(request):
 
     context = {'wps_services': wps_services,
                'wps': wps,
-               'service': service}
+               'service': service,
+               }
+
     return render(request, 'wps_gui/home.html', context)
 
 
@@ -80,11 +81,17 @@ class ProcessView(TemplateView):
 
             wps = get_wps_service_engine(selected_process['serv'])
             wps_process = wps.describeprocess(selected_process['id'])
+            # print('jsonpickle.encode(wps_process): ', jsonpickle.encode(wps_process))
+            # for i in wps_process:
+            #     print('i: ', i)
+            # print('jsonpickle.encode(wps_process, unpicklable=False): ', jsonpickle.encode(wps_process,
+            # unpicklable=False))
 
             # TODO: use of jsonpickle only to simplify readability of wps_process.
             #  Shouldn't be necessary to use jsonpickle for that. Please improve!
             # simply serialize wps to json
             whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
+            # print('a: ',whole_wpsprocess_json)
             # convert to dict to remove unwanted keys and empty values
             whole_wpsprocess = json.loads(whole_wpsprocess_json)
             whole_wpsprocess.pop('_root', None)
@@ -101,7 +108,7 @@ class ProcessView(TemplateView):
                                 if k == 'allowedValues' and not v == [] and v[0] == '_keywords':
                                     innerdict['keywords'] = v[1:]
                                 elif v is not None and not v == []:
-                                # if not v is None and not v == []:
+                                    # if not v is None and not v == []:
                                     if isinstance(v, str) and re.search("(?<=/#)\w+", v):
                                         match = re.search("(?<=/#)\w+", v)
                                         innerdict[k] = match.group(0)
@@ -148,6 +155,7 @@ class ProcessView(TemplateView):
                          }
 
             return JsonResponse(context_p)
+
 
 #
 # def process(request, service, identifier):

@@ -57,7 +57,7 @@ function Sidemenu_close() {
 // it is stored as a string, so the following function transforms this string back to a dictionary
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
-    let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
+    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {// && "value" in workspaceData) {
         build_datastore_button(workspaceData);
     }
@@ -81,11 +81,11 @@ function build_datastore_button(json) {
     $.each(json, function (key, value) {
         let btnName;
         let vnLen = value['name'].length;
-        if (vnLen + value['abbr'].length + value['unit'].length <= 14) {
+        if (vnLen + value['abbr'].length + value['unit'].length <= 13) {
             btnName = `${value['name']} (${value['abbr']} in ${value['unit']}) - ${key}`;
-        } else if (vnLen + value['abbr'].length <= 16) {
+        } else if (vnLen + value['abbr'].length <= 15) {
             btnName = `${value['name']} (${value['abbr']}) - ${key}`;
-        } else if (vnLen <= 18) {
+        } else if (vnLen <= 17) {
             btnName = `${value['name']} - ${key}`;
         } else {
             btnName = `${value['abbr']} in ${value['unit']} - ${key}`;
@@ -97,7 +97,7 @@ function build_datastore_button(json) {
                 'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
                 '<span class="respo-medium" title="' + title + '">' +
                 '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
-                '</span><span class="'+value['type']+'"></span>' +
+                '</span><span class="data '+value['type']+'"></span>' +
                 '<a href="javascript:void(0)" onclick="remove_single_data(' + key + ')" ' +
                 'class="respo-hover-white respo-right"><i class="fa fa-remove fa-fw"></i>' +
                 '</a><br></li>';
@@ -121,21 +121,21 @@ function remove_single_data(removeData) {
     // remove data from portal:
     document.getElementById("id" + removeData).remove();
     // remove data from session:
-    let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
+    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     delete workspaceData[removeData];
-    sessionStorage.setItem("btn", JSON.stringify(workspaceData))
+    sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
 }
 
 function remove_all_datasets() {
     // remove button from portal
-    $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
+    $.each(JSON.parse(sessionStorage.getItem("dataBtn")), function (key, value) {
         if ("name" in value) {
             remove_single_data(parseInt(key));
             // document.getElementById("id" + key).remove()
         }
     });
     // remove button from session
-    sessionStorage.removeItem("btn");
+    sessionStorage.removeItem("dataBtn");
 }
 
 function remove_single_result(removeData) {

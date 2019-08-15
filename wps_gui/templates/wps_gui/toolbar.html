@@ -21,31 +21,35 @@
 <script>
     function inoutIndicator(id, invalues, outvalues) {
         let element = document.getElementById(id);
+        let head = element.getElementsByTagName("header")[0].getElementsByTagName("DIV");
+        console.log('head: ', head)
         invalues.forEach(function (val) {
             if (Array.isArray(val)) {
                 let newHeader = "";
                 val.forEach(function (inVal) {
                     newHeader += '<div style="margin-left: 1px; margin-right: 1px;" ' +
-                        'class="' + inVal{% comment %}{% endcomment %} + '"></div>';
+                        'class="' + inVal + ' "title="Input: ' + val + '"></div>';
                 });
-                element.getElementsByTagName("header")[0].innerHTML =
-                    '<div style="display: flex; overflow: hidden;"><b>(</b>' + newHeader + '<b>)</b></div>';
+                element.getElementsByTagName("header")[0].innerHTML +=
+                    '<div style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></div>';
             } else {
-                element.getElementsByTagName("header")[0].innerHTML = '<div class="' + val + '"></div>';
+                element.getElementsByTagName("header")[0].innerHTML += '<div class="' + val + '" ' +
+                    'style="display: inline-block;" title="Input: ' + val + '"></div>';
             }
         });
         outvalues.forEach(function (val) {
             if (Array.isArray(val)) {
                 let newFooter = "";
                 val.forEach(function (outVal) {
-                    newFooter += '<div style="margin-left: 1px; margin-right: 1px;" ' +
-                        'class="' + outVal + '"></div>';
+                    newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
+                        'class="' + outVal + '" ></span>';
                 });
-                element.getElementsByTagName("footer")[0].innerHTML =
-                    '<div style="display: flex; overflow: hidden;"><b>(</b>"' + newFooter + '"<b>)</b></div>';
+                element.getElementsByTagName("footer")[0].innerHTML +=
+                    '<div style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>"' + newFooter + '"<b>)</b></div>';
             } else {
-                element.getElementsByTagName("footer")[0].innerHTML =
-                    '<div style="display: flex; overflow: hidden; align-self: right;" class="' + val + '"></div>';
+                element.getElementsByTagName("footer")[0].innerHTML +=
+                    '<div style="display: inline-block; overflow: hidden; align-self: right;" <span class="' + val + '" ' +
+                    'title="Ouput: ' + val + '"></span></div>';
             }
         })
     }
@@ -91,8 +95,7 @@
                                  title="{{ process.abstract }}" draggable="true" ondragstart="drag(event)"
                                      data-service="{{ service }}" data-process="{{ process.identifier }}"
                             style="cursor:pointer;">
-                                <header class="respo-container">
-                                    <p style="font-size: smaller">No input envisaged</p>
+                                <header class="respo-container" style="font-size: smaller">
                                 </header>
 
                                 <div value="{{ process.processin }}"
@@ -104,8 +107,8 @@
                                     <h7 class="title">{{ process.title }}
                                     </h7>
                                 </div>
-                                <footer class="respo-container respo-right-align">
-                                    <p style="font-size: smaller">No output envisaged</p>
+                                <footer class="respo-container respo-right-align" style="font-size: smaller">
+{#                                    <p>No output envisaged</p>#}
                                 </footer>
                                 <style onload="inoutIndicator('{{ process.identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
 
@@ -116,7 +119,9 @@
             </table>
         </div>
     </div>
-
+    <div class="respo-container">
+        <p> </p>
+    </div>
 </nav>
 
 {#  Overlay effect when opening sidenav on small screens#}

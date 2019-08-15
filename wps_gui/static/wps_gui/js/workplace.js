@@ -77,35 +77,42 @@ function check_required(checkElement) {
     return passed
 }
 
-// TODO: runProcess now works only on execution from modal. Ajdust to be usable from Dropzone too,
+// TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
 function modal_run_process() {
-    let workModal = document.getElementById('workModal');
-    let inModal = document.getElementById('mod_in');
-    let inputs = inModal.getElementsByTagName('input');
-    var i;
-    // var inDict = {};
     var inKey = [];
     var inValue = [];
-    let loopLength = inputs.length;
-    for (i = 0; i < loopLength; i++) {
-        if (inputs[i].type == "radio") {
-            if (inputs[i].checked == true) {
+    // let workModal = document.getElementById('workModal');
+    let inModal = document.getElementById('mod_in');
+    let radioInputs = inModal.getElementsByTagName('input');
+    let dropDInputs = inModal.getElementsByTagName('select');
+
+    for (let i = 0; i < dropDInputs.length; i++) {
+        for (let j = 0; j < dropDInputs[i].length; j++) {
+            if (dropDInputs[i][j].selected) {
+                inKey.push(dropDInputs[i].name);
+                inValue.push(dropDInputs[i][j].value);
+            }
+        }
+    }
+
+    for (let i = 0; i < radioInputs.length; i++) {
+        if (radioInputs[i].type == "radio") {
+            if (radioInputs[i].checked == true) {
                 // inDict[inputs[i].name] = inputs[i].value;
-                inKey.push(inputs[i].name);
-                inValue.push(inputs[i].value);
+                inKey.push(radioInputs[i].name);
+                inValue.push(radioInputs[i].value);
             }
         } else {
             // inDict[inputs[i].name] = inputs[i].value;
-            inKey.push(inputs[i].name);
-            inValue.push(inputs[i].value);
+            inKey.push(radioInputs[i].name);
+            inValue.push(radioInputs[i].value);
         }
     }
     let outModal = document.getElementById('mod_out');
     let outputs = outModal.getElementsByTagName('input');
     let outDict = {};
-    loopLength = outputs.length;
-    for (i = 0; i < loopLength; i++) {
+    for (let i = 0; i < outputs.length; i++) {
         if (outputs[i].type == "radio") {
             if (outputs[i].checked == true) {
                 outDict[outputs[i].name] = outputs[i].value;
@@ -201,7 +208,9 @@ function build_resultstore_button(btnName, json) {
     return '<li draggable="true" class="respo-padding task is-result" ' +
         'data-id="' + btnName + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
         '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
-        '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
+        '<div class="task__actions"></div></span>' +
+        // '<span class="'+value['type']+'"></span>' +
+        '<a href="javascript:void(0)"' +
         'onclick="remove_single_result(\'' + btnName + '\')" class="respo-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
@@ -225,28 +234,28 @@ function build_modal_radio(inElementIdList, item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
-function build_modal_drowdown(inElementIdList, item, newNode, option) {
-    console.log('build dropdown item: ', item)
-    console.log('build dropdown option: ', option)
-    let nodeText = "";
-    let inElement = "";
+function build_modal_dropdown(inElementIdList, item, newNode) {
+    let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    let opt = document.createElement("OPTION");
+    let htmlSelect = document.createElement("SELECT");
+    if (item.minOccurs === 1) htmlSelect.required = true;
+    if (item.maxOccurs > 1) htmlSelect.multiple = true;
+    htmlSelect.size = "3";
+    htmlSelect.name = item.identifier;
+    let optionGroup = document.createElement("OPTGROUP");
+    optionGroup.label = "Data store";
     item.keywords.forEach(function (option) {
-        nodeText = document.createTextNode(" " + option + " ");
-        inElement = document.createElement("input");
-        inElement.type = "radio";
-        // inElement.setAttribute("type", "radio");
-        inElement.value = option;
-        inElement.id = item.identifier;
-        inElementIdList.push(item.identifier);
-        if (item.minOccurs === 1) inElement.required = true;
-
-        inElement.name = item.identifier;
-        if ('defaultValue' in item) {
-            if (item.defaultValue == option) inElement.checked = true;
-        }
-    });
-    newNode.appendChild(inElement);
-    newNode.appendChild(nodeText);
+        Object.keys(storeData).forEach(function (singleData) {
+            if (option == storeData[singleData].type) {
+                opt.innerText = `${singleData} ${storeData[singleData].name} (${storeData[singleData].abbr} in ${storeData[singleData].unit})`;
+                opt.value = singleData;
+                optionGroup.appendChild(opt)
+                opt = document.createElement("OPTION");
+                }
+            })
+        });
+    htmlSelect.appendChild(optionGroup);
+    newNode.appendChild(htmlSelect);
 }
 
 function get_available_inputs() {
@@ -318,7 +327,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 }
             }
         } else if ('keywords' in item) {
-            build_modal_drowdown(inElementIdList, item, newNode, item.keywords)
+            build_modal_dropdown(inElementIdList, item, newNode)
         } else {
             inElement = document.createElement("input");
             inElement.id = item.identifier;
