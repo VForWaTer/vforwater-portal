@@ -405,12 +405,21 @@ function moreInfoModal(id) {
     $.ajax({
         url: DEMO_VAR + "/vfwheron/menu",
         datatype: 'image/png;base64',
+        // datatype: 'html',
         data: {
             preview: id,
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
     })
         .done(function (json) {
+            // TODO: following should show Bokeh plot. Not Working because auf get to django
+/*            document.getElementById("mod_prev").innerHTML = json.div; // png
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            script.src = json.script;
+            document.getElementsByTagName("head")[0].appendChild(script);
+            document.getElementsByTagName("HEAD")[0].appendChild(json.script); // png*/
+
             document.getElementById("mod_prev").innerHTML = json.get; // png
         })
         .fail(function (e) {
@@ -434,14 +443,14 @@ function workspace_dataset(id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
             success: function (json) {
-                if (sessionStorage.getItem("btn")) {
-                    let stored = JSON.parse(sessionStorage.getItem("btn"));
+                if (sessionStorage.getItem("dataBtn")) {
+                    let stored = JSON.parse(sessionStorage.getItem("dataBtn"));
                     $.each(json['workspaceData'], function (key, value) {
                         if (!stored[key]) stored[key] = value;
                     });
-                    sessionStorage.setItem("btn", JSON.stringify(stored))
+                    sessionStorage.setItem("dataBtn", JSON.stringify(stored))
                 } else {
-                    sessionStorage.setItem("btn", JSON.stringify(json['workspaceData']));
+                    sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
                 }
                 // push sessionStorage keys to html for Workspace
                 // TODO: "workdata" should be obsolete because of use of sessionStorage.

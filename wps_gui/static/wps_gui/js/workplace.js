@@ -203,7 +203,7 @@ function add_to_resultstore_buttonlist(btnName) {
 
 //TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
 function build_resultstore_button(btnName, json) {
-    let ident = json.processid;
+    // let ident = json.processid;
     let title = json.processid;
     return '<li draggable="true" class="respo-padding task is-result" ' +
         'data-id="' + btnName + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
@@ -266,14 +266,14 @@ function get_available_inputs() {
     Object.keys(available_elements).forEach(function (key) {
         if (available_elements[key].length == 0) delete available_elements[key]
     });
-    console.log('available_elements: ', available_elements);
+    // console.log('available_elements: ', available_elements);
     return available_elements
 }
 
 function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     // console.log('wpsInfo: ', wpsInfo)
     let availableInputs = get_available_inputs();
-    console.log('availableInputs: ', availableInputs)
+    // console.log('availableInputs: ', availableInputs)
     // sessionStorage.setItem("processModal", wpsInfo);
     let element = document.getElementById("mod_head");
     let newElement = "";

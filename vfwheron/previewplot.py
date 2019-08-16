@@ -9,7 +9,9 @@ from io import BytesIO
 
 from vfwheron.models import TblMeta
 
-
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
 # import plotly
 # import plotly.plotly as ply
 # import plotly.graph_objs as go
@@ -81,8 +83,100 @@ def get_preview(preview):
 
             # create the image-tag
     imgtag = "<img alt='data image' src='data:image/png;base64,%s'>" % b64
-    return imgtag
+    # imgtag = newplotplotly(x, ymax)
+    # return newplotbokeh(x, ymax)
+    return str(imgtag)
 
+def newplotbokeh(x, ymax):
+    print('+++++++++++++++++++++ start')
+
+    import numpy as np
+    import pandas as pd
+    # from bokeh.palettes import d3 as palette
+    # from bokeh.palettes import Spectral4
+    # from bokeh.io import output_notebook
+    # from bokeh.io import export_svgs
+    from bokeh.models import SingleIntervalTicker, LinearAxis, Range1d, plots
+    from bokeh.layouts import row, widgetbox
+    from bokeh.models import CustomJS, Slider
+    from bokeh.plotting import figure, output_file, show, ColumnDataSource
+    from bokeh.models import Legend
+    import itertools
+
+    colname = ['2_weeks', '4_weeks']
+    cols_orig = np.array([[15.68, 32.53], [15.7, 32.6], [16.03, 32.67]])
+    cols_evol = np.array([[7.23, 14.83], [7.65, 15.4], [7.4, 15.0]])
+    df_runtime_orig = pd.DataFrame(data=cols_orig, columns=colname)
+    df_runtime_evol = pd.DataFrame(data=cols_evol, columns=colname)
+    legend_it = []
+
+    # output_notebook()
+
+    # color = itertools.cycle(palette['Category10'][6])
+    TOOLS = "pan,wheel_zoom,zoom_in,zoom_out,box_zoom,undo,redo,reset,tap,save,box_select,poly_select,lasso_select,"
+    p = figure(tools=TOOLS, plot_width=600, plot_height=350, x_range=df_runtime_orig.columns.values,
+               x_axis_label='Simulation Duration', y_axis_label='Run Time (h)')
+
+    pl = p.circle(df_runtime_orig.columns.values, df_runtime_orig.mean(), size=10, fill_color='#d62728',
+                  line_color='black')
+    legend_it.append(('Original', [pl]))
+    pl = p.triangle(df_runtime_evol.columns.values, df_runtime_evol.mean(), size=10, fill_color='#2ca02c',
+                    line_color='black')
+    legend_it.append(('Evolutionary', [pl]))
+
+    legend = Legend(items=legend_it, location="center")
+    p.add_layout(legend, 'right')
+    p.legend.click_policy = "hide"
+
+    p.xaxis.major_label_text_font_size = "12pt"
+    p.yaxis.major_label_text_font_size = "12pt"
+    p.xaxis.axis_label_text_font_size = "12pt"
+    p.yaxis.axis_label_text_font_size = "12pt"
+    p.legend.label_text_font_size = "12pt"
+    # p.output_backend = "svg"
+    # export_svgs(p, filename="runtime.svg")
+    output_file("interactive_legend.html", title="interactive_legend.py example")
+    # show(p)
+    print(output_file)
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+    from bokeh.embed import components
+
+    html = file_html(p, CDN, "my plot")
+    script, div = components(p)
+    print('+++++++++++++++++++++ end')
+    html = {"script": script, "div": div}
+    return html
+
+def newplotplotly(x, ymax):
+    print('------------------------------')
+    print('start plotly')
+    # import plotly.offline as opy
+    import plotly.graph_objs as go
+    from plotly.offline import plot
+    # from django.template import context
+    trace1 = go.Scatter(
+        x=x,
+        y=ymax,
+        mode='lines',
+        name='lines',
+    )
+    layout = go.Layout(
+        # autosize=True,
+        # width = 800,
+        # height=900,
+        xaxis=dict(
+            autorange=True
+        ),
+        yaxis=dict(
+            autorange=True
+        )
+    )
+    plot_data = [trace1]
+    figure = go.Figure(data=plot_data, layout=layout)
+    plot_div = plot(figure, output_type='div', include_plotlyjs=False)
+    print('end plotly: ', plot_div)
+    return plot_div
 
 # class DataDisplayDownsampler(object):
 #     def __init__(self, xdata, ydata):

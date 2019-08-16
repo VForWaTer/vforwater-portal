@@ -21,8 +21,6 @@
 <script>
     function inoutIndicator(id, invalues, outvalues) {
         let element = document.getElementById(id);
-        let head = element.getElementsByTagName("header")[0].getElementsByTagName("DIV");
-        console.log('head: ', head)
         invalues.forEach(function (val) {
             if (Array.isArray(val)) {
                 let newHeader = "";
