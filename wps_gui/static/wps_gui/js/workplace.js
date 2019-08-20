@@ -235,26 +235,36 @@ function build_modal_radio(inElementIdList, item, newNode, option) {
 }
 
 function build_modal_dropdown(inElementIdList, item, newNode) {
-    let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    let opt = document.createElement("OPTION");
     let htmlSelect = document.createElement("SELECT");
-    if (item.minOccurs === 1) htmlSelect.required = true;
-    if (item.maxOccurs > 1) htmlSelect.multiple = true;
-    htmlSelect.size = "3";
-    htmlSelect.name = item.identifier;
-    let optionGroup = document.createElement("OPTGROUP");
-    optionGroup.label = "Data store";
-    item.keywords.forEach(function (option) {
-        Object.keys(storeData).forEach(function (singleData) {
-            if (option == storeData[singleData].type) {
-                opt.innerText = `${singleData} ${storeData[singleData].name} (${storeData[singleData].abbr} in ${storeData[singleData].unit})`;
-                opt.value = singleData;
-                optionGroup.appendChild(opt)
-                opt = document.createElement("OPTION");
+    let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    if (storeData !== null) {
+        let opt = document.createElement("OPTION");
+        if (item.minOccurs === 1) htmlSelect.required = true;
+        if (item.maxOccurs > 1) htmlSelect.multiple = true;
+        htmlSelect.size = "3";
+        htmlSelect.name = item.identifier;
+        let optionGroup = document.createElement("OPTGROUP");
+        optionGroup.label = "Data store";
+        item.keywords.forEach(function (option) {
+            Object.keys(storeData).forEach(function (singleData) {
+                if (option == storeData[singleData].type) {
+                    opt.innerText = `${singleData} ${storeData[singleData].name} (${storeData[singleData].abbr} in ${storeData[singleData].unit})`;
+                    opt.value = singleData;
+                    optionGroup.appendChild(opt)
+                    opt = document.createElement("OPTION");
                 }
             })
         });
-    htmlSelect.appendChild(optionGroup);
+        htmlSelect.appendChild(optionGroup);
+    } else {
+        htmlSelect = document.createElement("DIV");
+        if (item.minOccurs === 1) htmlSelect.required = true;
+        if (item.defaultValue) {
+            htmlSelect.innerText = 'Without selected datasets the default '+item.defaultValue+' value is used.'
+        } else {
+            htmlSelect.innerText = 'Please first select a dataset from the filter menu.'
+        }
+    }
     newNode.appendChild(htmlSelect);
 }
 
