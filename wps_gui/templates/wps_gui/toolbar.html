@@ -22,7 +22,7 @@
     function inoutIndicator(id, invalues, outvalues) {
         let element = document.getElementById(id);
         invalues.forEach(function (val) {
-            if (Array.isArray(val)) {
+            if (Array.isArray(val) && val.length > 1) {
                 let newHeader = "";
                 val.forEach(function (inVal) {
                     newHeader += '<div style="margin-left: 1px; margin-right: 1px;" ' +

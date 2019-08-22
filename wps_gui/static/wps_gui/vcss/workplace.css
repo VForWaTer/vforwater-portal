@@ -41,7 +41,9 @@ p.modal-datainfo {
   color: white;
   float: right;
   font-size: 20px;
-    padding: 4px 12px;
+    padding-top:2px;
+    padding-bottom: 2px;
+    padding-left: 12px;
   /*font-weight: bold;*/
 }
 .modal-cancel:hover, .modal-ok:hover, .modal-run:hover,
@@ -62,6 +64,6 @@ p.modal-datainfo {
 .modal-footer {
     height: 38px;
   padding: 2px 12px;
-  background-color: dodgerblue;;
+  background-color: dodgerblue;
   color: white;
 }

@@ -250,7 +250,8 @@ function build_modal_dropdown(inElementIdList, item, newNode) {
                 if (option == storeData[singleData].type) {
                     opt.innerText = `${singleData} ${storeData[singleData].name} (${storeData[singleData].abbr} in ${storeData[singleData].unit})`;
                     opt.value = singleData;
-                    optionGroup.appendChild(opt)
+                    if (item.keywords.length == 1) opt.selected = true;
+                    optionGroup.appendChild(opt);
                     opt = document.createElement("OPTION");
                 }
             })
@@ -309,12 +310,13 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
         let titleText = "";
         if ('minOccurs' in item) {
             if (item.minOccurs > 0 && item.dataType != 'boolean') {
-                titleText = " " + item.title + " (*) : "
+                titleText = " " + item.title + " (*) : ";
+                inElement.required = true;
             } else {
                 titleText = " " + item.title + ": "
             }
         }
-        if (item.minOccurs === 1) inElement.required = true;
+        // if (item.minOccurs === 1) inElement.required = true;
         nodeText = document.createTextNode(titleText);
         newNode.appendChild(nodeText);
         if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
