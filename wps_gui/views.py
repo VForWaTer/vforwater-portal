@@ -167,13 +167,13 @@ def edit_input(inputs):
     input_dict = dict((x, y) for x, y in inputs)
     for key, value in input_dict.items():
         if key == 'sql-filter':
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id='" + value + "';"
+            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
         if key == 'name_time' and value.isdigit():
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id='" + value + "';"
+            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
         if key == 'name' and value.isdigit():
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id='" + value + "';"
+            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
         if key == 'number' and value.isdigit():
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id='" + value + "';"
+            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
 
     return [(k, v) for k, v in input_dict.items()]
 
