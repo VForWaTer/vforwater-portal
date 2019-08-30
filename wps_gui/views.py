@@ -45,12 +45,15 @@ def home(request):
 
         wps.processes[countLoop].processout = []
         for i in describedprocess.processOutputs:
-            if isinstance(i.dataType, str):
+            if i.abstract is not None:
+                if 'keywords' in json.loads(i.abstract):
+                    wps.processes[countLoop].processout.append(json.loads(i.abstract)['keywords'])
+            elif isinstance(i.dataType, str):
                 wps.processes[countLoop].processout.append('string')
             elif isinstance(i.dataType, float):
                 wps.processes[countLoop].processout.append('float')
-            elif i.metadata[0] == '_keywords':
-                wps.processes[countLoop].processout.append(i.allowedValues[1:])
+            # elif i.metadata[0] == '_keywords':
+            #     wps.processes[countLoop].processout.append(i.allowedValues[1:])
         countLoop += 1
 
     context = {'wps_services': wps_services,
@@ -107,6 +110,12 @@ class ProcessView(TemplateView):
                                 #  allow_values with first value '_keywords' instead
                                 if k == 'allowedValues' and not v == [] and v[0] == '_keywords':
                                     innerdict['keywords'] = v[1:]
+                                elif k == 'abstract' and not v == None:  # and not v == [] and v[0] == '_keywords':
+                                    for abst in json.loads(v):
+                                        if abst == 'keywords':
+                                            innerdict[abst] = json.loads(v)[abst]
+                                        else:
+                                            innerdict['abstract'] = v
                                 elif v is not None and not v == []:
                                     # if not v is None and not v == []:
                                     if isinstance(v, str) and re.search("(?<=/#)\w+", v):
@@ -134,6 +143,7 @@ class ProcessView(TemplateView):
             execution_status = execution.status
             image = []
             outputs = []
+            # output = edit_outputs(execution.processOutputs)
             for output in execution.processOutputs:
                 print('output: ', output)
                 outputs.append(output.data)
@@ -159,7 +169,6 @@ class ProcessView(TemplateView):
             except:
                 print('--- no output_reference')
 
-
             return JsonResponse(context_p)
 
 
@@ -179,7 +188,6 @@ def edit_input(inputs):
 
 
 def get_pickle(ident):
-
     return
 
 

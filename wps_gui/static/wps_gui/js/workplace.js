@@ -80,6 +80,7 @@ function check_required(checkElement) {
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
 function modal_run_process() {
+    color_modal("dodgerblue");
     var inKey = [];
     var inValue = [];
     // let workModal = document.getElementById('workModal');
@@ -109,6 +110,7 @@ function modal_run_process() {
             inValue.push(radioInputs[i].value);
         }
     }
+
     let outModal = document.getElementById('mod_out');
     let outputs = outModal.getElementsByTagName('input');
     let outDict = {};
@@ -121,6 +123,7 @@ function modal_run_process() {
             outDict[outputs[i].name] = outputs[i].value;
         }
     }
+
     let modhead = document.getElementById('mod_head');
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
@@ -146,8 +149,12 @@ function modal_run_process() {
                 document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, json);
             } else {
                 color_modal("firebrick");
-                alert('Error: Failed to execute your request.');
+                // alert('Error: Failed to execute your request.');
             }
+        },
+        error: function(json) {
+            color_modal("firebrick")
+            console.log('Error: ', json)
         }
     });
 }
@@ -404,7 +411,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     newNode.appendChild(nodeText);
     let outElement = document.createElement("input");
     newNode.appendChild(outElement);
-    if (typeof (newNode) === 'object') element.appendChild(newNode)
+    if (typeof (newNode) === 'object') element.appendChild(newNode);
     /*let outElement = "";
     newNode = "";
     nodeText = "";

@@ -43,10 +43,10 @@
                         'class="' + outVal + '" ></span>';
                 });
                 element.getElementsByTagName("footer")[0].innerHTML +=
-                    '<div style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>"' + newFooter + '"<b>)</b></div>';
+                    '<div style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></div>';
             } else {
                 element.getElementsByTagName("footer")[0].innerHTML +=
-                    '<div style="display: inline-block; overflow: hidden; align-self: right;" <span class="' + val + '" ' +
+                    '<div style="display: flex; overflow: hidden; align-self: right;" <span class="' + val + '" ' +
                     'title="Ouput: ' + val + '"></span></div>';
             }
         })
