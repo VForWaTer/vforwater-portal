@@ -97,35 +97,39 @@ button {
   /*background-color: blue;*/
   /*display: inline-block;*/
 }
-.string,.array,.pickle,.timeseries {
-    margin: 7px;
+.string,.array,.pickle,.timeseries,
+.ts-array, .ts-pickle, .ts-aggregate {
+    margin: 5px;
     height: 10px;
     width: 10px;
     border-radius: 50%;
-
+    font-weight: bold;
+    font-size: 9pt;
+    color: black;
   /*display: inline-block;*/
   /*  display: flex;*/
   /*align-items: center;*/
 }
-.string {
-  background-color: #8c510a;
-}
-.array {
-  background-color: #01665e;
-}
-.pickle {
-  background-color: #35978f;
-}
-.timeseries {
-  background-color: #c7eae5;
-}
+/*.array::before{content: "A";}
+.timeseries::before{content: "T";}
+.ts-array::before{content: "TA";}
+.ts-pickle::before{content: "TP";}
+.ts-aggregate::before{content: "TAr";}
+.string::before{content: "S";}
+.pickle::before{content: "P";}*/
+/*
+11 colorblind safe colors from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
+ */
+.array{background-color:rgb(165,0,38); content: "AR";}
+.timeseries{background-color:rgb(215,48,39)}
+.ts-array{background-color:rgb(244,109,67)}
+.ts-pickle{background-color:rgb(253,174,97)}
+.ts-aggregate{background-color:rgb(254,224,144)}
+.string{background-color:rgb(255,255,191); border: 1px solid darkorange;}
+.pickle{background-color:rgb(224,243,248); border: 1px solid darkturquoise;}
+.q7-11{background-color:rgb(171,217,233)}
+.q8-11{background-color:rgb(116,173,209)}
+.q9-11{background-color:rgb(69,117,180)}
+.q10-11{background-color:rgb(49,54,149)}
 
-/*8 colorblind safe colors:
-#8c510a
-#bf812d
-#dfc27d
-#f6e8c3
-#c7eae5
-#80cdc1
-#35978f
-#01665e*/
+
