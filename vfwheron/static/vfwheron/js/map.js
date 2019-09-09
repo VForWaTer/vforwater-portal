@@ -11,6 +11,9 @@ function create_map() {
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
     let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
     wfsLayerName = document.getElementById('data_layer').value;
+    if (wfsLayerName.search("Error") !== -1){
+        console.error(wfsLayerName)
+    }
 // build the background map
     let mapLayer = new ol.layer.Tile({
         preload: Infinity,
@@ -455,7 +458,7 @@ function popupContent(ids, page) {
 
 
 function buildPopupText(json, popUpText) {
-    console.log('ist da')
+    // console.log('ist da')
     let valueLen;
     let buttonId = [];
     // loop over "properties" dict with metadata, build columns
