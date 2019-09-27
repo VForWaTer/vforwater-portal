@@ -1,6 +1,8 @@
 from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
+from django.urls import path
 
+from AuthorizationManagement.views import HomeView
 from heron import settings
 # from wps_workflow.views import EditorView
 from . import views
@@ -27,3 +29,5 @@ urlpatterns = [
 
 if settings.ON_VFW_SERVER:
     urlpatterns.append(url(r'^rsp/', include('watts_rsp.urls')))
+else:
+    urlpatterns.append(path('', include('django.contrib.auth.urls')))

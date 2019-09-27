@@ -21,15 +21,14 @@ VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
 if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
-# Set where the server is running on
-HOST_NAME = "portal.vforwater.de"
-VFW_SERVER = 'https://' + HOST_NAME
-MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
-
-
 # Variable to set the demo path in static files
 DEMO_VAR = ''
+
+# Set where the server is running on
+HOST_NAME = "portal.vforwater.de"
+VFW_SERVER = 'https://' + HOST_NAME + DEMO_VAR
+MAP_SERVER = "https://portal.vforwater.de"
+LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -87,7 +86,7 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
-        },    
+        },
         'watts_rsp': {
             'handlers': ['file'],
             'level': 'DEBUG',
@@ -157,8 +156,9 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 # http://diegobz.net/2011/02/10/django-database-router-using-settings/
 
-DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# TODO: Delete Router. Not necessary anymore now when only one database is used
+# DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
+# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
 
 DATABASES = {
     'default': {

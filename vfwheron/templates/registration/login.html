@@ -1,0 +1,39 @@
+<meta charset="UTF-8">
+{% extends "vfwheron/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+{% block sidebar %}
+	{% include 'vfwheron/static_sidebar.html' %}
+{% endblock sidebar %}
+
+{% block content %}
+
+  <header class="respo-container respo-padding-bottom respo-center" style="padding-top:22px">
+      {% if form.errors %}
+        <h5><b>{% trans "Your login failed! Please try again." %}</b></h5>
+      {% elif user.is_authenticated %}
+        <h5><b>{% trans "Welcome, you are logged in as " %} {{ user.email }}.</b></h5>
+      {% else %}
+        <h5><b>{% trans "Welcome, please log in." %}</b></h5>
+      {% endif %}
+  </header>
+
+  <div class="respo-row-padding respo-margin-bottom respo-center">
+
+    <div class="respo-container respo-light-turquoise respo-padding-16 respo-third-n">
+      <div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>Login</strong></div>
+      <div class="respo-clear"></div>
+      <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+
+  </div>
+
+{% endblock %}

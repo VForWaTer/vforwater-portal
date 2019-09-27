@@ -18,7 +18,7 @@ from django.contrib.auth import logout
 from django.core.cache import cache
 from django.db import connections
 from django.http import StreamingHttpResponse
-from django.http.response import JsonResponse, HttpResponse
+from django.http.response import JsonResponse, HttpResponse, Http404
 from django.http import FileResponse
 from django.shortcuts import redirect, render
 from django.utils import translation
@@ -29,7 +29,7 @@ from django.template import RequestContext
 
 from future.builtins import isinstance
 
-from heron.settings import LOCAL_GEOSERVER
+from heron.settings import LOCAL_GEOSERVER, DEBUG
 from io import StringIO, BytesIO
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer, \
@@ -102,14 +102,14 @@ class HomeView(TemplateView):
     # print(connections['vforwater'].queries)
     # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'testlayer4'#'default_layer_prod'
+    data_layer = 'testlayer4'  # 'default_layer_prod'
 
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    store = 'teststore2'#'new_vforwater_gis'
-    workspace = 'testworkspace2'#'CAOS_update'
+    store = 'teststore2'  # 'new_vforwater_gis'
+    workspace = 'testworkspace2'  # 'CAOS_update'
     try:
         test_geoserver_env(store, workspace)
     except:
@@ -131,7 +131,7 @@ class HomeView(TemplateView):
             data_layer = self.data_layer
         return data_layer
 
-    # Put here everything you need at startup and for refresh
+    # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
 
         self.data_layer = self.set_layer_name()
@@ -145,7 +145,7 @@ class HomeView(TemplateView):
                 delete_layer(self.data_layer, self.store, self.workspace)
                 create_layer(self.request, self.data_layer, self.store, self.workspace)
         except:
-            self.data_layer='Error: Found no geoserver!'
+            self.data_layer = 'Error: Found no geoserver!'
             print('Still no geoserver')
 
         try:
@@ -200,13 +200,15 @@ class MenuView(TemplateView):
             # where_var = 'tbl_data.meta_id = ' + str(work_dataset)
             if isinstance(work_dataset, int): work_dataset = [work_dataset]
             if request.user.is_authenticated:
-                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name', 'variable__variable_abbrev',
-                                                          'variable__unit__unit_abbrev').filter(pk__in=work_dataset)
+                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name',
+                                                           'variable__variable_abbrev',
+                                                           'variable__unit__unit_abbrev').filter(pk__in=work_dataset)
             else:
                 # from_var += ', lt_license'
                 # where_var += ' AND lt_license.commercial is false'
-                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name', 'variable__variable_abbrev',
-                                                          'variable__unit__unit_abbrev').filter(
+                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name',
+                                                           'variable__variable_abbrev',
+                                                           'variable__unit__unit_abbrev').filter(
                     license__commercial=False, pk__in=work_dataset)
 
             dataset_dict = {}
@@ -283,10 +285,10 @@ class MenuView(TemplateView):
 
             return JsonResponse(preview)  # requested from map.js show_info
 
-# get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
+        # get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
         if 'filter_selection' in request.GET:
             return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
-                                                         json.loads(request.GET.get('filter_selection'))))
+                                                               json.loads(request.GET.get('filter_selection'))))
 
         if 'filter_selection_map' in request.GET:
             m_ids = None
@@ -384,9 +386,8 @@ class DatasetDownloadView(TemplateView):
             create_data_layer(request, layer_name, s_id, store, workspace)
 
             # use GEOSERVER shape-zip
-            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
-                '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
-                '&outputFormat=shape-zip&srsname=EPSG:' + srid
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' \
+                  + workspace + ':' + layer_name + '&outputFormat=shape-zip&srsname=EPSG:' + srid
             request = requests.get(url)
 
             pzfile = PyZip().from_bytes(request.content)
@@ -399,7 +400,7 @@ class DatasetDownloadView(TemplateView):
             delete_layer(layer_name, store, workspace)
             return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
 
-        # TODO: schemaLocation shows too much information for possible intruder. Figure out how to improve?
+        # TODO: schema Location shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
             layer_name = 'XML_' + id
@@ -408,10 +409,9 @@ class DatasetDownloadView(TemplateView):
             create_id_layer(request, layer_name, id, HomeView.store, HomeView.workspace)
 
             # use GEOSERVER GML
-            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
-                                                      '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' \
-                  + layer_name + \
-                  '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' + srid
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' + \
+                  workspace + ':' + layer_name + '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' \
+                  + srid
 
             request = urllib.request.Request(url)
             response = urllib.request.urlopen(request)
@@ -424,7 +424,6 @@ class LoginView(View):
     """
 
     """
-
     def post(self, request):
         """
 
@@ -436,8 +435,10 @@ class LoginView(View):
         if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
             logger.debug('Redirect to vfwheron/rsp/login/init...')
             return redirect('vfwheron:watts_rsp:login_init')
-        else: # default django login
+        elif settings.DEBUG == True:  # default django login
             return redirect('vfwheron:login')
+        else:
+            raise Http404
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -455,6 +456,7 @@ class LoginView(View):
             logger.debug('The user is not authenticated!')
         else:
             logger.debug('{} logged in as'.format(request.user.username))
+
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -485,6 +487,11 @@ class LogoutView(View):
         self.logout(request)
         return redirect('vfwheron:home')
 
+
+class DevLoginView(TemplateView):
+    def get(self, request):
+        context = {}
+        return render(request, 'vfwheron/login.html', {'context': context})
 
 class HelpView(TemplateView):
     """
@@ -581,8 +588,8 @@ class GeoserverView(View):
         # wfsLayerName = layer
         work_space_name = HomeView.workspace  # 'CAOS_update'
         url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
-            '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
-            '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+              '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
+              '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         # url = '{}/{}/ows?service={}&version=1.0.0&request=GetFeature&typeName={}:{
         # }&outputFormat=application%2Fjson&' \
         #       'srsname=EPSG:{}&bbox={},EPSG:{}'.format(LOCAL_GEOSERVER, workSpaceName, service, workSpaceName, layer,

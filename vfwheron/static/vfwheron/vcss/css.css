@@ -100,15 +100,28 @@ button {
 .string,.array,.pickle,.timeseries,
 .ts-array, .ts-pickle, .ts-aggregate {
     margin: 5px;
-    height: 10px;
-    width: 10px;
-    border-radius: 50%;
-    font-weight: bold;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;/*0 6px 6px 0;*/
+    /*font-weight: bold;
     font-size: 9pt;
-    color: black;
+    color: black;*/
   /*display: inline-block;*/
   /*  display: flex;*/
   /*align-items: center;*/
+}
+
+.left-hemisphere {
+    margin: 5px;
+    height: 12px;
+    width: 6px;
+    border-radius: 0 6px 6px 0;
+}
+.right-hemisphere {
+    margin: 5px;
+    height: 12px;
+    width: 6px;
+    border-radius: 6px 0 0 6px;
 }
 /*.array::before{content: "A";}
 .timeseries::before{content: "T";}
@@ -120,15 +133,16 @@ button {
 /*
 11 colorblind safe colors from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
  */
-.array{background-color:rgb(165,0,38); content: "AR";}
+/*.array{background-color:rgb(165,0,38); content: "AR";}*/
+.array{background-color:rgb(165,0,38)}
 .timeseries{background-color:rgb(215,48,39)}
 .ts-array{background-color:rgb(244,109,67)}
 .ts-pickle{background-color:rgb(253,174,97)}
 .ts-aggregate{background-color:rgb(254,224,144)}
-.string{background-color:rgb(255,255,191); border: 1px solid darkorange;}
+.string{background-color:rgb(255,255,191); border: 1px solid #ffbf26;}
 .pickle{background-color:rgb(224,243,248); border: 1px solid darkturquoise;}
-.q7-11{background-color:rgb(171,217,233)}
-.q8-11{background-color:rgb(116,173,209)}
+.aggregate{background-color:rgb(171,217,233)}
+.merge{background-color:rgb(116,173,209)}
 .q9-11{background-color:rgb(69,117,180)}
 .q10-11{background-color:rgb(49,54,149)}
 

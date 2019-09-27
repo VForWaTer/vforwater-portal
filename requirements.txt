@@ -1,6 +1,6 @@
 django_crontab
 django-cors-headers
-psycopg2
+psycopg2<2.8
 pyzip
 matplotlib
 future

@@ -26,14 +26,14 @@ VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
 if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
-# Set where the server is running on
-HOST_NAME = "portal.vforwater.de"
-VFW_SERVER = 'https://' + HOST_NAME + '/demo'
-MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
-
 # Variable to set the demo path in static files
 DEMO_VAR = '/demo'
+
+# Set where the server is running on
+HOST_NAME = "portal.vforwater.de"
+VFW_SERVER = 'https://' + HOST_NAME + DEMO_VAR
+MAP_SERVER = "https://portal.vforwater.de"
+LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -57,7 +57,7 @@ if os.path.isfile(secretGeoServer):
 else:
         # TODO: Print to log file
     print('secretGeoServer.txt is missing')
-    
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -90,7 +90,7 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
-        },    
+        },
         'watts_rsp': {
             'handlers': ['file'],
             'level': 'DEBUG',
@@ -176,8 +176,9 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 # http://diegobz.net/2011/02/10/django-database-router-using-settings/
 
-DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# TODO: Delete Router. Not necessary anymore now when only one database is used
+# DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
+# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
 
 DATABASES = {
     'default': {
@@ -235,11 +236,11 @@ USE_TZ = True
 
 ##STATIC_URL = '/static/'
 ##STATIC_URL = 'https://portal.vforwater.de/demo/static/'
-STATIC_URL = '/demo/static/'
-STATIC_ROOT = '/var/www/html/demo/static/'
+STATIC_URL = DEMO_VAR + '/static/'
+STATIC_ROOT = '/var/www/html' + DEMO_VAR + '/static/'
 
 ##MEDIA_URL = '/media/'
-MEDIA_URL = '/demo/media/'
+MEDIA_URL = DEMO_VAR + '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default URLs for user authentication
@@ -254,10 +255,10 @@ LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron/failedlogin'
 
 ##EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smarthost.kit.edu'                                                                                                                                                                                                            
-EMAIL_HOST_USER = 'info@vforwater.de'                                                                                                                                                                                              
-#EMAIL_HOST_PASSWORD = 'xxx'                                                                                                                                                                                                 
-EMAIL_PORT = 25 #587                                                                                                                                                                                                                        
+EMAIL_HOST = 'smarthost.kit.edu'
+EMAIL_HOST_USER = 'info@vforwater.de'
+#EMAIL_HOST_PASSWORD = 'xxx'
+EMAIL_PORT = 25 #587
 EMAIL_USE_TLS = False
 
 
