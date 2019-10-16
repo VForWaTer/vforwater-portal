@@ -3,6 +3,10 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 <html>
+
+{#Cookie window 1/2#}
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+
 <head>
     <title>VFORWaTer</title>
     <meta charset="UTF-8">
@@ -18,6 +22,22 @@
 </head>
 {#TODO: value has to be updated through js before reading to make sure its up-to-date #}
 <param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
+
+{#Cookie window 2/2#}
+<script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
+<script>
+window.cookieconsent.initialise({
+  "palette": {
+    "popup": {
+      "background": "#d9effd"
+    },
+    "button": {
+      "background": "#00baee"
+    }
+  },
+  "position": "bottom-right"
+});
+</script>
 
 <body class="respo-light-grey">
 <!-- Current language: {{ LANGUAGE_CODE }} -->
@@ -88,6 +108,10 @@
         <!--	    <li class="respo-hide-small"><a href="#" onclick="search_open()" id="srch_box" class="respo-hover-white"><i class="fa fa-search fa-fw"></i>  Suche</a></li>
                 <li class="respo-hide-small"><a id="srch_but" class="respo-hover-none"></a></li>
                 <li class="respo-hide-small"><a id="srch_close_but" class="respo-hover-none"></a></li>   -->
+
+{#        <li class="respo-hide-small"><a href="{% url 'vfwheron:test' %}" class="respo-hover-white">#}
+{#            <i class="fa fa-bug fa-fw"></i>{% trans "  Test" %}</a>#}
+{#        </li>#}
         {% if user.is_authenticated %}
 
             <!-- for Authentication app
