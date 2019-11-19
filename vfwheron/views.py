@@ -26,7 +26,7 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.template import RequestContext
-
+from django.contrib.auth.admin import UserAdmin
 from future.builtins import isinstance
 
 from heron.settings import LOCAL_GEOSERVER, DEBUG
@@ -118,7 +118,10 @@ class HomeView(TemplateView):
     # dataExt = get_bbox_from_data()
     def set_user_menu(self):
         if self.request.user.is_authenticated:
-            data_layer = 'default_layer4'
+            if self.request.user.is_superuser:
+                data_layer = 'default_layer4'
+            else:
+                data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
         else:
             data_layer = self.data_layer
         return data_layer
@@ -126,7 +129,10 @@ class HomeView(TemplateView):
     # TODO: Test with users if this makes any sense
     def set_layer_name(self):
         if self.request.user.is_authenticated:
-            data_layer = 'default_layer4'
+            if self.request.user.is_superuser:
+                data_layer = 'default_layer4'
+            else:
+                data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
         else:
             data_layer = self.data_layer
         return data_layer
@@ -552,7 +558,6 @@ class FailedLoginView(View):
     """
     View for failed logins
     """
-
     @staticmethod
     def get(request):
         # message = _("Login failed.")

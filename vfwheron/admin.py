@@ -2,7 +2,7 @@ from django.contrib.gis import admin
 from django.forms import ModelForm
 
 from vfwheron import models
-
+# The Admin.py is used to create fields in the django admin web page
 
 # Register your models here.
 
@@ -77,3 +77,32 @@ class LtUserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.LtUser, LtUserAdmin)
+#
+#
+# class LocalUserForm(ModelForm):
+#     class Meta:
+#         model = models.User
+#         fields = ['username', 'first_name', 'last_name', 'last_login', 'is_staff', 'is_superuser', 'email']
+#
+# class LocalUser(admin.ModelAdmin):
+#     form = LocalUserForm
+#     # search_fields = ['user', 'data']
+#     list_display = ['ext_user_id']
+#     # list_display = ['user', 'data']
+#     # list_filter = ['user']
+#
+# admin.site.register(models.User, LocalUser)
+
+from vfwheron.models import Basiseinzugsgebiet
+class BasiseinzugsgebietForm(ModelForm):
+    class Meta:
+        model = models.Basiseinzugsgebiet
+        fields = ['langname', 'area', 'wasserkoer']
+
+class Basiseinzugsgebiet(admin.ModelAdmin):
+    form = BasiseinzugsgebietForm
+    # search_fields = ['langname', 'length']
+    list_display = ['langname', 'area']
+
+admin.site.register(models.Basiseinzugsgebiet, Basiseinzugsgebiet)
+

@@ -55,7 +55,7 @@ function Sidemenu_close() {
 // Get the User Selection in Workspace
 // Button information is stored in an HTML object with Id 'workdata'
 // it is stored as a string, so the following function transforms this string back to a dictionary
-// TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
+// TODO: workspacedata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {// && "value" in workspaceData) {

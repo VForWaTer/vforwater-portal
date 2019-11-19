@@ -22,14 +22,15 @@ function drawPolygon(shortParent, shortChild) {
     // let div = document.getElementById('toggle_draw');
     filterbox_open();
     // itemButtonFunction(item, shortParent, shortChild, shortItem)
-    dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
+    // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // olmap.removeInteraction(selectCluster);
     let collection = new ol.Collection();
 
     let source = new ol.source.Vector({
         wrapX: false,
         features: collection,
-        useSpatialIndex: false
+        useSpatialIndex: false,
+        zindex: -100
     });
 
     // create source layer
@@ -50,6 +51,7 @@ function drawPolygon(shortParent, shortChild) {
                   })
               })*/
         }),
+        // zindex: -100,
         updateWhileAnimating: true, // optional, for instant visual feedback
         updateWhileInteracting: true // optional, for instant visual feedback
     });
@@ -69,12 +71,15 @@ function drawPolygon(shortParent, shortChild) {
         }),
         }*/
     );
+
     olmap.addInteraction(select);
 
     draw = new ol.interaction.Draw({
         source: source,
         type: 'Polygon',
+        stopClick: true
     });
+    // draw.setZIndex(-100);
 
     modify = new ol.interaction.Modify({
         // features: collection.getFeaturesCollection(),
@@ -107,12 +112,11 @@ function drawPolygon(shortParent, shortChild) {
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
 
-
     /* Point features select/deselect as you move polygon.
         Deactivate select interaction. */
     modify.on('modifystart', function (event) {
         sketch = event.features;
-        select.setActive(false);
+        // select.setActive(false);
         listener = event.features.getArray()[0].getGeometry().on('change', function (event) {
             // clear features so they deselect when polygon moves away
             selectedFeatures.clear();
@@ -176,6 +180,7 @@ function drawPolygon(shortParent, shortChild) {
     }, this);
 
     draw.on('drawend', function () {
+        // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
         selectedIdsMap = [];
         // let writer = new ol.format.KML();
         // let geojsonStr = writer.writeFeatures(source.getFeatures());
@@ -259,7 +264,7 @@ function toggle_draw(self) {
             if (siblings[s].classList.contains('activeM')) siblings[s].classList.remove('activeM')
         }
         if (self.id !== siblings[sLen].id && self.id !== 'draw_close') self.classList.add('activeM')
-        else dcz.setActive(true); // reactivate double click zoom when draw window is closed}
+        // else dcz.setActive(true); // reactivate double click zoom when draw window is closed}
     }
 
 }
@@ -425,7 +430,7 @@ function moreInfoModal(id) {
         .fail(function (e) {
             console.log('fehler: ', e)
         })
-        .always(function () {
+        .always(function (json) {
             document.getElementById("mod_prev").classList.remove("loader");
         });
     let modal = document.getElementById("infoModal");

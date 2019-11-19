@@ -135,7 +135,6 @@ function modal_run_process() {
     }
     $.ajax({
         url: DEMO_VAR + "/wps_gui/processview",
-        dataType: 'json',
         data: {
             processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
             'csrfmiddlewaretoken': csrf_token,

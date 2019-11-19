@@ -7,6 +7,8 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.gis.db import models
 
 
@@ -474,3 +476,63 @@ class Basiseinzugsgebiet(models.Model):
     # Returns the string representation of the model.
     def __str__(self):  # __unicode__ on Python 2
         return self.langname
+
+    class Meta:
+        managed = False
+
+
+# class Profile(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     email_confirmed = models.BooleanField(default=False)
+    # other fields...
+#
+# @receiver(post_save, sender=User)
+# def update_user_profile(sender, instance, created, **kwargs):
+#     if created:
+#         Profile.objects.create(user=instance)
+#     instance.profile.save()
+#
+#
+# class AuthPermission(models.Model):
+#     name = models.CharField(max_length=255)
+#     # content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
+#     codename = models.CharField(max_length=100)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'auth_permission'
+#         # unique_together = (('content_type', 'codename'),)
+#
+#
+# class AuthUser(models.Model):
+#     password = models.CharField(max_length=128)
+#     last_login = models.DateTimeField(blank=True, null=True)
+#     is_superuser = models.BooleanField()
+#     username = models.CharField(unique=True, max_length=150)
+#     first_name = models.CharField(max_length=30)
+#     last_name = models.CharField(max_length=150)
+#     email = models.CharField(max_length=254)
+#     is_staff = models.BooleanField()
+#     is_active = models.BooleanField()
+#     date_joined = models.DateTimeField()
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'auth_user'
+
+# class UserDataMap(models.Model):
+#     """
+#
+#     """
+#     auth_user = models.ForeignKey(User, models.DO_NOTHING)
+#     # ext_user_id = models.PositiveSmallIntegerField(blank=True, null=True)
+#     meta_data = models.ManyToManyField('TblMeta', blank=True)
+#
+#     # class Meta:
+#     #     # managed = False
+#     #     db_table = 'user'
+#
+#     def __str__(self):
+#         return self.auth_user_id
+
+

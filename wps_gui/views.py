@@ -1,7 +1,8 @@
 # from inspect import getmembers
 import json
 import re
-
+import sys
+import xml.etree.ElementTree as ET
 import jsonpickle
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -10,7 +11,11 @@ from django.views.generic import TemplateView
 from owslib.wps import printInputOutput
 
 from heron.settings import VFW_SERVER, HOST_NAME
+from vfwheron.models import TblMeta, TblData
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 # from heron_wps.forms import InputForm
@@ -63,17 +68,12 @@ def home(request):
 
     return render(request, 'wps_gui/home.html', context)
 
-
-# def service(request, service):
-#     """
-#     View that lists the processes for a given service.
-#     """
-#     wps = get_wps_service_engine(service)
-#
-#     context = {'wps': wps,
-#                'service': service}
-#     return render(request, 'wps_gui/service.html', context)
-
+# def use_pandoc(bla):
+#     from subprocess import Popen, PIPE, STDOUT
+#     input_text = bla
+#     p = Popen(['pandoc', '-f', 'rst', '-t', 'html', '--wrap=preserve'], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+#     blala = p.communicate(input=input_text)[0]
+#     return blala
 
 class ProcessView(TemplateView):
 
@@ -111,11 +111,15 @@ class ProcessView(TemplateView):
                                 if k == 'allowedValues' and not v == [] and v[0] == '_keywords':
                                     innerdict['keywords'] = v[1:]
                                 elif k == 'abstract' and not v == None:  # and not v == [] and v[0] == '_keywords':
-                                    for abst in json.loads(v):
-                                        if abst == 'keywords':
-                                            innerdict[abst] = json.loads(v)[abst]
-                                        else:
-                                            innerdict['abstract'] = v
+                                    try:
+                                        for abst in json.loads(v):
+                                            if abst == 'keywords':
+                                                innerdict[abst] = json.loads(v)[abst]
+                                            else:
+                                                innerdict['abstract'] = v
+                                    except ValueError:
+                                        # print('v: ', v)
+                                        innerdict['abstract'] = v
                                 elif v is not None and not v == []:
                                     # if not v is None and not v == []:
                                     if isinstance(v, str) and re.search("(?<=/#)\w+", v):
@@ -145,15 +149,23 @@ class ProcessView(TemplateView):
             outputs = []
             # output = edit_outputs(execution.processOutputs)
             for output in execution.processOutputs:
-                print('output: ', output)
                 outputs.append(output.data)
                 output_reference = output.reference
-                print('output_reference: ', output_reference)
-                if type(output.data[0] is str):
+                if type(output.data[0]) is str:
                     if len(output.data[0]) > 10:
                         substring = output.data[0][:10]
                         if "img" in substring:
                             image = output.data[0]
+                elif type(output.data[0]) is bytes:
+                    if len(output.data[0]) > 30:
+                        substring = str(output.data[0][:30])
+                        if "xml" in substring:
+                            print('XML as input not implemented yet. Got: ', output.data[0])
+                            logger.error('XML as input not implemented yet.')
+                            # tree = ET.fromstring(output.data[0])
+                            # for child in tree:
+                            #     print(child.tag, child.attrib)
+                            del outputs[-1]
 
             context_p = {'processid': wps_process,
                          'outputs': outputs,

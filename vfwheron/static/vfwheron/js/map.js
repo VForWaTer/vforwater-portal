@@ -93,7 +93,7 @@ function create_map() {
     hiddenLayer = new ol.layer.Vector({
         renderMode: 'image',
         source: wfsPointSource,
-        style: new ol.style.Style({
+/*        style: new ol.style.Style({
             image: new ol.style.Circle({
                 radius: 5,
                 stroke: new ol.style.Stroke({
@@ -111,7 +111,7 @@ function create_map() {
                     color: 'red'
                 })
             })
-        })
+        })*/
     });
 
 
@@ -193,7 +193,7 @@ function create_map() {
         overlays: [metaData_Overlay],
         target: map_tar,
         layers: [mapLayer, clusterLayer],
-        interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
+        // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
 
         controls: [
             new ol.control.Zoom({duration: 300}),
@@ -218,8 +218,9 @@ function create_map() {
     // check what is clicked
     function checkMode(evt) {
         if (hit_cL) {
+            // console.log('hit_cL: ', hit_cL)
+            content.innerHTML = '';
             try {
-                content.innerHTML = '';
                 content.innerHTML = '<div id="loader" class="loader"></div>';
                 buildPopup(evt)
             } catch (err) {
@@ -238,9 +239,14 @@ function create_map() {
 
         let nCol = 5; // number of columns of metadata per page
         let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+        // console.log('feature 1', olmap)
+        // console.log('feature 2', olmap.getFeaturesAtPixel(evt.pixel))
+        // console.log('feature 3', olmap.getFeaturesAtPixel(evt.pixel)[0])
+        // console.log('+ feature 4', olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties())
+        // console.log('feature 5', olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features)
         let pos = evt.coordinate;
-        console.log('clickedFeatures: ', clickedFeatures)
-        console.log('clickedFeatures.length: ', clickedFeatures.length)
+        // console.log('+ clickedFeatures: ', clickedFeatures)
+        // console.log('+ clickedFeatures.length: ', clickedFeatures.length)
         let l = clickedFeatures.length;
         let wfsLen = wfsLayerName.length;
         if (l > 0 && l <= nCol) { // check how many datasets are selected
@@ -338,6 +344,7 @@ function create_map() {
             },
             {
                 layerFilter: function (layer) {
+                    // console.log('+++++ layer: ', layer === clusterLayer)
                     // return layer === vector
                     return layer === clusterLayer
                 }
@@ -422,7 +429,7 @@ function popupContent(ids, page) {
     if (page && page != 'none') document.getElementById("pagi" + page).classList.add("loadspin");
     let popupTableBeforeMeta = '<table id="popupTable"><td>';
     let popUpText = popupTableBeforeMeta +
-        '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
+        '<style>table tr:nth-child(even){background-color:#c8ebee;}</style>' +
         '<table id="metaTable">';
     // request info from server
     $.ajax({
