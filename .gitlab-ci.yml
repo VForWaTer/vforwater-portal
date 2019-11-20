@@ -4,7 +4,7 @@
 stages:
     - test
     - deploy
-    
+
 # Test vforwater-portal
 vforwater-portal-test:
     stage: test
@@ -34,7 +34,7 @@ vforwater-portal-deploy-prod:
              /home/vfwportal/vforwater-portal/heron/settings.py
         - sudo -u vfwportal cd /home/vfwportal/vforwater-portal
         #- python36 manage.py migrate
-        - sudo PYTHONPATH=/usr/local/lib64/python3.6/site-packages:/usr/local/lib/python3.6/site-packages:/home/vfwportal/vforwater-portal -u vfwportal python36 manage.py collectstatic --noinput
+        - sudo PYTHONPATH=/usr/local/lib64/python3.7/site-packages:/usr/local/lib/python3.7/site-packages:/home/vfwportal/vforwater-portal -u vfwportal python37 manage.py collectstatic --noinput
         # Start django service
         - sudo systemctl start vfwportal
     environment:
@@ -42,8 +42,8 @@ vforwater-portal-deploy-prod:
         url: https://portal.vforwater.de/vfwheron/
     only:
         - production
-        
-        
+
+
 # Deploy vforwater-portal (demo version)
 vforwater-portal-deploy-demo:
     stage: deploy
@@ -62,7 +62,7 @@ vforwater-portal-deploy-demo:
              /home/vfwdemo/vforwater-portal/heron/settings.py
         - sudo -u vfwdemo cd /home/vfwdemo/vforwater-portal
         #- python36 manage.py migrate
-        - sudo PYTHONPATH=/usr/local/lib64/python3.6/site-packages:/usr/local/lib/python3.6/site-packages:/home/vfwdemo/vforwater-portal -u vfwdemo python36 manage.py collectstatic --noinput
+        - sudo PYTHONPATH=/usr/local/lib64/python3.7/site-packages:/usr/local/lib/python3.7/site-packages:/home/vfwdemo/vforwater-portal -u vfwdemo python37 manage.py collectstatic --noinput
         # Start django service
         - sudo systemctl start vfwportal-demo
     environment:
