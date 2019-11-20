@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
+# Set the GDAL Version used by django:
+GDAL_LIBRARY_PATH = r'/usr/gdal23/lib/libgdal.so.20'
+
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 FORCE_SCRIPT_NAME = '/demo'
@@ -187,10 +190,10 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(VFW_DIR, 'django.db'),
-    },
-    'vforwater': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': os.path.join(VFW_DIR, 'django.db'),
+#    },
+#    'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater_update',
         'HOST': 'localhost',
