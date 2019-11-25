@@ -132,7 +132,39 @@ class ProcessView(TemplateView):
                             list_values.append(b)
                     wps_description[a] = list_values
                 elif not whole_wpsprocess[a] is None and not whole_wpsprocess[a] == []:
+                    from docutils.writers.html4css1 import Writer, HTMLTranslator
+                    from docutils import core
+                    # class HTMLFragmentTranslator(HTMLTranslator):
+                    #     def __init__(self, document):
+                    #         HTMLTranslator.__init__(self, document)
+                    #         self.head_prefix = ['', '', '', '', '']
+                    #         self.body_prefix = []
+                    #         self.body_suffix = []
+                    #         self.stylesheet = []
+                    #     def astext(self):
+                    #         return ''.join(self.body)
+                    # html_fragment_writer = Writer()
+                    # html_fragment_writer.translator_class = HTMLFragmentTranslator
+                    # print("reST_to_html(v): ", core.publish_string(whole_wpsprocess[a], writer=html_fragment_writer))
+
+                    # import simplicity
+                    # print('rst_to_json: ', simplicity.rst_to_json(whole_wpsprocess[a]))
+
+                    # import docutils.core  # not tested yet
+                    # docutils.core.publish_file(v, destination_path="output.json",
+                    # result = open("output.json").read()
+                    # innerdict['abstract'] = result
+
+                    import docutils.core
+                    # print('+ +  +: ', docutils.core.publish_parts(whole_wpsprocess[a], writer_name="html"))
+
+                    # parts = core.publish_parts(source = whole_wpsprocess[a], writer_name = 'html')
+                    # print(parts['body_pre_docinfo'] + parts['fragment'])
+
+                    # print('pandoc: ', use_pandoc(whole_wpsprocess[a]))
+
                     wps_description[a] = whole_wpsprocess[a]
+
             return JsonResponse(wps_description)
 
         if 'processrun' in request.GET:
@@ -145,6 +177,8 @@ class ProcessView(TemplateView):
             print('wps_process: ', wps_process)
             execution = wps.execute(wps_process, inputs)
             execution_status = execution.status
+            print('execution: ', execution)
+            print('execution_status: ', execution_status)
             image = []
             outputs = []
             # output = edit_outputs(execution.processOutputs)

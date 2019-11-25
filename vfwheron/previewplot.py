@@ -51,7 +51,7 @@ def get_preview(preview):
                                                                'variable__unit__unit_abbrev')
         ylabel = label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
         # connect to database
-        cursor = connections['vforwater'].cursor()
+        cursor = connections['default'].cursor()
         cursor.execute(
                 "SELECT date_trunc('day', tstamp) as date, avg(value) as avg, "
                 "min(value) as min, max(value) as max "

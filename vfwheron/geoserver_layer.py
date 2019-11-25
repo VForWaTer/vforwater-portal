@@ -41,9 +41,9 @@ def test_geoserver_env(store, workspace):
                         '<passwd>{}</passwd>' \
                         '<dbtype>postgis</dbtype>' \
                         '</connectionParameters>' \
-                        '</dataStore>'.format(store, DATABASES['vforwater']['HOST'],
-                                              DATABASES['vforwater']['PORT'], DATABASES['vforwater']['NAME'],
-                                              DATABASES['vforwater']['USER'], DATABASES['vforwater']['PASSWORD'])
+                        '</dataStore>'.format(store, DATABASES['default']['HOST'],
+                                              DATABASES['default']['PORT'], DATABASES['default']['NAME'],
+                                              DATABASES['default']['USER'], DATABASES['default']['PASSWORD'])
         url = '{}/rest/workspaces/{}/datastores'.format(LOCAL_GEOSERVER, workspace)
         build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=datastore_xml,
                               headers={'Content-type': 'text/xml'})

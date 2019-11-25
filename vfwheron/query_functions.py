@@ -15,7 +15,7 @@ def get_bbox_from_data(selected_ids=None):  # get bbox for available data
     :rtype:
     """
     try:
-        cursor = connections['vforwater'].cursor()  # connect to database
+        cursor = connections['default'].cursor()  # connect to database
         if selected_ids:
             cursor.execute(
                 'SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)),srid),3857)) FROM tbl_meta '
