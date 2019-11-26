@@ -67,6 +67,7 @@ vforwater-portal-deploy-demo:
         - sudo env
         - sudo -u vfwdemo env
 #        - sudo PYTHONPATH=/usr/local/lib64/python3.7/site-packages:/usr/local/lib/python3.7/site-packages:/home/vfwdemo/vforwater-portal -u vfwdemo /usr/local/bin/python3.7 manage.py collectstatic --noinput
+        - sudo PYTHONPATH=/usr/local/lib/python3.7/site-packages:/home/vfwportal/vforwater-portal LD_LIBRARY_PATH=/usr/local/lib -u vfwdemo env
         - sudo PYTHONPATH=/usr/local/lib/python3.7/site-packages:/home/vfwportal/vforwater-portal LD_LIBRARY_PATH=/usr/local/lib -u vfwdemo /usr/local/bin/python3.7 manage.py collectstatic --noinput
         # Start django service
         - sudo systemctl start vfwportal-demo
