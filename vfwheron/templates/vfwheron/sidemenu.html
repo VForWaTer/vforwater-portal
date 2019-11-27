@@ -35,7 +35,7 @@
                 </div>
             </a>
             </div>
-        <a href="{% url 'vfwheron:login' %}" class="respo-hover-blue"><i class="fa fa-user fa-fw"></i>{% trans " Log in" %}</a>
+<!--{#        <a href="{% url 'vfwheron:login' %}" class="respo-hover-red"><i class="fa fa-user fa-fw"></i>{% trans " Log in" %}</a>#} -->
         {% if user.is_authenticated %}
              <div class="respo-dropdown-hover respo-transparent">
                     <a class="respo-hover-white ">
@@ -81,7 +81,7 @@
                     </form>
                 </a>
         {% endif %}
-    </div>    
+    </div>
   </nav>
 
 {#  Overlay effect when opening sidenav on small screens #}

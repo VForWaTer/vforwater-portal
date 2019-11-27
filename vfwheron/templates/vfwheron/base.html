@@ -180,7 +180,7 @@ window.cookieconsent.initialise({
 
             <!-- is_authenticated -->
         {% else %}
-            <!--        <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> -->
+             <!-- {#       <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> #}-->
             <li class="respo-hide-small respo-right">
                 <a class="respo-hide-small respo-right respo-hover-white">
                     <form class="respo-hover-white " action="{% url 'vfwheron:watts_login' %}" method="post"> {% csrf_token %}
