@@ -1,6 +1,7 @@
 django
 django_crontab
 django-cors-headers
+docutils
 future
 jsonpickle
 lxml
