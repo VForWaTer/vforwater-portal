@@ -33,7 +33,7 @@ vforwater-portal-deploy-prod:
         - sudo -u vfwportal ln -s /home/vfwportal/vforwater-portal/heron/settings.py-prod
              /home/vfwportal/vforwater-portal/heron/settings.py
         # update pip packages
-        - sudo su -c '/usr/local/bin/pip3.7 /home/vfwportal/vforwater-portal/requirements.txt'
+        - sudo /usr/local/bin/pip3.7 install -r /home/vfwportal/vforwater-portal/requirements.txt
         # collectstatic
         - sudo su vfwportal -c 'cd  /home/vfwportal/vforwater-portal; PYTHONPATH=/usr/local/lib/python3.7/site-packages:/home/vfwportal/vforwater-portal LD_LIBRARY_PATH=/usr/local/lib PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vfwportal/.local/bin:/home/vfwportal/bin /usr/local/bin/python3.7 manage.py collectstatic --noinput'
         # Start django service
@@ -61,7 +61,7 @@ vforwater-portal-deploy-demo:
         - sudo chown -R vfwdemo:vfwdemo /home/vfwdemo/vforwater-portal
         - sudo -u vfwdemo ln -s /home/vfwdemo/vforwater-portal/heron/settings.py-demo /home/vfwdemo/vforwater-portal/heron/settings.py
         # update pip packages
-        - sudo su -c '/usr/local/bin/pip3.7 /home/vfwdemo/vforwater-portal/requirements.txt'
+        - sudo /usr/local/bin/pip3.7 install -r /home/vfwdemo/vforwater-portal/requirements.txt
         # collectstatic
         - sudo su vfwdemo -c 'cd  /home/vfwdemo/vforwater-portal; PYTHONPATH=/usr/local/lib/python3.7/site-packages:/home/vfwportal/vforwater-portal LD_LIBRARY_PATH=/usr/local/lib PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vfwdemo/.local/bin:/home/vfwdemo/bin /usr/local/bin/python3.7 manage.py collectstatic --noinput'
         # Start django service
