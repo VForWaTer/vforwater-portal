@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect, render_to_response, _get_queryset
+from django.shortcuts import render, redirect, _get_queryset #, render_to_response
 from django.views import generic
 from django.contrib.auth.decorators import login_required
 from AuthorizationManagement.models import *
