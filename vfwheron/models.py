@@ -14,6 +14,9 @@ from django.contrib.gis.db import models
 
 # TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
 # explanation
+from django.db.models.signals import post_save
+from django.dispatch.dispatcher import receiver
+
 
 class DjangoMigrations(models.Model):
     """
@@ -535,4 +538,215 @@ class Basiseinzugsgebiet(models.Model):
 #     def __str__(self):
 #         return self.auth_user_id
 
+# New Database Schemata for vfw 2.0
 
+class DatasourceTypes(models.Model):
+    name = models.CharField(max_length=64)
+    description = models.CharField(blank=True, null=True)
+    # description = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'datasource_types'
+
+
+class Datasources(models.Model):
+    type = models.ForeignKey(DatasourceTypes, models.DO_NOTHING)
+    path = models.CharField()
+    args = models.CharField(blank=True, null=True)
+    # path = models.CharField(max_length=-1)
+    # args = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'datasources'
+
+
+class Entries(models.Model):
+    title = models.CharField(max_length=512)
+    abstract = models.CharField(blank=True, null=True)
+    external_id = models.CharField(blank=True, null=True)
+    # abstract = models.CharField(max_length=-1, blank=True, null=True)
+    # external_id = models.CharField(max_length=-1, blank=True, null=True)
+    location = models.PointField(srid=0)
+    geom = models.GeometryField(srid=0, blank=True, null=True)
+    creation = models.DateTimeField(blank=True, null=True)
+    end = models.DateTimeField(blank=True, null=True)
+    version = models.IntegerField()
+    latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    license = models.ForeignKey('Licenses', models.DO_NOTHING, blank=True, null=True)
+    variable = models.ForeignKey('Variables', models.DO_NOTHING)
+    datasource = models.ForeignKey(Datasources, models.DO_NOTHING, blank=True, null=True)
+    embargo = models.BooleanField()
+    embargo_end = models.DateTimeField(blank=True, null=True)
+    publication = models.DateTimeField(blank=True, null=True)
+    lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
+
+    column_dict = {
+        'creation': 'Creation Time', 'end': 'End of measurement',
+        'embargo': 'Embargo', 'embargo_end': 'Embargo End',
+        'publication': 'Publication',
+    }
+
+    menu_name = 'Main'
+    path = ''
+    filter_type = {'creation': 'date', 'end': 'date',
+                   'embargo_end': 'date', 'publication': 'date'}
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'entries'
+
+
+class EntrygroupTypes(models.Model):
+    name = models.CharField(max_length=40)
+    description = models.CharField()
+    # description = models.CharField(max_length=-1)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'entrygroup_types'
+
+
+class Entrygroups(models.Model):
+    type = models.ForeignKey(EntrygroupTypes, models.DO_NOTHING)
+    title = models.CharField(max_length=40, blank=True, null=True)
+    description = models.CharField(blank=True, null=True)
+    # description = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'entrygroups'
+
+
+class Keywords(models.Model):
+    parent = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    value = models.CharField(max_length=1024)
+    uuid = models.CharField(unique=True, max_length=64, blank=True, null=True)
+    full_path = models.CharField(blank=True, null=True)
+    # full_path = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'keywords'
+
+
+class Licenses(models.Model):
+    short_title = models.CharField(max_length=40)
+    title = models.CharField()
+    summary = models.CharField(blank=True, null=True)
+    full_text = models.CharField(blank=True, null=True)
+    link = models.CharField(blank=True, null=True)
+    # title = models.CharField(max_length=-1)
+    # summary = models.CharField(max_length=-1, blank=True, null=True)
+    # full_text = models.CharField(max_length=-1, blank=True, null=True)
+    # link = models.CharField(max_length=-1, blank=True, null=True)
+    by_attribution = models.BooleanField()
+    share_alike = models.BooleanField()
+    commercial_use = models.BooleanField()
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'licenses'
+
+
+class NmEntrygroups(models.Model):
+    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    group = models.ForeignKey(Entrygroups, models.DO_NOTHING)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'nm_entrygroups'
+        unique_together = (('entry', 'group'),)
+
+
+class NmKeywordsEntries(models.Model):
+    keyword = models.ForeignKey(Keywords, models.DO_NOTHING, primary_key=True)
+    entry = models.ForeignKey(Entries, models.DO_NOTHING)
+    alias = models.CharField(max_length=1024, blank=True, null=True)
+    associated_value = models.CharField(max_length=1024, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'nm_keywords_entries'
+        unique_together = (('keyword', 'entry'),)
+
+
+class NmPersonsEntries(models.Model):
+    person = models.ForeignKey('Persons', models.DO_NOTHING, primary_key=True)
+    entry = models.ForeignKey(Entries, models.DO_NOTHING)
+    relationship_type = models.ForeignKey('PersonRoles', models.DO_NOTHING)
+    order = models.IntegerField()
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'nm_persons_entries'
+        unique_together = (('person', 'entry'),)
+
+
+class PersonRoles(models.Model):
+    name = models.CharField(max_length=64)
+    description = models.CharField(blank=True, null=True)
+    # description = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'person_roles'
+
+
+class Persons(models.Model):
+    first_name = models.CharField(max_length=128, blank=True, null=True)
+    last_name = models.CharField(max_length=128)
+    affiliation = models.CharField(max_length=1024, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'persons'
+
+
+class Timeseries(models.Model):
+    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    tstamp = models.DateTimeField()
+    value = models.DecimalField(max_digits=65535, decimal_places=65535)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'timeseries'
+        unique_together = (('entry', 'tstamp'),)
+
+
+class Units(models.Model):
+    name = models.CharField(max_length=64)
+    symbol = models.CharField(max_length=12)
+    si = models.CharField(blank=True, null=True)
+    # si = models.CharField(max_length=-1, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'units'
+
+
+class Variables(models.Model):
+    name = models.CharField(max_length=64)
+    symbol = models.CharField(max_length=12)
+    unit = models.ForeignKey(Units, models.DO_NOTHING)
+    keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
+
+    class Meta:
+        app_label = 'vfw2'
+        managed = False
+        db_table = 'variables'
