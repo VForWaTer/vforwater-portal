@@ -587,7 +587,7 @@ class Entries(models.Model):
     column_dict = {
         'creation': 'Creation Time', 'end': 'End of measurement',
         'embargo': 'Embargo', 'embargo_end': 'Embargo End',
-        'publication': 'Publication',
+        'publication': 'Publications',
     }
 
     menu_name = 'Main'

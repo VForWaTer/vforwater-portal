@@ -149,6 +149,11 @@ function modal_run_process() {
             } else {
                 color_modal("firebrick");
                 // alert('Error: Failed to execute your request.');
+            } else if (json.execution_status == "auth_error") {
+                color_modal("firebrick");
+                // Use Timeout to ensure color changed before popup appears
+                setTimeout(function(){alert('Error: You are not allowed to run this process. Please Contact your Admin.');}, 5);
+                console.log('Maybe you have to log in to run processes. ', json.execution_status)
             }
         },
         error: function(json) {
