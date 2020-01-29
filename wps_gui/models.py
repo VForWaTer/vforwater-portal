@@ -20,6 +20,10 @@ class WebProcessingService(models.Model):
 
 
 class WpsResults(models.Model):
+    """
+    Store data of creation in case datasets get an update.
+    Last access time to be able to remove datasets not used for ages
+    """
     creation = models.DateTimeField(blank=True, null=True)
     access = models.DateTimeField(blank=True, null=True)
     open = models.BooleanField()

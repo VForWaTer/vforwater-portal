@@ -8,10 +8,12 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.core.cache import cache
 from django.views.generic import TemplateView
+from django.utils import timezone
 from owslib.wps import printInputOutput
 
 from heron.settings import VFW_SERVER, HOST_NAME
 from vfwheron.models import TblMeta, TblData
+from wps_gui.models import WpsResults
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 
 import logging
@@ -74,6 +76,29 @@ def home(request):
 #     p = Popen(['pandoc', '-f', 'rst', '-t', 'html', '--wrap=preserve'], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
 #     blala = p.communicate(input=input_text)[0]
 #     return blala
+
+def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
+    db_result, created = WpsResults.objects.get_or_create(open=True, wps=wps_process, inputdict=invalue,
+                                                          defaults={'creation': timezone.now(),
+                                                                    'access': timezone.now()})
+    result = db_result.id
+    if not created:
+        db_result.access = timezone.now()
+        db_result.save()
+    else:
+        wps = get_wps_service_engine(service)
+        execution = wps.execute(wps_process, [(inkey, invalue)])
+        execution_status = execution.status
+        if execution_status == "ProcessSucceeded":
+            db_result.link = execution.processOutputs[0].data
+            db_result.save()
+        else:
+            db_result.delete()
+            result = 'dbload did not work'
+            logger.error('get_or create wps execution_status for %s: %s',
+                         ((service, wps_process, inkey, invalue), execution_status))
+    return result
+
 
 class ProcessView(TemplateView):
 
@@ -166,6 +191,15 @@ class ProcessView(TemplateView):
                     wps_description[a] = whole_wpsprocess[a]
 
             return JsonResponse(wps_description)
+
+        if 'dbload' in request.GET:
+            wps_process = 'dbloader_m'
+            inkey = 'sql-filter'
+            request_input = json.loads(request.GET.get('dbload'))
+            # TODO: Check if user has rights to access dataset
+            invalue = 'SELECT tstamp, value FROM tbl_data WHERE meta_id=' + request_input["id"] + ';'
+            result = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, inkey, invalue)
+            return JsonResponse(result)
 
         if 'processrun' in request.GET:
 
