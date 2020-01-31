@@ -88,24 +88,25 @@ home.html -> sidebar.html: call sidebar
 activate sidebar.html
 sidebar.html -> sidebar.js ++: show_data()
 opt if sessionStorage(dataBtn)
-    sessionStorage -> sidebar.js: get data
-    sidebar.js -> sidebar.html: build_datastore_button()
+    sessionStorage -> sidebar.js: get "dataBtn"
+    sidebar.js -> sidebar.html ++: build_datastore_button()
     opt data in datastore without link to DB
-        sidebar.js -> sidebar.js ++: preload_data()
+        sidebar.js -> sidebar.js ++: preload_datastore_button()
         rnote over views.py: ProcessView
         activate views.py
         sidebar.js -> views.py: <<ajax>> request 'dbload'
-        note right: opt muss noch implementiert werden
-
-        alt Data not in wps DB
-'            views.py -> sidebar.js: link to data
-            views.py -> views.py: wps.describeprocess
+        views.py -> views.py ++: get_or_create_wpsdb_entry()
+        alt get_or_create
+'           views.py -> sidebar.js --: link to data
             views.py -> views.py: wps.execute
             views.py -> views.py: write link in wps DB
         else Data in wps DB
+            views.py -> views.py: update access time
         end
+        deactivate views.py
         views.py -> sidebar.js: link to data
-            sidebar.js -> sidebar.html --: update datastore
+            sidebar.js -> sessionStorage: update "dataBtn"
+            sidebar.js -> sidebar.html: update_datastore_button
             deactivate sidebar.html
             deactivate sidebar.js
     end
@@ -133,9 +134,9 @@ workplace.js -> workplace.js++: build modal()
 workplace.js -> workplace.js++: get_available_inputs()
 
 opt check for appropriate data and processes
-sidebar.html -> workplace.js: get store data for dropdown
-sidebar.html -> workplace.js: get results data for dropdown
-toolbar.html -> workplace.js: get toolbar processes for dropdown
+    sidebar.html -> workplace.js: get store data for dropdown
+    sidebar.html -> workplace.js: get results data for dropdown
+    toolbar.html -> workplace.js: get toolbar processes for dropdown
 end
 
 deactivate workplace.js

@@ -49,6 +49,7 @@ function drop_and_save() {
 }
 
 function check_required(checkElement) {
+    // check if an Element of a wps is required
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -146,7 +147,7 @@ function modal_run_process() {
                 sessionStorage.setItem(btnName, JSON.stringify(json));
                 add_to_resultstore_buttonlist(btnName);
                 document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, json);
-            } else {
+            } else if (json.execution_status == "Exception") {
                 color_modal("firebrick");
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {

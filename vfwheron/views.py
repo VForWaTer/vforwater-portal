@@ -222,7 +222,10 @@ class MenuView(TemplateView):
                 dataset_dict.update({i['id']: {'name': i['variable__variable_name'],
                                                'abbr': i['variable__variable_abbrev'],
                                                'unit': i['variable__unit__unit_abbrev'],
-                                               'type': 'timeseries'}})
+                                               'type': 'timeseries',
+                                               'start': '',
+                                               'end': '',
+                                               'pickle': 0}})  # when pickled add id of wps db object here
 
             # TODO: Need timestamp in name to see if different selection
             return dataset_dict
