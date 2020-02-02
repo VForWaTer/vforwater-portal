@@ -168,8 +168,6 @@ class MenuView(TemplateView):
     View to build the filter menu on the start page and interact with the sidebar
     """
 
-    # user = 'default'
-
     def get(self, request):
         """
 

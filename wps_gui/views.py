@@ -27,41 +27,41 @@ def home(request):
     """
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
-    wps_services = list_wps_service_engines()
-
     try:
+        wps_services = list_wps_service_engines()
         service = 'PyWPS_vforwater'
         wps = get_wps_service_engine(service)
+        processin = {}
+        processout = {}
+        countLoop = 0
+        for process in wps.processes:
+            describedprocess = wps.describeprocess(process.identifier)
+            wps.processes[countLoop].processin = []
+            for i in describedprocess.dataInputs:
+                if i.allowedValues == [] and isinstance(i.dataType, str):
+                    wps.processes[countLoop].processin.append('string')
+                elif i.allowedValues == [] and isinstance(i.dataType, float):
+                    wps.processes[countLoop].processin.append('float')
+                elif i.allowedValues[0] == '_keywords':
+                    wps.processes[countLoop].processin.append(i.allowedValues[1:])
+
+            wps.processes[countLoop].processout = []
+            for i in describedprocess.processOutputs:
+                if i.abstract is not None:
+                    if 'keywords' in json.loads(i.abstract):
+                        wps.processes[countLoop].processout.append(json.loads(i.abstract)['keywords'])
+                elif isinstance(i.dataType, str):
+                    wps.processes[countLoop].processout.append('string')
+                elif isinstance(i.dataType, float):
+                    wps.processes[countLoop].processout.append('float')
+                # elif i.metadata[0] == '_keywords':
+                #     wps.processes[countLoop].processout.append(i.allowedValues[1:])
+            countLoop += 1
     except:
+        logger.error(sys.exc_info()[0])
         service = ''
         wps = []
-
-    processin = {}
-    processout = {}
-    countLoop = 0
-    for process in wps.processes:
-        describedprocess = wps.describeprocess(process.identifier)
-        wps.processes[countLoop].processin = []
-        for i in describedprocess.dataInputs:
-            if i.allowedValues == [] and isinstance(i.dataType, str):
-                wps.processes[countLoop].processin.append('string')
-            elif i.allowedValues == [] and isinstance(i.dataType, float):
-                wps.processes[countLoop].processin.append('float')
-            elif i.allowedValues[0] == '_keywords':
-                wps.processes[countLoop].processin.append(i.allowedValues[1:])
-
-        wps.processes[countLoop].processout = []
-        for i in describedprocess.processOutputs:
-            if i.abstract is not None:
-                if 'keywords' in json.loads(i.abstract):
-                    wps.processes[countLoop].processout.append(json.loads(i.abstract)['keywords'])
-            elif isinstance(i.dataType, str):
-                wps.processes[countLoop].processout.append('string')
-            elif isinstance(i.dataType, float):
-                wps.processes[countLoop].processout.append('float')
-            # elif i.metadata[0] == '_keywords':
-            #     wps.processes[countLoop].processout.append(i.allowedValues[1:])
-        countLoop += 1
+        wps_services = []
 
     context = {'wps_services': wps_services,
                'wps': wps,
