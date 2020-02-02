@@ -1,0 +1,174 @@
+@startuml
+title Workspace
+
+hide footbox
+
+participant views.py
+
+== Initialization ==
+participant home.html
+activate views.py
+rnote over views.py: home
+views.py -> views.py: wps.describeprocess
+activate home.html
+views.py -> home.html--: render wps services
+
+home.html -> sidebar.html: call sidebar
+activate sidebar.html
+sidebar.html -> sidebar.js ++: show_data()
+sidebar.js -> sidebar.html : create datastore
+sidebar.js -> sidebar.js ++: preload_data()
+opt data in datastore
+    rnote over views.py: ProcessView
+    activate views.py
+    sidebar.js -> views.py: <<ajax>> request 'dbload'
+    note right: opt muss noch implementiert werden
+
+    alt Data in wps DB
+        views.py -> sidebar.js: link to data
+
+    else Data not in wps DB
+        views.py -> views.py: wps.describeprocess
+        views.py -> views.py: wps.execute
+        views.py -> views.py: write link in wps DB
+        views.py -> sidebar.js: link to data
+    end
+        sidebar.js -> sidebar.html --: update datastore
+        deactivate sidebar.html
+        deactivate sidebar.js
+end
+deactivate views.py
+home.html -> toolbar.html ++: wps services
+toolbar.html -> toolbar.html: create wps menu
+deactivate home.html
+
+== select wps ==
+toolbar.html -> workplace.js ++: select process
+deactivate toolbar.html
+workplace.js -> workplace.js: build modal
+rnote over views.py: ProcessView
+workplace.js -> views.py ++: <<ajax>> request 'processview'
+views.py -> views.py: wps.describeprocess
+return JsonResponse(wps_description)
+opt appropriate store data
+sidebar.html -> workplace.js: get store data for dropdown
+end
+deactivate workplace.js
+
+
+== run wps ==
+rnote over views.py: ProcessView
+activate workplace.js
+workplace.js -> views.py ++: <<ajax>> request 'processrun'
+views.py -> views.py: wps.execute
+return JsonResponse(result)
+deactivate workplace.js
+
+@enduml
+
+
+-----------------------------------------------------------------------
+@startuml
+title Workspace with all functions
+
+'hide footbox
+
+participant views.py
+participant sessionStorage
+
+== Initialization ==
+participant home.html
+activate views.py
+rnote over views.py: home
+views.py -> views.py: wps.describeprocess
+activate home.html
+views.py -> home.html--: render wps services
+
+home.html -> sidebar.html: call sidebar
+activate sidebar.html
+sidebar.html -> sidebar.js ++: show_data()
+opt if sessionStorage(dataBtn)
+    sessionStorage -> sidebar.js: get "dataBtn"
+    sidebar.js -> sidebar.html ++: build_datastore_button()
+    opt data in datastore without link to DB
+        sidebar.js -> sidebar.js ++: preload_datastore_button()
+        rnote over views.py: ProcessView
+        activate views.py
+        sidebar.js -> views.py: <<ajax>> request 'dbload'
+        views.py -> views.py ++: get_or_create_wpsdb_entry()
+        alt get_or_create
+'           views.py -> sidebar.js --: link to data
+            views.py -> views.py: wps.execute
+            views.py -> views.py: write link in wps DB
+        else Data in wps DB
+            views.py -> views.py: update access time
+        end
+        deactivate views.py
+        views.py -> sidebar.js: link to data
+            sidebar.js -> sessionStorage: update "dataBtn"
+            sidebar.js -> sidebar.html: update_datastore_button
+            deactivate sidebar.html
+            deactivate sidebar.js
+    end
+deactivate views.py
+end
+opt if Element(workspace_results)
+    sessionStorage -> sidebar.js: get result data
+    sidebar.js -> sidebar.html: build_resultstore_button()
+end
+'sidebar.js -> sidebar.html : create datastore
+
+home.html -> toolbar.html ++: wps services
+toolbar.html -> toolbar.html: create wps menu, inoutIndicator()
+deactivate home.html
+deactivate toolbar.html
+
+== select wps ==
+toolbar.html -> workplace.js ++: wpsprocess()
+deactivate toolbar.html
+rnote over views.py: ProcessView
+workplace.js -> views.py ++: <<ajax>> request 'processview'
+views.py -> views.py: wps.describeprocess
+return JsonResponse(wps_description)
+workplace.js -> workplace.js++: build modal()
+workplace.js -> workplace.js++: get_available_inputs()
+
+opt check for appropriate data and processes
+    sidebar.html -> workplace.js: get store data for dropdown
+    sidebar.html -> workplace.js: get results data for dropdown
+    toolbar.html -> workplace.js: get toolbar processes for dropdown
+end
+
+deactivate workplace.js
+deactivate workplace.js
+workplace.js -> modal.html **
+deactivate workplace.js
+
+== run wps ==
+modal.html -> workplace.js ++: modal_run_process()
+rnote over views.py: ProcessView
+activate workplace.js
+workplace.js -> views.py ++: <<ajax>> request 'processrun'
+views.py -> views.py: wps.execute
+return JsonResponse(result)
+opt success
+    workplace.js -> workplace.js ++: set_result_btn_name()
+    sessionStorage -> workplace.js: get resultBtnList
+    alt if resultBtnList name exists in sessionStorage
+        workplace.js -> workplace.js: Number result
+        else new name
+    end
+        workplace.js -> sessionStorage: setItem 'name'
+deactivate workplace.js
+    workplace.js -> workplace.js ++: add_to_resultstore_buttonlist()
+    sessionStorage -> workplace.js: get 'resultBtnList'
+    opt resultBtnList exists in sessionStorage sessionStorage
+        workplace.js -> workplace.js: add name to 'resultBtnList'
+    end
+        workplace.js -> sessionStorage: setItem 'resultBtnList'
+deactivate workplace.js
+end
+deactivate workplace.js
+workplace.js -> sidebar.html: build_resultstore_button()
+deactivate workplace.js
+@enduml

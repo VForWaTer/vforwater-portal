@@ -181,6 +181,7 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 # http://diegobz.net/2011/02/10/django-database-router-using-settings/
 # TODO: Delete Router. Not necessary anymore now when only one database is used
+DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
 # DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
 # DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
 
@@ -197,6 +198,13 @@ DATABASES = {
         'PORT': '5433',
         'USER': 'vfwportal',
         'PASSWORD': '',
+    },
+    'vfw2': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'vforwater_20',
+        'HOST': 'localhost',
+        'PORT': '5433',
+        'USER': 'postgres',
     }
 
 }

@@ -55,11 +55,18 @@ function Sidemenu_close() {
 // Get the User Selection in Workspace
 // Button information is stored in an HTML object with Id 'workdata'
 // it is stored as a string, so the following function transforms this string back to a dictionary
-// TODO: workspacedata is maybe not needed anymore? Try to store information in sessionStorage
+// TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
+    // Initiate creation of data Button in data and result store. When called from outside of 'Home' check if data is
+    // already pickled. If not pickle it. (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {// && "value" in workspaceData) {
         build_datastore_button(workspaceData);
+        let path = window.location.pathname;
+        if (path.includes('wps_gui')) {
+            // check if datasets are pickled and update buttons
+            preload_datastore_button(workspaceData);
+        }
     }
     if (document.getElementById("workspace_results")) {
         let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
@@ -71,6 +78,70 @@ function show_data() {
             document.getElementById("workspace_results").innerHTML += html;
         }
     }
+}
+
+function preload_datastore_button(workspaceData) {
+    // USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPERATELY
+    // for (let dataset in workspaceData) {
+    //     let preload = {};
+    //     if (!workspaceData[dataset]['pickle']) {
+    //         preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
+    //         end: workspaceData[dataset]['end']};
+    //         $.ajax({
+    //             url: DEMO_VAR + "/wps_gui/processview",
+    //             // dataType: 'json',
+    //             data: {
+    //                 dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
+    //             }, // data sent with post request
+    //             success: function (wpsDBInfo) {
+    //                 update_datastore_button(wpsDBInfo, 'pickle');
+    //             },
+    //             error: function (wpsDBInfo) {
+    //                 console.log('Error in preload of data. ', wpsDBInfo)
+    //             }
+    //         });
+    //     }
+    // }
+    // USE FOLLOWING CODE INSTEAD WHEN YOU PREFER TO UPDATE ALL DATASETS IN ONE REQUEST
+    let preload = {};
+    for (let dataset in workspaceData) {
+        if (!workspaceData[dataset]['pickle']) {
+            preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
+            end: workspaceData[dataset]['end']};
+        }
+    }
+    if (Object.keys(preload).length == 0){}
+    else {
+        // send request to preload datasets
+        // TODO: might take a while. Check how to cancel if webpage changes
+        // TODO: discuss if "load it all at once" is the best solution. (alternatives: each dataset or in chunks)
+        $.ajax({
+            url: DEMO_VAR + "/wps_gui/processview",
+            // dataType: 'json',
+            data: {
+                dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with post request
+            success: function (wpsDBInfo) {
+                update_datastore_button(wpsDBInfo, 'pickle');
+            },
+            error: function (wpsDBInfo) {
+                console.log('Error in preload of data. ', wpsDBInfo)
+            }
+        });
+    }
+}
+
+function update_datastore_button(wpsDBInfo, newClass){
+    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    $.each(wpsDBInfo, function (keyID, value) {
+        if (workspaceData[keyID]) {
+            workspaceData[keyID]['pickle'] = 1;
+            workspaceData[keyID]['wpsID'] = value['wps_id'];
+            workspaceData[keyID]['type'] = workspaceData[keyID]['type'] + ", "+ newClass;
+            document.getElementById("id" + keyID).getElementsByClassName("data")[0].classList.add(newClass);
+        }
+    });
+    sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData));
 }
 
 // build buttons in workspace and store selection in clients sessionStorage
@@ -97,7 +168,7 @@ function build_datastore_button(json) {
                 'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
                 '<span class="respo-medium" title="' + title + '">' +
                 '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
-                '</span><span class="data '+value['type']+'"></span>' +
+                '</span><span class="data ' + value['type'] + '"></span>' +
                 '<a href="javascript:void(0)" onclick="remove_single_data(' + key + ')" ' +
                 'class="respo-hover-white respo-right"><i class="fa fa-remove fa-fw"></i>' +
                 '</a><br></li>';

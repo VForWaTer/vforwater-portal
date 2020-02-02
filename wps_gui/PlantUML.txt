@@ -1,0 +1,130 @@
+@startuml
+
+hide footbox
+title Workspace
+
+participant views.py
+
+
+== Initialization ==
+participant home.html
+activate views.py
+rnote over views.py: home
+views.py -> views.py: wps.describeprocess
+
+views.py -> home.html--: render wps services
+
+home.html -> sidebar.html
+sidebar.html -> sidebar.html: create data store
+home.html -> toolbar.html --: wps services
+toolbar.html -> toolbar.html: create wps menu
+
+
+== select wps ==
+toolbar.html -> workplace.js: select process
+workplace.js -> workplace.js ++: build modal
+rnote over views.py: ProcessView
+workplace.js -> views.py ++: <<ajax>> request 'processview'
+views.py -> views.py: wps.describeprocess
+return JsonResponse(wps_description)
+opt appropriate store data
+sidebar.html -> workplace.js: get store data for dropdown
+end
+deactivate workplace.js
+
+
+== run wps ==
+rnote over views.py: ProcessRun
+workplace.js -> views.py ++: <<ajax>> request 'processrun'
+views.py -> views.py: wps.execute
+return JsonResponse(result)
+
+@enduml
+
+
+
+@startuml
+
+hide footbox
+title Workspace
+
+participant views.py
+
+
+== Initialization ==
+participant home.html
+activate views.py
+rnote over views.py: home
+views.py -> views.py: wps.describeprocess
+activate home.html
+views.py -> home.html--: render wps services
+
+home.html -> sidebar.html: call sidebar
+activate sidebar.html
+sidebar.html -> sidebar.html: create data store
+opt data in datastore
+    rnote over views.py: DBLookup
+    activate views.py
+    sidebar.html -> views.py: <<ajax>> request 'DBLookup'
+
+    alt Data in wps DB
+        views.py -> sidebar.html: link to data
+
+    else Data not in wps DB
+        views.py -> views.py: wps.describeprocess
+        views.py -> views.py: wps.execute
+        views.py -> views.py: write link in wps DB
+        views.py -> sidebar.html: link to data
+        deactivate sidebar.html
+    end
+end
+deactivate views.py
+home.html -> toolbar.html ++: wps services
+toolbar.html -> toolbar.html: create wps menu
+deactivate home.html
+
+== select wps ==
+toolbar.html -> workplace.js ++: select process
+deactivate toolbar.html
+workplace.js -> workplace.js: build modal
+rnote over views.py: ProcessView
+workplace.js -> views.py ++: <<ajax>> request 'processview'
+views.py -> views.py: wps.describeprocess
+return JsonResponse(wps_description)
+opt appropriate store data
+sidebar.html -> workplace.js: get store data for dropdown
+end
+deactivate workplace.js
+
+
+== run wps ==
+rnote over views.py: ProcessRun
+activate workplace.js
+workplace.js -> views.py ++: <<ajax>> request 'processrun'
+views.py -> views.py: wps.execute
+return JsonResponse(result)
+deactivate workplace.js
+
+@enduml
+
+
+
+@startuml
+participant User
+
+User -> A: DoWork
+activate A #FFBBBB
+
+A -> A: Internal call
+activate A #DarkSalmon
+
+A -> B: << createRequest >>
+activate B
+
+B --> A: RequestCreated
+deactivate B
+deactivate A
+A -> User: Done
+deactivate A
+
+@enduml

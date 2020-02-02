@@ -17,3 +17,19 @@ class WebProcessingService(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class WpsResults(models.Model):
+    """
+    Store data of creation in case datasets get an update.
+    Last access time to be able to remove datasets not used for ages
+    """
+    creation = models.DateTimeField(blank=True, null=True)
+    access = models.DateTimeField(blank=True, null=True)
+    open = models.BooleanField()
+    link = models.CharField(max_length=1024)
+    wps = models.CharField(max_length=255)
+    inputdict = models.CharField(max_length=2048)
+
+    def __str__(self):
+        return '%s %s' % (self.wps, self.inputdict)
