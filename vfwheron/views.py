@@ -139,7 +139,6 @@ class HomeView(TemplateView):
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
-
         self.data_layer = self.set_layer_name()
 
         try:
@@ -236,10 +235,8 @@ class MenuView(TemplateView):
             return JsonResponse({'workspaceData': result})
 
         if 'preview' in request.GET:
-            # plot png the mälicke way:
-            imgtag = get_preview(request.GET.get('preview'))
-            return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
-            # return JsonResponse(imgtag)  # requested from vfw.js show_preview
+            # plot with bokeh
+            return JsonResponse(get_preview(request.GET.get('preview')))  # requested from vfw.js show_preview
 
         if 'short_info' in request.GET:
             ids = json.loads(request.GET.get('short_info'))

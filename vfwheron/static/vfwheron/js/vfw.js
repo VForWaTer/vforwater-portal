@@ -417,15 +417,18 @@ function moreInfoModal(id) {
         }, // data sent with the post request
     })
         .done(function (json) {
-            // TODO: following should show Bokeh plot. Not Working because auf get to django
-/*            document.getElementById("mod_prev").innerHTML = json.div; // png
-            var script = document.createElement("script");
-            script.type = "text/javascript";
-            script.src = json.script;
-            document.getElementsByTagName("head")[0].appendChild(script);
-            document.getElementsByTagName("HEAD")[0].appendChild(json.script); // png*/
-
-            document.getElementById("mod_prev").innerHTML = json.get; // png
+            /*            document.getElementById("mod_prev").innerHTML = json.div; // png
+                        var script = document.createElement("script");
+                        script.type = "text/javascript";
+                        script.src = json.script;
+                        document.getElementsByTagName("head")[0].appendChild(script);
+                        document.getElementsByTagName("HEAD")[0].appendChild(json.script); // png*/
+            document.getElementById("mod_prev").innerHTML = json.div; // add plot
+            // bokehPreviewScript is a global variable to set and remove the script of bokeh
+            bokehPreviewScript = document.createElement('script');
+            bokehPreviewScript.type = 'text/javascript';
+            bokehPreviewScript.text = json.script;
+            document.head.appendChild(bokehPreviewScript);
         })
         .fail(function (e) {
             console.log('fehler: ', e)
