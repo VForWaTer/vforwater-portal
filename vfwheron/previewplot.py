@@ -6,6 +6,7 @@ import base64
 from datetime import time, datetime, timezone, timedelta
 
 import matplotlib as mpl
+from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, VBar, LinearAxis, Range1d
 from bokeh.transform import linear_cmap
 from django.db import connections
@@ -128,56 +129,59 @@ def get_preview(id):
         from bokeh.plotting import figure
         from bokeh.models import ColumnDataSource
         from bokeh.embed import components
-        yrect = [i / 2 for i in DBdata['data'][4]]
         source = ColumnDataSource({'date': DBdata['data'][0], 'y': DBdata['data'][1],
                                    'ymin': DBdata['data'][2], 'ymax': DBdata['data'][3],
-                                   'count': DBdata['data'][4], 'yrect': yrect})
+                                   'count': DBdata['data'][4]})
         # TOOLTIPS = [("date", "@x{%F}"), ("value", "$y")]
         # formatters={'date': '@date{%F}'}
-        plot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
-                      y_axis_label=DBdata['ylabel'],
+
+        # Plot average as main plot
+        mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
+                          y_axis_label=DBdata['ylabel'],
                       plot_width=700, plot_height=500, toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
                       # tools="pan,wheel_zoom,box_zoom,reset,crosshair", active_drag="box_zoom", tooltips=TOOLTIPS)
-        plot.y_range = Range1d(round(DBdata['axis']['y1min']), round(DBdata['axis']['y1max']))
+        # mainplot.y_range = Range1d(round(DBdata['axis']['y1min']), round(DBdata['axis']['y1max']))
 
         # plot.toolbar.autohide = True
         # plot average line
-        plot.line(x='date', y='y', source=source, line_width=2, legend_label="average")
+        mainplot.line(x='date', y='y', source=source, line_width=2, legend_label="average")
 
         # TODO: Figure out how to use 'source' for multi_line.
         #  Maybe use Glyph? (https://docs.bokeh.org/en/latest/docs/reference/models/glyphs/multi_line.html)
         #  Glyphs maybe also helpful for hover_tool on multiline?
         # plot.add_tools(HoverTool(tooltips=[("value", "$y"), ("Date", "@date{%d %b %Y}")], formatters={"date": "datetime"}, mode="mouse"))
 
-        plot.add_tools(HoverTool(tooltips=[("value", "$y")], mode="mouse"))
-        # plot bars for the number of values in each group
-        from bokeh.palettes import Oranges9
-        mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=DBdata['axis']['y2max'])
-        width = 0.9 * (DBdata['data'][0][1] - DBdata['data'][0][0])
-        plot.rect(x='date', y='yrect', width=width, height='count', source=source, y_range_name="bar",
-                  level='underlay', color=mapper, alpha=0.5, legend_label="# values/group")
-                  # level='underlay', color="salmon", alpha=0.5, legend_label="# values/group")
-
-        # Add the second axis for the bar plot.
-        plot.extra_y_ranges = {"bar": Range1d(start=0, end=DBdata['axis']['y2max']*10)}
-        plot.add_layout(LinearAxis(y_range_name="bar", axis_label='# daily values'), 'right')
+        mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
 
         # plot min/max as multiline and fill area with band
-        plot.multi_line(xs=[DBdata['data'][0], DBdata['data'][0]],
-                        ys=[DBdata['data'][2], DBdata['data'][3]], level='underlay',
-                        color=['lightblue', 'lightblue'], legend_label="min & max values")
-        plot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
-                             fill_color='lightblue', fill_alpha=0.5))
+        mainplot.multi_line(xs=[DBdata['data'][0], DBdata['data'][0]],
+                            ys=[DBdata['data'][2], DBdata['data'][3]], level='underlay',
+                            color=['lightblue', 'lightblue'], legend_label="min & max values")
+        mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
+                                 fill_color='lightblue', fill_alpha=0.5))
 
+        # plot bars for the number of values in each group as secondary 'by'plot
+        from bokeh.palettes import Oranges9
+        mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=DBdata['axis']['y2max'])
+        width = DBdata['data'][0][1] - DBdata['data'][0][0]
+        byplot = figure(title='Number of available values per day', x_axis_type="datetime", x_range=mainplot.x_range,
+                        plot_width=700, plot_height=50, toolbar_location=None, background_fill_color="black")
+        byplot.vbar(x='date', source=source, width=width, bottom=0, top=1, color=mapper)
+        # byplot.vbar(x='date', source=source, width=width, bottom=0, top='count', color=mapper)
+        byplot.xaxis.visible = False
+        byplot.xgrid.visible = False
+        byplot.yaxis.visible = False
+        byplot.ygrid.visible = False
+        byplot.add_tools(HoverTool(tooltips=[("# of values", "@count")], mode="mouse"))
 
         # Style the plot
-        plot.title.text_font_size = "14pt"
-        plot.xaxis.axis_label_text_font_size = "14pt"
-        plot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
-        plot.yaxis.axis_label_text_font_size = "14pt"
+        mainplot.title.text_font_size = "14pt"
+        mainplot.xaxis.axis_label_text_font_size = "14pt"
+        mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
+        mainplot.yaxis.axis_label_text_font_size = "14pt"
 
-        script, div = components(plot, wrap_script=False)
+        script, div = components(column(byplot, mainplot), wrap_script=False)
         img = {'script': script, 'div': div}
         if use_redis:
             r.set("preview_{}".format('b' + id), img)
