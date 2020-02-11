@@ -6,7 +6,8 @@ from datetime import time, datetime, timezone, timedelta
 from math import radians, ceil, sqrt
 
 from bokeh.layouts import column
-from bokeh.models import Band, DatetimeTickFormatter, HoverTool, AnnularWedge, LinearAxis, Grid, Plot, Range1d
+from bokeh.models import Band, DatetimeTickFormatter, HoverTool, AnnularWedge, LinearAxis, Grid, Plot, Range1d, \
+    CustomJS
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
@@ -54,7 +55,7 @@ def get_bokeh_standard(DBdata, label):
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
                       plot_width=700, plot_height=500, toolbar_location="above",
-                      tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
+                      tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
 
     # plot.toolbar.autohide = True
     # plot average line
@@ -99,40 +100,83 @@ def get_bokeh_standard(DBdata, label):
 
 
 def get_bokeh_direction(DBdata, label):
-    hist = [0] * 36
+    source = ColumnDataSource({'date': DBdata['data'][0], 'avg': DBdata['data'][1],
+                               'count': DBdata['data'][2], 'med': DBdata['data'][3]})
+    avghist = [0] * 36
     for i in DBdata['data'][1]:
+        avghist[i] += 1
+    # better to use modal values:
+    hist = [0] * 36
+    for i in DBdata['data'][3]:
         hist[i] += 1
     x = list(range(0, 36))
     maxhist = max(hist)
     sumhist = sum(hist)
-    p = figure(plot_height=maxhist, title="Fruit Counts",
-               toolbar_location=None, tools="")
-    p.vbar(x=x, top=hist, width=0.9)
-    p.xgrid.grid_line_color = None
-    p.y_range.start = 0
 
-    p = figure(plot_width=400, plot_height=400, x_axis_type=None, y_axis_type=None,
-               min_border=0, outline_line_color=None)
+    # print('DBdata: ', DBdata['data'][2])
+    print('avghist: ', avghist)
+
+    mainplot = figure(title='Daily average and median count', plot_width=400, plot_height=400,
+                      x_axis_type=None, y_axis_type=None, tools="save",
+                      min_border=0, outline_line_color=None)
+    mainplot.title.text_font_size = "14pt"
     for i in x:
-        p.wedge(radius=hist[i], start_angle=-radians((i * 10) - 95), end_angle=-radians((i * 10) - 85),
-                x=0, y=0, direction='clock')
+        mainplot.wedge(radius=avghist[i], start_angle=-radians((i * 10) - 95), end_angle=-radians((i * 10) - 85),
+                       x=0, y=0, direction='clock', fill_color='lightblue', legend_label='average')
+        mainplot.wedge(radius=hist[i], start_angle=-radians((i * 10) - 95), end_angle=-radians((i * 10) - 85),
+                       x=0, y=0, direction='clock', line_color='darkred', fill_color='lightsalmon', alpha=0.5,
+                       legend_label='median')
+
     # create grid
     rund_perc = ceil(maxhist / sumhist * 100)
     labels = list(range(0, rund_perc, 2))
     labels.append(rund_perc)
-    bar_val = [i * sumhist / 100 for i in labels]
-    label_pos = [sqrt(((i - 1) ** 2) / 2) for i in bar_val]
-    for rad in bar_val:
-        p.circle(x=0, y=0, radius=rad, fill_color=None, line_color='grey', line_width=0.5, line_alpha=0.8)
+    rad_pos = [i * sumhist / 100 for i in labels]
+    out_rim = rad_pos[-1]
+    label_pos = [sqrt(((i - 1) ** 2) / 2) for i in rad_pos]
+    mainplot.text(label_pos[1:], label_pos[1:], [str(r) + ' %' for r in labels[1:]],
+                  text_font_size="10pt", text_align="left", text_baseline="top")
+    for rad in rad_pos:
+        mainplot.circle(x=0, y=0, radius=rad, fill_color=None, line_color='grey', line_width=0.5, line_alpha=0.8)
+    diagonal = sqrt((out_rim ** 2) / 2)
+    mainplot.multi_line(xs=[[diagonal, -diagonal], [-diagonal, diagonal], [-out_rim, out_rim], [0, 0]],
+                        ys=[[diagonal, -diagonal], [diagonal, -diagonal], [0, 0], [-out_rim, out_rim]],
+                        line_color="grey", line_width=0.5, line_alpha=0.8)
+    mainplot.x_range = Range1d(-out_rim*1.1, out_rim*1.1)
+    mainplot.y_range = Range1d(-out_rim*1.1, out_rim*1.1)
+    mainplot.legend.location = "top_left"
+    mainplot.legend.click_policy = "hide"
 
-    p.text(label_pos[1:], label_pos[1:], [str(r) + ' %' for r in labels[1:]],
-           text_font_size="10pt", text_align="left", text_baseline="top")
-    p.line(x=[0, 0], y=[-maxhist, maxhist], line_color="grey", line_width=0.5, line_alpha=0.8)
-    p.line(y=[0, 0], x=[-maxhist, maxhist], line_color="grey", line_width=0.5, line_alpha=0.8)
-    p.x_range = Range1d(-maxhist, maxhist, bounds=(-1, 2))
-    p.y_range = Range1d(-maxhist, maxhist, bounds=(-1, 2))
-    # script, div = components(column(byplot, mainplot), wrap_script=False)
-    script, div = components(p, wrap_script=False)
+    # add a slider
+    # callback = CustomJS(args=dict(source=source), code="""
+    #     var data = source.data;
+    #     var f = cb_obj.value
+    #     var x = data['x']
+    #     var y = data['y']
+    #     for (var i = 0; i < x.length; i++) {
+    #         y[i] = Math.pow(x[i], f)
+    #     }
+    #     source.change.emit();
+    # """)
+
+    # plot bars for the number of values in each group as secondary 'by'plot
+    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(DBdata['data'][2]))
+    width = DBdata['data'][0][1] - DBdata['data'][0][0]
+    byplot = figure(title='Number of available values per day', x_axis_type="datetime", #x_range=mainplot.x_range,
+                    plot_width=400, plot_height=50, toolbar_location="above", background_fill_color="black",
+                    tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
+    byplot.vbar(x='date', source=source, width=width, bottom=0, top=1, color=mapper)
+    byplot.xaxis.visible = False
+    byplot.xgrid.visible = False
+    byplot.yaxis.visible = False
+    byplot.ygrid.visible = False
+    byplot.add_tools(HoverTool(tooltips=[("value", "@count"), ("Date", "@date{%d %b %Y}")],
+                               formatters={"date": "datetime"}, mode="mouse"))
+
+
+
+    script, div = components(column(byplot, mainplot), wrap_script=False)
+    # script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
@@ -140,9 +184,10 @@ def DB_load_directiondata(id):
     # TODO: Use django ORM instead of pure sql
     # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
     cursor = connections['default'].cursor()
-    cursor.execute("SELECT date_trunc('day', tstamp)::date as date, "
+    cursor.execute("SELECT date_trunc('day', tstamp)::date as date, "  # 0 = date
                    "trunc(degrees(atan2(avg(cos(radians(value))), avg(sin(radians(value)))))/10)::smallint as avg, "
-                   "count(*) as amount "
+                   "count(*) as amount, "  # 2 = amount
+                   "trunc(percentile_disc(0.5) within group (order by value)/10)::smallint as med "  # 3 = med
                    "FROM tbl_data "
                    "WHERE meta_id = %s "
                    "GROUP BY date_trunc('day', tstamp) "
