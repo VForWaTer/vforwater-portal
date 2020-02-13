@@ -1,4 +1,5 @@
-django==2.2.9
+Bokeh==1.4.0
+django==2.2.10
 django_crontab
 django-cors-headers
 docutils

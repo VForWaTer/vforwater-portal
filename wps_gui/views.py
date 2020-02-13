@@ -96,7 +96,7 @@ def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
             db_result.delete()
             result = 'dbload did not work. Please check log file'
             logger.error('get_or create wps execution_status for %s: %s',
-                         ((service, wps_process, inkey, invalue), execution_status))
+                         (service, wps_process, inkey, invalue), execution_status)
     return result
 
 
