@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def test_geoserver_env(store, workspace):
     """
     Function to test if the workspace and store to build the layers in exist. If not the function first tries to set up
-    the new workspace in geoserver, and then in an inner function the store with the login information ro the database
+    the new workspace in geoserver, and then in an inner function add the store with the login information for the database
     from the django settings.
 
     :param store:
@@ -57,7 +57,7 @@ def test_geoserver_env(store, workspace):
     check = requests.get(url, auth=(eval(SECRET_GEOSERVER)), headers={"Accept": "application/xml"})
     if check.status_code != 200:  # if workspace doesn't exist build it
         logger.warning('workspace missing, trying to build it, {}: {}'.format(check.status_code, check.text))
-        print('get layer (if): ', str(check.status_code) + ': ' + check.text)
+        print('get layer in test (if): ', str(check.status_code) + ': ' + check.text)
         # build new workspace:
         url = '{}/rest/workspaces'.format(LOCAL_GEOSERVER)
         xml = '<workspace><name>{}</name></workspace>'.format(workspace)

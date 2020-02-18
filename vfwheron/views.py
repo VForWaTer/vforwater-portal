@@ -102,14 +102,14 @@ class HomeView(TemplateView):
     # print(connections['vforwater'].queries)
     # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'testlayer4'  # 'default_layer_prod'
+    data_layer = 'testlayer'  # 'default_layer_prod'
 
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    store = 'teststore2'  # 'new_vforwater_gis'
-    workspace = 'testworkspace2'  # 'CAOS_update'
+    store = 'teststore'  # 'new_vforwater_gis'
+    workspace = 'testworkspace'  # 'CAOS_update'
     try:
         test_geoserver_env(store, workspace)
     except:
@@ -119,7 +119,7 @@ class HomeView(TemplateView):
     def set_user_menu(self):
         if self.request.user.is_authenticated:
             if self.request.user.is_superuser:
-                data_layer = 'default_layer4'
+                data_layer = 'default_layer'
             else:
                 data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
         else:
