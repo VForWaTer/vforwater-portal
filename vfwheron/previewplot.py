@@ -80,16 +80,8 @@ def get_bokeh_standard(DBdata, label):
 
     # plot bars for the number of values in each group as secondary 'by'plot
     mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=DBdata['axis']['y2max'])
-    width = DBdata['data'][0][1] - DBdata['data'][0][0]
-    byplot = figure(title='Number of available values per day', x_axis_type="datetime", x_range=mainplot.x_range,
-                    plot_width=700, plot_height=50, toolbar_location=None, background_fill_color="black")
-    byplot.vbar(x='date', source=source, width=width, bottom=0, top=1, color=mapper)
-    # byplot.vbar(x='date', source=source, width=width, bottom=0, top='count', color=mapper)
-    byplot.xaxis.visible = False
-    byplot.xgrid.visible = False
-    byplot.yaxis.visible = False
-    byplot.ygrid.visible = False
-    byplot.add_tools(HoverTool(tooltips=[("# of values", "@count")], mode="mouse"))
+    bin_width = DBdata['data'][0][1] - DBdata['data'][0][0]
+    distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', 700)
 
     # Style the plot
     mainplot.title.text_font_size = "14pt"
@@ -97,76 +89,14 @@ def get_bokeh_standard(DBdata, label):
     mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
     mainplot.yaxis.axis_label_text_font_size = "14pt"
 
-    script, div = components(column(byplot, mainplot), wrap_script=False)
+    script, div = components(column(distriplot, mainplot), wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def get_bokeh_direction2(DBdata, label):
-    source = ColumnDataSource({'date': DBdata['data'][0], 'avg': DBdata['data'][1],
-                               'count': DBdata['data'][2], 'med': DBdata['data'][3]})
-    avghist = [0] * 36
-    for i in DBdata['data'][1]:
-        avghist[i] += 1
-    # better to use median values:
-    hist = [0] * 36
-    for i in DBdata['data'][3]:
-        hist[i] += 1
-    x = list(range(0, 36))
-    maxhist = max(hist)
-    sumhist = sum(hist)
-    print('hist: ', hist)
-    mainplot = figure(title='Daily average and median count', plot_width=400, plot_height=400,
-                      x_axis_type=None, y_axis_type=None, tools="save",
-                      min_border=0, outline_line_color=None)
-    mainplot.title.text_font_size = "14pt"
-    for i in x:
-        mainplot.wedge(radius=avghist[i], start_angle=-radians((i * 10) - 95), end_angle=-radians((i * 10) - 85),
-                       x=0, y=0, direction='clock', fill_color='lightblue', legend_label='average')
-        mainplot.wedge(radius=hist[i], start_angle=-radians((i * 10) - 95), end_angle=-radians((i * 10) - 85),
-                       x=0, y=0, direction='clock', line_color='darkred', fill_color='lightsalmon', alpha=0.5,
-                       legend_label='median')
-
-    # create grid
-    rund_perc = ceil(maxhist / sumhist * 100)
-    labels = list(range(0, rund_perc, 2))
-    labels.append(rund_perc)
-    rad_pos = [i * sumhist / 100 for i in labels]
-    out_rim = rad_pos[-1]
-    label_pos = [sqrt(((i - 1) ** 2) / 2) for i in rad_pos]
-    mainplot.text(label_pos[1:], label_pos[1:], [str(r) + ' %' for r in labels[1:]],
-                  text_font_size="10pt", text_align="left", text_baseline="top")
-    for rad in rad_pos:
-        mainplot.circle(x=0, y=0, radius=rad, fill_color=None, line_color='grey', line_width=0.5, line_alpha=0.8)
-    diagonal = sqrt((out_rim ** 2) / 2)
-    mainplot.multi_line(xs=[[diagonal, -diagonal], [-diagonal, diagonal], [-out_rim, out_rim], [0, 0]],
-                        ys=[[diagonal, -diagonal], [diagonal, -diagonal], [0, 0], [-out_rim, out_rim]],
-                        line_color="grey", line_width=0.5, line_alpha=0.8)
-    mainplot.x_range = Range1d(-out_rim*1.1, out_rim*1.1)
-    mainplot.y_range = Range1d(-out_rim*1.1, out_rim*1.1)
-    mainplot.legend.location = "top_left"
-    mainplot.legend.click_policy = "hide"
-    # plot bars for the number of values in each group as secondary 'by' plot
-    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(DBdata['data'][2]))
-    width = DBdata['data'][0][1] - DBdata['data'][0][0]
-    byplot = figure(title='Number of available values per day', x_axis_type="datetime", #x_range=mainplot.x_range,
-                    plot_width=400, plot_height=50, toolbar_location="above", background_fill_color="black",
-                    tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
-    byplot.vbar(x='date', source=source, width=width, bottom=0, top=1, color=mapper)
-    byplot.xaxis.visible = False
-    byplot.xgrid.visible = False
-    byplot.yaxis.visible = False
-    byplot.ygrid.visible = False
-    byplot.add_tools(HoverTool(tooltips=[("value", "@count"), ("Date", "@date{%d %b %Y}")],
-                               formatters={"date": "datetime"}, mode="mouse"))
-    script, div = components(column(byplot, mainplot), wrap_script=False)
-    return {'script': script, 'div': div}
-
-
-def get_bokeh_direction(DBdata, label):
-
+def get_bokeh_direction(DBdata, ti):
     # use data in percent => transform Dbdata to percent
     pct_data = []
-    for tc in range(0, len(DBdata)): # 4
+    for tc in range(0, len(DBdata)):  # 4
         all = DBdata[tc][1]
         datalist = [DBdata[tc][0], all]
         for bin in range(2, len(DBdata[tc])):
@@ -178,34 +108,46 @@ def get_bokeh_direction(DBdata, label):
     dbdatadictstr = {str(int(time.mktime(item[0].timetuple()) * 1000)): list(item[2:]) for item in pct_data}
 
     hist = [0] * 36
+    maxlist = [0] * 36
     data_list = list(zip(*(pct_data)))
 
     for i in range(2, len(data_list)):
         hist[i-3] = mean(data_list[i])
+        maxlist[i-3] = max(data_list[i])
 
-    maxhist = max(hist)
+    #maxhist = sorted(maxlist)[-3]
+    maxhist = mean(maxlist)  # don't use real max of dataset, too many discordant values
     sumhist = sum(hist)
     start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     end = [-radians((i * 10) - 75) for i in list(range(0, 36))]
-
-    pdsource = ColumnDataSource(data=dict(radius=df.loc[:, min(df.columns)], start=start, end=end))
+    pdstart = [-radians((i * 10) - 95) for i in list(range(0, 36))]
+    pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
+    labeltext = (ti + "ly histogram").capitalize()
+    titletext = (ti + 'ly median and sum of all histograms').capitalize()
+    pdsource = ColumnDataSource(data=dict(radius=df.loc[:, min(df.columns)], start=pdstart, end=pdend))
     jssource = ColumnDataSource(data=dbdatadictstr)
 
-    mainplot = figure(title='Daily median and sum of daily histograms', plot_width=400, plot_height=400,
+    mainplot = figure(title=titletext, plot_width=400, plot_height=400,
                       x_axis_type=None, y_axis_type=None, tools="save",
                       min_border=0, outline_line_color=None)
     mainplot.title.text_font_size = "14pt"
     mainplot.wedge(radius=hist, start_angle=start, end_angle=end, x=0, y=0, direction='clock', line_color='blue',
                    fill_color='lightblue', alpha=0.5, legend_label='Whole dataset')
     mainplot.wedge(radius='radius', start_angle='start', end_angle='end', source=pdsource, x=0, y=0, alpha=0.5,
-                   direction='clock', line_color='darkred', fill_color='lightsalmon', legend_label='Histogram')
+                   direction='clock', line_color='darkred', fill_color='lightsalmon', legend_label=labeltext)
 
     # create slider
     day = 1000 * 3600 * 24
-    week = 7 * day
-    month = 30 * day
-    slider = DateSlider(start=min(df.columns), end=max(df.columns), value=min(df.columns), step=week,
-                        title="choose histogram")
+    stepsize = day
+    if ti == 'week':
+        stepsize = day
+    elif ti == 'month':
+        stepsize = 7 * day
+    elif ti == 'year':
+        stepsize = 30 * day
+
+    slider = DateSlider(start=min(df.columns), end=max(df.columns), value=min(df.columns), step=stepsize,
+                        title="date within histogram")
     callback = CustomJS(
         args=dict(source=pdsource, data=jssource, slid=slider), code="""
         const S = slid.value;
@@ -240,7 +182,16 @@ def get_bokeh_direction(DBdata, label):
     mainplot.legend.location = "top_left"
     mainplot.legend.click_policy = "hide"
 
-    script, div = components(column(slider, mainplot), wrap_script=False)
+    allcounts = [i[1] for i in DBdata]
+    alldates = [i[0] for i in DBdata]
+
+    # plot bars for the number of values in each group as secondary 'by' plot
+    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(allcounts))
+    bin_width = DBdata[0][0] - DBdata[1][0]
+    source = ColumnDataSource({'date': alldates, 'count': allcounts})
+    distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
+
+    script, div = components(column(distriplot, mainplot, slider), wrap_script=False)
     return {'div': div, 'script': script}
 
 
@@ -263,6 +214,20 @@ def DB_load_directiondata(id, ti):
     return dbresult
 
 
+def distribution_plot(source, mapper, bin_width, title, plot_width):
+    p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
+                        plot_width=plot_width, plot_height=50, toolbar_location="above", background_fill_color="black",
+                        tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
+    p.vbar(x='date', source=source, width=bin_width, bottom=0, top=1, color=mapper)
+    p.xaxis.visible = False
+    p.xgrid.visible = False
+    p.yaxis.visible = False
+    p.ygrid.visible = False
+    p.add_tools(HoverTool(tooltips=[("value", "@count"), ("Date", "@date{%d %b %Y}")],
+                                   formatters={"date": "datetime"}, mode="mouse"))
+    return p
+
+
 def get_preview(id):
     # id = 2657 # small test dataset
     use_redis = True
@@ -282,10 +247,10 @@ def get_preview(id):
     if not in_cache:
         label = DB_load_label(id)
         if label.find('direction') != -1:
-            TI = 'year'  # time interval used to plot
-            DBdata = DB_load_directiondata(id, TI)
+            ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
+            DBdata = DB_load_directiondata(id, ti)
             # img = get_bokeh_standard(DBdata, label)
-            img = get_bokeh_direction(DBdata, TI)
+            img = get_bokeh_direction(DBdata, ti)
         else:
             DBdata = DB_load_data(id)
             img = get_bokeh_standard(DBdata, label)
