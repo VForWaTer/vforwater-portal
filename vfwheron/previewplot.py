@@ -2,11 +2,11 @@
 
 """
 import copy
-from datetime import time, datetime, timezone, timedelta, date
+from datetime import time
 from math import radians, ceil, sqrt
 from bokeh.layouts import column, row
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, RangeSlider, ColumnDataSource, \
-    DateSlider
+    DateSlider, DateRangeSlider
 # from bokeh.models.widgets import Slider
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
@@ -116,23 +116,25 @@ def get_bokeh_direction(DBdata, ti):
         maxlist[i-3] = max(data_list[i])
 
     #maxhist = sorted(maxlist)[-3]
-    maxhist = mean(maxlist)  # don't use real max of dataset, too many discordant values
+    maxhist = mean(maxlist)*0.8  # don't use real max of dataset, too many discordant values
     sumhist = sum(hist)
     start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     end = [-radians((i * 10) - 75) for i in list(range(0, 36))]
     pdstart = [-radians((i * 10) - 95) for i in list(range(0, 36))]
     pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
-    labeltext = (ti + "ly histogram").capitalize()
+    labeltext = ("Selection of " + ti + "ly histograms")
     titletext = (ti + 'ly median and sum of all histograms').capitalize()
-    pdsource = ColumnDataSource(data=dict(radius=df.loc[:, min(df.columns)], start=pdstart, end=pdend))
+    pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
     jssource = ColumnDataSource(data=dbdatadictstr)
 
     mainplot = figure(title=titletext, plot_width=400, plot_height=400,
                       x_axis_type=None, y_axis_type=None, tools="save",
                       min_border=0, outline_line_color=None)
     mainplot.title.text_font_size = "14pt"
+    # simple rose plot
     mainplot.wedge(radius=hist, start_angle=start, end_angle=end, x=0, y=0, direction='clock', line_color='blue',
                    fill_color='lightblue', alpha=0.5, legend_label='Whole dataset')
+    # plot connected to slider
     mainplot.wedge(radius='radius', start_angle='start', end_angle='end', source=pdsource, x=0, y=0, alpha=0.5,
                    direction='clock', line_color='darkred', fill_color='lightsalmon', legend_label=labeltext)
 
@@ -150,17 +152,49 @@ def get_bokeh_direction(DBdata, ti):
                         title="date within histogram")
     callback = CustomJS(
         args=dict(source=pdsource, data=jssource, slid=slider), code="""
-        const S = slid.value;
-        let radius = source.data.radius;
-        const radii = Object.keys(data.data)
-        let slidestop = radii.reduce(function(prev, curr) {
-        (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev)
-         return (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev);
-        });
-        source.data.radius = data.data[slidestop]
-        source.change.emit();
-    """)
+            const S = slid.value;
+            let radius = source.data.radius;
+            const radii = Object.keys(data.data)
+            let slidestop = radii.reduce(function(prev, curr) {
+            (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev)
+             return (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev);
+            });
+            source.data.radius = data.data[slidestop]
+            source.change.emit();
+        """)
     slider.js_on_change('value', callback)
+
+    # create range slider
+    rslider = DateRangeSlider(start=min(df.columns), end=max(df.columns), value=(min(df.columns), max(df.columns)),
+                             step=stepsize, title="Data within date range from ")
+    rcallback = CustomJS(
+        args=dict(source=pdsource, data=jssource, rslid=rslider), code="""
+            const smin = rslid.value[0]
+            const smax = rslid.value[1]
+            let radius = source.data.radius;
+            const radii = Object.keys(data.data)
+            let lstop = radii.reduce(function(prev, curr) {
+             return (Math.abs(curr - smin) < Math.abs(prev - smin) ? curr : prev);
+            });
+            let rstop = radii.reduceRight(function(prev, curr) {
+             return (Math.abs(curr - smax) < Math.abs(prev - smax) ? curr : prev);
+            });
+            let keylist = [];
+            for (let k in data.data) keylist.push(k);
+            let fromkey = keylist.indexOf(lstop);
+            let tokey = keylist.indexOf(rstop);
+            let rangekeys = keylist.slice(fromkey, tokey)
+            var dataavg = Array(36).fill(0)
+            var count = 0;
+            for (let k of rangekeys) {
+                dataavg = dataavg.map(function (num, idx) {return num + data.data[k][idx];});
+                count += 1
+            }
+            dataavg = dataavg.map(function (num, idx) {return num/count;});
+            source.data.radius = dataavg;
+            source.change.emit();
+        """)
+    rslider.js_on_change('value', rcallback)
 
     # create grid
     rund_perc = ceil(maxhist / sumhist * 100)
@@ -191,7 +225,7 @@ def get_bokeh_direction(DBdata, ti):
     source = ColumnDataSource({'date': alldates, 'count': allcounts})
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
 
-    script, div = components(column(distriplot, mainplot, slider), wrap_script=False)
+    script, div = components(column(distriplot, mainplot, slider, rslider), wrap_script=False)
     return {'div': div, 'script': script}
 
 
