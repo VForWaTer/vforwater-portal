@@ -60,7 +60,7 @@ function show_data() {
     // Initiate creation of data Button in data and result store. When called from outside of 'Home' check if data is
     // already pickled. If not pickle it. (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    if (workspaceData) {// && "value" in workspaceData) {
+    if (workspaceData) {  // && "value" in workspaceData) {
         build_datastore_button(workspaceData);
         let path = window.location.pathname;
         if (path.includes('wps_gui')) {
@@ -68,12 +68,12 @@ function show_data() {
             preload_datastore_button(workspaceData);
         }
     }
-    if (document.getElementById("workspace_results")) {
-        let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
+        let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
         if (resultData) {
-            var html = "";
-            resultData.forEach(function (btnName) {
-                html += build_resultstore_button(btnName, sessionStorage.getItem(btnName));
+            let html = "";
+            $.each(resultData, function (btnName, value) {
+                html += build_resultstore_button(btnName, value);
             });
             document.getElementById("workspace_results").innerHTML += html;
         }
@@ -81,54 +81,54 @@ function show_data() {
 }
 
 function preload_datastore_button(workspaceData) {
-    // USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPERATELY
-    // for (let dataset in workspaceData) {
-    //     let preload = {};
-    //     if (!workspaceData[dataset]['pickle']) {
-    //         preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
-    //         end: workspaceData[dataset]['end']};
-    //         $.ajax({
-    //             url: DEMO_VAR + "/wps_gui/processview",
-    //             // dataType: 'json',
-    //             data: {
-    //                 dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
-    //             }, // data sent with post request
-    //             success: function (wpsDBInfo) {
-    //                 update_datastore_button(wpsDBInfo, 'pickle');
-    //             },
-    //             error: function (wpsDBInfo) {
-    //                 console.log('Error in preload of data. ', wpsDBInfo)
-    //             }
-    //         });
-    //     }
-    // }
-    // USE FOLLOWING CODE INSTEAD WHEN YOU PREFER TO UPDATE ALL DATASETS IN ONE REQUEST
-    let preload = {};
+    // USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY
     for (let dataset in workspaceData) {
+        let preload = {};
         if (!workspaceData[dataset]['pickle']) {
             preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
             end: workspaceData[dataset]['end']};
+            $.ajax({
+                url: DEMO_VAR + "/wps_gui/processview",
+                // dataType: 'json',
+                data: {
+                    dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
+                }, // data sent with post request
+                success: function (wpsDBInfo) {
+                    update_datastore_button(wpsDBInfo, 'pickle');
+                },
+                error: function (wpsDBInfo) {
+                    console.log('Error in preload of data. ', wpsDBInfo)
+                }
+            });
         }
     }
-    if (Object.keys(preload).length == 0){}
-    else {
-        // send request to preload datasets
-        // TODO: might take a while. Check how to cancel if webpage changes
-        // TODO: discuss if "load it all at once" is the best solution. (alternatives: each dataset or in chunks)
-        $.ajax({
-            url: DEMO_VAR + "/wps_gui/processview",
-            // dataType: 'json',
-            data: {
-                dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with post request
-            success: function (wpsDBInfo) {
-                update_datastore_button(wpsDBInfo, 'pickle');
-            },
-            error: function (wpsDBInfo) {
-                console.log('Error in preload of data. ', wpsDBInfo)
-            }
-        });
-    }
+    // USE FOLLOWING CODE INSTEAD WHEN YOU PREFER TO UPDATE ALL DATASETS IN ONE REQUEST
+    // let preload = {};
+    // for (let dataset in workspaceData) {
+    //     if (!workspaceData[dataset]['pickle']) {
+    //         preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
+    //         end: workspaceData[dataset]['end']};
+    //     }
+    // }
+    // if (Object.keys(preload).length == 0){}
+    // else {
+    //     // send request to preload datasets
+    //     // TODO: might take a while. Check how to cancel if webpage changes
+    //     // TODO: discuss if "load it all at once" is the best solution. (alternatives: each dataset or in chunks)
+    //     $.ajax({
+    //         url: DEMO_VAR + "/wps_gui/processview",
+    //         // dataType: 'json',
+    //         data: {
+    //             dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
+    //         }, // data sent with post request
+    //         success: function (wpsDBInfo) {
+    //             update_datastore_button(wpsDBInfo, 'pickle');
+    //         },
+    //         error: function (wpsDBInfo) {
+    //             console.log('Error in preload of data. ', wpsDBInfo)
+    //         }
+    //     });
+    // }
 }
 
 function update_datastore_button(wpsDBInfo, newClass){
@@ -207,37 +207,6 @@ function remove_all_datasets() {
     });
     // remove button from session
     sessionStorage.removeItem("dataBtn");
-}
-
-function remove_single_result(removeData) {
-    // remove data from portal:
-    document.getElementById(removeData).remove();
-    sessionStorage.removeItem(removeData);
-    // remove data from session:
-    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-    let resultBtnListLen = workspaceData.length;
-    if (resultBtnListLen <= 1) {
-        remove_all_results()
-    } else {
-        for (let i = 0; i < resultBtnListLen; i++) {
-            if (workspaceData[i] === removeData) {
-                workspaceData.splice(i, 1);
-                i--;
-            }
-        }
-    }
-    // TODO: only the name is deleted from the list. Also delete the respective content!
-    // delete workspaceData[removeData];
-    sessionStorage.setItem("resultBtnList", JSON.stringify(workspaceData))
-}
-
-function remove_all_results() {
-    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-    for (let i in workspaceData) {
-        sessionStorage.removeItem('"' + workspaceData[i] + '"');
-        document.getElementById(workspaceData[i]).remove();
-    }
-    sessionStorage.removeItem("resultBtnList");
 }
 
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/

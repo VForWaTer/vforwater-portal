@@ -130,7 +130,7 @@ function modal_run_process() {
     let identifier = modhead.dataset.process;
     let outputName;
     if (outputs[0].value === "") {
-        outputName = identifier;
+        outputName = identifier + "_";
     } else {
         outputName = outputs[0].value;
     }
@@ -142,10 +142,12 @@ function modal_run_process() {
         }, // data sent with the post request
         success: function (json) { // Results are stored in the sessionStorage
             if (json.execution_status == "ProcessSucceeded") {
+                json.wps = identifier;
+                json.inputs = {};
+                $.each(inKey, function (key, value){ json.inputs[value] = inValue;});
                 color_modal("forestgreen");
                 let btnName = set_result_btn_name(outputName);
-                sessionStorage.setItem(btnName, JSON.stringify(json));
-                add_to_resultstore_buttonlist(btnName);
+                add_resultbtn_to_sessionstore(btnName, json);
                 document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, json);
             } else if (json.execution_status == "Exception") {
                 color_modal("firebrick");
@@ -153,32 +155,30 @@ function modal_run_process() {
             } else if (json.execution_status == "auth_error") {
                 color_modal("firebrick");
                 // Use Timeout to ensure color changed before popup appears
-                setTimeout(function(){alert('Error: You are not allowed to run this process. Please Contact your Admin.');}, 5);
+                setTimeout(function () {
+                    alert('Error: You are not allowed to run this process. Please Contact your Admin.');
+                }, 5);
                 console.log('Maybe you have to log in to run processes. ', json.execution_status)
             }
         },
-        error: function(json) {
-            color_modal("firebrick")
+        error: function (json) {
+            color_modal("firebrick");
             console.log('Error: ', json)
         }
     });
 }
 
 function set_result_btn_name(name) {
-    let newName;
-    if (sessionStorage.getItem("resultBtnList")) {
-        let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    var newName = name;
+    if (sessionStorage.getItem("resultBtn")) {
+        let result_btns = JSON.parse(sessionStorage.getItem("resultBtn"));
         newName = name;
-        if (result_btns.includes(name)) {
+        if (Object.keys(result_btns).includes(name)) {
             var i = 0;
-            while (result_btns.includes(newName)) {
-                i++;
-                newName = name + i
+            while (Object.keys(result_btns).includes(newName)) {
+                newName = name + i++;
             }
         }
-        result_btns.push(newName);
-    } else {
-        newName = [name];
     }
     return newName
 }
@@ -197,35 +197,54 @@ function modalObj(processId, processInput, processOutput) {
     this.processOutput = processOutput;
 }
 
-function add_to_resultstore_buttonlist(btnName) {
-    if (sessionStorage.getItem("resultBtnList")) {
-
-        let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
-        if (result_btns.includes(btnName)) {
-            console.error('Error! Names should be unique!')
+function add_resultbtn_to_sessionstore(btnName, json) {
+    let result_btns = {};
+    if (sessionStorage.getItem("resultBtn")) {
+        result_btns = JSON.parse(sessionStorage.getItem("resultBtn"));
+        if (Object.keys(result_btns).includes(btnName)) {
+            console.error('Error! Names should be unique! Problem with race conditions?')
         }
-        result_btns.push(btnName);
-        // }
-        sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
-    } else {
-        sessionStorage.setItem("resultBtnList", JSON.stringify(btnName));
     }
-    // return newBtnName;
+    result_btns[btnName] = {type: json.type, wps: json.wps, inputs: json.inputs, wpsid: json.wpsid, status: json.execution_status};
+    sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
 //TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
-function build_resultstore_button(btnName, json) {
-    // let ident = json.processid;
-    let title = json.processid;
+function build_resultstore_button(name, json) {
+    let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" class="respo-padding task is-result" ' +
-        'data-id="' + btnName + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
-        '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
+        'data-id="' + name + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" id="id' + name + '">' +
+        '<span class="respo-medium" title="' + title + '"><div class="task__content">' + name + '</div>' +
         '<div class="task__actions"></div></span>' +
-        // '<span class="'+value['type']+'"></span>' +
+        '<span class="'+json['type']+'"></span>' +
         '<a href="javascript:void(0)"' +
-        'onclick="remove_single_result(\'' + btnName + '\')" class="respo-hover-white">' +
+        'onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
+
+
+function remove_single_result(removeData) {
+    document.getElementById("id" + removeData).remove();
+    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    delete workspaceData[removeData];
+    sessionStorage.setItem("resultBtn", JSON.stringify(workspaceData))
+}
+
+function remove_all_results() {
+    // remove button from portal
+    $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key) { remove_single_result(key); });
+    // remove button from session
+    sessionStorage.removeItem("resultBtn");
+}
+
+// function remove_all_results() {
+//     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+//     for (let i in workspaceData) {
+//         sessionStorage.removeItem('"' + workspaceData[i] + '"');
+//         document.getElementById(workspaceData[i]).remove();
+//     }
+//     sessionStorage.removeItem("resultBtnList");
+// }
 
 function build_modal_radio(inElementIdList, item, newNode, option) {
     // let radioNode = document.createElement("p");
@@ -259,7 +278,9 @@ function build_modal_dropdown(inElementIdList, item, newNode) {
         optionGroup.label = "Data store";
         item.keywords.forEach(function (option) {
             Object.keys(storeData).forEach(function (singleData) {
-                if (option == storeData[singleData].type) {
+                console.log('storeData[singleData].type: ', storeData[singleData].type)
+                console.log('option: ', option)
+                if (storeData[singleData].type.includes(option)) {
                     opt.innerText = `${singleData} ${storeData[singleData].name} (${storeData[singleData].abbr} in ${storeData[singleData].unit})`;
                     opt.value = singleData;
                     if (item.keywords.length == 1) opt.selected = true;
@@ -273,7 +294,7 @@ function build_modal_dropdown(inElementIdList, item, newNode) {
         htmlSelect = document.createElement("DIV");
         if (item.minOccurs === 1) htmlSelect.required = true;
         if (item.defaultValue) {
-            htmlSelect.innerText = 'Without selected datasets the default '+item.defaultValue+' value is used.'
+            htmlSelect.innerText = 'Without selected datasets the default ' + item.defaultValue + ' value is used.'
         } else {
             htmlSelect.innerText = 'Please first select a dataset from the filter menu.'
         }

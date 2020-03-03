@@ -100,6 +100,12 @@ def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
     return result
 
 
+def create_wpsdb_entry(wps_process, invalue, outputs):
+    db_result = WpsResults.objects.create(open=False, wps=wps_process, inputdict=dict(invalue), link=outputs,
+                                          creation=timezone.now())#, access=timezone.now())
+    return db_result.id
+
+
 class ProcessView(TemplateView):
 
     def get(self, request):
@@ -221,8 +227,9 @@ class ProcessView(TemplateView):
                 outputs = []
                 # output = edit_outputs(execution.processOutputs)
                 for output in execution.processOutputs:
-                    outputs.append(output.data)
-                    output_reference = output.reference
+                    outputs.append(output.data[0])
+                    # output_reference = output.reference
+
                     if type(output.data[0]) is str:
                         if len(output.data[0]) > 10:
                             substring = output.data[0][:10]
@@ -239,19 +246,23 @@ class ProcessView(TemplateView):
                                 #     print(child.tag, child.attrib)
                                 del outputs[-1]
 
-                context_p = {'processid': wps_process,
-                             'outputs': outputs,
+                process = wps.describeprocess(wps_process)
+                datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
+                wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
+                context_p = {'wpsid': wpsid,
+                             # 'outputs': outputs,
                              'image': image,
+                             'type': datatype,
                              'execution_status': execution_status
                              }
 
-                try:
-                    #            if output_reference:
-                    output_reference = output_reference.replace('localhost', HOST_NAME)
-                    context_p.update({'output_reference': output_reference})
-                    # output_reference = output_reference.replace('localhost','vforwater-devel')
-                except:
-                    print('--- no output_reference')
+                # try:
+                #     #            if output_reference:
+                #     output_reference = output_reference.replace('localhost', HOST_NAME)
+                #     context_p.update({'output_reference': output_reference})
+                #     # output_reference = output_reference.replace('localhost','vforwater-devel')
+                # except:
+                #     print('--- no output_reference')
             else:
                 context_p = {'execution_status': 'auth_error'}
                 print('user is not authenticated. ', context_p)

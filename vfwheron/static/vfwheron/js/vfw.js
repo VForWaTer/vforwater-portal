@@ -346,23 +346,6 @@ $(document).ready(function (menuTitle) {
     });
 }); // end ready
 
-// seems to be unused / delete with next commit
-// Select Data / build elements, in workspace /
-// function select_data(selectedData) {
-//     $.ajax({
-//         url: DEMO_VAR+"/vfwheron/menu",
-//         datatype: 'json',
-//         data: {
-//             selection: selectedData[0],
-//             submenu: selectedData[1],
-//             'csrfmiddlewaretoken': csrf_token,
-//         }, // data sent with the post request
-//         success: function (json) {
-//         },
-//     });
-// //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
-// }
-
 // TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
 function getCookie(name) {
     let cookieValue = null;
@@ -417,12 +400,6 @@ function moreInfoModal(id) {
         }, // data sent with the post request
     })
         .done(function (json) {
-            /*            document.getElementById("mod_prev").innerHTML = json.div; // png
-                        var script = document.createElement("script");
-                        script.type = "text/javascript";
-                        script.src = json.script;
-                        document.getElementsByTagName("head")[0].appendChild(script);
-                        document.getElementsByTagName("HEAD")[0].appendChild(json.script); // png*/
             document.getElementById("mod_prev").innerHTML = json.div; // add plot
             // bokehPreviewScript is a global variable to set and remove the script of bokeh
             bokehPreviewScript = document.createElement('script');
