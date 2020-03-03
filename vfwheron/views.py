@@ -93,6 +93,16 @@ def get_dataset(self, request, **kwargs):
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
+def build_expressive_name(user):
+    namestring = str(user.id) + "_"
+    if user.first_name and user.last_name:
+        namestring += (user.first_name + "_" + user.last_name)
+    else:
+        namestring += user.username.translate({ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`=+"})
+
+    return namestring + "_layer"
+
+
 class HomeView(TemplateView):
     """
     Template View to bring the necessary variables for the startup to the template
@@ -116,15 +126,16 @@ class HomeView(TemplateView):
         print('no geoserver')
 
     # dataExt = get_bbox_from_data()
-    def set_user_menu(self):
-        if self.request.user.is_authenticated:
-            if self.request.user.is_superuser:
-                data_layer = 'default_layer'
-            else:
-                data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
-        else:
-            data_layer = self.data_layer
-        return data_layer
+    # def set_user_menu(self):
+    #     if self.request.user.is_authenticated:
+    #         if self.request.user.is_superuser:
+    #             data_layer = 'default_layer'
+    #         else:
+    #             data_layer = build_expressive_name(self.request.user)
+    #             # data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
+    #     else:
+    #         data_layer = self.data_layer
+    #     return data_layer
 
     # TODO: Test with users if this makes any sense
     def set_layer_name(self):
@@ -132,7 +143,7 @@ class HomeView(TemplateView):
             if self.request.user.is_superuser:
                 data_layer = 'default_layer4'
             else:
-                data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
+                data_layer = build_expressive_name(self.request.user)
         else:
             data_layer = self.data_layer
         return data_layer
