@@ -4,6 +4,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 import jsonpickle
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.core.cache import cache
@@ -18,7 +19,7 @@ from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, 
 
 import logging
 logger = logging.getLogger(__name__)
-
+datatypes = ['timeseries', 'pickle', 'ts-pickle', 'array', 'aggregate', 'ts-aggregate', 'merge', 'ts-merge']
 
 # from heron_wps.forms import InputForm
 
@@ -77,8 +78,9 @@ def home(request):
 #     blala = p.communicate(input=input_text)[0]
 #     return blala
 
+# TODO: consider also storing the type of the output to the outputs
 def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
-    db_result, created = WpsResults.objects.get_or_create(open=True, wps=wps_process, inputdict=invalue,
+    db_result, created = WpsResults.objects.get_or_create(open=True, wps=wps_process, inputs=invalue,
                                                           defaults={'creation': timezone.now(),
                                                                     'access': timezone.now()})
     result = {'wps_id': db_result.id}
@@ -89,19 +91,28 @@ def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
         wps = get_wps_service_engine(service)
         execution = wps.execute(wps_process, [(inkey, invalue)])
         execution_status = execution.status
-        if execution_status == "ProcessSucceeded":
-            db_result.link = execution.processOutputs[0].data
+        wpsError = {}
+        try:
+            wpsError['error'] = execution.processOutputs[1].data[0]
+        except ObjectDoesNotExist:
+            wpsError['error'] = 'True'
+            wpsError['text'] = 'Something strange (Error?) in wps.'
+            logger.error('Something strange (Error?) in wps for %s: %s',
+                         (service, wps_process, inkey, invalue), execution_status)
+        if execution_status == "ProcessSucceeded" and wpsError['error'] == 'False':
+            # if execution_status == "ProcessSucceeded" and not execution.processOutputs[1].data[0]:
+            db_result.outputs = execution.processOutputs[0].data
             db_result.save()
         else:
             db_result.delete()
-            result = 'dbload did not work. Please check log file'
+            result = {'Error': 'dbload did not work. Please check log file'}
             logger.error('get_or create wps execution_status for %s: %s',
                          (service, wps_process, inkey, invalue), execution_status)
     return result
 
 
 def create_wpsdb_entry(wps_process, invalue, outputs):
-    db_result = WpsResults.objects.create(open=False, wps=wps_process, inputdict=dict(invalue), link=outputs,
+    db_result = WpsResults.objects.create(open=False, wps=wps_process, inputs=dict(invalue), outputs=outputs,
                                           creation=timezone.now())#, access=timezone.now())
     return db_result.id
 
@@ -207,9 +218,14 @@ class ProcessView(TemplateView):
                 # TODO: Check if user has rights to access dataset
                 if request_input[dataset]['type'] == 'timeseries':
                     invalue = 'SELECT tstamp, value FROM tbl_data WHERE meta_id=' + dataset + ';'
+                    datatype = 'ts-pickle'
                 else:
                     invalue = 'SELECT value FROM tbl_data WHERE meta_id=' + dataset + ';'
-                result[dataset] = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, inkey, invalue)
+                    datatype = 'pickle'
+                datalink = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, inkey, invalue)
+                result[dataset] = datalink
+                if 'Error' not in datalink:
+                    result[dataset]['datatype'] = datatype
             return JsonResponse(result)
 
         if 'processrun' in request.GET:
@@ -225,10 +241,8 @@ class ProcessView(TemplateView):
                 execution_status = execution.status
                 image = []
                 outputs = []
-                # output = edit_outputs(execution.processOutputs)
                 for output in execution.processOutputs:
                     outputs.append(output.data[0])
-                    # output_reference = output.reference
 
                     if type(output.data[0]) is str:
                         if len(output.data[0]) > 10:
@@ -245,24 +259,20 @@ class ProcessView(TemplateView):
                                 # for child in tree:
                                 #     print(child.tag, child.attrib)
                                 del outputs[-1]
+                print('outputs[1]: ', outputs[1])
+                if outputs[1] == 'False':
+                    process = wps.describeprocess(wps_process)
+                    datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
+                    wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
+                    context_p = {'wpsid': wpsid,
+                                 # 'outputs': outputs,
+                                 'image': image,
+                                 'type': datatype,
+                                 'execution_status': execution_status
+                                 }
+                else:
+                    context_p = {'execution_status': 'error in wps process'}
 
-                process = wps.describeprocess(wps_process)
-                datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
-                wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
-                context_p = {'wpsid': wpsid,
-                             # 'outputs': outputs,
-                             'image': image,
-                             'type': datatype,
-                             'execution_status': execution_status
-                             }
-
-                # try:
-                #     #            if output_reference:
-                #     output_reference = output_reference.replace('localhost', HOST_NAME)
-                #     context_p.update({'output_reference': output_reference})
-                #     # output_reference = output_reference.replace('localhost','vforwater-devel')
-                # except:
-                #     print('--- no output_reference')
             else:
                 context_p = {'execution_status': 'auth_error'}
                 print('user is not authenticated. ', context_p)
@@ -273,6 +283,11 @@ class ProcessView(TemplateView):
 def edit_input(inputs):
     input_dict = dict((x, y) for x, y in inputs)
     for key, value in input_dict.items():
+        if key in datatypes:
+            try:
+                input_dict[key] = WpsResults.objects.get(id=value[5:]).outputs[2:-2]
+            except ObjectDoesNotExist:
+                print("Either the entry or blog doesn't exist.")
         if key == 'sql-filter':
             input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
         if key == 'name_time' and value.isdigit():

@@ -93,9 +93,7 @@ function preload_datastore_button(workspaceData) {
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post request
-                success: function (wpsDBInfo) {
-                    update_datastore_button(wpsDBInfo, 'pickle');
-                },
+                success: (wpsDBInfo) => update_datastore_button(wpsDBInfo),
                 error: function (wpsDBInfo) {
                     console.log('Error in preload of data. ', wpsDBInfo)
                 }
@@ -131,14 +129,15 @@ function preload_datastore_button(workspaceData) {
     // }
 }
 
-function update_datastore_button(wpsDBInfo, newClass){
+function update_datastore_button(wpsDBInfo){
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     $.each(wpsDBInfo, function (keyID, value) {
         if (workspaceData[keyID]) {
             workspaceData[keyID]['pickle'] = 1;
             workspaceData[keyID]['wpsID'] = value['wps_id'];
-            workspaceData[keyID]['type'] = workspaceData[keyID]['type'] + ", "+ newClass;
-            document.getElementById("id" + keyID).getElementsByClassName("data")[0].classList.add(newClass);
+            workspaceData[keyID]['type'] = value['datatype'];
+            // workspaceData[keyID]['type'] = workspaceData[keyID]['type'] + ", "+ newClass;
+            document.getElementById("id" + keyID).getElementsByClassName("data")[0].classList.add(value['datatype']);
         }
     });
     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData));

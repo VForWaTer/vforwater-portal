@@ -144,13 +144,20 @@ function modal_run_process() {
             if (json.execution_status == "ProcessSucceeded") {
                 json.wps = identifier;
                 json.inputs = {};
-                $.each(inKey, function (key, value){ json.inputs[value] = inValue;});
+                $.each(inKey, function (key, value) {
+                    json.inputs[value] = inValue;
+                });
                 color_modal("forestgreen");
                 let btnName = set_result_btn_name(outputName);
                 add_resultbtn_to_sessionstore(btnName, json);
                 document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, json);
             } else if (json.execution_status == "Exception") {
+                console.error('error in wps process')
                 color_modal("firebrick");
+                // alert('Error: Failed to execute your request.');
+            } else if (json.execution_status == "error in wps process") {
+                color_modal("firebrick");
+                console.error('error in wps process')
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
                 color_modal("firebrick");
@@ -158,7 +165,7 @@ function modal_run_process() {
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
                 }, 5);
-                console.log('Maybe you have to log in to run processes. ', json.execution_status)
+                console.error('Maybe you have to log in to run processes. ', json.execution_status)
             }
         },
         error: function (json) {
@@ -205,7 +212,13 @@ function add_resultbtn_to_sessionstore(btnName, json) {
             console.error('Error! Names should be unique! Problem with race conditions?')
         }
     }
-    result_btns[btnName] = {type: json.type, wps: json.wps, inputs: json.inputs, wpsid: json.wpsid, status: json.execution_status};
+    result_btns[btnName] = {
+        type: json.type,
+        wps: json.wps,
+        inputs: json.inputs,
+        wpsid: json.wpsid,
+        status: json.execution_status
+    };
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
@@ -216,12 +229,11 @@ function build_resultstore_button(name, json) {
         'data-id="' + name + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" id="id' + name + '">' +
         '<span class="respo-medium" title="' + title + '"><div class="task__content">' + name + '</div>' +
         '<div class="task__actions"></div></span>' +
-        '<span class="'+json['type']+'"></span>' +
+        '<span class="' + json['type'] + '"></span>' +
         '<a href="javascript:void(0)"' +
         'onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
-
 
 function remove_single_result(removeData) {
     document.getElementById("id" + removeData).remove();
@@ -232,7 +244,9 @@ function remove_single_result(removeData) {
 
 function remove_all_results() {
     // remove button from portal
-    $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key) { remove_single_result(key); });
+    $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key) {
+        remove_single_result(key);
+    });
     // remove button from session
     sessionStorage.removeItem("resultBtn");
 }
@@ -246,7 +260,7 @@ function remove_all_results() {
 //     sessionStorage.removeItem("resultBtnList");
 // }
 
-function build_modal_radio(inElementIdList, item, newNode, option) {
+function build_modal_radio(item, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("input");
@@ -254,7 +268,6 @@ function build_modal_radio(inElementIdList, item, newNode, option) {
     // inElement.setAttribute("type", "radio");
     inElement.value = option;
     inElement.id = item.identifier;
-    inElementIdList.push(item.identifier);
     if (item.minOccurs === 1) inElement.required = true;
 
     inElement.name = item.identifier;
@@ -265,43 +278,62 @@ function build_modal_radio(inElementIdList, item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
-function build_modal_dropdown(inElementIdList, item, newNode) {
+function build_modal_dropdown(item, newNode) {
     let htmlSelect = document.createElement("SELECT");
     let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    if (storeData !== null) {
-        let opt = document.createElement("OPTION");
-        if (item.minOccurs === 1) htmlSelect.required = true;
-        if (item.maxOccurs > 1) htmlSelect.multiple = true;
-        htmlSelect.size = "3";
-        htmlSelect.name = item.identifier;
-        let optionGroup = document.createElement("OPTGROUP");
-        optionGroup.label = "Data store";
-        item.keywords.forEach(function (option) {
-            Object.keys(storeData).forEach(function (singleData) {
-                console.log('storeData[singleData].type: ', storeData[singleData].type)
-                console.log('option: ', option)
-                if (storeData[singleData].type.includes(option)) {
-                    opt.innerText = `${singleData} ${storeData[singleData].name} (${storeData[singleData].abbr} in ${storeData[singleData].unit})`;
-                    opt.value = singleData;
-                    if (item.keywords.length == 1) opt.selected = true;
-                    optionGroup.appendChild(opt);
-                    opt = document.createElement("OPTION");
-                }
-            })
-        });
-        htmlSelect.appendChild(optionGroup);
-    } else {
+    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    let boxLen = 0;
+    for (let i in storeData) if (item.keywords[0] == storeData[i].type) boxLen += 1;
+    for (let i in resultData) if (item.keywords[0] == resultData[i].type) boxLen += 1;
+    if (item.minOccurs === 1) htmlSelect.required = true;
+    if (boxLen == 0) {
         htmlSelect = document.createElement("DIV");
-        if (item.minOccurs === 1) htmlSelect.required = true;
         if (item.defaultValue) {
             htmlSelect.innerText = 'Without selected datasets the default ' + item.defaultValue + ' value is used.'
         } else {
             htmlSelect.innerText = 'Please first select a dataset from the filter menu.'
         }
+    } else {
+        if (item.maxOccurs > 1) htmlSelect.multiple = true;
+        htmlSelect.size = (boxLen > 3) ? "5":(boxLen + 2).toString();
+        htmlSelect.name = item.identifier;
+        if (storeData !== null) {
+            let optionGroup = document.createElement("OPTGROUP");
+            optionGroup.label = "Data store";
+            optionGroup = build_dropdown_opt(item, optionGroup, storeData);
+            htmlSelect.appendChild(optionGroup);
+        }
+        if (resultData !== null) {
+            let optionGroup = document.createElement("OPTGROUP");
+            optionGroup.label = "Result store";
+            optionGroup = build_dropdown_opt(item, optionGroup, resultData);
+            htmlSelect.appendChild(optionGroup);
+        }
     }
     newNode.appendChild(htmlSelect);
 }
 
+function build_dropdown_opt(item, optionGroup, sidebarData) {
+    let opt = document.createElement("OPTION");
+    item.keywords.forEach(function (option) {
+        Object.keys(sidebarData).forEach(function (singleData) {
+            if (sidebarData[singleData].type.includes(option)) {
+                if (sidebarData[singleData].abbr && sidebarData[singleData].unit) {
+                    opt.innerText = `${singleData} ${sidebarData[singleData].name} (${sidebarData[singleData].abbr}
+                    in ${sidebarData[singleData].unit})`;
+                } else {
+                    opt.innerText = `${singleData}`;
+                }
+                opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
+                if (item.keywords.length == 1) opt.selected = true;
+                optionGroup.appendChild(opt);
+                opt = document.createElement("OPTION");
+            }
+        })
+    });
+    return optionGroup
+}
+/*
 function get_available_inputs() {
     let available_elements = {};
     available_elements['workspace'] = document.getElementById('workspace').getElementsByClassName('task');
@@ -312,13 +344,10 @@ function get_available_inputs() {
     });
     // console.log('available_elements: ', available_elements);
     return available_elements
-}
+}*/
 
 function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
-    // console.log('wpsInfo: ', wpsInfo)
-    let availableInputs = get_available_inputs();
-    // console.log('availableInputs: ', availableInputs)
-    // sessionStorage.setItem("processModal", wpsInfo);
+    // let availableInputs = get_available_inputs();
     let element = document.getElementById("mod_head");
     let newElement = "";
     element.innerHTML = wpsInfo.title;
@@ -335,7 +364,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     //inputs:
     document.getElementById("mod_in").innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
-    let outElementIdList = [], inElementIdList = [];
+    let outElementIdList = [];
 
     wpsInfo.dataInputs.forEach(function (item) {
         element = document.getElementById("mod_in");
@@ -357,7 +386,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 if (item.maxOccurs === 1) {
                     // nodeText = "";
                     item.allowedValues.forEach(function (option) {
-                        build_modal_radio(inElementIdList, item, newNode, option)
+                        build_modal_radio(item, newNode, option)
                     });
                 }
             }
@@ -366,17 +395,16 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 if (item.maxOccurs === 1) {
                     // nodeText = "";
                     item.supportedValues.forEach(function (option) {
-                        build_modal_radio(inElementIdList, item, newNode, option)
+                        build_modal_radio(item, newNode, option)
                     });
                     // inElement.setAttribute("type", "radio")
                 }
             }
         } else if ('keywords' in item) {
-            build_modal_dropdown(inElementIdList, item, newNode)
+            build_modal_dropdown(item, newNode)
         } else {
             inElement = document.createElement("input");
             inElement.id = item.identifier;
-            inElementIdList.push(item.identifier);
             inElement.name = item.identifier;
             if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
             switch (item.dataType) {
@@ -478,7 +506,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     let modal = document.getElementById("workModal");
     modal.setAttribute("name", invoke_btn_id);
     modal.style.display = "block";
-    let currentModal = new modalObj(identifier, inElementIdList, outElementIdList);
+    let currentModal = new modalObj(identifier, outElementIdList);
     // TODO: get right name for sessionstorage
     // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
     // console.log('+++: ', JSON.stringify(modalObj))
