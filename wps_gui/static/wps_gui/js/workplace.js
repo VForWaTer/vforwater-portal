@@ -130,7 +130,7 @@ function modal_run_process() {
     let identifier = modhead.dataset.process;
     let outputName;
     if (outputs[0].value === "") {
-        outputName = identifier;
+        outputName = identifier + "_";
     } else {
         outputName = outputs[0].value;
     }
@@ -142,43 +142,50 @@ function modal_run_process() {
         }, // data sent with the post request
         success: function (json) { // Results are stored in the sessionStorage
             if (json.execution_status == "ProcessSucceeded") {
+                json.wps = identifier;
+                json.inputs = {};
+                $.each(inKey, function (key, value) {
+                    json.inputs[value] = inValue;
+                });
                 color_modal("forestgreen");
                 let btnName = set_result_btn_name(outputName);
-                sessionStorage.setItem(btnName, JSON.stringify(json));
-                add_to_resultstore_buttonlist(btnName);
+                add_resultbtn_to_sessionstore(btnName, json);
                 document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, json);
             } else if (json.execution_status == "Exception") {
+                console.error('error in wps process')
                 color_modal("firebrick");
+                // alert('Error: Failed to execute your request.');
+            } else if (json.execution_status == "error in wps process") {
+                color_modal("firebrick");
+                console.error('error in wps process')
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
                 color_modal("firebrick");
                 // Use Timeout to ensure color changed before popup appears
-                setTimeout(function(){alert('Error: You are not allowed to run this process. Please Contact your Admin.');}, 5);
-                console.log('Maybe you have to log in to run processes. ', json.execution_status)
+                setTimeout(function () {
+                    alert('Error: You are not allowed to run this process. Please Contact your Admin.');
+                }, 5);
+                console.error('Maybe you have to log in to run processes. ', json.execution_status)
             }
         },
-        error: function(json) {
-            color_modal("firebrick")
+        error: function (json) {
+            color_modal("firebrick");
             console.log('Error: ', json)
         }
     });
 }
 
 function set_result_btn_name(name) {
-    let newName;
-    if (sessionStorage.getItem("resultBtnList")) {
-        let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    var newName = name;
+    if (sessionStorage.getItem("resultBtn")) {
+        let result_btns = JSON.parse(sessionStorage.getItem("resultBtn"));
         newName = name;
-        if (result_btns.includes(name)) {
+        if (Object.keys(result_btns).includes(name)) {
             var i = 0;
-            while (result_btns.includes(newName)) {
-                i++;
-                newName = name + i
+            while (Object.keys(result_btns).includes(newName)) {
+                newName = name + i++;
             }
         }
-        result_btns.push(newName);
-    } else {
-        newName = [name];
     }
     return newName
 }
@@ -197,37 +204,63 @@ function modalObj(processId, processInput, processOutput) {
     this.processOutput = processOutput;
 }
 
-function add_to_resultstore_buttonlist(btnName) {
-    if (sessionStorage.getItem("resultBtnList")) {
-
-        let result_btns = JSON.parse(sessionStorage.getItem("resultBtnList"));
-        if (result_btns.includes(btnName)) {
-            console.error('Error! Names should be unique!')
+function add_resultbtn_to_sessionstore(btnName, json) {
+    let result_btns = {};
+    if (sessionStorage.getItem("resultBtn")) {
+        result_btns = JSON.parse(sessionStorage.getItem("resultBtn"));
+        if (Object.keys(result_btns).includes(btnName)) {
+            console.error('Error! Names should be unique! Problem with race conditions?')
         }
-        result_btns.push(btnName);
-        // }
-        sessionStorage.setItem("resultBtnList", JSON.stringify(result_btns));
-    } else {
-        sessionStorage.setItem("resultBtnList", JSON.stringify(btnName));
     }
-    // return newBtnName;
+    result_btns[btnName] = {
+        type: json.type,
+        wps: json.wps,
+        inputs: json.inputs,
+        wpsid: json.wpsid,
+        status: json.execution_status
+    };
+    sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
 //TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
-function build_resultstore_button(btnName, json) {
-    // let ident = json.processid;
-    let title = json.processid;
+function build_resultstore_button(name, json) {
+    let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" class="respo-padding task is-result" ' +
-        'data-id="' + btnName + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="' + btnName + '">' +
-        '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
+        'data-id="' + name + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" id="id' + name + '">' +
+        '<span class="respo-medium" title="' + title + '"><div class="task__content">' + name + '</div>' +
         '<div class="task__actions"></div></span>' +
-        // '<span class="'+value['type']+'"></span>' +
+        '<span class="' + json['type'] + '"></span>' +
         '<a href="javascript:void(0)"' +
-        'onclick="remove_single_result(\'' + btnName + '\')" class="respo-hover-white">' +
+        'onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
-function build_modal_radio(inElementIdList, item, newNode, option) {
+function remove_single_result(removeData) {
+    document.getElementById("id" + removeData).remove();
+    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    delete workspaceData[removeData];
+    sessionStorage.setItem("resultBtn", JSON.stringify(workspaceData))
+}
+
+function remove_all_results() {
+    // remove button from portal
+    $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key) {
+        remove_single_result(key);
+    });
+    // remove button from session
+    sessionStorage.removeItem("resultBtn");
+}
+
+// function remove_all_results() {
+//     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+//     for (let i in workspaceData) {
+//         sessionStorage.removeItem('"' + workspaceData[i] + '"');
+//         document.getElementById(workspaceData[i]).remove();
+//     }
+//     sessionStorage.removeItem("resultBtnList");
+// }
+
+function build_modal_radio(item, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("input");
@@ -235,7 +268,6 @@ function build_modal_radio(inElementIdList, item, newNode, option) {
     // inElement.setAttribute("type", "radio");
     inElement.value = option;
     inElement.id = item.identifier;
-    inElementIdList.push(item.identifier);
     if (item.minOccurs === 1) inElement.required = true;
 
     inElement.name = item.identifier;
@@ -246,41 +278,62 @@ function build_modal_radio(inElementIdList, item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
-function build_modal_dropdown(inElementIdList, item, newNode) {
+function build_modal_dropdown(item, newNode) {
     let htmlSelect = document.createElement("SELECT");
     let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    if (storeData !== null) {
-        let opt = document.createElement("OPTION");
-        if (item.minOccurs === 1) htmlSelect.required = true;
-        if (item.maxOccurs > 1) htmlSelect.multiple = true;
-        htmlSelect.size = "3";
-        htmlSelect.name = item.identifier;
-        let optionGroup = document.createElement("OPTGROUP");
-        optionGroup.label = "Data store";
-        item.keywords.forEach(function (option) {
-            Object.keys(storeData).forEach(function (singleData) {
-                if (option == storeData[singleData].type) {
-                    opt.innerText = `${singleData} ${storeData[singleData].name} (${storeData[singleData].abbr} in ${storeData[singleData].unit})`;
-                    opt.value = singleData;
-                    if (item.keywords.length == 1) opt.selected = true;
-                    optionGroup.appendChild(opt);
-                    opt = document.createElement("OPTION");
-                }
-            })
-        });
-        htmlSelect.appendChild(optionGroup);
-    } else {
+    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    let boxLen = 0;
+    for (let i in storeData) if (item.keywords[0] == storeData[i].type) boxLen += 1;
+    for (let i in resultData) if (item.keywords[0] == resultData[i].type) boxLen += 1;
+    if (item.minOccurs === 1) htmlSelect.required = true;
+    if (boxLen == 0) {
         htmlSelect = document.createElement("DIV");
-        if (item.minOccurs === 1) htmlSelect.required = true;
         if (item.defaultValue) {
-            htmlSelect.innerText = 'Without selected datasets the default '+item.defaultValue+' value is used.'
+            htmlSelect.innerText = 'Without selected datasets the default ' + item.defaultValue + ' value is used.'
         } else {
             htmlSelect.innerText = 'Please first select a dataset from the filter menu.'
+        }
+    } else {
+        if (item.maxOccurs > 1) htmlSelect.multiple = true;
+        htmlSelect.size = (boxLen > 3) ? "5":(boxLen + 2).toString();
+        htmlSelect.name = item.identifier;
+        if (storeData !== null) {
+            let optionGroup = document.createElement("OPTGROUP");
+            optionGroup.label = "Data store";
+            optionGroup = build_dropdown_opt(item, optionGroup, storeData);
+            htmlSelect.appendChild(optionGroup);
+        }
+        if (resultData !== null) {
+            let optionGroup = document.createElement("OPTGROUP");
+            optionGroup.label = "Result store";
+            optionGroup = build_dropdown_opt(item, optionGroup, resultData);
+            htmlSelect.appendChild(optionGroup);
         }
     }
     newNode.appendChild(htmlSelect);
 }
 
+function build_dropdown_opt(item, optionGroup, sidebarData) {
+    let opt = document.createElement("OPTION");
+    item.keywords.forEach(function (option) {
+        Object.keys(sidebarData).forEach(function (singleData) {
+            if (sidebarData[singleData].type.includes(option)) {
+                if (sidebarData[singleData].abbr && sidebarData[singleData].unit) {
+                    opt.innerText = `${singleData} ${sidebarData[singleData].name} (${sidebarData[singleData].abbr}
+                    in ${sidebarData[singleData].unit})`;
+                } else {
+                    opt.innerText = `${singleData}`;
+                }
+                opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
+                if (item.keywords.length == 1) opt.selected = true;
+                optionGroup.appendChild(opt);
+                opt = document.createElement("OPTION");
+            }
+        })
+    });
+    return optionGroup
+}
+/*
 function get_available_inputs() {
     let available_elements = {};
     available_elements['workspace'] = document.getElementById('workspace').getElementsByClassName('task');
@@ -291,13 +344,10 @@ function get_available_inputs() {
     });
     // console.log('available_elements: ', available_elements);
     return available_elements
-}
+}*/
 
 function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
-    // console.log('wpsInfo: ', wpsInfo)
-    let availableInputs = get_available_inputs();
-    // console.log('availableInputs: ', availableInputs)
-    // sessionStorage.setItem("processModal", wpsInfo);
+    // let availableInputs = get_available_inputs();
     let element = document.getElementById("mod_head");
     let newElement = "";
     element.innerHTML = wpsInfo.title;
@@ -314,7 +364,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     //inputs:
     document.getElementById("mod_in").innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
-    let outElementIdList = [], inElementIdList = [];
+    let outElementIdList = [];
 
     wpsInfo.dataInputs.forEach(function (item) {
         element = document.getElementById("mod_in");
@@ -336,7 +386,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 if (item.maxOccurs === 1) {
                     // nodeText = "";
                     item.allowedValues.forEach(function (option) {
-                        build_modal_radio(inElementIdList, item, newNode, option)
+                        build_modal_radio(item, newNode, option)
                     });
                 }
             }
@@ -345,17 +395,16 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 if (item.maxOccurs === 1) {
                     // nodeText = "";
                     item.supportedValues.forEach(function (option) {
-                        build_modal_radio(inElementIdList, item, newNode, option)
+                        build_modal_radio(item, newNode, option)
                     });
                     // inElement.setAttribute("type", "radio")
                 }
             }
         } else if ('keywords' in item) {
-            build_modal_dropdown(inElementIdList, item, newNode)
+            build_modal_dropdown(item, newNode)
         } else {
             inElement = document.createElement("input");
             inElement.id = item.identifier;
-            inElementIdList.push(item.identifier);
             inElement.name = item.identifier;
             if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
             switch (item.dataType) {
@@ -457,7 +506,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     let modal = document.getElementById("workModal");
     modal.setAttribute("name", invoke_btn_id);
     modal.style.display = "block";
-    let currentModal = new modalObj(identifier, inElementIdList, outElementIdList);
+    let currentModal = new modalObj(identifier, outElementIdList);
     // TODO: get right name for sessionstorage
     // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
     // console.log('+++: ', JSON.stringify(modalObj))

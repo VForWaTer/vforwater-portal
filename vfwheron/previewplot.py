@@ -4,13 +4,11 @@
 import copy
 from datetime import time
 from math import radians, ceil, sqrt
-from bokeh.layouts import column, row
-from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, RangeSlider, ColumnDataSource, \
+from bokeh.layouts import column
+from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
     DateSlider, DateRangeSlider
-# from bokeh.models.widgets import Slider
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
-# from bokeh.models import
 from bokeh.embed import components
 from bokeh.palettes import Oranges9
 

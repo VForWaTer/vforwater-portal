@@ -47,7 +47,7 @@ from datetime import datetime, date
 import time
 
 from .filter import FilterMethods, Menu, build_id_list, Table
-from .models import TblMeta, TblVariable, TblData
+from .models import TblMeta, TblVariable, TblData, Entries
 
 import logging
 import os
@@ -186,8 +186,9 @@ class MenuView(TemplateView):
         :return:
         :rtype:
         """
-
-        request.session.set_expiry(20)  # TODO: expire after 20 seconds/ this is only for development!!!
+        if DEBUG:
+            # expire after 20 seconds/ this is only for development!!!
+            request.session.set_expiry(20)
 
         # bring last used menu to session
         if 'menu' in request.GET:

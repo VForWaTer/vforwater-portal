@@ -27,9 +27,9 @@ class WpsResults(models.Model):
     creation = models.DateTimeField(blank=True, null=True)
     access = models.DateTimeField(blank=True, null=True)
     open = models.BooleanField()
-    link = models.CharField(max_length=1024)
+    outputs = models.CharField(max_length=1024)
     wps = models.CharField(max_length=255)
-    inputdict = models.CharField(max_length=2048)
+    inputs = models.CharField(max_length=2048)
 
     def __str__(self):
-        return '%s %s' % (self.wps, self.inputdict)
+        return '%s %s' % (self.wps, self.inputs)
