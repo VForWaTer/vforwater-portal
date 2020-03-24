@@ -144,8 +144,10 @@ function modal_run_process() {
             if (json.execution_status == "ProcessSucceeded") {
                 json.wps = identifier;
                 json.inputs = {};
+                let i = 0;
                 $.each(inKey, function (key, value) {
-                    json.inputs[value] = inValue;
+                    json.inputs[value] = inValue[i];
+                    i++;
                 });
                 color_modal("forestgreen");
                 let btnName = set_result_btn_name(outputName);
@@ -223,15 +225,22 @@ function add_resultbtn_to_sessionstore(btnName, json) {
 }
 
 //TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
+/**
+ * Build a button in the result store.
+ * data-id is used to find results on server
+ * id is used for the remove button
+ * @param  {string} name name for the button
+ * @param  {obj} json Object holding all necessary info about result
+ * @return {string}      HTML Code for the button
+ * */
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" class="respo-padding task is-result" ' +
-        'data-id="' + name + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" id="id' + name + '">' +
-        '<span class="respo-medium" title="' + title + '"><div class="task__content">' + name + '</div>' +
-        '<div class="task__actions"></div></span>' +
+        'data-id="wps' + json.wpsid + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
+        'id="id' + json.wpsid + '"><span class="respo-medium" title="' + title + '">' +
+        '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
         '<span class="' + json['type'] + '"></span>' +
-        '<a href="javascript:void(0)"' +
-        'onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
+        '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 

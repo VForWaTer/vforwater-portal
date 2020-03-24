@@ -1,7 +1,10 @@
 """
 
 """
+import ast
 import copy
+import json
+import pickle
 from datetime import time
 from math import radians, ceil, sqrt
 from bokeh.layouts import column
@@ -20,6 +23,9 @@ from vfwheron.models import TblMeta, TblData
 import redis
 import pandas as pd
 import time
+
+from wps_gui.models import WpsResults
+
 
 def DB_load_label(ID):
     label = TblMeta.objects.filter(id=ID).values_list('variable__variable_name',
@@ -47,7 +53,7 @@ def DB_load_data(ID):
     return {'data': result, 'axis': axis}
 
 
-def get_bokeh_standard(DBdata, label):
+def get_bokeh_standard(DBdata, label=""):
     source = ColumnDataSource({'date': DBdata['data'][0], 'y': DBdata['data'][1],
                                'ymin': DBdata['data'][2], 'ymax': DBdata['data'][3],
                                'count': DBdata['data'][4]})
@@ -246,6 +252,30 @@ def DB_load_directiondata(id, ti):
     return dbresult
 
 
+def get_timeseries_plot(data):
+    print('in get...')
+    # source = ColumnDataSource(data)
+    print('made source...')
+
+    mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
+                      y_axis_label='value',
+                      plot_width=700, plot_height=500, toolbar_location="above",
+                      tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
+
+    # plot.toolbar.autohide = True
+    # plot line
+    mainplot.line(data.index.values, data['value'], line_width=2)
+    # mainplot.line(x='tstamp', y='value', source=source, line_width=2)
+    # Style the plot
+    mainplot.title.text_font_size = "14pt"
+    mainplot.xaxis.axis_label_text_font_size = "14pt"
+    mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
+    mainplot.yaxis.axis_label_text_font_size = "14pt"
+
+    script, div = components(mainplot, wrap_script=False)
+    return {'script': script, 'div': div}
+
+
 def distribution_plot(source, mapper, bin_width, title, plot_width):
     p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
                         plot_width=plot_width, plot_height=50, toolbar_location="above", background_fill_color="black",
@@ -262,6 +292,7 @@ def distribution_plot(source, mapper, bin_width, title, plot_width):
 
 def get_preview(id):
     # id = 2657 # small test dataset
+    wps_result = True if 'wps' in id[0:3] else False
     use_redis = True
     in_cache = False
     try:
@@ -276,7 +307,7 @@ def get_preview(id):
             img = str(img, 'utf-8')
             in_cache = True
 
-    if not in_cache:
+    if not in_cache and not wps_result:
         label = DB_load_label(id)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
@@ -289,5 +320,15 @@ def get_preview(id):
 
         if use_redis:
             r.set("preview_{}".format('b' + id), img)
+
+    if wps_result:
+        DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)[0]
+        try:
+            df = pd.read_pickle(DBstring)
+            img = get_timeseries_plot(df)
+            #with open(DBstring, 'rb') as f:
+            #    data = pickle.load(f)
+        except FileNotFoundError:
+            print('The data file %s was not found.' % (DBstring))
 
     return img

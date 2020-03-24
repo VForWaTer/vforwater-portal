@@ -392,6 +392,20 @@ div.ui-rangeslider label {
     position:relative;
     padding:0;
     outline:0;
+    /*width: -webkit-fit-content;*/
+    width: -moz-fit-content;
+    width:fit-content
+    /*width:600px*/
+}
+.wps-modal-content{
+    margin:auto;
+    background-color:#fff;
+    position:relative;
+    padding:0;
+    outline:0;
+    /*width: -webkit-fit-content;*/
+    /*width: -moz-fit-content;*/
+    /*width:fit-content*/
     width:600px
 }
 /*.respo-closebtn{
