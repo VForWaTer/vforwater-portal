@@ -456,6 +456,11 @@ function show_data_info(properties) {
 }
 
 
+/**
+ * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
+ *
+ * @param (html) link HTML Code of the clicked link
+ */
 function menuItemListener(link) {
     let id = taskItemInContext.getAttribute("data-id");
     content.innerHTML = '<div id="loader" class="loader"></div>';
@@ -479,21 +484,22 @@ function menuItemListener(link) {
                 }
             });
             break;
-        case "Plot":
-            $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
-                datatype: 'json',
-                data: {
-                    preview: id,
-                    'csrfmiddlewaretoken': csrf_token,
-                }, // data sent with post
-                success: function (result) {
-                    content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
-                    popcloser.classList.remove('respo-hide');
-                    positionPopup(popup);
-                }
-            });
-            break;
+        // case "Plot":
+        //     $.ajax({
+        //         url: DEMO_VAR + "/vfwheron/menu",
+        //         datatype: 'json',
+        //         data: {
+        //             preview: id,
+        //             'csrfmiddlewaretoken': csrf_token,
+        //         }, // data sent with post
+        //         success: function (result) {
+        //             console.log('plot result: ', result)
+        //             content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
+        //             popcloser.classList.remove('respo-hide');
+        //             positionPopup(popup);
+        //         }
+        //     });
+        //     break;
         case "Downloadcsv":
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
@@ -576,7 +582,7 @@ function menuItemListener(link) {
             popcloser.classList.remove('respo-hide');
             positionPopup(popup);
             break;
-        case "PlotResult":
+        case "Plot":
             // let result = JSON.parse(sessionStorage.getItem('resultBtn'));
             // result = JSON.parse(sessionStorage.getItem(id));
             console.log('IDw: ', result)

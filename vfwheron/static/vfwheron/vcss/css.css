@@ -41,7 +41,7 @@ iframe {
 }
 
 
-.modal-back {
+.modal-back{
     color: black;
     float: right;
     font-size: 20px;
@@ -49,31 +49,63 @@ iframe {
     /*font-weight: bold;*/
 }
 
-.modal-back:hover,
-.modal-back:focus {
+.modal-back:hover, .modal-back:focus,
+.result_modal-back:hover, .result_modal-back:focus,
+.work_modal-cancel:hover, .work_modal-cancel:focus,
+.work_modal-run:hover, .work_modal-run:focus,
+.work_modal-ok:hover, .work_modal-ok:focus{
     color: #000;
     text-decoration: none;
     cursor: pointer;
 }
 
-.modal-header {
+.result_modal-back, .work_modal-cancel, .work_modal-run, .work_modal-ok{
+  color: white;
+  float: right;
+  font-size: 20px;
+    padding-top:2px;
+    padding-bottom: 2px;
+    padding-left: 12px;
+  /*font-weight: bold;*/
+}
+
+.modal-header,
+.result_modal-header,
+.work_modal-header{
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
     color: black;
 }
 
-.modal-body.modal-body {
+.modal-body,
+.result_modal-body {
     /*padding: 2px 16px;*/
     width: fit-content;
 }
 
-.modal-footer {
+.modal-footer{
     height: 38px;
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
     color: black;
 }
 
+.result_modal-footer, .work_modal-footer{
+    height: 38px;
+    padding: 2px 12px;
+    background-color: dodgerblue;
+    color: white;
+}
+
+button-header {
+    display: block;
+}
+button-footer {
+    display: flex;
+    position: relative;
+    left: 150px;
+    overflow: hidden;
+}
 
 /*styles for Toolbox buttons*/
 /*!**
@@ -91,12 +123,12 @@ button {
   cursor: pointer;
 }*/
 
-.process {
-  /*height: 50px;*/
-  /*width: 350px;*/
-  /*background-color: blue;*/
-  /*display: inline-block;*/
-}
+/*.process {*/
+/*  !*height: auto;*!*/
+/*  !*width: 350px;*!*/
+/*  !*background-color: blue;*!*/
+/*  !*display: inline-block;*!*/
+/*}*/
 .string,.array,.pickle,.timeseries,
 .ts-array, .ts-pickle, .ts-aggregate {
     margin: 5px;

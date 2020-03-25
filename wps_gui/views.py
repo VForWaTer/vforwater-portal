@@ -2,15 +2,12 @@
 import json
 import re
 import sys
-import xml.etree.ElementTree as ET
 import jsonpickle
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.core.cache import cache
 from django.views.generic import TemplateView
 from django.utils import timezone
-from owslib.wps import printInputOutput
 
 from heron.settings import VFW_SERVER, HOST_NAME
 from vfwheron.models import TblMeta, TblData
@@ -231,7 +228,7 @@ class ProcessView(TemplateView):
         if 'processrun' in request.GET:
 
             if True:
-            # if request.user.is_authenticated:
+                # if request.user.is_authenticated:
                 request_input = json.loads(request.GET.get('processrun'))
                 inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
                 inputs = edit_input(inputs)
