@@ -103,7 +103,7 @@ button-header {
 button-footer {
     display: flex;
     position: relative;
-    left: 150px;
+    left: 180px;
     overflow: hidden;
 }
 
@@ -129,12 +129,12 @@ button {
 /*  !*background-color: blue;*!*/
 /*  !*display: inline-block;*!*/
 /*}*/
-.string,.array,.pickle,.timeseries,
-.ts-array, .ts-pickle, .ts-aggregate {
+.string,.array, .integer,
+.boolean, .float, .image{
     margin: 5px;
     height: 12px;
     width: 12px;
-    border-radius: 50%;/*0 6px 6px 0;*/
+    /*border-radius: 50%;!*0 6px 6px 0;*!*/
     /*font-weight: bold;
     font-size: 9pt;
     color: black;*/
@@ -142,6 +142,14 @@ button {
   /*  display: flex;*/
   /*align-items: center;*/
 }
+.pickle,.timeseries,
+.ts-array, .ts-pickle, .ts-aggregate {
+    margin: 5px;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+}
+
 
 .left-hemisphere {
     margin: 5px;
@@ -166,16 +174,19 @@ button {
 11 colorblind safe colors from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
  */
 /*.array{background-color:rgb(165,0,38); content: "AR";}*/
-.array{background-color:rgb(165,0,38)}
-.timeseries{background-color:rgb(215,48,39)}
-.ts-array{background-color:rgb(244,109,67)}
-.ts-pickle{background-color:rgb(253,174,97)}
-.ts-aggregate{background-color:rgb(254,224,144)}
-.string{background-color:rgb(255,255,191); border: 1px solid #ffbf26;}
-.pickle{background-color:rgb(224,243,248); border: 1px solid darkturquoise;}
-.aggregate{background-color:rgb(171,217,233)}
-.merge{background-color:rgb(116,173,209)}
-.q9-11{background-color:rgb(69,117,180)}
-.q10-11{background-color:rgb(49,54,149)}
+.array{background-color: rgb(165,0,38)}
+.timeseries{background-color: rgb(215,48,39)}
+.ts-array{background-color: rgb(244,109,67)}
+.ts-pickle{background-color: rgb(253,174,97)}
+.ts-aggregate{background-color: rgb(254,224,144)}
+.string{background-color: rgb(255,255,191); border: 1px solid #ffbf26;}
+.pickle{background-color: rgb(224,243,248); border: 1px solid darkturquoise;}
+.aggregate{background-color: rgb(171,217,233)}
+.merge{background-color: rgb(116,173,209)}
+.boolean{background-color: rgb(69,117,180)}
+/*.float{background-color:rgb(49,54,149)}*/
+.float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
+.integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
+.image{background-color: rgb(19, 154, 24); border: 1px solid #91ff59;}
 
 

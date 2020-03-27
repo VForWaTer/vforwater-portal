@@ -439,7 +439,7 @@ function positionPopup(window) {
 /**
  * Dummy action function that logs an action when a menu item link is clicked
  *
- * @param {HTMLElement} link The link that was clicked
+ * @param {???} properties
  */
 
 function show_data_info(properties) {
@@ -463,6 +463,9 @@ function show_data_info(properties) {
  */
 function menuItemListener(link) {
     let id = taskItemInContext.getAttribute("data-id");
+    console.log('id: ', id)
+
+    let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
     popup.classList.add(popActive);
     popText.classList.remove(popInActive);

@@ -45,15 +45,16 @@ def home(request):
 
             wps.processes[countLoop].processout = []
             for i in describedprocess.processOutputs:
-                if i.abstract is not None:
-                    if 'keywords' in json.loads(i.abstract):
-                        wps.processes[countLoop].processout.append(json.loads(i.abstract)['keywords'])
-                elif isinstance(i.dataType, str):
-                    wps.processes[countLoop].processout.append('string')
-                elif isinstance(i.dataType, float):
-                    wps.processes[countLoop].processout.append('float')
-                # elif i.metadata[0] == '_keywords':
-                #     wps.processes[countLoop].processout.append(i.allowedValues[1:])
+                if 'error' not in i.identifier:
+                    if i.abstract is not None:
+                        if 'keywords' in json.loads(i.abstract):
+                            wps.processes[countLoop].processout.append(json.loads(i.abstract)['keywords'])
+                    elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
+                        wps.processes[countLoop].processout.append(i.dataType)
+                    # elif isinstance(i.dataType, float):
+                    #     wps.processes[countLoop].processout.append('float')
+                    # elif i.metadata[0] == '_keywords':
+                    #     wps.processes[countLoop].processout.append(i.allowedValues[1:])
             countLoop += 1
     except:
         logger.error(sys.exc_info()[0])

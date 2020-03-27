@@ -45,7 +45,7 @@
     });
     //console.log('outvalues: ', outvalues)
     outvalues.forEach(function (val) {
-      if (Array.isArray(val)) {
+      if (Array.isArray(val) && val.length > 1) {
         let newFooter = "";
         val.forEach(function (outVal) {
           newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
