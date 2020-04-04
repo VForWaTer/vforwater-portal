@@ -36,10 +36,12 @@ def home(request):
             describedprocess = wps.describeprocess(process.identifier)
             wps.processes[countLoop].processin = []
             for i in describedprocess.dataInputs:
-                if i.allowedValues == [] and isinstance(i.dataType, str):
-                    wps.processes[countLoop].processin.append('string')
-                elif i.allowedValues == [] and isinstance(i.dataType, float):
-                    wps.processes[countLoop].processin.append('float')
+                if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
+                    wps.processes[countLoop].processin.append(i.dataType)
+                # if i.allowedValues == [] and isinstance(i.dataType, str):
+                #     wps.processes[countLoop].processin.append('string')
+                # elif i.allowedValues == [] and not isinstance(i.dataType, str):
+                #     wps.processes[countLoop].processin.append(i.dataType)
                 elif i.allowedValues[0] == '_keywords':
                     wps.processes[countLoop].processin.append(i.allowedValues[1:])
 

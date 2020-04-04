@@ -80,20 +80,35 @@ function check_required(checkElement) {
 
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
+// TODO: Improve code by using HTML Forms
 function modal_run_process() {
     color_modal("dodgerblue");
+    /** collect inputs **/
     var inKey = [];
     var inValue = [];
+    let dDInput = 0;
+    let inputList = [];
     // let workModal = document.getElementById('workModal');
     let inModal = document.getElementById('mod_in');
     let radioInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
 
     for (let i = 0; i < dropDInputs.length; i++) {
-        for (let j = 0; j < dropDInputs[i].length; j++) {
-            if (dropDInputs[i][j].selected) {
+        if (dropDInputs[i].className == 'divTblRight') {
+            inputList = [];
+            for (let j = 0; j < dropDInputs[i].length; j++) {
+                inputList.push(dropDInputs[i][j].value);
+            }
+            inKey.push(dropDInputs[i].name);
+            inValue.push(inputList);
+        }
+        /** Do not collect anything from DropDown with class 'noInput' **/
+        else if (dropDInputs[i].className != 'noInput') {
+            dDInput = dropDInputs[i].selectedOptions;
+            for (let j = 0; j < dDInput.length; j++) {
+                if (j > 0) {console.warn('You should only select one option.')}
                 inKey.push(dropDInputs[i].name);
-                inValue.push(dropDInputs[i][j].value);
+                inValue.push(dDInput[j].value);
             }
         }
     }
@@ -111,7 +126,7 @@ function modal_run_process() {
             inValue.push(radioInputs[i].value);
         }
     }
-
+    /** colect outputs **/
     let outModal = document.getElementById('mod_out');
     let outputs = outModal.getElementsByTagName('input');
     let outDict = {};
@@ -124,7 +139,7 @@ function modal_run_process() {
             outDict[outputs[i].name] = outputs[i].value;
         }
     }
-
+    /** find respective process **/
     let modhead = document.getElementById('mod_head');
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
@@ -287,14 +302,16 @@ function build_modal_radio(item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
-function build_modal_dropdown(item, newNode) {
+function build_modal_dropdown(item, newNode, countDropDowns) {
     let htmlSelect = document.createElement("SELECT");
     let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let boxLen = 0;
     for (let i in storeData) if (item.keywords[0] == storeData[i].type) boxLen += 1;
     for (let i in resultData) if (item.keywords[0] == resultData[i].type) boxLen += 1;
-    if (item.minOccurs === 1) htmlSelect.required = true;
+    // if (item.minOccurs === 1) htmlSelect.required = true; // Thy did I first use === 1 ???
+    if (item.minOccurs > 1) htmlSelect.required = true;
+    /** check if input data is available; only build dropdown if there is data to select from **/
     if (boxLen == 0) {
         htmlSelect = document.createElement("DIV");
         if (item.defaultValue) {
@@ -303,7 +320,6 @@ function build_modal_dropdown(item, newNode) {
             htmlSelect.innerText = 'Please first select a dataset from the filter menu.'
         }
     } else {
-        if (item.maxOccurs > 1) htmlSelect.multiple = true;
         htmlSelect.size = (boxLen > 3) ? "5":(boxLen + 2).toString();
         htmlSelect.name = item.identifier;
         if (storeData !== null) {
@@ -318,8 +334,52 @@ function build_modal_dropdown(item, newNode) {
             optionGroup = build_dropdown_opt(item, optionGroup, resultData);
             htmlSelect.appendChild(optionGroup);
         }
+        /** If more then one option is needed to select show a second box with selection **/
+        if (item.maxOccurs > 1 || item.minOccurs > 1) {
+            let divTable = document.getElementById('twoDropDown').cloneNode(true);
+            // let templateClass = document.createAttribute("class");
+            // let templateNumber = tdp + toString(countDropDowns);
+            let secondBox = document.createElement("SELECT");
+            let attLft = document.createAttribute("class");
+            let attRght = document.createAttribute("class");
+            console.log('Buddys: ', divTable)
+            console.log('Buddys: ', divTable.content)
+            console.log('Buddys1a: ', divTable.getElementsByTagName("button"))
+            console.log('Buddys1c: ', divTable.querySelectorAll("button"))
+            console.log('Buddys1c: ', divTable.content.querySelectorAll('divTbButtons'))
+            console.log('Buddys1: ', divTable.getElementsByClassName("divTbButtons").length)
+            console.log('Buddys2: ', divTable.getElementsByClassName("divTable"))
+            console.log('Buddys3: ', divTable.getElementsByClassName("tblRow"))
+            console.log('Buddys4: ', divTable.getElementsByClassName("tblCell"))
+            let buttons = divTable.getElementsByClassName("divTbButtons");
+            // divTable.id = 'twoDropDown'.concat(countDropDowns);
+            attLft.value = "noInput";
+            htmlSelect.setAttributeNode(attLft);
+
+            secondBox.size = htmlSelect.size;
+            attRght.value = "divTblRight";
+            secondBox.setAttributeNode(attRght);
+
+            htmlSelect.name = 'source_'.concat(item.identifier);
+            secondBox.name = item.identifier;
+            secondBox.multiple = true;
+            htmlSelect.multiple = true;
+
+            /** assemble table, put the orginal dropdown in first column, afterwards copy table in htmlSelect **/
+            divTable.content.getElementById("tDD_left_cell").append(htmlSelect);
+            divTable.content.getElementById("tDD_left_cell").id = 'tDD_left_cell'.concat(countDropDowns);
+            divTable.content.getElementById("tDD_right_cell").append(secondBox);
+            divTable.content.getElementById("tDD_right_cell").id = 'tDD_right_cell'.concat(countDropDowns);
+            /** associate buttons with dropdowns **/
+            console.log('buts: ', buttons)
+            // buttons.forEach(console.log(a, b))
+
+            htmlSelect = divTable.content.cloneNode(true);
+            countDropDowns += 1;
+        }
     }
     newNode.appendChild(htmlSelect);
+    return countDropDowns;
 }
 
 function build_dropdown_opt(item, optionGroup, sidebarData) {
@@ -374,10 +434,13 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     document.getElementById("mod_in").innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
+    let countDropDowns = 0;
 
     wpsInfo.dataInputs.forEach(function (item) {
         element = document.getElementById("mod_in");
         newNode = document.createElement("p");
+
+        /** Set title of Input and set the required flag if necessary **/
         let titleText = "";
         if ('minOccurs' in item) {
             if (item.minOccurs > 0 && item.dataType != 'boolean') {
@@ -410,7 +473,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 }
             }
         } else if ('keywords' in item) {
-            build_modal_dropdown(item, newNode)
+            countDropDowns = build_modal_dropdown(item, newNode, countDropDowns)
         } else {
             inElement = document.createElement("input");
             inElement.id = item.identifier;
@@ -462,7 +525,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     });
 
     // TODO: build one output now. Decide how to handle several outputs
-    //outputs:
+    /** outputs: **/
     document.getElementById("mod_out").innerHTML = "";
 
     element = document.getElementById("mod_out");
@@ -475,43 +538,6 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     let outElement = document.createElement("input");
     newNode.appendChild(outElement);
     if (typeof (newNode) === 'object') element.appendChild(newNode);
-    /*let outElement = "";
-    newNode = "";
-    nodeText = "";
-
-    wpsInfo.processOutputs.forEach(function (item) {
-        element = document.getElementById("mod_out");
-
-        nodeText = document.createElement("p");
-        nodeText.appendChild(document.createTextNode(" Name for " + item.title + ": "));
-
-        newNode = document.createElement("div");
-        newNode.appendChild(nodeText);
-
-
-        outElement = document.createElement("input");
-        // inElement.className = "input";
-        outElement.id = item.identifier;
-        outElementIdList.push(item.identifier);
-        outElement.name = item.identifier;
-        outElement.type = "text";
-        outElement.value = item.identifier;
-        newNode.appendChild(outElement);
-
-        nodeText = document.createElement("p");
-        let mimeText = "";
-        if (item.defaultValue && item.defaultValue.mimeType) {
-            mimeText = " (" + item.defaultValue.mimeType + ")"
-        }
-        nodeText.appendChild(document.createTextNode(" Type of Output: " + item.dataType + mimeText));
-        newNode.appendChild(nodeText);
-        //$("div").append(inElement);
-        if (typeof (newNode) === 'object') {
-            element.appendChild(newNode)
-        }
-    });*/
-
-    //element.innerHTML = inElement;
     let modal = document.getElementById("workModal");
     modal.setAttribute("name", invoke_btn_id);
     modal.style.display = "block";
@@ -519,6 +545,14 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     // TODO: get right name for sessionstorage
     // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
     // console.log('+++: ', JSON.stringify(modalObj))
+}
+
+function DropdownToDropdown(parentTemp, direction) {
+    console.log('parent: ', parentTemp)
+    console.log('parent prev siblings: ', parentTemp.previousSibling)
+    let sibbi = parentTemp.previousSibling;
+    console.log('parent prev siblings select: ', sibbi.getElementsByTagName("SELECT"))
+    console.log('parent next siblings: ', parentTemp.nextSibling)
 
     // element.innerHTML = wpsInfo.title;
 }

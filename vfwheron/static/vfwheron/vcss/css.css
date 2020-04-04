@@ -183,7 +183,8 @@ button {
 .pickle{background-color: rgb(224,243,248); border: 1px solid darkturquoise;}
 .aggregate{background-color: rgb(171,217,233)}
 .merge{background-color: rgb(116,173,209)}
-.boolean{background-color: rgb(69,117,180)}
+.boolean{background-color: rgb(50, 74, 147); border: 1px solid black;}
+/*.boolean{background-color: rgb(69,117,180)}*/
 /*.float{background-color:rgb(49,54,149)}*/
 .float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
 .integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
