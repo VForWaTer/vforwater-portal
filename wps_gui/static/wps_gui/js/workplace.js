@@ -365,13 +365,13 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
             secondBox.multiple = true;
             htmlSelect.multiple = true;
 
-            /** assemble table, put the orginal dropdown in first column, afterwards copy table in htmlSelect **/
+            /** assemble table, put the orignal dropdown in first column, afterwards copy table in htmlSelect **/
             divTable.content.getElementById("tDD_left_cell").append(htmlSelect);
             divTable.content.getElementById("tDD_left_cell").id = 'tDD_left_cell'.concat(countDropDowns);
             divTable.content.getElementById("tDD_right_cell").append(secondBox);
             divTable.content.getElementById("tDD_right_cell").id = 'tDD_right_cell'.concat(countDropDowns);
             /** associate buttons with dropdowns **/
-            console.log('buts: ', buttons)
+            // TODO: Didn't figur out how connect to buttons. DropdownToDropdown always
             // buttons.forEach(console.log(a, b))
 
             htmlSelect = divTable.content.cloneNode(true);
@@ -548,11 +548,18 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
 }
 
 function DropdownToDropdown(parentTemp, direction) {
+    let dropDowns = parentTemp.getElementsByTagName("SELECT");
+    let i;
     console.log('parent: ', parentTemp)
-    console.log('parent prev siblings: ', parentTemp.previousSibling)
-    let sibbi = parentTemp.previousSibling;
-    console.log('parent prev siblings select: ', sibbi.getElementsByTagName("SELECT"))
-    console.log('parent next siblings: ', parentTemp.nextSibling)
+    console.log('parent select: ', parentTemp.getElementsByTagName("SELECT"))
+    console.log('parent class: ', parentTemp.getElementsByClassName("tblCell"))
+    console.log('parent class: ', parentTemp.getElementsByClassName("tblCell"))
+    let selected = parentTemp.getElementsByClassName("tblCell");
+    for (let i of selected) {
+        if (i.id) {
+            console.log('im if: ', i.id)
+        }
+    }
 
     // element.innerHTML = wpsInfo.title;
 }

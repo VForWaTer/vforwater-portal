@@ -61,7 +61,6 @@
   rspan_b.onclick = () => close_result_Modal();
   {#span_c.onclick = function () {closeModal()};#}
   // When the user clicks anywhere outside of the modal, close it
-  console.log('window click: ', window.onclick)
   window.onclick = (event) => {if (event.target == rModal) close_result_Modal()};
 
   function close_result_Modal() {
