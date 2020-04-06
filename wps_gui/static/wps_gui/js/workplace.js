@@ -92,25 +92,34 @@ function modal_run_process() {
     let inModal = document.getElementById('mod_in');
     let radioInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
-
+    let valueList = [];
+    console.log('dropinputs: ', dropDInputs)
+    console.log('len dropinputs: ', dropDInputs.length)
+    /** first loop over each dropdown in input, then over values in dropdown **/
     for (let i = 0; i < dropDInputs.length; i++) {
-        if (dropDInputs[i].className == 'divTblRight') {
-            inputList = [];
-            for (let j = 0; j < dropDInputs[i].length; j++) {
-                inputList.push(dropDInputs[i][j].value);
-            }
-            inKey.push(dropDInputs[i].name);
-            inValue.push(inputList);
-        }
-        /** Do not collect anything from DropDown with class 'noInput' **/
-        else if (dropDInputs[i].className != 'noInput') {
+        // if (dropDInputs[i].className == 'divTblRight') {
+        //     inputList = [];
+        //     for (let j = 0; j < dropDInputs[i].length; j++) {
+        //         inputList.push(dropDInputs[i][j].value);
+        //     }
+        //     inKey.push(dropDInputs[i].name);
+        //     inValue.push(inputList);
+        // }
+        // /** Do not collect anything from DropDown with class 'noInput' **/
+        // else if (dropDInputs[i].className != 'noInput') {
             dDInput = dropDInputs[i].selectedOptions;
-            for (let j = 0; j < dDInput.length; j++) {
-                if (j > 0) {console.warn('You should only select one option.')}
+            if (dDInput.length > 1) {
+                for (let j = 0; j < dDInput.length; j++) {
+                    valueList.push(dDInput[j].value)
+                }
+                inValue.push([valueList]);
                 inKey.push(dropDInputs[i].name);
-                inValue.push(dDInput[j].value);
-            }
+            } else {
+                inKey.push(dropDInputs[i].name);
+                inValue.push(dDInput[0].value);
         }
+        // }
+
     }
 
     for (let i = 0; i < radioInputs.length; i++) {
@@ -334,35 +343,7 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
             optionGroup = build_dropdown_opt(item, optionGroup, resultData);
             htmlSelect.appendChild(optionGroup);
         }
-        /** If more then one option is needed to select show a second box with selection **/
         if (item.maxOccurs > 1 || item.minOccurs > 1) {
-            let divTable = document.getElementById('twoDropDown').cloneNode(true);
-            // let templateClass = document.createAttribute("class");
-            // let templateNumber = tdp + toString(countDropDowns);
-            let secondBox = document.createElement("SELECT");
-            let attLft = document.createAttribute("class");
-            let attRght = document.createAttribute("class");
-            console.log('Buddys: ', divTable)
-            console.log('Buddys: ', divTable.content)
-            console.log('Buddys1a: ', divTable.getElementsByTagName("button"))
-            console.log('Buddys1c: ', divTable.querySelectorAll("button"))
-            console.log('Buddys1c: ', divTable.content.querySelectorAll('divTbButtons'))
-            console.log('Buddys1: ', divTable.getElementsByClassName("divTbButtons").length)
-            console.log('Buddys2: ', divTable.getElementsByClassName("divTable"))
-            console.log('Buddys3: ', divTable.getElementsByClassName("tblRow"))
-            console.log('Buddys4: ', divTable.getElementsByClassName("tblCell"))
-            let buttons = divTable.getElementsByClassName("divTbButtons");
-            // divTable.id = 'twoDropDown'.concat(countDropDowns);
-            attLft.value = "noInput";
-            htmlSelect.setAttributeNode(attLft);
-
-            secondBox.size = htmlSelect.size;
-            attRght.value = "divTblRight";
-            secondBox.setAttributeNode(attRght);
-
-            htmlSelect.name = 'source_'.concat(item.identifier);
-            secondBox.name = item.identifier;
-            secondBox.multiple = true;
             htmlSelect.multiple = true;
 
             /** assemble table, put the orignal dropdown in first column, afterwards copy table in htmlSelect **/
@@ -377,6 +358,40 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
             htmlSelect = divTable.content.cloneNode(true);
             countDropDowns += 1;
         }
+        // /** If more then one option is needed to select show a second box with selection **/
+        // if (item.maxOccurs > 1 || item.minOccurs > 1) {
+        //     let divTable = document.getElementById('twoDropDown').cloneNode(true);
+        //     // let templateClass = document.createAttribute("class");
+        //     // let templateNumber = tdp + toString(countDropDowns);
+        //     let secondBox = document.createElement("SELECT");
+        //     let attLft = document.createAttribute("class");
+        //     let attRght = document.createAttribute("class");
+        //     let buttons = divTable.getElementsByClassName("divTbButtons");
+        //     // divTable.id = 'twoDropDown'.concat(countDropDowns);
+        //     attLft.value = "noInput";
+        //     htmlSelect.setAttributeNode(attLft);
+        //
+        //     secondBox.size = htmlSelect.size;
+        //     attRght.value = "divTblRight";
+        //     secondBox.setAttributeNode(attRght);
+        //
+        //     htmlSelect.name = 'source_'.concat(item.identifier);
+        //     secondBox.name = item.identifier;
+        //     secondBox.multiple = true;
+        //     htmlSelect.multiple = true;
+        //
+        //     /** assemble table, put the orignal dropdown in first column, afterwards copy table in htmlSelect **/
+        //     divTable.content.getElementById("tDD_left_cell").append(htmlSelect);
+        //     divTable.content.getElementById("tDD_left_cell").id = 'tDD_left_cell'.concat(countDropDowns);
+        //     divTable.content.getElementById("tDD_right_cell").append(secondBox);
+        //     divTable.content.getElementById("tDD_right_cell").id = 'tDD_right_cell'.concat(countDropDowns);
+        //     /** associate buttons with dropdowns **/
+        //     // TODO: Didn't figur out how connect to buttons. DropdownToDropdown always builds everything new
+        //     // buttons.forEach(console.log(a, b))
+        //
+        //     htmlSelect = divTable.content.cloneNode(true);
+        //     countDropDowns += 1;
+        // }
     }
     newNode.appendChild(htmlSelect);
     return countDropDowns;
@@ -519,8 +534,6 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
             } //else {inElement.required = false}
             newNode.appendChild(inElement);
         }
-        //$("p").append("<b>Appended text</b>");
-        //$("div").append(inElement);
         if (typeof (newNode) === 'object') element.appendChild(newNode)
     });
 
@@ -547,19 +560,17 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     // console.log('+++: ', JSON.stringify(modalObj))
 }
 
-function DropdownToDropdown(parentTemp, direction) {
-    let dropDowns = parentTemp.getElementsByTagName("SELECT");
-    let i;
-    console.log('parent: ', parentTemp)
-    console.log('parent select: ', parentTemp.getElementsByTagName("SELECT"))
-    console.log('parent class: ', parentTemp.getElementsByClassName("tblCell"))
-    console.log('parent class: ', parentTemp.getElementsByClassName("tblCell"))
-    let selected = parentTemp.getElementsByClassName("tblCell");
-    for (let i of selected) {
-        if (i.id) {
-            console.log('im if: ', i.id)
-        }
-    }
-
-    // element.innerHTML = wpsInfo.title;
-}
+// function DropdownToDropdown(parentTemp, direction) {
+//     let dropDowns = parentTemp.getElementsByTagName("SELECT");
+//     let i;
+//     console.log('parent: ', parentTemp)
+//     console.log('parent select: ', parentTemp.getElementsByTagName("SELECT"))
+//     console.log('parent class: ', parentTemp.getElementsByClassName("tblCell"))
+//     console.log('parent class: ', parentTemp.getElementsByClassName("tblCell"))
+//     let selected = parentTemp.getElementsByClassName("tblCell");
+//     for (let i of selected) {
+//         if (i.id) {
+//             console.log('im if: ', i.id)
+//         }
+//     }
+// }
