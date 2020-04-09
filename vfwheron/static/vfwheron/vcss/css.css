@@ -142,7 +142,7 @@ button {
   /*  display: flex;*/
   /*align-items: center;*/
 }
-.pickle,.timeseries,
+.pickle,.timeseries, .merged-pickle,
 .ts-array, .ts-pickle, .ts-aggregate {
     margin: 5px;
     height: 12px;
@@ -182,7 +182,7 @@ button {
 .string{background-color: rgb(255,255,191); border: 1px solid #ffbf26;}
 .pickle{background-color: rgb(224,243,248); border: 1px solid darkturquoise;}
 .aggregate{background-color: rgb(171,217,233)}
-.merge{background-color: rgb(116,173,209)}
+.merged-pickle{background-color: rgb(116,173,209)}
 .boolean{background-color: rgb(50, 74, 147); border: 1px solid black;}
 /*.boolean{background-color: rgb(69,117,180)}*/
 /*.float{background-color:rgb(49,54,149)}*/
