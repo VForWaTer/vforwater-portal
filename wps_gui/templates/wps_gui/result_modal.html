@@ -18,23 +18,26 @@
   {#  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-1.4.0.min.js"></script>#}
 </head>
 <body>
-<div id="infoModal" class="respo-modal">
+<div id="resultModal" class="respo-modal">
 
   <!-- Modal content -->
-  <div class="respo-modal-content modal-body">
-    <div class="modal-header" id="modal-header">
-      {#            <span class="close">&times;</span>#}
-      <h3 id="mod_head"></h3>
+  <div class="respo-modal-content" style="padding-left: 10px; padding-right: 10px; ">
+{#  <div class="respo-modal-content" style="padding-left: 10px; padding-right: 10px; ">#}
+    <div class="modal-header" id="result_modal-header" style="margin-left: -10px; margin-right: -10px;">
+      <span class="close">&times;</span>
+      <h3 id="result_mod_head"></h3>
     </div>
-    <table>
-      <tr>
-        <td><p id="mod_dat_inf" class="modal-datainfo"></p></td>
-        <td><p id="mod_prev" class="modal-preview"></p></td>
+{#    <table>#}
+{#      <tr>#}
+{#        <td><p id="mod_dat_inf" class="modal-datainfo"></p></td>#}
+{#        <td>#}
+          <p id="mod_result" class="modal-result"></p>
+{#        </td>#}
         {#                <td><p id="mod_prev" class="modal-preview">{{ div | safe }}</p></td>#}
-      </tr>
-    </table>
-    <div class="modal-footer" id="modal-footer">
-      <span-b class="modal-back">{% trans "Back" %}</span-b>
+{#      </tr>#}
+{#    </table>#}
+    <div class="result_modal-footer" id="result_modal-footer" style="margin-left: -10px; margin-right: -10px;">
+      <span-b class="result_modal-back">{% trans "Close" %}</span-b>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
       <h3></h3>
     </div>
@@ -43,25 +46,26 @@
 </div>
 </body>
 <script>
-  var bokehPreviewScript;
+  var bokehResultScript;
   // Get the modal
-  let modal = document.getElementById("infoModal");
+  let rModal = document.getElementById("resultModal");
   // Get the <span> element that closes the modal
-  {#let span = document.getElementsByClassName("close")[0];#}
+  let span = document.getElementsByClassName("close")[0];
   {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
-  let span_b = document.getElementsByClassName("modal-back")[0];
+  let rspan_b = document.getElementsByClassName("result_modal-back")[0];
   // When the user clicks on <span> (x), close the modal
   {% comment %}  span.onclick = function () {
         closeModal()
     };{% endcomment %}
-  span_b.onclick = () => closeInfoModal();
+  span.onclick = () => close_result_Modal();
+  rspan_b.onclick = () => close_result_Modal();
   {#span_c.onclick = function () {closeModal()};#}
   // When the user clicks anywhere outside of the modal, close it
-  window.onclick = (event) => {if (event.target == modal) closeInfoModal()};
+  window.onclick = (event) => {if (event.target == rModal) close_result_Modal()};
 
-  function closeInfoModal() {
-    modal.style.display = "none";
-    bokehPreviewScript.parentNode.removeChild(bokehPreviewScript);
+  function close_result_Modal() {
+    rModal.style.display = "none";
+    bokehResultScript.parentNode.removeChild(bokehResultScript);
   }
 
 </script>

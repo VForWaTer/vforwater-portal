@@ -439,7 +439,7 @@ function positionPopup(window) {
 /**
  * Dummy action function that logs an action when a menu item link is clicked
  *
- * @param {HTMLElement} link The link that was clicked
+ * @param {???} properties
  */
 
 function show_data_info(properties) {
@@ -456,8 +456,16 @@ function show_data_info(properties) {
 }
 
 
+/**
+ * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
+ *
+ * @param (html) link HTML Code of the clicked link
+ */
 function menuItemListener(link) {
     let id = taskItemInContext.getAttribute("data-id");
+    console.log('id: ', id)
+
+    let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
     popup.classList.add(popActive);
     popText.classList.remove(popInActive);
@@ -479,21 +487,22 @@ function menuItemListener(link) {
                 }
             });
             break;
-        case "Plot":
-            $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
-                datatype: 'image/png;base64',
-                data: {
-                    preview: id,
-                    'csrfmiddlewaretoken': csrf_token,
-                }, // data sent with post
-                success: function (result) {
-                    content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
-                    popcloser.classList.remove('respo-hide');
-                    positionPopup(popup);
-                }
-            });
-            break;
+        // case "Plot":
+        //     $.ajax({
+        //         url: DEMO_VAR + "/vfwheron/menu",
+        //         datatype: 'json',
+        //         data: {
+        //             preview: id,
+        //             'csrfmiddlewaretoken': csrf_token,
+        //         }, // data sent with post
+        //         success: function (result) {
+        //             console.log('plot result: ', result)
+        //             content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
+        //             popcloser.classList.remove('respo-hide');
+        //             positionPopup(popup);
+        //         }
+        //     });
+        //     break;
         case "Downloadcsv":
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/datasetdownload",
@@ -555,8 +564,8 @@ function menuItemListener(link) {
             remove_single_data(id);
             popup.classList.remove(popActive);
             break;
-        case "ViewR":
-            let result = JSON.parse(sessionStorage.getItem(id));
+        case "ViewResult":
+            // let result = JSON.parse(sessionStorage.getItem(id));
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
             for (let j in result) {
                 if (result[j]) {
@@ -575,6 +584,40 @@ function menuItemListener(link) {
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
             popcloser.classList.remove('respo-hide');
             positionPopup(popup);
+            break;
+        case "Plot":
+            // let result = JSON.parse(sessionStorage.getItem('resultBtn'));
+            // result = JSON.parse(sessionStorage.getItem(id));
+            console.log('IDw: ', result)
+            $.ajax({
+                url: DEMO_VAR + "/vfwheron/menu",
+                datatype: 'json',
+                data: {
+                    preview: id,
+                    'csrfmiddlewaretoken': csrf_token,
+                }, // data sent with post
+                success: function (result) {
+                    console.log('got a result: ', result)
+                    // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
+                    // content.innerHTML = result.div;
+                    // console.log('content: ', content)
+                    // console.log('content: ', content.innerHTML)
+                    // let bokehResultScript;
+                    document.getElementById("mod_result").innerHTML = result.div; // add plot
+                    bokehResultScript = document.createElement('script');
+                    bokehResultScript.type = 'text/javascript';
+                    bokehResultScript.text = result.script;
+                    document.head.appendChild(bokehResultScript);
+                    // console.log('document: ', document)
+                    // popcloser.classList.remove('respo-hide');
+                    // positionPopup(popup);
+                    let rModal = document.getElementById("resultModal");
+                    rModal.style.display = "block";
+                },
+                complete: function () {
+                    popup.classList.remove(popActive);
+                }
+            });
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});

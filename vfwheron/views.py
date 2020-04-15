@@ -109,8 +109,6 @@ class HomeView(TemplateView):
     """
     template_name = 'vfwheron/home.html'
     Menu = Menu().get_menu()
-    # print(connections['vforwater'].queries)
-    # print(len(connections['vforwater'].queries))
     JSON_Menu = json.dumps(Menu['client'])
     data_layer = 'testlayer'  # 'default_layer_prod'
 

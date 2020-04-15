@@ -137,6 +137,22 @@ msgstr "Alle&#32Ergebnisse&#32aus&#32der&#32Ergebnisablage&#32entfernen"
 msgid " View metadata"
 msgstr " Metadaten anzeigen"
 
+#: templates/vfwheron/wps_sidebar.html:124
+msgid " View result"
+msgstr " Ergebnis anzeigen"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Plot result"
+msgstr " Ergebnis darstellen"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Download result"
+msgstr " Ergebnis herunterladen"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Remove result"
+msgstr " Ergebnis entfernen"
+
 #: templates/vfwheron/base_sidebar.html:66
 #: templates/vfwheron/wps_sidebar.html:64
 msgid " Plot data"

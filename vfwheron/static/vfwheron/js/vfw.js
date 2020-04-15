@@ -346,25 +346,6 @@ $(document).ready(function (menuTitle) {
     });
 }); // end ready
 
-// TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        let cookies = document.cookie.split(';');
-        let cLen = cookies.length;
-        let nLen = name.length;
-        for (let i = 0; i < cLen; i++) {
-            let cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, nLen + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(nLen + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
 function moreInfoModal(id) {
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
@@ -389,7 +370,7 @@ function moreInfoModal(id) {
         }
     });
 
-    // load preview image when metadata is already available
+    // load preview image parallel to metadata
     $.ajax({
         url: DEMO_VAR + "/vfwheron/menu",
         datatype: 'image/png;base64',

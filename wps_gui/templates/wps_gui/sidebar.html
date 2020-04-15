@@ -51,7 +51,8 @@
                    title={% trans "Remove&#32all&#32datasets&#32from&#32data&#32store" %}>
         </b>
     </ul>
-    <hr style="margin-bottom:75%;">
+    <hr>
+{#    <hr style="margin-bottom:75%;">#}
 
     <div class="respo-container respo-light-turquoise">
         <b title={% trans "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available." %}>{% trans "Result store" %}</b>
@@ -91,7 +92,7 @@
                     class="fa fa-eye"></i>{% trans " View metadata" %}</a>
         </li>
         <li class="context-menu__item">
-            <a href="#" class="context-menu__link" data-action="Plot"><i class="fa fa-eye"></i>{% trans " Plot data" %}
+            <a href="#" class="context-menu__link" data-action="Plot"><i class="fa fa-area-chart"></i>{% trans " Plot data" %}
             </a>
         </li>
         <li class="context-menu__item">
@@ -120,8 +121,12 @@
 <nav id="context-result" class="context-result">
     <ul class="context-menu__items">
         <li class="context-menu__item">
-            <a href="#" class="context-menu__link" data-action="ViewR"><i
+            <a href="#" class="context-menu__link" data-action="ViewResult"><i
                     class="fa fa-eye"></i>{% trans " View result" %}</a>
+        </li>
+        <li class="context-menu__item">
+            <a href="#" class="context-menu__link" data-action="Plot"><i
+                    class="fa fa-area-chart"></i>{% trans " Plot result" %}</a>
         </li>
         <li class="context-menu__item">
             <a href="#" class="context-menu__link" data-action="DownloadR"><i
@@ -152,5 +157,9 @@
 {#  Overlay effect when opening sidenav on small screens#}
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
+
+{% block rModal %}
+    {% include 'wps_gui/result_modal.html' %}
+{% endblock rModal %}
 </body>
 

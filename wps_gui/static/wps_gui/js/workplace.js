@@ -80,21 +80,30 @@ function check_required(checkElement) {
 
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
+// TODO: Improve code by using HTML Forms
 function modal_run_process() {
     color_modal("dodgerblue");
+    /** collect inputs **/
     var inKey = [];
     var inValue = [];
-    // let workModal = document.getElementById('workModal');
+    let dDInput = 0;
     let inModal = document.getElementById('mod_in');
     let radioInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
+    let valueList = [];
 
+    /** first loop over each dropdown in input, then over values in dropdown **/
     for (let i = 0; i < dropDInputs.length; i++) {
-        for (let j = 0; j < dropDInputs[i].length; j++) {
-            if (dropDInputs[i][j].selected) {
+            dDInput = dropDInputs[i].selectedOptions;
+            if (dDInput.length > 1) {
+                for (let j = 0; j < dDInput.length; j++) {
+                    valueList.push(dDInput[j].value)
+                }
+                inValue.push(valueList);
                 inKey.push(dropDInputs[i].name);
-                inValue.push(dropDInputs[i][j].value);
-            }
+            } else {
+                inKey.push(dropDInputs[i].name);
+                inValue.push(dDInput[0].value);
         }
     }
 
@@ -111,7 +120,7 @@ function modal_run_process() {
             inValue.push(radioInputs[i].value);
         }
     }
-
+    /** colect outputs **/
     let outModal = document.getElementById('mod_out');
     let outputs = outModal.getElementsByTagName('input');
     let outDict = {};
@@ -124,7 +133,7 @@ function modal_run_process() {
             outDict[outputs[i].name] = outputs[i].value;
         }
     }
-
+    /** find respective process **/
     let modhead = document.getElementById('mod_head');
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
@@ -144,8 +153,10 @@ function modal_run_process() {
             if (json.execution_status == "ProcessSucceeded") {
                 json.wps = identifier;
                 json.inputs = {};
+                let i = 0;
                 $.each(inKey, function (key, value) {
-                    json.inputs[value] = inValue;
+                    json.inputs[value] = inValue[i];
+                    i++;
                 });
                 color_modal("forestgreen");
                 let btnName = set_result_btn_name(outputName);
@@ -216,22 +227,29 @@ function add_resultbtn_to_sessionstore(btnName, json) {
         type: json.type,
         wps: json.wps,
         inputs: json.inputs,
-        wpsid: json.wpsid,
+        wpsID: json.wpsID,
         status: json.execution_status
     };
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
 //TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
+/**
+ * Build a button in the result store.
+ * data-id is used to find results on server
+ * id is used for the remove button
+ * @param  {string} name name for the button
+ * @param  {obj} json Object holding all necessary info about result
+ * @return {string}      HTML Code for the button
+ * */
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" class="respo-padding task is-result" ' +
-        'data-id="' + name + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" id="id' + name + '">' +
-        '<span class="respo-medium" title="' + title + '"><div class="task__content">' + name + '</div>' +
-        '<div class="task__actions"></div></span>' +
+        'data-id="wps' + json.wpsID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
+        'id="' + name + '"><span class="respo-medium" title="' + title + '">' +
+        '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
         '<span class="' + json['type'] + '"></span>' +
-        '<a href="javascript:void(0)"' +
-        'onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
+        '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
@@ -278,14 +296,17 @@ function build_modal_radio(item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
-function build_modal_dropdown(item, newNode) {
+function build_modal_dropdown(item, newNode, countDropDowns) {
     let htmlSelect = document.createElement("SELECT");
     let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let boxLen = 0;
+
     for (let i in storeData) if (item.keywords[0] == storeData[i].type) boxLen += 1;
     for (let i in resultData) if (item.keywords[0] == resultData[i].type) boxLen += 1;
-    if (item.minOccurs === 1) htmlSelect.required = true;
+    // if (item.minOccurs === 1) htmlSelect.required = true; // Thy did I first use === 1 ???
+    if (item.minOccurs > 1) htmlSelect.required = true;
+    /** check if input data is available; only build dropdown if there is data to select from **/
     if (boxLen == 0) {
         htmlSelect = document.createElement("DIV");
         if (item.defaultValue) {
@@ -294,7 +315,6 @@ function build_modal_dropdown(item, newNode) {
             htmlSelect.innerText = 'Please first select a dataset from the filter menu.'
         }
     } else {
-        if (item.maxOccurs > 1) htmlSelect.multiple = true;
         htmlSelect.size = (boxLen > 3) ? "5":(boxLen + 2).toString();
         htmlSelect.name = item.identifier;
         if (storeData !== null) {
@@ -309,8 +329,13 @@ function build_modal_dropdown(item, newNode) {
             optionGroup = build_dropdown_opt(item, optionGroup, resultData);
             htmlSelect.appendChild(optionGroup);
         }
+        if (item.maxOccurs > 1 || item.minOccurs > 1) {
+            htmlSelect.multiple = true;
+        }
+        // /** If more then one option is needed to select show a second box with selection **/
     }
     newNode.appendChild(htmlSelect);
+    return countDropDowns;
 }
 
 function build_dropdown_opt(item, optionGroup, sidebarData) {
@@ -333,18 +358,6 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
     });
     return optionGroup
 }
-/*
-function get_available_inputs() {
-    let available_elements = {};
-    available_elements['workspace'] = document.getElementById('workspace').getElementsByClassName('task');
-    available_elements['results'] = document.getElementById('workspace_results').getElementsByClassName('task');
-    available_elements['toolbar'] = document.getElementById('toolbar').getElementsByClassName('process');
-    Object.keys(available_elements).forEach(function (key) {
-        if (available_elements[key].length == 0) delete available_elements[key]
-    });
-    // console.log('available_elements: ', available_elements);
-    return available_elements
-}*/
 
 function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     // let availableInputs = get_available_inputs();
@@ -365,10 +378,13 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     document.getElementById("mod_in").innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
+    let countDropDowns = 0;
 
     wpsInfo.dataInputs.forEach(function (item) {
         element = document.getElementById("mod_in");
         newNode = document.createElement("p");
+
+        /** Set title of Input and set the required flag if necessary **/
         let titleText = "";
         if ('minOccurs' in item) {
             if (item.minOccurs > 0 && item.dataType != 'boolean') {
@@ -401,7 +417,7 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
                 }
             }
         } else if ('keywords' in item) {
-            build_modal_dropdown(item, newNode)
+            countDropDowns = build_modal_dropdown(item, newNode, countDropDowns)
         } else {
             inElement = document.createElement("input");
             inElement.id = item.identifier;
@@ -447,13 +463,11 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
             } //else {inElement.required = false}
             newNode.appendChild(inElement);
         }
-        //$("p").append("<b>Appended text</b>");
-        //$("div").append(inElement);
         if (typeof (newNode) === 'object') element.appendChild(newNode)
     });
 
     // TODO: build one output now. Decide how to handle several outputs
-    //outputs:
+    /** outputs: **/
     document.getElementById("mod_out").innerHTML = "";
 
     element = document.getElementById("mod_out");
@@ -466,43 +480,6 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     let outElement = document.createElement("input");
     newNode.appendChild(outElement);
     if (typeof (newNode) === 'object') element.appendChild(newNode);
-    /*let outElement = "";
-    newNode = "";
-    nodeText = "";
-
-    wpsInfo.processOutputs.forEach(function (item) {
-        element = document.getElementById("mod_out");
-
-        nodeText = document.createElement("p");
-        nodeText.appendChild(document.createTextNode(" Name for " + item.title + ": "));
-
-        newNode = document.createElement("div");
-        newNode.appendChild(nodeText);
-
-
-        outElement = document.createElement("input");
-        // inElement.className = "input";
-        outElement.id = item.identifier;
-        outElementIdList.push(item.identifier);
-        outElement.name = item.identifier;
-        outElement.type = "text";
-        outElement.value = item.identifier;
-        newNode.appendChild(outElement);
-
-        nodeText = document.createElement("p");
-        let mimeText = "";
-        if (item.defaultValue && item.defaultValue.mimeType) {
-            mimeText = " (" + item.defaultValue.mimeType + ")"
-        }
-        nodeText.appendChild(document.createTextNode(" Type of Output: " + item.dataType + mimeText));
-        newNode.appendChild(nodeText);
-        //$("div").append(inElement);
-        if (typeof (newNode) === 'object') {
-            element.appendChild(newNode)
-        }
-    });*/
-
-    //element.innerHTML = inElement;
     let modal = document.getElementById("workModal");
     modal.setAttribute("name", invoke_btn_id);
     modal.style.display = "block";
@@ -510,6 +487,5 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     // TODO: get right name for sessionstorage
     // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
     // console.log('+++: ', JSON.stringify(modalObj))
-
-    // element.innerHTML = wpsInfo.title;
 }
+

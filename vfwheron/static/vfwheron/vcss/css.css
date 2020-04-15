@@ -41,7 +41,7 @@ iframe {
 }
 
 
-.modal-back {
+.modal-back{
     color: black;
     float: right;
     font-size: 20px;
@@ -49,31 +49,63 @@ iframe {
     /*font-weight: bold;*/
 }
 
-.modal-back:hover,
-.modal-back:focus {
+.modal-back:hover, .modal-back:focus,
+.result_modal-back:hover, .result_modal-back:focus,
+.work_modal-cancel:hover, .work_modal-cancel:focus,
+.work_modal-run:hover, .work_modal-run:focus,
+.work_modal-ok:hover, .work_modal-ok:focus{
     color: #000;
     text-decoration: none;
     cursor: pointer;
 }
 
-.modal-header {
+.result_modal-back, .work_modal-cancel, .work_modal-run, .work_modal-ok{
+  color: white;
+  float: right;
+  font-size: 20px;
+    padding-top:2px;
+    padding-bottom: 2px;
+    padding-left: 12px;
+  /*font-weight: bold;*/
+}
+
+.modal-header,
+.result_modal-header,
+.work_modal-header{
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
     color: black;
 }
 
-.modal-body.modal-body {
+.modal-body,
+.result_modal-body {
     /*padding: 2px 16px;*/
     width: fit-content;
 }
 
-.modal-footer {
+.modal-footer{
     height: 38px;
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
     color: black;
 }
 
+.result_modal-footer, .work_modal-footer{
+    height: 38px;
+    padding: 2px 12px;
+    background-color: dodgerblue;
+    color: white;
+}
+
+button-header {
+    display: block;
+}
+button-footer {
+    display: flex;
+    position: relative;
+    left: 180px;
+    overflow: hidden;
+}
 
 /*styles for Toolbox buttons*/
 /*!**
@@ -91,18 +123,18 @@ button {
   cursor: pointer;
 }*/
 
-.process {
-  /*height: 50px;*/
-  /*width: 350px;*/
-  /*background-color: blue;*/
-  /*display: inline-block;*/
-}
-.string,.array,.pickle,.timeseries,
-.ts-array, .ts-pickle, .ts-aggregate {
+/*.process {*/
+/*  !*height: auto;*!*/
+/*  !*width: 350px;*!*/
+/*  !*background-color: blue;*!*/
+/*  !*display: inline-block;*!*/
+/*}*/
+.string,.array, .integer,
+.boolean, .float, .image{
     margin: 5px;
     height: 12px;
     width: 12px;
-    border-radius: 50%;/*0 6px 6px 0;*/
+    /*border-radius: 50%;!*0 6px 6px 0;*!*/
     /*font-weight: bold;
     font-size: 9pt;
     color: black;*/
@@ -110,6 +142,14 @@ button {
   /*  display: flex;*/
   /*align-items: center;*/
 }
+.pickle,.timeseries, .merged-pickle,
+.ts-array, .ts-pickle, .ts-aggregate {
+    margin: 5px;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+}
+
 
 .left-hemisphere {
     margin: 5px;
@@ -134,16 +174,20 @@ button {
 11 colorblind safe colors from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
  */
 /*.array{background-color:rgb(165,0,38); content: "AR";}*/
-.array{background-color:rgb(165,0,38)}
-.timeseries{background-color:rgb(215,48,39)}
-.ts-array{background-color:rgb(244,109,67)}
-.ts-pickle{background-color:rgb(253,174,97)}
-.ts-aggregate{background-color:rgb(254,224,144)}
-.string{background-color:rgb(255,255,191); border: 1px solid #ffbf26;}
-.pickle{background-color:rgb(224,243,248); border: 1px solid darkturquoise;}
-.aggregate{background-color:rgb(171,217,233)}
-.merge{background-color:rgb(116,173,209)}
-.q9-11{background-color:rgb(69,117,180)}
-.q10-11{background-color:rgb(49,54,149)}
+.array{background-color: rgb(165,0,38)}
+.timeseries{background-color: rgb(215,48,39)}
+.ts-array{background-color: rgb(244,109,67)}
+.ts-pickle{background-color: rgb(253,174,97)}
+.ts-aggregate{background-color: rgb(254,224,144)}
+.string{background-color: rgb(255,255,191); border: 1px solid #ffbf26;}
+.pickle{background-color: rgb(224,243,248); border: 1px solid darkturquoise;}
+.aggregate{background-color: rgb(171,217,233)}
+.merged-pickle{background-color: rgb(116,173,209)}
+.boolean{background-color: rgb(50, 74, 147); border: 1px solid black;}
+/*.boolean{background-color: rgb(69,117,180)}*/
+/*.float{background-color:rgb(49,54,149)}*/
+.float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
+.integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
+.image{background-color: rgb(19, 154, 24); border: 1px solid #91ff59;}
 
 
