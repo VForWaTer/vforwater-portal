@@ -91,8 +91,7 @@ function modal_run_process() {
     let radioInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
     let valueList = [];
-    console.log('dropinputs: ', dropDInputs)
-    console.log('len dropinputs: ', dropDInputs.length)
+
     /** first loop over each dropdown in input, then over values in dropdown **/
     for (let i = 0; i < dropDInputs.length; i++) {
             dDInput = dropDInputs[i].selectedOptions;
@@ -100,7 +99,7 @@ function modal_run_process() {
                 for (let j = 0; j < dDInput.length; j++) {
                     valueList.push(dDInput[j].value)
                 }
-                inValue.push([valueList]);
+                inValue.push(valueList);
                 inKey.push(dropDInputs[i].name);
             } else {
                 inKey.push(dropDInputs[i].name);
@@ -247,7 +246,7 @@ function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" class="respo-padding task is-result" ' +
         'data-id="wps' + json.wpsID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="id' + json.wpsID + '"><span class="respo-medium" title="' + title + '">' +
+        'id="' + name + '"><span class="respo-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
         '<span class="' + json['type'] + '"></span>' +
         '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
