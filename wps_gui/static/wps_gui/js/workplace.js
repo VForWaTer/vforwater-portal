@@ -228,7 +228,7 @@ function add_resultbtn_to_sessionstore(btnName, json) {
         type: json.type,
         wps: json.wps,
         inputs: json.inputs,
-        wpsid: json.wpsid,
+        wpsID: json.wpsID,
         status: json.execution_status
     };
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
@@ -246,8 +246,8 @@ function add_resultbtn_to_sessionstore(btnName, json) {
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" class="respo-padding task is-result" ' +
-        'data-id="wps' + json.wpsid + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="id' + json.wpsid + '"><span class="respo-medium" title="' + title + '">' +
+        'data-id="wps' + json.wpsID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
+        'id="id' + json.wpsID + '"><span class="respo-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
         '<span class="' + json['type'] + '"></span>' +
         '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +

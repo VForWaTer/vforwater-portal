@@ -1,4 +1,5 @@
 # from inspect import getmembers
+import ast
 import json
 import re
 import sys
@@ -16,7 +17,8 @@ from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, 
 
 import logging
 logger = logging.getLogger(__name__)
-datatypes = ['timeseries', 'pickle', 'ts-pickle', 'array', 'aggregate', 'ts-aggregate', 'merge', 'ts-merge']
+datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
+              'pickle', 'merge', 'merged-pickle']
 
 # from heron_wps.forms import InputForm
 
@@ -25,19 +27,23 @@ def home(request):
     """
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
+    # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
     try:
         wps_services = list_wps_service_engines()
         service = 'PyWPS_vforwater'
         wps = get_wps_service_engine(service)
-        processin = {}
-        processout = {}
         countLoop = 0
         for process in wps.processes:
             describedprocess = wps.describeprocess(process.identifier)
             wps.processes[countLoop].processin = []
             for i in describedprocess.dataInputs:
                 if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
-                    wps.processes[countLoop].processin.append(i.dataType)
+                    if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
+                        # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
+                        keywords = ast.literal_eval(i.abstract[:1+i.abstract.find("}", 10)])['keywords']
+                        wps.processes[countLoop].processin.append(keywords)
+                    else:
+                        wps.processes[countLoop].processin.append(i.dataType)
                 # if i.allowedValues == [] and isinstance(i.dataType, str):
                 #     wps.processes[countLoop].processin.append('string')
                 # elif i.allowedValues == [] and not isinstance(i.dataType, str):
@@ -174,8 +180,8 @@ class ProcessView(TemplateView):
                             list_values.append(b)
                     wps_description[a] = list_values
                 elif not whole_wpsprocess[a] is None and whole_wpsprocess[a] != []:
-                    from docutils.writers.html4css1 import Writer, HTMLTranslator
-                    from docutils import core
+                    # from docutils.writers.html4css1 import Writer, HTMLTranslator
+                    # from docutils import core
                     # class HTMLFragmentTranslator(HTMLTranslator):
                     #     def __init__(self, document):
                     #         HTMLTranslator.__init__(self, document)
@@ -264,14 +270,15 @@ class ProcessView(TemplateView):
                     process = wps.describeprocess(wps_process)
                     datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
                     wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
-                    context_p = {'wpsid': wpsid,
+                    context_p = {'wpsID': wpsid,
                                  # 'outputs': outputs,
                                  'image': image,
                                  'type': datatype,
                                  'execution_status': execution_status
                                  }
                 else:
-                    context_p = {'execution_status': 'error in wps process'}
+                    context_p = {'execution_status': 'error in wps process',
+                                 'error': outputs[1]}
 
             else:
                 context_p = {'execution_status': 'auth_error'}
@@ -281,23 +288,25 @@ class ProcessView(TemplateView):
 
 
 def edit_input(inputs):
-    input_dict = dict((x, y) for x, y in inputs)
-    for key, value in input_dict.items():
-        if key in datatypes:
-            try:
-                input_dict[key] = WpsResults.objects.get(id=value[5:]).outputs[2:-2]
-            except ObjectDoesNotExist:
-                print("Either the entry or blog doesn't exist.")
-        if key == 'sql-filter':
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
-        if key == 'name_time' and value.isdigit():
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
-        if key == 'name' and value.isdigit():
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
-        if key == 'number' and value.isdigit():
-            input_dict[key] = "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + value + ";"
-
-    return [(k, v) for k, v in input_dict.items()]
+    wps_input = []
+    for key_value in inputs:
+        if key_value[0] in datatypes and isinstance(key_value[1], list):
+            for value in key_value[1]:
+                new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[0])
+                wps_input.append(new_pair)
+        elif key_value[0] in datatypes:
+            wps_input.append((key_value[0], ast.literal_eval(WpsResults.objects.get(id=key_value[1][5:]).outputs)[0]))
+        elif key_value[0] == 'sql-filter':
+            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
+        elif key_value[0] == 'name_time' and value.isdigit():
+            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
+        elif key_value[0] == 'name' and value.isdigit():
+            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
+        elif key_value[0] == 'number' and value.isdigit():
+            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
+        else:
+            wps_input.append((key_value[0], key_value[1]))
+    return wps_input
 
 
 def get_pickle(ident):
