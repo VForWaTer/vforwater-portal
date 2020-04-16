@@ -13,7 +13,7 @@ from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, Custom
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.palettes import Oranges9
+from bokeh.palettes import Oranges9, Spectral11
 
 from django.db import connections
 from numpy import mean
@@ -253,10 +253,6 @@ def DB_load_directiondata(id, ti):
 
 
 def get_timeseries_plot(data):
-    print('in get...')
-    # source = ColumnDataSource(data)
-    print('made source...')
-
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label='value',
                       plot_width=700, plot_height=500, toolbar_location="above",
@@ -264,7 +260,10 @@ def get_timeseries_plot(data):
 
     # plot.toolbar.autohide = True
     # plot line
-    mainplot.line(data.index.values, data['value'], line_width=2)
+    # mainplot.line(data.index.values, data['value'], line_width=2)
+    numlines = len(data.columns)
+    mainplot.multi_line(xs=[data.index.values] * numlines, ys=[data[name].values for name in data],
+                 line_color=Spectral11[0:numlines], line_width=2)
     # mainplot.line(x='tstamp', y='value', source=source, line_width=2)
     # Style the plot
     mainplot.title.text_font_size = "14pt"
