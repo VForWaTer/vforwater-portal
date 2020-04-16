@@ -265,21 +265,26 @@ class ProcessView(TemplateView):
                                 # for child in tree:
                                 #     print(child.tag, child.attrib)
                                 del outputs[-1]
-                print('outputs[1]: ', outputs[1])
-                if outputs[1] == 'False':
-                    process = wps.describeprocess(wps_process)
-                    datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
-                    wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
-                    context_p = {'wpsID': wpsid,
-                                 # 'outputs': outputs,
-                                 'image': image,
-                                 'type': datatype,
+                try:
+                    print('outputs[1]: ', outputs[1])
+                    if outputs[1] == 'False':
+                        process = wps.describeprocess(wps_process)
+                        datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
+                        wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
+                        context_p = {'wpsID': wpsid,
+                                     # 'outputs': outputs,
+                                     'image': image,
+                                     'type': datatype,
+                                     'execution_status': execution_status
+                                     }
+                    else:
+                        context_p = {'execution_status': 'error in wps process',
+                                     'error': outputs[1]}
+                except:
+                    print('Simple outputs: ', outputs)
+                    context_p = {'string': outputs,
                                  'execution_status': execution_status
                                  }
-                else:
-                    context_p = {'execution_status': 'error in wps process',
-                                 'error': outputs[1]}
-
             else:
                 context_p = {'execution_status': 'auth_error'}
                 print('user is not authenticated. ', context_p)
@@ -298,14 +303,14 @@ def edit_input(inputs):
             wps_input.append((key_value[0], ast.literal_eval(WpsResults.objects.get(id=key_value[1][5:]).outputs)[0]))
         elif key_value[0] == 'sql-filter':
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'name_time' and value.isdigit():
+        elif key_value[0] == 'name_time' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'name' and value.isdigit():
+        elif key_value[0] == 'name' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'number' and value.isdigit():
+        elif key_value[0] == 'number' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         else:
-            wps_input.append((key_value[0], key_value[1]))
+            wps_input.append(key_value)
     return wps_input
 
 

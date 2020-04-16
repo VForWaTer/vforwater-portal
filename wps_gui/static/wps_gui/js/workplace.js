@@ -29,7 +29,7 @@ function drop(ev) {
 
 // TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
 //  if process_id == btn_id place btn in dropzone (on save)
-function wpsprocess(service, identifier, invoke_btn_id) {
+function wpsprocess(service, identifier) {
     $.ajax({
         url: DEMO_VAR + "/wps_gui/processview",
         //url: DEMO_VAR+"/wps_gui/"+service+"/process",
@@ -39,7 +39,7 @@ function wpsprocess(service, identifier, invoke_btn_id) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            build_modal(json, service, identifier, invoke_btn_id)
+            build_modal(json, service, identifier)
         },
     });
 }
@@ -110,17 +110,15 @@ function modal_run_process() {
     for (let i = 0; i < radioInputs.length; i++) {
         if (radioInputs[i].type == "radio") {
             if (radioInputs[i].checked == true) {
-                // inDict[inputs[i].name] = inputs[i].value;
                 inKey.push(radioInputs[i].name);
                 inValue.push(radioInputs[i].value);
             }
         } else {
-            // inDict[inputs[i].name] = inputs[i].value;
             inKey.push(radioInputs[i].name);
             inValue.push(radioInputs[i].value);
         }
     }
-    /** colect outputs **/
+    /** collect outputs **/
     let outModal = document.getElementById('mod_out');
     let outputs = outModal.getElementsByTagName('input');
     let outDict = {};
@@ -269,15 +267,6 @@ function remove_all_results() {
     sessionStorage.removeItem("resultBtn");
 }
 
-// function remove_all_results() {
-//     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-//     for (let i in workspaceData) {
-//         sessionStorage.removeItem('"' + workspaceData[i] + '"');
-//         document.getElementById(workspaceData[i]).remove();
-//     }
-//     sessionStorage.removeItem("resultBtnList");
-// }
-
 function build_modal_radio(item, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
@@ -359,7 +348,7 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
     return optionGroup
 }
 
-function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
+function build_modal(wpsInfo, service, identifier) {
     // let availableInputs = get_available_inputs();
     let element = document.getElementById("mod_head");
     let newElement = "";
@@ -481,7 +470,8 @@ function build_modal(wpsInfo, service, identifier, invoke_btn_id) {
     newNode.appendChild(outElement);
     if (typeof (newNode) === 'object') element.appendChild(newNode);
     let modal = document.getElementById("workModal");
-    modal.setAttribute("name", invoke_btn_id);
+    // modal.setAttribute("name", invoke_btn_id);
+    modal.setAttribute("name", identifier);
     modal.style.display = "block";
     let currentModal = new modalObj(identifier, outElementIdList);
     // TODO: get right name for sessionstorage
