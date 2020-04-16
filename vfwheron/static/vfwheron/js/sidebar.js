@@ -441,8 +441,7 @@ function positionPopup(window) {
  *
  * @param {???} properties
  */
-
-function show_data_info(properties) {
+function showDataInfo(properties) {
     let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
     // loop over "properties" dict with metadata, build columns
     for (let j in properties) {
@@ -455,6 +454,29 @@ function show_data_info(properties) {
     positionPopup(popup);
 }
 
+// TODO: Fill Tool with previous values
+function setModalValues(btnName, btnValues) {
+    let inModal = document.getElementById('mod_in');
+    let radioInputs = inModal.getElementsByTagName('input');
+    let dropDInputs = inModal.getElementsByTagName('select');
+    /** first loop over each dropdown in input, then over values in dropdown **/
+    // for (let i = 0; i < dropDInputs.length; i++) {
+    //
+    //         // dDInput = dropDInputs[i].selectedOptions;
+    //     //     console.log('dDInput: ', dDInput)
+    //     //     if (dDInput.length > 1) {
+    //     //         for (let j = 0; j < dDInput.length; j++) {
+    //     //             valueList.push(dDInput[j].value)
+    //     //         }
+    //     //         inValue.push(valueList);
+    //     //         inKey.push(dropDInputs[i].name);
+    //     //     } else {
+    //     //         inKey.push(dropDInputs[i].name);
+    //     //         inValue.push(dDInput[0].value);
+    //     // }
+    // }
+
+}
 
 /**
  * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
@@ -463,6 +485,8 @@ function show_data_info(properties) {
  */
 function menuItemListener(link) {
     let id = taskItemInContext.getAttribute("data-id");
+    let btnName = taskItemInContext.getAttribute('btnname');
+
     console.log('id: ', id)
 
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
@@ -482,7 +506,7 @@ function menuItemListener(link) {
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with the post request
                 success: function (properties) {
-                    show_data_info(properties);
+                    showDataInfo(properties);
 
                 }
             });
@@ -558,6 +582,15 @@ function menuItemListener(link) {
                 }
             });
             break;
+        case "OpenTool":
+            /** Re-open the tool */
+            let wpsToOpen = result[btnName].wps;
+            let service = document.getElementById(wpsToOpen).getAttribute("data-service");
+            wpsprocess(service, wpsToOpen)
+            /** Fill the tool with selection made to receive this result button */
+            setModalValues(btnName, JSON.parse(sessionStorage['resultBtn'])[btnName])
+            popup.classList.remove(popActive);
+            break;
         case "DownloadDMD":
             break;
         case "Remove":
@@ -596,17 +629,17 @@ function menuItemListener(link) {
                     preview: id,
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post
-                success: function (result) {
-                    console.log('got a result: ', result)
+                success: function (requestResult) {
+                    console.log('got a result: ', requestResult)
                     // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
                     // content.innerHTML = result.div;
                     // console.log('content: ', content)
                     // console.log('content: ', content.innerHTML)
                     // let bokehResultScript;
-                    document.getElementById("mod_result").innerHTML = result.div; // add plot
+                    document.getElementById("mod_result").innerHTML = requestResult.div; // add plot
                     bokehResultScript = document.createElement('script');
                     bokehResultScript.type = 'text/javascript';
-                    bokehResultScript.text = result.script;
+                    bokehResultScript.text = requestResult.script;
                     document.head.appendChild(bokehResultScript);
                     // console.log('document: ', document)
                     // popcloser.classList.remove('respo-hide');

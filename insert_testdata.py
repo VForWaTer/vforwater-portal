@@ -6,6 +6,7 @@ dates = pd.date_range('2015-01-01 00:00:00', periods=df.shape[0], freq='5MIN').t
 df.insert(loc=0, column='date', value=pd.to_datetime(dates))
 insert_query = "INSERT INTO tbl_data(meta_id, tstamp, value) VALUES"
 for meta_n in range(10):
+    # TODO: Do not use range for dict. Check and change
 	for n in range(len(df)):
 	    data = " ({}, TIMESTAMP '{}', {}),".format(meta_n+1, df.iloc[n,0], df.iloc[n,1])
 	    #data = "(%d, %s, %s)", (1, df.iloc[n,0].tolist(), df.iloc[n,1].tolist())

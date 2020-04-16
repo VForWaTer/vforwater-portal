@@ -37,10 +37,6 @@ from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, crea
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib import pylab
-from matplotlib.dates import DateFormatter
-from matplotlib.figure import Figure
 
 from .query_functions import get_bbox_from_data
 from datetime import datetime, date
