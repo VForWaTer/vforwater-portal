@@ -252,7 +252,7 @@ function build_resultstore_button(name, json) {
 }
 
 function remove_single_result(removeData) {
-    document.getElementById("id" + removeData).remove();
+    document.getElementById(removeData).remove();
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
     delete workspaceData[removeData];
     sessionStorage.setItem("resultBtn", JSON.stringify(workspaceData))

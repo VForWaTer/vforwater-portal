@@ -141,9 +141,17 @@ msgstr " Metadaten anzeigen"
 msgid " View result"
 msgstr " Ergebnis anzeigen"
 
+#: templates/vfwheron/wps_sidebar.html:124
+msgid " View as table"
+msgstr " Ergebnistabelle"
+
 #: templates/vfwheron/wps_sidebar.html:127
 msgid " Plot result"
-msgstr " Ergebnis darstellen"
+msgstr " Graphisches Ergebnis"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Reopen Process"
+msgstr " Werkzeug öffnen"
 
 #: templates/vfwheron/wps_sidebar.html:127
 msgid " Download result"

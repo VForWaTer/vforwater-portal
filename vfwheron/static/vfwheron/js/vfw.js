@@ -366,7 +366,7 @@ function moreInfoModal(id) {
                 metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
             }
             document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
-            show_data_info(properties);
+            showDataInfo(properties);
         }
     });
 
