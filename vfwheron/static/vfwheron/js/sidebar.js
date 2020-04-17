@@ -484,11 +484,13 @@ function setModalValues(btnName, btnValues) {
  * @param (html) link HTML Code of the clicked link
  */
 function menuItemListener(link) {
+    console.log('link: ', link)
+    let wpsToOpen = "";
+    let service = {};
     let id = taskItemInContext.getAttribute("data-id");
     let btnName = taskItemInContext.getAttribute('btnname');
 
     console.log('id: ', id)
-
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
     popup.classList.add(popActive);
@@ -584,8 +586,8 @@ function menuItemListener(link) {
             break;
         case "OpenTool":
             /** Re-open the tool */
-            let wpsToOpen = result[btnName].wps;
-            let service = document.getElementById(wpsToOpen).getAttribute("data-service");
+            wpsToOpen = result[btnName].wps;
+            service = document.getElementById(wpsToOpen).getAttribute("data-service");
             wpsprocess(service, wpsToOpen)
             /** Fill the tool with selection made to receive this result button */
             setModalValues(btnName, JSON.parse(sessionStorage['resultBtn'])[btnName])
@@ -598,7 +600,6 @@ function menuItemListener(link) {
             popup.classList.remove(popActive);
             break;
         case "ViewResult":
-            // let result = JSON.parse(sessionStorage.getItem(id));
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
             for (let j in result) {
                 if (result[j]) {
@@ -619,9 +620,21 @@ function menuItemListener(link) {
             positionPopup(popup);
             break;
         case "Plot":
-            // let result = JSON.parse(sessionStorage.getItem('resultBtn'));
-            // result = JSON.parse(sessionStorage.getItem(id));
-            console.log('IDw: ', result)
+            // TODO: Add Names on lines in Plot needs modification in wps or another database entry
+            // let allBtns = JSON.parse(sessionStorage['resultBtn'])
+            // let inputs = allBtns[btnName].inputs
+            // let btnNames = []
+            // $.each(inputs, function (key, value) {
+            //     if (typeof value === "object"){
+            //         for (let singleValue of value){
+            //             $.each(allBtns, function(key, value) {
+            //                 if (String(value.wpsID) == singleValue.substr(5)) {
+            //                     btnNames.push(key)
+            //                 }
+            //             })
+            //         }
+            //     }
+            // })
             $.ajax({
                 url: DEMO_VAR + "/vfwheron/menu",
                 datatype: 'json',
