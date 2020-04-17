@@ -18,7 +18,7 @@ from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, 
 import logging
 logger = logging.getLogger(__name__)
 datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
-              'pickle', 'merge', 'merged-pickle']
+              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
 
 # from heron_wps.forms import InputForm
 

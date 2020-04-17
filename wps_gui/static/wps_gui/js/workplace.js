@@ -293,7 +293,7 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
 
     for (let i in storeData) if (item.keywords[0] == storeData[i].type) boxLen += 1;
     for (let i in resultData) if (item.keywords[0] == resultData[i].type) boxLen += 1;
-    // if (item.minOccurs === 1) htmlSelect.required = true; // Thy did I first use === 1 ???
+    // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???
     if (item.minOccurs > 1) htmlSelect.required = true;
     /** check if input data is available; only build dropdown if there is data to select from **/
     if (boxLen == 0) {
