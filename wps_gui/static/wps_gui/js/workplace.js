@@ -291,8 +291,9 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let boxLen = 0;
 
-    for (let i in storeData) if (item.keywords[0] == storeData[i].type) boxLen += 1;
-    for (let i in resultData) if (item.keywords[0] == resultData[i].type) boxLen += 1;
+    for (let i in storeData) if (item.keywords[0] == storeData[i].type) aptStoreData[i] = storeData[i];
+    for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
+    boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length;
     // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???
     if (item.minOccurs > 1) htmlSelect.required = true;
     /** check if input data is available; only build dropdown if there is data to select from **/
@@ -301,7 +302,7 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
         if (item.defaultValue) {
             htmlSelect.innerText = 'Without selected datasets the default ' + item.defaultValue + ' value is used.'
         } else {
-            htmlSelect.innerText = 'Please first select a dataset from the filter menu.'
+            htmlSelect.innerText = 'No suitable dataset found.\nPlease first process or select a dataset from the filter menu.'
         }
     } else {
         htmlSelect.size = (boxLen > 3) ? "5":(boxLen + 2).toString();
@@ -309,13 +310,13 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
         if (storeData !== null) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Data store";
-            optionGroup = build_dropdown_opt(item, optionGroup, storeData);
+            optionGroup = build_dropdown_opt(item, optionGroup, aptStoreData);
             htmlSelect.appendChild(optionGroup);
         }
         if (resultData !== null) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Result store";
-            optionGroup = build_dropdown_opt(item, optionGroup, resultData);
+            optionGroup = build_dropdown_opt(item, optionGroup, aptResultData);
             htmlSelect.appendChild(optionGroup);
         }
         if (item.maxOccurs > 1 || item.minOccurs > 1) {
@@ -329,22 +330,19 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
 
 function build_dropdown_opt(item, optionGroup, sidebarData) {
     let opt = document.createElement("OPTION");
-    item.keywords.forEach(function (option) {
-        Object.keys(sidebarData).forEach(function (singleData) {
-            if (sidebarData[singleData].type.includes(option)) {
-                if (sidebarData[singleData].abbr && sidebarData[singleData].unit) {
-                    opt.innerText = `${singleData} ${sidebarData[singleData].name} (${sidebarData[singleData].abbr}
-                    in ${sidebarData[singleData].unit})`;
-                } else {
-                    opt.innerText = `${singleData}`;
-                }
-                opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
-                if (item.keywords.length == 1) opt.selected = true;
-                optionGroup.appendChild(opt);
-                opt = document.createElement("OPTION");
-            }
-        })
-    });
+    Object.keys(sidebarData).forEach(function (singleData) {
+        if (sidebarData[singleData].abbr && sidebarData[singleData].unit) {
+            opt.innerText = `${singleData} ${sidebarData[singleData].name} (${sidebarData[singleData].abbr}
+            in ${sidebarData[singleData].unit})`;
+        } else {
+            opt.innerText = `${singleData}`;
+        }
+        opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
+
+        if (item.keywords.length == 1) opt.selected = true;
+        optionGroup.appendChild(opt);
+        opt = document.createElement("OPTION");
+    })
     return optionGroup
 }
 
