@@ -88,7 +88,7 @@ function modal_run_process() {
     var inValue = [];
     let dDInput = 0;
     let inModal = document.getElementById('mod_in');
-    let radioInputs = inModal.getElementsByTagName('input');
+    let inputInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
     let valueList = [];
 
@@ -107,15 +107,22 @@ function modal_run_process() {
         }
     }
 
-    for (let i = 0; i < radioInputs.length; i++) {
-        if (radioInputs[i].type == "radio") {
-            if (radioInputs[i].checked == true) {
-                inKey.push(radioInputs[i].name);
-                inValue.push(radioInputs[i].value);
+    for (let i = 0; i < inputInputs.length; i++) {
+        if (inputInputs[i].type == "radio") {
+            if (inputInputs[i].checked == true) {
+                inKey.push(inputInputs[i].name);
+                inValue.push(inputInputs[i].value);
+            }
+        } else if (inputInputs[i].type == "checkbox") {
+            inKey.push(inputInputs[i].name);
+            if (inputInputs[i].checked == true) {
+                inValue.push(true);
+            } else {
+                inValue.push(false);
             }
         } else {
-            inKey.push(radioInputs[i].name);
-            inValue.push(radioInputs[i].value);
+            inKey.push(inputInputs[i].name);
+            inValue.push(inputInputs[i].value);
         }
     }
     /** collect outputs **/
@@ -285,11 +292,31 @@ function build_modal_radio(item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
+function build_modal_checkbox(item, newNode, option) {
+    // let radioNode = document.createElement("p");
+    let nodeText = document.createTextNode(" " + option + " ");
+    let inElement = document.createElement("input");
+    inElement.type = "radio";
+    // inElement.setAttribute("type", "radio");
+    inElement.value = option;
+    inElement.id = item.identifier;
+    if (item.minOccurs === 1) inElement.required = true;
+
+    inElement.name = item.identifier;
+    if ('defaultValue' in item) {
+        if (item.defaultValue == option) inElement.checked = true;
+    }
+    newNode.appendChild(inElement);
+    newNode.appendChild(nodeText);
+}
+
 function build_modal_dropdown(item, newNode, countDropDowns) {
     let htmlSelect = document.createElement("SELECT");
     let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let boxLen = 0;
+    let aptStoreData = {};
+    let aptResultData = {};
 
     for (let i in storeData) if (item.keywords[0] == storeData[i].type) aptStoreData[i] = storeData[i];
     for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
