@@ -247,14 +247,23 @@ class ProcessView(TemplateView):
                 execution_status = execution.status
                 image = []
                 outputs = []
+                wpsError = False
+                # order output for database
                 for output in execution.processOutputs:
                     outputs.append(output.data[0])
+                    print('output.identifier: ', output.identifier)
+                    # print('output.data: ', output.data)
+                    # print('output.data[0]: ', output.data[0])
+                    if output.identifier == 'error' and output.data[0] != "False":
+                        print('error in wps process: ', output.data[0])
+                        context_p = {'execution_status': 'error in wps process',
+                                     'error': output.data[0]}
+                        wpsError = bool(output.data[0])
+                        break
 
-                    if type(output.data[0]) is str:
-                        if len(output.data[0]) > 10:
-                            substring = output.data[0][:10]
-                            if "img" in substring:
-                                image = output.data[0]
+                    elif type(output.data[0]) is str and output.identifier == "img":
+                        image = output.data[0]
+                        del outputs[-1]
                     elif type(output.data[0]) is bytes:
                         if len(output.data[0]) > 30:
                             substring = str(output.data[0][:30])
@@ -265,9 +274,10 @@ class ProcessView(TemplateView):
                                 # for child in tree:
                                 #     print(child.tag, child.attrib)
                                 del outputs[-1]
-                try:
-                    print('outputs[1]: ', outputs[1])
-                    if outputs[1] == 'False':
+
+                # if no error try to write result to database and create output for web
+                if not wpsError:
+                    try:
                         process = wps.describeprocess(wps_process)
                         datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
                         wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
@@ -277,14 +287,12 @@ class ProcessView(TemplateView):
                                      'type': datatype,
                                      'execution_status': execution_status
                                      }
-                    else:
-                        context_p = {'execution_status': 'error in wps process',
-                                     'error': outputs[1]}
-                except:
-                    print('Simple outputs: ', outputs)
-                    context_p = {'string': outputs,
-                                 'execution_status': execution_status
-                                 }
+                    except:
+                        print('Try did not work')
+                        # print('outputs from try: ', outputs)
+                        context_p = {'string': outputs,
+                                     'execution_status': execution_status
+                                     }
             else:
                 context_p = {'execution_status': 'auth_error'}
                 print('user is not authenticated. ', context_p)
@@ -309,6 +317,9 @@ def edit_input(inputs):
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif key_value[0] == 'number' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
+        elif isinstance(key_value[1], bool):
+            new_value = str(key_value[1])
+            wps_input.append((key_value[0], str(key_value[1])))
         else:
             wps_input.append(key_value)
     return wps_input
