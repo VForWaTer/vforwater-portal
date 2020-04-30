@@ -180,9 +180,11 @@ class MenuView(TemplateView):
         :return:
         :rtype:
         """
-        if DEBUG:
-            # expire after 20 seconds/ this is only for development!!!
-            request.session.set_expiry(20)
+        # if DEBUG:
+        #     # expire after 20 seconds/ this is only for development!!!
+        #     request.session.set_expiry(20)
+        # auto logout after 3 hours
+        request.session.set_expiry(10800)
 
         # bring last used menu to session
         if 'menu' in request.GET:

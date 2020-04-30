@@ -649,11 +649,15 @@ function menuItemListener(link) {
                     // console.log('content: ', content)
                     // console.log('content: ', content.innerHTML)
                     // let bokehResultScript;
-                    document.getElementById("mod_result").innerHTML = requestResult.div; // add plot
-                    bokehResultScript = document.createElement('script');
-                    bokehResultScript.type = 'text/javascript';
-                    bokehResultScript.text = requestResult.script;
-                    document.head.appendChild(bokehResultScript);
+                    if ('html' in requestResult) {
+                        document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
+                    } else {  // plot from bokeh
+                        document.getElementById("mod_result").innerHTML = requestResult.div; // add plot
+                        bokehResultScript = document.createElement('script');
+                        bokehResultScript.type = 'text/javascript';
+                        bokehResultScript.text = requestResult.script;
+                        document.head.appendChild(bokehResultScript);
+                    }
                     // console.log('document: ', document)
                     // popcloser.classList.remove('respo-hide');
                     // positionPopup(popup);

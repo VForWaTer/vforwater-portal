@@ -244,60 +244,72 @@ class ProcessView(TemplateView):
                 wps = get_wps_service_engine(request_input.get("serv", ""))
                 wps_process = request_input.get("id", "")
                 execution = wps.execute(wps_process, inputs)
-                execution_status = execution.status
-                image = []
-                outputs = []
-                wpsError = False
                 # order output for database
+                all_outputs = {'execution_status': execution.status}
+                all_outputs['result'] = {}
+                path = ''
+
                 for output in execution.processOutputs:
-                    outputs.append(output.data[0])
-                    print('output.identifier: ', output.identifier)
-                    # print('output.data: ', output.data)
-                    # print('output.data[0]: ', output.data[0])
-                    if output.identifier == 'error' and output.data[0] != "False":
-                        print('error in wps process: ', output.data[0])
-                        context_p = {'execution_status': 'error in wps process',
-                                     'error': output.data[0]}
-                        wpsError = bool(output.data[0])
-                        break
+                    one_output = {}
 
-                    elif type(output.data[0]) is str and output.identifier == "img":
-                        image = output.data[0]
-                        del outputs[-1]
-                    elif type(output.data[0]) is bytes:
-                        if len(output.data[0]) > 30:
-                            substring = str(output.data[0][:30])
-                            if "xml" in substring:
-                                print('XML as input not implemented yet. Got: ', output.data[0])
-                                logger.error('XML as input not implemented yet.')
-                                # tree = ET.fromstring(output.data[0])
-                                # for child in tree:
-                                #     print(child.tag, child.attrib)
-                                del outputs[-1]
+                    if output.identifier == 'error':
+                        all_outputs['error'] = output.data[0]
 
-                # if no error try to write result to database and create output for web
-                if not wpsError:
-                    try:
-                        process = wps.describeprocess(wps_process)
-                        datatype = json.loads(process.processOutputs[0].abstract)['keywords'][0]
-                        wpsid = create_wpsdb_entry(wps_process, inputs, outputs)
-                        context_p = {'wpsID': wpsid,
-                                     # 'outputs': outputs,
-                                     'image': image,
-                                     'type': datatype,
-                                     'execution_status': execution_status
-                                     }
-                    except:
-                        print('Try did not work')
-                        # print('outputs from try: ', outputs)
-                        context_p = {'string': outputs,
-                                     'execution_status': execution_status
-                                     }
+                        if output.data[0] != "False":
+                            print('error in wps process: ', output.data[0])
+                            all_outputs = {'execution_status': 'error in wps process',
+                                         'error': output.data[0]}
+                            break
+                    else:
+                        try:
+                            keywords = json.loads(output.abstract)['keywords'][0]
+                            one_output['type'] = keywords
+                            if 'pickle' in keywords:
+                                path = output.data[0]
+                        except:
+                            one_output['type'] = output.dataType
+                            print('no keywords')
+
+                        one_output['data'] = output.data[0]
+
+                        # TODO: Discuss if several outputs should have single or multiple buttons, and
+                        #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
+                        if len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
+                            db_output_data = output.data[0]
+                        elif path != '':
+                            try:
+                                file_name = path[:-4] + one_output['type'] + path[-4:]
+                                text_file = open(file_name, "w")
+                                text_file.write(output.data[0])
+                                text_file.close()
+                                db_output_data = file_name
+                                one_output['data'] = output.data[0]
+                            except:
+                                print('Warning: no file was created for long string')
+                        else:
+                            db_output_data = ''
+
+                        db_output = [output.identifier, one_output['type'], db_output_data]
+                        wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
+
+                        one_output['wpsID'] = wpsid
+                        all_outputs['result'][output.identifier] = one_output
+                        # TODO: Have to handle bytes result
+                        # if type(output.data[0]) is bytes:
+                        #     if len(output.data[0]) > 30:
+                        #         substring = str(output.data[0][:30])
+                        #         if "xml" in substring:
+                        #             print('XML as input not implemented yet. Got: ', output.data[0])
+                        #             logger.error('XML as input not implemented yet.')
+                        #             # tree = ET.fromstring(output.data[0])
+                        #             # for child in tree:
+                        #             #     print(child.tag, child.attrib)
+                        #             del outputs_for_db[-1]
             else:
-                context_p = {'execution_status': 'auth_error'}
-                print('user is not authenticated. ', context_p)
+                all_outputs = {'execution_status': 'auth_error'}
+                print('user is not authenticated. ', all_outputs)
 
-            return JsonResponse(context_p)
+            return JsonResponse(all_outputs)
 
 
 def edit_input(inputs):
@@ -318,7 +330,6 @@ def edit_input(inputs):
         elif key_value[0] == 'number' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif isinstance(key_value[1], bool):
-            new_value = str(key_value[1])
             wps_input.append((key_value[0], str(key_value[1])))
         else:
             wps_input.append(key_value)

@@ -164,16 +164,26 @@ function modal_run_process() {
                     i++;
                 });
                 color_modal("forestgreen");
-                let btnName = set_result_btn_name(outputName);
-                add_resultbtn_to_sessionstore(btnName, json);
-                document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, json);
+                console.log('json.result: ', json.result)
+                for (let i in json.result) {
+                    let btnData = {
+                        type: json.result[i].type,
+                        wpsID: json.result[i].wpsID,
+                        wps: json.wps,
+                        inputs: json.inputs,
+                        status: json.execution_status
+                    }
+                    let btnName = set_result_btn_name(outputName);
+                    add_resultbtn_to_sessionstore(btnName, btnData);
+                    document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, btnData);
+                }
             } else if (json.execution_status == "Exception") {
                 console.error('error in wps process')
                 color_modal("firebrick");
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "error in wps process") {
                 color_modal("firebrick");
-                console.error('error in wps process')
+                console.error('Error in wps process: ', json.error)
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
                 color_modal("firebrick");
@@ -186,7 +196,7 @@ function modal_run_process() {
         },
         error: function (json) {
             color_modal("firebrick");
-            console.log('Error: ', json)
+            console.error('Error, No success: ', json)
         }
     });
 }
@@ -245,7 +255,7 @@ function add_resultbtn_to_sessionstore(btnName, json) {
  * id is used for the remove button
  * @param  {string} name name for the button
  * @param  {obj} json Object holding all necessary info about result
- * @return {string}      HTML Code for the button
+ * @return {string} HTML Code for the button
  * */
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
