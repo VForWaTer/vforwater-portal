@@ -1,4 +1,4 @@
-Bokeh==2.0.1
+Bokeh==2.0.2
 django==2.2.12
 django_crontab==0.7.1
 django-cors-headers==3.2.1

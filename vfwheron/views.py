@@ -180,9 +180,11 @@ class MenuView(TemplateView):
         :return:
         :rtype:
         """
-        if DEBUG:
-            # expire after 20 seconds/ this is only for development!!!
-            request.session.set_expiry(20)
+        # if DEBUG:
+        #     # expire after 20 seconds/ this is only for development!!!
+        #     request.session.set_expiry(20)
+        # auto logout after 3 hours
+        request.session.set_expiry(10800)
 
         # bring last used menu to session
         if 'menu' in request.GET:
@@ -564,6 +566,7 @@ class FailedLoginView(View):
     """
     @staticmethod
     def get(request):
+        print('failed login view get')
         # message = _("Login failed.")
         # message = "Login failed."
         # request.user.message_set.create(message = message)

@@ -253,26 +253,46 @@ def DB_load_directiondata(id, ti):
 
 
 def get_timeseries_plot(data):
-    mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
-                      y_axis_label='value',
+    mainplot = get_main_plot(data, y_label='value', x_label="Time", x_type="datetime", type='line',
+                             title='Daily average, min and max values')
+    script, div = components(mainplot, wrap_script=False)
+    return {'script': script, 'div': div}
+
+
+def get_xy_plot(data):
+    x_label = data.columns[0]
+    y_label = data.columns[1]
+
+    mainplot = get_main_plot(data, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
+    script, div = components(mainplot, wrap_script=False)
+    return {'script': script, 'div': div}
+
+
+def get_main_plot(data, y_label='value', x_label="x axis", x_type="linear", type="line",
+                  title='Daily average, min and max values'):
+    mainplot = figure(title=title, x_axis_label=x_label, x_axis_type=x_type,
+                      y_axis_label=y_label,
                       plot_width=700, plot_height=500, toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
 
     # plot.toolbar.autohide = True
     # plot line
     # mainplot.line(data.index.values, data['value'], line_width=2)
-    numlines = len(data.columns)
-    mainplot.multi_line(xs=[data.index.values] * numlines, ys=[data[name].values for name in data],
-                 line_color=Spectral11[0:numlines], line_width=2)
+    if type == 'line':
+        numlines = len(data.columns)
+        mainplot.multi_line(xs=[data.index.values] * numlines, ys=[data[name].values for name in data],
+                            line_color=Spectral11[0:numlines], line_width=2)
+    elif type == 'scatter':
+        mainplot.line(x=data[x_label], y=data[y_label], line_width=2)
+
     # mainplot.line(x='tstamp', y='value', source=source, line_width=2)
     # Style the plot
     mainplot.title.text_font_size = "14pt"
     mainplot.xaxis.axis_label_text_font_size = "14pt"
-    mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
+    if x_type == 'datetime':
+        mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
     mainplot.yaxis.axis_label_text_font_size = "14pt"
-
-    script, div = components(mainplot, wrap_script=False)
-    return {'script': script, 'div': div}
+    return mainplot
 
 
 def distribution_plot(source, mapper, bin_width, title, plot_width):
@@ -321,13 +341,30 @@ def get_preview(id):
             r.set("preview_{}".format('b' + id), img)
 
     if wps_result:
-        DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)[0]
+        DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
         try:
-            df = pd.read_pickle(DBstring)
-            img = get_timeseries_plot(df)
-            #with open(DBstring, 'rb') as f:
+            # if 'ts-pickle' in DBstring[1]:
+            if 'pickle' in DBstring[1]:
+                df = pd.read_pickle(DBstring[2])
+                if 'ts-pickle' in DBstring[1]:
+                    img = get_timeseries_plot(df)
+                elif DBstring[1] == 'pickle':
+                    img = get_xy_plot(df)
+            elif DBstring[1] == 'image':
+                try:
+                    file = open(DBstring[2], mode='r')
+                    htmlimg = file.read()
+                    file.close()
+                except FileNotFoundError:
+                    print('Error: Can not load your image')
+                    htmlimg = 'Error: Can not load your image'
+                img = {'html': htmlimg}
+            else:
+                print('Error: Con not plot. Unknown type')
+
+        #with open(DBstring, 'rb') as f:
             #    data = pickle.load(f)
         except FileNotFoundError:
-            print('The data file %s was not found.' % (DBstring))
+            print('The data file %s was not found.' % (DBstring[2]))
 
     return img
