@@ -85,8 +85,14 @@ def home(request):
 #     return blala
 
 # TODO: consider also storing the type of the output to the outputs
-def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
-    db_result, created = WpsResults.objects.get_or_create(open=True, wps=wps_process, inputs=invalue,
+
+def get_or_create_wpsdb_entry(service: str, wps_process: str, input: tuple):
+    """
+    Get or create a database entry.
+    :param service: name of the wps service
+    :param wps_process: identifier of the wps process
+    """
+    db_result, created = WpsResults.objects.get_or_create(open=True, wps=wps_process, inputs={input[0]: input[1]},
                                                           defaults={'creation': timezone.now(),
                                                                     'access': timezone.now()})
     result = {'wps_id': db_result.id}
@@ -95,7 +101,7 @@ def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
         db_result.save()
     else:
         wps = get_wps_service_engine(service)
-        execution = wps.execute(wps_process, [(inkey, invalue)])
+        execution = wps.execute(wps_process, [input])
         execution_status = execution.status
         wpsError = {}
         try:
@@ -104,7 +110,7 @@ def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
             wpsError['error'] = 'True'
             wpsError['text'] = 'Something strange (Error?) in wps.'
             logger.error('Something strange (Error?) in wps for %s: %s',
-                         (service, wps_process, inkey, invalue), execution_status)
+                         (service, wps_process, input), execution_status)
         if execution_status == "ProcessSucceeded" and wpsError['error'] == 'False':
             # if execution_status == "ProcessSucceeded" and not execution.processOutputs[1].data[0]:
             db_result.outputs = execution.processOutputs[0].data
@@ -113,11 +119,16 @@ def get_or_create_wpsdb_entry(service, wps_process, inkey, invalue):
             db_result.delete()
             result = {'Error': 'dbload did not work. Please check log file'}
             logger.error('get_or create wps execution_status for %s: %s',
-                         (service, wps_process, inkey, invalue), execution_status)
+                         (service, wps_process, input), execution_status)
     return result
 
 
-def create_wpsdb_entry(wps_process, invalue, outputs):
+def create_wpsdb_entry(wps_process: str, invalue: list, outputs):
+    """
+    Create a database entry.
+    :param wps_process: identifier of the wps process
+    :param invalue: list of tuples of input identifier of wps and respective value (e.g. a path)
+    """
     db_result = WpsResults.objects.create(open=False, wps=wps_process, inputs=dict(invalue), outputs=outputs,
                                           creation=timezone.now())#, access=timezone.now())
     return db_result.id
@@ -215,6 +226,7 @@ class ProcessView(TemplateView):
 
             return JsonResponse(wps_description)
 
+        # function to preload data from database, convert it, and store a pickle of the data
         if 'dbload' in request.GET:
             wps_process = 'dbloader_m'
             inkey = 'sql-filter'
@@ -228,7 +240,7 @@ class ProcessView(TemplateView):
                 else:
                     invalue = 'SELECT value FROM tbl_data WHERE meta_id=' + dataset + ';'
                     datatype = 'pickle'
-                datalink = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, inkey, invalue)
+                datalink = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, (inkey, invalue))
                 result[dataset] = datalink
                 if 'Error' not in datalink:
                     result[dataset]['datatype'] = datatype
@@ -236,6 +248,7 @@ class ProcessView(TemplateView):
 
         if 'processrun' in request.GET:
 
+            # if request.user.is_authenticated:
             if True:
                 # if request.user.is_authenticated:
                 request_input = json.loads(request.GET.get('processrun'))
@@ -258,7 +271,7 @@ class ProcessView(TemplateView):
                         if output.data[0] != "False":
                             print('error in wps process: ', output.data[0])
                             all_outputs = {'execution_status': 'error in wps process',
-                                         'error': output.data[0]}
+                                           'error': output.data[0]}
                             break
                     else:
                         try:
@@ -289,10 +302,17 @@ class ProcessView(TemplateView):
                         else:
                             db_output_data = ''
 
-                        db_output = [output.identifier, one_output['type'], db_output_data]
-                        wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
 
-                        one_output['wpsID'] = wpsid
+                        if db_output_data != '':
+                            db_output = [output.identifier, one_output['type'], db_output_data]
+                            # create the db entry
+                            wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
+
+                            one_output['wpsID'] = wpsid
+                        else:
+                            print('*** no output to write to db ***')
+                            one_output['error'] = 'no output to write to db'
+
                         all_outputs['result'][output.identifier] = one_output
                         # TODO: Have to handle bytes result
                         # if type(output.data[0]) is bytes:
@@ -317,7 +337,7 @@ def edit_input(inputs):
     for key_value in inputs:
         if key_value[0] in datatypes and isinstance(key_value[1], list):
             for value in key_value[1]:
-                new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[0])
+                new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[2])
                 wps_input.append(new_pair)
         elif key_value[0] in datatypes:
             wps_input.append((key_value[0], ast.literal_eval(WpsResults.objects.get(id=key_value[1][5:]).outputs)[0]))
@@ -413,3 +433,11 @@ def development(request):
     Create a page to show when something isn't working.
     """
     return HttpResponse("We apologize for the inconvenience.\\ At the moment this site is under heavy development.")
+
+
+def clean_wpsresult():
+    """
+    Delete database entries that have no outputs or that haven't been accessed for a XXX days
+    :return:
+    """
+    return ""

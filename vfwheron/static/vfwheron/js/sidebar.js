@@ -80,6 +80,10 @@ function show_data() {
     }
 }
 
+/**
+ * If there is a selection from the Filtermenu preload it and store the pickle
+ * @param workspaceData
+ */
 function preload_datastore_button(workspaceData) {
     // USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY
     for (let dataset in workspaceData) {
@@ -594,6 +598,7 @@ function menuItemListener(link) {
             popup.classList.remove(popActive);
             break;
         case "DownloadDMD":
+            console.error('Not implemented yet')
             break;
         case "Remove":
             remove_single_data(id);

@@ -225,6 +225,7 @@ function create_map() {
                 buildPopup(evt)
             } catch (err) {
                 content.innerHTML = '<div id="loader">Failed to load your selection</div>';
+                console.log('err: ', err)
             }
 
         } else {

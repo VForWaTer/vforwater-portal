@@ -566,6 +566,7 @@ class FailedLoginView(View):
     """
     @staticmethod
     def get(request):
+        print('failed login view get')
         # message = _("Login failed.")
         # message = "Login failed."
         # request.user.message_set.create(message = message)
