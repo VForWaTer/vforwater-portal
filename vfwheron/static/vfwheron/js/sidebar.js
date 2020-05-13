@@ -99,7 +99,7 @@ function preload_datastore_button(workspaceData) {
                 }, // data sent with post request
                 success: (wpsDBInfo) => update_datastore_button(wpsDBInfo),
                 error: function (wpsDBInfo) {
-                    console.log('Error in preload of data. ', wpsDBInfo)
+                    console.error('Error in preload of data. ', wpsDBInfo)
                 }
             });
         }
@@ -136,7 +136,7 @@ function preload_datastore_button(workspaceData) {
 function update_datastore_button(wpsDBInfo){
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     $.each(wpsDBInfo, function (keyID, value) {
-        if (workspaceData[keyID]) {
+        if (workspaceData[keyID] && workspaceData[keyID]['wpsID']) {
             workspaceData[keyID]['pickle'] = 1;
             workspaceData[keyID]['wpsID'] = value['wps_id'];
             workspaceData[keyID]['type'] = value['datatype'];

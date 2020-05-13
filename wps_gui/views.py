@@ -104,14 +104,12 @@ def get_or_create_wpsdb_entry(service: str, wps_process: str, input: tuple):
         execution = wps.execute(wps_process, [input])
         execution_status = execution.status
         wpsError = {}
-        try:
-            wpsError['error'] = execution.processOutputs[1].data[0]
-        except ObjectDoesNotExist:
-            wpsError['error'] = 'True'
-            wpsError['text'] = 'Something strange (Error?) in wps.'
-            logger.error('Something strange (Error?) in wps for %s: %s',
+        if 'Exception' in execution_status:
+            result = {'Error': 'dbload did not work. Please check log file'}
+            db_result.delete()
+            logger.error('Got no result from wps for %s: %s',
                          (service, wps_process, input), execution_status)
-        if execution_status == "ProcessSucceeded" and wpsError['error'] == 'False':
+        elif execution_status == "ProcessSucceeded" and wpsError['error'] == 'False':
             # if execution_status == "ProcessSucceeded" and not execution.processOutputs[1].data[0]:
             db_result.outputs = execution.processOutputs[0].data
             db_result.save()
