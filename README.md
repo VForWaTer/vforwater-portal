@@ -9,7 +9,7 @@ Code is still under development and comes with no guarantees.
 
 # Dependencies
 
-vforwater-portal is a Django project (we testet Django 2.1, python 3.6)
+vforwater-portal is a Django project (we testet Django 2.2, python 3.7)
 The following components are needed:
 * PostGIS (we testet postgresql 9.6, 10.6, 11.2 + postgis 2.4, 2.5)
 * Geoserver (we testet 2.12.2 and 2.14.1, Oracle Java + tomcat or OpenJDK)
