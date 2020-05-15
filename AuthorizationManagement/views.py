@@ -19,7 +19,7 @@ from django.utils.html import strip_tags
 from django.core.exceptions import PermissionDenied, ValidationError
 from _csv import reader, Error
 import mimetypes
-from test.support import resource
+##from test.support import resource
 # from pip._vendor.requests.api import request  # TODO: what is this? It's whether used nor available.
 from django.db.models import Q
 from django.views.decorators.cache import never_cache
