@@ -22,7 +22,6 @@
 
 {#TODO: Don't like "show_data()" in map.html, but 2 onload in app don't work. Any better solution?#}
 <body onload="create_map(); show_data()">
-	<!-- <body class="respo-light-grey" onload="create_map()">  -->
 	<div id="map" class="map"></div>
 
 	<style>div.map {height: 80%; width: 100%;}</style>
@@ -33,11 +32,15 @@
 
 	<div class="respo-center" id="filterbox" class="" style="display:none">
 {#        <dl>#}
-		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_polygon" class="draw-hover" title="Draw"><i class="fa fa-square-o fa-fw"></i></a>
-		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="modify_polygon" class="draw-hover" title="Edit"><i class="fa fa-edit fa-fw"></i></a>
+    {% trans "Click&#32on&#32map&#32to&#32draw.&#32Doubleclick&#32to&#32start&#32drawing." as Draw %}
+    {% trans "Edit&#32drawing" as Edit %}
+    {% trans "Remove&#32drawing" as Remove %}
+    {% trans "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom." as Exit %}
+		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_polygon" class="draw-hover" title={{ Draw }}><i class="fa fa-square-o fa-fw"></i></a>
+		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="modify_polygon" class="draw-hover" title={{ Edit }}><i class="fa fa-edit fa-fw"></i></a>
 {#		  <a href="javascript:void(0)" id="select_polygon" class="draw-hover" title="Select Drawing"><i class="fa fa-hand-pointer-o fa-fw"></i></a>#}
-		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="remove_polygon" class="draw-hover" title="Remove"><i class="fa fa-trash fa-fw"></i></a>
-		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="respo-hover-white" title="Exit Drawing"><i class="fa fa-remove fa-fw"></i></a>
+		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="remove_polygon" class="draw-hover" title={{ Remove }}><i class="fa fa-trash fa-fw"></i></a>
+		  <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="respo-hover-white" title={{ Exit }}><i class="fa fa-remove fa-fw"></i></a>
 		  {% comment %}
 		  <a href="javascript:void(0)" onclick="select_catchment_toggle()" class="respo-hover-white respo-hide-small" title="Select Catchment"><i class="fa fa-check-square-o fa-fw"></i></a>
 		  <a href="javascript:void(0)" onclick="filterbox_close()" class="respo-hover-red respo-hide-small respo-right" title="Close Toolbar"><i class="fa fa-remove fa-fw"></i></a>
@@ -52,7 +55,7 @@
 	</div>
 		{# <input type="button" onclick="toggleLayer(vectorLayer)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp; #}
 
-    	<div id="popup" class="ol-popup">
+    	<div id="popup" class="ol-popup popup">
             <div id="popup-content">
             </div>
             <div class="center">
@@ -62,10 +65,9 @@
 {#            <img id="preview_img" src="" alt="Keine Vorschau verfügbar"/>#}
             <a href="#" id="popup-closer" class="ol-popup-closer"></a>
     </div>
+
+{% block modal %}
+    {% include 'vfwheron/info_modal.html' %}
+{% endblock modal %}
 </body>
 
-<!--
-<script>
-   sample_locations = '{{ sample_locations }}';
-</script>
--->

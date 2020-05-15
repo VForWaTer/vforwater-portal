@@ -17,5 +17,4 @@ def global_settings(request):
         'MAP_SERVER': settings.MAP_SERVER,
         # 'PORTAL_GEOSERVER': settings.PORTAL_GEOSERVER,
         'DEMO_VAR': settings.DEMO_VAR,
-        # again available for settings?!?
         }

@@ -1,0 +1,36 @@
+<meta charset="UTF-8">
+
+{% extends "vfwheron/base.html" %}
+
+{% block title %}- Heron WPS{% endblock %}
+
+{% block sidebar %}
+	{% include 'wps_gui/sidebar.html' %}
+{% endblock sidebar %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <h1>{{ wps.identification.title }}</h1>
+            <p>{{ wps.identification.abstract }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <h4>Processes</h4>
+            <input class="form-control input-lg process-search" type="text" placeholder="Search"
+                   oninput="dynamic_search(this.value);">
+            <div class="list-group">
+                {% for process in wps.processes %}
+                    <a href="{% url 'wps_gui_app:process' service=service identifier=process.identifier %}"
+                       class="list-group-item process">
+                        <h4 class="list-group-item-heading title">{{ process.title }}</h4>
+                    </a>
+                    <p class="list-group-item-text abstract">{{ process.abstract }}</p>
+
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

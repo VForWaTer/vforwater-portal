@@ -26,7 +26,6 @@ def _build_path_value_pair(parent_menu, child, item):
         path = 'id__in'
         value = item
     else:
-        # logger.debug('Unknown type of item.')
         print('Unknown type of item.')
     return {'path': path, 'value': value}
 
@@ -140,7 +139,6 @@ class FilterMethods:
                 child_result.update({"C" + str(c): item_result})
                 c += 1
             result.update({parent: child_result})
-        print('result of count: ', result)
         return result
 
     @staticmethod
@@ -167,7 +165,6 @@ class Menu:
     """
 
     # The order here is used as order for the menu on the client
-    # menu_list = [LtDomain, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
     # #queries [LtLocation(2), LtLicense(10), LtQuality(8), LtSite(47), LtSoil(8), LtUser(17), TblMeta(307), TblSensor(18), TblVariable(19)]
     # => TODO: TblMeta holds information about time of dataset => write view/something to reduce queries!
     # TODO: Check queries in detail (LtLocation is okay!)
@@ -181,15 +178,10 @@ class Menu:
         :type user:
         """
         # to see menu items without content set min_amount to 0
-        # self.min_amount = 0 if DEBUG else 1
         self.min_amount = 1
         self.user = user
         self.user_query_set()
-        # self.user = user
         self.menu_list = Menu.menu_list
-        # self.menu_list = [LtDomain]
-        # self.menu()
-        # self.write_json_menu()
 
     def user_query_set(self):
         """
@@ -202,11 +194,8 @@ class Menu:
             query_set = TblMeta.objects.filter(license__share=True).all()
             for i in query_set:
                 return
-                # print('i: ', i)
-                # print('query_set: ', query_set.__len__())
-                # print('query_set: ', query_set.filter(tbl))
 
-    def menu(self, user):
+    def get_menu(self):
         """
 
         :param user:
@@ -215,7 +204,6 @@ class Menu:
         :rtype:
         Function to build the actual menu
         """
-        # print('ACHTUNG!!! DU BAUST EIN MENU!!!')  # One line to check how often this is accessed        count = 0
         json_menu = {}  # menu for client
         menu_map = {}  # menu for server
         count = 0
@@ -223,7 +211,6 @@ class Menu:
             whole_menu = Table(table, self.min_amount, self.user_query_set)
             json_table = whole_menu.json_child['client']
             map_table = whole_menu.json_child['server']
-            # map_table = whole_menu.map_child
             if json_table['total'] >= self.min_amount:
                 count = count + 1
 
@@ -243,29 +230,8 @@ class Menu:
 
                 map_dict.update(map_table['C'])
                 menu_map.update({'P' + str(count): map_dict})
-        # print('menu_map: ', menu_map)
-        # print('json_menu: ', json_menu)
 
         return {'client': json_menu, 'server': menu_map}
-
-
-# use this method to write an example of the json menu to disk
-#     def write_json_menu(self):
-#         json_menu = json.dumps(self.menu()['client'])
-#         menu_map = json.dumps(self.menu()['server'])
-#
-#         if DEBUG:  # write the json menu for the web-site to file in DEBUG mode
-#             save_path = '/home/marcus/git/vforwater-portal/vfwheron/test.json'
-#             file = open(save_path, "w")
-#             file.write(json_menu)
-#             file.close()
-#
-#             save_path = '/home/marcus/git/vforwater-portal/vfwheron/test_map.json'
-#             file = open(save_path, "w")
-#             file.write(menu_map)
-#             file.close()
-#
-#         return json_menu
 
 
 # TODO: Check how often 'get_filter_type' and the others are called; Shall they be properties?
@@ -316,8 +282,6 @@ class Table:
         except AttributeError:
             pass
 
-        # else:
-        #     self.filter_type = self.table_name.filter_type
 
     def get_query_set(self):
         """
@@ -326,19 +290,6 @@ class Table:
         :rtype:
         """
         for columns in self.child_columns:
-            # if else when you want filter for default user
-            # if self.table_name.path:
-            #     table_path = self.table_name.path + '__' + columns
-            #     # query_set =
-            # TblMeta.objects.select_related().filter(license__share=True).values_list(table_path, flat=True).distinct()
-            #     # print('query_set: ', query_set)
-            #     # query1 = TblMeta.objects.select_related().filter(license__share=True)
-            #     query_set = self.default_query.values_list(table_path, flat=True).distinct()
-            #     # print(' * * *  * * * * query_set: ', query_set)
-            #
-            #     # print('query2: ', query2)
-            # else:
-            #     query_set = self.default_query.values_list(columns, flat=True).distinct()
             excluder = {'{0}'.format(columns): None}
             query_set = list(self.table_name.objects.select_related().distinct().exclude(**excluder).
                              values_list(columns, flat=True))
@@ -399,8 +350,6 @@ class Table:
                     json_all_childs = result['json']
                     map_all_childs = result['server']
                 else:
-                    # print('* * * * * grand_child: ', grand_child)
-                    # print('* * * * * result["total"]: ', result['total'])
                     grandchilds.update(
                             dict(name=self.table_name.column_dict[grand_child], total=result['total']))
                     map_grandchilds.update({
@@ -418,8 +367,6 @@ class Table:
 
         result = {'total': counter, 'C': json_all_childs}
         map_result = {'C': map_all_childs}
-        # print('client: ', result)
-        # print('server: ', map_result)
         return {'client': result, 'server': map_result}
 
     def build_default_json(self, grand_child):
@@ -440,7 +387,6 @@ class Table:
                 grandchild_dict = {
                     'name': values,
                     'total': total,
-                    # 'chosen': False,
                     }
                 map_grandchild_dict = {
                     'name': values,
@@ -464,21 +410,13 @@ class Table:
         counter = 0
         total = len(self.child[grand_child])
         keyword = self.query_paths[grand_child]
-        print('keyword: ', keyword)
         excl_nan = {'{0}'.format(keyword): 'NaN'}
         excl_none = {'{0}'.format(keyword): None}
         c_min = {'{0}'.format('min_value'): Min(keyword)}
         c_max = {'{0}'.format('max_value'): Max(keyword)}
-        # total = eval("TblMeta.objects.filter(" + grand_child + ").count()")
         try:
-            # min_max = eval("TblMeta.objects.exclude(" + self.query_paths[grand_child] +
-            #             "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
-            #                self.query_paths[grand_child] + "'))")
             min_max = TblMeta.objects.exclude(**excl_nan).exclude(**excl_none).aggregate(**c_min, **c_max)
-            print('min_max: ', min_max)
         except ValueError:
-            # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] +
-            #                "'), max_value=Max('" + self.query_paths[grand_child] + "'))")
             min_max = TblMeta.objects.aggregate(**c_min, **c_max)
             return {'json': '', 'total': 0, 'server': ''}
         grandchild_dict = {
@@ -506,15 +444,12 @@ class Table:
         :return:
         :rtype:
         """
-        print('date')
         counter = 0
         total = len(self.child[grand_child])
         d_min = {'{0}'.format('min_value'): Min(self.query_paths[grand_child])}
         d_max = {'{0}'.format('max_value'): Max(self.query_paths[grand_child])}
 
         min_max = TblMeta.objects.aggregate(**d_min, **d_max)
-        # min_max = eval("TblMeta.objects.aggregate(min_value=Min('" + self.query_paths[grand_child] + "'),
-        #   max_value=Max('" + self.query_paths[grand_child] + "'))")
         grandchild_dict = {
             'type': 'date',
             'total': total,
@@ -573,8 +508,6 @@ class Table:
 
                     # build the innermost selectables:
                     # TODO: IMPORTANT! Check which result is right. Maybe all three cases in one Filter?
-                    # grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id,
-                    # nmmetadomain__domain__pid_id=child_id, nmmetadomain__domain__domain_name=grandchild_name).count()
                     grandchild_total = TblMeta.objects.filter(nmmetadomain__domain__project_id=project_id).\
                         filter(nmmetadomain__domain__pid_id=child_id).\
                         filter(nmmetadomain__domain__domain_name=grandchild_name).count()
@@ -582,7 +515,6 @@ class Table:
                         grandchild_json = {
                             'name': grandchild_name,
                             'total': grandchild_total,
-                            # 'chosen': False,
                             }
                         grandchild_counter = grandchild_counter + 1
                         inner_grandchild.update({'I' + str(grandchild_counter): grandchild_json})
@@ -590,7 +522,6 @@ class Table:
                 grandchild_dict = {
                     'name': child_name,
                     'total': grandchild_counter,
-                    # 'chosen': False,
                     'childtitle': self.table_name.submenu_names['subdomain'],
                     }
                 grandchild_dict.update(inner_grandchild)
@@ -604,7 +535,6 @@ class Table:
                 'title': self.table_name.submenu_names['project'],
                 'name': str(project_name),
                 'total': child_total,
-                # 'chosen': False,
                 'childtitle': self.table_name.submenu_names['domain'],
                 }
 
@@ -625,19 +555,14 @@ class Table:
         :return:
         :rtype:
         """
-        # types = TblMeta.objects.values_list('geometry__geometry_type', flat=True).distinct().
-        #   exclude(geometry__geometry_type=None)
         counter = 0
-        # for values in self.child[grand_child]:  # for now only for POINT data
         values = 'POINT'
-        # total = TblMeta.objects.filter(geometry__geometry_type=values).count()
         filtermap = {'{0}'.format(self.query_paths[grand_child]): values}
         total = TblMeta.objects.filter(**filtermap).count()
         grandchild_dict = {
             'type': 'draw',
             'name': values,
             'total': total,
-            # 'chosen': False,
             }
         map_grandchild_dict = {
             'type': 'draw',
@@ -646,8 +571,6 @@ class Table:
 
         if total >= self.min_amount:
             counter = counter + 1
-            # all_grandchilds.update({'I' + str(counter): grandchild_dict})
-            # map_grandchilds.update({'I' + str(counter): map_grandchild_dict})
         # if there are no values for the submenu, return nothing
         return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
 

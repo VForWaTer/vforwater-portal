@@ -19,8 +19,6 @@
     text-align:left;
     cursor:pointer;
     white-space:nowrap}
-/*.filter-btn-block:hover{*/
-    /*box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)}*/
 
 .dropbtn {
     background-color: white;
@@ -31,10 +29,6 @@
     border: none;
     cursor: pointer;
 }
-
-/*.dropbtn:hover, .dropbtn:focus {*/
-    /*background-color: blue;*/
-/*}*/
 
 .dropdown {
     position: relative;
@@ -120,9 +114,6 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
     top: 100%;
     left: 50%;
     margin-left: -5px;
-    /*border-width: 5px;*/
-    /*border-style: solid;*/
-    /*border-color: #555 transparent transparent transparent;*/
 }
 
 /* Toggle this class - hide and show the popup */
@@ -187,19 +178,11 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
     }
 
     #sliderwildcard{
-	/*height: auto;*/
-	/*width: auto;*/
-	/*margin: 0 auto;*/
 	padding: 28px 0 0 0;
-	/*border: 1px solid #BFBFBF;*/
 }
 
     #datewildcard{
-	/*height: auto;*/
-	/*width: auto;*/
-	/*margin: 0 auto;*/
 	padding: 28px 0 0 0;
-	/*border: 1px solid #BFBFBF;*/
 }
 
 .noUi-tooltip {
@@ -211,13 +194,7 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 
 .noUi-connect {
     background: var(--color_Item) !important;
-    /*margin: 10px;*/
-	/*display: inline-block;
-	height: 200px;*/
 }
-/*.noUi-active .noUi-connect {
-    background: yellow !important;
-}*/
 
 /*style from https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css*/
 .ui-rangeslider {
@@ -261,7 +238,6 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 }
 
 .ui-rangeslider .ui-rangeslider-sliders .ui-slider-track:first-child {
-    /*background-color: transparent;*/
     background: 0;
     border-width: 0;
     height: 0
@@ -322,7 +298,7 @@ div.ui-rangeslider label {
 
 /* context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/*/
 
-.context-menu {
+.context-menu, .context-result {
   display: none;
   position: absolute;
   z-index: 10;
@@ -333,7 +309,7 @@ div.ui-rangeslider label {
   box-shadow: 1px 1px 2px #cfcfcf;
 }
 
-.context-menu--active {
+.context-menu--active, .context-result--active  {
   display: block;
 }
 
@@ -392,27 +368,17 @@ div.ui-rangeslider label {
     position:relative;
     padding:0;
     outline:0;
+    width: -moz-fit-content;
+    width:fit-content
+}
+.wps-modal-content{
+    margin:auto;
+    background-color:#fff;
+    position:relative;
+    padding:0;
+    outline:0;
     width:600px
 }
-/*.respo-closebtn{
-    text-decoration:none;
-    float:right;
-    font-size:24px;
-    font-weight:bold;
-    color:inherit
-}*/
-
-/*
-.mod-popup:after, .mod-popup:before {
-    top: 100%;
-    border: solid transparent;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
-}
-*/
 
 .mod-popup:after {
     border-top-color: white;

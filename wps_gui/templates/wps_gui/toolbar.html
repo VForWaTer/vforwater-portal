@@ -1,0 +1,143 @@
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<head>
+  {#  <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>#}
+
+  {#    <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>#}
+  <style>
+    .respo-sidenav {
+      margin-top: 80px;
+    }
+  </style>
+</head>
+
+{#<script>#}
+{#let SERVER = "{{ VFW_SERVER }}";#}
+{#let MAP_SERVER = "{{ MAP_SERVER }}";#}
+{#let DEMO_VAR = "{{ DEMO_VAR }}"#}
+{#</script>#}
+<script>
+  /**
+   * Build Type indicators for buttons in Toolbox
+   * Don't draw a marker, this is done with css. Set only respective class here.
+   * @param id
+   * @param invalues
+   * @param outvalues
+   */
+  function inoutIndicator(id, invalues, outvalues) {
+    let element = document.getElementById(id);
+    //console.log('- invalues: ', invalues)
+    console.group(id)
+    invalues.forEach(function (val) {
+      console.log(val)
+      if (Array.isArray(val) && val.length > 1) {
+        let newHeader = "";
+        val.forEach(function (inVal) {
+          newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +
+                  'class="' + inVal + ' "title="Input: ' + val + '"></span>';
+        });
+        element.getElementsByTagName("button-header")[0].innerHTML +=
+                '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
+      } else {
+        element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val + '" ' +
+                'style="display: inline-block;" title="Input: ' + val + '"></span>';
+      }
+    });
+    console.groupEnd()
+    //console.log('outvalues: ', outvalues)
+    outvalues.forEach(function (val) {
+      if (Array.isArray(val) && val.length > 1) {
+        let newFooter = "";
+        val.forEach(function (outVal) {
+          newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
+                  'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
+        });
+        element.getElementsByTagName("button-footer")[0].innerHTML +=
+                '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
+      } else {
+        element.getElementsByTagName("button-footer")[0].innerHTML +=
+                '<span style="align-self: flex-end;" <span class="' + val + '" ' +
+                'title="Ouput: ' + val + '"></span></div>';
+        {% comment %} display: inline-block for dots on the right side{% endcomment %}
+      }
+    })
+  }
+</script>
+<body>
+<!-- TODO: check if still in use. If not delete that parm -->
+<!--   Sidenav/menu -->
+<!--   Show Data selected in Home in Data Store and start database loader -->
+<nav class="respo-sidenav respo-collapse respo-white respo-animate-right" style="z-index:0;width:300px;right:0"
+     id="myToolbar">
+  <br>
+  <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()"
+     title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
+  <hr style="margin-bottom:0;">
+  <div class="respo-container ">
+    <p></p>
+  </div>
+  <div class="respo-container respo-light-turquoise">
+    <b title={% trans "Select&#32your&#32tool&#32here." %}>{% trans " Toolbox" %}</b>
+  </div>
+  <div class="row col-md-8 col-md-offset-2" id="toolbar">
+    {#  <div class="row" id="toolbar">#}
+    {#    <div class="col-md-8 col-md-offset-2">#}
+    {% if wps_services %}
+      <div class="list-group">
+        {% for wps in wps_services %}
+          <a
+                  {#                        <a href="{% url 'wps_gui_app:service' service=wps.identification.title %}"#}
+                  class="list-group-item wps">
+            <h6 class="list-group-item-heading title">{{ wps.identification.title }}</h6>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>Currently there are no WPS services or tools linked to this instance. We are working on this issue,
+        so please try later again.</p>
+    {% endif %}
+    <table style="width:100%">
+      <div class="list-group">
+        {% for process in wps.processes %}
+          <tr>
+            <div id="{{ process.identifier }}" class="process respo-card-2"
+                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}')"
+                 title="{{ process.abstract }}" draggable="true" ondragstart="drag(event)"
+                 data-service="{{ service }}" data-process="{{ process.identifier }}"
+                 style="cursor:pointer;">
+              <button-header class="respo-container" style="font-size: smaller">
+              </button-header>
+              <div value="{{ process.processin }}"
+                      {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
+                   class=" respo-container"
+
+                      {% comment %}onclick='location.href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"'{% endcomment %}
+              >
+                <h7 class="title">{{ process.title }}
+                </h7>
+              </div>
+              <button-footer class="respo-container" style="font-size: smaller">
+                {#                                    <p>No output envisaged</p>#}
+              </button-footer>
+              <style onload="inoutIndicator('{{ process.identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
+
+            </div>
+          </tr>
+        {% endfor %}
+      </div>
+    </table>
+    {#    </div>#}
+  </div>
+  <div class="respo-container">
+    <p></p>
+  </div>
+</nav>
+
+{#  Overlay effect when opening sidenav on small screens#}
+<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer"
+     title="close side menu" id="myOverlay"></div>
+</body>
+
+

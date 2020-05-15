@@ -100,7 +100,6 @@ LOGGING = {
 
 INSTALLED_APPS = [
     'vfwheron.apps.VfwheronConfig',
-    'dashboard.apps.DashboardConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -108,14 +107,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'heron_wps',
+    # 'heron_wps',
+    'wps_gui',
     'heron_monitor',
     'heron_visual',
     'heron_upload',
-    # Three apps for wps_workflow
-    'wps_workflow.apps.wps_workflowConfig',
-    'django_crontab',
-    'django.contrib.admindocs',
     'AuthorizationManagement.apps.AuthorizationmanagementConfig',
 ]
 
@@ -260,17 +256,4 @@ wps_log = logging.getLogger('wps')
 wps_log.setLevel(logging.DEBUG)  # set logging level here
 wps_log.addHandler(filehandler)
 # For django_crontab
-CRONJOBS = [
-    ('*/1 * * * *', 'wps_workflow.cron.scheduler'),
-    ('*/1 * * * *', 'wps_workflow.cron.receiver'),
-    ('*/5 * * * *', 'wps_workflow.cron.update_wps_processes'),
-]
-if (DEBUG):
-    MIDDLEWARE += ['corsheaders.middleware.CorsMiddleware', ]
-    INSTALLED_APPS += ['corsheaders', ]
-    CORS_ALLOW_CREDENTIALS = True
-    CORS_ORIGIN_WHITELIST = (
-        '127.0.0.1:4200',
-        'localhost:4200'
-    )
 # END OF settings from workflow app

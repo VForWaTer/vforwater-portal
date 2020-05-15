@@ -31,6 +31,10 @@ msgstr ""
 msgid "  Workspace"
 msgstr "  Arbeitsplatz"
 
+#: templates/vfwheron/base.html:47 templates/vfwheron/sidemenu.html:15
+msgid "  WPS GUI"
+msgstr ""
+
 #: templates/vfwheron/base.html:50
 msgid "  Workflow"
 msgstr ""
@@ -83,6 +87,10 @@ msgstr "  Ausloggen wie Einloggen"
 msgid "  Login"
 msgstr "  Einloggen"
 
+#: templates/vfwheron/info_modal.html:26
+msgid "Back"
+msgstr "zurück"
+
 #: templates/vfwheron/base_sidebar.html:22 templates/vfwheron/sidemenu.html:11
 #: templates/vfwheron/wps_sidebar.html:26
 msgid "  Close Menu"
@@ -93,10 +101,22 @@ msgstr "  Menü schließen"
 msgid "Data store"
 msgstr "Datenablage"
 
+#: templates/wps_gui/sidebar.html:57
+msgid "Result store"
+msgstr "Ergebnisablage"
+
 #: templates/vfwheron/base_sidebar.html:32
 #: templates/vfwheron/wps_sidebar.html:33
 msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
 msgstr "Bereich&#32um&#32die&#32ausgewählten&#32Datensätze&#32zur&#32weiteren&#32Bearbeitung&#32verfügbar&#32zu&#32machen."
+
+#: templates/wps_gui/sidebar.html:57
+msgid "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available."
+msgstr "Bereich&#32um&#32die&#Ergebnisse&#32zur&#32weiteren&#32Prozessierung&#32oder&#32zur&#32Ansicht&#32bereit&#32zu&#32stellen."
+
+#: templates/wps_gui/sidebar.html:57
+msgid "Remove&#32all&#32results"
+msgstr "Alle&#32Ergebnisse&#32entfernen"
 
 #: templates/vfwheron/base_sidebar.html:37
 #: templates/vfwheron/wps_sidebar.html:38
@@ -108,10 +128,38 @@ msgstr "Alle&#32Datensätze&#32entfernen"
 msgid "Remove&#32all&#32datasets&#32from&#32data&#32store"
 msgstr "Alle&#32ausgewählten&#32Datensätze&#32aus&#32der&#32Datenablage&#32entfernen"
 
+#: templates/wps_gui/sidebar.html:63
+msgid "Remove&#32all&#32results&#32from&#32result&#32store"
+msgstr "Alle&#32Ergebnisse&#32aus&#32der&#32Ergebnisablage&#32entfernen"
+
 #: templates/vfwheron/base_sidebar.html:63
 #: templates/vfwheron/wps_sidebar.html:61
 msgid " View metadata"
 msgstr " Metadaten anzeigen"
+
+#: templates/vfwheron/wps_sidebar.html:124
+msgid " View result"
+msgstr " Ergebnis anzeigen"
+
+#: templates/vfwheron/wps_sidebar.html:124
+msgid " View as table"
+msgstr " Ergebnistabelle"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Plot result"
+msgstr " Graphisches Ergebnis"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Reopen Process"
+msgstr " Werkzeug öffnen"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Download result"
+msgstr " Ergebnis herunterladen"
+
+#: templates/vfwheron/wps_sidebar.html:127
+msgid " Remove result"
+msgstr " Ergebnis entfernen"
 
 #: templates/vfwheron/base_sidebar.html:66
 #: templates/vfwheron/wps_sidebar.html:64
@@ -162,6 +210,22 @@ msgstr "Willkommen! Bitte einloggen."
 msgid "Filter menu"
 msgstr "Filtermenü"
 
+#: map.html:36
+msgid "Click&#32on&#32map&#32to&#32draw.&#32Doubleclick&#32to&#32start&#32drawing."
+msgstr "Auf&#32die&#32Karte&#32klicken&#32um&#32mit&#32dem&#32Zeichnen&#32zu&#32beginnen."
+
+#: map.html:39
+msgid "Edit&#32drawing"
+msgstr "Zeichnung&#32editieren"
+
+#: map.html:40
+msgid "Remove&#32drawing"
+msgstr "Zeichnung&#32läschen"
+
+#: map.html:41
+msgid "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom."
+msgstr "Zeichenauswahl&#32beenden&#32und&#32wiederherstellen&#32der&#32Zoomfundtionalität&#32beim&#32Doppelklick."
+
 #: select_data.html:38
 msgid "Please&#32choose&#32here&#32the&#32data&#32shown&#32on&#32the&#32map."
 msgstr "Wählen&#32Sie&#32hier&#32bitte&#32welche&#32Daten&#32auf&#32der&#32Karte&#32gezeigt&#32werden&#32sollen."
@@ -189,6 +253,10 @@ msgstr "  Hilfe"
 #: templates/vfwheron/sidemenu.html:37
 msgid " Log in"
 msgstr " Einloggen"
+
+#: templates/vfwheron/sidemenu.html:37
+msgid " Toolbox"
+msgstr " Werkzeugkiste"
 
 #: views.py:208
 msgid "help"

@@ -1,0 +1,33 @@
+<meta charset="UTF-8">
+
+{% load static %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
+
+
+{% block javascript %}
+{% endblock %}
+
+<div class="respo-container respo-light-turquoise">
+    <b title="Collection of methods for data processing.">{% trans "Toolbox" %}</b>
+</div>
+<p>
+<div class="respo-container respo-dropdown-hover">
+    <div class="nav respo-dropdown-click"><b>{%  trans "Select your method" %}</b></div>
+    <div class="respo-dropdown-content">
+        {% for process in wps.processes %}
+            <a class="respo-hover-blue nav"
+               href="{% url 'wps_gui_app:process' service=service identifier=process.identifier %}"
+               title="{{ process.abstract|cut:"  " }}">{{ process.title }}
+            </a>
+        {% empty %}
+            <option class="respo-hover-blue nav" value="Aggregate" title="Aggregates Data">Aggregate</option>
+            <option class="respo-hover-blue nav" value="Interpolate" title="Interpolates Datasets">Interpolate</option>
+            <option class="respo-hover-blue nav" value="Regression" title="Makes an obsession of your regression">Regression</option>
+            <option class="respo-hover-blue nav" value="NA-Models" title="Na na na na na na na na na na na na na na na na... BATMAN!">NA-Models</option>
+        {% endfor %}
+    </div>
+</div>
+</p>

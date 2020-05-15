@@ -20,24 +20,19 @@ from django.contrib import admin
 from django.views.generic.base import RedirectView
 
 
-print('   *   heron urls.py')
-
 urlpatterns = [
     url(r'^$', RedirectView.as_view(url='vfwheron/', permanent=False)),
     url(r'^vfwheron/', include('vfwheron.urls')),
-    url(r'^dashboard/', include('dashboard.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^heron_wps/', include('heron_wps.urls', namespace='heron_wps')),
+    url(r'^wps_gui/', include('wps_gui.urls', namespace='wps_gui')),
     url(r'^heron_monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
-    url(r'^heron_visual/', include('heron_visual.urls', namespace='heron_visual')),    
+    url(r'^heron_visual/', include('heron_visual.urls', namespace='heron_visual')),
     url(r'^heron_upload/', include('heron_upload.urls', namespace='heron_upload')),
-    #  url(r'^', include('wps_workflow.urls')),  # from wps_workflow
-    url(r'^wps_workflow/', include('wps_workflow.urls', namespace='wps_workflow')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     url(r'^AuthorizationManagement/', include('AuthorizationManagement.urls', namespace='AuthorizationManagement')),
 ]
 
 
 # This is just to test the upload in the development environment
-if settings.DEBUG:
+if settings.DEBUG and settings.DEBUG is not '':
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,118 @@
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+<meta charset="UTF-8">
+
+{#{% extends "vfwheron/base.html" %}#}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+<div id="workModal" class="respo-modal">
+
+  <!-- Modal content -->
+  <div class="wps-modal-content" style="padding-left: 10px; padding-right: 10px; ">
+    <div class="modal-header" id="modal-header" style="margin-left: -10px; margin-right: -10px;">
+      <span class="work_close">&times;</span>
+      <h3 id="mod_head"></h3>
+    </div>
+    <p id="mod_abs" class="modal-abstract"></p>
+    <h4>Input</h4>
+    <div id="mod_in"></div>
+    <hr>
+    <h4>Output</h4>
+    <div id="mod_out"></div>
+    <p align="right"><em>(*) = required </em></p>
+    <div class="modal-footer" id="modal-footer" style="margin-left: -10px; margin-right: -10px;">
+      <span-c class="work_modal-cancel">Cancel</span-c>
+      <span-ok class="work_modal-ok">Ok</span-ok>
+      <span-r class="work_modal-run">Run</span-r>
+      {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
+      <h3></h3>
+    </div>
+  </div>
+
+</div>
+
+
+{# Template to build a second dropdown for selection of multiple valuies in dropdown #}
+<template id="twoDropDown">
+  <span>
+  <div class="divTable">
+    <div class="tblRow">
+      <div id="tDD_left_cell" class="tblCell">
+      </div>
+      <div class="tblCell">
+        <div class="divTable">
+          <div class="tblRow">
+            <div class="tblCell">
+              <button class="divTbButtons allIn" onclick=
+                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
+                      'allIn')"><b>>></b></button>
+            </div>
+          </div>
+          <div class="tblRow">
+            <div class="tblCell">
+              <button class="divTbButtons oneIn" onclick=
+                      "DropdownToDropdown(this.parentNode.parentNode.parentNode.parentNode.parentNode,
+                      'oneIn')"><b>></b></button>
+            </div>
+          </div>
+        </div>
+        <div class="divTable">
+          <div class="tblRow">
+            <div class="tblCell">
+              <button class="divTbButtons allOut" onclick=
+                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
+                      'allOut')"><b><<</b></button>
+            </div>
+          </div>
+          <div class="tblRow">
+            <div class="tblCell">
+              <button class="divTbButtons oneOut" onclick=
+                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
+                      'oneOut')"><b><</b></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="tDD_right_cell" class="tblCell">
+      </div>
+    </div>
+  </div>
+    </span>
+</template>
+
+<script>
+  // Get the modal
+  let modal = document.getElementById("workModal");
+  // Get the <span> element that closes the modal
+  let wspan = document.getElementsByClassName("work_close")[0];
+  let wspan_c = document.getElementsByClassName("work_modal-cancel")[0];
+  let wspan_ok = document.getElementsByClassName("work_modal-ok")[0];
+  let wspan_r = document.getElementsByClassName("work_modal-run")[0];
+  // When the user clicks on <span> (x), close the modal
+  wspan.onclick = () => closeModal();
+  wspan_r.onclick = () => {
+    {#modal.style.display = "none";#}
+    if (check_required(modal)) modal_run_process()
+  };
+  wspan_ok.onclick = () => {
+    if (check_required(modal)) drop_and_save();
+    closeModal();
+  };
+  wspan_c.onclick = () => {
+    closeModal()
+  };
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = event => {
+    if (event.target == modal) closeModal()
+  };
+
+  function closeModal() {
+    modal.style.display = "none";
+    color_modal("dodgerblue")
+  }
+
+
+</script>
+

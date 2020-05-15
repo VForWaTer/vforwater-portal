@@ -1,11 +1,5 @@
-import base64
 import csv
-import decimal
-import hashlib
 import json
-import zipfile
-from builtins import filter
-from wsgiref.util import FileWrapper
 
 import requests
 from pyzip import PyZip
@@ -15,32 +9,22 @@ import urllib
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
-from django.core.cache import cache
-from django.db import connections
 from django.http import StreamingHttpResponse
-from django.http.response import JsonResponse, HttpResponse
-from django.http import FileResponse
+from django.http.response import JsonResponse, HttpResponse, Http404
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
-from django.template import RequestContext
-
 from future.builtins import isinstance
 
-from heron.settings import LOCAL_GEOSERVER
-from io import StringIO, BytesIO
+from heron.settings import LOCAL_GEOSERVER, DEBUG
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer, \
     test_geoserver_env
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib import pylab
-from matplotlib.dates import DateFormatter
-from matplotlib.figure import Figure
 
 from .query_functions import get_bbox_from_data
 from datetime import datetime, date
@@ -74,7 +58,6 @@ def get_dataset(self, request, **kwargs):
     :return:
     :rtype:
     """
-    # here
     m_id = request.POST.get('meta_id')
 
     data = TblData.objects.get(meta=m_id).value
@@ -83,52 +66,54 @@ def get_dataset(self, request, **kwargs):
     return result
 
 
-class WorkflowView(TemplateView):
-    """
-    Template View for plain workflow HTML Template.
-    Template so far does only contain iframe in content Block, that embedds wps_workflow app
-    """
-    template_name = "vfwheron/workflow.html"
-
-
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
+def build_expressive_name(user):
+    namestring = str(user.id) + "_"
+    if user.first_name and user.last_name:
+        namestring += (user.first_name + "_" + user.last_name)
+    else:
+        namestring += user.username.translate({ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`=+"})
+
+    return namestring + "_layer"
+
+
 class HomeView(TemplateView):
     """
     Template View to bring the necessary variables for the startup to the template
     """
     template_name = 'vfwheron/home.html'
-    user = 'default'
-    Menu = Menu().menu(user)
-    # print(connections['vforwater'].queries)
-    # print(len(connections['vforwater'].queries))
+    Menu = Menu().get_menu()
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'testlayer2'#'default_layer_prod'
+    data_layer = 'testlayer'  # 'default_layer_prod'
 
-    # JSON_Menu = Menu().json_menu()
-    # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    store = 'teststore2'#'new_vforwater_gis'
-    workspace = 'testworkspace2'#'CAOS_update'
-    test_geoserver_env(store, workspace)
-
-    # dataExt = get_bbox_from_data()
+    store = 'teststore'  # 'new_vforwater_gis'
+    workspace = 'testworkspace'  # 'CAOS_update'
+    try:
+        test_geoserver_env(store, workspace)
+    except:
+        print('no geoserver')
 
     # TODO: Test with users if this makes any sense
     def set_layer_name(self):
         if self.request.user.is_authenticated:
-            data_layer = 'default_layer'
+            if self.request.user.is_superuser:
+                data_layer = 'default_layer4'
+            else:
+                data_layer = build_expressive_name(self.request.user)
         else:
             data_layer = self.data_layer
         return data_layer
 
-    # Put here everything you need at startup and for refresh
+    # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
 
         self.data_layer = self.set_layer_name()
 
+        try:
         if not get_layer(self.data_layer, self.store, self.workspace):
             create_layer(self.request, self.data_layer, self.store, self.workspace)
         else:
@@ -136,6 +121,9 @@ class HomeView(TemplateView):
             # restart of django
             delete_layer(self.data_layer, self.store, self.workspace)
             create_layer(self.request, self.data_layer, self.store, self.workspace)
+        except:
+            self.data_layer = 'Error: Found no geoserver!'
+            print('Still no geoserver')
 
         try:
             data_ext = get_bbox_from_data()
@@ -151,20 +139,16 @@ class MenuView(TemplateView):
     View to build the filter menu on the start page and interact with the sidebar
     """
 
-    # user = 'default'
-
-    def get(self, request, user='default'):
+    def get(self, request):
         """
 
         :param request:
         :type request:
-        :param user:
-        :type user:
         :return:
         :rtype:
         """
-
-        request.session.set_expiry(20)  # TODO: expire after 20 seconds/ this is only for development!!!
+        # auto logout after 3 hours
+        request.session.set_expiry(10800)
 
         # bring last used menu to session
         if 'menu' in request.GET:
@@ -174,49 +158,66 @@ class MenuView(TemplateView):
             menu = request.session.get('menu')
 
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset, dataset_dict, min_time=0, max_time=0):
+        def build_selection(work_dataset, min_time=0, max_time=0):
+            """
+            function distinguishes only between default user (non-commercial data) and rest (all data)
+            :param work_dataset:
+            :param min_time:
+            :param max_time:
+            :return:
+            """
             data_definition = {}
-            work_query = 'SELECT tbl_data.tstamp, tbl_data.value FROM public.tbl_data WHERE tbl_data.meta_id = ' + \
-                         work_dataset
-            if min_time != 0:
-                work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
-            if max_time != 0:
-                work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
-
-            definition_query = TblMeta.objects.values('variable__variable_name', 'variable__variable_abbrev',
-                                                      'variable__unit__unit_abbrev').get(pk=work_dataset)
-            data_definition['name'] = definition_query['variable__variable_name']
-            data_definition['abbr'] = definition_query['variable__variable_abbrev']
-            data_definition['unit'] = definition_query['variable__unit__unit_abbrev']
-
-            # if 'work_dataset_dict' in request.session:
-            if dataset_dict != {}:
-                # TODO: Need timestamp in name to see if different selection
-                dataset_dict.update({work_dataset: data_definition})
+            if isinstance(work_dataset, int): work_dataset = [work_dataset]
+            if request.user.is_authenticated:
+                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name', 'variable__variable_abbrev',
+                                                          'variable__unit__unit_abbrev').filter(pk__in=work_dataset)
             else:
-                dataset_dict = {work_dataset: data_definition}
+                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name', 'variable__variable_abbrev',
+                                                          'variable__unit__unit_abbrev').filter(
+                    license__commercial=False, pk__in=work_dataset)
+
+            dataset_dict = {}
+            for i in requested_dataset:
+                dataset_dict.update({i['id']: {'name': i['variable__variable_name'],
+                                               'abbr': i['variable__variable_abbrev'],
+                                               'unit': i['variable__unit__unit_abbrev'],
+                                               'type': 'timeseries',
+                                               'start': '',
+                                               'end': '',
+                                               'pickle': 0}})  # when pickled add id of wps db object here
+
+            # TODO: Need timestamp in name to see if different selection
             return dataset_dict
 
         if 'workspaceData' in request.GET:
             min_time = request.GET.get('minTime')
             max_time = request.GET.get('maxTime')
-            result = {}
             # prepare work_dataset differently for list and single value to use in build_selection
-            conv_work_dataset = json.loads(request.GET.get('workspaceData'))
-            if type(conv_work_dataset) == list:
-                for datasetId in conv_work_dataset:
-                    result = build_selection(str(datasetId), result, min_time, max_time)
-            elif type(conv_work_dataset) == int:
-                result = build_selection(str(conv_work_dataset), result, min_time, max_time)
+            result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
             return JsonResponse({'workspaceData': result})
 
         if 'preview' in request.GET:
-            # plot png the mälicke way:
-            imgtag = get_preview(request.GET.get('preview'))
-            return JsonResponse({'get': imgtag})  # requested from vfw.js show_preview
+            # plot with bokeh
+            return JsonResponse(get_preview(request.GET.get('preview')))  # requested from vfw.js show_preview
+
+        if 'short_info' in request.GET:
+            ids = json.loads(request.GET.get('short_info'))
+            field = ['variable__variable_name', 'site__site_name']
+            field_name = {'variable__variable_name': 'Variable Name', 'site__site_name': 'Site name'}
+            preview = defaultdict(list)
+            for k in ids:
+                row_name = TblMeta.objects.filter(id=str(k)).values(*field)
+                counter = 0
+                for i in row_name[0]:
+                    if counter == 1:
+                        preview['id'].append(k)
+                    counter += 1
+                    preview[translation.gettext(field_name[i])].append(str(row_name[0][i]).title())
+
+            return JsonResponse(preview)  # requested from map.js show_info
 
         # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
-        # on request collect metadata for preview on map ans selection in the sidebar
+        # on request collect metadata for preview on map and selection in the sidebar
         if 'show_info' in request.GET:
             # get field names from models:
             field = []
@@ -235,48 +236,33 @@ class MenuView(TemplateView):
                 imgtag = TblMeta.objects.filter(id=str(k)).values(*field)
 
                 for i in imgtag[0]:
-                    # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
                     preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
                                                                                                  i] is not None else \
                         preview[translation.gettext(field_name[i])].append('-')
 
-            # remove rows only containing no value:
-            comparelist = ['-'] * len(ids)
-            deleteable = []
-            for i in preview:
-                if preview[i] == comparelist:
-                    deleteable.append(i)
-            for i in deleteable:
-                del preview[i]
-
-            return JsonResponse({'get': preview})  # requested from map.js show_info
+            return JsonResponse(preview)  # requested from map.js show_info
 
 # get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
         if 'filter_selection' in request.GET:
-            filter_menu = FilterMethods.selection_counts(HomeView.Menu['server'],
-                                                         json.loads(request.GET.get('filter_selection')))
-            return JsonResponse(filter_menu)
+            return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
+                                                         json.loads(request.GET.get('filter_selection'))))
 
         if 'filter_selection_map' in request.GET:
             m_ids = None
-            if json.loads(request.GET.get('filter_selection_map')) == 0:
-                id_layer = HomeView.set_layer_name(self)
-                dataExt = get_bbox_from_data()
-            else:
-                meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
-                dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
-                id_layer = 'ID_layer'  # + user
-                if get_layer(id_layer, HomeView.store, HomeView.workspace):
-                    delete_layer(id_layer, HomeView.store, HomeView.workspace)
-                create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
-                m_ids = meta_ids['all_filters']
-                # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
-                # existing layers
-                # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
-                # if not get_ID_layer(ID_layer):
-                #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
+            dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
+            id_layer = 'ID_layer'  # + user
+            if get_layer(id_layer, HomeView.store, HomeView.workspace):
+                delete_layer(id_layer, HomeView.store, HomeView.workspace)
+            create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
+            m_ids = meta_ids['all_filters']
+            # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
+            # existing layers
+            # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
+            # if not get_ID_layer(ID_layer):
+            #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
             #             else:
-            # # TODO: don't do that in production! That's just for develpment to make sure geoserver is updatet after
+            # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
             #  restart of django
             #                 delete_ID_layer(ID_layer)
             #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
@@ -302,20 +288,17 @@ class DatasetDownloadView(TemplateView):
 
     """
 
-    def get(self, request, user='default'):
+    def get(self, request):
         """
 
         :param request:
         :type request:
-        :param user:
-        :type user:
         :return:
         :rtype:
         """
         store = HomeView.store  # 'new_vforwater_gis'
         workspace = HomeView.workspace  # 'CAOS_update'
         test_geoserver_env(store, workspace)
-        print('im get')
 
         def get_metadata(m_id):
             """
@@ -338,16 +321,12 @@ class DatasetDownloadView(TemplateView):
             return catalog
 
         if 'csv' in request.GET:
-            # if 'download_data' in request.GET:
             rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
                 pk=json.loads(request.GET.get('csv')))
-            # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
-            # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
             pseudo_buffer = Echo()
             writer = csv.writer(pseudo_buffer)
             response = StreamingHttpResponse((writer.writerow(row) for row in rows),
                                              content_type="text/csv")
-            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
             return response
 
         # TODO: test if shp file is correct
@@ -360,9 +339,8 @@ class DatasetDownloadView(TemplateView):
             create_data_layer(request, layer_name, s_id, store, workspace)
 
             # use GEOSERVER shape-zip
-            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
-                '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' + layer_name + \
-                '&outputFormat=shape-zip&srsname=EPSG:' + srid
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' \
+                  + workspace + ':' + layer_name + '&outputFormat=shape-zip&srsname=EPSG:' + srid
             request = requests.get(url)
 
             pzfile = PyZip().from_bytes(request.content)
@@ -384,10 +362,9 @@ class DatasetDownloadView(TemplateView):
             create_id_layer(request, layer_name, id, HomeView.store, HomeView.workspace)
 
             # use GEOSERVER GML
-            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs' \
-                                                      '&version=1.0.0&request=GetFeature&typeName=' + workspace + ':' \
-                  + layer_name + \
-                  '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' + srid
+            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' + \
+                  workspace + ':' + layer_name + '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' \
+                  + srid
 
             request = urllib.request.Request(url)
             response = urllib.request.urlopen(request)
@@ -412,8 +389,10 @@ class LoginView(View):
         if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
             logger.debug('Redirect to vfwheron/rsp/login/init...')
             return redirect('vfwheron:watts_rsp:login_init')
-        else: # default django login
+        elif settings.DEBUG == True:  # default django login
             return redirect('vfwheron:login')
+        else:
+            raise Http404
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -461,6 +440,11 @@ class LogoutView(View):
         self.logout(request)
         return redirect('vfwheron:home')
 
+
+class DevLoginView(TemplateView):
+    def get(self, request):
+        context = {}
+        return render(request, 'vfwheron/login.html', {'context': context})
 
 class HelpView(TemplateView):
     """

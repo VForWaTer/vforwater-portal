@@ -1,0 +1,95 @@
+#dropdiv {
+    position: absolute;
+    right: 300px;
+    left: 300px;
+    top: 80px;
+    bottom: 1px;
+    padding: 10px;
+    border: 1px solid #00021d;
+    background: white;
+}
+
+.tool-btn {
+    cursor: move;
+    position: absolute;
+    z-index: 9;
+    background-color: #f1f1f1;
+    border: 1px solid #d3d3d3;
+    text-align: center;
+}
+
+/*Modal:*/
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+p.modal-datainfo {
+    max-height: 120px;
+    overflow: auto;
+}
+
+.modal-cancel, .modal-ok, .modal-run {
+    color: white;
+    float: right;
+    font-size: 20px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 12px;
+    /*font-weight: bold;*/
+}
+
+.modal-cancel:hover, .modal-ok:hover, .modal-run:hover,
+.modal-cancel:focus, .modal-ok:focus, .modal-run:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 2px 12px;
+    background-color: dodgerblue;
+    color: white;
+}
+
+.modal-body {
+    padding: 2px 16px;
+}
+
+.modal-footer {
+    height: 38px;
+    padding: 2px 12px;
+    background-color: dodgerblue;
+    color: white;
+}
+
+/** Table to show dropdowns in modal in one line **/
+.divTable {
+    display: table;
+    margin: 1px 2px;
+}
+.divTbButtons {
+    alignment: center;
+    width: 30px;
+    margin: 2px;
+}
+.tblRow {
+    display: flex;
+    justify-content: center;
+}
+.tblCell {
+    display: flex;
+    align-items: center;
+}
+.divTblRight {
+    width: 220px;
+}

@@ -1,8 +1,9 @@
 let zoomToExt;
 let wfsLayerName;
-let selectedIds = null;
+let selectedIdsFilter = null;
 let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
+let dcz = new ol.interaction.DoubleClickZoom();
 
 //Create own base layer
 function create_map() {
@@ -10,6 +11,9 @@ function create_map() {
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
     let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
     wfsLayerName = document.getElementById('data_layer').value;
+    if (wfsLayerName.search("Error") !== -1){
+        console.error(wfsLayerName)
+    }
 // build the background map
     let mapLayer = new ol.layer.Tile({
         preload: Infinity,
@@ -89,27 +93,7 @@ function create_map() {
     hiddenLayer = new ol.layer.Vector({
         renderMode: 'image',
         source: wfsPointSource,
-        style: new ol.style.Style({
-                image: new ol.style.Circle({
-                    radius: 5,
-                    stroke: new ol.style.Stroke({
-                            color: 'green',
-                            width: 2.5
-                        }),
-                    fill: new ol.style.Fill({
-                            color: 'yellow'
-                        })
-                }),
-                text: new ol.style.Text({
-                    text: 4,
-                    font: '12px helvetica,sans-serif',
-                    fill: new ol.style.Fill({
-                        color: 'red'
-                    })
-                })
-            })
     });
-
 
     // Style for selection/single circles around cluster
 /*    let img = new ol.style.Circle({
@@ -211,15 +195,21 @@ function create_map() {
     // check what is clicked
     function checkMode(evt) {
         if (hit_cL) {
+            content.innerHTML = '';
+            try {
+                content.innerHTML = '<div id="loader" class="loader"></div>';
             buildPopup(evt)
+            } catch (err) {
+                content.innerHTML = '<div id="loader">Failed to load your selection</div>';
+                console.log('err: ', err)
+            }
+
         } else {
             metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
         }
     }
     function buildPopup(evt) {
-        // if (olmap.getFeaturesAtPixel(evt.pixel)) {
         // Create spinning loader while getting meta data from server
-        content.innerHTML = '<div id="loader" class="loader"></div>';
         metaData_Overlay.setPosition(evt.coordinate);
 
         let nCol = 5; // number of columns of metadata per page
@@ -236,7 +226,7 @@ function create_map() {
                 id = parseInt(name.substr(wfsLen + 1, 8));
                 ids.push(id);
             }
-            popupContent(ids, pos);
+            popupContent(ids);
             paginat.innerHTML = []
 
         } else if (l > nCol) {
@@ -256,13 +246,37 @@ function create_map() {
                 idDict[page].push(id);
 
             }
-            popupContent(idDict[1], pos);
+            popupContent(idDict[1]);
+
 
             // add paginatation to popup:
             paginat.innerHTML = buildPagi(idDict, page);
             // end of paginatation
             // TODO: need a list to click to next objects, to select ids
             }
+        metaData_Overlay.setPosition(pos);
+
+    }
+
+    /* change cursor to pointer when hover over data */
+    olmap.on('pointermove', function (evt) {
+        if (evt.dragging) {
+            return;
+        }
+        // let pixel = olmap.getEventPixel(evt.originalEvent);
+        hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {
+                return feature;
+            },
+            {
+                layerFilter: function (layer) {
+                    // console.log('+++++ layer: ', layer === clusterLayer)
+                    // return layer === vector
+                    return layer === clusterLayer
+                }
+            }
+        );
+        olmap.getTargetElement().style.cursor = hit_cL ? 'pointer' : '';
+    });
 
     }
     function buildPagi(idDict, page) {
@@ -272,10 +286,10 @@ function create_map() {
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
                     pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
                     pagi = pagi + '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
         } else {
@@ -284,38 +298,25 @@ function create_map() {
            //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
            //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
 
-           /* console.log(' + +  idDict: ', idDict)
-            let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
-            // let pagiObj = {1:[]}; // very nice, but useless for the button!
-            let pagiStr; // very nice, but useless for the button!
-            for (let j = 1; j <= nPagi; j++) {
-                let minP = nDat * (j - 1);
-                let maxP = nDat * j - 1;
-                // pagiObj[j] = [];
-                console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
-                pagi = '';
-                for (let k = minP; k <= maxP; k++) {
-                    pagiObj[j].push(idDict[k])
-                }
-            }
-            console.log('pagiObj: ', pagiObj)
-            let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
-            pagi = prePagi*/
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
                     pagi = '<li id="pagi'+i+'" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
                     pagi += '<li id="pagi'+i+'"><a><input type="submit" class="respo-btn-simple"' +
-                        'onclick=\"popupContentvfw(\''+idDict[i]+','+i+'\')\" value="' + i + '"></a></li>';
+                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
         }
         return pagi;
     }
-    function popupContent(ids, pos) {
-    // TODO: CSS style überarbeiten
+
+function popupContent(ids, page) {
+    if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
+        page = JSON.parse("[" + ids + "]").slice(-1);
+        ids = JSON.parse("[" + ids + "]").slice(0, -1);
+    }
+    if (page && page != 'none') document.getElementById("pagi" + page).classList.add("loadspin");
         let popupTableBeforeMeta = '<table id="popupTable"><td>';
         let popUpText = popupTableBeforeMeta +
             '<style>table tr:nth-child(even) {background-color: #c8ebee;}</style>' +
@@ -326,35 +327,39 @@ function create_map() {
             url: DEMO_VAR + "/vfwheron/menu",
             dataType: 'json',
             data: {
-                show_info: JSON.stringify(ids),
+            short_info: JSON.stringify(ids),
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
         })
             .done(function (json) {
                 document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
                 // content.innerHTML = buildPopupText(json, popUpText);
-                metaData_Overlay.setPosition(pos);
+            if (page && page != 'none') {
+                document.getElementsByClassName("active")[0].classList.remove("active");
+                document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
+                document.getElementById("pagi" + page).classList.add("active");
+            }
+
             })
             .fail (function (e) {
-                // console.log('fehler: ', e)
-                metaData_Overlay.setPosition(undefined)
+            metaData_Overlay.setPosition(undefined);
+            document.getElementById('popup-content').remove("loader")
                 alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
                     "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
                     "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
                     "Är Ufro net duerchgefouert ginn!\nدرخواست شما نمی تواند اجرا شود!")
             })
-        // });
 
     }
-    // TODO: buildPopupText is the same as buildPopupTextvfw.js ==> figure out how(where) to use only one of the two functions for both cases
+
+
     function buildPopupText(json, popUpText) {
-        let properties = json.get;
+    // console.log('ist da')
         let valueLen;
         let buttonId = [];
         // loop over "properties" dict with metadata, build columns
-        for (let j in properties) {
-            // let values = eval('properties["' + j + '"]');
-            let values = properties[j];
+    for (let j in json) {
+        let values = json[j];
             valueLen = values.length;
             popUpText += `<tr><td><b>${j}</b></td>`;
             // loop over dict values and build rows
@@ -370,90 +375,13 @@ function create_map() {
         // build buttons for each dataset
         for (let k = 0; k < valueLen; k++) {
             popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
-                'onclick=\"show_preview(\'' + buttonId[k] + '\')\" value="Preview" data-toggle="tooltip" ' +
-                'title="Attention! Loading the preview might take a while."></b></a>' +
+            'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
+            'title="Show more information about the dataset."></b></a>' +
                 '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
                 'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
                 'title="Put dataset to session datastore"></b></a></td>';
         }
 
         let popupTableAfterMeta = popUpText + '</table>';
-        let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
-        return popupTableAfterMeta + img_preview;
-    }
-
-    // select data with doubleclick
-    //olmap.on('doubleclick', selectDataset);
-    // TODO: Cluster gives error when click on sketched polygon. Not used yet anyways, so uncommented until usefull
-/*    selectCluster = new ol.interaction.SelectCluster(
-        {	// Point radius: to calculate distance between the features
-            pointRadius: 8.5,
-            animate: 100,
-            // Feature style when it springs apart
-            featureStyle: style1,
-            // selectCluster: false,	// disable cluster selection
-            // Style to draw cluster when selected
-            style: function (f) {
-                let cluster = f.get('features');
-                if (cluster.length > 1) {
-                    let s = getStyle(f);
-                    if (ol.coordinate.convexHull) {
-                        let coords = [];
-                        let l = cluster.length;
-                        for (i = 0; i < l; i++) coords.push(cluster[i].getGeometry().getFirstCoordinate());
-                        s.push(new ol.style.Style({ // spread datapoints around the center of the cluster
-                            stroke: new ol.style.Stroke({color: "rgba(0,0,192,0.4)", width: 2}),
-                            fill: new ol.style.Fill({color: "rgba(0,0,192,0.3)"}),
-                            geometry: new ol.geom.Polygon([ol.coordinate.convexHull(coords)]),
-                            zIndex: 1
-                        }));
-                    }
-                    return s;
-                }
-                else {
-                    return [
-                        new ol.style.Style({ // draw a circle around your selection
-                            image: new ol.style.Circle({
-                                stroke: new ol.style.Stroke({color: "rgba(0,73,120,0.5)", width: 2}),
-                                fill: new ol.style.Fill({color: "rgba(0,73,120,0.3)"}),
-                                radius: 15
-                                })
-                        })];
-                }
-            }
-        });
-    olmap.addInteraction(selectCluster);*/
-
-    /* change cursor to pointer when hover over data */
-    olmap.on('pointermove', function (evt) {
-        if (evt.dragging) {
-            return;
+    return popupTableAfterMeta //+ img_preview;
         }
-        // let pixel = olmap.getEventPixel(evt.originalEvent);
-        hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {return feature;},
-            {layerFilter: function (layer) {
-                // return layer === vector
-                return layer === clusterLayer
-            }}
-        );
-        olmap.getTargetElement().style.cursor = hit_cL ? 'pointer' : '';
-    });
-
-    // On selected => get feature in cluster and show info
-/*    selectCluster.getFeatures().on(['add'], function (e) {
-        console.log(' ------------ im add')
-        let c = e.element.get('features');
-        if (c.length == 1) {
-            let feature = c[0];
-            $(".infos").html("One feature selected...<br/>(id=" + feature.get('id') + ")");
-        }
-        else {
-            $(".infos").text("Cluster (" + c.length + " features)");
-        }
-    });
-    selectCluster.getFeatures().on(['remove'], function (e) {
-        $(".infos").html("");
-    })*/
-
-}
-

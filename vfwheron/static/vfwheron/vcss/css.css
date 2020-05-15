@@ -16,15 +16,15 @@
 }
 .popup {
     position: absolute;
-    background-color: white;
+    background-color: rgb(239, 251, 251);
     -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
     filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-    padding: 15px;
+    padding: 2px;
     border-radius: 10px;
     border: 1px solid #cccccc;
     bottom: 12px;
     left: -50px;
-    min-width: 280px;
+    /*min-width: 280px;*/
       }
 /* more styling at the end of ol.css */
 iframe {
@@ -36,4 +36,115 @@ iframe {
 
     font-family: Raleway, Arial, sans-serif;
 }
+
+
+.modal-back{
+    color: black;
+    float: right;
+    font-size: 20px;
+    padding: 4px 12px;
+    /*font-weight: bold;*/
+}
+
+.modal-back:hover, .modal-back:focus,
+.result_modal-back:hover, .result_modal-back:focus,
+.work_modal-cancel:hover, .work_modal-cancel:focus,
+.work_modal-run:hover, .work_modal-run:focus,
+.work_modal-ok:hover, .work_modal-ok:focus{
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.result_modal-back, .work_modal-cancel, .work_modal-run, .work_modal-ok{
+  color: white;
+  float: right;
+  font-size: 20px;
+    padding-top:2px;
+    padding-bottom: 2px;
+    padding-left: 12px;
+  /*font-weight: bold;*/
+}
+
+.modal-header,
+.result_modal-header,
+.work_modal-header{
+    padding: 2px 12px;
+    background-color: rgb(239, 251, 251);
+    color: black;
+}
+
+.modal-body,
+.result_modal-body {
+    /*padding: 2px 16px;*/
+    width: fit-content;
+}
+
+.modal-footer{
+    height: 38px;
+    padding: 2px 12px;
+    background-color: rgb(239, 251, 251);
+    color: black;
+}
+
+.result_modal-footer, .work_modal-footer{
+    height: 38px;
+    padding: 2px 12px;
+    background-color: dodgerblue;
+    color: white;
+}
+
+button-header {
+    display: block;
+}
+button-footer {
+    display: flex;
+    position: relative;
+    left: 180px;
+    overflow: hidden;
+}
+
+/*styles for Toolbox buttons*/
+.string,.array, .integer,
+.boolean, .float, .image{
+    margin: 5px;
+    height: 12px;
+    width: 12px;
+}
+.pickle,.timeseries, .merged-pickle, .merged-ts-pickle,
+.ts-array, .ts-pickle, .ts-aggregate {
+    margin: 5px;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+}
+
+
+.left-hemisphere {
+    margin: 5px;
+    height: 12px;
+    width: 6px;
+    border-radius: 0 6px 6px 0;
+}
+.right-hemisphere {
+    margin: 5px;
+    height: 12px;
+    width: 6px;
+    border-radius: 6px 0 0 6px;
+}
+.array{background-color: rgb(165,0,38)}
+.timeseries{background-color: rgb(215,48,39)}
+.ts-array{background-color: rgb(244,109,67)}
+.ts-pickle{background-color: rgb(253,174,97)}
+.ts-aggregate{background-color: rgb(254,224,144)}
+.string{background-color: rgb(255,255,191); border: 1px solid #ffbf26;}
+.pickle{background-color: rgb(224,243,248); border: 1px solid darkturquoise;}
+.aggregate{background-color: rgb(171,217,233)}
+.merged-pickle{background-color: rgb(116,173,209)}
+.merged-ts-pickle{background-color: rgb(69,117,180)}
+.boolean{background-color: rgb(50, 74, 147); border: 1px solid black;}
+.float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
+.integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
+.image{background-color: rgb(19, 154, 24); border: 1px solid #91ff59;}
+
 

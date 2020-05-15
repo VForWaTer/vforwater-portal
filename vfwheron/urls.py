@@ -1,14 +1,11 @@
 from django.conf.urls import url, include
-from django.contrib.auth import views as auth_views
+from django.urls import path
 
 from heron import settings
-from wps_workflow.views import EditorView
 from . import views
-from .views import WorkflowView
 
 
 app_name = 'vfwheron'
-print('   *   vfwheron urls.py')
 
 urlpatterns = [
     url(r'^$', views.HomeView.as_view(), name='home'),
@@ -20,7 +17,6 @@ urlpatterns = [
     url(r'^menu$', views.MenuView.as_view(), name='menu'),
     url(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$',
         views.GeoserverView.as_view()),
-    url(r'^workflowtool/', WorkflowView.as_view(), name='workflowtool'),
     url(r'^togglelang$', views.ToggleLanguageView.as_view(), name='togglelang'),
     url(r'^failedlogin$', views.FailedLoginView.as_view(), name='failedlogin'),
     url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),
@@ -28,3 +24,5 @@ urlpatterns = [
 
 if settings.ON_VFW_SERVER:
     urlpatterns.append(url(r'^rsp/', include('watts_rsp.urls')))
+else:
+    urlpatterns.append(path('', include('django.contrib.auth.urls')))

@@ -2,7 +2,7 @@ from django.contrib.gis import admin
 from django.forms import ModelForm
 
 from vfwheron import models
-
+# The Admin.py is used to create fields in the django admin web page
 
 # Register your models here.
 

@@ -1,5 +1,6 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect, render_to_response, _get_queryset
+from django.shortcuts import render, redirect, _get_queryset #, render_to_response
+from django.template.loader import render_to_string
 from django.views import generic
 from django.contrib.auth.decorators import login_required
 from AuthorizationManagement.models import *
@@ -61,7 +62,7 @@ class ProfileView(generic.ListView):
     template_name = 'AuthorizationManagement/profile.html'
     context_object_name = 'requests_list'
     paginate_by = 4
-    
+
     def get(self,request):
         """
 
@@ -72,23 +73,23 @@ class ProfileView(generic.ListView):
         """
         current_user = self.request.user
         resources = MyResourcesView.get_queryset(self)
-        
+
         # load access requests if user owns any resources
         if resources.exists():
             self.model = AccessRequest.objects.filter(resource__in=resources).order_by('-creationDate')
 
-          
+
         # load all deletion request if user is staff
-        if self.model.exists():            
+        if self.model.exists():
             if current_user.is_staff and DeletionRequest.objects.all().exists():
-                self.model=get_sorted_requests(self.model, DeletionRequest.objects.all().order_by('-creationDate'))               
+                self.model=get_sorted_requests(self.model, DeletionRequest.objects.all().order_by('-creationDate'))
                 #self.model = list(chain(self.model,DeletionRequest.objects.all()))
-        else: 
+        else:
             if current_user.is_staff and DeletionRequest.objects.all().exists():
                 self.model = DeletionRequest.objects.all().order_by('-creationDate')
-                
+
         return super(ProfileView, self).get(request)
-    
+
     def get_queryset(self):
         """
 
@@ -96,7 +97,7 @@ class ProfileView(generic.ListView):
         @rtype:
         """
         return self.model
-     
+
     def get_context_data(self, **kwargs):
         """
 
@@ -108,7 +109,7 @@ class ProfileView(generic.ListView):
         context = super(ProfileView, self).get_context_data(**kwargs)
         context['is_admin'] = self.request.user.is_staff
         return context
-   
+
 
 # the view for showing all the user's resources
 @method_decorator(never_cache, name='dispatch')
@@ -167,15 +168,15 @@ class SendDeletionRequestView(generic.View):
         @rtype:
         """
         pk = self.kwargs['resourceid'] # get the id of the resource which is included in the url
-        
+
         try:
             res=Resource.objects.get(id=pk)
         except Resource.DoesNotExist:
             # redirects the current user to profile/my-resources if a resource with such an id does not exist
             logger.info("User %s tried to send a deletion request for non-existing resource \n" % (request.user.username))
             raise Http404()
-        
-        
+
+
         # raises the PermissionDenied exception if the current user has no ownership for this resource
         if  not res.owners.filter(id= request.user.id).exists():
             logger.info("User %s tried to send a deletion request for resource '%s' without being an owner! \n" % (request.user.username,res.name))
@@ -185,13 +186,13 @@ class SendDeletionRequestView(generic.View):
             logger.info("User %s tried to inconsistently send a deletion request for resource '%s' \n" % (request.user.username,res.name))
             #return redirect("/profile/my-resources")
             return redirect('AuthorizationManagement:my-resources')
-        
+
         # creates a deletion request with the given description
         req = DeletionRequest.objects.create(sender=request.user,
                                        resource=Resource.objects.get(id=pk),
                                        description=request.POST['descr'])
         message=req.description
-        
+
         # notifies all the staff users
         html_content = render_to_string('AuthorizationManagement/mail/delete-resource-request-mail.html', {'user' : request.user,
                                                                                              'resource' : req.resource,
@@ -230,29 +231,29 @@ class CancelDeletionRequestView(generic.View):
         @rtype:
         """
         pk = self.kwargs['resourceid'] # get the id of the resource which is included in the url
-        
-        
+
+
         try:
             res=Resource.objects.get(id=pk)
         except Resource.DoesNotExist:
             # redirects the current user to the 404 if a resource with such an id does not exist
             logger.info("User %s tried to cancel a deletion request for non-existing resource \n" % (request.user.username))
             raise Http404()
-        
+
         # raises the PermissionDenied exception if the current user has no ownership for this resource
         if  not res.owners.filter(id= request.user.id).exists():
             logger.info("User %s tried to cancel a deletion request for resource '%s' without being an owner! \n" % (request.user.username,res.name))
             raise PermissionDenied
-            
-        # redirects the current user to /profile/my-resources if the user is a staff user 
+
+        # redirects the current user to /profile/my-resources if the user is a staff user
         if request.user.is_staff :
             logger.info("User %s tried to cancel a deletion request for resource '%s' \n" % (request.user.username,res.name))
             return redirect('AuthorizationManagement:my-resources')
-        
-        #requests_of_user = DeletionRequest.objects.filter(sender=request.user) 
+
+        #requests_of_user = DeletionRequest.objects.filter(sender=request.user)
         request_to_delete = get_object_or_404(DeletionRequest,sender=request.user, resource=res)
-        
-        # notifies all the staff users 
+
+        # notifies all the staff users
         html_content = render_to_string('AuthorizationManagement/mail/deletion-request-canceled-mail.html', {'user' : request.user,
                                                                                              'resource' : request_to_delete.resource,
                                                                                              'request': request_to_delete})
@@ -269,21 +270,21 @@ class CancelDeletionRequestView(generic.View):
         return redirect('AuthorizationManagement:my-resources')
 
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch') 
+@method_decorator(login_required, name='dispatch')
 class ResourcesOverview(generic.ListView):
     """
 
     """
     model = Resource.objects.all()
-    template_name = 'AuthorizationManagement/resources-overview.html'  
+    template_name = 'AuthorizationManagement/resources-overview.html'
     context_object_name = "resources_list"
     paginate_by = 5
-    
+
     query = ''
-    can_access = Resource.objects.none()  
+    can_access = Resource.objects.none()
     requested_resources = Resource.objects.none()
 
-    
+
     def get_queryset(self):
         """
 
@@ -291,7 +292,7 @@ class ResourcesOverview(generic.ListView):
         @rtype:
         """
         return self.model
-    
+
     # returns a dictionary representing the template context.
     def get_context_data(self, **kwargs):
         """
@@ -311,10 +312,10 @@ class ResourcesOverview(generic.ListView):
 
         return context
 
-     
+
 # the view for ResourcesOverview after search
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch')     
+@method_decorator(login_required, name='dispatch')
 class ResourcesOverviewSearch(ResourcesOverview):
     """
 
@@ -338,7 +339,7 @@ class ResourcesOverviewSearch(ResourcesOverview):
         else:
             return redirect('AuthorizationManagement:resources-overview')
                          #"/resources-overview"
-    
+
     # returns a dictionary representing the template context.
     def get_context_data(self, **kwargs):
         """
@@ -358,7 +359,7 @@ class ResourcesOverviewSearch(ResourcesOverview):
 
 # the view for approving an access request
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch') 
+@method_decorator(login_required, name='dispatch')
 class ApproveAccessRequest(generic.View):
     """
 
@@ -376,23 +377,23 @@ class ApproveAccessRequest(generic.View):
         @rtype:
         """
         pk = self.kwargs['requestid'] # gets the id of the request which is included in the url
-        
+
         try:
             req=AccessRequest.objects.get(id=pk)
         except AccessRequest.DoesNotExist:
             # redirects the current user to the 404 if a request with a such id does not exist
             logger.info("User %s tried to approve a non-existing access request" % (request.user))
             raise Http404()
-        
+
         # raises the PermissionDenied exception if the current user has no ownership for this resource
         if not req.resource.owners.filter(id = request.user.id).exists():
             logger.info("User %s tried to approve an access request without being owner of the requested resource" % (request.user))
             raise PermissionDenied
-        
+
         # adds the sender to the readers list of this resource
         req.resource.readers.add(req.sender)
         message=req.description
-       
+
         # sends an email to sender of the request
         html_content = render_to_string('AuthorizationManagement/mail/access-request-approved-mail.html', {'user' : request.user,
                                                                                              'resource' : req.resource,
@@ -404,14 +405,14 @@ class ApproveAccessRequest(generic.View):
         msg=EmailMultiAlternatives('Access Request approved', text_content, email_from, [email_to])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
-        req.delete() 
+        req.delete()
         logger.info("Request from %s to access '%s' was approved by %s \n" % (req.sender,req.resource.name,request.user.username))
-        logger.info("An email was sent from %s to %s, Subject: Access request for '%s' approved \n" % (request.user.username,req.sender,req.resource.name))           
+        logger.info("An email was sent from %s to %s, Subject: Access request for '%s' approved \n" % (request.user.username,req.sender,req.resource.name))
         return redirect('AuthorizationManagement:profile')
 
 # the view for denying an access request
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch')     
+@method_decorator(login_required, name='dispatch')
 class DenyAccessRequest(generic.View):
     """
 
@@ -429,23 +430,23 @@ class DenyAccessRequest(generic.View):
         @rtype:
         """
         pk = self.kwargs['requestid'] # gets the id of the request which is included in the url
-        
+
         try:
             req=AccessRequest.objects.get(id=pk)
         except AccessRequest.DoesNotExist:
             # redirects the current user to the 404 if a request with a such id does not exist
             logger.info("User %s tried to deny a non-existing access request" % (request.user))
             raise Http404()
-        
+
         # raises the PermissionDenied exception if the current user has no ownership for this resource
         if not req.resource.owners.filter(id = request.user.id).exists():
             logger.info("User %s tried to deny an access request without being owner of the requested resource" % (request.user))
             raise PermissionDenied
-        
+
 
         message=request.POST['descr'] # gets the description of the request
-       
-       
+
+
         # sends an email to sender of this request
         html_content = render_to_string('AuthorizationManagement/mail/access-request-denied-mail.html', {'user' : request.user,
                                                                                              'resource' : req.resource,
@@ -457,14 +458,14 @@ class DenyAccessRequest(generic.View):
         msg=EmailMultiAlternatives('Access Request denied', text_content, email_from, [email_to])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
-        req.delete()  
-        logger.info("Request from %s to access '%s' was denied by %s \n" % (req.sender,req.resource.name,request.user.username)) 
-        logger.info("An email was sent from %s to %s, Subject: Access Request for '%s' denied \n" % (request.user.username,req.sender,req.resource.name))     
+        req.delete()
+        logger.info("Request from %s to access '%s' was denied by %s \n" % (req.sender,req.resource.name,request.user.username))
+        logger.info("An email was sent from %s to %s, Subject: Access Request for '%s' denied \n" % (request.user.username,req.sender,req.resource.name))
         return redirect('AuthorizationManagement:profile')
 
 #the view for sending an access request
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch')     
+@method_decorator(login_required, name='dispatch')
 class SendAccessRequestView(generic.View):
     """
 
@@ -488,19 +489,19 @@ class SendAccessRequestView(generic.View):
         except Resource.DoesNotExist:
             # redirects the current user to the 404 if a resource with a such id does not exist
             logger.info("User %s tried to send an access request for non-existing resource \n" % (request.user.username))
-            raise Http404() 
+            raise Http404()
 
         # redirects the current user to resources-overview if the user is a staff user or already has an access permission to this resource
         # or if the user has already requested to access this resource
         if res.readers.filter(id= request.user.id).exists() or request.user.is_staff or AccessRequest.objects.filter(resource=res,sender = request.user).exists():
             logger.info("User %s tried to inconsistently send an access request for resource '%s' \n" % (request.user.username,res.name))
             return redirect('AuthorizationManagement:resources-overview')
-        
+
         # creates an access request with the given description
         req=AccessRequest.objects.create(sender= request.user, resource=res, description=request.POST['descr'])
         message=req.description
-       
-       
+
+
         # notifies all the owners via email
         html_content = render_to_string('AuthorizationManagement/mail/access-resource-mail.html', {'user' : request.user,
                                                                                              'resource' : res,
@@ -515,11 +516,11 @@ class SendAccessRequestView(generic.View):
         logger.info("Access request for resource '%s' with id '%s' was sent by %s \n" % (res.name,pk,request.user.username))
         logger.info("An email was sent from %s to '%s' owners, Subject: Access Request for '%s' \n" % (request.user.username,res.name,res.name))
         return redirect('AuthorizationManagement:resources-overview')
-   
+
 
 # the view for canceling an access request
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch')     
+@method_decorator(login_required, name='dispatch')
 class CancelAccessRequest(generic.View):
     """
 
@@ -544,21 +545,21 @@ class CancelAccessRequest(generic.View):
             # redirects the current user to the 404 if a resource with a such id does not exist
             logger.info("User %s tried to cancel an access request for non-existing resource \n" % (request.user.username))
             raise Http404()
-           
-        # redirects the current user to the 404 if the user is a staff user or already has an access permission to this resource 
+
+        # redirects the current user to the 404 if the user is a staff user or already has an access permission to this resource
         if res.readers.filter(id= request.user.id).exists() or request.user.is_staff:
             logger.info("User %s tried to inconsistently cancel an access request for resource '%s' \n" % (request.user.username,res.name))
             raise Http404()
-        
+
         # deletes the request
         #requests_of_user = AccessRequest.objects.filter(sender=request.user)
         request_to_delete = get_object_or_404(AccessRequest,sender=request.user,resource=res)
         request_to_delete.delete()
-        
+
         # notifies all owners  via email
         html_content=render_to_string('AuthorizationManagement/mail/access-request-canceled-mail.html', {'user' : request.user,
                                                                                                     'resource' : request_to_delete.resource,
-                                                                                                    'request': request_to_delete})                                                               
+                                                                                                    'request': request_to_delete})
         text_content=strip_tags(html_content)
         email_to = [x[0] for x in request_to_delete.resource.owners.values_list('email')]
         email_from=request.user.email
@@ -568,9 +569,9 @@ class CancelAccessRequest(generic.View):
         logger.info("Access request for '%s' was canceled by %s \n" % (request_to_delete.resource.name,request.user.username))
         logger.info("An email was sent from %s to '%s' owners, Subject: Cancel the Access Request for '%s' \n" % (request.user.username,request_to_delete.resource.name,request_to_delete.resource.name))
         return redirect('AuthorizationManagement:resources-overview')
-    
+
 @method_decorator(never_cache, name='dispatch')
-@method_decorator(login_required, name='dispatch')     
+@method_decorator(login_required, name='dispatch')
 class OpenResourceView(generic.View):
     """
 
@@ -588,13 +589,13 @@ class OpenResourceView(generic.View):
         @rtype:
         """
         pk = self.kwargs['resourceid'] # gets the id of the resource which is included in the url
-             
+
         try:
-            resource=Resource.objects.get(id=pk)   
+            resource=Resource.objects.get(id=pk)
         except Resource.DoesNotExist:
             logger.info("User %s tried to access a non-existing resource \n" % (request.user.username))
             raise Http404()
-        
+
         # raises the PermissionDenied exception if the current user is a staff user or has no access permission to this resource
         if (not resource.readers.filter(id=request.user.id).exists())and (not request.user.is_staff) :
             raise PermissionDenied
@@ -616,8 +617,8 @@ def download(request,resource):
     """
     relative_path = request.path
     if relative_path.find(os.sep) == -1:
-        relative_path = relative_path.replace(utilities.get_opposite_os_directory_sep(),os.sep)  
-        
+        relative_path = relative_path.replace(utilities.get_opposite_os_directory_sep(),os.sep)
+
     relative_path_elements = relative_path.split(os.sep,1)
     relative_path = relative_path_elements[len(relative_path_elements)-1]
 
@@ -626,13 +627,13 @@ def download(request,resource):
 
     absolute_path = os.path.join(settings.BASE_DIR, relative_path)
     data = mimetypes.guess_type(absolute_path)
-    
+
 
     f = open(absolute_path,'rb')
 
     myfile = File(f)
     response = HttpResponse(myfile.read(), content_type=data[0])
-    
+
     response['Content-Disposition'] = 'attachment; filename=' + file_name
     return response
 
@@ -648,7 +649,7 @@ class PermissionEditingView(generic.ListView):
     query = ''
     context_object_name = "user_list"
     paginate_by = 10
-    
+
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         """
@@ -663,23 +664,23 @@ class PermissionEditingView(generic.ListView):
         @rtype:
         """
         try:
-            resource=Resource.objects.get(id=self.kwargs['resourceid'])   
+            resource=Resource.objects.get(id=self.kwargs['resourceid'])
         except Resource.DoesNotExist:
             if request.method=="POST":
                 logger.info("User %s tried to edit the permissions of a non-existing resource \n" % (request.user.username))
             raise Http404()
-        
-                
-        
+
+
+
         #checks if the current user has permission to access this resource
         if resource.owners.filter(id=request.user.id).exists():
             return super().dispatch(request,*args, **kwargs)
-        
+
         logger.info("User %s tried to edit the permissions of resource %s \n" % (request.user.username,resource.name))
         raise PermissionDenied
 
 
-    
+
     def post (self, request,*args, **kwargs ):
         """
 
@@ -790,7 +791,7 @@ class PermissionEditingView(generic.ListView):
             path_to_redirect = utilities.get_relative_path_with_parameters(self.request)
         return redirect(path_to_redirect)
 
-    
+
     def get_queryset(self):
         """
 
@@ -798,8 +799,8 @@ class PermissionEditingView(generic.ListView):
         @rtype:
         """
         return self.model
-    
-    def get(self,request,*args, **kwargs):       
+
+    def get(self,request,*args, **kwargs):
         """
 
         @param request:
@@ -815,7 +816,7 @@ class PermissionEditingView(generic.ListView):
         is_reader_of_resource = Resource.objects.get(id=self.kwargs['resourceid']).readers.all().values_list('id',flat=True)
         self.model = User.objects.filter(Q(id__in=is_owner_of_resource)|Q(id__in=is_reader_of_resource))
         return super().get(request,*args, **kwargs)
-        
+
     def get_context_data(self, **kwargs):
         """
 
@@ -832,10 +833,10 @@ class PermissionEditingView(generic.ListView):
         context['query_pagination_string'] = ''
         context['is_admin']=self.request.user.is_staff
         return context
-    
-    
-@method_decorator(never_cache, name='dispatch')    
-@method_decorator(login_required, name='dispatch')     
+
+
+@method_decorator(never_cache, name='dispatch')
+@method_decorator(login_required, name='dispatch')
 class PermissionEditingViewSearch(PermissionEditingView):
     """
 
@@ -859,7 +860,7 @@ class PermissionEditingViewSearch(PermissionEditingView):
         else:
             path_to_redirect = utilities.get_one_level_lower_path(self.request.path)
             return redirect(path_to_redirect)
-        
+
     def get(self,request,*args, **kwargs):
         """
 
@@ -875,7 +876,7 @@ class PermissionEditingViewSearch(PermissionEditingView):
         self.query = self.request.GET['q']
         self.model = User.objects.filter(Q(username__icontains=self.query) | Q(first_name__icontains=self.query) | Q(last_name__icontains=self.query))
         return super(generic.ListView,self).get(request,*args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         """
 
@@ -913,14 +914,14 @@ class DeleteResourceView(generic.View):
         @rtype:
         """
         pk = self.kwargs['resourceid'] # gets the id of the resource which is included in the url
-        
+
         try:
-            res=Resource.objects.get(id=pk)   
+            res=Resource.objects.get(id=pk)
         except Resource.DoesNotExist:
             # raises Http404 if a resource with a such id does not exist
             logger.info("User %s tried to delete a non-existing resource" % (request.user))
             raise Http404()
-        
+
         # raises the PermissionDenied exception if the current user is not a staff user
         if not request.user.is_staff :
             logger.info("User %s tried to delete the resource '%s' without being an administrator" % (request.user,res.name))
@@ -936,7 +937,7 @@ class DeleteResourceView(generic.View):
         AccessRequest.objects.filter(resource=res).delete()
         DeletionRequest.objects.filter(resource=res).delete()
 
-        # notifies all the owners     
+        # notifies all the owners
         email_to = [x[0] for x in res.owners.values_list('email')]
         email_from = request.user.email
         msg = EmailMultiAlternatives('File deleted by admin', text_content, email_from, [email_to])
@@ -944,7 +945,7 @@ class DeleteResourceView(generic.View):
         msg.send()
         logger.info("User %s deleted resource %s " % (request.user.username,res.name))
         logger.info("An email was sent to all '%s' owners, Subject: '%s' is deleted " % (res.name,res.name))
-        
+
         # deletes the resource
         res.delete()
         return redirect('AuthorizationManagement:my-resources')
@@ -969,19 +970,19 @@ class ApproveDeletionRequest(generic.View):
         @rtype:
         """
         pk = self.kwargs['requestid']
-        
+
         try:
             req=DeletionRequest.objects.get(id=pk)
         except DeletionRequest.DoesNotExist:
             # raises Http404 if a request with a such id does not exist
             logger.info("User %s tried to approve a non-existing deletion request" % (request.user))
             raise Http404()
-        
+
         # raises the PermissionDenied exception if the current user is a staff user
         if not request.user.is_staff :
             logger.info("User %s tried to approve a deletion request without being an administrator" % (request.user))
             raise PermissionDenied
-        
+
         message = req.description # gets the description of the request
 
         html_content1 = render_to_string('AuthorizationManagement/mail/delete-request-accepted-mail.html',
@@ -989,7 +990,7 @@ class ApproveDeletionRequest(generic.View):
                                          'resource': req.resource,
                                          'message': message})
         text_content1 = strip_tags(html_content1)
-        
+
         html_content2 = render_to_string('AuthorizationManagement/mail/resource-deleted-mail.html',
                                         {'user': request.user,
                                          'resource': req.resource,
@@ -1019,13 +1020,13 @@ class ApproveDeletionRequest(generic.View):
         msg.attach_alternative(html_content2, "text/html")
         msg.send()
         logger.info("An email was sent to all '%s' owners, Object: '%s' is deleted " % (req.resource.name,req.resource.name))
-        
-        # deletes the resource and the deletion request      
+
+        # deletes the resource and the deletion request
         res.delete()
         req.delete()
 
         logger.info("Request from %s to delete '%s' accepted by %s \n" % (req.sender,req.resource.name,request.user.username))
-        
+
         return redirect('AuthorizationManagement:profile')
 
 # the view for denying a deletion request
@@ -1035,7 +1036,7 @@ class DenyDeletionRequest(generic.View):
     """
 
     """
-    
+
     def post(self, request,*args, **kwargs):
         """
 
@@ -1049,21 +1050,21 @@ class DenyDeletionRequest(generic.View):
         @rtype:
         """
         pk = self.kwargs['requestid']
-        
+
         try:
             req=DeletionRequest.objects.get(id=pk)
         except DeletionRequest.DoesNotExist:
             # raises Http404 if a request with a such id does not exist
             logger.info("User %s tried to deny a non-existing deletion request" % (request.user))
             raise Http404()
-        
+
         # raises the PermissionDenied exception if the current user is a staff user
         if not request.user.is_staff:
             logger.info("User %s tried to deny a deletion request without being an administrator" % (request.user))
             raise PermissionDenied
-        
+
         message = request.POST['descr'] # gets the description of this request
-        
+
         # notifies the sender of this request via email
         html_content = render_to_string('AuthorizationManagement/mail/delete-request-denied-mail.html',
                                         {'user': request.user,
@@ -1078,7 +1079,7 @@ class DenyDeletionRequest(generic.View):
         msg.send()
         logger.info("Request from %s to delete '%s' was denied by %s \n" % (req.sender,req.resource.name,request.user.username))
         logger.info("An email was sent from %s to %s, Subject: Deletion Request for '%s' denied\n" % (request.user.username,req.sender,req.resource.name))
-        
+
         # deletes the request
         req.delete()
         return redirect('AuthorizationManagement:profile')
@@ -1107,7 +1108,7 @@ class AddNewResourceView(generic.View):
             instance.owners.add(request.user.id)
             instance.readers.add(request.user.id)
             logger.info("User %s created the '%s' Resource \n" % (request.user.username,instance.name))
-            
+
         else:
             logger.info("User %s tried to inconsistently create a resource \n" % request.user.username)
         return redirect('AuthorizationManagement:my-resources')
@@ -1117,12 +1118,13 @@ class AddNewResourceView(generic.View):
 
         args = {}
         args.update(csrf(request))
-        
+
         args['form'] = form
         args['is_admin'] = self.request.user.is_staff
         args['user'] = self.request.user
-        return render_to_response('AuthorizationManagement/add-new-resource.html', args)
-    
+        # return render_to_response('AuthorizationManagement/add-new-resource.html', args) # not working in django > 3
+        return render(None, 'AuthorizationManagement/add-new-resource.html', args)
+
 # the view for editing the name of the user
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
@@ -1139,16 +1141,16 @@ class EditNameView(generic.View):
         @return:
         @rtype:
         """
-        if(request.POST['firstName'] and (not request.POST['firstName'].isspace())): 
+        if(request.POST['firstName'] and (not request.POST['firstName'].isspace())):
             request.user.first_name=request.POST['firstName']
             request.user.save()
         if(request.POST['lastName'] and (not request.POST['lastName'].isspace())):
             request.user.last_name=request.POST['lastName']
-            request.user.save()  
+            request.user.save()
         return redirect('AuthorizationManagement:profile')
 
 
-# returns a sorted list of combination of the access requests and the deletion requests        
+# returns a sorted list of combination of the access requests and the deletion requests
 def get_sorted_requests(access_request_queryset,deletion_request_queryset):
     """
 
@@ -1161,21 +1163,21 @@ def get_sorted_requests(access_request_queryset,deletion_request_queryset):
     """
     access_requests_list = list(access_request_queryset)
     deletion_requests_list = list(deletion_request_queryset)
-    
+
     result = []
     longer_list_len = max(len(access_requests_list),len(deletion_requests_list))
     shorter_list_len = min(len(access_requests_list),len(deletion_requests_list))
-    
+
     if longer_list_len==len(access_requests_list):
         longer_list = access_requests_list
         shorter_list = deletion_requests_list
     else:
         longer_list = deletion_requests_list
         shorter_list = access_requests_list
-       
+
     for i in range(0,longer_list_len):
         result.append(longer_list[i])
         if i<shorter_list_len:
             result.append(shorter_list[i])
-            
+
     return result

@@ -3,6 +3,10 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 <html>
+
+{#Cookie window 1/2#}
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+
 <head>
     <title>VFORWaTer</title>
     <meta charset="UTF-8">
@@ -18,6 +22,22 @@
 </head>
 {#TODO: value has to be updated through js before reading to make sure its up-to-date #}
 <param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
+
+{#Cookie window 2/2#}
+<script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
+<script>
+window.cookieconsent.initialise({
+  "palette": {
+    "popup": {
+      "background": "#d9effd"
+    },
+    "button": {
+      "background": "#00baee"
+    }
+  },
+  "position": "bottom-right"
+});
+</script>
 
 <body class="respo-light-grey">
 <!-- Current language: {{ LANGUAGE_CODE }} -->
@@ -40,15 +60,21 @@
                 <i class="fa fa-bars"></i>
             </a>
         </li>
-        <li class="respo-hide-small"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white">
+        <li class="respo-hide-small respo-hide-medium"><a href="{% url 'vfwheron:home' %}" class="respo-hover-white">
             <i class="fa fa-map-o fa-fw"></i>{% trans "  Home" %}</a>
         </li>
-        <li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white">
+        {% comment %}<li class="respo-hide-small"><a href="{% url 'heron_wps:home' %}" class="respo-hover-white">
             <i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
+        </li>
+        <li class="respo-hide-small"><a href="{% url 'wps_gui:home' %}" class="respo-hover-white">
+            <i class="fa fa-workflow fa-fw" style="height: 24px; width: 24px;"></i>{% trans "  WPS GUI" %}</a>
         </li>
          <li class="respo-hide-small"><a href="{% url 'vfwheron:workflowtool' %}" class="respo-hover-white">
             <i class="fa fa-workflow fa-fw" style="height: 24px; width: 24px;"></i>{% trans "  Workflow" %}</a>
-        </li>     
+        </li>{% endcomment %}
+        <li class="respo-hide-small"><a href="{% url 'wps_gui:home' %}" class="respo-hover-white">
+            <i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
+        </li>
         <li class="respo-hide-small"><a href="{% url 'heron_monitor:home' %}" class="respo-hover-white">
             <i class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>
         </li>
@@ -60,15 +86,16 @@
                 <a class="respo-hover-white ">
                     <i class="fa fa-external-link fa-fw"></i>  {% trans "Help" %}<i class="fa fa-caret-down fa-fw"></i>
                     <div class="respo-dropdown-content" style="right:0">
-                        <a href="{% url 'vfwheron:help' %}" class="respo-hover-blue">
+{#                        <a href="{% url 'vfwheron:help' %}" class="respo-hover-blue">#}
+                        <a target="_blank" href="https://vforwater.github.io/documentation/index.html" style="text-decoration:none" class="respo-hover-blue">
                             <i class="fa fa-book fa-fw"></i>{% trans "  Portal Help" %}
                         </a>
                         <a target="_blank" href="http://vforwater.de" style="text-decoration:none" class="respo-hover-blue">
                             <i class="fa fa-sitemap fa-fw"></i>{% trans "  Web Site" %}
                         </a>
-                        <a target="_blank" href={{ VFW_SERVER|add:"/doc" }} style="text-decoration:none" class="respo-hover-blue">
+                   {% comment %}     <a target="_blank" href={{ VFW_SERVER|add:"/doc" }} style="text-decoration:none" class="respo-hover-blue">
                             <i class="fa fa-book fa-fw"></i>{% trans "  Documentation" %}
-                        </a>
+                        </a>{% endcomment %}
                         <a target="_blank" href="https://github.com/VForWaTer/vforwater-portal" style="text-decoration:none" class="respo-hover-blue">
                             <i class="fa fa-code fa-fw"></i>{% trans "  Source Code" %}
                         </a>
@@ -78,9 +105,6 @@
 
         </li>
         {#	    <li class="respo-hide-small"><a href="{% url 'heron_upload:home' %}" class="respo-hover-white"><i class="fa fa-upload fa-fw"></i>  Upload</a></li>#}
-        <!--	    <li class="respo-hide-small"><a href="#" onclick="search_open()" id="srch_box" class="respo-hover-white"><i class="fa fa-search fa-fw"></i>  Suche</a></li>
-                <li class="respo-hide-small"><a id="srch_but" class="respo-hover-none"></a></li>
-                <li class="respo-hide-small"><a id="srch_close_but" class="respo-hover-none"></a></li>   -->
         {% if user.is_authenticated %}
 
             <!-- for Authentication app
@@ -103,27 +127,11 @@
                         <div class="respo-dropdown-content" style="right:0">
                             <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:profile' %}">{% trans "Profile" %}</a>
                             <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:resources-overview' %}">{% trans "Resource Overview" %}</a>
-                            <!--<a class="respo-hover-blue " href="{% url 'vfwheron:logout' %}">{% csrf_token %}{% trans "  Logout" %}</a>-->
-                            <!--<a class="respo-hover-blue " action="{% url 'vfwheron:logout' %}" method="post"> {% csrf_token %}-->
-                            <!--<input class="respo-btn-simple " type="submit" name="logout" value='{% trans "  Logout like login"  %}' />-->
-                            <!--</a>-->
                             <a href="#" class="respo-hover-blue">
                                 <form action="{% url 'vfwheron:logout' %}" method="post"> {% csrf_token %}
                                     <input class="respo-btn-simple" type="submit" name="logout" value="Logout"/>
                                 </form>
                             </a>
-                            <!--    <option value="Manage Resources" title="Manage Resource"><a class="respo-hover-blue nav" href="{prozent url 'AuthorizationManagement:resource-manager' prozent}">Manage Resources</a></option> -->
-                            <!--    <option class="respo-hover-blue nav" value="Profile" title="Profile">Profile</option>
-			    <option class="respo-hover-blue nav" value="MyData" title="My Data">My Data</option>
-                            <option class="respo-hover-blue nav" value="Manage Data" title="Manage Data">My Data</option>
-                            <option class="respo-hover-blue nav" value="Logout" title="Logout">
-		    <a href="#" class="respo-hover-blue nav">
-		  <!--	<form action="{% url 'vfwheron:logout' %}" method="post"> {% csrf_token %}
-			<input class="respo-btn-simple" type="submit" name="logout" value="Logout" />
-		  </form>
-		  Logout
-		</a>
-		<!--    </option> -->
                         </div>
                     </a>
                 </div>
@@ -139,7 +147,6 @@
                             <div class="respo-dropdown-content" style="right:0">
                                 <a class="respo-hover-red nav" value="ManageUsers" title="Manage Users">Manage Users</a>
                                 <a class="respo-hover-red nav" value="ManageSomething" title="Manage Something">Manage Something</a>
-<!--                    <option class="respo-hover-blue nav" value="test" title="test"><a class="respo-hover-blue nav" href="#">test</a></option> -->
                             </div>
                         </a>
                     </div>
@@ -149,7 +156,7 @@
 
             <!-- is_authenticated -->
         {% else %}
-            <!--        <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> -->
+             <!-- {#       <li class="respo-hide-small respo-right"><a href="{% url 'vfwheron:login' %}" class="respo-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> #}-->
             <li class="respo-hide-small respo-right">
                 <a class="respo-hide-small respo-right respo-hover-white">
                     <form class="respo-hover-white " action="{% url 'vfwheron:watts_login' %}" method="post"> {% csrf_token %}
@@ -163,14 +170,6 @@
 	    <!-- flag -->
 	    {% get_current_language as LANGUAGE_CODE %}
 	    {% if LANGUAGE_CODE == 'de' %}
-<!--
-	<li class="respo-hide-small respo-right">
-	  <a href="#" class="respo-hover-white img-thumbnail flag flag-icon-background flag-icon-gb" title="gb" id="gb">
-	    <form action="{% url 'vfwheron:togglelang' %}" method="post"> {% csrf_token %}
-              <input class="respo-btn-simple" type="submit" name="togglelang" value="&nbsp;"/>
-            </form>
-	  </a>
-	</li> -->
 
 	<li class="respo-hide-small respo-right">
 	  <a href="#" class="respo-hover-none">
@@ -178,7 +177,7 @@
               <input class="respo-btn-simple flag-icon-background flag-icon-gb" type="submit" name="togglelang" value="&nbsp;&nbsp;&nbsp;"/>
             </form>
           </a>
-	</li>	
+	</li>
 
 	{% else %}
 	<li class="respo-hide-small respo-right">
@@ -187,15 +186,18 @@
               <input class="respo-btn-simple flag-icon-background flag-icon-de" type="submit" name="togglelang" value="&nbsp;&nbsp;&nbsp;"/>
             </form>
           </a>
-	</li>	
-	
+	</li>
+
 	{% endif %}
 
-	  
+
     </ul>
 </div>
 
 {% block sidebar %}
+{% endblock %}
+
+{% block toolbar %}
 {% endblock %}
 
 {% block sidemenu %}
@@ -209,7 +211,7 @@
 
     <footer class="respo-container respo-padding-16 respo-light-grey">
         <p style="text-align:center">Powered by <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> |
-            Copyright &copy; 2016-2019</p>
+            Copyright &copy; 2016-2020</p>
     </footer>
 
 </div>

@@ -13,7 +13,7 @@
 	<div id="accordion"  >
 		<br>
        <a href="{% url 'vfwheron:home' %}" class="respo-hover-blue"><i class="fa fa-home fa-fw"></i>{% trans "  Home" %}</a>
-       <a href="{% url 'heron_wps:home' %}" class="respo-hover-blue"><i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
+       <a href="{% url 'wps_gui:home' %}" class="respo-hover-blue"><i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
 	   <a href="{% url 'heron_monitor:home' %}" class="respo-hover-blue"><i class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>
 	   <a href="{% url 'heron_visual:home' %}" class="respo-hover-blue"><i class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a>
         <div class="respo-dropdown-hover respo-transparent">
@@ -29,13 +29,13 @@
                     <a target="_blank" href={{ VFW_SERVER|add:"/doc" }} style="text-decoration:none" class="respo-hover-blue">
                         <i class="fa fa-book fa-fw"></i>{% trans "  Documentation" %}
                     </a>
-                    <a target="_blank" href="https://github.com/VForWaTer/vforwater-portal" style="text-decoration:none" class="respo-hover-blue">
+                    <a target="_blank" href="https://github.com/VForWaTer/pleasant" style="text-decoration:none" class="respo-hover-blue">
                         <i class="fa fa-code fa-fw"></i>{% trans "  Source Code" %}
                     </a>
                 </div>
             </a>
             </div>
-        <a href="{% url 'vfwheron:login' %}" class="respo-hover-blue"><i class="fa fa-user fa-fw"></i>{% trans " Log in" %}</a>
+<!--{#        <a href="{% url 'vfwheron:login' %}" class="respo-hover-red"><i class="fa fa-user fa-fw"></i>{% trans " Log in" %}</a>#} -->
         {% if user.is_authenticated %}
              <div class="respo-dropdown-hover respo-transparent">
                     <a class="respo-hover-white ">
@@ -65,7 +65,6 @@
                             <div class="respo-dropdown-content" style="right:0">
                                 <a class="respo-hover-red nav" value="ManageUsers" title="Manage Users">Manage Users</a>
                                 <a class="respo-hover-red nav" value="ManageSomething" title="Manage Something">Manage Something</a>
-<!--                    <option class="respo-hover-blue nav" value="test" title="test"><a class="respo-hover-blue nav" href="#">test</a></option> -->
                             </div>
                         </a>
                     </div>
@@ -81,7 +80,7 @@
                     </form>
                 </a>
         {% endif %}
-    </div>    
+    </div>
   </nav>
 
 {#  Overlay effect when opening sidenav on small screens #}

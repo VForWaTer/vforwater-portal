@@ -5,25 +5,8 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
-{% block sidebar %} 
-	{% include 'heron_visual/sidebar.html' %} 
-{% endblock sidebar %}
-
 {% block title %}- Heron Visualisation{% endblock %}
 
 {% block content %}
-
-<div class="row">
-  <div class="col-md-8 col-md-offset-2">
-    <h1>{%  trans "Visualisation" %}</h1>
-      <p>{%  trans "This page is still under construction." %}</p>
-  </div>
-</div>
-<div class="row">
-  <div class="col-md-8 col-md-offset-2">
-
-    <h4>{%  trans "No visualization is available yet." %}</h4>
-
-  </div>
-</div>
+	{% include 'heron_visual/visualplace.html' %}
 {% endblock %}
