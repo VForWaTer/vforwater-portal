@@ -199,9 +199,9 @@ DATABASES = {
         'USER': 'vfwportal',
         'PASSWORD': '',
     },
-    'vfw2': {
+    'mcdev': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater_20',
+        'NAME': 'metacatalog-dev',
         'HOST': 'localhost',
         'PORT': '5434',
         'USER': 'postgres',
@@ -296,7 +296,7 @@ if ON_VFW_SERVER:
     ##WATTS_PROVIDER_ID = 'iam'
     WATTS_PROVIDER_ID = 'eudat'
 
-# Settings from workflowPSE, here for wps_workflow app
+# Settings for logging in wps_gui app
 import logging.handlers
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d;%(funcName)s()] - %(message)s')  #
