@@ -9,7 +9,7 @@ Vforwater-portal is an open source virtual research environment written in djang
 
 # Installation notes
 
-For installation instructions please look at `install_notes.txt`.
+For installation instructions please look at [`install_notes.txt`](install_notes.txt).
 There are no special dependencies on the LINUX distribution. We tested the installation on Fedora 29, 30, Centos 7, and RHEL 7.
 Code is still under development and comes with no guarantees.
 
