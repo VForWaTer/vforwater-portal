@@ -142,7 +142,7 @@ class Entrygroups(models.Model):
 
 
 class GenericGeometryData(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.IntegerField()
     geom = models.GeometryField(srid=0)
     srid = models.IntegerField(blank=True, null=True)
@@ -155,7 +155,7 @@ class GenericGeometryData(models.Model):
 
 
 class Generic1DData(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.DecimalField(max_digits=65535, decimal_places=65535)
     value = models.DecimalField(max_digits=65535, decimal_places=65535)
     precision = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
@@ -168,7 +168,7 @@ class Generic1DData(models.Model):
 
 
 class Generic2DData(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.DecimalField(max_digits=65535, decimal_places=65535)
     value1 = models.DecimalField(max_digits=65535, decimal_places=65535)
     value2 = models.DecimalField(max_digits=65535, decimal_places=65535)
@@ -183,7 +183,7 @@ class Generic2DData(models.Model):
 
 
 class GeomTimeseries(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
     geom = models.GeometryField(srid=0)
     srid = models.IntegerField(blank=True, null=True)
@@ -263,7 +263,7 @@ class Licenses(models.Model):
 
 
 class NmEntrygroups(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     group = models.ForeignKey(Entrygroups, models.DO_NOTHING)
 
     class Meta:
@@ -274,7 +274,7 @@ class NmEntrygroups(models.Model):
 
 
 class NmKeywordsEntries(models.Model):
-    keyword = models.ForeignKey(Keywords, models.DO_NOTHING, primary_key=True)
+    keyword = models.OneToOneField(Keywords, models.DO_NOTHING, primary_key=True)
     entry = models.ForeignKey(Entries, models.DO_NOTHING)
     alias = models.CharField(max_length=1024, blank=True, null=True)
     associated_value = models.CharField(max_length=1024, blank=True, null=True)
@@ -290,7 +290,7 @@ class NmKeywordsEntries(models.Model):
 
 
 class NmPersonsEntries(models.Model):
-    person = models.ForeignKey('Persons', models.DO_NOTHING, primary_key=True)
+    person = models.OneToOneField('Persons', models.DO_NOTHING, primary_key=True)
     entry = models.ForeignKey(Entries, models.DO_NOTHING)
     relationship_type = models.ForeignKey('PersonRoles', models.DO_NOTHING)
     order = models.IntegerField()
@@ -327,6 +327,11 @@ class Persons(models.Model):
     last_name = models.CharField(max_length=128)
     affiliation = models.CharField(max_length=1024, blank=True, null=True)
 
+    column_dict = {'name': 'Name'}  # menu text
+    column_dict_adv = {'name': 'Name'}
+    menu_name = 'Variables'
+    path = 'variable'
+
     class Meta:
         # app_label = 'mcdev'
         managed = False
@@ -337,7 +342,7 @@ class Persons(models.Model):
 
 
 class Timeseries(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
     value = models.DecimalField(max_digits=65535, decimal_places=65535)
     precision = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
@@ -350,7 +355,7 @@ class Timeseries(models.Model):
 
 
 class Timeseries2D(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
     value1 = models.DecimalField(max_digits=65535, decimal_places=65535)
     value2 = models.DecimalField(max_digits=65535, decimal_places=65535)
