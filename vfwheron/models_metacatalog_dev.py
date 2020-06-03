@@ -236,7 +236,7 @@ class Keywords(models.Model):
 
 class Licenses(models.Model):
     """
-    Use one of the Boolean Field for the Filter menu.
+    Use one of the Boolean Fields for the Filter menu.
     """
     short_title = models.CharField(max_length=40)
     title = models.TextField()
@@ -246,6 +246,12 @@ class Licenses(models.Model):
     by_attribution = models.BooleanField()
     share_alike = models.BooleanField()
     commercial_use = models.BooleanField()
+
+    column_dict = {'commercial_use': 'Commercial use allowed'}  # menu text
+    column_dict_adv = {'commercial_use': 'Commercial use allowed'}
+    menu_name = 'Licenses'
+    path = 'license'
+    filter_type = {'commercial_use': 'bool'}
 
     class Meta:
         # app_label = 'mcdev'
@@ -381,6 +387,12 @@ class Variables(models.Model):
     unit = models.ForeignKey(Units, models.DO_NOTHING)
     keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
 
+    column_dict = {'name': 'Name'}  # menu text
+    column_dict_adv = {'name': 'Name'}
+    menu_name = 'Variables'
+    path = 'variable'
+    # print('\033[31m' + 'path: \033[0m', path)
+
     class Meta:
         # app_label = 'mcdev'
         managed = False
@@ -388,3 +400,33 @@ class Variables(models.Model):
 
     def __str__(self):
         return "%s [%s] <ID=%d>" % (self.name, self.unit.symbol, self.id)
+
+
+class BasicFilter:
+    """
+    Class to collect relevant information for filter
+    """
+
+    embargo = Entries.objects.using('mcdev').values_list('embargo', flat=True).distinct()
+    creation = Entries.objects.using('mcdev').values_list('creation', flat=True).distinct()
+    end = Entries.objects.using('mcdev').values_list('end', flat=True).distinct()
+    licenses = Licenses.objects.using('mcdev').values_list('commercial_use', flat=True).distinct()
+    variables = Variables.objects.using('mcdev').values_list('name', flat=True).distinct()
+
+    # menu_entries = {'Embargo': embargo, 'Creation': creation, 'End': end, 'License': licenses,
+    #                 'Variables': variables}
+    # menu_entries = [variables]
+    menu_entries = [Variables]#, Entries]#, Licenses]
+
+    print('________')
+    # a = Entries.objects.using('mcdev').filter(variable__name='sap flow')
+    # a = Entries.objects.using('mcdev').filter(nmpersonsentries__person__first_name='Inst.')
+    # print(a)
+    # class Meta:
+    #     abstract = True
+
+class AdvancedFilter(BasicFilter):
+    """
+    Class to collect relevant information for advanced filter
+    """
+
