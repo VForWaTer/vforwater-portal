@@ -290,7 +290,7 @@ if ON_VFW_SERVER:
     )
 
     # WaTTS settings
-    WATTS_RSP_ENDPOINT = 'https://watts.data.kit.edu/rsp/'
+    WATTS_RSP_ENDPOINT = 'https://watts-prod.data.kit.edu/rsp/'
     WATTS_SERVICE_NAME = 'rsp2'
     WATTS_ISSUER_ID = 'vforwater_demo'
     ##WATTS_PROVIDER_ID = 'iam'
