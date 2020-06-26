@@ -114,16 +114,16 @@ class HomeView(TemplateView):
         self.data_layer = self.set_layer_name()
 
         try:
-        if not get_layer(self.data_layer, self.store, self.workspace):
-            create_layer(self.request, self.data_layer, self.store, self.workspace)
-        else:
-            # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
-            # restart of django
-            delete_layer(self.data_layer, self.store, self.workspace)
-            create_layer(self.request, self.data_layer, self.store, self.workspace)
-        except:
-            self.data_layer = 'Error: Found no geoserver!'
-            print('Still no geoserver')
+            if not get_layer(self.data_layer, self.store, self.workspace):
+                create_layer(self.request, self.data_layer, self.store, self.workspace)
+            else:
+                # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
+                # restart of django
+                delete_layer(self.data_layer, self.store, self.workspace)
+                create_layer(self.request, self.data_layer, self.store, self.workspace)
+            except:
+                self.data_layer = 'Error: Found no geoserver!'
+                print('Still no geoserver')
 
         try:
             data_ext = get_bbox_from_data()
