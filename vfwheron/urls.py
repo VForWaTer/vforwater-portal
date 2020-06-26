@@ -9,7 +9,7 @@ app_name = 'vfwheron'
 
 urlpatterns = [
     url(r'^$', views.HomeView.as_view(), name='home'),
-    url(r'^login$', auth_views.LoginView.as_view(template_name='vfwheron/login.html'), {'template_name': 'vfwheron/login.html'}, name='login'),
+    # url(r'^login$', auth_views.LoginView.as_view(template_name='vfwheron/login.html'), {'template_name': 'vfwheron/login.html'}, name='login'),
     # url(r'^failedlogin$', auth_views.LoginView, {'template_name': 'vfwheron/failedlogin.html'}, name='failedlogin'),
     url(r'^watts_login$', views.LoginView.as_view(), name='watts_login'),
     url(r'^help$', views.HelpView.as_view(), name='help'),
