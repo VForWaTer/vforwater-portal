@@ -8,12 +8,15 @@ from vfwheron.models import TblMeta, TblVariable, LtDomain, LtLicense, LtSite, L
 logger = logging.getLogger(__name__)
 
 
-def _build_path_value_pair(parent_menu, child, item):
+def _build_path_value_pair(parent_menu:dict, child:str, item:str):
     """
 
     :param parent_menu:
+    :type parent_menu: dict
     :param child:
+    :type child:str
     :param item:
+    :type item:str
     :return:
     """
     path = ''
@@ -30,16 +33,18 @@ def _build_path_value_pair(parent_menu, child, item):
     return {'path': path, 'value': value}
 
 
-def build_select_filters(menu, filter_selection):
+def build_select_filters(menu: dict, filter_selection: dict):
     """
 
     :param menu:
-    :type menu:
+    :type menu: dict
     :param filter_selection:
-    :type filter_selection:
+    :type filter_selection:dict
     :return:
     :rtype:
     """
+
+
     # build queries for the filter values
     short_filter = {}
     long_filter = {}
@@ -67,16 +72,17 @@ def build_select_filters(menu, filter_selection):
     return {'filters': short_filter, 'active_f': spec_filter}
 
 
-def build_id_list(menu, filter_selection):
+def build_id_list(menu:dict, filter_selection:dict):
     """
     Build list of IDs needed to create in geoserver a layer with the selected elements
     :param menu:
-    :type menu:
+    :type menu:dict:{'P1': {'name': 'Location', 'path': 'geometry', 'filter': {'geometry_type': 'draw'}
     :param filter_selection:
-    :type filter_selection:
+    :type filter_selection:dict
     :return:
     :rtype:
     """
+
     # build queries for the filter values
     query_filters = {}
     for parent in filter_selection:
@@ -98,16 +104,17 @@ class FilterMethods:
     """
 
     @staticmethod
-    def selection_counts(menu, filter_selection):
+    def selection_counts(menu:dict, filter_selection:dict):
         """
 
         :param menu:
-        :type menu:
+        :type menu:dict
         :param filter_selection:
-        :type filter_selection:
+        :type filter_selection:dict
         :return:
         :rtype:
         """
+
         result = {}
 
         query_filter = build_select_filters(menu, filter_selection)
@@ -152,6 +159,8 @@ class FilterMethods:
         :return:
         :rtype:
         """
+
+
         data_points = []
         return data_points
 
@@ -177,6 +186,7 @@ class Menu:
         :param user:
         :type user:
         """
+
         # to see menu items without content set min_amount to 0
         self.min_amount = 1
         self.user = user

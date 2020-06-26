@@ -407,6 +407,7 @@ def create_id_layer(request, filename, selection, datastore, workspace, srid=385
     :return:
     :rtype:
     """
+
     xml = build_xml_from_id(request, filename, selection, datastore, workspace, srid)
     url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
     build = requests.post(url, auth=(eval(SECRET_GEOSERVER)), data=xml, headers={'Content-type': 'text/xml'})
