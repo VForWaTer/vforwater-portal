@@ -23,11 +23,14 @@ a.respo-hover-blue{padding: 0px}
 .loader {
   border: 16px solid #00BAEE;
   border-radius: 50%;
-  border-top: 16px solid #AADDF9;
+  border-bottom: 16px solid #AADDF9;
+  border-right: 16px solid #D9EFFD;
+  border-top: 16px solid white;
+  /*border-top: 16px solid var(--color_Child);*/
   width: 120px;
   height: 120px;
-  -webkit-animation: spin 2s linear infinite; /* Safari */
-  animation: spin 2s linear infinite;
+  -webkit-animation: spin 1.5s linear infinite; /* Safari */
+  animation: spin 1.5s linear infinite;
 }
 /* Safari */
 @-webkit-keyframes spin {

@@ -1,0 +1,38 @@
+@startuml
+title Build Filtermenu in Python
+
+hide footbox
+
+participant views.HomeView
+
+== Initialization at start of django ==
+views.HomeView -> filter.Menu ++: Menu().get_menu()
+activate views.HomeView
+loop relevant tables of model
+filter.Menu -> filter.Table ++: Table
+filter.Table -> filter.Table: get_query_set()
+filter.Table -> filter.Table: get_query_path()
+filter.Table -> filter.Table: get_filter_type()
+filter.Table -> filter.Table ++: build_json_child
+opt switch filter_type
+alt filter_type is 'slider'
+filter.Table -> filter.Table: Table.build_slider_json()
+else filter_type is 'date'
+filter.Table -> filter.Table: Table.build_date_json()
+else filter_type is 'recursive'
+filter.Table -> filter.Table: Table.build_recursive_json()
+else filter_type is 'draw'
+filter.Table -> filter.Table: Table.build_draw_json()
+else
+filter.Table -> filter.Table: Table.build_default_json()
+end
+end
+deactivate filter.Table
+filter.Menu <- filter.Table
+deactivate filter.Table
+end
+deactivate filter.Menu
+views.HomeView <- filter.Menu
+deactivate views.HomeView
+@enduml
+-----------------------------------------------------------------------

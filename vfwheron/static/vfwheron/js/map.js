@@ -90,8 +90,9 @@ function create_map() {
         // Cluster style
         style: getStyle
     });
-    hiddenLayer = new ol.layer.Vector({
-        renderMode: 'image',
+    hiddenLayer = new ol.layer.VectorImage({  // TODO: In OL 6 use VectorImage and remove renderMode
+        className: 'hidden-layer',
+        // renderMode: 'image',
         source: wfsPointSource,
 /*        style: new ol.style.Style({
             image: new ol.style.Circle({

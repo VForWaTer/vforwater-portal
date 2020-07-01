@@ -150,6 +150,14 @@ button {
     border-radius: 50%;
 }
 
+.pickle:hover,.timeseries:hover, .merged-pickle:hover, .merged-ts-pickle:hover,
+.ts-array:hover, .ts-pickle:hover, .ts-aggregate:hover, .string:hover,.array:hover, .integer:hover,
+.boolean:hover, .float:hover, .image:hover {
+/*    height: 200%;
+    width: 200%;*/
+    transform: scale(2);
+    vertical-align: text-bottom;
+}
 
 .left-hemisphere {
     margin: 5px;
