@@ -26,6 +26,7 @@ def test_geoserver_env(store, workspace):
     :return:
     :rtype:
     """
+
     def build_store():
         """
         Inner function to build the data store
@@ -77,9 +78,7 @@ def test_geoserver_env(store, workspace):
             # build new workspace:
             build_store()
         # else:
-            # print('store exist too: ', check.status_code)
-
-
+        # print('store exist too: ', check.status_code)
 
 
 # TODO: IDs for new layer (for user) are still missing
@@ -160,6 +159,25 @@ def delete_layer(filename, datastore, workspace):
         logger.warning('{}: {}'.format(build.status_code, build.text))
 
 
+def create_attributes(attributes_list):
+    attributes = ''
+    binding_dict = {'point': 'com.vividsolutions.jts.geom.Point', 'string': 'java.lang.String',
+                    'bigDeci': 'java.math.BigDecimal', 'int': 'java.lang.Integer',
+                    'date': 'java.sql.Date', 'time': 'java.sql.Time'}
+    for element in attributes_list:
+        attribute = '<attribute>' \
+                    '<name>' + element[0] + '</name>' \
+                    '<minOccurs>' + str(element[1]) + '</minOccurs>' \
+                    '<maxOccurs>' + str(element[2]) + '</maxOccurs>' \
+                    '<nillable>' + str(element[3]).lower() + '</nillable>' \
+                    '<binding>' + binding_dict[element[4]] + '</binding>' \
+                    '</attribute>'
+
+        attributes += attribute
+
+    return attributes
+
+
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in 'build_XML_from_ID'?)
 def build_new_layer_xml(request, filename, datastore, workspace, srid):
     """
@@ -217,182 +235,55 @@ def build_new_layer_xml(request, filename, datastore, workspace, srid):
     if not request.user.is_authenticated:
         query = '{} {}'.format(query, ' WHERE lt_license.share is true')  # only for test use on portal
 
-    attributes = '<attribute>' \
-                 '<name>Geometry</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>com.vividsolutions.jts.geom.Point</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Datentyp</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Schrittweite</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Landnutzung</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Geologie</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Vorname</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Nachname</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Institut</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Abteilung</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Projekt</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Dom&#228;ne</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Kommentar</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Lizenz</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Lizenz_URL</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>site_id</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.Integer</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>external_id</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>centroid_x</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.math.BigDecimal</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>centroid_y</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.math.BigDecimal</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>srid</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.Integer</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>geometry_type</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>geom</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>com.vividsolutions.jts.geom.Point</binding>' \
-                 '</attribute>'
+    # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
+    attribute_list = [('Geometry', 0, 1, True, 'point'), ('Datentyp', 1, 1, False, 'string'),
+                      ('Schrittweite', 0, 1, True, 'string'), ('Landnutzung', 0, 1, True, 'string'),
+                      ('Geologie', 0, 1, True, 'string'), ('Vorname', 0, 1, True, 'string'),
+                      ('Nachname', 0, 1, True, 'string'), ('Institut', 0, 1, True, 'string'),
+                      ('Abteilung', 0, 1, True, 'string'), ('Projekt', 1, 1, False, 'string'),
+                      ('Dom&#228;ne', 1, 1, False, 'string'), ('Kommentar', 0, 1, True, 'string'),
+                      ('Lizenz', 1, 1, False, 'string'), ('Lizenz_URL', 0, 1, True, 'string'),
+                      ('site_id', 0, 1, True, 'string'), ('external_id', 0, 1, True, 'string'),
+                      ('centroid_x', 0, 1, True, 'bigDeci'), ('centroid_y', 0, 1, True, 'bigDeci'),
+                      ('srid', 0, 1, True, 'int'), ('geometry_type', 0, 1, True, 'string'),
+                      ('geom', 1, 1, False, 'point')]
+
+    attributes = create_attributes(attribute_list)
 
     xml = '<featureType>' \
-        '<name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
-        '<namespace><name>' + workspace + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
-        '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
-        '</namespace>' \
-        '<title>' + filename + '</title>' \
-        '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
-        '<srs>EPSG:' + str(srid) + '</srs><projectionPolicy>FORCE_DECLARED</projectionPolicy>' \
-        '<enabled>true</enabled><advertised>true</advertised>' \
-        '<metadata>' \
-        '<entry key="elevation"><dimensionInfo><enabled>false</enabled></dimensionInfo></entry>' \
-        '<entry key="JDBC_VIRTUAL_TABLE"><virtualTable><name>' + filename + '</name>' \
-        '<sql>' + query + '</sql><escapeSql>false</escapeSql><keyColumn>id</keyColumn>' \
-        '<geometry><name>Geometry</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
-        '<geometry><name>geom</name><type>Point</type><srid>' + str(4326) + '</srid></geometry>' \
-        '</virtualTable></entry>' \
-        '<entry key="time"><dimensionInfo><enabled>false</enabled><defaultValue/></dimensionInfo></entry>' \
-        '<entry key="cachingEnabled">false</entry>' \
-        '</metadata>' \
-        '<store class="dataStore"><name>' + workspace + ':' + datastore + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
-        '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/>' \
-        '</store>' \
-        '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals><overridingServiceSRS>false</overridingServiceSRS>' \
-        '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
-        '<attributes>' + attributes + '</attributes>' \
-        '</featureType>'
+            '<name>' + filename + '</name>'\
+            '<nativeName>' + filename + '</nativeName>' \
+            '<namespace>' \
+              '<name>' + workspace + '</name>' \
+              '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
+              '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
+            '</namespace>' \
+            '<title>' + filename + '</title>' \
+            '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
+            '<srs>EPSG:' + str(srid) + '</srs><projectionPolicy>FORCE_DECLARED</projectionPolicy>' \
+            '<enabled>true</enabled><advertised>true</advertised>' \
+            '<metadata>' \
+              '<entry key="elevation"><dimensionInfo><enabled>false</enabled></dimensionInfo></entry>' \
+              '<entry key="JDBC_VIRTUAL_TABLE">' \
+                '<virtualTable><name>' + filename + '</name>' \
+                  '<sql>' + query + '</sql>' \
+                  '<escapeSql>false</escapeSql><keyColumn>id</keyColumn>' \
+                  '<geometry><name>Geometry</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
+                  '<geometry><name>geom</name><type>Point</type><srid>' + str(4326) + '</srid></geometry>' \
+                '</virtualTable>' \
+              '</entry>' \
+              '<entry key="time"><dimensionInfo><enabled>false</enabled><defaultValue/></dimensionInfo></entry>' \
+              '<entry key="cachingEnabled">false</entry>' \
+            '</metadata>' \
+            '<store class="dataStore"><name>' + workspace + ':' + datastore + '</name>' \
+              '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
+              '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/>' \
+            '</store>' \
+            '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals>' \
+            '<overridingServiceSRS>false</overridingServiceSRS>' \
+            '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
+            '<attributes>' + attributes + '</attributes>' \
+          '</featureType>'
 
     return xml
 
@@ -404,8 +295,8 @@ def create_id_layer(request, filename, selection, datastore, workspace, srid=385
     :type request: object
     :param filename:
     :type filename: string
-    :param selection:
-    :type selection: string (list of IDs)
+    :param selection: string with list of IDs
+    :type selection: list
     :param datastore:
     :type datastore: string
     :param workspace: string
@@ -511,91 +402,54 @@ def build_xml_from_id(request, filename, selection, datastore, workspace, srid):
     if not request.user.is_authenticated:
         query = '{} {}'.format(query, ' and lt_license.commercial is false')  # only for test use on portal
 
-    attributes = '<attribute>' \
-                 '<name>Geometry</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>com.vividsolutions.jts.geom.Point</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Datentyp</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>site_id</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.Integer</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>centroid_x</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.math.BigDecimal</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>centroid_y</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.math.BigDecimal</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>srid</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.Integer</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>geometry_type</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>geom</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>com.vividsolutions.jts.geom.Point</binding>' \
-                 '</attribute>'
+    # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
+    attribute_list = [('Geometry', 0, 1, True, 'point'), ('Datentyp', 1, 1, False, 'string'),
+                      ('site_id', 0, 1, True, 'string'),
+                      ('centroid_x', 0, 1, True, 'bigDeci'), ('centroid_y', 0, 1, True, 'bigDeci'),
+                      ('srid', 0, 1, True, 'int'), ('geometry_type', 0, 1, True, 'string'),
+                      ('geom', 1, 1, False, 'point')]
 
-    xml = '<featureType><name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
-        '<namespace><name>' + workspace + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
-        '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
-        '</namespace>' \
-        '<title>' + filename + '</title>' \
-        '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
-        '<srs>EPSG:' + str(srid) + '</srs>' \
-        '<projectionPolicy>FORCE_DECLARED</projectionPolicy>' \
-        '<enabled>true</enabled>' \
-        '<advertised>true</advertised>' \
-        '<metadata>' \
-        '<entry key="elevation"><dimensionInfo><enabled>false</enabled></dimensionInfo></entry>' \
-        '<entry key="JDBC_VIRTUAL_TABLE"><virtualTable><name>' + filename + '</name><sql>' + query + '</sql>' \
-        '<escapeSql>false</escapeSql><keyColumn>id</keyColumn><geometry><name>Geometry</name><type>Point</type>' \
-        '<srid>' + str(srid) + '</srid></geometry><geometry><name>geom</name><type>Point</type>' \
-        '<srid>' + str(srid) + '</srid>' \
-        '</geometry></virtualTable></entry>' \
-        '<entry key="time"><dimensionInfo><enabled>false</enabled><defaultValue/></dimensionInfo></entry>' \
-        '<entry key="cachingEnabled">false</entry></metadata><store class="dataStore">' \
-        '<name>' + workspace + ':' + datastore + '</name>' \
-        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
-        '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" type="application/xml"/>' \
-        '</store>' \
-        '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals><overridingServiceSRS>false</overridingServiceSRS>' \
-        '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
-        '<attributes>' + attributes + '</attributes>' \
-        '</featureType>'
+    attributes = create_attributes(attribute_list)
+
+    xml = '<featureType>' \
+            '<name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
+            '<namespace>' \
+              '<name>' + workspace + '</name>' \
+              '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" href="' + LOCAL_GEOSERVER + \
+                '/rest/namespaces/' + workspace + '.xml" type="application/xml"/>' \
+             '</namespace>' \
+             '<title>' + filename + '</title>' \
+             '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
+            '<srs>EPSG:' + str(srid) + '</srs>' \
+            '<projectionPolicy>FORCE_DECLARED</projectionPolicy>' \
+            '<enabled>true</enabled>' \
+            '<advertised>true</advertised>' \
+            '<metadata>' \
+              '<entry key="elevation"><dimensionInfo><enabled>false</enabled></dimensionInfo></entry>' \
+              '<entry key="JDBC_VIRTUAL_TABLE">' \
+                '<virtualTable>' \
+                  '<name>' + filename + '</name>' \
+                  '<sql>' + query + '</sql>' \
+                  '<escapeSql>false</escapeSql>' \
+                  '<keyColumn>id</keyColumn>' \
+                  '<geometry><name>Geometry</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
+                  '<geometry><name>geom</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
+                '</virtualTable>' \
+              '</entry>' \
+              '<entry key="time"><dimensionInfo><enabled>false</enabled><defaultValue/></dimensionInfo></entry>' \
+              '<entry key="cachingEnabled">false</entry>' \
+            '</metadata>' \
+            '<store class="dataStore">' \
+              '<name>' + workspace + ':' + datastore + '</name>' \
+              '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" ' \
+                'href="' + LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' + datastore + '.xml" ' \
+                'type="application/xml"/>' \
+            '</store>' \
+            '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals>' \
+            '<overridingServiceSRS>false</overridingServiceSRS>' \
+            '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
+            '<attributes>' + attributes + '</attributes>' \
+           '</featureType>'
 
     return xml
 
@@ -664,97 +518,46 @@ def build_datalayer(request, filename, selection, datastore, workspace, srid):
     if not request.user.is_authenticated:
         query = '{} {}'.format(query, ' and lt_license.commercial is false')  # only for test use on portal
 
-    attributes = '<attribute>' \
-                 '<name>Date</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.sql.Date</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Time</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.sql.Time</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>value</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>java.math.BigDecimal</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>Geometry</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>com.vividsolutions.jts.geom.Point</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>id</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>java.lang.Integer</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>centroid_x</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.math.BigDecimal</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>centroid_y</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.math.BigDecimal</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>srid</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.Integer</binding>' \
-                 '</attribute><attribute>' \
-                 '<name>geometry_type</name>' \
-                 '<minOccurs>0</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>true</nillable>' \
-                 '<binding>java.lang.String</binding>' \
-                 '</attribute>' \
-                 '<attribute>' \
-                 '<name>geom</name>' \
-                 '<minOccurs>1</minOccurs>' \
-                 '<maxOccurs>1</maxOccurs>' \
-                 '<nillable>false</nillable>' \
-                 '<binding>com.vividsolutions.jts.geom.Point</binding>' \
-                 '</attribute>'
+    # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
+    attribute_list = [('Date', 0, 1, True, 'date'), ('Time', 0, 1, True, 'time'),
+                      ('value', 1, 1, False, 'bigDeci'), ('Geometry', 0, 1, True, 'point'),
+                      ('id', 1, 1, False, 'int'),
+                      ('centroid_x', 0, 1, True, 'bigDeci'), ('centroid_y', 0, 1, True, 'bigDeci'),
+                      ('srid', 0, 1, True, 'int'), ('geometry_type', 0, 1, True, 'string'),
+                      ('geom', 1, 1, False, 'point')]
 
-    xml = '<featureType><name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
-        '<namespace><name>' + workspace + '</name>' \
-        '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/namespaces/' + workspace + \
-        '.xml" type="application/xml"/>' \
-        '</namespace>' \
-        '<title>' + filename + '</title>' \
-        '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
-        '<srs>EPSG:' + str(srid) + '</srs>' \
-        '<projectionPolicy>FORCE_DECLARED</projectionPolicy>' \
-        '<enabled>true</enabled>' \
-        '<metadata><entry key="JDBC_VIRTUAL_TABLE"><virtualTable>' \
-        '<name>' + filename + '</name><sql>' + query + '</sql><escapeSql>false</escapeSql>' \
-        '<geometry><name>Geometry</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
-        '<geometry><name>geom</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
-        '</virtualTable></entry></metadata>' \
-        '<store class="dataStore"><name>' + workspace + ':' + datastore + '</name>' \
-        '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + '/datastores/' \
-        + datastore + '.xml" type="application/xml"/></store>' \
-        '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals><overridingServiceSRS>false</overridingServiceSRS>' \
-        '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
-        '<attributes>' + attributes + '</attributes>' \
-        '</featureType>'
+    attributes = create_attributes(attribute_list)
+
+    xml = '<featureType>' \
+            '<name>' + filename + '</name><nativeName>' + filename + '</nativeName>' \
+            '<namespace>' \
+              '<name>' + workspace + '</name>' \
+              '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/namespaces/' + workspace + '.xml" ' \
+                'type="application/xml"/>' \
+            '</namespace>' \
+            '<title>' + filename + '</title>' \
+            '<keywords><string>features</string><string>' + filename + '</string></keywords>' \
+            '<srs>EPSG:' + str(srid) + '</srs>' \
+            '<projectionPolicy>FORCE_DECLARED</projectionPolicy><enabled>true</enabled>' \
+            '<metadata>' \
+              '<entry key="JDBC_VIRTUAL_TABLE">' \
+                '<virtualTable>' \
+                  '<name>' + filename + '</name>' \
+                  '<sql>' + query + '</sql><escapeSql>false</escapeSql>' \
+                  '<geometry><name>Geometry</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
+                  '<geometry><name>geom</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
+                '</virtualTable>' \
+              '</entry>' \
+            '</metadata>' \
+            '<store class="dataStore">' \
+              '<name>' + workspace + ':' + datastore + '</name>' \
+              '<atom:link rel="alternate" href="' + LOCAL_GEOSERVER + '/rest/workspaces/' + workspace + \
+              '/datastores/' + datastore + '.xml" type="application/xml"/>' \
+            '</store>' \
+            '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals>' \
+            '<overridingServiceSRS>false</overridingServiceSRS>' \
+            '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>' \
+            '<attributes>' + attributes + '</attributes>' \
+          '</featureType>'
 
     return xml
