@@ -5,6 +5,7 @@ from AuthorizationManagement.models import *
 
 admin.site.register(PostgresReader)
 admin.site.register(PostgresOwner)
+admin.site.register(PostgresWriter)
 admin.site.register(Resource)
 admin.site.register(AccessRequest)
 admin.site.register(DeletionRequest)
@@ -15,31 +16,31 @@ admin.site.register(DeletionRequest)
     #model = Resource.owners.through
     #fields = ['user_id']
 
-    
- 
+
+
 class ResourceManager(AdminSite):
     """
     This is the subpage 'Manage Resources' only displayable to the admin
 
     """
     pass
-    #or methods         
+    #or methods
 resource_manager = AdminSite(name="ResourceManager")
 
 class ResourceAdmin(admin.ModelAdmin):
     """
-    Admin Model display for a Resource object entry in Database 
+    Admin Model display for a Resource object entry in Database
     """
     #inlines = [
     #    RowInline,
     #]
     list_display = ["name",
-                    "type", 
+                    "type",
                     "description"]
-    search_fields = ["name", 
-                     "type", 
+    search_fields = ["name",
+                     "type",
                      "description"]
-    
+
 
 
 resource_manager.register(Resource, ResourceAdmin)
@@ -60,7 +61,7 @@ class UserManager(AdminSite):
     This is the subpage 'Manage Users' also only displayable to the admin
     """
     pass
-    #or methods    
+    #or methods
 user_manager = AdminSite(name="UserManager")
 
 class UserAdmin(admin.ModelAdmin):
@@ -69,18 +70,18 @@ class UserAdmin(admin.ModelAdmin):
     Displays a list of fields and provides search through some of them.
     """
     list_display = ["username",
-                    "last_name", 
-                    "first_name", 
-                    "email", 
-                    "is_active", 
-                    "is_staff", 
-                    "last_login", 
+                    "last_name",
+                    "first_name",
+                    "email",
+                    "is_active",
+                    "is_staff",
+                    "last_login",
                     "date_joined"]
-    search_fields = ["username" , 
-                     "email", 
-                     "first_name", 
+    search_fields = ["username" ,
+                     "email",
+                     "first_name",
                      "last_name"]
-    
+
 user_manager.register(User, UserAdmin)
 # Text to put at the end of each page's <title>.
 user_manager.site_title = 'Site Admin'
@@ -90,4 +91,3 @@ user_manager.site_header = 'Users Manager'
 
 # Text to put at the top of the admin index page.
 user_manager.index_title = 'Administration'
-    

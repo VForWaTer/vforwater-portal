@@ -30,7 +30,7 @@ from vfwheron.models import TblMeta
 
 class PostgresReader(models.Model):
     """
-    Table that links Users to Data in Postgres DB reader rights
+    Table that links Users to Data in Postgres DB reader rights (read rights only)
     """
     psql_id = models.IntegerField(default=0)
     user_id = models.IntegerField(default=0)
@@ -38,7 +38,15 @@ class PostgresReader(models.Model):
 
 class PostgresOwner(models.Model):
     """
-    Table that links Users to Data in Postgres DB with owner rights
+    Table that links Users to Data in Postgres DB with owner rights (read, write and share data)
+    """
+    psql_id = models.IntegerField(default=0)
+    user_id = models.IntegerField(default=0)
+
+
+class PostgresWriter(models.Model):
+    """
+    Table that links Users to Data in Postgres DB with writer rights (read and write data)
     """
     psql_id = models.IntegerField(default=0)
     user_id = models.IntegerField(default=0)
