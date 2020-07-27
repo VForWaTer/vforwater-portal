@@ -1,6 +1,6 @@
 from django.core.mail import send_mail, mail_admins
 
-from AuthorizationManagement.models import MetaMap, User
+from author_manage.models import MetaMap, User
 from vfwheron.models import TblMeta
 
 
@@ -52,7 +52,7 @@ def addMetaMapEntry(uid, mid):
     """
     # check if entry already exists
     # if not add entry
-    
+
 
 
 def checkUser(check_uid):
@@ -67,8 +67,8 @@ def checkUser(check_uid):
     # wenn neuer benutzer angelegt wird
     # prüfe ob uid bereits in tabelle
     # wenn uid vorhanden lösche alle einträge damit
-    # danach kaskade in alle anderen uids 
-    # uids nach gültigkeit prüfen    
+    # danach kaskade in alle anderen uids
+    # uids nach gültigkeit prüfen
 
     # TODO check if user exists?
     # TODO check if user is admin

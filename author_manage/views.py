@@ -1,8 +1,9 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, _get_queryset #, render_to_response
+from django.template.loader import render_to_string
 from django.views import generic
 from django.contrib.auth.decorators import login_required
-from AuthorizationManagement.models import *
+from author_manage.models import *
 from django.core.files import File
 from django.conf import settings
 import os
@@ -26,7 +27,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
 from itertools import chain
-from AuthorizationManagement.apps import AuthorizationmanagementConfig
+from author_manage.apps import AuthorizationmanagementConfig
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ class HomeView(generic.View):
     """
     model = User
     def get(self, request):
+        print(' --- gefunden 2')
         """
 
         @param request:
@@ -47,7 +49,7 @@ class HomeView(generic.View):
         @rtype:
         """
         is_admin = request.user.is_staff
-        return render(request, 'AuthorizationManagement/home.html', {'is_admin': is_admin})
+        return render(request, 'author_manage/home.html', {'is_admin': is_admin})
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -57,7 +59,7 @@ class ProfileView(generic.ListView):
 
     """
     model = AccessRequest.objects.none()
-    template_name = 'AuthorizationManagement/profile.html'
+    template_name = 'author_manage/profile.html'
     context_object_name = 'requests_list'
     paginate_by = 4
 
@@ -117,7 +119,7 @@ class MyResourcesView(generic.ListView):
 
     """
     model = Resource
-    template_name = 'AuthorizationManagement/my-resources.html'
+    template_name = 'author_manage/my-resources.html'
     deletion_requested = Resource.objects.none()
 
     def get_queryset(self):
@@ -183,7 +185,7 @@ class SendDeletionRequestView(generic.View):
         if  request.user.is_staff or DeletionRequest.objects.filter(resource=res,sender = request.user).exists():
             logger.info("User %s tried to inconsistently send a deletion request for resource '%s' \n" % (request.user.username,res.name))
             #return redirect("/profile/my-resources")
-            return redirect('AuthorizationManagement:my-resources')
+            return redirect('author_manage:my-resources')
 
         # creates a deletion request with the given description
         req = DeletionRequest.objects.create(sender=request.user,
@@ -192,7 +194,7 @@ class SendDeletionRequestView(generic.View):
         message=req.description
 
         # notifies all the staff users
-        html_content = render_to_string('AuthorizationManagement/mail/delete-resource-request-mail.html', {'user' : request.user,
+        html_content = render_to_string('author_manage/mail/delete-resource-request-mail.html', {'user' : request.user,
                                                                                              'resource' : req.resource,
                                                                                              'request': req,
                                                                                              'message': message})
@@ -205,7 +207,7 @@ class SendDeletionRequestView(generic.View):
         logger.info("Deletion request for '%s' resource was sent by %s \n" % (res.name,request.user.username))
         logger.info("An email was sent to the Staff members from %s, Subject: Deletion Request for '%s' \n" % (request.user.username,res.name))
         #return redirect("/profile/my-resources")
-        return redirect('AuthorizationManagement:my-resources')
+        return redirect('author_manage:my-resources')
 
 
 # the view for canceling a deletion request
@@ -246,13 +248,13 @@ class CancelDeletionRequestView(generic.View):
         # redirects the current user to /profile/my-resources if the user is a staff user
         if request.user.is_staff :
             logger.info("User %s tried to cancel a deletion request for resource '%s' \n" % (request.user.username,res.name))
-            return redirect('AuthorizationManagement:my-resources')
+            return redirect('author_manage:my-resources')
 
         #requests_of_user = DeletionRequest.objects.filter(sender=request.user)
         request_to_delete = get_object_or_404(DeletionRequest,sender=request.user, resource=res)
 
         # notifies all the staff users
-        html_content = render_to_string('AuthorizationManagement/mail/deletion-request-canceled-mail.html', {'user' : request.user,
+        html_content = render_to_string('author_manage/mail/deletion-request-canceled-mail.html', {'user' : request.user,
                                                                                              'resource' : request_to_delete.resource,
                                                                                              'request': request_to_delete})
         text_content=strip_tags(html_content)
@@ -265,7 +267,7 @@ class CancelDeletionRequestView(generic.View):
         logger.info("An email was sent to the Staff members from %s, Subject: Cancel the Deletion Request for '%s' \n" % (request.user.username,request_to_delete.resource.name))
         request_to_delete.delete()
         #return redirect("/profile/my-resources")
-        return redirect('AuthorizationManagement:my-resources')
+        return redirect('author_manage:my-resources')
 
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
@@ -274,7 +276,7 @@ class ResourcesOverview(generic.ListView):
 
     """
     model = Resource.objects.all()
-    template_name = 'AuthorizationManagement/resources-overview.html'
+    template_name = 'author_manage/resources-overview.html'
     context_object_name = "resources_list"
     paginate_by = 5
 
@@ -335,7 +337,7 @@ class ResourcesOverviewSearch(ResourcesOverview):
             self.requested_resources = Resource.objects.filter(id__in=current_user_has_requested)
             return super(ResourcesOverviewSearch, self).get(request)
         else:
-            return redirect('AuthorizationManagement:resources-overview')
+            return redirect('author_manage:resources-overview')
                          #"/resources-overview"
 
     # returns a dictionary representing the template context.
@@ -393,7 +395,7 @@ class ApproveAccessRequest(generic.View):
         message=req.description
 
         # sends an email to sender of the request
-        html_content = render_to_string('AuthorizationManagement/mail/access-request-approved-mail.html', {'user' : request.user,
+        html_content = render_to_string('author_manage/mail/access-request-approved-mail.html', {'user' : request.user,
                                                                                              'resource' : req.resource,
                                                                                              'request': req,
                                                                                              'message': message})
@@ -406,7 +408,7 @@ class ApproveAccessRequest(generic.View):
         req.delete()
         logger.info("Request from %s to access '%s' was approved by %s \n" % (req.sender,req.resource.name,request.user.username))
         logger.info("An email was sent from %s to %s, Subject: Access request for '%s' approved \n" % (request.user.username,req.sender,req.resource.name))
-        return redirect('AuthorizationManagement:profile')
+        return redirect('author_manage:profile')
 
 # the view for denying an access request
 @method_decorator(never_cache, name='dispatch')
@@ -446,7 +448,7 @@ class DenyAccessRequest(generic.View):
 
 
         # sends an email to sender of this request
-        html_content = render_to_string('AuthorizationManagement/mail/access-request-denied-mail.html', {'user' : request.user,
+        html_content = render_to_string('author_manage/mail/access-request-denied-mail.html', {'user' : request.user,
                                                                                              'resource' : req.resource,
                                                                                              'request': req,
                                                                                              'message': message})
@@ -459,7 +461,7 @@ class DenyAccessRequest(generic.View):
         req.delete()
         logger.info("Request from %s to access '%s' was denied by %s \n" % (req.sender,req.resource.name,request.user.username))
         logger.info("An email was sent from %s to %s, Subject: Access Request for '%s' denied \n" % (request.user.username,req.sender,req.resource.name))
-        return redirect('AuthorizationManagement:profile')
+        return redirect('author_manage:profile')
 
 #the view for sending an access request
 @method_decorator(never_cache, name='dispatch')
@@ -493,7 +495,7 @@ class SendAccessRequestView(generic.View):
         # or if the user has already requested to access this resource
         if res.readers.filter(id= request.user.id).exists() or request.user.is_staff or AccessRequest.objects.filter(resource=res,sender = request.user).exists():
             logger.info("User %s tried to inconsistently send an access request for resource '%s' \n" % (request.user.username,res.name))
-            return redirect('AuthorizationManagement:resources-overview')
+            return redirect('author_manage:resources-overview')
 
         # creates an access request with the given description
         req=AccessRequest.objects.create(sender= request.user, resource=res, description=request.POST['descr'])
@@ -501,7 +503,7 @@ class SendAccessRequestView(generic.View):
 
 
         # notifies all the owners via email
-        html_content = render_to_string('AuthorizationManagement/mail/access-resource-mail.html', {'user' : request.user,
+        html_content = render_to_string('author_manage/mail/access-resource-mail.html', {'user' : request.user,
                                                                                              'resource' : res,
                                                                                              'request': req,
                                                                                              'message': message})
@@ -513,7 +515,7 @@ class SendAccessRequestView(generic.View):
         msg.send()
         logger.info("Access request for resource '%s' with id '%s' was sent by %s \n" % (res.name,pk,request.user.username))
         logger.info("An email was sent from %s to '%s' owners, Subject: Access Request for '%s' \n" % (request.user.username,res.name,res.name))
-        return redirect('AuthorizationManagement:resources-overview')
+        return redirect('author_manage:resources-overview')
 
 
 # the view for canceling an access request
@@ -555,7 +557,7 @@ class CancelAccessRequest(generic.View):
         request_to_delete.delete()
 
         # notifies all owners  via email
-        html_content=render_to_string('AuthorizationManagement/mail/access-request-canceled-mail.html', {'user' : request.user,
+        html_content=render_to_string('author_manage/mail/access-request-canceled-mail.html', {'user' : request.user,
                                                                                                     'resource' : request_to_delete.resource,
                                                                                                     'request': request_to_delete})
         text_content=strip_tags(html_content)
@@ -566,7 +568,7 @@ class CancelAccessRequest(generic.View):
         msg.send()
         logger.info("Access request for '%s' was canceled by %s \n" % (request_to_delete.resource.name,request.user.username))
         logger.info("An email was sent from %s to '%s' owners, Subject: Cancel the Access Request for '%s' \n" % (request.user.username,request_to_delete.resource.name,request_to_delete.resource.name))
-        return redirect('AuthorizationManagement:resources-overview')
+        return redirect('author_manage:resources-overview')
 
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
@@ -642,7 +644,7 @@ class PermissionEditingView(generic.ListView):
 
     """
     model = User = User.objects.none()
-    template_name='AuthorizationManagement/edit-permissions.html'
+    template_name= 'author_manage/edit-permissions.html'
     resource = Resource.objects.all()
     query = ''
     context_object_name = "user_list"
@@ -710,7 +712,7 @@ class PermissionEditingView(generic.ListView):
                 resource.readers.add(user)
                 AccessRequest.objects.filter(sender = user,resource=resource).delete()
 
-                html_content=render_to_string('AuthorizationManagement/mail/access-granted-mail.html', {'user' : request.user,
+                html_content=render_to_string('author_manage/mail/access-granted-mail.html', {'user' : request.user,
                                                                                                 'resource' : resource})
                 text_content=strip_tags(html_content)
                 email_to = [user.email]
@@ -727,7 +729,7 @@ class PermissionEditingView(generic.ListView):
                 no_rights_users+=1
                 resource.readers.remove(user)
 
-                html_content=render_to_string('AuthorizationManagement/mail/access-removed-mail.html', {'user' : request.user,
+                html_content=render_to_string('author_manage/mail/access-removed-mail.html', {'user' : request.user,
                                                                                                     'resource' : resource})
                 text_content=strip_tags(html_content)
                 email_to = [user.email]
@@ -749,7 +751,7 @@ class PermissionEditingView(generic.ListView):
                     resource.readers.add(user)
                     AccessRequest.objects.filter(sender = user,resource=resource).delete()
 
-                html_content=render_to_string('AuthorizationManagement/mail/ownership-granted-mail.html', {'user' : request.user,
+                html_content=render_to_string('author_manage/mail/ownership-granted-mail.html', {'user' : request.user,
                                                                                                     'resource' : resource})
                 text_content=strip_tags(html_content)
                 email_to = [user.email]
@@ -769,7 +771,7 @@ class PermissionEditingView(generic.ListView):
                 if int(userId) == self.request.user.id:
                     user_removed_own_right = True
 
-                html_content=render_to_string('AuthorizationManagement/mail/ownership-revoked-mail.html', {'user' : request.user,
+                html_content=render_to_string('author_manage/mail/ownership-revoked-mail.html', {'user' : request.user,
                                                                                                     'resource' : resource})
                 text_content=strip_tags(html_content)
                 email_to = [user.email]
@@ -781,10 +783,10 @@ class PermissionEditingView(generic.ListView):
                 logger.info("An email was sent from %s to '%s' , Subject: ownership revoked \n" % (request.user.username,user.username))
 
         if user_removed_own_right:
-            path_to_redirect = 'AuthorizationManagement:my-resources'
+            path_to_redirect = 'author_manage:my-resources'
         # All users on the page are removed and there is no search
         elif not('q' in self.request.GET and self.request.GET['q']) and no_rights_users == len(users_on_page):
-            path_to_redirect = 'AuthorizationManagement:my-resources'
+            path_to_redirect = 'author_manage:my-resources'
         else:
             path_to_redirect = utilities.get_relative_path_with_parameters(self.request)
         return redirect(path_to_redirect)
@@ -925,7 +927,7 @@ class DeleteResourceView(generic.View):
             logger.info("User %s tried to delete the resource '%s' without being an administrator" % (request.user,res.name))
             raise PermissionDenied
 
-        html_content = render_to_string('AuthorizationManagement/mail/resource-deleted-mail.html',
+        html_content = render_to_string('author_manage/mail/resource-deleted-mail.html',
                                         {'user': request.user,
                                          'resource': res,
                                          'message': request.POST['descr']})
@@ -946,7 +948,7 @@ class DeleteResourceView(generic.View):
 
         # deletes the resource
         res.delete()
-        return redirect('AuthorizationManagement:my-resources')
+        return redirect('author_manage:my-resources')
 
 # the view for approving a deletion request
 @method_decorator(never_cache, name='dispatch')
@@ -983,14 +985,14 @@ class ApproveDeletionRequest(generic.View):
 
         message = req.description # gets the description of the request
 
-        html_content1 = render_to_string('AuthorizationManagement/mail/delete-request-accepted-mail.html',
-                                        {'user': request.user,
+        html_content1 = render_to_string('author_manage/mail/delete-request-accepted-mail.html',
+                                         {'user': request.user,
                                          'resource': req.resource,
                                          'message': message})
         text_content1 = strip_tags(html_content1)
 
-        html_content2 = render_to_string('AuthorizationManagement/mail/resource-deleted-mail.html',
-                                        {'user': request.user,
+        html_content2 = render_to_string('author_manage/mail/resource-deleted-mail.html',
+                                         {'user': request.user,
                                          'resource': req.resource,
                                          'message': message})
         text_content2 = strip_tags(html_content2)
@@ -1025,7 +1027,7 @@ class ApproveDeletionRequest(generic.View):
 
         logger.info("Request from %s to delete '%s' accepted by %s \n" % (req.sender,req.resource.name,request.user.username))
 
-        return redirect('AuthorizationManagement:profile')
+        return redirect('author_manage:profile')
 
 # the view for denying a deletion request
 @method_decorator(never_cache, name='dispatch')
@@ -1064,7 +1066,7 @@ class DenyDeletionRequest(generic.View):
         message = request.POST['descr'] # gets the description of this request
 
         # notifies the sender of this request via email
-        html_content = render_to_string('AuthorizationManagement/mail/delete-request-denied-mail.html',
+        html_content = render_to_string('author_manage/mail/delete-request-denied-mail.html',
                                         {'user': request.user,
                                          'resource': req.resource,
                                          'request': req,
@@ -1080,7 +1082,7 @@ class DenyDeletionRequest(generic.View):
 
         # deletes the request
         req.delete()
-        return redirect('AuthorizationManagement:profile')
+        return redirect('author_manage:profile')
 
 
 # the view for adding a new resource
@@ -1109,7 +1111,7 @@ class AddNewResourceView(generic.View):
 
         else:
             logger.info("User %s tried to inconsistently create a resource \n" % request.user.username)
-        return redirect('AuthorizationManagement:my-resources')
+        return redirect('author_manage:my-resources')
 
     def get(self,request):
         form = AddNewResourceForm()
@@ -1120,7 +1122,8 @@ class AddNewResourceView(generic.View):
         args['form'] = form
         args['is_admin'] = self.request.user.is_staff
         args['user'] = self.request.user
-        return render_to_response('AuthorizationManagement/add-new-resource.html', args)
+        # return render_to_response('author_manage/add-new-resource.html', args) # not working in django > 3
+        return render(None, 'author_manage/add-new-resource.html', args)
 
 # the view for editing the name of the user
 @method_decorator(never_cache, name='dispatch')
@@ -1144,7 +1147,7 @@ class EditNameView(generic.View):
         if(request.POST['lastName'] and (not request.POST['lastName'].isspace())):
             request.user.last_name=request.POST['lastName']
             request.user.save()
-        return redirect('AuthorizationManagement:profile')
+        return redirect('author_manage:profile')
 
 
 # returns a sorted list of combination of the access requests and the deletion requests

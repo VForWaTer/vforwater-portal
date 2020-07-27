@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
-from AuthorizationManagement.models import *
+from author_manage.models import *
 
 
-admin.site.register(PostgresReader)
-admin.site.register(PostgresOwner)
-admin.site.register(PostgresWriter)
+admin.site.register(MetacatalogReader)
+admin.site.register(MetacatalogOwner)
+admin.site.register(MetacatalogMaintainer)
 admin.site.register(Resource)
 admin.site.register(AccessRequest)
 admin.site.register(DeletionRequest)

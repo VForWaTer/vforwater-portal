@@ -5,4 +5,4 @@ class AuthorizationmanagementConfig(AppConfig):
     """
     Configuration Class for Athorizationmanagement App
     """
-    name = 'AuthorizationManagement'
+    name = 'author_manage'

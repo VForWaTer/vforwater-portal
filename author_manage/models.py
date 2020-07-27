@@ -11,6 +11,7 @@ from django.core.validators import MaxLengthValidator
 # from wps_workflow.models import Workflow, Process
 
 from vfwheron.models import TblMeta
+from vfwheron.models import Entries
 
 # class CustomUser(User):
 #
@@ -28,28 +29,37 @@ from vfwheron.models import TblMeta
 #        proxy = True
 
 
-class PostgresReader(models.Model):
+class MetacatalogReader(models.Model):
     """
     Table that links Users to Data in Postgres DB reader rights (read rights only)
     """
     psql_id = models.IntegerField(default=0)
     user_id = models.IntegerField(default=0)
 
+    class Meta:
+        managed = True
 
-class PostgresOwner(models.Model):
+
+class MetacatalogOwner(models.Model):
     """
     Table that links Users to Data in Postgres DB with owner rights (read, write and share data)
     """
     psql_id = models.IntegerField(default=0)
     user_id = models.IntegerField(default=0)
 
+    class Meta:
+        managed = True
 
-class PostgresWriter(models.Model):
+
+class MetacatalogMaintainer(models.Model):
     """
     Table that links Users to Data in Postgres DB with writer rights (read and write data)
     """
     psql_id = models.IntegerField(default=0)
     user_id = models.IntegerField(default=0)
+
+    class Meta:
+        managed = True
 
 
 class Resource(models.Model):
@@ -58,12 +68,16 @@ class Resource(models.Model):
     """
     type = models.CharField(max_length=50)
     name = models.CharField(max_length=150)
-    description = models.TextField(max_length=250, blank=True,
-                                   validators=[MaxLengthValidator(250)])
+    description = models.TextField(max_length=250, blank=True, validators=[MaxLengthValidator(250)])
     creationDate = models.DateTimeField(default=datetime.now, blank=True)
     readers = models.ManyToManyField(User, related_name='reader')
     owners = models.ManyToManyField(User, related_name='owner')
+    maintainers = models.ManyToManyField(User, related_name='maintainer')
+    entry_id = models.ForeignKey(Entries, models.DO_NOTHING, blank=True, null=True)  # Foreign Key to vfwheron/models
     link = models.FileField(upload_to='', default=' ')
+
+    class Meta:
+        managed = True
 
 
 class Request(models.Model):
@@ -82,6 +96,7 @@ class Request(models.Model):
         This model will not be used to create any database table
         """
         abstract = True
+        managed = True
         unique_together = ('sender', 'resource',)  # This tuple must be unique when considered together
 
 
@@ -107,6 +122,8 @@ class MetaMap(models.Model):
     uid = models.ForeignKey(User, on_delete=models.CASCADE)
     mid = models.IntegerField()
     # mid = models.ManyToManyField(TblMeta, blank=True)  # models.IntegerField()
+    class Meta:
+        managed = True
 
 
 class WorkflowOwner(models.Model):
@@ -115,12 +132,18 @@ class WorkflowOwner(models.Model):
     uid = models.ForeignKey(User, on_delete=models.CASCADE)
     wfid = models.IntegerField()  # models.ForeignKey(Workflow, on_delete = models.CASCADE)
 
+    class Meta:
+        managed = True
+
 
 class WorkflowShared(models.Model):
     """
     """
     uid = models.ForeignKey(User, on_delete=models.CASCADE)
     wfid = models.IntegerField()  # models.ForeignKey(Workflow, on_delete = models.CASCADE)
+
+    class Meta:
+        managed = True
 
 
 class ProcessOwner(models.Model):
@@ -129,9 +152,19 @@ class ProcessOwner(models.Model):
     uid = models.ForeignKey(User, on_delete=models.CASCADE)
     pid = models.IntegerField()  # models.ForeignKey(Process, on_delete = models.CASCADE)
 
+    class Meta:
+        managed = True
+
 
 class RequestOwner(models.Model):
     """
     """
     uid = models.ForeignKey(User, on_delete=models.CASCADE)
     rid = models.IntegerField()  # models.ForeignKey(Request, on_delete = models.CASCADE)
+
+    class Meta:
+        managed = True
+
+    # def __str__(self):
+    #     user = User.objects.get(pk=self.uid)
+    #     return '{} <ID={}>'.format(user, self.uid)

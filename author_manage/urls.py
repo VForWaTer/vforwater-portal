@@ -1,13 +1,13 @@
 from django.urls import path
-# from AuthorizationManagement import views
+# from author_manage import views
 from django.urls.conf import re_path
-from AuthorizationManagement.admin import resource_manager
-from AuthorizationManagement.admin import user_manager
-from AuthorizationManagement.views import *
+from author_manage.admin import resource_manager
+from author_manage.admin import user_manager
+from author_manage.views import *
 
 # for security reasons all urls are accessible only for logged in users
 
-app_name = 'AuthorizationManagement'  # jm
+app_name = 'author_manage'  # jm
 
 urlpatterns = [
 
