@@ -1,6 +1,6 @@
 from django.core.mail import send_mail, mail_admins
 
-from author_manage.models import MetaMap, User
+from author_manage.models import User
 from vfwheron.models import TblMeta
 
 
@@ -73,7 +73,7 @@ def checkUser(check_uid):
     # TODO check if user exists?
     # TODO check if user is admin
     # TODO check if given uid is valid/unassigned
-    MetaMap.objects.filter(uid = check_uid).delete()
+    # MetaMap.objects.filter(uid = check_uid).delete()
 
 
 
@@ -93,7 +93,7 @@ def checkMeta(check_mid):
     # TODO check if meta exists
     # TODO check if given mid is valid/unassigned
 
-    MetaMap.objects.filter(mid = check_mid).delete()
+    # MetaMap.objects.filter(mid = check_mid).delete()
     midConsistency()
     uidConsistency()
 
@@ -111,24 +111,24 @@ def uidConsistency():
     # cycle durch user id alle einträge
     # get list of table
 
-    for entry in MetaMap.objects.all():
-        if not User.objects.filter(id = entry.uid).exists():
-            # delete all entries with uid
-            delList = MetaMap.objects.filter(uid = entry.uid).values_list('mid')
-            MetaMap.objects.filter(uid = entry.uid).delete()
-
-            # get all mids that are no longer present in MetaMap
-            diffList = list(set(delList) - set(MetaMap.objects.all().values_list('mid')))
-            for deleted in diffList:
-                # new table entry, owner is first admin
-                admin = User.objects.get(is_superuser = True).first()
-                MetaMap.objects.create(mid = deleted, uid = admin.id)
-                # TODO notify admin
-                send_mail('[v-for-water] A Ressource has been temp mapped', 'The Meta Ressource with id ' + deleted +
-                          ' has been temporarily mapped to you because it is no longer present in MetaMap. Please take action and reassign it to another user or consider deletion.',
-                          'system@v-for-water.de', admin.email,
-                          fail_silently = False)
-                # mail_admins(subject, message, fail_silently=False)
+    # for entry in MetaMap.objects.all():
+    #     if not User.objects.filter(id = entry.uid).exists():
+    #         # delete all entries with uid
+    #         delList = MetaMap.objects.filter(uid = entry.uid).values_list('mid')
+    #         MetaMap.objects.filter(uid = entry.uid).delete()
+    #
+    #         # get all mids that are no longer present in MetaMap
+    #         diffList = list(set(delList) - set(MetaMap.objects.all().values_list('mid')))
+    #         for deleted in diffList:
+    #             # new table entry, owner is first admin
+    #             admin = User.objects.get(is_superuser = True).first()
+    #             MetaMap.objects.create(mid = deleted, uid = admin.id)
+    #             # TODO notify admin
+    #             send_mail('[v-for-water] A Ressource has been temp mapped', 'The Meta Ressource with id ' + deleted +
+    #                       ' has been temporarily mapped to you because it is no longer present in MetaMap. Please take action and reassign it to another user or consider deletion.',
+    #                       'system@v-for-water.de', admin.email,
+    #                       fail_silently = False)
+    #             # mail_admins(subject, message, fail_silently=False)
 
 
 def midConsistency():
@@ -140,7 +140,7 @@ def midConsistency():
 
     # cycle durch alle meta id einträge
     # check ob mid valider eintrag ist
-
-    for entry in MetaMap.objects.all():
-        if not TblMeta.objects.filter(id = entry.mid).exists():
-            MetaMap.objects.filter(mid = entry.mid).delete()
+    #
+    # for entry in MetaMap.objects.all():
+    #     if not TblMeta.objects.filter(id = entry.mid).exists():
+    #         MetaMap.objects.filter(mid = entry.mid).delete()
