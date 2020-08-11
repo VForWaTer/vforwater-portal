@@ -132,8 +132,8 @@ window.cookieconsent.initialise({
                         <i class="fa fa-caret-down fa-fw"></i>
 
                         <div class="respo-dropdown-content" style="right:0">
-                            <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:profile' %}">{% trans "Profile" %}</a>
-                            <a class="respo-hover-blue "href="{% url 'AuthorizationManagement:resources-overview' %}">{% trans "Resource Overview" %}</a>
+                            <a class="respo-hover-blue "href="{% url 'author_manage:profile' %}">{% trans "Profile" %}</a>
+                            <a class="respo-hover-blue "href="{% url 'author_manage:resources-overview' %}">{% trans "Resource Overview" %}</a>
                             <!--<a class="respo-hover-blue " href="{% url 'vfwheron:logout' %}">{% csrf_token %}{% trans "  Logout" %}</a>-->
                             <!--<a class="respo-hover-blue " action="{% url 'vfwheron:logout' %}" method="post"> {% csrf_token %}-->
                             <!--<input class="respo-btn-simple " type="submit" name="logout" value='{% trans "  Logout like login"  %}' />-->

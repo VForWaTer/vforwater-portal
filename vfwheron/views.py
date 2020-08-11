@@ -1,11 +1,5 @@
-import base64
 import csv
-import decimal
-import hashlib
 import json
-import zipfile
-from builtins import filter
-from wsgiref.util import FileWrapper
 
 import requests
 from pyzip import PyZip
@@ -15,22 +9,16 @@ import urllib
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
-from django.core.cache import cache
-from django.db import connections
 from django.http import StreamingHttpResponse
 from django.http.response import JsonResponse, HttpResponse, Http404
-from django.http import FileResponse
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
-from django.template import RequestContext
-from django.contrib.auth.admin import UserAdmin
 from future.builtins import isinstance
 
 from heron.settings import LOCAL_GEOSERVER, DEBUG
-from io import StringIO, BytesIO
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer, \
     test_geoserver_env
@@ -41,7 +29,9 @@ mpl.use('Agg')
 from .query_functions import get_bbox_from_data
 from datetime import datetime, date
 import time
-
+# import vfwheron.filter_metacatalog_dev as filter_mcdev
+# from .filter_metacatalog_dev import FilterMethods, Menu, build_id_list
+# from .filter import FilterMethods, Menu, build_id_list, Table
 from .filter import FilterMethods, Menu, build_id_list, Table
 from .models import TblMeta, TblVariable, TblData, Entries
 
@@ -104,6 +94,8 @@ class HomeView(TemplateView):
     Template View to bring the necessary variables for the startup to the template
     """
     template_name = 'vfwheron/home.html'
+
+    # Before you make migrations
     Menu = Menu().get_menu()
     JSON_Menu = json.dumps(Menu['client'])
     data_layer = 'testlayer'  # 'default_layer_prod'
@@ -114,6 +106,7 @@ class HomeView(TemplateView):
 
     store = 'teststore'  # 'new_vforwater_gis'
     workspace = 'testworkspace'  # 'CAOS_update'
+
     try:
         test_geoserver_env(store, workspace)
     except:
@@ -158,11 +151,9 @@ class HomeView(TemplateView):
             self.data_layer = 'Error: Found no geoserver!'
             print('Still no geoserver')
 
-        try:
-            data_ext = get_bbox_from_data()
-        except:
-            data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
-            logger.warning('Data Extend cannot be loaded in views.py. Using fixed values.')
+        data_ext = get_bbox_from_data()
+
+        print(' + + +  ++ + self.JSON_Menu: ', self.JSON_Menu)
         return {'dataExt': data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
                 'messages': messages.get_messages(self.request)}
 
@@ -269,7 +260,7 @@ class MenuView(TemplateView):
             field = []
             field_name = {}
             for i in Menu().menu_list:
-                for j in i.column_dict.items():
+                for j in i.db_alias_child.items():
                     fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
                     field.append(fieldpath)
                     field_name[fieldpath] = j[1]
@@ -363,7 +354,7 @@ class DatasetDownloadView(TemplateView):
             """
             catalog = {}
             for table in Menu.menu_list:
-                for i in table.column_dict:
+                for i in table.db_alias_child:
                     if table.path != '':
                         query = TblMeta.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
                     else:

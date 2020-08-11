@@ -6,6 +6,51 @@
     --color_Parent: #D9EFFD;
 }
 
+.switch-field {
+    display: flex;
+    margin-bottom: 36px;
+    overflow: hidden;
+}
+
+.switch-field input {
+    position: absolute !important;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    width: 1px;
+    border: 0;
+    overflow: hidden;
+}
+
+.switch-field label {
+    background-color: lightgrey;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    padding: 8px 16px;
+    margin-right: -1px;
+   /* border: 1px solid rgba(0, 0, 0, 0.1);*/
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.switch-field label:hover {
+    cursor: pointer;
+}
+
+.switch-field input:checked + label {
+    background-color: var(--color_Item);
+    box-shadow: none;
+}
+
+.switch-field label:first-of-type {
+    border-radius: 14px 0 0 14px;
+}
+
+.switch-field label:last-of-type {
+    border-radius: 0 14px 14px 0;
+}
+
 .filter-btn-block{
     border:none;
     display:inline-block;

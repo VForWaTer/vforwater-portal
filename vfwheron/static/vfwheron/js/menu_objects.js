@@ -62,20 +62,35 @@ function childBuilder(child, shortChild, shortParent) {
         inputName = "Input"+child.name;
         childHTML =
             `<div class='dropdown'>
-                <button onclick='dDMFunction("${child.name}")' 
+                <button onclick='dDMFunction("${child.name}")'
                     class='filter-btn-block respo-hover-blue nav child ${shortParent} ${shortChild}'>${child.name}
                 </button>
                 <div id='${child.name}' class='dropdown-content'>
-                    <input type='text' placeholder='Search...' 
-                    id='${inputName}'onkeyup='dDMFilterFunction("${child.name}", 
+                    <input type='text' placeholder='Search...'
+                    id='${inputName}'onkeyup='dDMFilterFunction("${child.name}",
                     "${inputName}")' >${itemHTML}
                 </div>
             </div>`
     }
-/* build special childs if type is defined */
+    /* build special childs if type is defined */
     else if (child.hasOwnProperty("type")) {
-/* build slider if type is slider */
         switch (child.type) {
+            /* build three-way-button if type is boolean */
+            case "bool":
+                console.log('c h i l d : ', child)
+                console.log('c h i l d : ', child.I1.total)
+                console.log('c h i l d : ', child.I1.total + child.I2.total)
+                console.log('shortChild: ', shortChild)
+                console.log('shortParent: ', shortParent)
+                if (child.I1.total + child.I2.total == 0){break;}
+                itemHTML = boolBuilder(child, shortChild, shortParent);
+                childHTML =
+                    `<div id='${child.name}'>
+                        <h6 class='respo-hover-blue child ${shortParent} ${shortChild}'>
+                        </h6>${child.name}&emsp;<i class='count s'>(${child.total})</i>
+                    <div id='sliderwildcard'>${itemHTML} </div></div>`;
+                break;
+            /* build slider if type is slider */
             case "slider":
                 if (child.selectable_min.toString() =='None' || child.selectable_max.toString()=='None'){break;}
                 itemHTML = sliderBuilder(child, shortChild, shortParent);
@@ -86,7 +101,7 @@ function childBuilder(child, shortChild, shortParent) {
                     <div id='sliderwildcard'>${itemHTML} </div></div>`;
                 break;
             // }
-/* build calender if type is date */
+            /* build calender if type is date */
             case "date":
                 itemHTML = dateBuilder(child, shortChild, shortParent);
                 // childHTML = itemHTML
@@ -96,8 +111,8 @@ function childBuilder(child, shortChild, shortParent) {
                         </h6>${child.name}&emsp;<i><div class='count d'>(${child.total})</div></i>${itemHTML}
                     </div>`;
                 break;
-        // }
-/* build draw box if type is draw */
+            // }
+            /* build draw box if type is draw */
             case "draw":
                 itemHTML = drawBuilder(child, shortChild, shortParent);
                 childHTML=
@@ -133,14 +148,41 @@ function dateBuilder(child, shortChild, shortParent) {
     return itemHTML;
 }
 
-/* Prepair location in web site to build there a slider to select num values after loading of web site */
+/* Build three connected radio buttons for false, true or no choice */
+function boolBuilder(child, shortChild, shortParent) {
+    let i, itemHTML = "";
+    console.log(' +- child: ', child)
+    let shortItem, cItem;
+    for (i = 1; i <= 2; i++) {
+        shortItem = 'I'+ i.toString();
+        console.log('shortItem: ', shortItem)
+        cItem = child[shortItem];
+        console.log('cItem: ', cItem)
+        itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
+            onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","${shortItem}")'>${cItem.name}&emsp;
+            <i><span class='count'>(${cItem.total})</span></i>
+            </a>`;
+    }
+    return itemHTML
+    // TODO: Would be nicer to have a button box for booleans. Though the following doesn't work...
+    /*return `<div class='switch-field' name='${child.name}'>
+        <input type="radio" class='${shortParent} ${shortChild} I1' onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","I1")'/>
+        <label>${child.I1.name}</label>
+        <input type="radio" checked/>
+        <label>None</label>
+        <input type="radio" class='${shortParent} ${shortChild} I2' onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","I2")'/>
+        <label>${child.I2.name}</label>
+        </div>`;  // respective field for false and true is accessed by 0 and 1 in id*/
+}
+
+/* Prepare location in web site to build there a slider to select num values after loading of web site */
 function sliderBuilder(child, shortChild, shortParent) {
     return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}'
         minV='${ child.selectable_min.toString()}' maxv='${child.selectable_max.toString()}'></div>
         <div class="respo-row-padding">
-            <div class="respo-half"><input id="slide-0${shortParent}${shortChild}" title="min-${child.name}" 
+            <div class="respo-half"><input id="slide-0${shortParent}${shortChild}" title="min-${child.name}"
                 class="respo-input respo-hover-blue" style="width: 80px;" placeholder="One" type="number"></div>
-            <div class="respo-half"><input id="slide-1${shortParent}${shortChild}" title="max-${child.name}" 
+            <div class="respo-half"><input id="slide-1${shortParent}${shortChild}" title="max-${child.name}"
                 class="respo-input respo-hover-blue" style="width: 80px;" placeholder="two" type="number"></div>
         </div>`;  // respective field for min and max is accessed by 0 and 1 in id
 }
@@ -160,9 +202,10 @@ function itemBuilder(child, shortChild, shortParent) {
     for (i = 1; i <= ctot; i++) {
         shortItem = 'I'+ i.toString();
         cItem = child[shortItem];
-        itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}' 
+        console.log('cItem: ', cItem)
+        itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
             onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","${shortItem}")'>${cItem.name}&emsp;
-            <i><div class='count'>(${cItem.total})</div></i>
+            <i><span class='count'>(${cItem.total})</span></i>
             </a>`;
     }
     return itemHTML

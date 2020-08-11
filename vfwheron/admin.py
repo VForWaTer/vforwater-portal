@@ -93,16 +93,16 @@ admin.site.register(models.LtUser, LtUserAdmin)
 #
 # admin.site.register(models.User, LocalUser)
 
-from vfwheron.models import Basiseinzugsgebiet
-class BasiseinzugsgebietForm(ModelForm):
-    class Meta:
-        model = models.Basiseinzugsgebiet
-        fields = ['langname', 'area', 'wasserkoer']
-
-class Basiseinzugsgebiet(admin.ModelAdmin):
-    form = BasiseinzugsgebietForm
-    # search_fields = ['langname', 'length']
-    list_display = ['langname', 'area']
-
-admin.site.register(models.Basiseinzugsgebiet, Basiseinzugsgebiet)
+# from vfwheron.models import Basiseinzugsgebiet
+# class BasiseinzugsgebietForm(ModelForm):
+#     class Meta:
+#         model = models.Basiseinzugsgebiet
+#         fields = ['langname', 'area', 'wasserkoer']
+#
+# class Basiseinzugsgebiet(admin.ModelAdmin):
+#     form = BasiseinzugsgebietForm
+#     # search_fields = ['langname', 'length']
+#     list_display = ['langname', 'area']
+#
+# admin.site.register(models.Basiseinzugsgebiet, Basiseinzugsgebiet)
 

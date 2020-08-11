@@ -117,7 +117,7 @@ INSTALLED_APPS = [
     # 'wps_workflow.apps.wps_workflowConfig',
     # 'django_crontab',
     # 'django.contrib.admindocs',
-    'AuthorizationManagement.apps.AuthorizationmanagementConfig',
+    'author_manage.apps.AuthorizationmanagementConfig',
 ]
 
 MIDDLEWARE = [
