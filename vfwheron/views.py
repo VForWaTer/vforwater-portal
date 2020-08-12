@@ -110,7 +110,7 @@ class HomeView(TemplateView):
     try:
         test_geoserver_env(store, workspace)
     except:
-        print('no geoserver')
+        print('\033[91mno geoserver\033[0m')
 
     # dataExt = get_bbox_from_data()
     # def set_user_menu(self):
@@ -300,7 +300,7 @@ class MenuView(TemplateView):
             id_layer = 'ID_layer'  # + user
             if get_layer(id_layer, HomeView.store, HomeView.workspace):
                 delete_layer(id_layer, HomeView.store, HomeView.workspace)
-            create_id_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
+            create_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
             m_ids = meta_ids['all_filters']
             # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
             # existing layers
@@ -409,7 +409,7 @@ class DatasetDownloadView(TemplateView):
             layer_name = 'XML_' + id
             srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
 
-            create_id_layer(request, layer_name, id, HomeView.store, HomeView.workspace)
+            create_layer(request, layer_name, id, HomeView.store, HomeView.workspace)
 
             # use GEOSERVER GML
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' + \
