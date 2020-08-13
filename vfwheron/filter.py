@@ -254,13 +254,10 @@ class Menu:
         menu_map = {}  # menu for server
         count = 0
         for table in self.menu_list:
-            print('table: ', table)
             whole_menu = Table(table, self.min_amount, self.user_query_set)
             # print('whole_menu: ', whole_menu)
             json_table = whole_menu.json_child['client']
-            print('json_table: ', json_table)
             map_table = whole_menu.json_child['server']
-            print('map_table: ', map_table)
             # map_table = whole_menu.map_child
             if json_table['total'] >= self.min_amount:
                 count = count + 1
@@ -281,8 +278,6 @@ class Menu:
 
                 map_dict.update(map_table['C'])
                 menu_map.update({'P' + str(count): map_dict})
-        print('menu_map: ', menu_map)
-        print('json_menu: ', json_menu)
 
         return {'client': json_menu, 'server': menu_map}
 
@@ -381,8 +376,8 @@ class Table:
             # query_set = list(self.table_name.objects.select_related().distinct().exclude(**excluder).
             #                  values_list(columns, flat=True))
             query_set = list(self.table_name.objects.select_related().distinct().values_list(columns, flat=True))
-            print('+ query_set a: ', query_set)
-            print('+ query_set b: ', self.table_name.objects.values_list(columns, flat=True))
+            # print('+ query_set a: ', query_set)
+            # print('+ query_set b: ', self.table_name.objects.values_list(columns, flat=True))
             # print('+ excluder: ', excluder)
             if len(query_set) > 0:
                 self.child[columns] = query_set
@@ -418,7 +413,6 @@ class Table:
             map_grandchilds = {}
             recursive = False
             if grand_child in self.child and grand_child is not None:
-                print('___build something from grand_child: ', grand_child)
                 # build different menus according to the type defined in the model:
                 if grand_child in self.filter_type:
                     switch = self.filter_type[grand_child]
@@ -440,7 +434,6 @@ class Table:
                 else:
                     result = self.__build_default_json(grand_child)
 
-                print('--- result: ', result)
                 if recursive:
                     counter = result['total']
                     json_all_childs = result['json']
@@ -476,8 +469,6 @@ class Table:
         :rtype:
         """
         print('\033[34m' + '+++')
-        print('grand_child:', grand_child)
-        print('min_amount: ', self.min_amount)
         all_grandchilds = {}
         map_grandchilds = {}
         counter = 0
@@ -499,9 +490,6 @@ class Table:
                     all_grandchilds.update({'I' + str(counter): grandchild_dict})
                     map_grandchilds.update({'I' + str(counter): map_grandchild_dict})
         # if there are no values for the submenu, return nothing
-        print('json', all_grandchilds)
-        print('total', total)
-        print('counter', counter)
         print('server', map_grandchilds)
         print({'json': all_grandchilds, 'total': counter, 'server': map_grandchilds})
         print('---', '\033[0m')

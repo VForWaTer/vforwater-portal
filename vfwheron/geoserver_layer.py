@@ -209,7 +209,7 @@ def __build_new_layer_xml(request, filename, datastore, workspace, srid, selecti
             'title as "Beschreibung", name as "Datentyp", ' \
             'comment as "Kommentar", ' \
             'embargo as "Embargo", ' \
-            'entries.id as "eID"' \
+            'entries.id ' \
             'FROM entries LEFT JOIN variables on entries.variable_id = variables.id'
         #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
     if selection is not None:
@@ -220,7 +220,7 @@ def __build_new_layer_xml(request, filename, datastore, workspace, srid, selecti
     # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
     attribute_list = [('Geometry', 0, 1, True, 'point'), ('Beschreibung', 1, 1, False, 'string'),
                       ('Datentyp', 1, 1, False, 'string'), ('Kommentar', 0, 1, True, 'string'),
-                      ('Embargo', 1, 1, False, 'bool'), ('eID', 1, 1, False, 'int')]
+                      ('Embargo', 1, 1, False, 'bool')]#, ('id', 1, 1, False, 'int')]
 
     attributes = __create_attributes(attribute_list)
     xml = '<featureType>' \
@@ -241,6 +241,7 @@ def __build_new_layer_xml(request, filename, datastore, workspace, srid, selecti
                 '<virtualTable><name>' + filename + '</name>' \
                   '<sql>' + query + '</sql>' \
                   '<escapeSql>false</escapeSql>' \
+                  '<keyColumn>id</keyColumn>' \
                   '<geometry><name>Geometry</name><type>Point</type><srid>' + str(srid) + '</srid></geometry>' \
                 '</virtualTable>' \
               '</entry>' \

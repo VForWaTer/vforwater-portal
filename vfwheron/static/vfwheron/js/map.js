@@ -342,6 +342,137 @@ function create_map() {
             $(".infos").html("");
         })*/
 
+// Popup related functions
+    function buildPagi(idDict, page) {
+        let pagi = '';
+        let nDat = 16; // number of Datasets shown at once
+        if (Object.keys(idDict).length < nDat) {
+            for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                }
+            }
+        } else {
+            // TODO: Show only 16 pages to select in pagination and arrows
+            //  Pagination durch Django:
+            //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
+            //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
+
+            /* console.log(' + +  idDict: ', idDict)
+             let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
+             // let pagiObj = {1:[]}; // very nice, but useless for the button!
+             let pagiStr; // very nice, but useless for the button!
+             for (let j = 1; j <= nPagi; j++) {
+                 let minP = nDat * (j - 1);
+                 let maxP = nDat * j - 1;
+                 // pagiObj[j] = [];
+                 console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
+                 pagi = '';
+                 for (let k = minP; k <= maxP; k++) {
+                     pagiObj[j].push(idDict[k])
+                 }
+             }
+             console.log('pagiObj: ', pagiObj)
+             let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
+                         'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
+             pagi = prePagi*/
+            for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi += '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                }
+            }
+        }
+        return pagi;
+    }
+
+    function popupContent(ids, page) {
+        if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
+            page = JSON.parse("[" + ids + "]").slice(-1);
+            ids = JSON.parse("[" + ids + "]").slice(0, -1);
+        }
+        if (page && page != 'none') document.getElementById("pagi" + page).classList.add("loadspin");
+        let popupTableBeforeMeta = '<table id="popupTable"><td>';
+        let popUpText = popupTableBeforeMeta +
+            '<style>table tr:nth-child(even){background-color:#c8ebee;}</style>' +
+            '<table id="metaTable">';
+
+        // request info from server
+        $.ajax({
+            url: DEMO_VAR + "/vfwheron/menu",
+            dataType: 'json',
+            data: {
+                short_info: JSON.stringify(ids),
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+        })
+            .done(function (json) {
+                document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
+                // content.innerHTML = buildPopupText(json, popUpText);
+                if (page && page != 'none') {
+                    document.getElementsByClassName("active")[0].classList.remove("active");
+                    document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
+                    document.getElementById("pagi" + page).classList.add("active");
+                }
+
+            })
+            .fail(function (e) {
+                console.log('fehler: ', e)
+                metaData_Overlay.setPosition(undefined);
+                document.getElementById('popup-content').remove("loader")
+                alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
+                    "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
+                    "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
+                    "Är Ufro net duerchgefouert ginn!\nدرخواست شما نمی تواند اجرا شود!")
+            })
+        // });
+
+    }
+
+
+    function buildPopupText(json, popUpText) {
+        // console.log('ist da')
+        let valueLen;
+        let buttonId = [];
+        // loop over "properties" dict with metadata, build columns
+        for (let j in json) {
+            // let values = eval('properties["' + j + '"]');
+            let values = json[j];
+            valueLen = values.length;
+            popUpText += `<tr><td><b>${j}</b></td>`;
+            // loop over dict values and build rows
+            for (let k = 0; k < valueLen; k++) {
+                popUpText += `<td>${values[k]}</td>`;
+                if (j.toLowerCase() == 'id') {
+                    buttonId.push(values[k])
+                }
+            }
+            popUpText += '</tr>'
+        }
+        popUpText += '<tr><td><b></b></td>';
+        // build buttons for each dataset
+        for (let k = 0; k < valueLen; k++) {
+            popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
+                'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
+                'title="Show more information about the dataset."></b></a>' +
+                // 'title="Attention! Loading the preview might take a while."></b></a>' +
+                '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
+                'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
+                'title="Put dataset to session datastore"></b></a></td>';
+        }
+
+        let popupTableAfterMeta = popUpText + '</table>';
+        // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+        return popupTableAfterMeta //+ img_preview;
+    }
+
 }
 
 function buildPagi(idDict, page) {

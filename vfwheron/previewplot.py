@@ -18,7 +18,7 @@ from bokeh.palettes import Oranges9, Spectral11
 from django.db import connections
 from numpy import mean
 
-from vfwheron.models import TblMeta, TblData
+from vfwheron.models import TblMeta, TblData, Entries
 
 import redis
 import pandas as pd
@@ -28,30 +28,33 @@ from wps_gui.models import WpsResults
 
 
 def DB_load_label(ID):
-    label = TblMeta.objects.filter(id=ID).values_list('variable__variable_name',
-                                                      'variable__variable_symbol',
-                                                      'variable__unit__unit_abbrev')
+    label = Entries.objects.filter(id=ID).values_list('variable__name',
+                                                      'variable__symbol',
+                                                      'variable__unit__symbol')
     return label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
 
 
-def DB_load_data(ID):
-    # TODO: Use django ORM instead of pure sql
-    # connect to database and fetch day(x), daily average, daily min, daily max, # of daily values
-    cursor = connections['default'].cursor()
-    cursor.execute("SELECT date_trunc('day', tstamp) as date, avg(value), "
-                   "min(value), max(value), count(*) "
-                   "FROM tbl_data "
-                   "WHERE meta_id = %s "
-                   "GROUP BY date_trunc('day', tstamp)"
-                   "ORDER BY date ASC;" % ID)
-    dbresult = cursor.fetchall()
-    cursor.close()
-    result = list(zip(*dbresult))
-    # y1 is for the main plot -> min and  max of the day of the day,
-    # y2 for the secondary plot with min and max in each group for each day
-    axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
-    return {'data': result, 'axis': axis}
-
+def __DB_load_data(ID):
+    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+    if datatable == 'timeseries':
+        # TODO: Use django ORM instead of pure sql
+        # connect to database and fetch day(x), daily average, daily min, daily max, # of daily values
+        cursor = connections['default'].cursor()
+        cursor.execute("SELECT date_trunc('day', tstamp) as date, avg(value), "
+                       "min(value), max(value), count(*) "
+                       "FROM {0} "
+                       "WHERE entry_id = {1} "
+                       "GROUP BY date_trunc('day', tstamp)"
+                       "ORDER BY date ASC;".format(datatable, ID))
+        dbresult = cursor.fetchall()
+        cursor.close()
+        result = list(zip(*dbresult))
+        # y1 is for the main plot -> min and  max of the day of the day,
+        # y2 for the secondary plot with min and max in each group for each day
+        axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
+        return {'data': result, 'axis': axis}
+    else:
+        print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 def get_bokeh_standard(DBdata, label=""):
     source = ColumnDataSource({'date': DBdata['data'][0], 'y': DBdata['data'][1],
@@ -233,7 +236,7 @@ def get_bokeh_direction(DBdata, ti):
     return {'div': div, 'script': script}
 
 
-def DB_load_directiondata(id, ti):
+def __DB_load_directiondata(id, ti):
     # TODO: Use django ORM instead of pure sql
     cursor = connections['default'].cursor()
     # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
@@ -319,6 +322,7 @@ def get_preview(id):
         img = r.get("preview_{}".format('b' + id))
     except:
         use_redis = False
+
     if use_redis:
         if img is None:
             in_cache = False
@@ -330,11 +334,13 @@ def get_preview(id):
         label = DB_load_label(id)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            DBdata = DB_load_directiondata(id, ti)
+            DBdata = __DB_load_directiondata(id, ti)
             # img = get_bokeh_standard(DBdata, label)
             img = get_bokeh_direction(DBdata, ti)
         else:
-            DBdata = DB_load_data(id)
+            print('else')
+            DBdata = __DB_load_data(id)
+            print('else2')
             img = get_bokeh_standard(DBdata, label)
 
         if use_redis:
