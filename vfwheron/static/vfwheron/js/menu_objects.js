@@ -11,7 +11,8 @@ let parent;
 let SELECTION = {};
 
 // TODO: To improve performance onclick try to build variables P1C1I1, P1C1T2,... here and assign an id to the
-// TODO: respective value. In 'updateCounts' you can access the values then directly with the ID; But the following isn't working
+//  respective value. In 'updateCounts' you can access the values then directly with the ID; But the following
+//  isn't working
 // Predefine variables to assign IDs for the filter elements that will be changed on every filter selection:
 // for (let p in JSMENU){
 //     for (let m = 1; m <= JSMENU[p].total; m++) {
@@ -77,11 +78,6 @@ function childBuilder(child, shortChild, shortParent) {
         switch (child.type) {
             /* build three-way-button if type is boolean */
             case "bool":
-                console.log('c h i l d : ', child)
-                console.log('c h i l d : ', child.I1.total)
-                console.log('c h i l d : ', child.I1.total + child.I2.total)
-                console.log('shortChild: ', shortChild)
-                console.log('shortParent: ', shortParent)
                 if (child.I1.total + child.I2.total == 0){break;}
                 itemHTML = boolBuilder(child, shortChild, shortParent);
                 childHTML =
@@ -151,13 +147,10 @@ function dateBuilder(child, shortChild, shortParent) {
 /* Build three connected radio buttons for false, true or no choice */
 function boolBuilder(child, shortChild, shortParent) {
     let i, itemHTML = "";
-    console.log(' +- child: ', child)
     let shortItem, cItem;
     for (i = 1; i <= 2; i++) {
         shortItem = 'I'+ i.toString();
-        console.log('shortItem: ', shortItem)
         cItem = child[shortItem];
-        console.log('cItem: ', cItem)
         itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
             onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","${shortItem}")'>${cItem.name}&emsp;
             <i><span class='count'>(${cItem.total})</span></i>
@@ -202,7 +195,6 @@ function itemBuilder(child, shortChild, shortParent) {
     for (i = 1; i <= ctot; i++) {
         shortItem = 'I'+ i.toString();
         cItem = child[shortItem];
-        console.log('cItem: ', cItem)
         itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
             onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","${shortItem}")'>${cItem.name}&emsp;
             <i><span class='count'>(${cItem.total})</span></i>

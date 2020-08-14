@@ -202,23 +202,25 @@ class MenuView(TemplateView):
             # where_var = 'tbl_data.meta_id = ' + str(work_dataset)
             if isinstance(work_dataset, int): work_dataset = [work_dataset]
             if request.user.is_authenticated:
-                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name',
-                                                           'variable__variable_abbrev',
-                                                           'variable__unit__unit_abbrev').filter(pk__in=work_dataset)
+                requested_dataset = Entries.objects.values('id', 'variable__name',
+                                                           'variable__symbole',
+                                                           'variable__unit').filter(pk__in=work_dataset)
             else:
                 # from_var += ', lt_license'
                 # where_var += ' AND lt_license.commercial is false'
-                requested_dataset = TblMeta.objects.values('id', 'variable__variable_name',
-                                                           'variable__variable_abbrev',
-                                                           'variable__unit__unit_abbrev').filter(
-                    license__commercial=False, pk__in=work_dataset)
+                requested_dataset = Entries.objects.values('id', 'variable__name', 'variable__symbol',
+                                                           'variable__unit__symbol').filter(
+                    embargo=False, pk__in=work_dataset)
 
             dataset_dict = {}
-            for i in requested_dataset:
-                dataset_dict.update({i['id']: {'name': i['variable__variable_name'],
-                                               'abbr': i['variable__variable_abbrev'],
-                                               'unit': i['variable__unit__unit_abbrev'],
-                                               'type': 'timeseries',
+            datatype = Entries.objects.filter(pk__in=work_dataset).values_list('datasource__datatype__name',
+                                                                               flat=True)[0]
+            # TODO: Might not work when different datatypes are selected. Check when different datatypes in DB
+            for dataset in requested_dataset:
+                dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
+                                               'abbr': dataset['variable__symbol'],
+                                               'unit': dataset['variable__unit__symbol'],
+                                               'type': datatype,
                                                'start': '',
                                                'end': '',
                                                'pickle': 0}})  # when pickled add id of wps db object here
@@ -239,11 +241,12 @@ class MenuView(TemplateView):
 
         if 'short_info' in request.GET:
             ids = json.loads(request.GET.get('short_info'))
-            field = ['variable__variable_name', 'site__site_name']
-            field_name = {'variable__variable_name': 'Variable Name', 'site__site_name': 'Site name'}
+            field = ['title', 'variable__name', 'embargo']
+            field_name = {'title': 'Titel', 'variable__name': 'Variablenname', 'embargo': 'Embargo'}
             preview = defaultdict(list)
+
             for k in ids:
-                row_name = TblMeta.objects.filter(id=str(k)).values(*field)
+                row_name = Entries.objects.filter(id=str(k)).values(*field)
                 counter = 0
                 for i in row_name[0]:
                     if counter == 1:
@@ -269,7 +272,7 @@ class MenuView(TemplateView):
             preview = defaultdict(list)
             for k in ids:
                 preview['id'].append(k)
-                imgtag = TblMeta.objects.filter(id=str(k)).values(*field)
+                imgtag = Entries.objects.filter(id=str(k)).values(*field)
 
                 for i in imgtag[0]:
                     # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
@@ -427,6 +430,7 @@ class LoginView(View):
     """
 
     """
+
     def post(self, request):
         """
 
@@ -496,6 +500,7 @@ class DevLoginView(TemplateView):
         context = {}
         return render(request, 'vfwheron/login.html', {'context': context})
 
+
 class HelpView(TemplateView):
     """
 
@@ -555,6 +560,7 @@ class FailedLoginView(View):
     """
     View for failed logins
     """
+
     @staticmethod
     def get(request):
         print('failed login view get')
