@@ -62,20 +62,28 @@ def __DB_load_data(ID):
 
 
 def get_bokeh_standard(DBdata, label=""):
-    # To get a discontinuous line add 'nan' when a time step is missing.
+    # use first five time steps to estimate resolution/step size of data
     stepsize = []
     steps = 0
     while steps < 5:
         stepsize.append(DBdata['data'][0][steps+1] - DBdata['data'][0][steps])
         steps += 1
+
+    # check if data is continuous. If not write position of missing values in noDataPos
     stepsize = min(stepsize)
     datalength = len(DBdata['data'][0])
-    endline = []
+    noDataPos = []
     for steps in range(1, datalength):
         if DBdata['data'][0][steps] - DBdata['data'][0][steps-1] > stepsize:
-            endline.append(steps-1)
-    if len(endline) > 0:
-        for position in endline[::-1]:
+            noDataPos.append(steps-1)
+
+    nanIndata = False
+    # To get a discontinuous line add 'nan' when a time step is missing.
+    whiteLine = ()
+    if len(noDataPos) > 0:
+        nanIndata = True
+        whiteLine = tuple([float('nan')] * datalength)
+        for position in noDataPos[::-1]:
             DBdata['data'][0] = DBdata['data'][0][: position+1] + \
                                 (DBdata['data'][0][position]+stepsize, DBdata['data'][0][position+1]-stepsize,) + \
                                 DBdata['data'][0][position+1:]
@@ -88,6 +96,7 @@ def get_bokeh_standard(DBdata, label=""):
             DBdata['data'][2] = DBdata['data'][2][: position+1] + (bandbef, bandaft,) + DBdata['data'][2][position+1:]
             DBdata['data'][3] = DBdata['data'][3][: position+1] + (bandbef, bandaft,) + DBdata['data'][3][position+1:]
             DBdata['data'][4] = DBdata['data'][4][: position+1] + (0, 0,) + DBdata['data'][4][position+1:]
+            whiteLine = whiteLine[: position+1] + (bandbef, bandaft,) + whiteLine[position+1:]
 
     source = ColumnDataSource({'date': DBdata['data'][0], 'y': DBdata['data'][1],
                                'ymin': DBdata['data'][2], 'ymax': DBdata['data'][3],
@@ -116,7 +125,9 @@ def get_bokeh_standard(DBdata, label=""):
                         color=['lightblue', 'lightblue'], legend_label="min & max values")
     mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
                              fill_color='lightblue', fill_alpha=0.5))
-
+    # plot white line to hide small band for no data areas
+    if nanIndata:
+        mainplot.line(x=DBdata['data'][0], y=whiteLine, line_width=2, line_color='white', line_cap='round')
     # plot bars for the number of values in each group as secondary 'by'plot
     mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=DBdata['axis']['y2max'])
     bin_width = DBdata['data'][0][1] - DBdata['data'][0][0]
@@ -370,9 +381,7 @@ def get_preview(id):
             # img = get_bokeh_standard(DBdata, label)
             img = get_bokeh_direction(DBdata, ti)
         else:
-            print('else')
             DBdata = __DB_load_data(id)
-            print('else2')
             img = get_bokeh_standard(DBdata, label)
 
         if use_redis:
