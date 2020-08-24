@@ -31,15 +31,14 @@ class ResourceAdmin(admin.ModelAdmin):
     """
     Admin Model display for a Resource object entry in Database
     """
-    #inlines = [
-    #    RowInline,
-    #]
-    list_display = ["name",
-                    "type",
-                    "description"]
-    search_fields = ["name",
-                     "type",
-                     "description"]
+    list_display = ["type"]
+    search_fields = ["type"]
+    # list_display = ["name",
+    #                 "type",
+    #                 "description"]
+    # search_fields = ["name",
+    #                  "type",
+    #                  "description"]
 
 
 

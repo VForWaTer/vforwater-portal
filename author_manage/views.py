@@ -65,7 +65,7 @@ class ProfileView(generic.ListView):
     context_object_name = 'requests_list'
     paginate_by = 4
 
-    def get(self,request):
+    def get(self, request):
         """
 
         @param request:
@@ -130,8 +130,10 @@ class MyResourcesView(generic.ListView):
         @return:
         @rtype:
         """
-        current_user = Owner.objects.get(id=self.request.user.id)
-        return current_user.owner.all()
+        current_user = User.objects.all().select_related('profile')
+        return current_user
+        # current_user = CustomUser.objects.get(id=self.request.user.id)
+        # return current_user.owner.all()
 
     #returns a dictionary representing the template context.
     def get_context_data(self, **kwargs):
