@@ -86,100 +86,116 @@ class Profile(models.Model):
     checkedAssociation = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 #     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    metacatalogUser = models.ForeignKey(Persons, models.SET_NULL, blank=True, null=True)
+    metacatalogPerson = models.ForeignKey(Persons, models.SET_NULL, blank=True, null=True)
 #     resources = models.ManyToManyField(Resource, related_name='profile_resources')
 
     def __str__(self):
         return '{} <ID={}>'.format(self.user, self.id)
 
 
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
-
-# class UserRole(models.Model):
-#     user = models.ManyToManyField(Profile)
-#     resource = models.ForeignKey(Resource, models.DO_NOTHING)
-
-
-def make_association(user_object, person_entry, user_profile):
+def __assign_data(user_obj, user_profile):
     """
 
-    :param user_object:
-    :param person_entry:
+    :param user_obj:
+    :param person_obj:
     :param user_profile:
     """
     lookup = dict.fromkeys(['author', 'custodian', 'distributor', 'originator', 'owner', 'pointOfContact',
                             'principalInvestigator', 'resourceProvider', 'editor', 'rightsHolder'], 'owner')
     lookup.update(dict.fromkeys(['processor', 'publisher', 'collaborator'], 'maintainer'))
-    lookup.update(dict.fromkeys(['sponsor', 'user', 'coAuthor', 'contributor', 'stakeholder'], 'reader'))
+    lookup.update(dict.fromkeys(['sponsor', 'user', 'coAuthor', 'contributor', 'stakeholder', 'funder',
+                                 'mediator'], 'reader'))
 
-    matching_persons = person_entry.values_list('pk', flat=True)
-    for idx, person in enumerate(matching_persons):
-        if Profile.objects.filter(metacatalogUser_id=person).exists():
-            print('\033[91mAsk user if (s)he is the same as already linked with!\033[0m')
-        else:
-            # associate user with entry person in profile:
-            user_profile.metacatalogUser = person_entry[idx]
-            user_profile.save()
+    last_name = user_obj.last_name
+    first_name = user_obj.first_name
 
-    # set roles in author_manage for data of this person and create resources:
-    role_list = person_entry.values_list('nmpersonsentries__relationship_type__name', flat=True)
-    entry_list = person_entry.values_list('nmpersonsentries__entry_id', flat=True)
-    datatype_list = person_entry.values_list('nmpersonsentries__entry__datasource__datatype__name', flat=True)
-    for idx, role in enumerate(role_list):
-        user_role = lookup[role]
-        new_resource = Resource(type=datatype_list[idx], link='/', dataEntry_id=entry_list[idx])
-        new_resource.save()
-        if user_role == 'owner':
-            new_resource.owners.add(user_object.id)
-        elif user_role == 'maintainer':
-            new_resource.maintainers.add(user_object.id)
-        elif user_role == 'reader':
-            new_resource.readers.add(user_object.id)
-        else:
-            print('\033[91mError in author_manage models: Unexpected user role!\033[0m')
-        new_resource.save()
-    # TODO: Implement something to ask user if (s)he is the user from person_entry!
-    #  Test with several users with same name.
-    print('\033[91mImplement something to ask user if (s)he is the user from person_entry!\033[0m')
+    try:
+        person_obj = Persons.objects.filter(first_name=first_name, last_name=last_name)
+        matching_persons = person_obj.values_list('pk', flat=True)
+        for idx, person in enumerate(matching_persons):
+            if Profile.objects.filter(metacatalogPerson_id=person).exists():
+                print('\033[91mAsk user if (s)he is the same as already linked with!\033[0m')
+            else:
+                # associate user with entry person in profile:
+                user_profile.metacatalogPerson = person_obj[idx]
+                user_profile.save()
 
-def check_association(sender, user: str, request, **kwargs):
+        # set roles in author_manage for data of this person and create resources:
+        role_list = person_obj.values_list('nmpersonsentries__relationship_type__name', flat=True)
+        entry_list = person_obj.values_list('nmpersonsentries__entry_id', flat=True)
+        datatype_list = person_obj.values_list('nmpersonsentries__entry__datasource__datatype__name', flat=True)
+        for idx, role in enumerate(role_list):
+            user_role = lookup[role]
+            new_resource, created = Resource.objects.get_or_create(type=datatype_list[idx], link='/',
+                                                                   dataEntry_id=entry_list[idx])
+            if user_role == 'owner':
+                new_resource.owners.add(user_obj.id)
+            elif user_role == 'maintainer':
+                new_resource.maintainers.add(user_obj.id)
+            elif user_role == 'reader':
+                new_resource.readers.add(user_obj.id)
+            else:
+                print('\033[91mError in author_manage models: Unexpected user role!\033[0m')
+            new_resource.save()
+        # TODO: Implement something to ask user if (s)he is the user from person_obj!
+        #  Test with several users with same name.
+        print('\033[91mImplement something to ask user if (s)he is the user from person_obj!\033[0m')
+    except:
+        # no user to connect with
+        print('No user to connect entries with auth in metacatalog.')
+        pass
+
+    finally:
+        user_profile.checkedAssociation = True
+        user_profile.save()
+
+
+def __assign_person(user) -> object:
+    user_obj = User.objects.get(username=user)
+    last_name = user_obj.last_name
+    first_name = user_obj.first_name
+
+    try:
+        # try to get a person with the same name as the users name:
+        person_obj = Persons.objects.filter(first_name=first_name, last_name=last_name)
+        # TODO: what to do when there a several persons with this name?
+        user_profile, created = Profile.objects.update_or_create(user=user_obj,
+                                                                 defaults={'metacatalogPerson': person_obj},)
+        # TODO: what to do with a person without data? Check on every login if there is data, or do nothing
+        #  (in first case checkedAssociation is True, in second case do not fill checkedAssociation).
+        #  By not filling checkedAssociation the second case is implemented.
+    except:
+        # no person to connect with
+        user_profile = Profile(user=user_obj)
+        user_profile.save()
+        print('No user to connect entries with auth in metacatalog.')
+    return user_profile
+
+
+def check_profile(sender, user: str, request, **kwargs):
     """
-    On first time log in check if there are data entries from a person with name user
+    On first time log in check if there is a profile and if there are data entries from a person with name user in the
+    profile.
     :param sender:
     :param user:
     :param request:
     :param kwargs:
     """
-    print('sender: ', type(sender))
-    print('sender: ', type(request))
-    user_profile = Profile.objects.get(user__username=user)
-    if not user_profile.checkedAssociation:
-        user_object = User.objects.get(username=user)
-        last_name = user_object.last_name
-        first_name = user_object.first_name
-        if first_name and last_name:
-            try:
-                person_entry = Persons.objects.filter(first_name=first_name, last_name=last_name)
-                make_association(user_object, person_entry, user_profile)
-            except:
-                # no user to connect with
-                print('No user to connect entries with auth in metacatalog.')
-                pass
-            finally:
-                print('profile.checkedAssociation: ', user_profile.checkedAssociation)
-                user_profile.checkedAssociation = True
-                user_profile.save()
-                # print('profile.checkedAssociation2: ', user_profile.checkedAssociation)
-        else:
-            print('\033[91mYour user needs first and last name to associate user with data.\033[0m')
+    user_obj = User.objects.get(username=user)
+    if Profile.objects.filter(user__username=user).exists():  # if user has a profile
+        user_profile = Profile.objects.get(user__username=user)
+        if user_profile.checkedAssociation:  # Profile should be filled, so there is nothing to do.
+            pass
+        elif user_profile.metacatalogPerson_id:  # no Association for data checked, so check if there is data now.
+            # TODO: implement this! __assign_data()
+            __assign_data(user_obj, user_profile)
+            pass
+        else:  # only user in profile, so assign_person first
+            __assign_data(user_obj, user_profile)
+            #     print('\033[91mYour user needs first and last name to associate user with data.\033[0m')
+    else:  # there is no profile at all for this user
+        user_profile = __assign_person(user)
+        __assign_data(user_obj, user_profile)
 
 
-user_logged_in.connect(check_association)
+user_logged_in.connect(check_profile)
