@@ -33,7 +33,7 @@ import time
 # from .filter_metacatalog_dev import FilterMethods, Menu, build_id_list
 # from .filter import FilterMethods, Menu, build_id_list, Table
 from .filter import FilterMethods, Menu, build_id_list, Table
-from .models import TblMeta, TblVariable, TblData, Entries
+from .models import TblVariable, TblData, Entries
 
 import logging
 import os
@@ -137,14 +137,15 @@ class HomeView(TemplateView):
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
+
         self.data_layer = self.set_layer_name()
 
         try:
             if not get_layer(self.data_layer, self.store, self.workspace):
                 create_layer(self.request, self.data_layer, self.store, self.workspace)
             else:
-                # TODO: don't do that in production! That's just for development to make sure geoserver is updated after
-                # restart of django
+                # TODO: don't do that in production! That's just for development to make sure geoserver is updated
+                #  after restart of django
                 delete_layer(self.data_layer, self.store, self.workspace)
                 create_layer(self.request, self.data_layer, self.store, self.workspace)
         except:
@@ -153,7 +154,6 @@ class HomeView(TemplateView):
 
         data_ext = get_bbox_from_data()
 
-        print(' + + +  ++ + self.JSON_Menu: ', self.JSON_Menu)
         return {'dataExt': data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
                 'messages': messages.get_messages(self.request)}
 
@@ -185,55 +185,73 @@ class MenuView(TemplateView):
             menu = request.session.get('menu')
 
         # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(work_dataset, min_time=0, max_time=0):
+        def build_selection(requested_id, min_time=0, max_time=0):
             """
-            function distinguishes only between default user (non-commercial data) and rest (all data)
-            :param work_dataset:
+            function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
+            :param requested_id:
             :param min_time:
             :param max_time:
             :return:
             """
-            data_definition = {}
+            error_dict = {}
+            dataset_dict = {}
+
+            def error_list(requested_data: list, result_data: list):
+                result_list = []
+                for result_dict in result_data:
+                    result_list.append(result_dict['id'])
+
+                missing_data = list(set(requested_data).symmetric_difference(set(result_list)))
+                return {'error': {'text': 'no access', 'id': missing_data}}
+
             # if min_time != 0:
             #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
             # if max_time != 0:
             #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
             # from_var = 'public.tbl_data'
-            # where_var = 'tbl_data.meta_id = ' + str(work_dataset)
-            if isinstance(work_dataset, int): work_dataset = [work_dataset]
-            if request.user.is_authenticated:
-                requested_dataset = Entries.objects.values('id', 'variable__name',
-                                                           'variable__symbole',
-                                                           'variable__unit').filter(pk__in=work_dataset)
-            else:
-                # from_var += ', lt_license'
-                # where_var += ' AND lt_license.commercial is false'
-                requested_dataset = Entries.objects.values('id', 'variable__name', 'variable__symbol',
-                                                           'variable__unit__symbol').filter(
-                    embargo=False, pk__in=work_dataset)
+            # where_var = 'tbl_data.meta_id = ' + str(requested_id)
 
-            dataset_dict = {}
-            datatype = Entries.objects.filter(pk__in=work_dataset).values_list('datasource__datatype__name',
-                                                                               flat=True)[0]
-            # TODO: Might not work when different datatypes are selected. Check when different datatypes in DB
-            for dataset in requested_dataset:
+            if isinstance(requested_id, int): requested_id = [requested_id]
+
+            # first get datasets without embargo, open for for everyone
+            result_dataset = Entries.objects.\
+                values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
+                       'datasource__datatype__name').filter(pk__in=requested_id, embargo=False)
+
+            # check if the user wanted more and is authenticated. If yes check if (s)he has access and get the rest
+            if len(requested_id) > len(result_dataset) and request.user.is_authenticated:
+                user_embargo_datasets = request.session['datasets']
+                accessible_embargo_datasets = list(set(requested_id) & set(user_embargo_datasets))
+                embargo_dataset = Entries.objects.\
+                    values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
+                           'datasource__datatype__name').filter(pk__in=accessible_embargo_datasets)
+                result_dataset = result_dataset | embargo_dataset
+
+                # check if there is still data not accessible and create error for these
+                if len(requested_id) > len(result_dataset):
+                    error_dict = error_list(requested_id, list(result_dataset))
+
+            elif len(requested_id) > len(result_dataset) and not request.user.is_authenticated:
+                error_dict = error_list(requested_id, list(result_dataset))
+
+            for dataset in result_dataset:
                 dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
-                                               'abbr': dataset['variable__symbol'],
-                                               'unit': dataset['variable__unit__symbol'],
-                                               'type': datatype,
-                                               'start': '',
-                                               'end': '',
-                                               'pickle': 0}})  # when pickled add id of wps db object here
+                                                     'abbr': dataset['variable__symbol'],
+                                                     'unit': dataset['variable__unit__symbol'],
+                                                     'type': dataset['datasource__datatype__name'],
+                                                     'start': '',
+                                                     'end': '',
+                                                     'pickle': 0}})  # when pickled add id of wps db object here
 
             # TODO: Need timestamp in name to see if different selection
-            return dataset_dict
+            return {'data': dataset_dict, 'error': error_dict}
 
         if 'workspaceData' in request.GET:
             min_time = request.GET.get('minTime')
             max_time = request.GET.get('maxTime')
-            # prepare work_dataset differently for list and single value to use in build_selection
+            # prepare dataset_id differently for list and single value to use in build_selection
             result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
-            return JsonResponse({'workspaceData': result})
+            return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
         if 'preview' in request.GET:
             # plot with bokeh

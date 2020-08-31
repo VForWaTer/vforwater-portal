@@ -31,6 +31,15 @@ from author_manage.apps import AuthorizationmanagementConfig
 logger = logging.getLogger(__name__)
 
 
+@receiver(user_logged_in)  # function to collect user data - especially resources - on login
+def get_user_embargo_resources(request, user, **kwargs):
+    maintainer_set = Resource.objects.filter(maintainers=user, embargo=True)
+    reader_set = Resource.objects.filter(readers=user, embargo=True)
+    owner_set = Resource.objects.filter(owners=user, embargo=True)
+    datasets = reader_set | maintainer_set | owner_set
+    request.session['datasets'] = list(datasets.values_list('dataEntry_id', flat=True))
+
+
 # TODO: document
 @method_decorator(login_required, name='dispatch')
 class HomeView(generic.View):
@@ -38,7 +47,6 @@ class HomeView(generic.View):
 
     """
     model = User
-
     def get(self, request):
         """
 
@@ -51,7 +59,7 @@ class HomeView(generic.View):
         return render(request, 'author_manage/home.html', {'is_admin': is_admin})
 
 
-@method_decorator(never_cache, name='dispatch')
+# @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
 class ProfileView(generic.ListView):
     """
@@ -131,6 +139,8 @@ class MyResourcesView(generic.ListView):
         reader_set = Resource.objects.filter(readers=self.request.user)
         deletion_set = Resource.objects.filter(deletionrequest__sender=self.request.user)
         access_set = Resource.objects.filter(accessrequest__sender=self.request.user)
+        # What about:
+        # users = User.objects.all().select_related('profile')
         current_user = owner_set | maintainer_set | reader_set | deletion_set | access_set
         return current_user.all()
 
