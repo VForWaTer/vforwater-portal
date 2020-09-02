@@ -304,7 +304,7 @@ function mapSelectFunction(shortParent, shortChild, selected_Id) {
 // TODO: When you decide to remove the wms map, use showAllPointsOnMap
 function showAllPointsOnMap(){
    $.ajax({
-       url: DEMO_VAR + "/vfwheron/menu",
+       url: DEMO_VAR + "/home/menu",
        dataType: 'json',
        data: {
            all_datasets: 'True',
@@ -348,9 +348,9 @@ function reset_filter(){
 }
 
 /* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
-function showSelectionOnMap(selection) {
+async function showSelectionOnMap(selection) {
     $.ajax({
-        url: DEMO_VAR + "/vfwheron/menu",
+        url: DEMO_VAR + "/home/menu",
         dataType: 'json',
         data: {
             filter_selection_map: JSON.stringify(selection),
@@ -369,9 +369,9 @@ function showSelectionOnMap(selection) {
 }
 
 /* send json Object with selection to server and get int(in a json) with amount of items back */
-function getCountFromServer(selection) {
+async function getCountFromServer(selection) {
     $.ajax({
-        url: DEMO_VAR+"/vfwheron/menu",
+        url: DEMO_VAR+"/home/menu",
         dataType   : 'json',
         data: {
             filter_selection: JSON.stringify(selection),

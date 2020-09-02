@@ -352,7 +352,7 @@ function moreInfoModal(id) {
     document.getElementById("mod_prev").classList.add("loader");
     // TODO: If the first ajax finishes first there is an additional table id="popupTable". Check why and avoid it!
     $.ajax({
-        url: DEMO_VAR + "/vfwheron/menu",
+        url: DEMO_VAR + "/home/menu",
         dataType: 'json',
         data: {
             show_info: JSON.stringify([id]),
@@ -372,7 +372,7 @@ function moreInfoModal(id) {
 
     // load preview image parallel to metadata
     $.ajax({
-        url: DEMO_VAR + "/vfwheron/menu",
+        url: DEMO_VAR + "/home/menu",
         datatype: 'image/png;base64',
         // datatype: 'html',
         data: {
@@ -402,7 +402,7 @@ function moreInfoModal(id) {
 function workspace_dataset(id) {
     if (id !== 'null') {
         $.ajax({
-            url: DEMO_VAR + "/vfwheron/menu",
+            url: DEMO_VAR + "/home/menu",
             datatype: 'json',
             data: {
                 workspaceData: id,
@@ -433,7 +433,7 @@ function workspace_dataset(id) {
 function show_preview(id) {
     document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
     $.ajax({
-        url: DEMO_VAR + "/vfwheron/menu",
+        url: DEMO_VAR + "/home/menu",
         datatype: 'image/png;base64',
         data: {
             preview: id,

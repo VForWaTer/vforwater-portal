@@ -502,7 +502,7 @@ function menuItemListener(link) {
 
         case "View":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
+                url: DEMO_VAR + "/home/menu",
                 dataType: 'json',
                 data: {
                     show_info: JSON.stringify([id]),
@@ -516,7 +516,7 @@ function menuItemListener(link) {
             break;
         // case "Plot":
         //     $.ajax({
-        //         url: DEMO_VAR + "/vfwheron/menu",
+        //         url: DEMO_VAR + "/home/menu",
         //         datatype: 'json',
         //         data: {
         //             preview: id,
@@ -532,7 +532,7 @@ function menuItemListener(link) {
         //     break;
         case "Downloadcsv":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     csv: id,
@@ -548,7 +548,7 @@ function menuItemListener(link) {
             break;
         case "Downloadshp":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 method: 'GET',
                 xhrFields: {
@@ -569,7 +569,7 @@ function menuItemListener(link) {
             break;
         case "Downloadxml":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     xml: id,
@@ -638,7 +638,7 @@ function menuItemListener(link) {
             //     }
             // })
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
+                url: DEMO_VAR + "/home/menu",
                 datatype: 'json',
                 data: {
                     preview: id,

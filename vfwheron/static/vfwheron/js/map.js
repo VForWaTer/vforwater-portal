@@ -36,7 +36,7 @@ function clusterStyle(feature) {
 
 //Create own base layer
 function create_map() {
-    const GEO_SERVER = DEMO_VAR + "/vfwheron/geoserver";
+    const GEO_SERVER = DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
     let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
     wfsLayerName = document.getElementById('data_layer').value;
@@ -410,7 +410,7 @@ function create_map() {
 
         // request info from server
         $.ajax({
-            url: DEMO_VAR + "/vfwheron/menu",
+            url: DEMO_VAR + "/home/menu",
             dataType: 'json',
             data: {
                 short_info: JSON.stringify(ids),
