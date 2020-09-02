@@ -409,6 +409,10 @@ function workspace_dataset(id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
             success: function (json) {
+                if (json['error']['message']) {
+                    // TODO: handle errors/data selected but without access
+                    console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')
+                }
                 if (sessionStorage.getItem("dataBtn")) {
                     let stored = JSON.parse(sessionStorage.getItem("dataBtn"));
                     $.each(json['workspaceData'], function (key, value) {
@@ -444,7 +448,7 @@ function show_preview(id) {
             });
         })
         .fail(function (e) {
-            console.log('fehler: ', e)
+            console.error('fehler: ', e)
         })
 }
 

@@ -360,7 +360,7 @@ function showSelectionOnMap(selection) {
             zoomToExt.extent = json['dataExt'];
             wfsLayerName = json['ID_layer'];
             selectedIdsFilter = json['IDs'];
-            wfsPointSource.clear();
+            wfsPointSource.refresh();
             // document.getElementById()
             // clusterLayer.changed()
         },
@@ -378,14 +378,14 @@ function getCountFromServer(selection) {
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
         success: function (json) {
-            updateCounts(json);
+            _updateCounts(json);
         },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
 /* updates the numbers for each item */
-function updateCounts(json) {
+function _updateCounts(json) {
     let parent, child, item, itemHTML, jpc;
     for (parent in json) {
         child = '';

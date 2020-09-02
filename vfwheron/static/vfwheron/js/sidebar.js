@@ -467,7 +467,6 @@ function setModalValues(btnName, btnValues) {
     // for (let i = 0; i < dropDInputs.length; i++) {
     //
     //         // dDInput = dropDInputs[i].selectedOptions;
-    //     //     console.log('dDInput: ', dDInput)
     //     //     if (dDInput.length > 1) {
     //     //         for (let j = 0; j < dDInput.length; j++) {
     //     //             valueList.push(dDInput[j].value)
@@ -488,13 +487,11 @@ function setModalValues(btnName, btnValues) {
  * @param (html) link HTML Code of the clicked link
  */
 function menuItemListener(link) {
-    console.log('link: ', link)
     let wpsToOpen = "";
     let service = {};
     let id = taskItemInContext.getAttribute("data-id");
     let btnName = taskItemInContext.getAttribute('btnname');
 
-    console.log('id: ', id)
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
     popup.classList.add(popActive);
@@ -648,11 +645,8 @@ function menuItemListener(link) {
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post
                 success: function (requestResult) {
-                    console.log('got a result: ', requestResult)
                     // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
                     // content.innerHTML = result.div;
-                    // console.log('content: ', content)
-                    // console.log('content: ', content.innerHTML)
                     // let bokehResultScript;
                     if ('html' in requestResult) {
                         document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
@@ -663,7 +657,6 @@ function menuItemListener(link) {
                         bokehResultScript.text = requestResult.script;
                         document.head.appendChild(bokehResultScript);
                     }
-                    // console.log('document: ', document)
                     // popcloser.classList.remove('respo-hide');
                     // positionPopup(popup);
                     let rModal = document.getElementById("resultModal");
@@ -711,11 +704,7 @@ $(function () {
 // TODO: remove popup when clicking outside of popup
 /*
 window.onclick = function(event) {
-    console.log(' - + click + - : ', event)
-    console.log(' - + click + - target: ', event.target)
-    console.log(' - + click + - parentNode: ', event.parentNode)
     if (event.target == popup) {
-        console.log('click inside')
         // popup.style.display = "none";
         popup.classList.remove(popActive);
     }
