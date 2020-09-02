@@ -48,7 +48,7 @@ from django.db import connections
 logger = logging.getLogger(__name__)
 
 
-def get_dataset(self, request, **kwargs):
+def get_dataset(request):
     """
 
     :param self:
@@ -62,7 +62,8 @@ def get_dataset(self, request, **kwargs):
     """
     m_id = request.POST.get('meta_id')
 
-    data = TblData.objects.get(meta=m_id).value
+    data = TblData.objects.get(meta=m_id)
+    print('~~~~ data: ', data)
     result = "test"
 
     return result
@@ -98,19 +99,20 @@ class HomeView(TemplateView):
     # Before you make migrations
     Menu = Menu().get_menu()
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'testlayer'  # 'default_layer_prod'
+    data_layer = 'testlayer_meta20b'  # 'default_layer_prod'
 
     # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    store = 'teststore'  # 'new_vforwater_gis'
-    workspace = 'testworkspace'  # 'CAOS_update'
+    store = 'teststore_meta20b'  # 'new_vforwater_gis'
+    workspace = 'testworkspace_meta20b'  # 'CAOS_update'
+    unlocked_embargo = []
 
     try:
         test_geoserver_env(store, workspace)
-    except:
-        print('\033[91mno geoserver\033[0m')
+    except JSONDecodeError:
+        print('\033[91mno geoserver\033[0m ', sys.exc_info()[0])
 
     # dataExt = get_bbox_from_data()
     # def set_user_menu(self):
@@ -125,20 +127,18 @@ class HomeView(TemplateView):
     #     return data_layer
 
     # TODO: Test with users if this makes any sense
-    def set_layer_name(self):
+    def __set_layer_name(self):
         if self.request.user.is_authenticated:
             if self.request.user.is_superuser:
-                data_layer = 'default_layer4'
+                self.data_layer = 'admin_layer'
             else:
-                data_layer = build_expressive_name(self.request.user)
-        else:
-            data_layer = self.data_layer
-        return data_layer
+                self.data_layer = build_expressive_name(self.request.user)
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
 
-        self.data_layer = self.set_layer_name()
+        self.__set_layer_name()
+        # get_dataset(self, **kwargs)
 
         try:
             if not get_layer(self.data_layer, self.store, self.workspace):
@@ -150,12 +150,12 @@ class HomeView(TemplateView):
                 create_layer(self.request, self.data_layer, self.store, self.workspace)
         except:
             self.data_layer = 'Error: Found no geoserver!'
-            print('Still no geoserver')
+            print('Still no geoserver: ', sys.exc_info()[0])
 
-        data_ext = get_bbox_from_data()
+        self.data_ext = get_bbox_from_data()
 
-        return {'dataExt': data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
-                'messages': messages.get_messages(self.request)}
+        return {'dataExt': self.data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
+                'messages': messages.get_messages(self.request), 'embargo_unlocked_ids': self.unlocked_embargo}
 
 
 class MenuView(TemplateView):
@@ -175,7 +175,8 @@ class MenuView(TemplateView):
         #     # expire after 20 seconds/ this is only for development!!!
         #     request.session.set_expiry(20)
         # auto logout after 3 hours
-        request.session.set_expiry(10800)
+        # request.session.set_expiry(10800)
+        request.session.set_expiry(0)  # expires when the browser is closed
 
         # bring last used menu to session
         if 'menu' in request.GET:
@@ -193,16 +194,8 @@ class MenuView(TemplateView):
             :param max_time:
             :return:
             """
-            error_dict = {}
             dataset_dict = {}
-
-            def error_list(requested_data: list, result_data: list):
-                result_list = []
-                for result_dict in result_data:
-                    result_list.append(result_dict['id'])
-
-                missing_data = list(set(requested_data).symmetric_difference(set(result_list)))
-                return {'error': {'text': 'no access', 'id': missing_data}}
+            error_dict = {}
 
             # if min_time != 0:
             #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
@@ -211,28 +204,14 @@ class MenuView(TemplateView):
             # from_var = 'public.tbl_data'
             # where_var = 'tbl_data.meta_id = ' + str(requested_id)
 
-            if isinstance(requested_id, int): requested_id = [requested_id]
+            accessible_ids, error_ids = get_accessible_data(request, requested_id)
 
-            # first get datasets without embargo, open for for everyone
-            result_dataset = Entries.objects.\
+            result_dataset = Entries.objects. \
                 values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
-                       'datasource__datatype__name').filter(pk__in=requested_id, embargo=False)
+                       'datasource__datatype__name').filter(pk__in=accessible_ids)
 
-            # check if the user wanted more and is authenticated. If yes check if (s)he has access and get the rest
-            if len(requested_id) > len(result_dataset) and request.user.is_authenticated:
-                user_embargo_datasets = request.session['datasets']
-                accessible_embargo_datasets = list(set(requested_id) & set(user_embargo_datasets))
-                embargo_dataset = Entries.objects.\
-                    values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
-                           'datasource__datatype__name').filter(pk__in=accessible_embargo_datasets)
-                result_dataset = result_dataset | embargo_dataset
-
-                # check if there is still data not accessible and create error for these
-                if len(requested_id) > len(result_dataset):
-                    error_dict = error_list(requested_id, list(result_dataset))
-
-            elif len(requested_id) > len(result_dataset) and not request.user.is_authenticated:
-                error_dict = error_list(requested_id, list(result_dataset))
+            if len(error_ids) > 0:
+                error_dict = {'message': 'no access', 'id': error_ids}
 
             for dataset in result_dataset:
                 dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
@@ -249,7 +228,7 @@ class MenuView(TemplateView):
         if 'workspaceData' in request.GET:
             min_time = request.GET.get('minTime')
             max_time = request.GET.get('maxTime')
-            # prepare dataset_id differently for list and single value to use in build_selection
+            # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
             result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
             return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
@@ -316,13 +295,17 @@ class MenuView(TemplateView):
 
         if 'filter_selection_map' in request.GET:
             m_ids = None
-            meta_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
-            dataExt = get_bbox_from_data(str(meta_ids['all_filters'])[1:-1])
+            entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
+            print('entry_ids: ', entry_ids)
+            dataExt = get_bbox_from_data(str(entry_ids['all_filters'])[1:-1])
             id_layer = 'ID_layer'  # + user
             if get_layer(id_layer, HomeView.store, HomeView.workspace):
                 delete_layer(id_layer, HomeView.store, HomeView.workspace)
-            create_layer(request, id_layer, str(meta_ids['all_filters'])[1:-1], HomeView.store, HomeView.workspace)
-            m_ids = meta_ids['all_filters']
+            print(' _______ entry_ids: ', entry_ids)
+            print(' _______ str(entry_ids[all_filters])[1:-1]: ', str(entry_ids['all_filters'])[1:-1])
+            create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(entry_ids['all_filters'])[1:-1])
+            m_ids = entry_ids['all_filters']
+            print('m_ids: ', m_ids)
             # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
             # existing layers
             # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
@@ -348,6 +331,35 @@ class Echo:
         Write the value by returning it, instead of storing in a buffer.
         """
         return value
+
+
+def get_accessible_data(request: object, requested_ids: list) -> (list, list):
+    """
+    Use request object to check if user has read access to a list of data (entries_id). Output is a list with
+    accessible data and a second list with unaccessible data.
+
+    :param request:
+    :param requested_ids:
+    :return: accessible_ids, error_ids
+    """
+    if isinstance(requested_ids, int):
+        requested_ids = [requested_ids]
+    elif isinstance(requested_ids, str):
+        requested_ids = [int(requested_ids)]
+
+    # first get datasets without embargo / open for for everyone
+    accessible_data = list(Entries.objects.
+                           values_list('id', flat=True).filter(pk__in=requested_ids, embargo=False))
+
+    # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
+    if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
+        accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
+        accessible_data.extend(accessible_embargo_datasets)
+
+    # check if there is still data not accessible and create error for these
+    error_list = list(set(requested_ids) - set(accessible_data))
+
+    return accessible_data, error_list
 
 
 class DatasetDownloadView(TemplateView):
@@ -403,22 +415,26 @@ class DatasetDownloadView(TemplateView):
         # TODO: test if shp file is correct
         if 'shp' in request.GET:
             s_id = request.GET.get('shp')
-            layer_name = 'shp' + s_id
-            srid = str(TblMeta.objects.filter(pk=s_id).values_list('geometry__srid__srid', flat=True)[0])
+            accessible_data, error_list = get_accessible_data(request, s_id)
 
-            # create layer on geoserver to request shp file
-            create_data_layer(request, layer_name, s_id, store, workspace)
-
-            # use GEOSERVER shape-zip
-            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' \
-                  + workspace + ':' + layer_name + '&outputFormat=shape-zip&srsname=EPSG:' + srid
-            request = requests.get(url)
-
-            pzfile = PyZip().from_bytes(request.content)
-            try:
-                del pzfile['wfsrequest.txt']
-            except KeyError:
-                pass
+            if len(accessible_data) > 0:
+                layer_name = 'shp_{}_{}'.format(request.user, request.user.id)
+                # srid = str(Entries.objects.filter(pk=s_id).values_list('geometry__srid__srid', flat=True)[0])
+                srid = 4326
+                # create layer on geoserver to request shp file
+                create_layer(request, layer_name, store, workspace, s_id)
+                # create_data_layer(request, layer_name, s_id, store, workspace)
+                # use GEOSERVER shape-zip
+                url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{' \
+                      '2}&outputFormat=shape-zip&srsname=EPSG:{3}'.format(LOCAL_GEOSERVER, workspace, layer_name, srid)
+                # url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' \
+                #       + workspace + ':' + layer_name + '&outputFormat=shape-zip&srsname=EPSG:' + srid
+                request = requests.get(url)
+                pzfile = PyZip().from_bytes(request.content)
+                try:
+                    del pzfile['wfsrequest.txt']
+                except KeyError:
+                    pass
 
             # clean up right after request:
             delete_layer(layer_name, store, workspace)
@@ -428,10 +444,12 @@ class DatasetDownloadView(TemplateView):
         if 'xml' in request.GET:
             id = request.GET.get('xml')
             layer_name = 'XML_' + id
-            srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
+            # srid = str(Entries.objects.filter(pk=id).values_list('genericgeometrydata__srid', flat=True)[0])
+            # srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
+            srid = 4326
 
-            create_layer(request, layer_name, id, HomeView.store, HomeView.workspace)
-
+            create_layer(request, layer_name, HomeView.store, HomeView.workspace, id)
+            # create_layer(request, filename, datastore, workspace, selection=None, srid=4326):
             # use GEOSERVER GML
             url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' + \
                   workspace + ':' + layer_name + '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' \
