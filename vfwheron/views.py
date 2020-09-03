@@ -33,7 +33,8 @@ import time
 # from .filter_metacatalog_dev import FilterMethods, Menu, build_id_list
 # from .filter import FilterMethods, Menu, build_id_list, Table
 from .filter import FilterMethods, Menu, build_id_list, Table
-from .models import TblVariable, TblData, Entries
+from .models import TblVariable, TblData, Entries, Timeseries, Timeseries2D, Generic1DData, Generic2DData, \
+    GenericGeometryData, GeomTimeseries
 
 import logging
 import os
@@ -308,14 +309,14 @@ class MenuView(TemplateView):
             print('m_ids: ', m_ids)
             # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
             # existing layers
-            # ID_layer = 'ID_layer' + str(hashlib.md5(str(meta_ids['all_filters'])[1:-1].encode())) # + user
+            # ID_layer = 'ID_layer' + str(hashlib.md5(str(entry_ids['all_filters'])[1:-1].encode())) # + user
             # if not get_ID_layer(ID_layer):
-            #     create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            #     create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
             #             else:
             # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
             #  restart of django
             #                 delete_ID_layer(ID_layer)
-            #                 create_ID_layer(ID_layer, str(meta_ids['all_filters'])[1:-1])
+            #                 create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
             return JsonResponse({'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': m_ids})
 
         return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
@@ -401,15 +402,67 @@ class DatasetDownloadView(TemplateView):
 
         if 'csv' in request.GET:
             # if 'download_data' in request.GET:
-            rows = TblMeta.objects.values_list('tbldata__tstamp', 'tbldata__value').filter(
-                pk=json.loads(request.GET.get('csv')))
-            # rows = TblData.objects.get(meta_id=json.loads(request.GET.get('download_data')))
-            # rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
-            pseudo_buffer = Echo()
-            writer = csv.writer(pseudo_buffer)
-            response = StreamingHttpResponse((writer.writerow(row) for row in rows),
-                                             content_type="text/csv")
-            # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            s_id = json.loads(request.GET.get('csv'))
+            accessible_data, error_list = get_accessible_data(request, s_id)
+
+            if len(accessible_data) > 0:
+                # TODO: There are 3 Solutions to get data from the different tables.
+                #  Solution 1 produces many None fields, hence is discarded.
+                #  Solution 2 makes a query from 'Entries' to get datatype and builds another query from 'Entries'
+                #  according to the result.
+                #  Solution 3 gets the datatype and 'eval' a query for the respective table.
+                #  Decide if solution 2 or 3 is better.
+                #  Check if results are the right datasets!!!
+                #  (Commited on Sept 3, 2020)
+                # Solution 1:
+                # ===========
+                # rows = Entries.objects.filter(pk=s_id)\
+                #     .values_list('timeseries__value', 'timeseries__tstamp', 'timeseries__precision',
+                #                  'timeseries2d__tstamp', 'timeseries2d__value1', 'timeseries2d__value2',
+                #                  'generic2ddata__value2', ...ASO)  # would be possible. Generates many None values
+
+                # Solution 2:
+                # ===========
+                entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+                type_values = {'generic1ddata': ['index', 'value', 'precision'],
+                              'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
+                              'genericgeometrydata': ['index', 'geom', 'srid'],
+                              'geomtimeseries': ['tstamp', 'geom', 'srid'],
+                              'timeseries': ['tstamp', 'value', 'precision'],
+                              'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
+
+                # build string of values for django query
+                db_values = type_values[entry_type]
+                query_values = []
+                for value in db_values:
+                    query_values.append('{}__{}'.format(entry_type, value))
+
+                query_filter = {entry_type: s_id}
+                rows = Entries.objects.filter(**query_filter).values_list(*query_values)
+
+                # Solution 3:
+                # ===========
+                # switcher = {  # if the entry id is of interest too you can use 'values_list()' without arguments
+                #     'generic1ddata': "Generic1DData.objects.filter(entry_id=s_id)."
+                #                      "values_list('index', 'value', 'precision')",
+                #     'generic2ddata': "Generic2DData.objects.filter(entry_id=s_id)."
+                #                      "values_list('index', 'value1', 'value2', 'precision1', 'precision2')",
+                #     'genericgeometrydata': "GenericGeometryData.objects.filter(entry_id=s_id)."
+                #                            "values_list('index', 'geom', 'srid')",
+                #     'geomtimeseries': "GeomTimeseries.objects.filter(entry_id=s_id)."
+                #                       "values_list('tstamp', 'geom', 'srid')",
+                #     'timeseries': "Timeseries.objects.filter(entry_id=s_id)."
+                #                   "values_list('tstamp', 'value', 'precision')",
+                #     'timeseries2d': "Timeseries2D.objects.filter(entry_id=s_id)."
+                #                     "values_list('tstamp', 'value1', 'value2', 'precision1', 'precision2')"
+                # }
+                # entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+                # rows = eval(switcher[entry_type])
+
+                pseudo_buffer = Echo()
+                writer = csv.writer(pseudo_buffer)
+                response = StreamingHttpResponse((writer.writerow(row) for row in rows), content_type="text/csv")
+                response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
             return response
 
         # TODO: test if shp file is correct
@@ -418,7 +471,7 @@ class DatasetDownloadView(TemplateView):
             accessible_data, error_list = get_accessible_data(request, s_id)
 
             if len(accessible_data) > 0:
-                layer_name = 'shp_{}_{}'.format(request.user, request.user.id)
+                layer_name = 'shp_{}_{}_{}'.format(request.user, request.user.id, s_id)
                 # srid = str(Entries.objects.filter(pk=s_id).values_list('geometry__srid__srid', flat=True)[0])
                 srid = 4326
                 # create layer on geoserver to request shp file
@@ -427,8 +480,6 @@ class DatasetDownloadView(TemplateView):
                 # use GEOSERVER shape-zip
                 url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{' \
                       '2}&outputFormat=shape-zip&srsname=EPSG:{3}'.format(LOCAL_GEOSERVER, workspace, layer_name, srid)
-                # url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' \
-                #       + workspace + ':' + layer_name + '&outputFormat=shape-zip&srsname=EPSG:' + srid
                 request = requests.get(url)
                 pzfile = PyZip().from_bytes(request.content)
                 try:
@@ -443,22 +494,22 @@ class DatasetDownloadView(TemplateView):
         # TODO: schema Location shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
-            layer_name = 'XML_' + id
-            # srid = str(Entries.objects.filter(pk=id).values_list('genericgeometrydata__srid', flat=True)[0])
-            # srid = str(TblMeta.objects.filter(pk=id).values_list('geometry__srid__srid', flat=True)[0])
-            srid = 4326
+            accessible_data, error_list = get_accessible_data(request, id)
 
-            create_layer(request, layer_name, HomeView.store, HomeView.workspace, id)
-            # create_layer(request, filename, datastore, workspace, selection=None, srid=4326):
-            # use GEOSERVER GML
-            url = LOCAL_GEOSERVER + '/' + workspace + '/ows?service=wfs&version=1.0.0&request=GetFeature&typeName=' + \
-                  workspace + ':' + layer_name + '&outputFormat=text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:' \
-                  + srid
-
-            request = urllib.request.Request(url)
-            response = urllib.request.urlopen(request)
-            # clean up right after request:
-            delete_layer(layer_name, store, workspace)
+            if len(accessible_data) > 0:
+                layer_name = 'XML_{}_{}_{}'.format(request.user, request.user.id, id)
+                # srid = str(Entries.objects.filter(pk=id).values_list('genericgeometrydata__srid', flat=True)[0])
+                srid = 4326
+                # create layer on geoserver to request xml file
+                create_layer(request, layer_name, store, workspace, id)
+                # use GEOSERVER GML
+                url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{2}&outputFormat=' \
+                      'text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:{3}'.format(LOCAL_GEOSERVER,
+                                                                                       workspace, layer_name, srid)
+                request = urllib.request.Request(url)
+                response = urllib.request.urlopen(request)
+                # clean up right after request:
+                delete_layer(layer_name, store, workspace)
             return HttpResponse(response.read().decode('utf-8'))
 
 
