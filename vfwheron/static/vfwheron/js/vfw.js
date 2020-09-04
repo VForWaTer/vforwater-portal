@@ -358,7 +358,8 @@ function moreInfoModal(id) {
             show_info: JSON.stringify([id]),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (properties) {
+    })
+        .done(function (properties) {
             let metaText = '<table>';
             // loop over "properties" dict with metadata, build columns
             for (let j in properties) {
@@ -367,8 +368,7 @@ function moreInfoModal(id) {
             }
             document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
             showDataInfo(properties);
-        }
-    });
+        });
 
     // load preview image parallel to metadata
     $.ajax({
@@ -408,7 +408,9 @@ function workspace_dataset(id) {
                 workspaceData: id,
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
-            success: function (json) {
+        })
+            .done(function (json) {
+                console.log('success: ', json)
                 if (json['error']['message']) {
                     // TODO: handle errors/data selected but without access
                     console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')
@@ -424,8 +426,7 @@ function workspace_dataset(id) {
                 }
                 // build buttons
                 build_datastore_button(json['workspaceData']);
-            } // function in sidebar.js
-        });
+            }) // function in sidebar.js
     }
 }
 

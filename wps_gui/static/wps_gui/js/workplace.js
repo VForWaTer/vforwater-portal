@@ -38,9 +38,9 @@ function wpsprocess(service, identifier) {
             processview: JSON.stringify({id: identifier, serv: service}),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) {
+    })
+        .done(function (json) {
             build_modal(json, service, identifier)
-        },
     });
 }
 
@@ -154,7 +154,13 @@ function modal_run_process() {
             processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) { // Results are stored in the sessionStorage
+    })
+        .done(function (json) { // Results are stored in the sessionStorage
+            console.log('------')
+            console.log('result json: ', json)
+            console.log('json id: ', json.wpsID)
+            console.log('json img: ', json.image)
+            console.log('json execution_status: ', json.execution_status)
             if (json.execution_status == "ProcessSucceeded") {
                 json.wps = identifier;
                 json.inputs = {};
@@ -193,11 +199,10 @@ function modal_run_process() {
                 }, 5);
                 console.error('Maybe you have to log in to run processes. ', json.execution_status)
             }
-        },
-        error: function (json) {
+        })
+        .fail(function (json) {
             color_modal("firebrick");
             console.error('Error, No success: ', json)
-        }
     });
 }
 

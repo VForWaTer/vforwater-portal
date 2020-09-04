@@ -310,9 +310,10 @@ function showAllPointsOnMap(){
            all_datasets: 'True',
            'csrfmiddlewaretoken': csrf_token,
        }, // data sent with the post request
-       success: function (json) {
-       },
-   });
+       })
+       .done(function (json) {
+       })
+
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
@@ -356,30 +357,29 @@ async function showSelectionOnMap(selection) {
             filter_selection_map: JSON.stringify(selection),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) {
+    })
+        .done(function (json) {
             zoomToExt.extent = json['dataExt'];
             wfsLayerName = json['ID_layer'];
             selectedIdsFilter = json['IDs'];
             wfsPointSource.refresh();
             // document.getElementById()
-            // clusterLayer.changed()
-        },
-    });
+    })
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
 /* send json Object with selection to server and get int(in a json) with amount of items back */
 async function getCountFromServer(selection) {
     $.ajax({
-        url: DEMO_VAR+"/home/menu",
-        dataType   : 'json',
+        url: DEMO_VAR + "/home/menu",
+        dataType: 'json',
         data: {
             filter_selection: JSON.stringify(selection),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) {
+    })
+        .done(function (json) {
             _updateCounts(json);
-        },
     });
 //    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }

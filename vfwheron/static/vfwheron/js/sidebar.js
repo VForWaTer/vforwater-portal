@@ -89,19 +89,21 @@ function preload_datastore_button(workspaceData) {
     for (let dataset in workspaceData) {
         let preload = {};
         if (!workspaceData[dataset]['pickle']) {
-            preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
-            end: workspaceData[dataset]['end']};
+            preload[dataset] = {
+                type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
+                end: workspaceData[dataset]['end']
+            };
             $.ajax({
                 url: DEMO_VAR + "/wps_gui/processview",
                 // dataType: 'json',
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post request
-                success: (wpsDBInfo) => update_datastore_button(wpsDBInfo),
-                error: function (wpsDBInfo) {
+            })
+                .done((wpsDBInfo) => update_datastore_button(wpsDBInfo),)
+                .fail(function (wpsDBInfo) {
                     console.error('Error in preload of data. ', wpsDBInfo)
-                }
-            });
+                });
         }
     }
     // USE FOLLOWING CODE INSTEAD WHEN YOU PREFER TO UPDATE ALL DATASETS IN ONE REQUEST
@@ -133,7 +135,7 @@ function preload_datastore_button(workspaceData) {
     // }
 }
 
-function update_datastore_button(wpsDBInfo){
+function update_datastore_button(wpsDBInfo) {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     $.each(wpsDBInfo, function (keyID, value) {
         if (workspaceData[keyID] && workspaceData[keyID]['wpsID']) {
@@ -497,7 +499,6 @@ function menuItemListener(link) {
     popup.classList.add(popActive);
     popText.classList.remove(popInActive);
     positionPopup(popup);
-
     switch (link.getAttribute("data-action")) {
 
         case "View":
@@ -508,11 +509,10 @@ function menuItemListener(link) {
                     show_info: JSON.stringify([id]),
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with the post request
-                success: function (properties) {
+            })
+                .done(function (properties) {
                     showDataInfo(properties);
-
-                }
-            });
+                });
             break;
         // case "Plot":
         //     $.ajax({
@@ -537,14 +537,14 @@ function menuItemListener(link) {
                 data: {
                     csv: id,
                 }, // data sent with post request
-                success: function (json) {
+            })
+                .done(function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "Downloadshp":
             $.ajax({
@@ -557,15 +557,15 @@ function menuItemListener(link) {
                 data: {
                     shp: id,
                 }, // data sent with post request
-                success: function (data) {
+            })
+                .done(function (data) {
                     let blob = new File([data], {type: "application/octet-stream"});
                     // let blob = new Blob([data], {type: "application/octet-binary"});
                     saveAs(blob, String(taskItemInContext.getAttribute("btnName")) + ".zip");
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "Downloadxml":
             $.ajax({
@@ -574,16 +574,16 @@ function menuItemListener(link) {
                 data: {
                     xml: id,
                 }, // data sent with post request
-                success: function (json) {
+            })
+                .done(function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "OpenTool":
             /** Re-open the tool */
@@ -644,7 +644,8 @@ function menuItemListener(link) {
                     preview: id,
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post
-                success: function (requestResult) {
+            })
+                .done(function (requestResult) {
                     // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
                     // content.innerHTML = result.div;
                     // let bokehResultScript;
@@ -661,11 +662,13 @@ function menuItemListener(link) {
                     // positionPopup(popup);
                     let rModal = document.getElementById("resultModal");
                     rModal.style.display = "block";
-                },
-                complete: function () {
+                })
+                .fail(function (e) {
+                    console.error(('fehler: ', e))
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                })
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});

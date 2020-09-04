@@ -83,5 +83,10 @@
 </nav>
 {#  Overlay effect when opening sidenav on small screens#}
 <div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+{% block rModal %}
+    {% include 'wps_gui/result_modal.html' %}
+{% endblock rModal %}
+
 </body>
 
