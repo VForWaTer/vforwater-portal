@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),
     ]
 
+# use watts for authorization, or django for development environment
 if settings.ON_VFW_SERVER:
     urlpatterns.append(url(r'^rsp/', include('watts_rsp.urls')))
 else:

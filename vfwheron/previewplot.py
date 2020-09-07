@@ -18,7 +18,7 @@ from bokeh.palettes import Oranges9, Spectral11
 from django.db import connections
 from numpy import mean
 
-from vfwheron.models import TblMeta, TblData, Entries
+from vfwheron.models import Entries
 
 import redis
 import pandas as pd

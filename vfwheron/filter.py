@@ -89,10 +89,17 @@ def build_id_list(menu, filter_selection):
     query_filters = {}
     for parent in filter_selection:
         for child in filter_selection[parent]:
-            try:
-                if 'draw' in menu[parent][child]['type']:  # following https://docs.python.org/3/glossary.html#term-eafp
+            try:  # following here EAFP style: https://docs.python.org/3/glossary.html#term-eafp
+                print("menu[parent][child]: ", menu[parent][child])
+                print("menu[parent][child]['type']: ", menu[parent][child]['type'])
+                if 'draw' in menu[parent][child]['type']:
                     pass
-            except KeyError:
+                elif 'bool' in menu[parent][child]['type']:
+                    query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
+                    query_filters.update({'{0}'.format(query_pair['path']): query_pair['value']})
+
+            except KeyError:  # there is no type for the usual structure, so a KeyError gets called
+                print(' + + + im except')
                 query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
 
                 query_filters.update({'{0}'.format(query_pair['path']): query_pair['value']})
@@ -106,11 +113,11 @@ class FilterMethods:
     """
 
     @staticmethod
-    def selection_counts(menu, filter_selection):
+    def selection_counts(menu: dict, filter_selection: dict):
         """
 
         :param menu:
-        :type menu:
+        :type menu: dict
         :param filter_selection:
         :type filter_selection:
         :return:
@@ -142,6 +149,13 @@ class FilterMethods:
                 elif c_type == 'draw':
                     filter_items = {'{0}'.format(path): child['name']}
                     item_result = query1.filter(**filter_items).count()
+                # elif c_type == 'bool':
+                #     print('++> path: ', path)
+                #     print('++> child: ', child['name'])
+                #     filter_items = {'{0}'.format(path): child['name']}
+                #     print('++> filter items: ', filter_items)
+                #     item_result = query1.filter(**filter_items).count()
+                #     print('++> item_result: ', item_result)
                 else:
                     print('Adjust your filter.py selection_counts to type: ', c_type)
                 child_result.update({"C" + str(c): item_result})
@@ -490,8 +504,8 @@ class Table:
                     all_grandchilds.update({'I' + str(counter): grandchild_dict})
                     map_grandchilds.update({'I' + str(counter): map_grandchild_dict})
         # if there are no values for the submenu, return nothing
-        print('server', map_grandchilds)
-        print({'json': all_grandchilds, 'total': counter, 'server': map_grandchilds})
+        # print('server', map_grandchilds)
+        # print({'json': all_grandchilds, 'total': counter, 'server': map_grandchilds})
         print('---', '\033[0m')
         return {'json': all_grandchilds, 'total': counter, 'server': map_grandchilds}
 

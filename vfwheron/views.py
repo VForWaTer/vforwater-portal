@@ -20,8 +20,7 @@ from future.builtins import isinstance
 
 from heron.settings import LOCAL_GEOSERVER, DEBUG
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, create_id_layer, create_data_layer, \
-    test_geoserver_env
+from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
 from vfwheron.previewplot import get_preview
 
 mpl.use('Agg')
@@ -33,8 +32,8 @@ import time
 # from .filter_metacatalog_dev import FilterMethods, Menu, build_id_list
 # from .filter import FilterMethods, Menu, build_id_list, Table
 from .filter import FilterMethods, Menu, build_id_list, Table
-from .models import TblVariable, TblData, Entries, Timeseries, Timeseries2D, Generic1DData, Generic2DData, \
-    GenericGeometryData, GeomTimeseries
+from .models import Entries, Timeseries, Timeseries2D, Generic1DData, Generic2DData, GenericGeometryData, \
+    GeomTimeseries
 
 import logging
 import os
@@ -177,7 +176,7 @@ class MenuView(TemplateView):
         #     request.session.set_expiry(20)
         # auto logout after 3 hours
         # request.session.set_expiry(10800)
-        request.session.set_expiry(0)  # expires when the browser is closed
+        # request.session.set_expiry(0)  # expires when the browser is closed
 
         # bring last used menu to session
         if 'menu' in request.GET:
@@ -386,13 +385,16 @@ class DatasetDownloadView(TemplateView):
             Change get_metadata if you want to have more information in the export file.
             :return:
             """
+            # TODO: Portal uses code from class MenuView.get, 'show_info'. Bad style to use two classes for popup.
             catalog = {}
             for table in Menu.menu_list:
                 for i in table.db_alias_child:
                     if table.path != '':
-                        query = TblMeta.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
+                        query = Entries.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
+                        # query = TblMeta.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
                     else:
-                        query = TblMeta.objects.filter(pk=m_id).values_list(i, flat=True)
+                        query = Entries.objects.filter(pk=m_id).values_list(i, flat=True)
+                        # query = TblMeta.objects.filter(pk=m_id).values_list(i, flat=True)
                     if query[0] is not None:
                         try:
                             catalog[table.menu_name][i] = query[0]
@@ -413,13 +415,7 @@ class DatasetDownloadView(TemplateView):
                 #  Solution 3 gets the datatype and 'eval' a query for the respective table.
                 #  Decide if solution 2 or 3 is better.
                 #  Check if results are the right datasets!!!
-                #  (Commited on Sept 3, 2020)
-                # Solution 1:
-                # ===========
-                # rows = Entries.objects.filter(pk=s_id)\
-                #     .values_list('timeseries__value', 'timeseries__tstamp', 'timeseries__precision',
-                #                  'timeseries2d__tstamp', 'timeseries2d__value1', 'timeseries2d__value2',
-                #                  'generic2ddata__value2', ...ASO)  # would be possible. Generates many None values
+                #  (Unused solutions deleted. Check commit from Sept 3, 2020)
 
                 # Solution 2:
                 # ===========
@@ -440,32 +436,12 @@ class DatasetDownloadView(TemplateView):
                 query_filter = {entry_type: s_id}
                 rows = Entries.objects.filter(**query_filter).values_list(*query_values)
 
-                # Solution 3:
-                # ===========
-                # switcher = {  # if the entry id is of interest too you can use 'values_list()' without arguments
-                #     'generic1ddata': "Generic1DData.objects.filter(entry_id=s_id)."
-                #                      "values_list('index', 'value', 'precision')",
-                #     'generic2ddata': "Generic2DData.objects.filter(entry_id=s_id)."
-                #                      "values_list('index', 'value1', 'value2', 'precision1', 'precision2')",
-                #     'genericgeometrydata': "GenericGeometryData.objects.filter(entry_id=s_id)."
-                #                            "values_list('index', 'geom', 'srid')",
-                #     'geomtimeseries': "GeomTimeseries.objects.filter(entry_id=s_id)."
-                #                       "values_list('tstamp', 'geom', 'srid')",
-                #     'timeseries': "Timeseries.objects.filter(entry_id=s_id)."
-                #                   "values_list('tstamp', 'value', 'precision')",
-                #     'timeseries2d': "Timeseries2D.objects.filter(entry_id=s_id)."
-                #                     "values_list('tstamp', 'value1', 'value2', 'precision1', 'precision2')"
-                # }
-                # entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
-                # rows = eval(switcher[entry_type])
-
                 pseudo_buffer = Echo()
                 writer = csv.writer(pseudo_buffer)
                 response = StreamingHttpResponse((writer.writerow(row) for row in rows), content_type="text/csv")
                 response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
             return response
 
-        # TODO: test if shp file is correct
         if 'shp' in request.GET:
             s_id = request.GET.get('shp')
             accessible_data, error_list = get_accessible_data(request, s_id)
@@ -476,7 +452,6 @@ class DatasetDownloadView(TemplateView):
                 srid = 4326
                 # create layer on geoserver to request shp file
                 create_layer(request, layer_name, store, workspace, s_id)
-                # create_data_layer(request, layer_name, s_id, store, workspace)
                 # use GEOSERVER shape-zip
                 url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{' \
                       '2}&outputFormat=shape-zip&srsname=EPSG:{3}'.format(LOCAL_GEOSERVER, workspace, layer_name, srid)
@@ -487,8 +462,8 @@ class DatasetDownloadView(TemplateView):
                 except KeyError:
                     pass
 
-            # clean up right after request:
-            delete_layer(layer_name, store, workspace)
+                # clean up right after request:
+                delete_layer(layer_name, store, workspace)
             return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
 
         # TODO: schema Location shows too much information for possible intruder. Figure out how to improve?
@@ -583,6 +558,7 @@ class LogoutView(View):
 
 
 class DevLoginView(TemplateView):
+
     def get(self, request):
         context = {}
         return render(request, 'vfwheron/login.html', {'context': context})
