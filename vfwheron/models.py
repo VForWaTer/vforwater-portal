@@ -13,7 +13,7 @@ from django.contrib.gis.db import models
 
 
 # TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
-# explanation
+#  explanation
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
 
@@ -73,60 +73,6 @@ from django.dispatch.dispatcher import receiver
 #     class Meta:
 #         managed = True
 
-
-# class Profile(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     email_confirmed = models.BooleanField(default=False)
-    # other fields...
-#
-# @receiver(post_save, sender=User)
-# def update_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Profile.objects.create(user=instance)
-#     instance.profile.save()
-#
-#
-# class AuthPermission(models.Model):
-#     name = models.CharField(max_length=255)
-#     # content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-#     codename = models.CharField(max_length=100)
-#
-#     class Meta:
-#         managed = True
-#         db_table = 'auth_permission'
-#         # unique_together = (('content_type', 'codename'),)
-#
-#
-# class AuthUser(models.Model):
-#     password = models.CharField(max_length=128)
-#     last_login = models.DateTimeField(blank=True, null=True)
-#     is_superuser = models.BooleanField()
-#     username = models.CharField(unique=True, max_length=150)
-#     first_name = models.CharField(max_length=30)
-#     last_name = models.CharField(max_length=150)
-#     email = models.CharField(max_length=254)
-#     is_staff = models.BooleanField()
-#     is_active = models.BooleanField()
-#     date_joined = models.DateTimeField()
-#
-#     class Meta:
-#         managed = True
-#         db_table = 'auth_user'
-
-# class UserDataMap(models.Model):
-#     """
-#
-#     """
-#     auth_user = models.ForeignKey(User, models.DO_NOTHING)
-#     # ext_user_id = models.PositiveSmallIntegerField(blank=True, null=True)
-#     meta_data = models.ManyToManyField('TblMeta', blank=True)
-#
-#     # class Meta:
-#     #     # managed = True
-#     #     db_table = 'user'
-#
-#     def __str__(self):
-#         return self.auth_user_id
 
 ### New Database Schemata for vfw 2.0
 ### from metacatalog 2.0
@@ -258,10 +204,12 @@ class Entries(models.Model):
     citation = models.CharField(max_length=2048, blank=True, null=True)
 
     db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract'}
+    # db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract', 'location': 'Location'}
     db_alias_child_adv = {'version': 'version'}
     menu_name = 'Entries'
     path = ''
     filter_type = {'embargo': 'bool'}
+    # filter_type = {'embargo': 'bool', 'location': 'draw'}
 
     class Meta:
         # app_label = 'mcdev'
@@ -683,3 +631,22 @@ class AdvancedFilter(BasicFilter):
     Class to collect relevant information for advanced filter
     """
     details = Details.objects.values_list('value', flat=True).distinct()
+
+
+class LocationFilter(models.Model):
+    """
+    Fake class to write location from Entries to a separate entry online in the menu.
+    """
+    location = models.PointField(srid=0)
+
+    db_alias_child = {'location': 'Location'}
+    db_alias_child_adv = {'bla': 'blala'}
+    menu_name = 'Point Filter'
+    path = ''
+    filter_type = {'location': 'draw'}
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'entries'
+

@@ -110,6 +110,15 @@ def get_bokeh_standard(DBdata, label=""):
     # plot.toolbar.autohide = True
     # plot average line
     mainplot.line(x='date', y='y', source=source, line_width=2, legend_label="average")
+    # add errorbars TODO: Not working yet. Maybe because lack of values for precision. Test again when data available.
+    # precision = np.array(DBdata['data'][5], dtype=np.float)
+    # data = np.array(DBdata['data'][1], dtype=np.float)
+    # lower_error = tuple(subtract(data, precision))
+    # upper_error = tuple(add(data, precision))
+    # error_source = ColumnDataSource({'date': DBdata['data'][0], 'upper': upper_error, 'lower': lower_error})
+    # mainplot.add_layout(
+    #     Whisker(source=error_source, base="date", upper="upper", lower="lower")
+    # )
 
     # TODO: Figure out how to use 'source' for multi_line.
     #  Maybe use Glyph? (https://docs.bokeh.org/en/latest/docs/reference/models/glyphs/multi_line.html)

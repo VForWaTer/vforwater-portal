@@ -33,9 +33,9 @@ logger = logging.getLogger(__name__)
 
 @receiver(user_logged_in)  # function to collect user data - especially resources - on login
 def get_user_embargo_resources(request, user, **kwargs):
-    maintainer_set = Resource.objects.filter(maintainers=user, embargo=True)
-    reader_set = Resource.objects.filter(readers=user, embargo=True)
-    owner_set = Resource.objects.filter(owners=user, embargo=True)
+    maintainer_set = Resource.objects.filter(maintainers=user, dataEntry__embargo=True)
+    reader_set = Resource.objects.filter(readers=user, dataEntry__embargo=True)
+    owner_set = Resource.objects.filter(owners=user, dataEntry__embargo=True)
     datasets = reader_set | maintainer_set | owner_set
     request.session['datasets'] = list(datasets.values_list('dataEntry_id', flat=True))
 

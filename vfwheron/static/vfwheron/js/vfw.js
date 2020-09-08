@@ -284,23 +284,23 @@ function toggle_draw(self) {
 function search_close() {
 
     document.getElementById("search_box").outerHTML = "<a href='#' onclick='open_search()' id='srch_box' " +
-        "class='respo-hover-white'><i class='fa fa-search fa-fw'></i>  Search</a>";
-    document.getElementById("search_but").outerHTML = "<a id='srch_but' class='respo-hover-none'></a>";
-    document.getElementById("search_close_but").outerHTML = "<a id='srch_close_but' class='respo-hover-none'></a>";
+        "class='w3-hover-white'><i class='fa fa-search fa-fw'></i>  Search</a>";
+    document.getElementById("search_but").outerHTML = "<a id='srch_but' class='w3-hover-none'></a>";
+    document.getElementById("search_close_but").outerHTML = "<a id='srch_close_but' class='w3-hover-none'></a>";
 }
 
 function search_open() {
     if (!document.getElementById("search_box")) {
         let searchBox = document.getElementById("srch_box");
-        searchBox.outerHTML = "<a class='respo-hover-none' style='height:103px' id='search_box'><input type='search' " +
+        searchBox.outerHTML = "<a class='w3-hover-none' style='height:103px' id='search_box'><input type='search' " +
             "value='' placeholder='Search ...' style='height:26px; font-size:70%;'></a>";
 
         let searchBut = document.getElementById("srch_but");
-        searchBut.outerHTML = "<a href='#' class='respo-hover-white' style='height:103px' id='search_but' " +
+        searchBut.outerHTML = "<a href='#' class='w3-hover-white' style='height:103px' id='search_but' " +
             "onclick='search_close()'><i class='fa fa-search fa-fw'></i></a>";
 
         let closeBut = document.getElementById("srch_close_but");
-        closeBut.outerHTML = "<a href='javascript:void(0)' class='respo-hover-white' style='height:103px' " +
+        closeBut.outerHTML = "<a href='javascript:void(0)' class='w3-hover-white' style='height:103px' " +
             "id='search_close_but' onclick='search_close()'><i class='fa fa-remove fa-fw'></i></a>";
     }
 }
@@ -334,8 +334,7 @@ $(document).ready(function (menuTitle) {
         active: false,
         collapsible: true,
     });
-
-    $("h5.respo-hover-blue.nav").click(function () {
+    $("h5.w3-hover-blue.nav").click(function () {
         // var menuValue = $(this).attr("value");
 // open accordion
         $('div #subaccordion').accordion({
@@ -389,7 +388,7 @@ function moreInfoModal(id) {
             document.head.appendChild(bokehPreviewScript);
         })
         .fail(function (e) {
-            console.log('fehler: ', e)
+            console.warn('fehler: ', e)
         })
         .always(function (json) {
             document.getElementById("mod_prev").classList.remove("loader");
@@ -410,7 +409,6 @@ function workspace_dataset(id) {
             }, // data sent with post request
         })
             .done(function (json) {
-                console.log('success: ', json)
                 if (json['error']['message']) {
                     // TODO: handle errors/data selected but without access
                     console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')

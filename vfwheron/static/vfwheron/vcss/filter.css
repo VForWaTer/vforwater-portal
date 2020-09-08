@@ -1,7 +1,7 @@
 /*TODO: This upper part isn't used now. Maybe a start to style the accordions of the filter menu*/
 /* Dropdown Button */
 :root{
-    --color_Item: #00BAEE;
+    --color_Item: #00baee;
     --color_Child: #AADDF9;
     --color_Parent: #D9EFFD;
 }
@@ -431,7 +431,7 @@ div.ui-rangeslider label {
   display: none;
 }
 
-.respo-modal-content{
+.w3-modal-content{
     margin:auto;
     background-color:#fff;
     position:relative;
@@ -453,7 +453,7 @@ div.ui-rangeslider label {
     /*width:fit-content*/
     width:600px
 }
-/*.respo-closebtn{
+/*.w3-closebtn{
     text-decoration:none;
     float:right;
     font-size:24px;

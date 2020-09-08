@@ -37,29 +37,29 @@
 </head>
 
 <body>
-   <div class="respo-container respo-light-turquoise">
+   <div class="w3-container w3-light-turquoise">
         <b title={% trans "Please&#32choose&#32here&#32the&#32data&#32shown&#32on&#32the&#32map." %}>{%  trans "Filter menu" %}</b>
     </div>
    {% comment %}
-    <div class="respo-hover-blue nav parent">
+    <div class="w3-hover-blue nav parent">
         <h5 style="display:block;cursor:pointer;position:relative;margin:2px 0 0 0;padding:.5em.5em.5em.7em;font-size:15px;"
             onclick="draw_polygon()" id="toggle_draw" title={% trans "Click&#32here&#32to&#32draw&#32the&#32area&#32you&#32want&#32to&#32filter." %}>{% trans "Draw SELECTION area" %}</h5>
     </div>{% endcomment %}
     {#    new accordion#}
 {#    unselect all button. More a cosmetic treatment. Do it later #}
-{#    <a><b><input id="unselect_all" class="respo-btn-simple" type="submit" onclick="unselect_all_func()"#}
+{#    <a><b><input id="unselect_all" class="w3-btn-simple" type="submit" onclick="unselect_all_func()"#}
 {#                 value="Unselect all" data-toggle="tooltip" title="Provides you a fresh menu to filter whatever you want."></b></a>#}
     <div class="container">
         <div class="panel-group" id="accordion">
         </div>
     </div>
         <a><b>
-            <input class="respo-btn-block respo-blue respo-btn:hover" type="submit"
+            <input class="w3-btn-block w3-blue w3-btn:hover" type="submit"
                 onclick="many_datasets()" value={% trans "Pass&#32datasets&#32to&#32data&#32store" %} data-toggle="tooltip"
                 title={% trans "Pass&#32all&#32selected&#32datasets&#32to&#32session&#32data&#32store." %}></b>
         </a>
         <a><b>
-            <input class="respo-btn-block respo-blue respo-btn:hover" type="submit"
+            <input class="w3-btn-block w3-blue w3-btn:hover" type="submit"
                 onclick="reset_filter()" value={% trans "Reset&#32filter&#32menu" %} data-toggle="tooltip"
                 title={% trans "Remove&#32selection&#32from&#32filter&#32menu." %}></b>
         </a>
@@ -70,4 +70,5 @@
 {#TODO: Do I need this, or can I just use the csrftoken in vfw.js?#}
  csrf_token = '{{ csrf_token }}';
 var jsonMenu = "{{ Filter_Menu|escapejs }}";
+var unblockedIds = "{{ unblocked_ids|escapejs }}";
 </script>

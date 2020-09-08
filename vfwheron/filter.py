@@ -8,13 +8,14 @@ from django.db.models import Max, Min
 from heron.settings import DEBUG
 # import vfwheron.models_metacatalog_dev as mc_dev
 
-from vfwheron.models import Keywords, EntrygroupTypes, Variables, Licenses, Entries, Details, Persons, BasicFilter
-from vfwheron.models import TblMeta, TblVariable, LtDomain, LtLicense, LtSite, LtSoil, LtUser, TblSensor, LtProject, \
-    NmMetaDomain, LtQuality, LtLocation
+from vfwheron.models import Keywords, EntrygroupTypes, Variables, Licenses, Entries, Details, Persons, BasicFilter, \
+    LocationFilter
+
 logger = logging.getLogger(__name__)
 
 
-def _build_path_value_pair(parent_menu, child, item):
+def _build_path_value_pair(parent_menu: dict, child: str, item: str):
+    # TODO: Called two times with one selection. Figure out why and try to call it only once.
     """
 
     :param parent_menu:
@@ -33,7 +34,7 @@ def _build_path_value_pair(parent_menu, child, item):
         value = item
     else:
         # logger.debug('Unknown type of item.')
-        print('Unknown type of item.')
+        print('\033[31mUnknown type of item.\033[0m')
 
     return {'path': path, 'value': value}
 
@@ -75,9 +76,9 @@ def build_select_filters(menu, filter_selection):
     return {'filters': short_filter, 'active_f': spec_filter}
 
 
-def build_id_list(menu, filter_selection):
+def build_id_list(menu: dict, filter_selection: dict):
     """
-    Build list of IDs needed to create in geoserver a layer with the selected elements
+    Build list of IDs needed in geoserver to create a layer with the selected elements
     :param menu:
     :type menu:
     :param filter_selection:
@@ -87,24 +88,27 @@ def build_id_list(menu, filter_selection):
     """
     # build queries for the filter values
     query_filters = {}
+    draw_ids = []
     for parent in filter_selection:
         for child in filter_selection[parent]:
             try:  # following here EAFP style: https://docs.python.org/3/glossary.html#term-eafp
-                print("menu[parent][child]: ", menu[parent][child])
-                print("menu[parent][child]['type']: ", menu[parent][child]['type'])
                 if 'draw' in menu[parent][child]['type']:
-                    pass
+                    draw_ids = filter_selection[parent][child]
                 elif 'bool' in menu[parent][child]['type']:
                     query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
                     query_filters.update({'{0}'.format(query_pair['path']): query_pair['value']})
 
             except KeyError:  # there is no type for the usual structure, so a KeyError gets called
-                print(' + + + im except')
                 query_pair = _build_path_value_pair(menu[parent], child, filter_selection[parent][child])
-
                 query_filters.update({'{0}'.format(query_pair['path']): query_pair['value']})
 
-    return {'all_filters': list(Entries.objects.filter(**query_filters).values_list('id', flat=True))}
+    without_draw = list(Entries.objects.filter(**query_filters).values_list('id', flat=True))
+    if not draw_ids:
+        all_filter = without_draw
+    else:
+        all_filter = list(set(without_draw).intersection(set(draw_ids)))
+
+    return {'all_filters': all_filter}
 
 
 class FilterMethods:
@@ -134,10 +138,10 @@ class FilterMethods:
             child_result = {}
             while "C" + str(c) in menu[parent]:
                 path = menu[parent]['path'] + "__" + menu[parent]["C" + str(c)]['column'] if menu[parent]['path'] \
-                    != '' else menu[parent]["C" + str(c)]['column']
+                                                                                             != '' else menu[parent]["C" + str(c)]['column']
                 child = menu[parent]["C" + str(c)]
                 query1 = Entries.objects.filter(**filtermap[parent + "C" + str(c)]) if parent + "C" + str(c) in \
-                    filtermap else std_query
+                                                                                       filtermap else std_query
                 item_result = {}
                 i = 1
                 c_type = child.get('type')
@@ -147,21 +151,21 @@ class FilterMethods:
                         item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
                         i += 1
                 elif c_type == 'draw':
-                    filter_items = {'{0}'.format(path): child['name']}
-                    item_result = query1.filter(**filter_items).count()
-                # elif c_type == 'bool':
-                #     print('++> path: ', path)
-                #     print('++> child: ', child['name'])
-                #     filter_items = {'{0}'.format(path): child['name']}
-                #     print('++> filter items: ', filter_items)
-                #     item_result = query1.filter(**filter_items).count()
-                #     print('++> item_result: ', item_result)
+                    # filter_items = {'{0}'.format(path): child['name']}
+                    # print('yes, its draw filter_items: ', filter_items)
+                    # item_result = query1.filter(**filter_items).count()
+                    item_result = query1.values('location').count()
+                elif c_type == 'bool':
+                    filter_items = {'{0}'.format(path): False}
+                    item_result.update({"I1": query1.filter(**filter_items).count()})
+
+                    filter_items = {'{0}'.format(path): True}
+                    item_result.update({"I2": query1.filter(**filter_items).count()})
                 else:
                     print('Adjust your filter.py selection_counts to type: ', c_type)
                 child_result.update({"C" + str(c): item_result})
                 c += 1
             result.update({parent: child_result})
-        # print('result of count: ', result)
         return result
 
     @staticmethod
@@ -197,7 +201,7 @@ class Menu:
     # TODO: Check queries in detail (LtLocation is okay!)
     # menu_list = [LtLocation, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblSensor, TblVariable]
     # menu_list = [Variables]
-    menu_list = [Variables, Licenses, Entries]
+    menu_list = [LocationFilter, Variables, Licenses, Entries]
     # menu_list = [LtLocation, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
 
     def __init__(self, user='default'):
@@ -748,8 +752,7 @@ class Table:
         # for values in self.child[grand_child]:  # for now only for POINT data
         values = 'POINT'
         # total = Entries.objects.using('mcdev').filter(geometry__geometry_type=values).count()
-        filtermap = {'{0}'.format(self.query_paths[grand_child]): values}
-        total = Entries.objects.filter(**filtermap).count()
+        total = Entries.objects.values('location').count()
         grandchild_dict = {
             'type': 'draw',
             'name': values,

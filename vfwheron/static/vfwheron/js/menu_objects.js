@@ -9,6 +9,7 @@ const MENUES = Object.keys(JSMENU);
 let FILTERMENU;
 let parent;
 let SELECTION = {};
+let UNBLOCKED_IDS = JSON.parse(unblockedIds)
 
 // TODO: To improve performance onclick try to build variables P1C1I1, P1C1T2,... here and assign an id to the
 //  respective value. In 'updateCounts' you can access the values then directly with the ID; But the following
@@ -34,18 +35,20 @@ function menuBuilder(parent) {
         let ctot = JSMENU[parent].total;
         for (let c = 1; c <= ctot; c++) {  // build child menu
             let child = 'C'+c.toString();
-            let childHTML = childBuilder(JSMENU[parent][child], child, parent);
+            let childHTML = _childBuilder(JSMENU[parent][child], child, parent);
             // let childHTML = childBuilder(eval("JSMENU[parent]."+[child]), child, parent);
-            parentHTML += `<div id='subaccordion'> ${childHTML}   </div>`
+            console.log('childHTML: ', childHTML)
+            parentHTML += childHTML
+            // parentHTML += `<div id='subaccordion'> ${childHTML}   </div>`
         }
         FILTERMENU = document.getElementById("accordion").innerHTML +=
-            `<h5 class='respo-hover-blue nav parent ${parent}'>${JSMENU[parent].name}</h5>
+            `<h5 class='w3-hover-blue nav parent ${parent}'>${JSMENU[parent].name}</h5>
             <div id='${JSMENU[parent].name}'>${parentHTML}</div>`;
     }
 }
 
 /* build the childs of the menu / distinguishes the types of possible inputs*/
-function childBuilder(child, shortChild, shortParent) {
+function _childBuilder(child, shortChild, shortParent) {
     let childHTML = "";
     let itemHTML = "";
     let inputName = "";
@@ -54,7 +57,7 @@ function childBuilder(child, shortChild, shortParent) {
     if (child.total > 1 && child.total <= dDL && !child.hasOwnProperty("type")) {
         itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
-            `<h6 class='respo-hover-blue nav child ${shortParent} ${shortChild} childmenu'>${child.name}</h6>
+            `<h6 class='w3-hover-blue nav child ${shortParent} ${shortChild} childmenu'>${child.name}</h6>
             <div id='${child.name}'> ${itemHTML}</div>`
     }
 /* build a dropdown list for childs with many items */
@@ -64,7 +67,7 @@ function childBuilder(child, shortChild, shortParent) {
         childHTML =
             `<div class='dropdown'>
                 <button onclick='dDMFunction("${child.name}")'
-                    class='filter-btn-block respo-hover-blue nav child ${shortParent} ${shortChild}'>${child.name}
+                    class='filter-btn-block w3-hover-blue nav child ${shortParent} ${shortChild}'>${child.name}
                 </button>
                 <div id='${child.name}' class='dropdown-content'>
                     <input type='text' placeholder='Search...'
@@ -82,7 +85,7 @@ function childBuilder(child, shortChild, shortParent) {
                 itemHTML = boolBuilder(child, shortChild, shortParent);
                 childHTML =
                     `<div id='${child.name}'>
-                        <h6 class='respo-hover-blue child ${shortParent} ${shortChild}'>
+                        <h6 class='w3-hover-blue child ${shortParent} ${shortChild}'>
                         </h6>${child.name}&emsp;<i class='count s'>(${child.total})</i>
                     <div id='sliderwildcard'>${itemHTML} </div></div>`;
                 break;
@@ -92,7 +95,7 @@ function childBuilder(child, shortChild, shortParent) {
                 itemHTML = sliderBuilder(child, shortChild, shortParent);
                 childHTML=
                     `<div id='${child.name}'>
-                        <h6 class='respo-hover-blue child ${shortParent} ${shortChild}'>
+                        <h6 class='w3-hover-blue child ${shortParent} ${shortChild}'>
                         </h6>${child.name}&emsp;<i class='count s'>(${child.total})</i>
                     <div id='sliderwildcard'>${itemHTML} </div></div>`;
                 break;
@@ -103,7 +106,7 @@ function childBuilder(child, shortChild, shortParent) {
                 // childHTML = itemHTML
                 childHTML =
                     `<div id='${child.name}'>
-                        <h6 class='respo-hover-blue nav child ${shortParent} ${shortChild}'>
+                        <h6 class='w3-hover-blue nav child ${shortParent} ${shortChild}'>
                         </h6>${child.name}&emsp;<i><div class='count d'>(${child.total})</div></i>${itemHTML}
                     </div>`;
                 break;
@@ -113,19 +116,21 @@ function childBuilder(child, shortChild, shortParent) {
                 itemHTML = drawBuilder(child, shortChild, shortParent);
                 childHTML=
                     `<div id='${child.name}'>
-                        <h6 class='respo-hover-blue nav child ${shortParent} ${shortChild} count m${shortParent}'></h6>
+                        <h6 class='w3-hover-blue nav child ${shortParent} ${shortChild} count m${shortParent}'></h6>
                         ${child.name}&emsp;<i><div class='count'>(${child.total})</div></i>${itemHTML}
                     </div>`;
-                break;
+                return childHTML
+                // break;
         }
     }
     else if (child.total === 1) {
         itemHTML = itemBuilder(child, shortChild, shortParent);
         childHTML =
-            `<div id='${child.name}'><h6 class='respo-hover-blue child ${shortParent} ${shortChild}'></h6>
+            `<div id='${child.name}'><h6 class='w3-hover-blue child ${shortParent} ${shortChild}'></h6>
             ${child.name}: ${itemHTML}</div>`
     }
-    return childHTML
+    return `<div id='subaccordion'> ${childHTML} </div>`
+    // return childHTML
 }
 
 /* Builds a calender to select dates*/
@@ -151,7 +156,7 @@ function boolBuilder(child, shortChild, shortParent) {
     for (i = 1; i <= 2; i++) {
         shortItem = 'I'+ i.toString();
         cItem = child[shortItem];
-        itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
+        itemHTML += `<a class='w3-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
             onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","${shortItem}")'>${cItem.name}&emsp;
             <i><span class='count'>(${cItem.total})</span></i>
             </a>`;
@@ -172,19 +177,19 @@ function boolBuilder(child, shortChild, shortParent) {
 function sliderBuilder(child, shortChild, shortParent) {
     return `<div class='slider ${shortParent} ${shortChild}' name='${child.name}'
         minV='${ child.selectable_min.toString()}' maxv='${child.selectable_max.toString()}'></div>
-        <div class="respo-row-padding">
-            <div class="respo-half"><input id="slide-0${shortParent}${shortChild}" title="min-${child.name}"
-                class="respo-input respo-hover-blue" style="width: 80px;" placeholder="One" type="number"></div>
-            <div class="respo-half"><input id="slide-1${shortParent}${shortChild}" title="max-${child.name}"
-                class="respo-input respo-hover-blue" style="width: 80px;" placeholder="two" type="number"></div>
+        <div class="w3-row-padding">
+            <div class="w3-half"><input id="slide-0${shortParent}${shortChild}" title="min-${child.name}"
+                class="w3-input w3-hover-blue" style="width: 80px;" placeholder="One" type="number"></div>
+            <div class="w3-half"><input id="slide-1${shortParent}${shortChild}" title="max-${child.name}"
+                class="w3-input w3-hover-blue" style="width: 80px;" placeholder="two" type="number"></div>
         </div>`;  // respective field for min and max is accessed by 0 and 1 in id
 }
 
 /* build a button to open the draw menue */
 function drawBuilder(child, shortChild, shortParent) {
-    return `<a class='respo-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")'
+    return `<a class='w3-hover-blue btn' onClick='drawPolygon("${shortParent}","${shortChild}","${child}")'
         id='toggle_draw' title='Click here to select from drawing'>Open draw menu</a>`;
-//    return `<a class='respo-hover-blue btn' id='toggle_draw' title='Click here to select from map'>Open draw menu</a>`;
+//    return `<a class='w3-hover-blue btn' id='toggle_draw' title='Click here to select from map'>Open draw menu</a>`;
 }
 
 /* build items to click on in the Filter Menu*/
@@ -195,7 +200,7 @@ function itemBuilder(child, shortChild, shortParent) {
     for (i = 1; i <= ctot; i++) {
         shortItem = 'I'+ i.toString();
         cItem = child[shortItem];
-        itemHTML += `<a class='respo-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
+        itemHTML += `<a class='w3-hover-blue btn ${shortParent} ${shortChild} ${shortItem}'
             onclick='itemButtonFunction(this,"${shortParent}","${shortChild}","${shortItem}")'>${cItem.name}&emsp;
             <i><span class='count'>(${cItem.total})</span></i>
             </a>`;
@@ -314,7 +319,7 @@ function showAllPointsOnMap(){
        .done(function (json) {
        })
 
-//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+//    document.getElementById("workspace").innerHTML += "<li class='w3-padding' id='"+selectedData+"'><span class='w3-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='w3-hover-white w3-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
 /* button to remove the selection in the filter menu, reset values on items, and show all points on map */
@@ -365,7 +370,7 @@ async function showSelectionOnMap(selection) {
             wfsPointSource.refresh();
             // document.getElementById()
     })
-//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+//    document.getElementById("workspace").innerHTML += "<li class='w3-padding' id='"+selectedData+"'><span class='w3-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='w3-hover-white w3-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
 /* send json Object with selection to server and get int(in a json) with amount of items back */
@@ -381,7 +386,7 @@ async function getCountFromServer(selection) {
         .done(function (json) {
             _updateCounts(json);
     });
-//    document.getElementById("workspace").innerHTML += "<li class='respo-padding' id='"+selectedData+"'><span class='respo-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='respo-hover-white respo-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+//    document.getElementById("workspace").innerHTML += "<li class='w3-padding' id='"+selectedData+"'><span class='w3-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='w3-hover-white w3-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
 /* updates the numbers for each item */
@@ -396,10 +401,10 @@ function _updateCounts(json) {
                 itemHTML = document.getElementsByClassName(`${parent} ${child} ${item}`);
                 itemHTML[0].getElementsByClassName('count')[0].innerHTML = "("+jpc[item]+")";
                 if (jpc[item] == '0'){
-                    itemHTML[0].classList.add('respo-disabled')
+                    itemHTML[0].classList.add('w3-disabled')
                 }
-                else if (itemHTML[0].classList.contains('respo-disabled')) {
-                    itemHTML[0].classList.remove('respo-disabled')
+                else if (itemHTML[0].classList.contains('w3-disabled')) {
+                    itemHTML[0].classList.remove('w3-disabled')
                 }
             }
             if (item == '' && typeof(jpc) == 'number') {

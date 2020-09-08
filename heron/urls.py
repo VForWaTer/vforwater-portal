@@ -27,7 +27,7 @@ urlpatterns = [
     url(r'^workspace/', include('wps_gui.urls', namespace='wps_gui')),
     url(r'^monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
     url(r'^visual/', include('heron_visual.urls', namespace='heron_visual')),
-    url(r'^upload/', include('heron_upload.urls', namespace='heron_upload')),
+    url(r'^upload/', include('upload.urls', namespace='upload')),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     url(r'^user/', include('author_manage.urls', namespace='author_manage')),
 ]

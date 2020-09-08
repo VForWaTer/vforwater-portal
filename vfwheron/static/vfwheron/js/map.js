@@ -3,8 +3,10 @@ let wfsLayerName;
 let selectedIdsFilter = null;
 let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
-let dcz = new ol.interaction.DoubleClickZoom();
 let wfsPointSource;
+// let dcz = new ol.interaction.DoubleClickZoom();
+
+/* build style for cluster */
 let styleCache = {};
 
 function clusterStyle(feature) {
@@ -38,7 +40,9 @@ function clusterStyle(feature) {
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
-    let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
+    let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
+        'EPSG:4326', 'EPSG:3857'); // bbox of available data
+
     wfsLayerName = document.getElementById('data_layer').value;
     if (wfsLayerName.search("Error") !== -1) {
         console.error(wfsLayerName)
@@ -349,10 +353,10 @@ function create_map() {
         if (Object.keys(idDict).length < nDat) {
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
-                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="w3-btn-simple"' +
                         'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
-                    pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                    pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="w3-btn-simple"' +
                         'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
@@ -382,10 +386,10 @@ function create_map() {
              pagi = prePagi*/
             for (let i = 1; i <= page; i++) {
                 if (i == 1) {
-                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="w3-btn-simple"' +
                         'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 } else {
-                    pagi += '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
+                    pagi += '<li id="pagi' + i + '"><a><input type="submit" class="w3-btn-simple"' +
                         'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
                 }
             }
@@ -397,7 +401,6 @@ function create_map() {
 
 
     function popupContent(ids, page) {
-        console.log('ids, page: ', ids, page)
         if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
             page = JSON.parse("[" + ids + "]").slice(-1);
             ids = JSON.parse("[" + ids + "]").slice(0, -1);
@@ -428,7 +431,7 @@ function create_map() {
 
             })
             .fail(function (e) {
-                console.log('fehler: ', e)
+                console.error('fehler: ', e)
                 metaData_Overlay.setPosition(undefined);
                 document.getElementById('popup-content').remove("loader")
                 alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
@@ -442,9 +445,7 @@ function create_map() {
 
 
     function buildPopupText(json, popUpText) {
-        // console.log('ist da')
         let valueLen;
-        let buttonId = [];
         // loop over "properties" dict with metadata, build columns
         for (let j in json) {
             // let values = eval('properties["' + j + '"]');
@@ -454,25 +455,36 @@ function create_map() {
             // loop over dict values and build rows
             for (let k = 0; k < valueLen; k++) {
                 popUpText += `<td>${values[k]}</td>`;
-                if (j.toLowerCase() == 'id') {
-                    buttonId.push(values[k])
-                }
             }
             popUpText += '</tr>'
         }
         popUpText += '<tr><td><b></b></td>';
         // build buttons for each dataset
+        function moreBtn(listIndex) {
+            return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
+                'type="submit" onclick=\"moreInfoModal(\'' + json.id[listIndex] + '\')\" value="More" ' +
+                'data-toggle="tooltip" title="Show more information about the dataset."></b></a>'}
+        function storeBtn(listIndex) {
+            if (!json.Embargo[listIndex] || UNBLOCKED_IDS.includes(json.id[listIndex])) {
+                return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
+                    'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" value="Pass to datastore" ' +
+                    'data-toggle="tooltip" title="Put dataset to session datastore"></b></a>'
+            } else {
+                return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
+                    'onclick=\"requestDataset(\'' + json.id[listIndex] + '\')\" value="Send request" ' +
+                    'data-toggle="tooltip" title="Send an access request to the data owner."></b></a>'
+            }
+        }
         for (let k = 0; k < valueLen; k++) {
-            popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
-                'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
-                'title="Show more information about the dataset."></b></a>' +
-                // 'title="Attention! Loading the preview might take a while."></b></a>' +
-                '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
-                'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
-                'title="Put dataset to session datastore"></b></a></td>';
+            popUpText += '<td>' + moreBtn(k) + storeBtn(k) + '</td>'
         }
 
         let popupTableAfterMeta = popUpText + '</table>';
         // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
         return popupTableAfterMeta //+ img_preview;
+    }
+
+
+    function requestDataset(dataId) {
+        console.warn('Noch nicht implementiert.')
     }
