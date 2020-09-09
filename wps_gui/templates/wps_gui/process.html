@@ -32,8 +32,8 @@
 
 {#{% block modal %}#}
   <!-- Process Overview -->
-<div id="modal" class="respo-modal">
-<div class="respo-modal-content">
+<div id="modal" class="w3-modal">
+<div class="w3-modal-content">
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
       <h1>{{ process.title }}</h1>
@@ -79,7 +79,7 @@
                                 {% for datasets in workspaceData %}
                                     <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
                                 {% comment %}{% empty %}
-                                    <option class="respo-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>{% endcomment %}
+                                    <option class="w3-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>{% endcomment %}
                                 {% endfor %}
                                     <option value = "select tstamp, value from tbl_data where meta_id=2557"> Colpach</option>
                                     <option value = "select tstamp, value from tbl_data where meta_id=2558"> Huewelerbach</option>

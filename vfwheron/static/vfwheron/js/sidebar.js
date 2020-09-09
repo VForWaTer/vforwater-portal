@@ -511,7 +511,7 @@ function menuItemListener(link) {
 
         case "View":
             $.ajax({
-                url: DEMO_VAR + "/home/menu",
+                url: DEMO_VAR + "/home/show_info",
                 dataType: 'json',
                 data: {
                     show_info: JSON.stringify([id]),
@@ -646,7 +646,7 @@ function menuItemListener(link) {
             //     }
             // })
             $.ajax({
-                url: DEMO_VAR + "/home/menu",
+                url: DEMO_VAR + "/home/previewplot",
                 datatype: 'json',
                 data: {
                     preview: id,

@@ -3,7 +3,7 @@
 #   * Rearrange models' order
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
@@ -14,8 +14,6 @@ from django.contrib.gis.db import models
 
 # TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
 #  explanation
-from django.db.models.signals import post_save
-from django.dispatch.dispatcher import receiver
 
 
 # class DjangoMigrations(models.Model):
@@ -83,17 +81,6 @@ from django.dispatch.dispatcher import receiver
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
 #   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
-
-
-##
-# Seems to be unused
-##
-# class AlembicVersion(models.Model):
-#     version_num = models.CharField(primary_key=True, max_length=32)
-#
-#     class Meta:
-#         managed = True
-#         db_table = 'alembic_version'
 
 
 class DatasourceTypes(models.Model):
@@ -618,10 +605,6 @@ class BasicFilter:
     # menu_entries = [variables]
     menu_entries = [Variables, Licenses, Entries]  # Licenses]
 
-    print('________')
-    # a = Entries.objects.using('mcdev').filter(variable__name='sap flow')
-    # a = Entries.objects.using('mcdev').filter(nmpersonsentries__person__first_name='Inst.')
-    # print(a)
     # class Meta:
     #     abstract = True
 

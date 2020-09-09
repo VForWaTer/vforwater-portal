@@ -381,7 +381,7 @@ function create_map() {
                  }
              }
              console.log('pagiObj: ', pagiObj)
-             let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
+             let prePagi = '<li id="prePagi"><a><input type="submit" class="w3-btn-simple"' +
                          'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
              pagi = prePagi*/
             for (let i = 1; i <= page; i++) {
@@ -413,7 +413,7 @@ function create_map() {
 
         // request info from server
         $.ajax({
-            url: DEMO_VAR + "/home/menu",
+            url: DEMO_VAR + "/home/short_datainfo",
             dataType: 'json',
             data: {
                 short_info: JSON.stringify(ids),

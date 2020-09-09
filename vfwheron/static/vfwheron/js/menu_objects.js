@@ -36,10 +36,7 @@ function menuBuilder(parent) {
         for (let c = 1; c <= ctot; c++) {  // build child menu
             let child = 'C'+c.toString();
             let childHTML = _childBuilder(JSMENU[parent][child], child, parent);
-            // let childHTML = childBuilder(eval("JSMENU[parent]."+[child]), child, parent);
-            console.log('childHTML: ', childHTML)
             parentHTML += childHTML
-            // parentHTML += `<div id='subaccordion'> ${childHTML}   </div>`
         }
         FILTERMENU = document.getElementById("accordion").innerHTML +=
             `<h5 class='w3-hover-blue nav parent ${parent}'>${JSMENU[parent].name}</h5>
@@ -263,18 +260,6 @@ $(document).ready(function (){
     })
 });
 
-// $(document).ready(addDatePicker);
-// function addDatePicker() {
-//     var handlesDate =  document.getElementsByClassName('date');
-//     console.log('handlesDate: ', handlesDate)
-//     for (let d = 0; d < handlesDate.length; d++) {
-//         console.log('date: ', handlesDate[d])
-//         console.log("document."+handlesDate[d].id+".datepicker()")
-//         eval("document."+handlesDate[d].id+".datepicker()");
-//         // $( "#handlesDate[i].name" ).datepicker();
-//     }
-//   } ;
-
 /* Add onclick functionality to the items in the menu to update menu and show selection on map */
 function itemButtonFunction(item, shortParent, shortChild, shortItem) {
     let activeSibling = checkSiblings(item);
@@ -356,10 +341,10 @@ function reset_filter(){
 /* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
 async function showSelectionOnMap(selection) {
     $.ajax({
-        url: DEMO_VAR + "/home/menu",
+        url: DEMO_VAR + "/home/filter_map_selection",
         dataType: 'json',
         data: {
-            filter_selection_map: JSON.stringify(selection),
+            filter_map_selection: JSON.stringify(selection),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
     })
@@ -368,15 +353,16 @@ async function showSelectionOnMap(selection) {
             wfsLayerName = json['ID_layer'];
             selectedIdsFilter = json['IDs'];
             wfsPointSource.refresh();
-            // document.getElementById()
     })
-//    document.getElementById("workspace").innerHTML += "<li class='w3-padding' id='"+selectedData+"'><span class='w3-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='w3-hover-white w3-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
+        .fail(function (e) {
+            console.warn('Cannot update your map: ', e)
+        })
 }
 
 /* send json Object with selection to server and get int(in a json) with amount of items back */
 async function getCountFromServer(selection) {
     $.ajax({
-        url: DEMO_VAR + "/home/menu",
+        url: DEMO_VAR + "/home/filter_selection",
         dataType: 'json',
         data: {
             filter_selection: JSON.stringify(selection),
@@ -386,7 +372,6 @@ async function getCountFromServer(selection) {
         .done(function (json) {
             _updateCounts(json);
     });
-//    document.getElementById("workspace").innerHTML += "<li class='w3-padding' id='"+selectedData+"'><span class='w3-medium'>"+selectedData+"</span><a href='javascript:void(0)' onclick=this.parentElement.remove(); class='w3-hover-white w3-right'><i class='fa fa-remove fa-fw'></i></a><br></li>";
 }
 
 /* updates the numbers for each item */

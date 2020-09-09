@@ -425,14 +425,14 @@ def get_pickle(ident):
 #
 #     return render(request, 'wps_gui/process.html', context)
 
-
+# TODO:
 def development(request):
     """
     Create a page to show when something isn't working.
     """
     return HttpResponse("We apologize for the inconvenience.\\ At the moment this site is under heavy development.")
 
-
+# TODO:
 def clean_wpsresult():
     """
     Delete database entries that have no outputs or that haven't been accessed for a XXX days

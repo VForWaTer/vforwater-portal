@@ -40,7 +40,7 @@ def get_bbox_from_data(selected_ids=None):  # get bbox for available data
         logger.warning('\033[91m Data Extend cannot be loaded in query_functions.py. Using fixed values.\033[0m')
         # m = ['5798222.6196955', '1257192.40494065', '5798286.18312474', '1257331.99671517']
         m = ['11.221124', '52.08632', '11.222354', '52.086891']
-    print('m: ', m)
+
     return list(map(lambda x: float(x), m))  # change string to list of floats
 #
 # def dictfetchall(cursor):

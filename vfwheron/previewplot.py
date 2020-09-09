@@ -9,14 +9,16 @@ from datetime import time
 from math import radians, ceil, sqrt
 from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
-    DateSlider, DateRangeSlider
+    DateSlider, DateRangeSlider, Whisker
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Oranges9, Spectral11
 
 from django.db import connections
-from numpy import mean
+from django.http.response import JsonResponse
+from numpy import mean, subtract, add
+import numpy as np
 
 from vfwheron.models import Entries
 

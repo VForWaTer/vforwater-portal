@@ -211,16 +211,10 @@ class Menu:
         :type user:
         """
         # to see menu items without content set min_amount to 0
-        # self.min_amount = 0 if DEBUG else 1
         self.min_amount = 1
         self.user = user
         self.user_query_set()
-        # self.user = user
         self.menu_list = Menu.menu_list
-        # self.menu_list = BasicFilter.menu_entries
-        # self.menu_list = [LtDomain]
-        # self.menu()
-        # self.write_json_menu()
 
     def user_query_set(self):
         """
@@ -231,13 +225,8 @@ class Menu:
         """
         if self.user == 'default':
             query_set = Entries.objects.filter(embargo=False).all()
-            for i in query_set:
-                # return
-                print('i: ', i)
-                print('query_set: ', query_set.__len__())
-                # print('query_set: ', query_set.filter(tbl))
         else:
-            pass
+            query_set = MyResourcesView.get_queryset(self) | Entries.objects.filter(embargo=False).all()
 
         return query_set
 
@@ -250,33 +239,13 @@ class Menu:
         :rtype:
         Function to build the actual menu
         """
-        # print('********************')
-        # print(Entries.objects.using('mcdev').filter(embargo=False).all())
-        # for i in Entries.objects.using('mcdev').all():
-        #     print('test 1a: ', i)
-        #     print('test 1b: ', i.creation, i.end, i.version, i.license, i.variable, i.embargo, i.details_set,
-        #           i.variable.keyword)
-        from vfwheron.models import BasicFilter
-        # print('1 Basicfilter: ', BasicFilter)
-        # print('2 Basicfilter: ', BasicFilter.__dict__)
-        # print('3 Basicfilter: ', BasicFilter.variables)
-        # print('4 Basicfilter: ', BasicFilter.menu_entries)
-        # print('3 Basicfilter: ', BasicFilter.embargo)
-        # for i in BasicFilter.menu_entries:
-        #     print('i: ', i)
-            # print('BasicFilter.menu_entries[i]: ', BasicFilter.menu_entries[i])
-        # print('------------')
-        # print(BasicFilter.a)
-        # print('ACHTUNG!!! DU BAUST EIN MENU!!!')  # One line to check how often this is accessed        count = 0
         json_menu = {}  # menu for client
         menu_map = {}  # menu for server
         count = 0
         for table in self.menu_list:
             whole_menu = Table(table, self.min_amount, self.user_query_set)
-            # print('whole_menu: ', whole_menu)
             json_table = whole_menu.json_child['client']
             map_table = whole_menu.json_child['server']
-            # map_table = whole_menu.map_child
             if json_table['total'] >= self.min_amount:
                 count = count + 1
 
@@ -378,25 +347,10 @@ class Table:
         """
         for columns in self.child_columns:
             # if else when you want filter for default user
-            if self.table_name.path:
-                table_path = self.table_name.path + '__' + columns
-            #     # query_set =
-            # Entries.objects.using('mcdev').select_related().filter(license__share=True).values_list(table_path, flat=True).distinct()
-                query_set = Entries.objects.select_related().filter(**{table_path: True})
-                # query_set = Entries.objects.select_related().filter(license__share=True)
-            #     query_set = self.default_query.values_list(table_path, flat=True).distinct()
-            #     # print(' * * *  * * * * query_set: ', query_set)
-            #
-            #     # print('query2: ', query2)
-            # else:
-            #     query_set = self.default_query.values_list(columns, flat=True).distinct()
-            # excluder = {'{0}'.format(columns): None}
-            # query_set = list(self.table_name.objects.select_related().distinct().exclude(**excluder).
-            #                  values_list(columns, flat=True))
+            # if self.table_name.path:
+            #     table_path = self.table_name.path + '__' + columns
+            #     query_set = Entries.objects.select_related().filter(**{table_path: True})
             query_set = list(self.table_name.objects.select_related().distinct().values_list(columns, flat=True))
-            # print('+ query_set a: ', query_set)
-            # print('+ query_set b: ', self.table_name.objects.values_list(columns, flat=True))
-            # print('+ excluder: ', excluder)
             if len(query_set) > 0:
                 self.child[columns] = query_set
 
@@ -474,8 +428,7 @@ class Table:
 
         result = {'total': counter, 'C': json_all_childs}
         map_result = {'C': map_all_childs}
-        # print('client: ', result)
-        # print('server: ', map_result)
+
         return {'client': result, 'server': map_result}
 
     def __build_default_json(self, grand_child):
@@ -486,7 +439,7 @@ class Table:
         :return:
         :rtype:
         """
-        print('\033[34m' + '+++')
+        # print('\033[34m' + '+++')
         all_grandchilds = {}
         map_grandchilds = {}
         counter = 0
@@ -510,7 +463,7 @@ class Table:
         # if there are no values for the submenu, return nothing
         # print('server', map_grandchilds)
         # print({'json': all_grandchilds, 'total': counter, 'server': map_grandchilds})
-        print('---', '\033[0m')
+        # print('---', '\033[0m')
         return {'json': all_grandchilds, 'total': counter, 'server': map_grandchilds}
 
     def __build_bool_json(self, grand_child):
@@ -521,29 +474,8 @@ class Table:
         :return:
         :rtype:
         """
-        print('\033[32m' + '+++')
+        # print('\033[32m' + '+++')
         total = []
-        # if self.child[grand_child]:
-        #     values = [False, True]
-        #     for i, case in enumerate(values):
-        #         print('_______________________')
-        #         print('i: ', i)
-        #         print('case: ', case)
-        #         filtermap = {'{0}'.format(self.query_paths[grand_child]): i}
-        #         total.append(Entries.objects.filter(**filtermap).count())
-        #
-        #     all_grandchilds = {'I1': {'false': total[0], 'true': total[1]}}
-        #     map_grandchilds = {'I1': {'name': values}}
-        # # if there are no values for the submenu, return nothing
-        # grandchild_dict = {
-        #     'type': 'bool',
-        #     'False': total[0],
-        #     'True': total[1],
-        # }
-        # map_grandchild_dict = {
-        #     'type': 'bool',
-        # }
-        # return {'json': grandchild_dict, 'total': 1, 'server': map_grandchild_dict}
         all_grandchilds = {}
         map_grandchilds = {}
         counter = 0
@@ -565,13 +497,13 @@ class Table:
                                         'I' + str(i+1): grandchild_dict})
                 map_grandchilds.update({'type': 'bool',
                                         'I' + str(i+1): map_grandchild_dict})
-            print({'json': grandchild_dict, 'total': 1, 'server': map_grandchild_dict})
-            print('server', map_grandchilds)
-            print('json', all_grandchilds)
-            print('i: ', i)
-            print('total: ', total)
-            print('total[0]: ', total[0])
-            print('---', '\033[0m')
+            # print({'json': grandchild_dict, 'total': 1, 'server': map_grandchild_dict})
+            # print('server', map_grandchilds)
+            # print('json', all_grandchilds)
+            # print('i: ', i)
+            # print('total: ', total)
+            # print('total[0]: ', total[0])
+            # print('---', '\033[0m')
         return {'json': all_grandchilds, 'total': total[1], 'server': map_grandchilds}
 
     def __build_slider_json(self, grand_child):
@@ -585,21 +517,14 @@ class Table:
         counter = 0
         total = len(self.child[grand_child])
         keyword = self.query_paths[grand_child]
-        # print('keyword: ', keyword)
         excl_nan = {'{0}'.format(keyword): 'NaN'}
         excl_none = {'{0}'.format(keyword): None}
         c_min = {'{0}'.format('min_value'): Min(keyword)}
         c_max = {'{0}'.format('max_value'): Max(keyword)}
-        # total = eval("Entries.objects.using('mcdev').filter(" + grand_child + ").count()")
+
         try:
-            # min_max = eval("Entries.objects.using('mcdev').exclude(" + self.query_paths[grand_child] +
-            #             "='NaN').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'), max_value=Max('" +
-            #                self.query_paths[grand_child] + "'))")
             min_max = Entries.objects.exclude(**excl_nan).exclude(**excl_none).aggregate(**c_min, **c_max)
-            # print('min_max: ', min_max)
         except ValueError:
-            # min_max = eval("Entries.objects.using('mcdev').aggregate(min_value=Min('" + self.query_paths[grand_child] +
-            #                "'), max_value=Max('" + self.query_paths[grand_child] + "'))")
             min_max = Entries.objects.aggregate(**c_min, **c_max)
             return {'json': '', 'total': 0, 'server': ''}
         grandchild_dict = {
@@ -627,15 +552,12 @@ class Table:
         :return:
         :rtype:
         """
-        print('date')
         counter = 0
         total = len(self.child[grand_child])
         d_min = {'{0}'.format('min_value'): Min(self.query_paths[grand_child])}
         d_max = {'{0}'.format('max_value'): Max(self.query_paths[grand_child])}
 
         min_max = Entries.objects.aggregate(**d_min, **d_max)
-        # min_max = eval("Entries.objects.using('mcdev').aggregate(min_value=Min('" + self.query_paths[grand_child] + "'),
-        #   max_value=Max('" + self.query_paths[grand_child] + "'))")
         grandchild_dict = {
             'type': 'date',
             'total': total,
@@ -746,12 +668,8 @@ class Table:
         :return:
         :rtype:
         """
-        # types = Entries.objects.using('mcdev').values_list('geometry__geometry_type', flat=True).distinct().
-        #   exclude(geometry__geometry_type=None)
         counter = 0
-        # for values in self.child[grand_child]:  # for now only for POINT data
         values = 'POINT'
-        # total = Entries.objects.using('mcdev').filter(geometry__geometry_type=values).count()
         total = Entries.objects.values('location').count()
         grandchild_dict = {
             'type': 'draw',
@@ -766,8 +684,6 @@ class Table:
 
         if total >= self.min_amount:
             counter = counter + 1
-            # all_grandchilds.update({'I' + str(counter): grandchild_dict})
-            # map_grandchilds.update({'I' + str(counter): map_grandchild_dict})
         # if there are no values for the submenu, return nothing
         return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
 
