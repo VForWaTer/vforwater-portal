@@ -3,7 +3,7 @@
 #   * Rearrange models' order
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
@@ -13,569 +13,172 @@ from django.contrib.gis.db import models
 
 
 # TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
-# explanation
-from django.db.models.signals import post_save
-from django.dispatch.dispatcher import receiver
+#  explanation
 
 
-class DjangoMigrations(models.Model):
-    """
-
-    """
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
-class LtDomain(models.Model):
-    """
-
-    """
-    pid = models.ForeignKey('self', models.DO_NOTHING, db_column='pid', blank=True, null=True)
-    domain_name = models.CharField(max_length=65)
-    project = models.ForeignKey('LtProject', models.DO_NOTHING, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {'project__project_name': 'Project'}
-    menu_name = 'Project/Domain'
-    submenu_names = {'Project': 'Project', 'Domain': 'Domain', 'Subdomain': 'Subdomain'}
-    path = 'nmmetadomain__domain'
-
-    # Recursive exists only in that table, so the build process is highly customized to that one
-    filter_type = {'project__project_name': 'recursive'}
-    mother = 'LtProject'
-
-    def __str__(self):
-        return self.domain_name
-
-    class Meta:
-        managed = False
-        db_table = 'lt_domain'
-
-
-class LtLicense(models.Model):
-    """
-
-    """
-    license_abbrev = models.CharField(max_length=20)
-    license_name = models.CharField(max_length=255)
-    legal_text = models.TextField(blank=True, null=True)
-    text_url = models.CharField(max_length=255, blank=True, null=True)
-    # TODO: Try to reduse flags in a table and use choices instead:
-    # https://steelkiwi.com/blog/best-practices-working-django-models-python/
-    access = models.BooleanField()
-    share = models.BooleanField()
-    edit = models.BooleanField()
-    commercial = models.BooleanField()
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {'license_abbrev': 'License name'}
-    menu_name = 'License'
-    path = 'license'
-
-    def __str__(self):
-        return self.license_name
-
-    class Meta:
-        managed = False
-        db_table = 'lt_license'
-
-
-class LtLocation(models.Model):
-    """
-
-    """
-    centroid_x = models.DecimalField("X-Coordinate", max_digits=65535, decimal_places=65535, blank=True, null=True)
-    centroid_y = models.DecimalField("Y-Coordinate", max_digits=65535, decimal_places=65535, blank=True, null=True)
-    srid = models.ForeignKey('SpatialRefSys', models.DO_NOTHING, db_column='srid', blank=True, null=True)
-    geometry_type = models.CharField("Geometry", max_length=15, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-    geom = models.GeometryField(unique=True, srid=0)
-
-    column_dict = {'geometry_type': 'Geometry'}
-    # column_dict = {'centroid_x': 'X-Coordinate', 'centroid_y': 'Y-Coordinate', 'geometry_type': 'Geometry'}
-    menu_name = 'Location'
-    path = 'geometry'
-    filter_type = {'geometry_type': 'draw'}
-    # filter_type = {'centroid_x': 'slider', 'centroid_y': 'slider', 'geom': 'draw'}
-
-    def __str__(self):
-        # return '%s %s' % (self.centroid_x, self.centroid_y)
-        return '{"type": %s, "coordinates": [%s %s], "srid": %s}' % (
-            self.geometry_type, self.centroid_x, self.centroid_y, self.srid)
-
-    class Meta:
-        managed = False
-        db_table = 'lt_location'
-
-
-class LtProject(models.Model):
-    """
-
-    """
-    project_name = models.CharField(unique=True, max_length=65)
-    user = models.ForeignKey('LtUser', models.DO_NOTHING, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {'project_name': 'Project name'}
-    menu_name = 'project'
-    path = 'nmmetadomain__domain__project'
-
-    def __str__(self):
-        return self.project_name
-
-    class Meta:
-        managed = False
-        db_table = 'lt_project'
-
-
-class LtQuality(models.Model):
-    """
-
-    """
-    flag_name = models.CharField("flag", max_length=25)
-    flag_weight = models.IntegerField("quantifier", blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {'flag_name': 'Flag', 'flag_weight': 'Quantifier'}
-    menu_name = 'Quality'
-    path = 'quality'
-    filter_type = {'flag_weight': 'slider'}
-
-    def __str__(self):
-        return self.flag_name
-
-    class Meta:
-        managed = False
-        db_table = 'lt_quality'
-
-
-class LtSite(models.Model):
-    """
-
-    """
-    site_name = models.CharField(max_length=65, blank=True, null=True)
-    elevation = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    rel_height = models.DecimalField("relative height", max_digits=65535, decimal_places=65535, blank=True, null=True)
-    orientation_degree = models.IntegerField("orientation", blank=True, null=True)
-    slope = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    landuse = models.CharField(max_length=65, blank=True, null=True)
-    site_comment = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {
-        'site_name': 'Site name', 'elevation': 'Elevation', 'rel_height': 'Relative height',
-        'orientation_degree': 'Orientation', 'slope': 'Slope', 'landuse': 'Landuse',
-        'site_comment': 'Site comment'
-    }
-    menu_name = 'Site'
-    path = 'site'
-    filter_type = {
-        'elevation': 'slider', 'rel_height': 'slider', 'orientation_degree': 'slider', 'slope': 'slider'
-    }
-
-    def __str__(self):
-        return self.site_name  # TODO: is this useful? At the moment there is no information in site_name
-
-    class Meta:
-        managed = False
-        db_table = 'lt_site'
-
-
-class LtSoil(models.Model):
-    """
-
-    """
-    geology = models.CharField(max_length=65, blank=True, null=True)
-    soil_type = models.CharField(max_length=65, blank=True, null=True)
-    porosity = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    field_capacity = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    residual_moisture = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {
-        'geology': 'Geology', 'soil_type': 'Soil Type', 'porosity': 'Porosity',
-        'field_capacity': 'Field Capacity', 'residual_moisture': 'Residual Moisture'
-    }
-    menu_name = 'Soil'
-    path = 'soil'
-
-    def __str__(self):
-        return self.geology  # TODO: at the moment only values in geology and nothing in soil_type. Check if geology
-        # is always filled
-
-    class Meta:
-        managed = False
-        db_table = 'lt_soil'
-
-
-class LtSourceType(models.Model):
-    """
-
-    """
-    type_name = models.CharField(unique=True, max_length=65)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    def __str__(self):
-        return self.type_name
-
-    class Meta:
-        managed = False
-        db_table = 'lt_source_type'
-
-
-class LtUnit(models.Model):
-    """
-
-    """
-    unit_name = models.CharField("unit", unique=True, max_length=65)
-    unit_abbrev = models.CharField(max_length=15)
-    unit_symbol = models.CharField(max_length=5)
-    derived_si = models.NullBooleanField()
-    to_derived_si = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {'unit_name': 'Unit'}
-
-    def __str__(self):
-        return self.unit_name
-
-    class Meta:
-        managed = False
-        db_table = 'lt_unit'
-
-
-class LtUser(models.Model):
-    """
-
-    """
-
-    is_institution = models.BooleanField()
-    first_name = models.CharField(max_length=65, blank=True, null=True)
-    last_name = models.CharField(max_length=65, blank=True, null=True)
-    institution_name = models.CharField("institution", max_length=255, blank=True, null=True)
-    department = models.CharField(max_length=255, blank=True, null=True)
-    email = models.CharField(max_length=60, blank=True, null=True)
-    comment = models.TextField("user Comment", blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {
-        'institution_name': 'Institution', 'department': 'Department',
-        'last_name': 'Last name', 'first_name': 'First name', 'comment': 'User Comment'
-    }
-    menu_name = 'User'
-    path = 'creator'
-
-    def __str__(self):
-        return '%s %s' % (self.first_name, self.last_name)
-
-    class Meta:
-        managed = False
-        db_table = 'lt_user'
-
-
-class NmMetaDomain(models.Model):
-    """
-
-    """
-    meta = models.ForeignKey('TblMeta', models.DO_NOTHING, blank=True, null=True)
-    domain = models.ForeignKey(LtDomain, models.DO_NOTHING, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'nm_meta_domain'
-
-
-class SpatialRefSys(models.Model):
-    """
-
-    """
-    srid = models.IntegerField(primary_key=True)
-    auth_name = models.CharField(max_length=255, blank=True, null=True)
-    auth_srid = models.IntegerField(blank=True, null=True)
-    srtext = models.TextField(blank=True, null=True)
-    proj4text = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return '%s %s' % (self.auth_name, self.auth_srid)
-
-    class Meta:
-        managed = False
-        db_table = 'spatial_ref_sys'
-
-
-class TblData(models.Model):
-    """
-
-    """
-    tstamp = models.DateTimeField()
-    meta = models.ForeignKey('TblMeta', models.DO_NOTHING)
-    value = models.DecimalField(max_digits=65535, decimal_places=65535)
-
-    def __str__(self):
-        return self.value  # TODO: is that okay?
-
-    class Meta:
-        managed = False
-        db_table = 'tbl_data'
-        unique_together = (('tstamp', 'meta'),)
-
-
-class TblDataSource(models.Model):
-    """
-
-    """
-    source_type = models.ForeignKey(LtSourceType, models.DO_NOTHING, blank=True, null=True)
-    source_path = models.TextField()
-    settings = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    def __str__(self):
-        return self.source_path
-
-    class Meta:
-        managed = False
-        db_table = 'tbl_data_source'
-
-
-class TblMeta(models.Model):
-    """
-
-    """
-    ts_start = models.DateTimeField("start of measurement", blank=True, null=True)
-    ts_stop = models.DateTimeField("end of measurement", blank=True, null=True)
-    external_id = models.CharField(max_length=255, blank=True, null=True)
-    support = models.CharField(max_length=255, blank=True, null=True)
-    spacing = models.CharField(max_length=255, blank=True, null=True)
-    creator = models.ForeignKey(LtUser, models.DO_NOTHING, blank=True, null=True, related_name='creator')
-    publisher = models.ForeignKey(LtUser, models.DO_NOTHING, blank=True, null=True, related_name='Publisher')
-    geometry = models.ForeignKey(LtLocation, models.DO_NOTHING, blank=True, null=True)
-    license = models.ForeignKey(LtLicense, models.DO_NOTHING, blank=True, null=True)
-    quality = models.ForeignKey(LtQuality, models.DO_NOTHING, blank=True, null=True)
-    site = models.ForeignKey(LtSite, models.DO_NOTHING, blank=True, null=True)
-    soil = models.ForeignKey(LtSoil, models.DO_NOTHING, blank=True, null=True)
-    variable = models.ForeignKey('TblVariable', models.DO_NOTHING, blank=True, null=True)
-    sensor = models.ForeignKey('TblSensor', models.DO_NOTHING, blank=True, null=True)
-    source = models.ForeignKey(TblDataSource, models.DO_NOTHING, blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    # TODO: ussed because users are creator and publisher. Improve this!
-
-    column_dict = {
-        'ts_start': 'Start of measurement', 'ts_stop': 'End of measurement',
-        'support': 'Support', 'spacing': 'Spacing', 'comment': 'Comment',
-        # 'creator__LtUser': 'Creator', 'publisher__LtUser': 'Publisher'}
-        }
-
-    menu_name = 'Sampling'
-    path = ''
-    filter_type = {'ts_start': 'date', 'ts_stop': 'date'}
-
-    class Meta:
-        managed = False
-        db_table = 'tbl_meta'
-
-
-class TblSensor(models.Model):
-    """
-
-    """
-    sensor_name = models.CharField(max_length=65, blank=True, null=True)
-    manufacturer = models.CharField(max_length=255, blank=True, null=True)
-    documentation_url = models.TextField(blank=True, null=True)
-    last_configured = models.DateTimeField(blank=True, null=True)
-    valid_until = models.DateTimeField(blank=True, null=True)
-    sensor_comment = models.TextField(blank=True, null=True)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {'sensor_name': 'Name', 'manufacturer': 'Manufacturer', 'sensor_comment': 'sensor comment'}
-    menu_name = 'Sensor'
-    path = 'sensor'
-
-    def __str__(self):
-        return self.sensor_name
-
-    class Meta:
-        managed = False
-        db_table = 'tbl_sensor'
-
-
-class TblVariable(models.Model):
-    """
-
-    """
-    variable_name = models.CharField(unique=True, max_length=65)
-    variable_abbrev = models.CharField(max_length=15)
-    variable_symbol = models.CharField(max_length=5)
-    unit = models.ForeignKey(LtUnit, models.DO_NOTHING)
-    created_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(blank=True, null=True)
-
-    column_dict = {'variable_name': 'Variable Name'}
-    menu_name = 'Data type'
-    path = 'variable'
-
-    def __str__(self):
-        return self.variable_name
-
-    class Meta:
-        managed = False
-        db_table = 'tbl_variable'
-
-
-# TODO rename to english for continuity
-# build BW watershed table
-class Basiseinzugsgebiet(models.Model):
-    """
-
-    """
-    # Regular Django fields corresponding to the attributes in the Basiseinzugsgebiet shapefile.
-    langname = models.CharField(max_length=100)
-    area = models.FloatField()
-    objectid = models.BigIntegerField()
-    object_id = models.FloatField()
-    fg_id = models.BigIntegerField()
-    fgkz_nr = models.FloatField('flussgebietskennzahl')
-    einzugsgeb = models.IntegerField('einzugsgebietsordnung')  # Einzugsgebiets Ordnung – eines Flusses, Baches
-    einzugsg00 = models.CharField('einzugsgebietsordnung in Worten',
-                                  max_length=80)  # Quellgebiet – oberstes Teilgebiet eines Flusses,
-    # Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet
-    #  – unterstes Teilgebiet eines Flusses, Baches
-    einzugsg01 = models.CharField(max_length=1)
-    einzugsg02 = models.CharField(max_length=26)
-    vor_fgkz_n = models.FloatField('flussgebietskennzahl des vorfluters')
-    vor_fg_id = models.FloatField()
-    vor_fg_lan = models.CharField('vorfluter_langname', max_length=100)
-    wasserkoer = models.CharField('wasserkoerper_code', max_length=10)
-    wasserko00 = models.CharField('wasserkoerper_name', max_length=85)
-    aenderungs = models.CharField(max_length=20)
-    aenderun00 = models.CharField(max_length=20)
-    length = models.FloatField()
-    mod_by = models.CharField(max_length=32)
-    last_mod = models.CharField(max_length=20)
-    se_anno_ca = models.CharField(max_length=254)
-    wasserko01 = models.BigIntegerField()
-    # GeoDjango-specific: a geometry field (MultiPolygonField)
-    mpoly = models.MultiPolygonField(srid=31467)
-
-    # Returns the string representation of the model.
-    def __str__(self):  # __unicode__ on Python 2
-        return self.langname
-
-    class Meta:
-        managed = False
-
-
-# class Profile(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     email_confirmed = models.BooleanField(default=False)
-    # other fields...
+# class DjangoMigrations(models.Model):
+#     """
 #
-# @receiver(post_save, sender=User)
-# def update_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Profile.objects.create(user=instance)
-#     instance.profile.save()
-#
-#
-# class AuthPermission(models.Model):
+#     """
+#     app = models.CharField(max_length=255)
 #     name = models.CharField(max_length=255)
-#     # content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-#     codename = models.CharField(max_length=100)
+#     applied = models.DateTimeField()
 #
 #     class Meta:
-#         managed = False
-#         db_table = 'auth_permission'
-#         # unique_together = (('content_type', 'codename'),)
-#
-#
-# class AuthUser(models.Model):
-#     password = models.CharField(max_length=128)
-#     last_login = models.DateTimeField(blank=True, null=True)
-#     is_superuser = models.BooleanField()
-#     username = models.CharField(unique=True, max_length=150)
-#     first_name = models.CharField(max_length=30)
-#     last_name = models.CharField(max_length=150)
-#     email = models.CharField(max_length=254)
-#     is_staff = models.BooleanField()
-#     is_active = models.BooleanField()
-#     date_joined = models.DateTimeField()
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'auth_user'
+#         managed = True
+#         db_table = 'django_migrations'
 
-# class UserDataMap(models.Model):
+
+# # TODO rename to english for continuity
+# # build BW watershed table
+# class Basiseinzugsgebiet(models.Model):
 #     """
 #
 #     """
-#     auth_user = models.ForeignKey(User, models.DO_NOTHING)
-#     # ext_user_id = models.PositiveSmallIntegerField(blank=True, null=True)
-#     meta_data = models.ManyToManyField('TblMeta', blank=True)
+#     # Regular Django fields corresponding to the attributes in the Basiseinzugsgebiet shapefile.
+#     langname = models.CharField(max_length=100)
+#     area = models.FloatField()
+#     objectid = models.BigIntegerField()
+#     object_id = models.FloatField()
+#     fg_id = models.BigIntegerField()
+#     fgkz_nr = models.FloatField('flussgebietskennzahl')
+#     einzugsgeb = models.IntegerField('einzugsgebietsordnung')  # Einzugsgebiets Ordnung – eines Flusses, Baches
+#     einzugsg00 = models.CharField('einzugsgebietsordnung in Worten',
+#                                   max_length=80)  # Quellgebiet – oberstes Teilgebiet eines Flusses,
+#     # Baches / Zwischengebiet – Teilgebiet eines Flusses, Baches; wird begrenzt von 2 Hauptzuflüssen / Mündungsgebiet
+#     #  – unterstes Teilgebiet eines Flusses, Baches
+#     einzugsg01 = models.CharField(max_length=1)
+#     einzugsg02 = models.CharField(max_length=26)
+#     vor_fgkz_n = models.FloatField('flussgebietskennzahl des vorfluters')
+#     vor_fg_id = models.FloatField()
+#     vor_fg_lan = models.CharField('vorfluter_langname', max_length=100)
+#     wasserkoer = models.CharField('wasserkoerper_code', max_length=10)
+#     wasserko00 = models.CharField('wasserkoerper_name', max_length=85)
+#     aenderungs = models.CharField(max_length=20)
+#     aenderun00 = models.CharField(max_length=20)
+#     length = models.FloatField()
+#     mod_by = models.CharField(max_length=32)
+#     last_mod = models.CharField(max_length=20)
+#     se_anno_ca = models.CharField(max_length=254)
+#     wasserko01 = models.BigIntegerField()
+#     # GeoDjango-specific: a geometry field (MultiPolygonField)
+#     mpoly = models.MultiPolygonField(srid=31467)
 #
-#     # class Meta:
-#     #     # managed = False
-#     #     db_table = 'user'
+#     # Returns the string representation of the model.
+#     def __str__(self):  # __unicode__ on Python 2
+#         return self.langname
 #
-#     def __str__(self):
-#         return self.auth_user_id
+#     class Meta:
+#         managed = True
 
-# New Database Schemata for vfw 2.0
+
+### New Database Schemata for vfw 2.0
+### from metacatalog 2.0
+# This is an auto-generated Django model module.
+# You'll have to do the following manually to clean this up:
+#   * Rearrange models' order
+#   * Make sure each model has one field with primary_key=True
+#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
+#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
+# Feel free to rename the models, but don't rename db_table values or field names.
+
 
 class DatasourceTypes(models.Model):
     name = models.CharField(max_length=64)
-    description = models.CharField(blank=True, null=True)
-    # description = models.CharField(max_length=-1, blank=True, null=True)
+    title = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'datasource_types'
 
+    def __str__(self):
+        return 'Data source type {}'.format(self.name)
+
 
 class Datasources(models.Model):
-    type = models.ForeignKey(DatasourceTypes, models.DO_NOTHING)
-    path = models.CharField()
-    args = models.CharField(blank=True, null=True)
-    # path = models.CharField(max_length=-1)
-    # args = models.CharField(max_length=-1, blank=True, null=True)
+    type = models.ForeignKey('DatasourceTypes', models.DO_NOTHING)
+    path = models.TextField()
+    args = models.TextField(blank=True, null=True)
+    creation = models.DateTimeField(blank=True, null=True)
+    lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
+    encoding = models.CharField(max_length=64, blank=True, null=True)
+    datatype = models.ForeignKey('Datatypes', models.DO_NOTHING)
+    temporal_scale = models.ForeignKey('TemporalScales', models.DO_NOTHING, blank=True, null=True)
+    spatial_scale = models.ForeignKey('SpatialScales', models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'datasources'
 
+    def __str__(self):
+        return '{} data source at {} <ID={}}>'.format(self.type.name, self.path, self.id)
+        # return "%s data source at %s <ID=%d>" % (self.type.name, self.path, self.id)
+
+
+class Datatypes(models.Model):
+    parent = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    name = models.CharField(max_length=64)
+    title = models.TextField()
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'datatypes'
+
+    def __str__(self):
+        return 'Data type {}'.format(self.name)
+
+
+class Details(models.Model):
+    """
+    Used for the advanced Filter.
+    """
+    entry = models.ForeignKey('Entries', models.DO_NOTHING, blank=True, null=True)
+    key = models.CharField(max_length=20)
+    stem = models.CharField(max_length=20)
+    value = models.TextField()
+    description = models.TextField(blank=True, null=True)
+    thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
+
+    db_alias_child_adv = {'value': 'details_text'}
+    menu_name_adv = 'Details'
+    path = 'details'
+    filter_type = {'value': 'text'}
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'details'
+        unique_together = (('entry', 'stem'),)
+
+    def __str__(self):
+        return '{}: {}'.format(self.key, self.value)
+
 
 class Entries(models.Model):
+    """
+    Main Table.
+    For Filter use ID, creation, end, embargo, version (all versions for advanced filter).
+    Filter connections to other tables:
+    variable_id, license_id.
+
+        From django docs (https://docs.djangoproject.com/en/2.2/ref/contrib/gis/model-api/):
+
+    If you wish to perform arbitrary distance queries using non-point geometries in WGS84 in PostGIS and you want
+    decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
+
+    """
     title = models.CharField(max_length=512)
-    abstract = models.CharField(blank=True, null=True)
-    external_id = models.CharField(blank=True, null=True)
-    # abstract = models.CharField(max_length=-1, blank=True, null=True)
-    # external_id = models.CharField(max_length=-1, blank=True, null=True)
+    abstract = models.TextField(blank=True, null=True)
+    external_id = models.TextField(blank=True, null=True)
     location = models.PointField(srid=0)
     geom = models.GeometryField(srid=0, blank=True, null=True)
-    creation = models.DateTimeField(blank=True, null=True)
-    end = models.DateTimeField(blank=True, null=True)
     version = models.IntegerField()
     latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
     license = models.ForeignKey('Licenses', models.DO_NOTHING, blank=True, null=True)
     variable = models.ForeignKey('Variables', models.DO_NOTHING)
     datasource = models.ForeignKey(Datasources, models.DO_NOTHING, blank=True, null=True)
@@ -583,170 +186,450 @@ class Entries(models.Model):
     embargo_end = models.DateTimeField(blank=True, null=True)
     publication = models.DateTimeField(blank=True, null=True)
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
+    is_partial = models.BooleanField()
+    uuid = models.CharField(max_length=36)
+    citation = models.CharField(max_length=2048, blank=True, null=True)
 
-    column_dict = {
-        'creation': 'Creation Time', 'end': 'End of measurement',
-        'embargo': 'Embargo', 'embargo_end': 'Embargo End',
-        'publication': 'Publications',
-    }
-
-    menu_name = 'Main'
+    db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract'}
+    # db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract', 'location': 'Location'}
+    db_alias_child_adv = {'version': 'version'}
+    menu_name = 'Entries'
     path = ''
-    filter_type = {'creation': 'date', 'end': 'date',
-                   'embargo_end': 'date', 'publication': 'date'}
+    filter_type = {'embargo': 'bool'}
+    # filter_type = {'embargo': 'bool', 'location': 'draw'}
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'entries'
 
+    def __str__(self):
+        return '<ID={} {} [{}] >'.format(self.id, self.title[:20], self.variable.name)
+
 
 class EntrygroupTypes(models.Model):
+    """
+    Filter (advanced) only entrygroup 'project'
+    """
     name = models.CharField(max_length=40)
-    description = models.CharField()
-    # description = models.CharField(max_length=-1)
+    description = models.TextField()
+
+    db_alias_child = {'creation': 'creation/start', 'end': 'end of measurement', 'embargo': 'embargo'}
+    db_alias_child_adv = {'version': 'version'}
+    menu_name = 'Entries'
+    path = ''
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'entrygroup_types'
+
+    def __str__(self):
+        return '{} <ID={}>'.format(self.name, self.id)
 
 
 class Entrygroups(models.Model):
     type = models.ForeignKey(EntrygroupTypes, models.DO_NOTHING)
     title = models.CharField(max_length=40, blank=True, null=True)
-    description = models.CharField(blank=True, null=True)
-    # description = models.CharField(max_length=-1, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    uuid = models.CharField(max_length=36)
+    publication = models.DateTimeField(blank=True, null=True)
+    lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'entrygroups'
 
+    def __str__(self):
+        return '{}{} <ID={}>'.format(self.type.name, " %s" % self.title[:20] if self.title is not None else '',
+                                     self.id)
+
+
+class GenericGeometryData(models.Model):
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    index = models.IntegerField()
+    geom = models.GeometryField(srid=0)
+    srid = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'geneic_geometry_data'
+        unique_together = (('entry', 'index'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
+
+
+class Generic1DData(models.Model):
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    index = models.DecimalField(max_digits=999, decimal_places=999)
+    value = models.DecimalField(max_digits=999, decimal_places=999)
+    precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'generic_1d_data'
+        unique_together = (('entry', 'index'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
+
+
+class Generic2DData(models.Model):
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    index = models.DecimalField(max_digits=999, decimal_places=999)
+    value1 = models.DecimalField(max_digits=999, decimal_places=999)
+    value2 = models.DecimalField(max_digits=999, decimal_places=999)
+    precision1 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+    precision2 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'generic_2d_data'
+        unique_together = (('entry', 'index'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
+
+
+class GeomTimeseries(models.Model):
+    # entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)  # This produces a django warning
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    tstamp = models.DateTimeField()
+    geom = models.GeometryField(srid=0)
+    srid = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'geom_timeseries'
+        unique_together = (('entry', 'tstamp'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
+
 
 class Keywords(models.Model):
+    """
+    Used for advanced filter. Shows a complete list and the 10 most common (but not the ones every dataset has)
+    """
     parent = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
     value = models.CharField(max_length=1024)
     uuid = models.CharField(unique=True, max_length=64, blank=True, null=True)
-    full_path = models.CharField(blank=True, null=True)
-    # full_path = models.CharField(max_length=-1, blank=True, null=True)
+    full_path = models.TextField(blank=True, null=True)
+    thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'keywords'
 
+    # def keyword_path(self):
+    #     """Keyword path
+    #     Returns the full keyword path for the given level.
+    #     The levels are separated by a '>' sign. The levels are:
+    #     Topic > Term > Variable_Level_1 > Variable_Level_2 > Variable_Level_3 > Detailed_Variable
+    #     Returns
+    #     -------
+    #     keyword_path : str
+    #         The full keyword path
+    #     """
+    #     keyword_path = [self.value]
+    #     parent = self.parent
+    #     print('keyword_path: ', keyword_path)
+    #     print('parent: ', parent)
+    #
+    #     while parent is not None:
+    #         keyword_path.append(parent.value)
+    #         parent = parent.parent
+    #
+    #     return ' > '.join(reversed(keyword_path))
+
+    def __str__(self):
+        return '{} <ID={}>'.format(self.full_path, self.id)
+
 
 class Licenses(models.Model):
+    """
+    Use one of the Boolean Fields for the Filter menu.
+    """
     short_title = models.CharField(max_length=40)
-    title = models.CharField()
-    summary = models.CharField(blank=True, null=True)
-    full_text = models.CharField(blank=True, null=True)
-    link = models.CharField(blank=True, null=True)
-    # title = models.CharField(max_length=-1)
-    # summary = models.CharField(max_length=-1, blank=True, null=True)
-    # full_text = models.CharField(max_length=-1, blank=True, null=True)
-    # link = models.CharField(max_length=-1, blank=True, null=True)
+    title = models.TextField()
+    summary = models.TextField(blank=True, null=True)
+    full_text = models.TextField(blank=True, null=True)
+    link = models.TextField(blank=True, null=True)
     by_attribution = models.BooleanField()
     share_alike = models.BooleanField()
     commercial_use = models.BooleanField()
 
+    db_alias_child = {'commercial_use': 'Commercial use allowed'}  # menu text
+    db_alias_child_adv = {'commercial_use': 'Commercial use allowed'}
+    menu_name = 'Licenses'
+    path = 'license'
+    filter_type = {'commercial_use': 'bool'}
+
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'licenses'
 
+    def __str__(self):
+        return '{} <ID={}>'.format(self.title, self.id)
+
+
+class Logs(models.Model):
+    tstamp = models.DateTimeField()
+    code = models.IntegerField()
+    description = models.TextField()
+    migration_head = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'logs'
+
+    def __str__(self):
+        return 'Date={} Code={}'.format(self.tstamp, self.code)
+
 
 class NmEntrygroups(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     group = models.ForeignKey(Entrygroups, models.DO_NOTHING)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_entrygroups'
         unique_together = (('entry', 'group'),)
 
 
 class NmKeywordsEntries(models.Model):
-    keyword = models.ForeignKey(Keywords, models.DO_NOTHING, primary_key=True)
+    keyword = models.OneToOneField(Keywords, models.DO_NOTHING, primary_key=True)
     entry = models.ForeignKey(Entries, models.DO_NOTHING)
-    alias = models.CharField(max_length=1024, blank=True, null=True)
-    associated_value = models.CharField(max_length=1024, blank=True, null=True)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_keywords_entries'
         unique_together = (('keyword', 'entry'),)
 
+    def __str__(self):
+        return '<Entry ID={}> tagged {}'.format(self.entry.id, self.keyword.value)
+
 
 class NmPersonsEntries(models.Model):
-    person = models.ForeignKey('Persons', models.DO_NOTHING, primary_key=True)
+    person = models.OneToOneField('Persons', models.DO_NOTHING, primary_key=True)
     entry = models.ForeignKey(Entries, models.DO_NOTHING)
     relationship_type = models.ForeignKey('PersonRoles', models.DO_NOTHING)
     order = models.IntegerField()
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_persons_entries'
         unique_together = (('person', 'entry'),)
 
+    def __str__(self):
+        return '{} <ID={}> as {} for Entry <ID={}>'.format(self.person.full_name, self.person.id,
+                                                           self.relationship_type.name, self.entry.id)
+
 
 class PersonRoles(models.Model):
     name = models.CharField(max_length=64)
-    description = models.CharField(blank=True, null=True)
-    # description = models.CharField(max_length=-1, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'person_roles'
 
+    def __str__(self):
+        return '{} <ID={}>'.format(self.name, self.id)
+
 
 class Persons(models.Model):
-    first_name = models.CharField(max_length=128, blank=True, null=True)
+    """
+    Filter for persons in advanced filter.
+    """
+    first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
     affiliation = models.CharField(max_length=1024, blank=True, null=True)
+    organisation_name = models.CharField(max_length=1024, blank=True, null=True)
+    attribution = models.CharField(max_length=1024, blank=True, null=True)
+
+    db_alias_child = {'last_name': 'Name'}  # menu text
+    db_alias_child_adv = {'last_name': 'Name'}
+    menu_name = 'Variables'
+    path = 'variable'
+    full_name = '{} {}'.format(first_name, last_name)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'persons'
 
+    def __str__(self):
+        return '{} <ID={}>'.format(self.full_name, self.id)
 
-class Timeseries(models.Model):
-    entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)
-    tstamp = models.DateTimeField()
-    value = models.DecimalField(max_digits=65535, decimal_places=65535)
+
+class SpatialScales(models.Model):
+    resolution = models.IntegerField()
+    extent = models.PolygonField()
+    support = models.DecimalField(max_digits=999, decimal_places=999)
 
     class Meta:
-        app_label = 'vfw2'
+        managed = False
+        db_table = 'spatial_scales'
+
+    def __str__(self):
+        return '<ID={}> extent={}'.format(self.id, self.extent)
+
+
+class TemporalScales(models.Model):
+    resolution = models.TextField()
+    observation_start = models.DateTimeField()
+    observation_end = models.DateTimeField()
+    support = models.DecimalField(max_digits=999, decimal_places=999)
+
+    class Meta:
+        managed = False
+        db_table = 'temporal_scales'
+
+    def __str__(self):
+        return '<ID={}> observation start/end={}/{}'.format(self.id, self.observation_start, self.observation_end)
+
+
+class Thesaurus(models.Model):
+    uuid = models.CharField(unique=True, max_length=64)
+    name = models.CharField(unique=True, max_length=1024)
+    title = models.TextField()
+    organisation = models.TextField()
+    description = models.TextField(blank=True, null=True)
+    url = models.TextField()
+
+    class Meta:
+        managed = False
+        db_table = 'thesaurus'
+
+    def __str__(self):
+        return '<ID={}>   <UUID={}>    Name={}/{}'.format(self.id, self.uuid, self.name)
+
+
+class Timeseries(models.Model):
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    tstamp = models.DateTimeField()
+    value = models.DecimalField(max_digits=999, decimal_places=999)
+    precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+
+    class Meta:
+        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries'
         unique_together = (('entry', 'tstamp'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
+
+
+class Timeseries2D(models.Model):
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    tstamp = models.DateTimeField()
+    value1 = models.DecimalField(max_digits=999, decimal_places=999)
+    value2 = models.DecimalField(max_digits=999, decimal_places=999)
+    precision1 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+    precision2 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'timeseries_2d'
+        unique_together = (('entry', 'tstamp'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
 
 
 class Units(models.Model):
     name = models.CharField(max_length=64)
     symbol = models.CharField(max_length=12)
-    si = models.CharField(blank=True, null=True)
-    # si = models.CharField(max_length=-1, blank=True, null=True)
+    si = models.TextField(blank=True, null=True)
 
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'units'
 
+    def __str__(self):
+        return '{} <ID={}>'.format(self.name, self.id)
+
 
 class Variables(models.Model):
+    """
+    Names of the dataset. Used in the Filter menu.
+    """
     name = models.CharField(max_length=64)
     symbol = models.CharField(max_length=12)
     unit = models.ForeignKey(Units, models.DO_NOTHING)
     keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
 
+    db_alias_child = {'name': 'Name'}  # menu text
+    db_alias_child_adv = {'name': 'Name'}
+    menu_name = 'Variables'
+    path = 'variable'
+
+    # print('\033[31m' + 'path: \033[0m', path)
+
     class Meta:
-        app_label = 'vfw2'
+        # app_label = 'mcdev'
         managed = False
         db_table = 'variables'
+
+    def __str__(self):
+        return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
+
+
+class BasicFilter:
+    """
+    Class to collect relevant information for filter
+    """
+    embargo = Entries.objects.values_list('embargo', flat=True).distinct()
+    licenses = Licenses.objects.values_list('commercial_use', flat=True).distinct()
+    variables = Variables.objects.values_list('name', flat=True).distinct()
+    # has_access =
+
+    # menu_entries = {'Embargo': embargo, 'Creation': creation, 'End': end, 'License': licenses,
+    #                 'Variables': variables}
+    # menu_entries = [variables]
+    menu_entries = [Variables, Licenses, Entries]  # Licenses]
+
+    # class Meta:
+    #     abstract = True
+
+
+class AdvancedFilter(BasicFilter):
+    """
+    Class to collect relevant information for advanced filter
+    """
+    details = Details.objects.values_list('value', flat=True).distinct()
+
+
+class LocationFilter(models.Model):
+    """
+    Fake class to write location from Entries to a separate entry online in the menu.
+    """
+    location = models.PointField(srid=0)
+
+    db_alias_child = {'location': 'Location'}
+    db_alias_child_adv = {'bla': 'blala'}
+    menu_name = 'Point Filter'
+    path = ''
+    filter_type = {'location': 'draw'}
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'entries'
+

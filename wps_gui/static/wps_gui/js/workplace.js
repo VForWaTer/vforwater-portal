@@ -38,9 +38,9 @@ function wpsprocess(service, identifier) {
             processview: JSON.stringify({id: identifier, serv: service}),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) {
+    })
+        .done(function (json) {
             build_modal(json, service, identifier)
-        },
     });
 }
 
@@ -154,7 +154,13 @@ function modal_run_process() {
             processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
-        success: function (json) { // Results are stored in the sessionStorage
+    })
+        .done(function (json) { // Results are stored in the sessionStorage
+            console.log('------')
+            console.log('result json: ', json)
+            console.log('json id: ', json.wpsID)
+            console.log('json img: ', json.image)
+            console.log('json execution_status: ', json.execution_status)
             if (json.execution_status == "ProcessSucceeded") {
                 json.wps = identifier;
                 json.inputs = {};
@@ -193,11 +199,10 @@ function modal_run_process() {
                 }, 5);
                 console.error('Maybe you have to log in to run processes. ', json.execution_status)
             }
-        },
-        error: function (json) {
+        })
+        .fail(function (json) {
             color_modal("firebrick");
             console.error('Error, No success: ', json)
-        }
     });
 }
 
@@ -259,12 +264,12 @@ function add_resultbtn_to_sessionstore(btnName, json) {
  * */
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
-    return '<li draggable="true" class="respo-padding task is-result" ' +
+    return '<li draggable="true" class="w3-padding task is-result" ' +
         'data-id="wps' + json.wpsID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="' + name + '"><span class="respo-medium" title="' + title + '">' +
+        'id="' + name + '"><span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
         '<span class="' + json['type'] + '"></span>' +
-        '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="respo-hover-white">' +
+        '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 

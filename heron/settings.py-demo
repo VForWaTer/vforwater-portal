@@ -96,7 +96,7 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-        'AuthorizationManagement': {
+        'author_manage': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -137,17 +137,19 @@ INSTALLED_APPS = [
     'wps_gui',
     'heron_monitor',
     'heron_visual',
-    'heron_upload',
+    'upload',
     # Three apps for wps_workflow
     # 'wps_workflow.apps.wps_workflowConfig',
     # 'django_crontab',
     # 'django.contrib.admindocs',
-    'AuthorizationManagement.apps.AuthorizationmanagementConfig',
+    'author_manage.apps.AuthorizationmanagementConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -187,25 +189,33 @@ DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
 
 DATABASES = {
     'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': os.path.join(VFW_DIR, 'django.db'),
-#    },
-#    'vforwater': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater_update',
-        'HOST': 'localhost',
-         #'HOST': 'portal.vforwater.de',
-        'PORT': '5434',
-        'USER': 'vfwportal',
-        'PASSWORD': '',
-    },
-    'vfw2': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater_20',
-        'HOST': 'localhost',
-        'PORT': '5434',
-        'USER': 'postgres',
-    }
+             'ENGINE': 'django.contrib.gis.db.backends.postgis',
+             # 'NAME': 'vforwater_update',
+             'NAME': 'vforwater_play7',
+            'USER': 'postgres',
+            'PORT': '5434',
+            'HOST': 'localhost',
+             }
+#     'default': {
+# #        'ENGINE': 'django.db.backends.sqlite3',
+# #        'NAME': os.path.join(VFW_DIR, 'django.db'),
+# #    },
+# #    'vforwater': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'vforwater_update',
+#         'HOST': 'localhost',
+#          #'HOST': 'portal.vforwater.de',
+#         'PORT': '5434',
+#         'USER': 'vfwportal',
+#         'PASSWORD': '',
+#     },
+#     'mcdev': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'metacatalog-dev',
+#         'HOST': 'localhost',
+#         'PORT': '5434',
+#         'USER': 'postgres',
+#     }
 
 }
 
@@ -296,7 +306,7 @@ if ON_VFW_SERVER:
     ##WATTS_PROVIDER_ID = 'iam'
     WATTS_PROVIDER_ID = 'eudat'
 
-# Settings from workflowPSE, here for wps_workflow app
+# Settings for logging in wps_gui app
 import logging.handlers
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d;%(funcName)s()] - %(message)s')  #

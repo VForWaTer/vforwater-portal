@@ -1,0 +1,143 @@
+<meta charset="UTF-8">
+
+
+{% extends "vfwheron/base.html" %}
+
+{% load static %}
+
+<head>
+    <script src="{% static 'vfwheron/js/jquery-3.2.1.min.js' %}"></script>
+    {# JQUERY FILE UPLOAD SCRIPTS #}
+    <script src="{% static 'upload/js/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
+    <script src="{% static 'upload/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
+    <script src="{% static 'upload/js/jquery-file-upload/jquery.fileupload.js' %}"></script>
+
+    <script src="{% static 'upload/js/data_access.js' %}"></script>
+
+</head>
+<body>
+{% block title %}- Upload{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <h1>Upload</h1>
+
+{#        Here starts the menu form#}
+<form method="post" novalidate>
+  {% csrf_token %}
+{% if form.non_field_errors %}
+    <ul>
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% for hidden_field in form.hidden_fields %}
+    {% if hidden_field.errors %}
+      <ul>
+        {% for error in hidden_field.errors %}
+          <li>(Hidden field {{ hidden_field.name }}) {{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    {{ hidden_field }}
+  {% endfor %}
+
+  <table>
+    {% for field in form.visible_fields %}
+      <tr>
+        <th>{{ field.label_tag }}</th>
+        <td>
+          {% if field.errors %}
+            <ul>
+              {% for error in field.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {{ field }}
+          {% if field.help_text %}
+            <br />{{ field.help_text }}
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{#  {{ form.non_field_errors }}#}
+{##}
+{#  {{ form.source.errors }}#}
+{#  {{ form.source }}#}
+{##}
+{#  <table border="1">#}
+{##}
+{#      <tr>#}
+{#        <th>{{ form.name.label_tag }}</th>#}
+{#        <td>#}
+{#          {{ form.name.errors }}#}
+{#          {{ form.name }}#}
+{#        </td>#}
+{#      </tr>#}
+{##}
+{#      <tr>#}
+{#        <th>{{ form.title.label_tag }}</th>#}
+{#        <td>#}
+{#          {{ form.title.errors }}#}
+{#          {{ form.title }}#}
+{#        </td>#}
+{#      </tr>#}
+{##}
+{#      <tr>#}
+{#        <th>{{ form.abstract.label_tag }}</th>#}
+{#        <td>#}
+{#          {{ form.abstract.errors }}#}
+{#          {{ form.abstract }}#}
+{#          <br />#}
+{#          {{ form.abstract.help_text }}#}
+{#        </td>#}
+{#      </tr>#}
+{##}
+{#  </table>#}
+
+  <button type="submit">Submit</button>
+</form>
+{#        End of menu form#}
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+
+            <h4>Bisher ist noch kein Upload verfügbar.</h4>
+
+        </div>
+    </div>
+
+    <!-- Here we only offer the upload button to access data.
+    Please be aware that uploading data is a security issue that you have to handle yourself.
+    Django stores data up to 2.5 megabyte in memory, bigger files in a tmp folder. For details see
+    https://docs.djangoproject.com/en/1.11/topics/http/file-uploads/#where-uploaded-data-is-stored
+    Some ideas (in German) about uploading data (and why you shouldn't offer that) are
+    available at https://wiki.selfhtml.org/wiki/PHP/Anwendung_und_Praxis/File_Upload
+    The better choice for offering data would be a database. -->
+
+    <div>
+        {# create a button pointing to an invisible input button: #}
+        <hr style="margin-bottom: 0px;">
+        <i class="w3-padding fa fa-upload fa-fw"></i>
+        <button type="button" class="btn btn-primary js-upload-photos">Upload
+            data
+        </button>
+        <!-- call js function for upload and (invisible) input button
+    id is the same as defined in data_access.js -->
+        <input id="fileupload" type="file" name="file" multiple
+               style="display: none;"
+               data-url="{% url 'upload:upload' %}"
+               data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+    </div>
+
+
+{% endblock %}
+</body>

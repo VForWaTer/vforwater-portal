@@ -1,5 +1,5 @@
 //Toggle between showing and hiding the sidenav, and add overlay effect
-function respo_open() {
+function w3_open() {
     // Get the Sidenav
     var mySidenav = document.getElementById("mySidenav");
 
@@ -16,7 +16,7 @@ function respo_open() {
 }
 
 //Close the sidenav with the close button
-function respo_close() {
+function w3_close() {
     var mySidenav = document.getElementById("mySidenav");
 
     var overlayBg = document.getElementById("myOverlay");
@@ -89,19 +89,21 @@ function preload_datastore_button(workspaceData) {
     for (let dataset in workspaceData) {
         let preload = {};
         if (!workspaceData[dataset]['pickle']) {
-            preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
-            end: workspaceData[dataset]['end']};
+            preload[dataset] = {
+                type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
+                end: workspaceData[dataset]['end']
+            };
             $.ajax({
                 url: DEMO_VAR + "/wps_gui/processview",
                 // dataType: 'json',
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post request
-                success: (wpsDBInfo) => update_datastore_button(wpsDBInfo),
-                error: function (wpsDBInfo) {
-                    console.log('Error in preload of data. ', wpsDBInfo)
-                }
-            });
+            })
+                .done((wpsDBInfo) => update_datastore_button(wpsDBInfo),)
+                .fail(function (wpsDBInfo) {
+                    console.error('Error in preload of data. ', wpsDBInfo)
+                });
         }
     }
     // USE FOLLOWING CODE INSTEAD WHEN YOU PREFER TO UPDATE ALL DATASETS IN ONE REQUEST
@@ -133,10 +135,10 @@ function preload_datastore_button(workspaceData) {
     // }
 }
 
-function update_datastore_button(wpsDBInfo){
+function update_datastore_button(wpsDBInfo) {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     $.each(wpsDBInfo, function (keyID, value) {
-        if (workspaceData[keyID]) {
+        if (workspaceData[keyID] && workspaceData[keyID]['wpsID']) {
             workspaceData[keyID]['pickle'] = 1;
             workspaceData[keyID]['wpsID'] = value['wps_id'];
             workspaceData[keyID]['type'] = value['datatype'];
@@ -167,19 +169,19 @@ function build_datastore_button(json) {
         let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
         // check if buttons already exist before creating a new one:
         if (document.getElementById("id" + key) === null) {
-            html += '<li draggable="true" class="respo-padding task" ' +
+            html += '<li draggable="true" class="w3-padding task" ' +
                 'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
-                '<span class="respo-medium" title="' + title + '">' +
+                '<span class="w3-medium" title="' + title + '">' +
                 '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
                 '</span><span class="data ' + value['type'] + '"></span>' +
                 '<a href="javascript:void(0)" onclick="remove_single_data(' + key + ')" ' +
-                'class="respo-hover-white respo-right"><i class="fa fa-remove fa-fw"></i>' +
+                'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +
                 '</a><br></li>';
             /*
-            document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
+            document.getElementById("workspace").innerHTML += '<li draggable="true" class="w3-padding" ' +
                 'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
-                '<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
-                'onclick="remove_single_data('+key+')"; class="respo-hover-white respo-right">' +
+                '<span class="w3-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
+                'onclick="remove_single_data('+key+')"; class="w3-hover-white w3-right">' +
                 '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
                 '<div id="w3popup" class="w3popup"><span class="popuptext" id="pop' + key + '"></span></div>' +
         '<li class="task" data-id="1"><div class="task__content">Build An App</div><div class="task__actions">' +
@@ -454,7 +456,7 @@ function showDataInfo(properties) {
     }
     content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
         '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-    popcloser.classList.remove('respo-hide');
+    popcloser.classList.remove('w3-hide');
     positionPopup(popup);
 }
 
@@ -467,7 +469,6 @@ function setModalValues(btnName, btnValues) {
     // for (let i = 0; i < dropDInputs.length; i++) {
     //
     //         // dDInput = dropDInputs[i].selectedOptions;
-    //     //     console.log('dDInput: ', dDInput)
     //     //     if (dDInput.length > 1) {
     //     //         for (let j = 0; j < dDInput.length; j++) {
     //     //             valueList.push(dDInput[j].value)
@@ -488,38 +489,42 @@ function setModalValues(btnName, btnValues) {
  * @param (html) link HTML Code of the clicked link
  */
 function menuItemListener(link) {
-    console.log('link: ', link)
     let wpsToOpen = "";
     let service = {};
     let id = taskItemInContext.getAttribute("data-id");
     let btnName = taskItemInContext.getAttribute('btnname');
 
-    console.log('id: ', id)
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
+    /*content.innerHTML = '<div id="loader"  class="fading-dot-loader">\n' +
+                    '  <div class="dot-loader1 dot-loader"></div>\n' +
+                    '  <div class="dot-loader2 dot-loader"></div>\n' +
+                    '  <div class="dot-loader3 dot-loader"></div>\n' +
+                    '  <div class="dot-loader4 dot-loader"></div>\n' +
+                    '  <div class="dot-loader5 dot-loader"></div>\n' +
+                    '  <div class="dot-loader6 dot-loader"></div> \n' +
+                    '</div>';*/
     popup.classList.add(popActive);
     popText.classList.remove(popInActive);
     positionPopup(popup);
-
     switch (link.getAttribute("data-action")) {
 
         case "View":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
+                url: DEMO_VAR + "/home/show_info",
                 dataType: 'json',
                 data: {
                     show_info: JSON.stringify([id]),
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with the post request
-                success: function (properties) {
+            })
+                .done(function (properties) {
                     showDataInfo(properties);
-
-                }
-            });
+                });
             break;
         // case "Plot":
         //     $.ajax({
-        //         url: DEMO_VAR + "/vfwheron/menu",
+        //         url: DEMO_VAR + "/home/menu",
         //         datatype: 'json',
         //         data: {
         //             preview: id,
@@ -528,30 +533,30 @@ function menuItemListener(link) {
         //         success: function (result) {
         //             console.log('plot result: ', result)
         //             content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
-        //             popcloser.classList.remove('respo-hide');
+        //             popcloser.classList.remove('w3-hide');
         //             positionPopup(popup);
         //         }
         //     });
         //     break;
         case "Downloadcsv":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     csv: id,
                 }, // data sent with post request
-                success: function (json) {
+            })
+                .done(function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "Downloadshp":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 method: 'GET',
                 xhrFields: {
@@ -560,33 +565,33 @@ function menuItemListener(link) {
                 data: {
                     shp: id,
                 }, // data sent with post request
-                success: function (data) {
+            })
+                .done(function (data) {
                     let blob = new File([data], {type: "application/octet-stream"});
                     // let blob = new Blob([data], {type: "application/octet-binary"});
                     saveAs(blob, String(taskItemInContext.getAttribute("btnName")) + ".zip");
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "Downloadxml":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     xml: id,
                 }, // data sent with post request
-                success: function (json) {
+            })
+                .done(function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "OpenTool":
             /** Re-open the tool */
@@ -621,7 +626,7 @@ function menuItemListener(link) {
             }
             content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-            popcloser.classList.remove('respo-hide');
+            popcloser.classList.remove('w3-hide');
             positionPopup(popup);
             break;
         case "Plot":
@@ -641,18 +646,16 @@ function menuItemListener(link) {
             //     }
             // })
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
+                url: DEMO_VAR + "/home/previewplot",
                 datatype: 'json',
                 data: {
                     preview: id,
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post
-                success: function (requestResult) {
-                    console.log('got a result: ', requestResult)
+            })
+                .done(function (requestResult) {
                     // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
                     // content.innerHTML = result.div;
-                    // console.log('content: ', content)
-                    // console.log('content: ', content.innerHTML)
                     // let bokehResultScript;
                     if ('html' in requestResult) {
                         document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
@@ -663,16 +666,17 @@ function menuItemListener(link) {
                         bokehResultScript.text = requestResult.script;
                         document.head.appendChild(bokehResultScript);
                     }
-                    // console.log('document: ', document)
-                    // popcloser.classList.remove('respo-hide');
+                    // popcloser.classList.remove('w3-hide');
                     // positionPopup(popup);
                     let rModal = document.getElementById("resultModal");
                     rModal.style.display = "block";
-                },
-                complete: function () {
+                })
+                .fail(function (e) {
+                    console.error(('fehler: ', e))
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                })
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});
@@ -711,11 +715,7 @@ $(function () {
 // TODO: remove popup when clicking outside of popup
 /*
 window.onclick = function(event) {
-    console.log(' - + click + - : ', event)
-    console.log(' - + click + - target: ', event.target)
-    console.log(' - + click + - parentNode: ', event.parentNode)
     if (event.target == popup) {
-        console.log('click inside')
         // popup.style.display = "none";
         popup.classList.remove(popActive);
     }

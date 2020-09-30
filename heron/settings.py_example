@@ -112,12 +112,12 @@ INSTALLED_APPS = [
     'wps_gui',
     'heron_monitor',
     'heron_visual',
-    'heron_upload',
+    'upload',
     # Three apps for wps_workflow
     # 'wps_workflow.apps.wps_workflowConfig',
     # 'django_crontab',
     # 'django.contrib.admindocs',
-    'AuthorizationManagement.apps.AuthorizationmanagementConfig',
+    'author_manage.apps.AuthorizationmanagementConfig',
 ]
 
 MIDDLEWARE = [

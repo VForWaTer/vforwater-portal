@@ -3,15 +3,48 @@ let wfsLayerName;
 let selectedIdsFilter = null;
 let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
-let dcz = new ol.interaction.DoubleClickZoom();
+let wfsPointSource;
+// let dcz = new ol.interaction.DoubleClickZoom();
+
+/* build style for cluster */
+let styleCache = {};
+
+function clusterStyle(feature) {
+    let size = feature.get('features').length;
+    let style = styleCache[size];
+    if (!style) {
+        style = styleCache[size] = new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: Math.round(8 + 1.3 * Math.log(size)),
+                stroke: new ol.style.Stroke({
+                    color: '#00BAEE',
+                    width: 0.5
+                }),
+                fill: new ol.style.Fill({
+                    color: '#AADDF9'
+                })
+            }),
+            text: new ol.style.Text({
+                text: size.toString(),
+                font: '12px helvetica,sans-serif',
+                fill: new ol.style.Fill({
+                    color: 'black'
+                })
+            })
+        });
+    }
+    return [style];
+}
 
 //Create own base layer
 function create_map() {
-    const GEO_SERVER = DEMO_VAR + "/vfwheron/geoserver";
+    const GEO_SERVER = DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
-    let dataExt = JSON.parse(document.getElementById('dataExt').value); // bbox of available data
+    let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
+        'EPSG:4326', 'EPSG:3857'); // bbox of available data
+
     wfsLayerName = document.getElementById('data_layer').value;
-    if (wfsLayerName.search("Error") !== -1){
+    if (wfsLayerName.search("Error") !== -1) {
         console.error(wfsLayerName)
     }
 // build the background map
@@ -82,36 +115,18 @@ function create_map() {
     /* Make (animated) cluster layer from data points */
     clusterLayer = new ol.layer.AnimatedCluster({
         name: 'Cluster',
+        className: 'cluster-layer',
         source: new ol.source.Cluster({
             distance: 30,
             source: wfsPointSource
         }),
         animationDuration: 0,
         // Cluster style
-        style: getStyle
+        style: clusterStyle
     });
-    hiddenLayer = new ol.layer.Vector({
-        renderMode: 'image',
+    hiddenLayer = new ol.layer.VectorImage({
+        className: 'hidden-layer',
         source: wfsPointSource,
-/*        style: new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: 5,
-                stroke: new ol.style.Stroke({
-                    color: 'green',
-                    width: 2.5
-                }),
-                fill: new ol.style.Fill({
-                    color: 'yellow'
-                })
-            }),
-            text: new ol.style.Text({
-                text: 4,
-                font: '12px helvetica,sans-serif',
-                fill: new ol.style.Fill({
-                    color: 'red'
-                })
-            })
-        })*/
     });
 
 
@@ -135,35 +150,6 @@ function create_map() {
             })
         });*/
 
-    /* build style for cluster */
-    let styleCache = {};
-
-    function getStyle(feature) {
-        let size = feature.get('features').length;
-        let style = styleCache[size];
-        if (!style) {
-            style = styleCache[size] = new ol.style.Style({
-                image: new ol.style.Circle({
-                    radius: Math.round(8 + 1.3 * Math.log(size)),
-                    stroke: new ol.style.Stroke({
-                        color: '#00BAEE',
-                        width: 0.5
-                    }),
-                    fill: new ol.style.Fill({
-                        color: '#AADDF9'
-                    })
-                }),
-                text: new ol.style.Text({
-                    text: size.toString(),
-                    font: '12px helvetica,sans-serif',
-                    fill: new ol.style.Fill({
-                        color: 'black'
-                    })
-                })
-            });
-        }
-        return [style];
-    }
 
     /* functionality for zoom to extent button */
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
@@ -218,7 +204,6 @@ function create_map() {
     // check what is clicked
     function checkMode(evt) {
         if (hit_cL) {
-            // console.log('hit_cL: ', hit_cL)
             content.innerHTML = '';
             try {
                 content.innerHTML = '<div id="loader" class="loader"></div>';
@@ -234,20 +219,12 @@ function create_map() {
     }
 
     function buildPopup(evt) {
-        // if (olmap.getFeaturesAtPixel(evt.pixel)) {
         // Create spinning loader while getting meta data from server
         metaData_Overlay.setPosition(evt.coordinate);
 
         let nCol = 5; // number of columns of metadata per page
         let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
-        // console.log('feature 1', olmap)
-        // console.log('feature 2', olmap.getFeaturesAtPixel(evt.pixel))
-        // console.log('feature 3', olmap.getFeaturesAtPixel(evt.pixel)[0])
-        // console.log('+ feature 4', olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties())
-        // console.log('feature 5', olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features)
         let pos = evt.coordinate;
-        // console.log('+ clickedFeatures: ', clickedFeatures)
-        // console.log('+ clickedFeatures.length: ', clickedFeatures.length)
         let l = clickedFeatures.length;
         let wfsLen = wfsLayerName.length;
         if (l > 0 && l <= nCol) { // check how many datasets are selected
@@ -260,7 +237,7 @@ function create_map() {
                 ids.push(id);
             }
             popupContent(ids);
-            paginat.innerHTML = []
+            paginat.innerHTML = ''
 
         } else if (l > nCol) {
             let page = 1;
@@ -356,7 +333,6 @@ function create_map() {
 
     // On selected => get feature in cluster and show info
     /*    selectCluster.getFeatures().on(['add'], function (e) {
-            console.log(' ------------ im add')
             let c = e.element.get('features');
             if (c.length == 1) {
                 let feature = c[0];
@@ -370,133 +346,145 @@ function create_map() {
             $(".infos").html("");
         })*/
 
-}
-
-function buildPagi(idDict, page) {
-    let pagi = '';
-    let nDat = 16; // number of Datasets shown at once
-    if (Object.keys(idDict).length < nDat) {
-        for (let i = 1; i <= page; i++) {
-            if (i == 1) {
-                pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
-            } else {
-                pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
-                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+// Popup related functions
+    function buildPagi(idDict, page) {
+        let pagi = '';
+        let nDat = 16; // number of Datasets shown at once
+        if (Object.keys(idDict).length < nDat) {
+            for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="w3-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi = pagi + '<li id="pagi' + i + '"><a><input type="submit" class="w3-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                }
             }
-        }
-    } else {
-        // TODO: Show only 16 pages to select in pagination and arrows
-        //  Pagination durch Django:
-        //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
-        //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
+        } else {
+            // TODO: Show only 16 pages to select in pagination and arrows
+            //  Pagination durch Django:
+            //  https://medium.com/@sumitlni/paginate-properly-please-93e7ca776432
+            //  https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html
 
-        /* console.log(' + +  idDict: ', idDict)
-         let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
-         // let pagiObj = {1:[]}; // very nice, but useless for the button!
-         let pagiStr; // very nice, but useless for the button!
-         for (let j = 1; j <= nPagi; j++) {
-             let minP = nDat * (j - 1);
-             let maxP = nDat * j - 1;
-             // pagiObj[j] = [];
-             console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
-             pagi = '';
-             for (let k = minP; k <= maxP; k++) {
-                 pagiObj[j].push(idDict[k])
+            /* console.log(' + +  idDict: ', idDict)
+             let nPagi = Math.ceil(Object.keys(idDict).length / nDat); // Number of Pagination menues
+             // let pagiObj = {1:[]}; // very nice, but useless for the button!
+             let pagiStr; // very nice, but useless for the button!
+             for (let j = 1; j <= nPagi; j++) {
+                 let minP = nDat * (j - 1);
+                 let maxP = nDat * j - 1;
+                 // pagiObj[j] = [];
+                 console.log('minP, maxP, pagiObj[j], j: ', minP, maxP, pagiObj[j], j)
+                 pagi = '';
+                 for (let k = minP; k <= maxP; k++) {
+                     pagiObj[j].push(idDict[k])
+                 }
              }
-         }
-         console.log('pagiObj: ', pagiObj)
-         let prePagi = '<li id="prePagi"><a><input type="submit" class="respo-btn-simple"' +
-                     'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
-         pagi = prePagi*/
-        for (let i = 1; i <= page; i++) {
-            if (i == 1) {
-                pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="respo-btn-simple"' +
-                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+             console.log('pagiObj: ', pagiObj)
+             let prePagi = '<li id="prePagi"><a><input type="submit" class="w3-btn-simple"' +
+                         'onclick=\"buildPagivfw(\''+pagiObj+','+page+'\')\" value="<"></a></li>';
+             pagi = prePagi*/
+            for (let i = 1; i <= page; i++) {
+                if (i == 1) {
+                    pagi = '<li id="pagi' + i + '" class="active"><a><input type="submit" id="popBtn" class="w3-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                } else {
+                    pagi += '<li id="pagi' + i + '"><a><input type="submit" class="w3-btn-simple"' +
+                        'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                }
+            }
+        }
+        return pagi;
+    }
+
+}
+
+
+    function popupContent(ids, page) {
+        if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
+            page = JSON.parse("[" + ids + "]").slice(-1);
+            ids = JSON.parse("[" + ids + "]").slice(0, -1);
+        }
+        if (page && page != 'none') document.getElementById("pagi" + page).classList.add("loadspin");
+        let popupTableBeforeMeta = '<table id="popupTable"><td>';
+        let popUpText = popupTableBeforeMeta +
+            '<style>table tr:nth-child(even){background-color:#c8ebee;}</style>' +
+            '<table id="metaTable">';
+
+        // request info from server
+        $.ajax({
+            url: DEMO_VAR + "/home/short_datainfo",
+            dataType: 'json',
+            data: {
+                short_info: JSON.stringify(ids),
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+        })
+            .done(function (json) {
+                document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
+                // content.innerHTML = buildPopupText(json, popUpText);
+                if (page && page != 'none') {
+                    document.getElementsByClassName("active")[0].classList.remove("active");
+                    document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
+                    document.getElementById("pagi" + page).classList.add("active");
+                }
+
+            })
+            .fail(function (e) {
+                console.error('fehler: ', e)
+                metaData_Overlay.setPosition(undefined);
+                document.getElementById('popup-content').remove("loader")
+                alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
+                    "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
+                    "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
+                    "Är Ufro net duerchgefouert ginn!\nدرخواست شما نمی تواند اجرا شود!")
+            })
+        // });
+
+    }
+
+
+    function buildPopupText(json, popUpText) {
+        let valueLen;
+        // loop over "properties" dict with metadata, build columns
+        for (let j in json) {
+            // let values = eval('properties["' + j + '"]');
+            let values = json[j];
+            valueLen = values.length;
+            popUpText += `<tr><td><b>${j}</b></td>`;
+            // loop over dict values and build rows
+            for (let k = 0; k < valueLen; k++) {
+                popUpText += `<td>${values[k]}</td>`;
+            }
+            popUpText += '</tr>'
+        }
+        popUpText += '<tr><td><b></b></td>';
+        // build buttons for each dataset
+        function moreBtn(listIndex) {
+            return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
+                'type="submit" onclick=\"moreInfoModal(\'' + json.id[listIndex] + '\')\" value="More" ' +
+                'data-toggle="tooltip" title="Show more information about the dataset."></b></a>'}
+        function storeBtn(listIndex) {
+            if (!json.Embargo[listIndex] || UNBLOCKED_IDS.includes(json.id[listIndex])) {
+                return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
+                    'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" value="Pass to datastore" ' +
+                    'data-toggle="tooltip" title="Put dataset to session datastore"></b></a>'
             } else {
-                pagi += '<li id="pagi' + i + '"><a><input type="submit" class="respo-btn-simple"' +
-                    'onclick=\"popupContent(\'' + idDict[i] + ',' + i + '\')\" value="' + i + '"></a></li>';
+                return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
+                    'onclick=\"requestDataset(\'' + json.id[listIndex] + '\')\" value="Send request" ' +
+                    'data-toggle="tooltip" title="Send an access request to the data owner."></b></a>'
             }
         }
-    }
-    return pagi;
-}
-
-function popupContent(ids, page) {
-    if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
-        page = JSON.parse("[" + ids + "]").slice(-1);
-        ids = JSON.parse("[" + ids + "]").slice(0, -1);
-    }
-    if (page && page != 'none') document.getElementById("pagi" + page).classList.add("loadspin");
-    let popupTableBeforeMeta = '<table id="popupTable"><td>';
-    let popUpText = popupTableBeforeMeta +
-        '<style>table tr:nth-child(even){background-color:#c8ebee;}</style>' +
-        '<table id="metaTable">';
-    // request info from server
-    $.ajax({
-        url: DEMO_VAR + "/vfwheron/menu",
-        dataType: 'json',
-        data: {
-            short_info: JSON.stringify(ids),
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (json) {
-            document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
-            // content.innerHTML = buildPopupText(json, popUpText);
-            if (page && page != 'none') {
-                document.getElementsByClassName("active")[0].classList.remove("active");
-                document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
-                document.getElementById("pagi" + page).classList.add("active");
-            }
-
-        })
-        .fail(function (e) {
-            // console.log('fehler: ', e)
-            metaData_Overlay.setPosition(undefined);
-            document.getElementById('popup-content').remove("loader")
-            alert("Ihre Anfrage kann nicht ausgeführt werden!\nYour request cannot be executed!\n" +
-                "Votre demande ne peut pas être exécutée!\nSu solicitud no puede ser ejecutada!\n" +
-                "Din forespørsel kan ikke utføres!\nВаш запрос не может быть выполнен!\n" +
-                "Är Ufro net duerchgefouert ginn!\nدرخواست شما نمی تواند اجرا شود!")
-        })
-    // });
-
-}
-
-
-function buildPopupText(json, popUpText) {
-    // console.log('ist da')
-    let valueLen;
-    let buttonId = [];
-    // loop over "properties" dict with metadata, build columns
-    for (let j in json) {
-        // let values = eval('properties["' + j + '"]');
-        let values = json[j];
-        valueLen = values.length;
-        popUpText += `<tr><td><b>${j}</b></td>`;
-        // loop over dict values and build rows
         for (let k = 0; k < valueLen; k++) {
-            popUpText += `<td>${values[k]}</td>`;
-            if (j.toLowerCase() == 'id') {
-                buttonId.push(values[k])
-            }
+            popUpText += '<td>' + moreBtn(k) + storeBtn(k) + '</td>'
         }
-        popUpText += '</tr>'
-    }
-    popUpText += '<tr><td><b></b></td>';
-    // build buttons for each dataset
-    for (let k = 0; k < valueLen; k++) {
-        popUpText += '<td><a><b><input id="show_data_preview' + buttonId[k].toString() + '" class="respo-btn-block" type="submit" ' +
-            'onclick=\"moreInfoModal(\'' + buttonId[k] + '\')\" value="More" data-toggle="tooltip" ' +
-            'title="Show more information about the dataset."></b></a>' +
-            // 'title="Attention! Loading the preview might take a while."></b></a>' +
-            '<a><b><input class="respo-btn-block respo-btn-block:hover" type="submit" ' +
-            'onclick=\"workspace_dataset(\'' + buttonId[k] + '\')\" value="Pass to datastore" data-toggle="tooltip" ' +
-            'title="Put dataset to session datastore"></b></a></td>';
+
+        let popupTableAfterMeta = popUpText + '</table>';
+        // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+        return popupTableAfterMeta //+ img_preview;
     }
 
-    let popupTableAfterMeta = popUpText + '</table>';
-    // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
-    return popupTableAfterMeta //+ img_preview;
-}
+
+    function requestDataset(dataId) {
+        console.warn('Noch nicht implementiert.')
+    }

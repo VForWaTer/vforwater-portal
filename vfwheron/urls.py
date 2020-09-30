@@ -1,12 +1,8 @@
 from django.conf.urls import url, include
-from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from AuthorizationManagement.views import HomeView
 from heron import settings
-# from wps_workflow.views import EditorView
 from . import views
-# from .views import WorkflowView
 
 
 app_name = 'vfwheron'
@@ -24,6 +20,7 @@ urlpatterns = [
     url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),
     ]
 
+# use watts for authorization, or django for development environment
 if settings.ON_VFW_SERVER:
     urlpatterns.append(url(r'^rsp/', include('watts_rsp.urls')))
 else:

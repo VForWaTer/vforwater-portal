@@ -9,16 +9,18 @@ from datetime import time
 from math import radians, ceil, sqrt
 from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
-    DateSlider, DateRangeSlider
+    DateSlider, DateRangeSlider, Whisker
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Oranges9, Spectral11
 
 from django.db import connections
-from numpy import mean
+from django.http.response import JsonResponse
+from numpy import mean, subtract, add
+import numpy as np
 
-from vfwheron.models import TblMeta, TblData
+from vfwheron.models import Entries
 
 import redis
 import pandas as pd
@@ -27,36 +29,80 @@ import time
 from wps_gui.models import WpsResults
 
 
-def DB_load_label(ID):
-    label = TblMeta.objects.filter(id=ID).values_list('variable__variable_name',
-                                                      'variable__variable_symbol',
-                                                      'variable__unit__unit_abbrev')
-    return label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
+def __DB_load_label(ID):
+    label = Entries.objects.filter(id=ID).values_list('variable__name',
+                                                      'variable__symbol',
+                                                      'variable__unit__symbol')
+    SUP = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+    superscript_label = label[0][2].replace("^", "").translate(SUP)
+    return label[0][0] + ' (' + label[0][1] + ')' + ' [' + superscript_label + ']'
+    # return label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
 
 
-def DB_load_data(ID):
-    # TODO: Use django ORM instead of pure sql
-    # connect to database and fetch day(x), daily average, daily min, daily max, # of daily values
-    cursor = connections['default'].cursor()
-    cursor.execute("SELECT date_trunc('day', tstamp) as date, avg(value), "
-                   "min(value), max(value), count(*) "
-                   "FROM tbl_data "
-                   "WHERE meta_id = %s "
-                   "GROUP BY date_trunc('day', tstamp)"
-                   "ORDER BY date ASC;" % ID)
-    dbresult = cursor.fetchall()
-    cursor.close()
-    result = list(zip(*dbresult))
-    # y1 is for the main plot -> min and  max of the day of the day,
-    # y2 for the secondary plot with min and max in each group for each day
-    axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
-    return {'data': result, 'axis': axis}
+def __DB_load_data(ID):
+    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+    if datatable == 'timeseries':
+        # TODO: Use django ORM instead of pure sql
+        # connect to database and fetch day(x), daily average, daily min, daily max, # of daily values
+        cursor = connections['default'].cursor()
+        # noinspection SqlResolve
+        cursor.execute("SELECT date_trunc('day', tstamp) as date, avg(value), "
+                       "min(value), max(value), count(*), avg(precision) "
+                       "FROM {0} "
+                       "WHERE entry_id = {1} "
+                       "GROUP BY date_trunc('day', tstamp)"
+                       "ORDER BY date ASC;".format(datatable, ID))
+        dbresult = cursor.fetchall()
+        cursor.close()
+        result = list(zip(*dbresult))
+        # y1 is for the main plot -> min and  max of the day of the day,
+        # y2 for the secondary plot with min and max in each group for each day
+        axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
+        return {'data': result, 'axis': axis}
+    else:
+        print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
 def get_bokeh_standard(DBdata, label=""):
+    # use first five time steps to estimate resolution/step size of data
+    stepsize = []
+    steps = 0
+    while steps < 5:
+        stepsize.append(DBdata['data'][0][steps+1] - DBdata['data'][0][steps])
+        steps += 1
+
+    # check if data is continuous. If not write position of missing values in noDataPos
+    stepsize = min(stepsize)
+    datalength = len(DBdata['data'][0])
+    noDataPos = []
+    for steps in range(1, datalength):
+        if DBdata['data'][0][steps] - DBdata['data'][0][steps-1] > stepsize:
+            noDataPos.append(steps-1)
+
+    nanIndata = False
+    # To get a discontinuous line add 'nan' when a time step is missing.
+    whiteLine = ()
+    if len(noDataPos) > 0:
+        nanIndata = True
+        whiteLine = tuple([float('nan')] * datalength)
+        for position in noDataPos[::-1]:
+            DBdata['data'][0] = DBdata['data'][0][: position+1] + \
+                                (DBdata['data'][0][position]+stepsize, DBdata['data'][0][position+1]-stepsize,) + \
+                                DBdata['data'][0][position+1:]
+            DBdata['data'][1] = DBdata['data'][1][: position+1] + (float('nan'), float('nan'),) + \
+                                DBdata['data'][1][position+1:]
+            DBdata['data'][5] = DBdata['data'][5][: position+1] + (float('nan'), float('nan'),) + \
+                                DBdata['data'][5][position+1:]
+            bandbef = (DBdata['data'][2][position]+DBdata['data'][3][position])/2
+            bandaft = (DBdata['data'][2][position+1]+DBdata['data'][3][position+1])/2
+            DBdata['data'][2] = DBdata['data'][2][: position+1] + (bandbef, bandaft,) + DBdata['data'][2][position+1:]
+            DBdata['data'][3] = DBdata['data'][3][: position+1] + (bandbef, bandaft,) + DBdata['data'][3][position+1:]
+            DBdata['data'][4] = DBdata['data'][4][: position+1] + (0, 0,) + DBdata['data'][4][position+1:]
+            whiteLine = whiteLine[: position+1] + (bandbef, bandaft,) + whiteLine[position+1:]
+
     source = ColumnDataSource({'date': DBdata['data'][0], 'y': DBdata['data'][1],
                                'ymin': DBdata['data'][2], 'ymax': DBdata['data'][3],
-                               'count': DBdata['data'][4]})
+                               'count': DBdata['data'][4], 'precision': DBdata['data'][5]})
     # Plot average as main plot
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
@@ -66,6 +112,15 @@ def get_bokeh_standard(DBdata, label=""):
     # plot.toolbar.autohide = True
     # plot average line
     mainplot.line(x='date', y='y', source=source, line_width=2, legend_label="average")
+    # add errorbars TODO: Not working yet. Maybe because lack of values for precision. Test again when data available.
+    # precision = np.array(DBdata['data'][5], dtype=np.float)
+    # data = np.array(DBdata['data'][1], dtype=np.float)
+    # lower_error = tuple(subtract(data, precision))
+    # upper_error = tuple(add(data, precision))
+    # error_source = ColumnDataSource({'date': DBdata['data'][0], 'upper': upper_error, 'lower': lower_error})
+    # mainplot.add_layout(
+    #     Whisker(source=error_source, base="date", upper="upper", lower="lower")
+    # )
 
     # TODO: Figure out how to use 'source' for multi_line.
     #  Maybe use Glyph? (https://docs.bokeh.org/en/latest/docs/reference/models/glyphs/multi_line.html)
@@ -81,7 +136,9 @@ def get_bokeh_standard(DBdata, label=""):
                         color=['lightblue', 'lightblue'], legend_label="min & max values")
     mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
                              fill_color='lightblue', fill_alpha=0.5))
-
+    # plot white line to hide small band for no data areas
+    if nanIndata:
+        mainplot.line(x=DBdata['data'][0], y=whiteLine, line_width=2, line_color='white', line_cap='round')
     # plot bars for the number of values in each group as secondary 'by'plot
     mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=DBdata['axis']['y2max'])
     bin_width = DBdata['data'][0][1] - DBdata['data'][0][0]
@@ -101,10 +158,10 @@ def get_bokeh_direction(DBdata, ti):
     # use data in percent => transform Dbdata to percent
     pct_data = []
     for tc in range(0, len(DBdata)):  # 4
-        all = DBdata[tc][1]
-        datalist = [DBdata[tc][0], all]
-        for bin in range(2, len(DBdata[tc])):
-            datalist.append(DBdata[tc][bin]*100/all)
+        all_direct = DBdata[tc][1]
+        datalist = [DBdata[tc][0], all_direct]
+        for single_bin in range(2, len(DBdata[tc])):
+            datalist.append(DBdata[tc][single_bin]*100/all_direct)
         pct_data.append(tuple(datalist))
 
     dbdatadict = {item[0]: item[2:] for item in pct_data}
@@ -119,7 +176,7 @@ def get_bokeh_direction(DBdata, ti):
         hist[i-3] = mean(data_list[i])
         maxlist[i-3] = max(data_list[i])
 
-    #maxhist = sorted(maxlist)[-3]
+    # maxhist = sorted(maxlist)[-3]
     maxhist = mean(maxlist)*0.8  # don't use real max of dataset, too many discordant values
     sumhist = sum(hist)
     start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
@@ -170,7 +227,7 @@ def get_bokeh_direction(DBdata, ti):
 
     # create range slider
     rslider = DateRangeSlider(start=min(df.columns), end=max(df.columns), value=(min(df.columns), max(df.columns)),
-                             step=stepsize, title="Data within date range from ")
+                              step=stepsize, title="Data within date range from ")
     rcallback = CustomJS(
         args=dict(source=pdsource, data=jssource, rslid=rslider), code="""
             const smin = rslid.value[0]
@@ -233,19 +290,19 @@ def get_bokeh_direction(DBdata, ti):
     return {'div': div, 'script': script}
 
 
-def DB_load_directiondata(id, ti):
+def __DB_load_directiondata(id, ti):
     # TODO: Use django ORM instead of pure sql
     cursor = connections['default'].cursor()
     # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
     sum_string = ""
     for i in range(1, 36):
-        sum_string += "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = %i ) as b%i," %(i, i)
+        sum_string += "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = %i ) as b%i," % (i, i)
 
     cursor.execute("SELECT date_trunc('%s', tstamp)::date as date, count(*), "
                    "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = 0 "
                    "or trunc(((value)+5)/10)::smallint = 36) as b0, %s "
                    "from tbl_data where meta_id = %s "
-                   "group by date_trunc('%s', tstamp);" %(ti, sum_string[:-1], id, ti))
+                   "group by date_trunc('%s', tstamp);" % (ti, sum_string[:-1], id, ti))
 
     dbresult = cursor.fetchall()
     cursor.close()
@@ -297,15 +354,15 @@ def get_main_plot(data, y_label='value', x_label="x axis", x_type="linear", type
 
 def distribution_plot(source, mapper, bin_width, title, plot_width):
     p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
-                        plot_width=plot_width, plot_height=50, toolbar_location="above", background_fill_color="black",
-                        tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
+               plot_width=plot_width, plot_height=50, toolbar_location="above", background_fill_color="black",
+               tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
     p.vbar(x='date', source=source, width=bin_width, bottom=0, top=1, color=mapper)
     p.xaxis.visible = False
     p.xgrid.visible = False
     p.yaxis.visible = False
     p.ygrid.visible = False
     p.add_tools(HoverTool(tooltips=[("value", "@count"), ("Date", "@date{%d %b %Y}")],
-                                   formatters={"date": "datetime"}, mode="mouse"))
+                          formatters={"date": "datetime"}, mode="mouse"))
     return p
 
 
@@ -319,6 +376,7 @@ def get_preview(id):
         img = r.get("preview_{}".format('b' + id))
     except:
         use_redis = False
+
     if use_redis:
         if img is None:
             in_cache = False
@@ -327,14 +385,14 @@ def get_preview(id):
             in_cache = True
 
     if not in_cache and not wps_result:
-        label = DB_load_label(id)
+        label = __DB_load_label(id)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            DBdata = DB_load_directiondata(id, ti)
+            DBdata = __DB_load_directiondata(id, ti)
             # img = get_bokeh_standard(DBdata, label)
             img = get_bokeh_direction(DBdata, ti)
         else:
-            DBdata = DB_load_data(id)
+            DBdata = __DB_load_data(id)
             img = get_bokeh_standard(DBdata, label)
 
         if use_redis:
@@ -362,7 +420,7 @@ def get_preview(id):
             else:
                 print('Error: Con not plot. Unknown type')
 
-        #with open(DBstring, 'rb') as f:
+        # with open(DBstring, 'rb') as f:
             #    data = pickle.load(f)
         except FileNotFoundError:
             print('The data file %s was not found.' % (DBstring[2]))

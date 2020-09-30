@@ -93,3 +93,9 @@ p.modal-datainfo {
 .divTblRight {
     width: 220px;
 }
+
+.red_border_figure {
+    fill: chocolate;
+    stroke: cornflowerblue;
+    height: 150px;
+}
