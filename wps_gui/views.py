@@ -11,14 +11,13 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 
 from heron.settings import VFW_SERVER, HOST_NAME
-from vfwheron.models import TblMeta, TblData
 from wps_gui.models import WpsResults
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 
 import logging
 logger = logging.getLogger(__name__)
 datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
-              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
+             'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
 
 # from heron_wps.forms import InputForm
 
@@ -233,7 +232,7 @@ class ProcessView(TemplateView):
             for dataset in request_input:
                 # TODO: Check if user has rights to access dataset
                 if request_input[dataset]['type'] == 'timeseries':
-                    invalue = 'SELECT tstamp, value FROM tbl_data WHERE meta_id=' + dataset + ';'
+                    invalue = 'SELECT tstamp, value FROM timeseries WHERE entry_id={};'.format(dataset)
                     datatype = 'ts-pickle'
                 else:
                     invalue = 'SELECT value FROM tbl_data WHERE meta_id=' + dataset + ';'
