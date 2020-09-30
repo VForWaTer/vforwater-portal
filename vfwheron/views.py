@@ -1,5 +1,7 @@
 import csv
 import json
+import sys
+from json import JSONDecodeError
 
 import requests
 from pyzip import PyZip
@@ -48,27 +50,6 @@ from django.db import connections
 logger = logging.getLogger(__name__)
 
 
-def get_dataset(request):
-    """
-
-    :param self:
-    :type self:
-    :param request:
-    :type request:
-    :param kwargs:
-    :type kwargs:
-    :return:
-    :rtype:
-    """
-    m_id = request.POST.get('meta_id')
-
-    data = TblData.objects.get(meta=m_id)
-    print('~~~~ data: ', data)
-    result = "test"
-
-    return result
-
-
 # class WorkflowView(TemplateView):
 #     """
 #     Template View for plain workflow HTML Template.
@@ -101,7 +82,6 @@ class HomeView(TemplateView):
     JSON_Menu = json.dumps(Menu['client'])
     data_layer = 'testlayer_meta20b'  # 'default_layer_prod'
 
-    # JSON_Menu = Menu().json_menu()
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
@@ -139,6 +119,8 @@ class HomeView(TemplateView):
 
         self.__set_layer_name()
         # get_dataset(self, **kwargs)
+        if not self.request.user.is_authenticated:
+            self.request.session['datasets'] = []
 
         try:
             if not get_layer(self.data_layer, self.store, self.workspace):
@@ -155,170 +137,14 @@ class HomeView(TemplateView):
         self.data_ext = get_bbox_from_data()
 
         return {'dataExt': self.data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
-                'messages': messages.get_messages(self.request), 'embargo_unlocked_ids': self.unlocked_embargo}
+                'messages': messages.get_messages(self.request), 'unblocked_ids': self.request.session['datasets']}
 
 
-class MenuView(TemplateView):
-    """
-    View to build the filter menu on the start page and interact with the sidebar
-    """
+class TestView(View):
 
     def get(self, request):
-        """
-
-        :param request:
-        :type request:
-        :return:
-        :rtype:
-        """
-        # if DEBUG:
-        #     # expire after 20 seconds/ this is only for development!!!
-        #     request.session.set_expiry(20)
-        # auto logout after 3 hours
-        # request.session.set_expiry(10800)
-        # request.session.set_expiry(0)  # expires when the browser is closed
-
-        # bring last used menu to session
-        if 'menu' in request.GET:
-            request.session['menu'] = request.GET.get('menu')
-            request.session.modified = True
-        else:
-            menu = request.session.get('menu')
-
-        # build_selection is called if the following request.GET.get('workspaceData') is true
-        def build_selection(requested_id, min_time=0, max_time=0):
-            """
-            function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
-            :param requested_id:
-            :param min_time:
-            :param max_time:
-            :return:
-            """
-            dataset_dict = {}
-            error_dict = {}
-
-            # if min_time != 0:
-            #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
-            # if max_time != 0:
-            #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
-            # from_var = 'public.tbl_data'
-            # where_var = 'tbl_data.meta_id = ' + str(requested_id)
-
-            accessible_ids, error_ids = get_accessible_data(request, requested_id)
-
-            result_dataset = Entries.objects. \
-                values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
-                       'datasource__datatype__name').filter(pk__in=accessible_ids)
-
-            if len(error_ids) > 0:
-                error_dict = {'message': 'no access', 'id': error_ids}
-
-            for dataset in result_dataset:
-                dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
-                                                     'abbr': dataset['variable__symbol'],
-                                                     'unit': dataset['variable__unit__symbol'],
-                                                     'type': dataset['datasource__datatype__name'],
-                                                     'start': '',
-                                                     'end': '',
-                                                     'pickle': 0}})  # when pickled add id of wps db object here
-
-            # TODO: Need timestamp in name to see if different selection
-            return {'data': dataset_dict, 'error': error_dict}
-
-        if 'workspaceData' in request.GET:
-            min_time = request.GET.get('minTime')
-            max_time = request.GET.get('maxTime')
-            # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
-            result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
-            return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
-
-        if 'preview' in request.GET:
-            # plot with bokeh
-            return JsonResponse(get_preview(request.GET.get('preview')))  # requested from vfw.js show_preview
-
-        if 'short_info' in request.GET:
-            ids = json.loads(request.GET.get('short_info'))
-            field = ['title', 'variable__name', 'embargo']
-            field_name = {'title': 'Titel', 'variable__name': 'Variablenname', 'embargo': 'Embargo'}
-            preview = defaultdict(list)
-
-            for k in ids:
-                row_name = Entries.objects.filter(id=str(k)).values(*field)
-                counter = 0
-                for i in row_name[0]:
-                    if counter == 1:
-                        preview['id'].append(k)
-                    counter += 1
-                    preview[translation.gettext(field_name[i])].append(str(row_name[0][i]).title())
-
-            return JsonResponse(preview)  # requested from map.js show_info
-
-        # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
-        # on request collect metadata for preview on map and selection in the sidebar
-        if 'show_info' in request.GET:
-            # get field names from models:
-            field = []
-            field_name = {}
-            for i in Menu().menu_list:
-                for j in i.db_alias_child.items():
-                    fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
-                    field.append(fieldpath)
-                    field_name[fieldpath] = j[1]
-            # build dict of lists for preview:
-            ids = json.loads(request.GET.get('show_info'))
-            preview = defaultdict(list)
-            for k in ids:
-                preview['id'].append(k)
-                imgtag = Entries.objects.filter(id=str(k)).values(*field)
-
-                for i in imgtag[0]:
-                    # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
-                    preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
-                                                                                                 i] is not None else \
-                        preview[translation.gettext(field_name[i])].append('-')
-
-            # remove rows only containing no value:
-            # comparelist = ['-'] * len(ids)
-            # deleteable = []
-            # for i in preview:
-            #     if preview[i] == comparelist:
-            #         deleteable.append(i)
-            # for i in deleteable:
-            #     del preview[i]
-
-            return JsonResponse(preview)  # requested from map.js show_info
-
-        # get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
-        if 'filter_selection' in request.GET:
-            return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
-                                                               json.loads(request.GET.get('filter_selection'))))
-
-        if 'filter_selection_map' in request.GET:
-            m_ids = None
-            entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_selection_map')))
-            print('entry_ids: ', entry_ids)
-            dataExt = get_bbox_from_data(str(entry_ids['all_filters'])[1:-1])
-            id_layer = 'ID_layer'  # + user
-            if get_layer(id_layer, HomeView.store, HomeView.workspace):
-                delete_layer(id_layer, HomeView.store, HomeView.workspace)
-            print(' _______ entry_ids: ', entry_ids)
-            print(' _______ str(entry_ids[all_filters])[1:-1]: ', str(entry_ids['all_filters'])[1:-1])
-            create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(entry_ids['all_filters'])[1:-1])
-            m_ids = entry_ids['all_filters']
-            print('m_ids: ', m_ids)
-            # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
-            # existing layers
-            # ID_layer = 'ID_layer' + str(hashlib.md5(str(entry_ids['all_filters'])[1:-1].encode())) # + user
-            # if not get_ID_layer(ID_layer):
-            #     create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
-            #             else:
-            # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
-            #  restart of django
-            #                 delete_ID_layer(ID_layer)
-            #                 create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
-            return JsonResponse({'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': m_ids})
-
-        return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
+        print('request: ', request)
+        return JsonResponse({'answer': 'läuft'})
 
 
 class Echo:
@@ -379,28 +205,28 @@ class DatasetDownloadView(TemplateView):
         workspace = HomeView.workspace  # 'CAOS_update'
         test_geoserver_env(store, workspace)
 
-        def get_metadata(m_id):
-            """
-            the metadata for export includes only the values that are also used for filtering.
-            Change get_metadata if you want to have more information in the export file.
-            :return:
-            """
-            # TODO: Portal uses code from class MenuView.get, 'show_info'. Bad style to use two classes for popup.
-            catalog = {}
-            for table in Menu.menu_list:
-                for i in table.db_alias_child:
-                    if table.path != '':
-                        query = Entries.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
-                        # query = TblMeta.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
-                    else:
-                        query = Entries.objects.filter(pk=m_id).values_list(i, flat=True)
-                        # query = TblMeta.objects.filter(pk=m_id).values_list(i, flat=True)
-                    if query[0] is not None:
-                        try:
-                            catalog[table.menu_name][i] = query[0]
-                        except KeyError:
-                            catalog[table.menu_name] = {i: query[0]}
-            return catalog
+        # def get_metadata(m_id):
+        #     """
+        #     the metadata for export includes only the values that are also used for filtering.
+        #     Change get_metadata if you want to have more information in the export file.
+        #     :return:
+        #     """
+        #     # TODO: Portal uses code from class MenuView.get, 'show_info'. Bad style to use two classes for popup.
+        #     catalog = {}
+        #     for table in Menu.menu_list:
+        #         for i in table.db_alias_child:
+        #             if table.path != '':
+        #                 query = Entries.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
+        #                 # query = TblMeta.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
+        #             else:
+        #                 query = Entries.objects.filter(pk=m_id).values_list(i, flat=True)
+        #                 # query = TblMeta.objects.filter(pk=m_id).values_list(i, flat=True)
+        #             if query[0] is not None:
+        #                 try:
+        #                     catalog[table.menu_name][i] = query[0]
+        #                 except KeyError:
+        #                     catalog[table.menu_name] = {i: query[0]}
+        #     return catalog
 
         if 'csv' in request.GET:
             # if 'download_data' in request.GET:
@@ -421,11 +247,11 @@ class DatasetDownloadView(TemplateView):
                 # ===========
                 entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
                 type_values = {'generic1ddata': ['index', 'value', 'precision'],
-                              'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
-                              'genericgeometrydata': ['index', 'geom', 'srid'],
-                              'geomtimeseries': ['tstamp', 'geom', 'srid'],
-                              'timeseries': ['tstamp', 'value', 'precision'],
-                              'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
+                               'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
+                               'genericgeometrydata': ['index', 'geom', 'srid'],
+                               'geomtimeseries': ['tstamp', 'geom', 'srid'],
+                               'timeseries': ['tstamp', 'value', 'precision'],
+                               'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
 
                 # build string of values for django query
                 db_values = type_values[entry_type]
@@ -659,13 +485,195 @@ class GeoserverView(View):
         # wfsLayerName = 'new_ID_as_identifier_update'
         # wfsLayerName = layer
         work_space_name = HomeView.workspace  # 'CAOS_update'
-        url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
-              '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
-              '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
-        # url = '{}/{}/ows?service={}&version=1.0.0&request=GetFeature&typeName={}:{
-        # }&outputFormat=application%2Fjson&' \
-        #       'srsname=EPSG:{}&bbox={},EPSG:{}'.format(LOCAL_GEOSERVER, workSpaceName, service, workSpaceName, layer,
-        #                                                srid, bbox, srid)
+        # url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
+        #       '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
+        #       '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
+        url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
+              'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
+                                                                srid, bbox, srid)
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         return HttpResponse(response.read().decode('utf-8'))
+
+
+def previewplot(request):
+    """
+    Requested from vfw.js show_preview
+    :param request:
+    :return:
+    """
+    try:
+        # plot with bokeh
+        return JsonResponse(get_preview(request.GET.get('preview')))
+
+    except TypeError:
+        raise Http404
+
+
+def short_datainfo(request):
+    """
+    Requested from map.js popupContent
+    :param request:
+    :return:
+    """
+    try:
+        ids = json.loads(request.GET.get('short_info'))
+        field = ['title', 'variable__name', 'embargo']
+        field_name = {'title': 'Titel', 'variable__name': 'Variablenname', 'embargo': 'Embargo'}
+        preview = defaultdict(list)
+
+        for k in ids:
+            row_name = Entries.objects.filter(id=str(k)).values(*field)
+            counter = 0
+            for i in row_name[0]:
+                if counter == 1:
+                    preview['id'].append(k)
+                counter += 1
+                preview[translation.gettext(field_name[i])].append(str(row_name[0][i]).title())
+
+        return JsonResponse(preview)
+
+    except TypeError:
+        raise Http404
+        # return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
+
+
+def filter_selection(request):
+    """
+    get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
+    :param request:
+    :return:
+    """
+    try:
+        return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
+                                                           json.loads(request.GET.get('filter_selection'))))
+
+    except TypeError:
+        raise Http404
+
+
+def filter_map_selection(request):
+    try:
+        m_ids = None
+        entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_map_selection')))
+        dataExt = get_bbox_from_data(str(entry_ids['all_filters'])[1:-1])
+        id_layer = 'ID_layer'  # + user
+        if get_layer(id_layer, HomeView.store, HomeView.workspace):
+            delete_layer(id_layer, HomeView.store, HomeView.workspace)
+        create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(entry_ids['all_filters'])[1:-1])
+        m_ids = entry_ids['all_filters']
+        # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
+        # existing layers
+        # ID_layer = 'ID_layer' + str(hashlib.md5(str(entry_ids['all_filters'])[1:-1].encode())) # + user
+        # if not get_ID_layer(ID_layer):
+        #     create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
+        #             else:
+        # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
+        #  restart of django
+        #                 delete_ID_layer(ID_layer)
+        #                 create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
+        return JsonResponse({'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': m_ids})
+
+    except TypeError:
+        raise Http404
+
+
+# TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
+def show_info(request):
+    """
+    On request collect metadata for preview on map and selection in the sidebar.
+    Requested from map.js show_info.
+    :param request:
+    :return:
+    """
+    try:
+        # get field names from models:
+        field = []
+        field_name = {}
+        for i in Menu().menu_list:
+            for j in i.db_alias_child.items():
+                fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
+                field.append(fieldpath)
+                field_name[fieldpath] = j[1]
+        # build dict of lists for preview:
+        ids = json.loads(request.GET.get('show_info'))
+        preview = defaultdict(list)
+        for k in ids:
+            preview['id'].append(k)
+            imgtag = Entries.objects.filter(id=str(k)).values(*field)
+
+            for i in imgtag[0]:
+                # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
+                preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
+                                                                                             i] is not None else \
+                    preview[translation.gettext(field_name[i])].append('-')
+
+        # remove rows only containing no value:
+        # comparelist = ['-'] * len(ids)
+        # deleteable = []
+        # for i in preview:
+        #     if preview[i] == comparelist:
+        #         deleteable.append(i)
+        # for i in deleteable:
+        #     del preview[i]
+
+        return JsonResponse(preview)
+
+    except TypeError:
+        raise Http404
+
+
+def workspace_data(request):
+    """
+
+    :param request:
+    :return:
+    """
+    def build_selection(requested_id, min_time=0, max_time=0):
+        """
+        function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
+        :param requested_id:
+        :param min_time:
+        :param max_time:
+        :return:
+        """
+        dataset_dict = {}
+        error_dict = {}
+
+        # if min_time != 0:
+        #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
+        # if max_time != 0:
+        #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
+        # from_var = 'public.tbl_data'
+        # where_var = 'tbl_data.meta_id = ' + str(requested_id)
+
+        accessible_ids, error_ids = get_accessible_data(request, requested_id)
+
+        result_dataset = Entries.objects. \
+            values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
+                   'datasource__datatype__name').filter(pk__in=accessible_ids)
+
+        if len(error_ids) > 0:
+            error_dict = {'message': 'no access', 'id': error_ids}
+
+        for dataset in result_dataset:
+            dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
+                                                 'abbr': dataset['variable__symbol'],
+                                                 'unit': dataset['variable__unit__symbol'],
+                                                 'type': dataset['datasource__datatype__name'],
+                                                 'start': '',
+                                                 'end': '',
+                                                 'pickle': 0}})  # when pickled add id of wps db object here
+
+        # TODO: Need timestamp in name to see if different selection
+        return {'data': dataset_dict, 'error': error_dict}
+
+    try:
+        min_time = request.GET.get('minTime')
+        max_time = request.GET.get('maxTime')
+        # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
+        result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
+        return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
+
+    except TypeError:
+        raise Http404
