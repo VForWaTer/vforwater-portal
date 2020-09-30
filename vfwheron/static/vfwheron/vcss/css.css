@@ -187,3 +187,63 @@ button {
 .image{background-color: rgb(19, 154, 24); border: 1px solid #91ff59;}
 
 
+/*Create a "toggle switch" (on/off button) from a checkbox
+(source: https://www.w3schools.com/howto/howto_css_switch.asp) */
+ /* The switch - the box around the slider */
+.toggleswitch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  vertical-align: text-bottom;
+}
+
+/* Hide default HTML checkbox */
+.toggleswitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.toggleslider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .3s;
+  transition: .3s;
+  border-radius: 17px;
+}
+
+.toggleslider:before {
+  position: absolute;
+  content: "";
+  height: 13px;
+  width: 13px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .3s;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggleslider {
+  background-color: #2196F3;
+}
+
+input:focus + .toggleslider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .toggleslider:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+
