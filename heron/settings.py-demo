@@ -269,8 +269,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
-LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron/failedlogin'
+LOGIN_SUCCESS_VIEW = VFW_SERVER + '/home/rsp/login/success'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/home/failedlogin'
 #LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron'
 #LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
 
