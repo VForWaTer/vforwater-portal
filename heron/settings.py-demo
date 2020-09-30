@@ -266,9 +266,9 @@ MEDIA_URL = DEMO_VAR + '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default URLs for user authentication
-LOGIN_URL = 'vfwheron:login'
-LOGIN_REDIRECT_URL = 'vfwheron:home'
-LOGOUT_REDIRECT_URL = 'vfwheron:home'
+LOGIN_URL = 'home:login'
+LOGIN_REDIRECT_URL = 'home:home'
+LOGOUT_REDIRECT_URL = 'home:home'
 LOGIN_SUCCESS_VIEW = VFW_SERVER + '/home/rsp/login/success'
 LOGIN_FAILURE_VIEW = VFW_SERVER + '/home/failedlogin'
 #LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron'
