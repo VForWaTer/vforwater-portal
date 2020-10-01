@@ -21,7 +21,7 @@ from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='vfwheron/', permanent=False)),
+    url(r'^$', RedirectView.as_view(url='home/', permanent=False)),
     url(r'^home/', include('vfwheron.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^workspace/', include('wps_gui.urls', namespace='wps_gui')),
