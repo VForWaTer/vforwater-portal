@@ -328,7 +328,8 @@ class LoginView(View):
         :rtype:
         """
         if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
-            logger.debug('Redirect to vfwheron/rsp/login/init...')
+            logger.debug('Redirect to home/rsp/login/init...')
+            logger.debug('Redirect to home/rsp/login/init...')
             return redirect('vfwheron:watts_rsp:login_init')
         elif settings.DEBUG == True:  # default django login
             return redirect('vfwheron:login')
@@ -387,7 +388,7 @@ class DevLoginView(TemplateView):
 
     def get(self, request):
         context = {}
-        return render(request, 'vfwheron/login.html', {'context': context})
+        return render(request, 'home/login.html', {'context': context})
 
 
 class HelpView(TemplateView):
@@ -411,7 +412,7 @@ class HelpView(TemplateView):
             context[i] = line
             i += 1
         f.close()
-        return render(request, 'vfwheron/help.html', {'context': context})
+        return render(request, 'home/help.html', {'context': context})
 
 
 class ToggleLanguageView(View):
