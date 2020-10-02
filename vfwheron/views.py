@@ -4,6 +4,7 @@ import sys
 from json import JSONDecodeError
 
 import requests
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from pyzip import PyZip
 
 import matplotlib as mpl
@@ -678,3 +679,17 @@ def workspace_data(request):
 
     except TypeError:
         raise Http404
+
+
+def entries_pagination(request):
+    entries_list = Entries.objects.all()
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(entries_list, 6)
+    try:
+        entriespage = paginator.page(page)
+    except PageNotAnInteger:
+        entriespage = paginator.page(1)
+    except EmptyPage:
+        entriespage = paginator.page(paginator.num_pages)
+    return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage})
