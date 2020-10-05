@@ -13,7 +13,7 @@
 {% block content %}
    <!-- Tab links -->
 <div class="tab">
-  <button class="tablinks" onclick="toggleMapTable(event, 'Map')" id="defaultOpen">Map</button>
+  <button class="tablinks" onclick="toggleMapTable(event, 'Map')" id="defaultMapTab">Map</button>
   <button class="tablinks" onclick="toggleMapTable(event, 'paginationTable'); filter_pagination()">Table</button>
 </div>
 
@@ -28,7 +28,7 @@
 
 <!-- Login alert -->
   {% if messages %}
-     <script>alert("Login failed.");</script>
+     <script>alert("Login failed.", messages);</script>
 
      {% comment %}
      {# todo: nice message window #}
@@ -43,7 +43,9 @@
 
 
 <script>
-// Get the element with id="defaultOpen" and click on it
-document.getElementById("defaultOpen").click();
+// Get the element with id="defaultMapTab" and click on it
+document.getElementById("defaultMapTab").click();
 </script>
 {% endblock %}
+
+
