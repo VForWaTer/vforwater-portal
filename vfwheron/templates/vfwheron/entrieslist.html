@@ -35,10 +35,12 @@
       <a class="disabled"><span>&#8882;</span></a>
     {% endif %}
     {% for i in entries.paginator.page_range %}
-      {% if entries.number == i %}
-        <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
-      {% else %}
-        <a onclick="filter_pagination({{ i }})">{{ i }}</a>
+      {% if entries.paginator.num_pages < 11 or i > entries.number|add:"-5" and i < entries.number|add:"5" %}
+        {% if entries.number == i %}
+          <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
+        {% else %}
+          <a onclick="filter_pagination({{ i }})">{{ i }}</a>
+        {% endif %}
       {% endif %}
     {% endfor %}
     {% if entries.has_next %}

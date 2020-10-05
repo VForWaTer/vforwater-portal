@@ -682,7 +682,7 @@ def workspace_data(request):
 
 
 def entries_pagination(request):
-    entries_list = Entries.objects.all()
+    entries_list = Entries.objects.all().order_by('title')
     page = request.GET.get('page', 1)
 
     paginator = Paginator(entries_list, 6)
