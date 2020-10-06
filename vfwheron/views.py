@@ -4,6 +4,7 @@ import sys
 from json import JSONDecodeError
 
 import requests
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from pyzip import PyZip
 
 import matplotlib as mpl
@@ -24,6 +25,7 @@ from heron.settings import LOCAL_GEOSERVER, DEBUG
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
 from vfwheron.previewplot import get_preview
+from .forms import AdvancedFilterForm
 
 mpl.use('Agg')
 
@@ -116,7 +118,6 @@ class HomeView(TemplateView):
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
-
         self.__set_layer_name()
         # get_dataset(self, **kwargs)
         if not self.request.user.is_authenticated:
@@ -454,9 +455,6 @@ class FailedLoginView(View):
     @staticmethod
     def get(request):
         print('failed login view get')
-        # message = _("Login failed.")
-        # message = "Login failed."
-        # request.user.message_set.create(message = message)
         messages.warning(request, 'Login failed.')
         return redirect('vfwheron:home')
 
@@ -678,3 +676,28 @@ def workspace_data(request):
 
     except TypeError:
         raise Http404
+
+
+def entries_pagination(request):
+    entries_list = Entries.objects.all().order_by('title')
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(entries_list, 6)
+    try:
+        entriespage = paginator.page(page)
+    except PageNotAnInteger:
+        entriespage = paginator.page(1)
+    except EmptyPage:
+        entriespage = paginator.page(paginator.num_pages)
+    return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage})
+
+
+def advanced_Filter(request):
+    if request.method == 'POST':
+        form = AdvancedFilterForm(request.POST)
+        if form.is_valid():
+            pass  # does nothing, just trigger the validation
+    else:
+        form = AdvancedFilterForm()
+    print('form: ', form)
+    return render(request, 'vfwheron/advanced_filter.html', {'form': form})
