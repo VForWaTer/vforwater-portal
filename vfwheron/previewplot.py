@@ -7,7 +7,6 @@ import json
 import pickle
 from datetime import time
 from math import radians, ceil, sqrt
-
 from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
     DateSlider, DateRangeSlider, Whisker
@@ -109,6 +108,7 @@ def get_bokeh_standard(DBdata, label=""):
                       y_axis_label=label,
                       plot_width=700, plot_height=500, toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
+
     # plot.toolbar.autohide = True
     # plot average line
     mainplot.line(x='date', y='y', source=source, line_width=2, legend_label="average")
@@ -331,6 +331,7 @@ def get_main_plot(data, y_label='value', x_label="x axis", x_type="linear", type
                       y_axis_label=y_label,
                       plot_width=700, plot_height=500, toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
+
     # plot.toolbar.autohide = True
     # plot line
     # mainplot.line(data.index.values, data['value'], line_width=2)

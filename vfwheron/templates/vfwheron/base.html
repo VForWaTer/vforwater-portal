@@ -50,7 +50,7 @@ window.cookieconsent.initialise({
 <body class="w3-light-grey">
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 <!--    Top container -->
-<div class="w3-container w3-top w3-black w3-large w3-padding" id="topcontainer">
+<div class="w3-container w3-top w3-black w3-large w3-padding" style="z-index:4" id="topcontainer">
     <button class="w3-btn w3-hide-large w3-padding-0 w3-hover-text-grey" onclick="w3_open();"><i class="fa fa-bars"></i>
     </button>
     {#	  <span class="w3-right"><strong><small>Virtuelle Forschungsumgebung für die Wasser- und terrestrische Umweltforschung</small></strong></span>#}
@@ -246,12 +246,13 @@ window.cookieconsent.initialise({
 {% endblock %}
 
 <!-- 	!PAGE CONTENT! -->
-<div class="w3-main">
+<div class="w3-main" style="margin-left:300px;margin-top:98px;">
     {# get map in the content block #}
     {% block content %}{% endblock %}
 
     <footer class="w3-container w3-padding-16 w3-light-grey">
-        <p>Powered by <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> | Copyright &copy; 2016-2020</p>
+        <p style="text-align:center">Powered by <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> |
+            Copyright &copy; 2016-2020</p>
     </footer>
 
 </div>

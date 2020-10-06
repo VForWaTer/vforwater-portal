@@ -216,6 +216,7 @@ def __build_new_layer_xml(request, filename, datastore, workspace, srid, selecti
         query = '{} WHERE entries.id in ({})'.format(query, selection)
     # if not request.user.is_authenticated:
     #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
+
     # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
     attribute_list = [('Geometry', 0, 1, True, 'point'), ('Beschreibung', 1, 1, False, 'string'),
                       ('Datentyp', 1, 1, False, 'string'), ('Kommentar', 0, 1, True, 'string'),

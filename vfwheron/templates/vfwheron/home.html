@@ -6,29 +6,15 @@
 {% extends "vfwheron/base.html" %}
 {% load static %}
 
-{% block sidebar %}
-	{% include 'vfwheron/base_sidebar.html' %}
+{% block sidebar %} 
+	{% include 'vfwheron/base_sidebar.html' %} 
 {% endblock sidebar %}
 
 {% block content %}
-   <!-- Tab links -->
-<div class="tab">
-  <button class="tablinks" onclick="toggleMapTable(event, 'Map')" id="defaultMapTab">Map</button>
-  <button class="tablinks" onclick="toggleMapTable(event, 'paginationTable'); filter_pagination()">Table</button>
-</div>
+{% include 'vfwheron/map.html' %}
 
-<!-- Tab content -->
-<div id="Map" class="tabcontent">
-  {% include 'vfwheron/map.html' %}
-</div>
-
-<div id="paginationTable" class="tabcontent">
-  {% include 'vfwheron/entrieslist.html' %}
-</div>
-
-<!-- Login alert -->
   {% if messages %}
-     <script>alert("Login failed.", messages);</script>
+     <script>alert("Login failed.");</script>
 
      {% comment %}
      {# todo: nice message window #}
@@ -42,10 +28,4 @@
 
 
 
-<script>
-// Get the element with id="defaultMapTab" and click on it
-document.getElementById("defaultMapTab").click();
-</script>
 {% endblock %}
-
-

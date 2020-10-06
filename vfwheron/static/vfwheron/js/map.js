@@ -36,7 +36,7 @@ function clusterStyle(feature) {
     return [style];
 }
 
-// Fetch V-FOR-WaTer base layer
+//Create own base layer
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
