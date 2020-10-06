@@ -82,13 +82,14 @@ class HomeView(TemplateView):
     # Before you make migrations
     Menu = Menu().get_menu()
     JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'testlayer_meta20b'  # 'default_layer_prod'
+    data_layer = 'metacatalogdev'  # 'default_layer_prod'
 
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    store = 'teststore_meta20b'  # 'new_vforwater_gis'
-    workspace = 'testworkspace_meta20b'  # 'CAOS_update'
+    # IMPORTANT! Don't use "-" in geoserver names!!!
+    store = 'metacatalogdev'  # 'new_vforwater_gis'
+    workspace = 'metacatalogdev'  # 'CAOS_update'
     unlocked_embargo = []
 
     try:

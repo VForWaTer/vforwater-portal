@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class AuthorizationmanagementConfig(AppConfig):
+class authorManageConfig(AppConfig):
     """
     Configuration Class for Authorizationmanagement App
     """
