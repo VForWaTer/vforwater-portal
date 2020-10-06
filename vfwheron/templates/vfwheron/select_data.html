@@ -46,7 +46,7 @@
             onclick="draw_polygon()" id="toggle_draw" title={% trans "Click&#32here&#32to&#32draw&#32the&#32area&#32you&#32want&#32to&#32filter." %}>{% trans "Draw SELECTION area" %}</h5>
     </div>{% endcomment %}
 <div class="tab">
-  <button class="filter-tablinks" onclick="toggleFilter(event, 'basicFilter')" id="defaultFilterTab">Simple</button>
+  <button class="filter-tablinks" onclick="toggleFilter(event, 'quickFilter')" id="defaultFilterTab">Quick</button>
   <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()">Advanced</button>
 </div>
 
@@ -54,7 +54,7 @@
   {% include 'vfwheron/advanced_filter.html' %}
 </div>
 
-<div id="basicFilter" class="filter-tabcontent">
+<div id="quickFilter" class="filter-tabcontent">
     {#    new accordion#}
     <div class="container">
         <div class="panel-group" id="accordion">

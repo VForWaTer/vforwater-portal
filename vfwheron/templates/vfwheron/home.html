@@ -27,8 +27,8 @@
 </div>
 
 <!-- Login alert -->
-  {% if messages %}
-     <script>alert("Login failed.", messages);</script>
+  {% if messages.alert %}
+     <script>alert("Login failed.");</script>
 
      {% comment %}
      {# todo: nice message window #}
