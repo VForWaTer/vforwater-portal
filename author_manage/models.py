@@ -54,6 +54,7 @@ class Resource(models.Model):
     def __str__(self):
         return '{}, {}'.format(self.type, self.dataEntry)
 
+
 class Request(models.Model):
     sender = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     # sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

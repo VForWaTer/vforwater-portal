@@ -26,7 +26,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
 from itertools import chain
-from author_manage.apps import AuthorizationmanagementConfig
+from author_manage.apps import authorManageConfig
 
 logger = logging.getLogger(__name__)
 
