@@ -45,10 +45,17 @@
         <h5 style="display:block;cursor:pointer;position:relative;margin:2px 0 0 0;padding:.5em.5em.5em.7em;font-size:15px;"
             onclick="draw_polygon()" id="toggle_draw" title={% trans "Click&#32here&#32to&#32draw&#32the&#32area&#32you&#32want&#32to&#32filter." %}>{% trans "Draw SELECTION area" %}</h5>
     </div>{% endcomment %}
+<div class="tab">
+  <button class="filter-tablinks" onclick="toggleFilter(event, 'basicFilter')" id="defaultFilterTab">Simple</button>
+  <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()">Advanced</button>
+</div>
+
+<div id="advancedFilter" class="filter-tabcontent">
+  {% include 'vfwheron/advanced_filter.html' %}
+</div>
+
+<div id="basicFilter" class="filter-tabcontent">
     {#    new accordion#}
-{#    unselect all button. More a cosmetic treatment. Do it later #}
-{#    <a><b><input id="unselect_all" class="w3-btn-simple" type="submit" onclick="unselect_all_func()"#}
-{#                 value="Unselect all" data-toggle="tooltip" title="Provides you a fresh menu to filter whatever you want."></b></a>#}
     <div class="container">
         <div class="panel-group" id="accordion">
         </div>
@@ -63,7 +70,7 @@
                 onclick="reset_filter()" value={% trans "Reset&#32filter&#32menu" %} data-toggle="tooltip"
                 title={% trans "Remove&#32selection&#32from&#32filter&#32menu." %}></b>
         </a>
-
+  </div>
 </body>
 
 <script>
@@ -71,4 +78,6 @@
  csrf_token = '{{ csrf_token }}';
 var jsonMenu = "{{ Filter_Menu|escapejs }}";
 var unblockedIds = "{{ unblocked_ids|escapejs }}";
+// Get the element with id="defaultMapTab" and click on it
+document.getElementById("defaultFilterTab").click();
 </script>

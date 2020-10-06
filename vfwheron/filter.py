@@ -5,6 +5,8 @@ The filter doesn't have to care about users, as all metadata is supposed to be a
 import json
 import logging
 from django.db.models import Max, Min
+
+from author_manage.views import MyResourcesView
 from heron.settings import DEBUG
 # import vfwheron.models_metacatalog_dev as mc_dev
 
@@ -128,7 +130,6 @@ class FilterMethods:
         :rtype:
         """
         result = {}
-
         query_filter = build_select_filters(menu, filter_selection)
         std_query = Entries.objects.filter(**query_filter['filters'])
         filtermap = query_filter['active_f']
