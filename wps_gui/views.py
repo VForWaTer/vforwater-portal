@@ -73,7 +73,6 @@ def home(request):
                'wps': wps,
                'service': service,
                }
-
     return render(request, 'wps_gui/home.html', context)
 
 # def use_pandoc(bla):
@@ -135,198 +134,203 @@ class ProcessView(TemplateView):
 
     def get(self, request):
 
-        if 'processview' in request.GET:
-            selected_process = json.loads(request.GET.get('processview'))
+        selected_process = json.loads(request.GET.get('processview'))
 
-            wps = get_wps_service_engine(selected_process['serv'])
-            wps_process = wps.describeprocess(selected_process['id'])
-            # print('jsonpickle.encode(wps_process): ', jsonpickle.encode(wps_process))
-            # for i in wps_process:
-            #     print('i: ', i)
-            # print('jsonpickle.encode(wps_process, unpicklable=False): ', jsonpickle.encode(wps_process,
-            # unpicklable=False))
+        wps = get_wps_service_engine(selected_process['serv'])
+        wps_process = wps.describeprocess(selected_process['id'])
+        # print('jsonpickle.encode(wps_process): ', jsonpickle.encode(wps_process))
+        # for i in wps_process:
+        #     print('i: ', i)
+        # print('jsonpickle.encode(wps_process, unpicklable=False): ', jsonpickle.encode(wps_process,
+        # unpicklable=False))
 
-            # TODO: use of jsonpickle only to simplify readability of wps_process.
-            #  Shouldn't be necessary to use jsonpickle for that. Please improve!
-            # simply serialize wps to json
-            whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
-            # print('a: ',whole_wpsprocess_json)
-            # convert to dict to remove unwanted keys and empty values
-            whole_wpsprocess = json.loads(whole_wpsprocess_json)
-            whole_wpsprocess.pop('_root', None)
-            wps_description = {}
-            for a in whole_wpsprocess:
-                if isinstance(whole_wpsprocess[a], list):
-                    list_values = []
-                    for b in whole_wpsprocess[a]:
-                        if isinstance(b, dict):
-                            innerdict = {}
-                            for k, v in b.items():
-                                # TODO: ugly hack because keywords are still not implemented in pywps. Use
-                                #  allow_values with first value '_keywords' instead
-                                if k == 'allowedValues' and v != [] and v[0] == '_keywords':
-                                    innerdict['keywords'] = v[1:]
-                                elif k == 'abstract' and v != None:  # and not v == [] and v[0] == '_keywords':
-                                    try:
-                                        for abst in json.loads(v):
-                                            if abst == 'keywords':
-                                                innerdict[abst] = json.loads(v)[abst]
-                                            else:
-                                                innerdict['abstract'] = v
-                                    except ValueError:
-                                        # print('v: ', v)
-                                        innerdict['abstract'] = v
-                                elif v is not None and v != []:
-                                    # if not v is None and not v == []:
-                                    if isinstance(v, str) and re.search("(?<=/#)\w+", v):
-                                        match = re.search("(?<=/#)\w+", v)
-                                        innerdict[k] = match.group(0)
-                                    else:
-                                        innerdict[k] = v
-                            list_values.append(innerdict)
-                        elif not b is None and b != []:
-                            list_values.append(b)
-                    wps_description[a] = list_values
-                elif not whole_wpsprocess[a] is None and whole_wpsprocess[a] != []:
-                    # from docutils.writers.html4css1 import Writer, HTMLTranslator
-                    # from docutils import core
-                    # class HTMLFragmentTranslator(HTMLTranslator):
-                    #     def __init__(self, document):
-                    #         HTMLTranslator.__init__(self, document)
-                    #         self.head_prefix = ['', '', '', '', '']
-                    #         self.body_prefix = []
-                    #         self.body_suffix = []
-                    #         self.stylesheet = []
-                    #     def astext(self):
-                    #         return ''.join(self.body)
-                    # html_fragment_writer = Writer()
-                    # html_fragment_writer.translator_class = HTMLFragmentTranslator
-                    # print("reST_to_html(v): ", core.publish_string(whole_wpsprocess[a], writer=html_fragment_writer))
+        # TODO: use of jsonpickle only to simplify readability of wps_process.
+        #  Shouldn't be necessary to use jsonpickle for that. Please improve!
+        # simply serialize wps to json
+        whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
+        # print('a: ',whole_wpsprocess_json)
+        # convert to dict to remove unwanted keys and empty values
+        whole_wpsprocess = json.loads(whole_wpsprocess_json)
+        whole_wpsprocess.pop('_root', None)
+        wps_description = {}
+        for a in whole_wpsprocess:
+            if isinstance(whole_wpsprocess[a], list):
+                list_values = []
+                for b in whole_wpsprocess[a]:
+                    if isinstance(b, dict):
+                        innerdict = {}
+                        for k, v in b.items():
+                            # TODO: ugly hack because keywords are still not implemented in pywps. Use
+                            #  allow_values with first value '_keywords' instead
+                            if k == 'allowedValues' and v != [] and v[0] == '_keywords':
+                                innerdict['keywords'] = v[1:]
+                            elif k == 'abstract' and v is not None:  # and not v == [] and v[0] == '_keywords':
+                                try:
+                                    for abst in json.loads(v):
+                                        if abst == 'keywords':
+                                            innerdict[abst] = json.loads(v)[abst]
+                                        else:
+                                            innerdict['abstract'] = v
+                                except ValueError:
+                                    # print('v: ', v)
+                                    innerdict['abstract'] = v
+                            elif v is not None and v != []:
+                                # if not v is None and not v == []:
+                                if isinstance(v, str) and re.search("(?<=/#)\w+", v):
+                                    match = re.search("(?<=/#)\w+", v)
+                                    innerdict[k] = match.group(0)
+                                else:
+                                    innerdict[k] = v
+                        list_values.append(innerdict)
+                    elif not b is None and b != []:
+                        list_values.append(b)
+                wps_description[a] = list_values
+            elif not whole_wpsprocess[a] is None and whole_wpsprocess[a] != []:
+                # from docutils.writers.html4css1 import Writer, HTMLTranslator
+                # from docutils import core
+                # class HTMLFragmentTranslator(HTMLTranslator):
+                #     def __init__(self, document):
+                #         HTMLTranslator.__init__(self, document)
+                #         self.head_prefix = ['', '', '', '', '']
+                #         self.body_prefix = []
+                #         self.body_suffix = []
+                #         self.stylesheet = []
+                #     def astext(self):
+                #         return ''.join(self.body)
+                # html_fragment_writer = Writer()
+                # html_fragment_writer.translator_class = HTMLFragmentTranslator
+                # print("reST_to_html(v): ", core.publish_string(whole_wpsprocess[a], writer=html_fragment_writer))
 
-                    # import simplicity
-                    # print('rst_to_json: ', simplicity.rst_to_json(whole_wpsprocess[a]))
+                # import simplicity
+                # print('rst_to_json: ', simplicity.rst_to_json(whole_wpsprocess[a]))
 
-                    # import docutils.core  # not tested yet
-                    # docutils.core.publish_file(v, destination_path="output.json",
-                    # result = open("output.json").read()
-                    # innerdict['abstract'] = result
+                # import docutils.core  # not tested yet
+                # docutils.core.publish_file(v, destination_path="output.json",
+                # result = open("output.json").read()
+                # innerdict['abstract'] = result
 
-                    import docutils.core
-                    # print('+ +  +: ', docutils.core.publish_parts(whole_wpsprocess[a], writer_name="html"))
+                import docutils.core
+                # print('+ +  +: ', docutils.core.publish_parts(whole_wpsprocess[a], writer_name="html"))
 
-                    # parts = core.publish_parts(source = whole_wpsprocess[a], writer_name = 'html')
-                    # print(parts['body_pre_docinfo'] + parts['fragment'])
+                # parts = core.publish_parts(source = whole_wpsprocess[a], writer_name = 'html')
+                # print(parts['body_pre_docinfo'] + parts['fragment'])
 
-                    # print('pandoc: ', use_pandoc(whole_wpsprocess[a]))
+                # print('pandoc: ', use_pandoc(whole_wpsprocess[a]))
 
-                    wps_description[a] = whole_wpsprocess[a]
+                wps_description[a] = whole_wpsprocess[a]
 
-            return JsonResponse(wps_description)
-
-        # function to preload data from database, convert it, and store a pickle of the data
-        if 'dbload' in request.GET:
-            wps_process = 'dbloader_m'
-            inkey = 'sql-filter'
-            request_input = json.loads(request.GET.get('dbload'))
-            result = {}
-            for dataset in request_input:
-                # TODO: Check if user has rights to access dataset
-                if request_input[dataset]['type'] == 'timeseries':
-                    invalue = 'SELECT tstamp, value FROM timeseries WHERE entry_id={};'.format(dataset)
-                    datatype = 'ts-pickle'
-                else:
-                    invalue = 'SELECT value FROM tbl_data WHERE meta_id=' + dataset + ';'
-                    datatype = 'pickle'
-                datalink = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, (inkey, invalue))
-                result[dataset] = datalink
-                if 'Error' not in datalink:
-                    result[dataset]['datatype'] = datatype
-            return JsonResponse(result)
-
-        if 'processrun' in request.GET:
-
-            # if request.user.is_authenticated:
-            if True:
-                # if request.user.is_authenticated:
-                request_input = json.loads(request.GET.get('processrun'))
-                inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
-                inputs = edit_input(inputs)
-                wps = get_wps_service_engine(request_input.get("serv", ""))
-                wps_process = request_input.get("id", "")
-                execution = wps.execute(wps_process, inputs)
-                # order output for database
-                all_outputs = {'execution_status': execution.status}
-                all_outputs['result'] = {}
-                path = ''
-
-                for output in execution.processOutputs:
-                    one_output = {}
-
-                    if output.identifier == 'error':
-                        all_outputs['error'] = output.data[0]
-
-                        if output.data[0] != "False":
-                            print('error in wps process: ', output.data[0])
-                            all_outputs = {'execution_status': 'error in wps process',
-                                           'error': output.data[0]}
-                            break
-                    else:
-                        try:
-                            keywords = json.loads(output.abstract)['keywords'][0]
-                            one_output['type'] = keywords
-                            if 'pickle' in keywords:
-                                path = output.data[0]
-                        except:
-                            one_output['type'] = output.dataType
-                            print('no keywords')
-
-                        one_output['data'] = output.data[0]
-
-                        # TODO: Discuss if several outputs should have single or multiple buttons, and
-                        #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
-                        if len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
-                            db_output_data = output.data[0]
-                        elif path != '':
-                            try:
-                                file_name = path[:-4] + one_output['type'] + path[-4:]
-                                text_file = open(file_name, "w")
-                                text_file.write(output.data[0])
-                                text_file.close()
-                                db_output_data = file_name
-                                one_output['data'] = output.data[0]
-                            except:
-                                print('Warning: no file was created for long string')
-                        else:
-                            db_output_data = ''
+        return JsonResponse(wps_description)
 
 
-                        if db_output_data != '':
-                            db_output = [output.identifier, one_output['type'], db_output_data]
-                            # create the db entry
-                            wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
+def process_run(request):
+    # if request.user.is_authenticated:
+    if True:
+        request_input = json.loads(request.GET.get('processrun'))
+        inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
+        print('inputs 1: ', inputs)
+        inputs = edit_input(inputs)
+        print('inputs 2: ', inputs)
+        wps = get_wps_service_engine(request_input.get("serv", ""))
+        wps_process = request_input.get("id", "")
+        execution = wps.execute(wps_process, inputs)
+        # order output for database
+        all_outputs = {'execution_status': execution.status}
+        all_outputs['result'] = {}
+        path = ''
 
-                            one_output['wpsID'] = wpsid
-                        else:
-                            print('*** no output to write to db ***')
-                            one_output['error'] = 'no output to write to db'
+        for output in execution.processOutputs:
+            one_output = {}
 
-                        all_outputs['result'][output.identifier] = one_output
-                        # TODO: Have to handle bytes result
-                        # if type(output.data[0]) is bytes:
-                        #     if len(output.data[0]) > 30:
-                        #         substring = str(output.data[0][:30])
-                        #         if "xml" in substring:
-                        #             print('XML as input not implemented yet. Got: ', output.data[0])
-                        #             logger.error('XML as input not implemented yet.')
-                        #             # tree = ET.fromstring(output.data[0])
-                        #             # for child in tree:
-                        #             #     print(child.tag, child.attrib)
-                        #             del outputs_for_db[-1]
+            if output.identifier == 'error':
+                all_outputs['error'] = output.data[0]
+
+                if output.data[0] != "False":
+                    print('error in wps process: ', output.data[0])
+                    all_outputs = {'execution_status': 'error in wps process',
+                                   'error': output.data[0]}
+                    break
             else:
-                all_outputs = {'execution_status': 'auth_error'}
-                print('user is not authenticated. ', all_outputs)
+                try:
+                    keywords = json.loads(output.abstract)['keywords'][0]
+                    one_output['type'] = keywords
+                    if 'pickle' in keywords:
+                        path = output.data[0]
+                except:
+                    one_output['type'] = output.dataType
+                    print('no keywords')
 
-            return JsonResponse(all_outputs)
+                one_output['data'] = output.data[0]
+
+                # TODO: Discuss if several outputs should have single or multiple buttons, and
+                #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
+                if len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
+                    db_output_data = output.data[0]
+                elif path != '':
+                    try:
+                        file_name = path[:-4] + one_output['type'] + path[-4:]
+                        text_file = open(file_name, "w")
+                        text_file.write(output.data[0])
+                        text_file.close()
+                        db_output_data = file_name
+                        one_output['data'] = output.data[0]
+                    except:
+                        print('Warning: no file was created for long string')
+                else:
+                    db_output_data = ''
+
+                if db_output_data != '':
+                    db_output = [output.identifier, one_output['type'], db_output_data]
+                    # create db entry
+                    wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
+
+                    one_output['wpsID'] = wpsid
+                else:
+                    print('*** no output to write to db ***')
+                    one_output['error'] = 'no output to write to db'
+
+                all_outputs['result'][output.identifier] = one_output
+                # TODO: Have to handle bytes result
+                # if type(output.data[0]) is bytes:
+                #     if len(output.data[0]) > 30:
+                #         substring = str(output.data[0][:30])
+                #         if "xml" in substring:
+                #             print('XML as input not implemented yet. Got: ', output.data[0])
+                #             logger.error('XML as input not implemented yet.')
+                #             # tree = ET.fromstring(output.data[0])
+                #             # for child in tree:
+                #             #     print(child.tag, child.attrib)
+                #             del outputs_for_db[-1]
+    else:
+        all_outputs = {'execution_status': 'auth_error'}
+        print('user is not authenticated. ', all_outputs)
+
+    return JsonResponse(all_outputs)
+
+
+def db_load(request):
+    """
+    Function to preload data from database, convert it, and store a pickle of the data
+    :param request:
+    :return:
+    """
+
+    wps_process = 'dbloader_m'
+    inkey = 'sql-filter'
+    request_input = json.loads(request.GET.get('dbload'))
+    result = {}
+    for dataset in request_input:
+        # TODO: Check if user has rights to access dataset
+        if request_input[dataset]['type'] == 'timeseries':
+            invalue = 'SELECT tstamp, value FROM timeseries WHERE entry_id={};'.format(dataset)
+            datatype = 'ts-pickle'
+        else:
+            invalue = 'SELECT value FROM tbl_data WHERE meta_id=' + dataset + ';'
+            datatype = 'pickle'
+        datalink = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, (inkey, invalue))
+        result[dataset] = datalink
+        if 'Error' not in datalink:
+            result[dataset]['datatype'] = datatype
+    return JsonResponse(result)
 
 
 def edit_input(inputs):

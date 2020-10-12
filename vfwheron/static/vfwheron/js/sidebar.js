@@ -94,7 +94,7 @@ function preload_datastore_button(workspaceData) {
                 end: workspaceData[dataset]['end']
             };
             $.ajax({
-                url: DEMO_VAR + "/wps_gui/processview",
+                url: DEMO_VAR + "/wps_gui/dbload",
                 // dataType: 'json',
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
