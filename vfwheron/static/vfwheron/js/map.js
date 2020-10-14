@@ -39,7 +39,11 @@ function clusterStyle(feature) {
 // Fetch V-FOR-WaTer base layer
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
-    let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
+    let mapSource = new ol.source.XYZ({
+        attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
+        'SRTM | Map style from <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
+        url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"
+    });
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
         'EPSG:4326', 'EPSG:3857'); // bbox of available data
 
@@ -52,9 +56,19 @@ function create_map() {
         preload: Infinity,
         source: mapSource
     });
-// get OSM in case local map is not loading:
+// get OSM/OTM in case local map is not loading:
     mapLayer.getSource().on('tileloaderror', function () {
-        let source = new ol.source.OSM();
+        let source = new ol.source.OSM({
+            attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
+                    'SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
+                    '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
+        });
+        // let source = new ol.source.XYZ({
+        //     attributions: [' Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>' +
+        //     '-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
+        //     '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
+        //     url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+        // })
         mapLayer.setSource(source)
     });
 
@@ -183,7 +197,7 @@ function create_map() {
 
         controls: [
             new ol.control.Zoom({duration: 300}),
-            new ol.control.Attribution(),
+            new ol.control.Attribution({collapsed: false, collapsible: true}),
             new ol.control.ZoomSlider(),
             new ol.control.MousePosition({
                 projection: 'EPSG:4326',
