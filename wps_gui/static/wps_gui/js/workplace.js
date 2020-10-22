@@ -31,7 +31,7 @@ function drop(ev) {
 //  if process_id == btn_id place btn in dropzone (on save)
 function wpsprocess(service, identifier) {
     $.ajax({
-        url: DEMO_VAR + "/wps_gui/processview",
+        url: DEMO_VAR + "/workspace/processview",
         //url: DEMO_VAR+"/wps_gui/"+service+"/process",
         dataType: 'json',
         data: {
@@ -41,7 +41,10 @@ function wpsprocess(service, identifier) {
     })
         .done(function (json) {
             build_modal(json, service, identifier)
-    });
+    })
+        .fail(function (e) {
+            console.log('Failed: ', e)
+        });
 }
 
 function drop_and_save() {
@@ -149,18 +152,13 @@ function modal_run_process() {
         outputName = outputs[0].value;
     }
     $.ajax({
-        url: DEMO_VAR + "/wps_gui/processview",
+        url: DEMO_VAR + "/workspace/processrun",
         data: {
             processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
     })
         .done(function (json) { // Results are stored in the sessionStorage
-            console.log('------')
-            console.log('result json: ', json)
-            console.log('json id: ', json.wpsID)
-            console.log('json img: ', json.image)
-            console.log('json execution_status: ', json.execution_status)
             if (json.execution_status == "ProcessSucceeded") {
                 json.wps = identifier;
                 json.inputs = {};
@@ -172,12 +170,18 @@ function modal_run_process() {
                 color_modal("forestgreen");
                 console.log('json.result: ', json.result)
                 for (let i in json.result) {
+                    let btnName = set_result_btn_name(outputName);
+                    console.log('json.result[i]: ', json.result[i])
+                    console.log('json.result[i].dropBtn: ', json.result[i].dropBtn)
+                    json.result[i].dropBtn.name = btnName;
+                    console.log('json.result[i].dropBtn.name: ', json.result[i].dropBtn.name)
                     let btnData = {
                         type: json.result[i].type,
                         wpsID: json.result[i].wpsID,
                         wps: json.wps,
                         inputs: json.inputs,
-                        status: json.execution_status
+                        status: json.execution_status,
+                        dropBtn: json.result[i].dropBtn
                     }
                     let btnName = set_result_btn_name(outputName);
                     add_resultbtn_to_sessionstore(btnName, btnData);
@@ -248,7 +252,8 @@ function add_resultbtn_to_sessionstore(btnName, json) {
         wps: json.wps,
         inputs: json.inputs,
         wpsID: json.wpsID,
-        status: json.execution_status
+        status: json.execution_status,
+        dropBtn: json.dropBtn
     };
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
@@ -261,10 +266,10 @@ function add_resultbtn_to_sessionstore(btnName, json) {
  * @param  {string} name name for the button
  * @param  {obj} json Object holding all necessary info about result
  * @return {string} HTML Code for the button
- * */
+ **/
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
-    return '<li draggable="true" class="w3-padding task is-result" ' +
+    return '<li draggable="true" ondragstart="dragstart_handler(event)" class="w3-padding task is-result" ' +
         'data-id="wps' + json.wpsID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
         'id="' + name + '"><span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
@@ -465,6 +470,10 @@ function build_modal(wpsInfo, service, identifier) {
                     inElement.type = "checkbox";
                     if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;
                     break;
+                case 'dateTime':
+                    inElement.type = "datetime-local";
+                    if ('defaultValue' in item) inElement.value = item.defaultValue;
+                    break;
                 case 'float':
                     inElement.type = "number";
                     inElement.step = "0.000001";
@@ -474,6 +483,11 @@ function build_modal(wpsInfo, service, identifier) {
                     inElement.type = "number";
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
+                case 'positiveInteger':
+                    inElement.type = "number";
+                    inElement.min = "0";
+                    if ('defaultValue' in item) inElement.value = item.defaultValue;
+                    break;
                 case 'ComplexData':
                     inElement.type = "text";
                     if ('defaultValue' in item) {
@@ -481,11 +495,11 @@ function build_modal(wpsInfo, service, identifier) {
                     }
                     break;
                 case 'BoundingBoxData':
-                    console.exception('you have to handle BoundingBoxData properly');
+                    console.error('you have to handle BoundingBoxData properly');
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 default:
-                    console.exception(' new dataType')
+                    console.error(' new dataType: ', item.dataType)
             }
             if (item.minOccurs > 0) {
                 inElement.required = true

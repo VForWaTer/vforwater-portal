@@ -18,6 +18,13 @@
     text-align: center;
 }
 
+.box-data {
+    fill: ghostwhite;
+    stroke-width: 0.5;
+    stroke: lightslategray;
+    width: 200px;
+}
+
 /*Modal:*/
 .close {
     color: white;
@@ -98,4 +105,17 @@ p.modal-datainfo {
     fill: chocolate;
     stroke: cornflowerblue;
     height: 150px;
+}
+
+.draw2d_shape_basic_Label {
+    padding: 10px;
+    background-color: blue;
+    /*fill: lightyellow;*/
+    color: darkblue;
+}
+
+rect {
+  resize: both;
+  overflow: auto;
+    fill: yellow;
 }

@@ -62,8 +62,7 @@ function show_data() {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
         build_datastore_button(workspaceData);
-        let path = window.location.pathname;
-        if (path.includes('wps_gui')) {
+        if (window.location.pathname !== '/home/') {
             // check if datasets are pickled and update buttons
             preload_datastore_button(workspaceData);
         }
@@ -94,7 +93,7 @@ function preload_datastore_button(workspaceData) {
                 end: workspaceData[dataset]['end']
             };
             $.ajax({
-                url: DEMO_VAR + "/wps_gui/dbload",
+                url: DEMO_VAR + "/workspace/dbload",
                 // dataType: 'json',
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
@@ -149,11 +148,18 @@ function update_datastore_button(wpsDBInfo) {
     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData));
 }
 
-// build buttons in workspace and store selection in clients sessionStorage
+/**
+ * build buttons in workspace and store selection in clients sessionStorage
+ * @param {object} json
+ */
 function build_datastore_button(json) {
     // if (json['workspaceData'] !== undefined) {
     //     $.each(json['workspaceData'], function (key, value) {
     let html = "";
+    let drag_html = "";
+    if (window.location.pathname == '/workspace/') {
+        drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
+    }
     $.each(json, function (key, value) {
         let btnName;
         let vnLen = value['name'].length;
@@ -169,7 +175,7 @@ function build_datastore_button(json) {
         let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
         // check if buttons already exist before creating a new one:
         if (document.getElementById("id" + key) === null) {
-            html += '<li draggable="true" class="w3-padding task" ' +
+            html += '<li ' + drag_html + ' class="w3-padding task" ' +
                 'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
                 '<span class="w3-medium" title="' + title + '">' +
                 '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +

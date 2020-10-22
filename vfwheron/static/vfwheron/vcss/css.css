@@ -117,7 +117,7 @@ button {
 /*  !*background-color: blue;*!*/
 /*  !*display: inline-block;*!*/
 /*}*/
-.string,.array, .integer,
+.string,.array, .integer, .positiveInteger, .dateTime,
 .boolean, .float, .image{
     margin: 5px;
     height: 12px;
@@ -140,6 +140,7 @@ button {
 
 .pickle:hover,.timeseries:hover, .merged-pickle:hover, .merged-ts-pickle:hover,
 .ts-array:hover, .ts-pickle:hover, .ts-aggregate:hover, .string:hover,.array:hover, .integer:hover,
+.positiveInteger:hover, .dateTime:hover,
 .boolean:hover, .float:hover, .image:hover {
 /*    height: 200%;
     width: 200%;*/
@@ -184,6 +185,9 @@ button {
 /*.float{background-color:rgb(49,54,149)}*/
 .float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
 .integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
+.positiveInteger{background-color: rgb(151, 90, 177); border: 1px solid rgb(83, 10, 114)}
+.dateTime{background-color: rgb(90, 182, 179); border: 1px solid rgb(2, 59, 76)
+}
 .image{background-color: rgb(19, 154, 24); border: 1px solid #91ff59;}
 
 

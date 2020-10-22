@@ -63,7 +63,13 @@ logger = logging.getLogger(__name__)
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
-def build_expressive_name(user):
+def expressive_layer_name(user):
+    """
+    Build an expressive name for the layer o the geoserver
+    :param user:
+    :type user: object
+    :return: string
+    """
     namestring = str(user.id) + "_"
     if user.first_name and user.last_name:
         namestring += (user.first_name + "_" + user.last_name)
@@ -115,7 +121,7 @@ class HomeView(TemplateView):
             if self.request.user.is_superuser:
                 self.data_layer = 'admin_layer'
             else:
-                self.data_layer = build_expressive_name(self.request.user)
+                self.data_layer = expressive_layer_name(self.request.user)
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
@@ -167,6 +173,7 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     accessible data and a second list with unaccessible data.
 
     :param request:
+    :type request: object
     :param requested_ids:
     :return: accessible_ids, error_ids
     """
@@ -188,6 +195,25 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     error_list = list(set(requested_ids) - set(accessible_data))
 
     return accessible_data, error_list
+
+
+def get_dataset(s_id):
+    entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+    type_values = {'generic1ddata': ['index', 'value', 'precision'],
+                   'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
+                   'genericgeometrydata': ['index', 'geom', 'srid'],
+                   'geomtimeseries': ['tstamp', 'geom', 'srid'],
+                   'timeseries': ['tstamp', 'value', 'precision'],
+                   'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
+
+    # build string of values for django query
+    db_values = type_values[entry_type]
+    query_values = []
+    for value in db_values:
+        query_values.append('{}__{}'.format(entry_type, value))
+
+    query_filter = {entry_type: s_id}
+    return Entries.objects.filter(**query_filter).values_list(*query_values)
 
 
 class DatasetDownloadView(TemplateView):
@@ -247,22 +273,7 @@ class DatasetDownloadView(TemplateView):
 
                 # Solution 2:
                 # ===========
-                entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
-                type_values = {'generic1ddata': ['index', 'value', 'precision'],
-                               'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
-                               'genericgeometrydata': ['index', 'geom', 'srid'],
-                               'geomtimeseries': ['tstamp', 'geom', 'srid'],
-                               'timeseries': ['tstamp', 'value', 'precision'],
-                               'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
-
-                # build string of values for django query
-                db_values = type_values[entry_type]
-                query_values = []
-                for value in db_values:
-                    query_values.append('{}__{}'.format(entry_type, value))
-
-                query_filter = {entry_type: s_id}
-                rows = Entries.objects.filter(**query_filter).values_list(*query_values)
+                rows = get_dataset(accessible_data[0])
 
                 pseudo_buffer = Echo()
                 writer = csv.writer(pseudo_buffer)
@@ -557,7 +568,9 @@ def filter_map_selection(request):
         m_ids = None
         entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_map_selection')))
         dataExt = get_bbox_from_data(str(entry_ids['all_filters'])[1:-1])
-        id_layer = 'ID_layer'  # + user
+        print('dataExt: ', dataExt)
+        print('request.user: ', request.user)
+        id_layer = 'ID_layer' + str(request.user)
         if get_layer(id_layer, HomeView.store, HomeView.workspace):
             delete_layer(id_layer, HomeView.store, HomeView.workspace)
         create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(entry_ids['all_filters'])[1:-1])
@@ -648,7 +661,6 @@ def workspace_data(request):
         # where_var = 'tbl_data.meta_id = ' + str(requested_id)
 
         accessible_ids, error_ids = get_accessible_data(request, requested_id)
-
         result_dataset = Entries.objects. \
             values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
                    'datasource__datatype__name').filter(pk__in=accessible_ids)
@@ -663,7 +675,17 @@ def workspace_data(request):
                                                  'type': dataset['datasource__datatype__name'],
                                                  'start': '',
                                                  'end': '',
-                                                 'pickle': 0}})  # when pickled add id of wps db object here
+                                                 'pickle': 0,
+                                                 'dropBtn': {'orgid': dataset['id'],
+                                                             'type': 'data',
+                                                             'name': dataset['variable__name'] + ' (' +
+                                                                     dataset['variable__symbol'] + ' in ' +
+                                                                     dataset['variable__unit__symbol'] + ') - ' +
+                                                                     str(dataset['id']),
+                                                             'inputs': [],
+                                                             'outputs': [dataset['datasource__datatype__name']]}
+                                                 }
+                                 })  # when pickled add id of wps db object here
 
         # TODO: Need timestamp in name to see if different selection
         return {'data': dataset_dict, 'error': error_dict}
@@ -680,7 +702,12 @@ def workspace_data(request):
 
 
 def entries_pagination(request):
-    entries_list = Entries.objects.all().order_by('title')
+    datasets = json.loads(request.GET.get('datasets', 1))
+    print('datasets: ', datasets)
+    if datasets:
+        entries_list = Entries.objects.all().order_by('title').filter(pk__in=datasets)
+    else:
+        entries_list = Entries.objects.all().order_by('title')
     page = request.GET.get('page', 1)
 
     paginator = Paginator(entries_list, 6)
@@ -693,7 +720,7 @@ def entries_pagination(request):
     return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage})
 
 
-def advanced_Filter(request):
+def advanced_filter(request):
     if request.method == 'POST':
         form = AdvancedFilterForm(request.POST)
         if form.is_valid():

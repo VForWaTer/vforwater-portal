@@ -58,10 +58,13 @@ function create_map() {
     });
 // get OSM/OTM in case local map is not loading:
     mapLayer.getSource().on('tileloaderror', function () {
-        let source = new ol.source.OSM({
+        // let source = new ol.source.OSM({
+        //     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
+        let source = new ol.source.XYZ({
             attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
-                    'SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
-                    '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
+            'SRTM | Map style from <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
+            url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
         });
         // let source = new ol.source.XYZ({
         //     attributions: [' Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>' +
@@ -105,6 +108,9 @@ function create_map() {
         },
         strategy: ol.loadingstrategy.bbox
     });
+
+    // TODO: Bei Gelegenheit mal sentinel Daten einführen
+    //     url = https://sgx.geodatenzentrum.de/wms_sentinel2_de?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2019
 
     /* Elements that make up the popup. */
     let container = document.getElementById('popup');
@@ -197,7 +203,7 @@ function create_map() {
 
         controls: [
             new ol.control.Zoom({duration: 300}),
-            new ol.control.Attribution({collapsed: false, collapsible: true}),
+            new ol.control.Attribution({collapsed: false, collapsible: false, }),
             new ol.control.ZoomSlider(),
             new ol.control.MousePosition({
                 projection: 'EPSG:4326',

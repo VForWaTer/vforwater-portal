@@ -11,6 +11,8 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 
 from heron.settings import VFW_SERVER, HOST_NAME
+from vfwheron.models import Entries, Datatypes
+from vfwheron.views import get_accessible_data, get_dataset
 from wps_gui.models import WpsResults
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 
@@ -259,11 +261,14 @@ def process_run(request):
                     one_output['type'] = output.dataType
                     print('no keywords')
 
-                one_output['data'] = output.data[0]
-
+                print('output.data: ', output.data)
+                print('one_output 1: ', one_output)
+                if output.data:
+                    one_output['data'] = output.data[0]
+                print('one_output 2: ', one_output)
                 # TODO: Discuss if several outputs should have single or multiple buttons, and
                 #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
-                if len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
+                if output.data and len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
                     db_output_data = output.data[0]
                 elif path != '':
                     try:
@@ -284,6 +289,11 @@ def process_run(request):
                     wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
 
                     one_output['wpsID'] = wpsid
+                    one_output['dropBtn'] = {'orgid': wpsid,
+                                             'type': 'data',
+                                             'name': '',
+                                             'inputs': [],
+                                             'outputs': [one_output['type']]}
                 else:
                     print('*** no output to write to db ***')
                     one_output['error'] = 'no output to write to db'
@@ -313,19 +323,20 @@ def db_load(request):
     :param request:
     :return:
     """
-
     wps_process = 'dbloader_m'
     inkey = 'sql-filter'
-    request_input = json.loads(request.GET.get('dbload'))
     result = {}
-    for dataset in request_input:
-        # TODO: Check if user has rights to access dataset
+    request_input = json.loads(request.GET.get('dbload'))
+
+    accessible_data, error_list = get_accessible_data(request, request_input.keys())
+    for dataset in accessible_data:
+        invalue = get_dataset(dataset)
         if request_input[dataset]['type'] == 'timeseries':
             invalue = 'SELECT tstamp, value FROM timeseries WHERE entry_id={};'.format(dataset)
             datatype = 'ts-pickle'
         else:
             invalue = 'SELECT value FROM tbl_data WHERE meta_id=' + dataset + ';'
-            datatype = 'pickle'
+        datatype = 'pickle'
         datalink = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, (inkey, invalue))
         result[dataset] = datalink
         if 'Error' not in datalink:
@@ -350,6 +361,12 @@ def edit_input(inputs):
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif key_value[0] == 'number' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
+        elif key_value[0] == 'start' and key_value[1] is '':
+            pass
+            # wps_input.append((key_value[0], '0, 0'))
+        elif key_value[0] == 'end' and key_value[1] is '':
+            pass
+            # wps_input.append((key_value[0], '0, 0'))
         elif isinstance(key_value[1], bool):
             wps_input.append((key_value[0], str(key_value[1])))
         else:
