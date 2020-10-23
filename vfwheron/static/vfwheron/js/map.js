@@ -90,17 +90,19 @@ function create_map() {
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            $.ajax({
-                url: GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
-                type: 'GET',
-            })
-                .done(function (result) {
-                    wfsPointSource.addFeatures(
-                    wfsPointSource.getFormat().readFeatures(result));
+            fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857')
+                .then(function (response) {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        return Promise.reject(response);
+                    }
                 })
-                .fail(function (error) {
-                    console.log('error in onload for wfs: ', error);
-                    console.log('Error in building vector wfsPointSource');
+                .then(function (response) {
+                    wfsPointSource.addFeatures(wfsPointSource.getFormat().readFeatures(response));
+                })
+                .catch(function (error) {
+                    console.log('Error in building vector wfsPointSource: ', error);
                     wfsPointSource.removeLoadedExtent(extent);
                 })
         },
