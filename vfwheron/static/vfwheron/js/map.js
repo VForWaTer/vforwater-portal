@@ -1,9 +1,12 @@
 let zoomToExt;
 let wfsLayerName;
-let selectedIdsFilter = null;
 let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
 let wfsPointSource;
+
+// console.log('get1: ', selectedIds.quickMenu)
+// console.log('set: ', selectedIds.quickMenu=toarray(1))
+// console.log('get2: ', selectedIds.quickMenu)
 // let dcz = new ol.interaction.DoubleClickZoom();
 
 /* build style for cluster */
@@ -87,24 +90,19 @@ function create_map() {
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            let url = GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857';
-            let xhr = new XMLHttpRequest();
-            xhr.open('GET', url);
-            let onError = function () {
-                console.log('Error in building vector wfsPointSource');
-                wfsPointSource.removeLoadedExtent(extent);
-            };
-            xhr.onerror = onError;
-            xhr.onload = function () {
-                if (xhr.status == 200) {
+            $.ajax({
+                url: GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
+                type: 'GET',
+            })
+                .done(function (result) {
                     wfsPointSource.addFeatures(
-                        wfsPointSource.getFormat().readFeatures(xhr.responseText));
-                } else {
-                    console.log('error in onload for wfs');
-                    onError();
-                }
-            };
-            xhr.send();
+                    wfsPointSource.getFormat().readFeatures(result));
+                })
+                .fail(function (error) {
+                    console.log('error in onload for wfs: ', error);
+                    console.log('Error in building vector wfsPointSource');
+                    wfsPointSource.removeLoadedExtent(extent);
+                })
         },
         strategy: ol.loadingstrategy.bbox
     });
