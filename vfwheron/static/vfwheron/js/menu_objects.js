@@ -379,7 +379,7 @@ async function showSelectionOnMap(selection) {
         }, // data sent with the post request
     })
         .done(function (json) {
-            zoomToExt.extent = json['dataExt'];
+            zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
             wfsLayerName = json['ID_layer'];
             selectedIds.quickMenu = json['IDs'];
             wfsPointSource.refresh();
