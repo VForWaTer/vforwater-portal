@@ -40,8 +40,8 @@ let selectedIds = {
      * if selection changes update table (when HTML in table tab)
      * @param {array} oldCombinedIds
      */
-    updateFilterTable: function (oldCombinedIds) {
-        if (!activeMap && this.combinedIds != oldCombinedIds) {
+    _updateFilterTable: function (oldIds) {
+        if (!activeMap && this.combinedIds != oldIds) {
             filter_pagination(1);
         }
     },
@@ -50,7 +50,7 @@ let selectedIds = {
     * update combined Ids when selection on map or in Quick Menu
     */
     _setCombinedIds: function () {
-        let oldCombinedIds = this.combinedIds
+        let oldIds = this.combinedIds
         if (this.mapIds == null) {
             this.combinedIds = this.quickMenuIds
         } else if (this.quickMenuIds == null) {
@@ -58,7 +58,7 @@ let selectedIds = {
         } else {
             this.combinedIds = this.mapIds.filter(x => this.quickMenuIds.includes(x))
         }
-        this.updateFilterTable(oldCombinedIds);
+        this._updateFilterTable(oldIds);
     }
 };
 

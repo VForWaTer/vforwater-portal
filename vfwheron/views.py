@@ -127,8 +127,8 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         self.__set_layer_name()
         # get_dataset(self, **kwargs)
-        if not self.request.user.is_authenticated:
-            self.request.session['datasets'] = []
+        unblocked_ids = self.request.session['datasets']
+        self.request.session['fun'] = 'have fun'
 
         try:
             if not get_layer(self.data_layer, self.store, self.workspace):
@@ -145,7 +145,7 @@ class HomeView(TemplateView):
         self.data_ext = get_bbox_from_data()
 
         return {'dataExt': self.data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
-                'messages': messages.get_messages(self.request), 'unblocked_ids': self.request.session['datasets']}
+                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids}
 
 
 class TestView(View):
@@ -567,8 +567,7 @@ def filter_map_selection(request):
     try:
         m_ids = None
         entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_map_selection')))
-        dataExt = get_bbox_from_data(str(entry_ids['all_filters'])[1:-1])
-        print('dataExt: ', dataExt)
+        dataExt = get_bbox_from_data(entry_ids['all_filters'])
         print('request.user: ', request.user)
         id_layer = 'ID_layer' + str(request.user)
         if get_layer(id_layer, HomeView.store, HomeView.workspace):
@@ -710,7 +709,7 @@ def entries_pagination(request):
         entries_list = Entries.objects.all().order_by('title')
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(entries_list, 6)
+    paginator = Paginator(entries_list, 4)
     try:
         entriespage = paginator.page(page)
     except PageNotAnInteger:

@@ -588,7 +588,8 @@ class Variables(models.Model):
         db_table = 'variables'
 
     def __str__(self):
-        return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
+        return '{n} ({s}) [{u}]'.format(n=self.name, s=self.symbol, u=self.unit.symbol)
+        # return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
 
 
 class BasicFilter:

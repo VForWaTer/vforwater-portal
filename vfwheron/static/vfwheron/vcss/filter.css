@@ -521,3 +521,22 @@ padding: 2px;
 .activeM {
     background-color: rgba(0, 60, 136, .9)!important;
 }
+
+.outerPaginationTable, .innerPaginationTable {
+    width: 100%;
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+.AccessTrue, .AccessFalse {
+    margin: 5px;
+    height: 12px;
+    width: 12px;
+    font-weight: bold;
+}
+.AccessFalse {
+    background-color: lime;
+}
+.AccessTrue {
+    background-color: red;
+    color: white;
+}

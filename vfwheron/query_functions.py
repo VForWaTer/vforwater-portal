@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 def get_bbox_from_data(*args):
     """
-    Get bbox for available data with the geometry as a 4-tuple, consisting of (xmin, ymin, xmax, ymax).
+    Get geometry of bbox for available data in the style: [xmin, ymin, xmax, ymax].
 
-    :param args: list of ids inside the bounding box
+    :param args: Ids inside the bounding box
     :type args: list
     :return: list
     """
