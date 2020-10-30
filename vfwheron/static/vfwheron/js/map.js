@@ -90,7 +90,10 @@ function create_map() {
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857')
+            fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
+                // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+                // credentials: 'same-origin'}
+                )
                 .then(function (response) {
                     if (response.ok) {
                         return response.text();

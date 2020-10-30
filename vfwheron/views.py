@@ -103,18 +103,6 @@ class HomeView(TemplateView):
     except JSONDecodeError:
         print('\033[91mno geoserver\033[0m ', sys.exc_info()[0])
 
-    # dataExt = get_bbox_from_data()
-    # def set_user_menu(self):
-    #     if self.request.user.is_authenticated:
-    #         if self.request.user.is_superuser:
-    #             data_layer = 'default_layer'
-    #         else:
-    #             data_layer = build_expressive_name(self.request.user)
-    #             # data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
-    #     else:
-    #         data_layer = self.data_layer
-    #     return data_layer
-
     # TODO: Test with users if this makes any sense
     def __set_layer_name(self):
         if self.request.user.is_authenticated:
@@ -170,7 +158,7 @@ class Echo:
 def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     """
     Use request object to check if user has read access to a list of data (entries_id). Output is a list with
-    accessible data and a second list with unaccessible data.
+    accessible data and a second list with inaccessible data.
 
     :param request:
     :type request: object
@@ -702,21 +690,22 @@ def workspace_data(request):
 
 def entries_pagination(request):
     datasets = json.loads(request.GET.get('datasets', 1))
-    print('datasets: ', datasets)
     if datasets:
         entries_list = Entries.objects.all().order_by('title').filter(pk__in=datasets)
     else:
         entries_list = Entries.objects.all().order_by('title')
     page = request.GET.get('page', 1)
 
-    paginator = Paginator(entries_list, 4)
+    paginator = Paginator(entries_list, 5)
     try:
         entriespage = paginator.page(page)
     except PageNotAnInteger:
         entriespage = paginator.page(1)
     except EmptyPage:
         entriespage = paginator.page(paginator.num_pages)
-    return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage})
+
+    return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage,
+                                                         'ownData': request.session['datasets']})
 
 
 def advanced_filter(request):
