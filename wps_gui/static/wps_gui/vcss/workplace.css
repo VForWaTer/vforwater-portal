@@ -22,7 +22,7 @@
     fill: ghostwhite;
     stroke-width: 0.5;
     stroke: lightslategray;
-    width: 200px;
+    /*width: 200px;*/
 }
 
 /*Modal:*/
@@ -114,8 +114,10 @@ p.modal-datainfo {
     color: darkblue;
 }
 
+/*
 rect {
   resize: both;
   overflow: auto;
-    fill: yellow;
+    fill: pink;
 }
+*/

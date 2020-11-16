@@ -12,7 +12,7 @@
     <tr>
       <td colspan="0">
         <table class="outerPaginationTable">
-          <tr style="font-size: 90%;">
+          <tr style="font-size: 90%; color: white; background-color: grey;">
             <th></th>
             <th class="col1">Title</th>
             <th></th>
@@ -49,7 +49,7 @@
       <tr>
         <td colspan="0">
           <table class="innerPaginationTable">
-            <tr class={% if entry.id in ownData %} "embargoFalse"> {% else %} "embargo{{ entry.embargo }}"> {% endif %}
+            <tr class={% if ownData and entry.id in ownData %} "embargoFalse"> {% else %} "embargo{{ entry.embargo }}"> {% endif %}
               <th></th>
               <th title="Title" colspan="0"> {{ entry.title|ljust:"200" }} </th>
               <th></th>

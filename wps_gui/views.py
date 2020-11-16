@@ -6,6 +6,7 @@ import sys
 import jsonpickle
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
+from django.http.response import Http404
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.utils import timezone
@@ -13,7 +14,7 @@ from django.utils import timezone
 from heron.settings import VFW_SERVER, HOST_NAME
 from vfwheron.models import Entries, Datatypes
 from vfwheron.views import get_accessible_data, get_dataset
-from wps_gui.models import WpsResults
+from wps_gui.models import WpsResults, WebProcessingService
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 
 import logging
@@ -31,7 +32,8 @@ def home(request):
     # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
     try:
         wps_services = list_wps_service_engines()
-        service = 'PyWPS_vforwater'
+        # service = 'PyWPS_vforwater'
+        service = WebProcessingService.objects.values_list('name', flat=True)[0]
         wps = get_wps_service_engine(service)
         countLoop = 0
         for process in wps.processes:
@@ -85,7 +87,7 @@ def home(request):
 #     return blala
 
 # TODO: consider also storing the type of the output to the outputs
-
+# TODO: This way a result might get calculated, but used is a older stored value, right? Rethink this!
 def get_or_create_wpsdb_entry(service: str, wps_process: str, input: tuple):
     """
     Get or create a database entry.
@@ -224,92 +226,112 @@ class ProcessView(TemplateView):
         return JsonResponse(wps_description)
 
 
+def handle_wps_output(execution, wps_process, inputs):
+    """
+
+    :param execution: owslib.wps.output object
+    :type execution: object
+    :param wps_process: name of the process
+    :type wps_process: string
+    :param inputs: {'key_list': [], 'value_list': [], 'dataset': ''}
+    :type inputs: dict
+    :return:
+    """
+    # order output for database
+    all_outputs = {'execution_status': execution.status}
+    all_outputs['result'] = {}
+    path = ''
+
+    loopcount = 0
+    for output in execution.processOutputs:
+        loopcount += 1
+
+        if output.identifier == 'error':
+            error_dict = json.loads(output.data[0])
+            all_outputs['error'] = error_dict
+
+            if error_dict['error'] is not False:
+                print('error in wps process: ', error_dict)
+                all_outputs = {'execution_status': 'error in wps process',
+                               'error': error_dict['message']}
+                break
+        else:
+            one_output = {}
+            try:
+                keywords = json.loads(output.abstract)['keywords'][0]
+                one_output['type'] = keywords
+                if 'pickle' in keywords:
+                    path = output.data[0]
+            except TypeError as e:
+                one_output['type'] = output.dataType
+                print('No keywords (TypeError: {})'.format(e))
+            except KeyError as e:
+                print('this is a key error: ', e)
+
+            if output.data:
+                one_output['data'] = output.data[0]
+
+            # TODO: Discuss if several outputs should have single or multiple buttons, and
+            #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
+            if output.data and len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
+                db_output_data = output.data[0]
+            elif path != '':
+                try:
+                    file_name = path[:-4] + one_output['type'] + path[-4:]
+                    text_file = open(file_name, "w")
+                    text_file.write(output.data[0])
+                    text_file.close()
+                    db_output_data = file_name
+                    one_output['data'] = output.data[0]
+                except Exception as e:
+                    print('Warning: no file was created for long string')
+                    print(e)
+            else:
+                db_output_data = ''
+
+            if db_output_data != '':
+                db_output = [output.identifier, one_output['type'], db_output_data]
+                # create db entry
+                wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
+
+                one_output['wpsID'] = wpsid
+                one_output['dropBtn'] = {'orgid': wpsid,
+                                         'type': 'data',
+                                         'name': '',
+                                         'inputs': [],
+                                         'outputs': [one_output['type']]}
+            else:
+                print('*** no output to write to db ***')
+                one_output['error'] = 'no output to write to db'
+
+            all_outputs['result'][output.identifier] = one_output
+            # TODO: Have to handle bytes result
+            # if type(output.data[0]) is bytes:
+            #     if len(output.data[0]) > 30:
+            #         substring = str(output.data[0][:30])
+            #         if "xml" in substring:
+            #             print('XML as input not implemented yet. Got: ', output.data[0])
+            #             logger.error('XML as input not implemented yet.')
+            #             # tree = ET.fromstring(output.data[0])
+            #             # for child in tree:
+            #             #     print(child.tag, child.attrib)
+            #             del outputs_for_db[-1]
+    return all_outputs
+
+
+# @login_required
 def process_run(request):
     # if request.user.is_authenticated:
     if True:
         request_input = json.loads(request.GET.get('processrun'))
         inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
-        print('inputs 1: ', inputs)
         inputs = edit_input(inputs)
-        print('inputs 2: ', inputs)
         wps = get_wps_service_engine(request_input.get("serv", ""))
         wps_process = request_input.get("id", "")
         execution = wps.execute(wps_process, inputs)
-        # order output for database
-        all_outputs = {'execution_status': execution.status}
-        all_outputs['result'] = {}
-        path = ''
 
-        for output in execution.processOutputs:
-            one_output = {}
+        all_outputs = handle_wps_output(execution, wps_process, inputs)
 
-            if output.identifier == 'error':
-                all_outputs['error'] = output.data[0]
-
-                if output.data[0] != "False":
-                    print('error in wps process: ', output.data[0])
-                    all_outputs = {'execution_status': 'error in wps process',
-                                   'error': output.data[0]}
-                    break
-            else:
-                try:
-                    keywords = json.loads(output.abstract)['keywords'][0]
-                    one_output['type'] = keywords
-                    if 'pickle' in keywords:
-                        path = output.data[0]
-                except:
-                    one_output['type'] = output.dataType
-                    print('no keywords')
-
-                print('output.data: ', output.data)
-                print('one_output 1: ', one_output)
-                if output.data:
-                    one_output['data'] = output.data[0]
-                print('one_output 2: ', one_output)
-                # TODO: Discuss if several outputs should have single or multiple buttons, and
-                #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
-                if output.data and len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
-                    db_output_data = output.data[0]
-                elif path != '':
-                    try:
-                        file_name = path[:-4] + one_output['type'] + path[-4:]
-                        text_file = open(file_name, "w")
-                        text_file.write(output.data[0])
-                        text_file.close()
-                        db_output_data = file_name
-                        one_output['data'] = output.data[0]
-                    except:
-                        print('Warning: no file was created for long string')
-                else:
-                    db_output_data = ''
-
-                if db_output_data != '':
-                    db_output = [output.identifier, one_output['type'], db_output_data]
-                    # create db entry
-                    wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
-
-                    one_output['wpsID'] = wpsid
-                    one_output['dropBtn'] = {'orgid': wpsid,
-                                             'type': 'data',
-                                             'name': '',
-                                             'inputs': [],
-                                             'outputs': [one_output['type']]}
-                else:
-                    print('*** no output to write to db ***')
-                    one_output['error'] = 'no output to write to db'
-
-                all_outputs['result'][output.identifier] = one_output
-                # TODO: Have to handle bytes result
-                # if type(output.data[0]) is bytes:
-                #     if len(output.data[0]) > 30:
-                #         substring = str(output.data[0][:30])
-                #         if "xml" in substring:
-                #             print('XML as input not implemented yet. Got: ', output.data[0])
-                #             logger.error('XML as input not implemented yet.')
-                #             # tree = ET.fromstring(output.data[0])
-                #             # for child in tree:
-                #             #     print(child.tag, child.attrib)
-                #             del outputs_for_db[-1]
     else:
         all_outputs = {'execution_status': 'auth_error'}
         print('user is not authenticated. ', all_outputs)
@@ -320,27 +342,53 @@ def process_run(request):
 def db_load(request):
     """
     Function to preload data from database, convert it, and store a pickle of the data
-    :param request:
+    Example for input for wps dbloader:  [('entry_id', '12'), ('uuid', ''), ('start', '1990-10-31T09:06'),
+    ('end', '2020-11-21T09:07')]
+    :param request: dict
     :return:
     """
-    wps_process = 'dbloader_m'
-    inkey = 'sql-filter'
-    result = {}
+    wps_process = 'dbloader'
     request_input = json.loads(request.GET.get('dbload'))
+    orgid = request_input.get('dataset')
+    accessible_data, error_list = get_accessible_data(request, orgid[2:])
 
-    accessible_data, error_list = get_accessible_data(request, request_input.keys())
-    for dataset in accessible_data:
-        invalue = get_dataset(dataset)
-        if request_input[dataset]['type'] == 'timeseries':
-            invalue = 'SELECT tstamp, value FROM timeseries WHERE entry_id={};'.format(dataset)
-            datatype = 'ts-pickle'
-        else:
-            invalue = 'SELECT value FROM tbl_data WHERE meta_id=' + dataset + ';'
-        datatype = 'pickle'
-        datalink = get_or_create_wpsdb_entry('PyWPS_vforwater', wps_process, (inkey, invalue))
-        result[dataset] = datalink
-        if 'Error' not in datalink:
-            result[dataset]['datatype'] = datatype
+    if len(accessible_data) < 1:
+        return JsonResponse({'Error': 'No accessible dataset.'})
+    elif len(accessible_data) > 1:
+        return JsonResponse({'Error': 'You have to adjust function for list of datasets.'})
+
+    inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
+    inputs = edit_input(inputs)
+
+    try:
+        preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)
+        output = json.loads(preloaded_data.outputs)
+        result = {'orgid': orgid, 'id': 'wps' + str(preloaded_data.id), 'type': output['type']}
+    except ObjectDoesNotExist:
+        # collect variables for wps and run wps
+        service = WebProcessingService.objects.values_list('name', flat=True)[0]
+        wps = get_wps_service_engine(service)
+        execution = wps.execute(wps_process, inputs)
+
+        # create output for client
+        if execution.status == 'ProcessSucceeded':
+            for output in execution.processOutputs:
+                if output.identifier == 'data':
+                    path = output.data[0]
+                elif output.identifier == 'datatype':
+                    dtype = output.data[0]
+            output = json.dumps({'path': path, 'type': dtype})
+            # write result to database
+            try:
+                dbkey = WpsResults.objects.create(open=True, wps=wps_process, inputs=inputs, outputs=output,
+                                                  creation=timezone.now())
+            except Exception as e:
+                print('Exception while creating DB entry: ', e)
+            result = {'orgid': orgid, 'id': 'wps' + dbkey.id, 'type': dtype}
+    except Exception as e:
+        print('Exception in db_load: ', e)
+        raise Http404
+
     return JsonResponse(result)
 
 
@@ -374,7 +422,8 @@ def edit_input(inputs):
     return wps_input
 
 
-def get_pickle(ident):
+def load_data_local(inputs):
+
     return
 
 

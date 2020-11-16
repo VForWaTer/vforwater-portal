@@ -369,7 +369,7 @@ function reset_filter(){
 }
 
 /* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
-async function showSelectionOnMap(selection) {
+function showSelectionOnMap(selection) {
     $.ajax({
         url: DEMO_VAR + "/home/filter_map_selection",
         dataType: 'json',

@@ -7,9 +7,11 @@ class Box {
      * @param {String} type Used to define style of box. Implemented is 'tool', which increases the height of the box
      * @param {List} inputs List of strings to define port types. Implemented are timeseries, string, boolean
      * @param {List} outputs List of strings to define port types. Implemented are timeseries, string, boolean
+     * @param {Number} ~90% of the width of the box
      */
-    constructor(name, orgId, type, inputs, outputs) {
+    constructor(name, orgId, type, inputs, outputs, boxwidth) {
         this._boxname = name;
+        this._boxwidth = boxwidth;
         this._orgid = orgId;
         this._boxtype = type;
         this._inputs = inputs;
@@ -74,7 +76,8 @@ class Box {
         let boxid = 'box' + this._orgid;
         let box = new draw2d.shape.basic.Rectangle({
             id: boxid,
-            minWidth: 140,
+            minWidth: 100,
+            width: this._boxwidth * 1.1,
             height: boxHeight,
             // resizable: true,
             radius: 5,
@@ -305,7 +308,17 @@ function drop_handler(ev) {
     console.log('id: ', id)
     console.log('data: ', data)
 
-    console.log('box_param: ', box_param)
-    let box = new Box(box_param.name, box_param.orgid, box_param.type, box_param.inputs, box_param.outputs)
+    // assign text width:
+    let c = document.getElementById('textWidthCanvas');
+    let ctx = c.getContext("2d");
+    ctx.font = "15px Arial";
+    let textwidth = ctx.measureText(box_param.name).width
+    // console.log('___TEXT size in px: ', textwidth)
+    // console.log('___TEXT size in pt: ', 3/4 * textwidth)
+    // console.log('___TEXT size in em: ', (3/4 * textwidth)/12)
+
+    // console.log('box_param: ', box_param)
+    // console.log('box_param.name: ', box_param.name)
+    let box = new Box(box_param.name, box_param.orgid, box_param.type, box_param.inputs, box_param.outputs, textwidth)
     canvas.add(box.box, x, y);
 }

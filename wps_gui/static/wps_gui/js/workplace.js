@@ -48,7 +48,7 @@ function wpsprocess(service, identifier) {
 }
 
 function drop_and_save() {
-    console.exception('lets store it')
+    console.error('lets store it')
 }
 
 function check_required(checkElement) {
@@ -208,6 +208,40 @@ function modal_run_process() {
             color_modal("firebrick");
             console.error('Error, No success: ', json)
     });
+}
+
+function run_wps(input_dict) {
+    let modhead = document.getElementById('mod_head');
+    let wpsservice = modhead.dataset.service;
+    let identifier = modhead.dataset.process;
+    // '2020-10-31T14:10'
+    // fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
+    //             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+    //             // credentials: 'same-origin'}
+    //             )
+    //             .then(function (response) {
+    //                 wfsPointSource.addFeatures(wfsPointSource.getFormat().readFeatures(response));
+    //             })
+    //             .catch(function (error) {
+    //                 console.log('Error in building vector wfsPointSource: ', error);
+    //                 wfsPointSource.removeLoadedExtent(extent);
+    //             })
+    $.ajax({
+        url: DEMO_VAR + "/workspace/processrun",
+        data: {
+            processrun: JSON.stringify({id: identifier, serv: wpsservice,
+                key_list: input_dict.keys(), value_list: input_dict.values()}),
+            // processrun: JSON.stringify(input_dict),
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+    })
+        .done (function (json) {
+            return json
+        })
+        .fail (function (json) {
+            console.error('Error, No success: ', json)
+            color_modal("firebrick");
+        })
 }
 
 function set_result_btn_name(name) {

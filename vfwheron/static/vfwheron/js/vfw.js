@@ -1,5 +1,8 @@
 let draw, modify, selectedFeatures, vector;
 let activeMap = true;
+// TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
+let sessionStorageData = {};
+
 let selectedIds = {
     mapIds: null,
     quickMenuIds: null,
@@ -61,6 +64,74 @@ let selectedIds = {
         this._updateFilterTable(oldIds);
     }
 };
+
+class storeData {
+    data = {};
+
+    constructor(definition) {
+        console.log('constructor: ', definition)
+        this.data.name = definition.name;
+        this.data.abbr = definition.abbr;
+        this.data.unit = definition.unit;
+        this.data.type = definition.type;
+        this.data.source = definition.source;
+        this.data.dbID = definition.dbID;
+        this.data.webID = definition.source + definition.dbID; // + 'from' + start + 'to' + end
+        this.data.dispName = createBtnName(definition.name, definition.abbr, definition.unit, definition.dbID);
+        this.data.orgID = definition.orgID;
+        this.data.start = definition.start;
+        this.data.end = definition.end;
+        this.data.inputs = definition.inputs;
+        this.data.outputs = definition.outputs;
+        this.data.error = null;
+        this.data.toolName = null;
+    }
+
+    save() {
+        console.log('data: ', this.data)
+        let thisID = this.data.webID;
+        //let data[thisID] = this.data
+        //sessionStorage.setItem("data", JSON.stringify(data))
+        // console.log('storeVar: ', dataStorageVar)
+        //dataStorageVar.store = this;
+        // storeVar[this.webID] = this
+        // console.log('this: ', this)
+        // console.log('storeVar: ', dataStorageVar)
+    }
+}
+
+function createBtnName(name, abbr, unit, dbID){
+    let btnName;
+    let vnLen = name.length;
+    if (vnLen + abbr.length + unit.length <= 13) {
+        btnName = name + '(' + abbr + ' in ' + unit + ') - ' + dbID;
+    } else if (vnLen + abbr.length <= 15) {
+        btnName = name + '(' + abbr + ') - ' + dbID;
+    } else if (vnLen <= 17) {
+        btnName = name + ' - ' + dbID;
+    } else {
+        btnName = abbr + ' in ' + unit + ' - ' + dbID;
+    }
+    return btnName
+}
+
+function sidebar_btn_html(storeID, btnData, btnName, title) {
+    let drag_html = "";
+    if (window.location.pathname == '/workspace/') {
+        drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
+    }
+    let elementID = "sidebtn" + storeID;
+    console.log('___ elementID: ', elementID)
+    return '<li ' + drag_html + ' class="w3-padding task" ' +
+        'data-id="' + storeID + '" btnName="' + btnName + '" onmouseover="" ' +
+        'style="cursor:pointer;" id="' + elementID + '">' +
+        '<span class="w3-medium" title="' + title + '">' +
+        '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
+        '</span><span class="data ' + btnData['type'] + '"></span>' +
+        '<a onclick="remove_single_data(\'' + storeID + '\')" ' +
+        'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +
+        '</a><br></li>';
+}
 
 function resetDraw() {
     selectedIds.map = null;
@@ -408,7 +479,7 @@ function moreInfoModal(id) {
         url: DEMO_VAR + "/home/show_info",
         dataType: 'json',
         data: {
-            show_info: JSON.stringify([id]),
+            show_info: id,
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
     })
@@ -476,8 +547,10 @@ function workspace_dataset(id) {
                         if (!stored[key]) stored[key] = value;
                     });
                     sessionStorage.setItem("dataBtn", JSON.stringify(stored))
+                    sessionStorageData = stored;
                 } else {
                     sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
+                    sessionStorageData = json['workspaceData']
                 }
                 // build buttons
                 build_datastore_button(json['workspaceData']);
@@ -660,23 +733,8 @@ class SidebarButtonData extends SidebarButton {
         this.start = start;
         this.end = end;
         this.type = 'data';
-        this.btnName = this.btnNamefunc();
+        this.btnName = createBtnName(this.name, this.abbr, this.unit, this.orgid);
 
-    }
-
-    btnNamefunc() {
-        let btnName;
-        let vnLen = this.name.length;
-        if (vnLen + this.abbr.length + this.unit.length <= 13) {
-            btnName = this.name + ' (' + this.abbr + ' in ' + this.unit + ')' + ' - ' + this.orgid;
-        } else if (vnLen + this.abbr.length <= 15) {
-            btnName = this.name + ' (' + this.abbr + ')' + ' - ' + this.orgid;
-        } else if (vnLen <= 17) {
-            btnName = this.name + ' - ' + this.orgid;
-        } else {
-            btnName = this.abbr + ' in ' + this.unit + ' - ' + this.orgid;
-        }
-        return btnName;
     }
 
     titlefunc() {

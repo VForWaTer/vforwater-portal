@@ -115,8 +115,12 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         self.__set_layer_name()
         # get_dataset(self, **kwargs)
-        unblocked_ids = self.request.session['datasets']
-        self.request.session['fun'] = 'have fun'
+
+        try:
+            unblocked_ids = self.request.session['datasets']
+        except KeyError:
+            unblocked_ids = []
+            self.request.session['datasets'] = []
 
         try:
             if not get_layer(self.data_layer, self.store, self.workspace):
@@ -501,11 +505,20 @@ def previewplot(request):
     :param request:
     :return:
     """
-    try:
-        # plot with bokeh
-        return JsonResponse(get_preview(request.GET.get('preview')))
+    webID = request.GET.get('preview')
+    if webID[0:2] == 'db':
+        try:
+            # plot with bokeh
+            return JsonResponse(get_preview(webID[2:]))
 
-    except TypeError:
+        except TypeError:
+            raise Http404
+
+    elif webID[0:3] == 'wps':
+        print ('you have to implement something to show wps results!')
+        raise Http404
+
+    else:
         raise Http404
 
 
@@ -579,6 +592,7 @@ def filter_map_selection(request):
 
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
+# TODO: Handle this with an http request!
 def show_info(request):
     """
     On request collect metadata for preview on map and selection in the sidebar.
@@ -586,7 +600,13 @@ def show_info(request):
     :param request:
     :return:
     """
-    try:
+    def collectData(ids):
+        """
+
+        :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
+        :type ids: str
+        :return: dict
+        """
         # get field names from models:
         field = []
         field_name = {}
@@ -596,17 +616,16 @@ def show_info(request):
                 field.append(fieldpath)
                 field_name[fieldpath] = j[1]
         # build dict of lists for preview:
-        ids = json.loads(request.GET.get('show_info'))
         preview = defaultdict(list)
-        for k in ids:
-            preview['id'].append(k)
-            imgtag = Entries.objects.filter(id=str(k)).values(*field)
+        preview['id'].append(ids)
+        imgtag = Entries.objects.filter(id=str(ids)).values(*field)
 
-            for i in imgtag[0]:
-                # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
-                preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
-                                                                                             i] is not None else \
-                    preview[translation.gettext(field_name[i])].append('-')
+        for i in imgtag[0]:
+            # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
+            if imgtag[0][i] is not None:
+                preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
+            else:
+                preview[translation.gettext(field_name[i])].append('-')
 
         # remove rows only containing no value:
         # comparelist = ['-'] * len(ids)
@@ -619,8 +638,23 @@ def show_info(request):
 
         return JsonResponse(preview)
 
-    except TypeError:
+    webID = request.GET.get('show_info')
+    if webID[0:3] == 'wps':
+        print("webID is wps: ", webID)
+        print('you have to implement something to show wps results!')
         raise Http404
+    else:
+        if webID[0:2] == 'db':
+            ids = webID[2:]
+        else:
+            ids = webID
+
+        try:
+            # print('json.loads(webID): ', json.loads(ids))
+            return collectData(ids)
+
+        except TypeError:
+            raise Http404
 
 
 def workspace_data(request):
@@ -638,6 +672,7 @@ def workspace_data(request):
         :return:
         """
         dataset_dict = {}
+        old_dataset_dict = {}
         error_dict = {}
 
         # if min_time != 0:
@@ -656,7 +691,20 @@ def workspace_data(request):
             error_dict = {'message': 'no access', 'id': error_ids}
 
         for dataset in result_dataset:
-            dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
+            dataset_dict.update({'db'+str(dataset['id']): {'name': dataset['variable__name'],
+                                                               'abbr': dataset['variable__symbol'],
+                                                               'unit': dataset['variable__unit__symbol'],
+                                                               'type': dataset['datasource__datatype__name'],
+                                                               'source': 'db',
+                                                               'dbID': dataset['id'],
+                                                               'orgID': 'db' + str(dataset['id']),
+                                                               'start': '',
+                                                               'end': '',
+                                                               'inputs': [],
+                                                               'outputs': dataset['datasource__datatype__name']
+                                                               }
+                                     })
+            old_dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
                                                  'abbr': dataset['variable__symbol'],
                                                  'unit': dataset['variable__unit__symbol'],
                                                  'type': dataset['datasource__datatype__name'],
@@ -675,25 +723,37 @@ def workspace_data(request):
                                  })  # when pickled add id of wps db object here
 
         # TODO: Need timestamp in name to see if different selection
-        return {'data': dataset_dict, 'error': error_dict}
+        return {'data': dataset_dict, 'error': error_dict, 'old_data': old_dataset_dict}
 
     try:
         min_time = request.GET.get('minTime')
         max_time = request.GET.get('maxTime')
         # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
         result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
-        return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
+        return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'workspaceData2': result['old_data']})
 
     except TypeError:
         raise Http404
 
 
 def entries_pagination(request):
+    """
+
+    :param request: list of integers
+    :type request: object
+    :return:
+    """
     datasets = json.loads(request.GET.get('datasets', 1))
     if datasets:
-        entries_list = Entries.objects.all().order_by('title').filter(pk__in=datasets)
+        # entries_list = NmPersonsEntries.objects.all().order_by('entry__title').filter(entry_id=datasets).distinct()
+        entries_list = Entries.objects.all().order_by('title').filter(pk__in=json.loads(request.GET.get('datasets', 1)))
     else:
         entries_list = Entries.objects.all().order_by('title')
+    try:
+        owndata = request.session['datasets']
+    except KeyError:
+        owndata = None
+
     page = request.GET.get('page', 1)
 
     paginator = Paginator(entries_list, 5)
@@ -705,7 +765,7 @@ def entries_pagination(request):
         entriespage = paginator.page(paginator.num_pages)
 
     return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage,
-                                                         'ownData': request.session['datasets']})
+                                                         'ownData': owndata})
 
 
 def advanced_filter(request):

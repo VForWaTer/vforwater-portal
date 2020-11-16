@@ -87,11 +87,14 @@ function preload_datastore_button(workspaceData) {
     // USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY
     for (let dataset in workspaceData) {
         let preload = {};
-        if (!workspaceData[dataset]['pickle']) {
-            preload[dataset] = {
-                type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
-                end: workspaceData[dataset]['end']
+        if (workspaceData[dataset]['source'] === 'db') {
+            // TODO: Think about using uuid instead of entry_id
+            preload = {key_list: ['entry_id', 'uuid', 'start', 'end'],
+                value_list: [workspaceData[dataset]['dbID'].toString(), '',
+                    workspaceData[dataset]['start'], workspaceData[dataset]['end']],
+                dataset: dataset
             };
+            // run_wps(preload)
             $.ajax({
                 url: DEMO_VAR + "/workspace/dbload",
                 // dataType: 'json',
@@ -99,10 +102,42 @@ function preload_datastore_button(workspaceData) {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with post request
             })
-                .done((wpsDBInfo) => update_datastore_button(wpsDBInfo),)
+                .done(function (wpsDBInfo) {
+                    if (wpsDBInfo.Error) {
+                        console.warn(wpsDBInfo.Error)
+                    }
+                    else {
+                        update_datastore_button(wpsDBInfo);
+                    }
+                },)
                 .fail(function (wpsDBInfo) {
                     console.error('Error in preload of data. ', wpsDBInfo)
                 });
+            // TODO: change ajax to fetch, though data sent using fetch are not located inside request.POST but rather
+            //  inside request.body. There are then cases where the received data is in byte so you will need to decode
+            //  it first with json.loads(request.body.decode("utf-8")).
+            //  Instead of post maybe make use of django URLs
+            /*fetch(DEMO_VAR + "/workspace/dbload",
+                {method: 'POST',
+                    headers: { 'Accept': 'application/json, text/plain, *!/!*',
+        'Content-Type': 'application/json',
+        "X-CSRFToken": csrf_token },
+                    body: JSON.stringify({'dbload': preload}),
+                    // 'csrfmiddlewaretoken': csrf_token,
+                    credentials: 'same-origin'
+                })
+                .then(function (wpsDBInfo) {
+                    if (wpsDBInfo.Error) {
+                        console.warn(wpsDBInfo.Error)
+                    }
+                    else {
+                        console.log('back: ', wpsDBInfo)
+                        update_datastore_button(wpsDBInfo);
+                    }
+                })
+                .catch(function (wpsDBInfo) {
+                    console.error('Error in preload of data. ', wpsDBInfo)
+                })*/
         }
     }
     // USE FOLLOWING CODE INSTEAD WHEN YOU PREFER TO UPDATE ALL DATASETS IN ONE REQUEST
@@ -136,16 +171,26 @@ function preload_datastore_button(workspaceData) {
 
 function update_datastore_button(wpsDBInfo) {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    $.each(wpsDBInfo, function (keyID, value) {
+    // let workspaceData = sessionStorageData
+    let datasetKey = wpsDBInfo['orgid']
+    let storageEntry = workspaceData[datasetKey]
+    if (wpsDBInfo['id'].substring(0,3) == 'wps') {
+        storageEntry.source = wpsDBInfo['id'].substring(0,3)
+        storageEntry.dbID = wpsDBInfo['id'].substring(3,)
+    }
+    workspaceData[datasetKey] = storageEntry
+    /*$.each(wpsDBInfo, function (keyID, value) {
         if (workspaceData[keyID] && workspaceData[keyID]['wpsID']) {
-            workspaceData[keyID]['pickle'] = 1;
-            workspaceData[keyID]['wpsID'] = value['wps_id'];
-            workspaceData[keyID]['type'] = value['datatype'];
+            workspaceData[keyID]['source'] = value['source'];
+            workspaceData[keyID]['dbID'] = value['dbID'];
+            // workspaceData[keyID]['type'] = value['datatype'];
             // workspaceData[keyID]['type'] = workspaceData[keyID]['type'] + ", "+ newClass;
             document.getElementById("id" + keyID).getElementsByClassName("data")[0].classList.add(value['datatype']);
         }
-    });
+    });*/
+    // document.getElementById("sidebtn" + wpsDBInfo['orgid']).getElementsByClassName("data")[0].classList.add(value['datatype']);
     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData));
+    sessionStorageData = workspaceData
 }
 
 /**
@@ -156,33 +201,13 @@ function build_datastore_button(json) {
     // if (json['workspaceData'] !== undefined) {
     //     $.each(json['workspaceData'], function (key, value) {
     let html = "";
-    let drag_html = "";
-    if (window.location.pathname == '/workspace/') {
-        drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
-    }
-    $.each(json, function (key, value) {
-        let btnName;
-        let vnLen = value['name'].length;
-        if (vnLen + value['abbr'].length + value['unit'].length <= 13) {
-            btnName = `${value['name']} (${value['abbr']} in ${value['unit']}) - ${key}`;
-        } else if (vnLen + value['abbr'].length <= 15) {
-            btnName = `${value['name']} (${value['abbr']}) - ${key}`;
-        } else if (vnLen <= 17) {
-            btnName = `${value['name']} - ${key}`;
-        } else {
-            btnName = `${value['abbr']} in ${value['unit']} - ${key}`;
-        }
-        let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
+    $.each(json, function (k, v) {
+        console.log('key, value: ', k, v)
+        let btnName = createBtnName(v['name'], v['abbr'], v['unit'], v['dbID'])
+        let title = `${v['name']} (${v['abbr']} in ${v['unit']})`;
         // check if buttons already exist before creating a new one:
-        if (document.getElementById("id" + key) === null) {
-            html += '<li ' + drag_html + ' class="w3-padding task" ' +
-                'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
-                '<span class="w3-medium" title="' + title + '">' +
-                '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
-                '</span><span class="data ' + value['type'] + '"></span>' +
-                '<a href="javascript:void(0)" onclick="remove_single_data(' + key + ')" ' +
-                'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +
-                '</a><br></li>';
+        if (document.getElementById("sidebtn" + k) === null) {
+            html += sidebar_btn_html(k, v, btnName, title)
             /*
             document.getElementById("workspace").innerHTML += '<li draggable="true" class="w3-padding" ' +
                 'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
@@ -201,23 +226,27 @@ function build_datastore_button(json) {
 // Remove data / elements from workspace
 function remove_single_data(removeData) {
     // remove data from portal:
-    document.getElementById("id" + removeData).remove();
+    document.getElementById("sidebtn" + removeData).remove();
+    // removeData.remove();  // could be used when the element where send directly
     // remove data from session:
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     delete workspaceData[removeData];
     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
+    sessionStorageData = workspaceData
 }
 
 function remove_all_datasets() {
     // remove button from portal
-    $.each(JSON.parse(sessionStorage.getItem("dataBtn")), function (key, value) {
+    let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
+    $.each(storedData, function (key, value) {
         if ("name" in value) {
-            remove_single_data(parseInt(key));
+            remove_single_data(key);
             // document.getElementById("id" + key).remove()
         }
     });
     // remove button from session
     sessionStorage.removeItem("dataBtn");
+    sessionStorageData = {};
 }
 
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
@@ -282,7 +311,7 @@ function getPosition(e) {
 //
 
 /**
- * Variables.
+ * Global Variables for popup.
  */
 var contextMenuClassName = "context-menu";
 var contextMenuItemClassName = "context-menu__item";
@@ -302,7 +331,7 @@ var resultMenu = document.querySelector("#context-result");
 let popup = document.querySelector("#loader-popup");
 let content = document.querySelector('#pop-content-side');
 let popText = document.querySelector('#popupText');
-let popcloser = document.querySelector('#pop-closer');
+let popClose = document.querySelector('#pop-closer');
 let popActive = "mod-popup--active";
 let popInActive = "mod-popup--inactive";
 
@@ -451,9 +480,11 @@ function positionPopup(window) {
 /**
  * Dummy action function that logs an action when a menu item link is clicked
  *
- * @param {???} properties
+ * @param {dict} properties
  */
 function showDataInfo(properties) {
+    // TODO: This function changes the style of the table used instead of the map. (To the Style I is supposed to be.
+    //  Why only after this function and not without. What is this function doing?)
     let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
     // loop over "properties" dict with metadata, build columns
     for (let j in properties) {
@@ -462,7 +493,7 @@ function showDataInfo(properties) {
     }
     content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
         '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-    popcloser.classList.remove('w3-hide');
+    popClose.classList.remove('w3-hide');
     positionPopup(popup);
 }
 
@@ -520,13 +551,13 @@ function menuItemListener(link) {
                 url: DEMO_VAR + "/home/show_info",
                 dataType: 'json',
                 data: {
-                    show_info: JSON.stringify([id]),
+                    show_info: id,
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with the post request
             })
                 .done(function (properties) {
                     showDataInfo(properties);
-                });
+                })
             break;
         // case "Plot":
         //     $.ajax({
@@ -539,7 +570,7 @@ function menuItemListener(link) {
         //         success: function (result) {
         //             console.log('plot result: ', result)
         //             content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
-        //             popcloser.classList.remove('w3-hide');
+        //             popClose.classList.remove('w3-hide');
         //             positionPopup(popup);
         //         }
         //     });
@@ -632,7 +663,7 @@ function menuItemListener(link) {
             }
             content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-            popcloser.classList.remove('w3-hide');
+            popClose.classList.remove('w3-hide');
             positionPopup(popup);
             break;
         case "Plot":
@@ -672,13 +703,13 @@ function menuItemListener(link) {
                         bokehResultScript.text = requestResult.script;
                         document.head.appendChild(bokehResultScript);
                     }
-                    // popcloser.classList.remove('w3-hide');
+                    // popClose.classList.remove('w3-hide');
                     // positionPopup(popup);
                     let rModal = document.getElementById("resultModal");
                     rModal.style.display = "block";
                 })
                 .fail(function (e) {
-                    console.error(('fehler: ', e))
+                    console.error('Fehler: ', e)
                 })
                 .always(function () {
                     popup.classList.remove(popActive);
@@ -702,9 +733,9 @@ function menuItemListener(link) {
 }
 
 /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
-popcloser.onclick = function () {
+popClose.onclick = function () {
     // metaData_Overlay.setPosition(undefined);
-    // popcloser.blur();
+    // popClose.blur();
     popup.classList.remove(popActive);
     return false;
 };

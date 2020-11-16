@@ -1,5 +1,23 @@
 from django import forms
 
+from vfwheron.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
+
+
+# Filter:
+# - Zeitraum
+# - hat Daten
+# - embargo
+# - variable
+# - [license (oder besser nach einem der bools in der lizenz)  kann man auch weglassen da embargo das wichtigste abbildet]
+#
+# advanced Filter (auf eigener seite?)
+# - nach personen filtern
+# - liste 10 (25) häufigsten keywords, die nicht jeder entry hat und nutze die zum filtern
+# - list 5 (10) häufigsten Detai.stem und biete jeweils den wert zum filtern an
+# - liste alle verwendeten keywords (in extra ansicht? können viele sein)
+# - filter nach Projekt
+# - finde alle Versionen (checkmark)
+# - volltextsuche (sobald ich da ein konzept für metacatalog habe.)
 
 class AdvancedFilterForm(forms.Form):
 
