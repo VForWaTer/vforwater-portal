@@ -1,6 +1,9 @@
-{% load static %}
-{% load i18n %}
-{% get_current_language as LANGUAGE_CODE %}
+{#{% extends "vfwheron/select_data.html" %}#}
+
+{#{% load static %}#}
+{#{% load i18n %}#}
+{#{% get_current_language as LANGUAGE_CODE %}#}
+{% comment %}
 
 <form method="post" novalidate>
   {% csrf_token %}
@@ -9,3 +12,24 @@
   </table>
   <button type="submit">Submit</button>
 </form>
+
+{% endcomment %}
+{#{% include "vfwheron/filter_entries.html" %}#}
+{#{% block advanced_filter %}#}
+<form method="get" name="advancedfilterform">
+    <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
+        {{ myFilter.form.as_p }}
+
+
+      <button class="btn btn-primary" type="submit">Search</button>
+
+      <a onclick="filter_pagination({{ i }})">{{ i }}</a>
+
+{#        <input type="submit" />#}
+    </div>
+</form>
+{% for obj in selection %}
+    {{ obj.variable }} - ${{ obj.license }}<br />
+{% endfor %}
+
+{#{% endblock %}#}

@@ -350,7 +350,8 @@ def db_load(request):
     wps_process = 'dbloader'
     request_input = json.loads(request.GET.get('dbload'))
     orgid = request_input.get('dataset')
-    accessible_data, error_list = get_accessible_data(request, orgid[2:])
+    accessible_data = get_accessible_data(request, orgid[2:])
+    accessible_data = accessible_data['open']
 
     if len(accessible_data) < 1:
         return JsonResponse({'Error': 'No accessible dataset.'})
@@ -363,7 +364,7 @@ def db_load(request):
     try:
         preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)
         output = json.loads(preloaded_data.outputs)
-        result = {'orgid': orgid, 'id': 'wps' + str(preloaded_data.id), 'type': output['type']}
+        result = {'orgid': orgid, 'id': 'wps' + str(preloaded_data.id), 'type': output['type'], 'inputs': inputs}
     except ObjectDoesNotExist:
         # collect variables for wps and run wps
         service = WebProcessingService.objects.values_list('name', flat=True)[0]
@@ -384,7 +385,7 @@ def db_load(request):
                                                   creation=timezone.now())
             except Exception as e:
                 print('Exception while creating DB entry: ', e)
-            result = {'orgid': orgid, 'id': 'wps' + dbkey.id, 'type': dtype}
+            result = {'orgid': orgid, 'id': 'wps' + dbkey.id, 'type': dtype, 'inputs': inputs}
     except Exception as e:
         print('Exception in db_load: ', e)
         raise Http404

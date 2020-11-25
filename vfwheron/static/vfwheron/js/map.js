@@ -485,7 +485,7 @@ function create_map() {
         // build buttons for each dataset
         function moreBtn(listIndex) {
             return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
-                'type="submit" onclick=\"moreInfoModal(\'' + json.id[listIndex] + '\')\" value="More" ' +
+                'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" value="More" ' +
                 'data-toggle="tooltip" title="Show more information about the dataset."></b></a>'}
         function storeBtn(listIndex) {
             if (!json.Embargo[listIndex] || UNBLOCKED_IDS.includes(json.id[listIndex])) {

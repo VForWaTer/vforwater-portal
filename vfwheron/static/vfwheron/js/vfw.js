@@ -551,6 +551,13 @@ function workspace_dataset(id) {
                 } else {
                     sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
                     sessionStorageData = json['workspaceData']
+
+                    $.each(json['workspaceData2'], function (k, v) {
+                        let dataset = new storeData(json['workspaceData2'][k])
+                        //dataset.save(json['workspaceData2'][k])
+                        console.log('dataset.data: ', dataset.data)
+                        sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
+                    });
                 }
                 // build buttons
                 build_datastore_button(json['workspaceData']);

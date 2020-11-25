@@ -98,6 +98,7 @@
     <table style="width:100%">
       <div class="list-group">
         {% for process in wps.processes %}
+          {% if process.identifier != "dbloader" %}
           <tr>
             <div id="{{ process.identifier }}" class="process w3-card-2"
                  onclick="wpsprocess('{{ service }}', '{{ process.identifier }}')"
@@ -122,6 +123,7 @@
 
             </div>
           </tr>
+          {% endif %}
         {% endfor %}
       </div>
     </table>

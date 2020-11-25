@@ -64,7 +64,7 @@ def __DB_load_data(ID):
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
-def get_bokeh_standard(DBdata, label=""):
+def get_bokeh_standard(DBdata, size, label=""):
     # use first five time steps to estimate resolution/step size of data
     stepsize = []
     steps = 0
@@ -107,7 +107,7 @@ def get_bokeh_standard(DBdata, label=""):
     # Plot average as main plot
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
-                      plot_width=700, plot_height=500, toolbar_location="above",
+                      plot_width=size[0], plot_height=size[1]-50, toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
     # plot average line
@@ -142,7 +142,7 @@ def get_bokeh_standard(DBdata, label=""):
     # plot bars for the number of values in each group as secondary 'by'plot
     mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=DBdata['axis']['y2max'])
     bin_width = DBdata['data'][0][1] - DBdata['data'][0][0]
-    distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', 700)
+    distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', size[0])
 
     # Style the plot
     mainplot.title.text_font_size = "14pt"
@@ -309,27 +309,28 @@ def __DB_load_directiondata(id, ti):
     return dbresult
 
 
-def get_timeseries_plot(data):
-    mainplot = get_main_plot(data, y_label='value', x_label="Time", x_type="datetime", type='line',
+def get_timeseries_plot(data, size):
+    mainplot = get_main_plot(data, size, y_label='value', x_label="Time", x_type="datetime", type='line',
                              title='Daily average, min and max values')
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def get_xy_plot(data):
+def get_xy_plot(data, size):
     x_label = data.columns[0]
     y_label = data.columns[1]
 
-    mainplot = get_main_plot(data, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
+    mainplot = get_main_plot(data, size, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
+    mainplot.sizing_mode = 'scale_both'
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def get_main_plot(data, y_label='value', x_label="x axis", x_type="linear", type="line",
+def get_main_plot(data, size, y_label='value', x_label="x axis", x_type="linear", type="line",
                   title='Daily average, min and max values'):
     mainplot = figure(title=title, x_axis_label=x_label, x_axis_type=x_type,
                       y_axis_label=y_label,
-                      plot_width=700, plot_height=500, toolbar_location="above",
+                      plot_width=size[0], plot_height=size[1], toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
     # plot line
@@ -365,14 +366,26 @@ def distribution_plot(source, mapper, bin_width, title, plot_width):
     return p
 
 
-def get_preview(id):
+def get_preview(id: str, size=[700, 500]):
+    """
+    Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
+
+    :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
+    :param size: size of resulting plot [width, height]
+    :type size: list
+    :return: html ready to render
+    """
     # id = 2657 # small test dataset
-    wps_result = True if 'wps' in id[0:3] else False
+    try:
+        wps_result = True if 'wps' in id[0:3] else False
+    except:
+        wps_result = False
     use_redis = True
     in_cache = False
+
     try:
         r = redis.StrictRedis()
-        img = r.get("preview_{}".format('b' + id))
+        img = r.get("preview_{}".format('b' + id + size))
     except:
         use_redis = False
 
@@ -392,7 +405,7 @@ def get_preview(id):
             img = get_bokeh_direction(DBdata, ti)
         else:
             DBdata = __DB_load_data(id)
-            img = get_bokeh_standard(DBdata, label)
+            img = get_bokeh_standard(DBdata, size, label)
 
         if use_redis:
             r.set("preview_{}".format('b' + id), img)
@@ -404,9 +417,9 @@ def get_preview(id):
             if 'pickle' in DBstring[1]:
                 df = pd.read_pickle(DBstring[2])
                 if 'ts-pickle' in DBstring[1]:
-                    img = get_timeseries_plot(df)
+                    img = get_timeseries_plot(df, size)
                 elif DBstring[1] == 'pickle':
-                    img = get_xy_plot(df)
+                    img = get_xy_plot(df, size)
             elif DBstring[1] == 'image':
                 try:
                     file = open(DBstring[2], mode='r')

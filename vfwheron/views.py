@@ -63,12 +63,11 @@ logger = logging.getLogger(__name__)
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
-def expressive_layer_name(user):
+def expressive_layer_name(user: object) -> str:
     """
     Build an expressive name for the layer o the geoserver
     :param user:
-    :type user: object
-    :return: string
+    :return: String of user id + username + "_layer"
     """
     namestring = str(user.id) + "_"
     if user.first_name and user.last_name:
@@ -165,7 +164,6 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     accessible data and a second list with inaccessible data.
 
     :param request:
-    :type request: object
     :param requested_ids:
     :return: accessible_ids, error_ids
     """
@@ -188,18 +186,23 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
 
     return accessible_data, error_list
 
+def get_dataset(s_id: int) -> object:
+    """
 
-def get_dataset(s_id):
+    :param s_id: ID in metacatalob
+    :return:
+    """
     entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+
+    # build string of values for django query
     type_values = {'generic1ddata': ['index', 'value', 'precision'],
                    'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
                    'genericgeometrydata': ['index', 'geom', 'srid'],
                    'geomtimeseries': ['tstamp', 'geom', 'srid'],
                    'timeseries': ['tstamp', 'value', 'precision'],
                    'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
-
-    # build string of values for django query
     db_values = type_values[entry_type]
+
     query_values = []
     for value in db_values:
         query_values.append('{}__{}'.format(entry_type, value))
@@ -251,7 +254,9 @@ class DatasetDownloadView(TemplateView):
         if 'csv' in request.GET:
             # if 'download_data' in request.GET:
             s_id = json.loads(request.GET.get('csv'))
-            accessible_data, error_list = get_accessible_data(request, s_id)
+            accessible_data = get_accessible_data(request, s_id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
 
             if len(accessible_data) > 0:
                 # TODO: There are 3 Solutions to get data from the different tables.
@@ -275,7 +280,9 @@ class DatasetDownloadView(TemplateView):
 
         if 'shp' in request.GET:
             s_id = request.GET.get('shp')
-            accessible_data, error_list = get_accessible_data(request, s_id)
+            accessible_data = get_accessible_data(request, s_id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
 
             if len(accessible_data) > 0:
                 layer_name = 'shp_{}_{}_{}'.format(request.user, request.user.id, s_id)
@@ -300,7 +307,9 @@ class DatasetDownloadView(TemplateView):
         # TODO: schema Location shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
-            accessible_data, error_list = get_accessible_data(request, id)
+            accessible_data = get_accessible_data(request, id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
 
             if len(accessible_data) > 0:
                 layer_name = 'XML_{}_{}_{}'.format(request.user, request.user.id, id)
@@ -472,16 +481,14 @@ class GeoserverView(View):
     def get(request, service, layer, bbox, srid):
         """
 
-        :param request:
-        :type request:
-        :param service:
-        :type service:
-        :param layer:
-        :type layer:
-        :param bbox:
-        :type bbox:
+        :param service: e.g. wfs
+        :type service: str
+        :param layer: name of the requested layer
+        :type layer: str
+        :param bbox: style e.g. -976.82,530.56,2741.65,702.43
+        :type bbox: str
         :param srid:
-        :type srid:
+        :type srid: int
         :return:
         :rtype:
         """
@@ -508,14 +515,31 @@ def previewplot(request):
     webID = request.GET.get('preview')
     if webID[0:2] == 'db':
         try:
+            accessible_data = get_accessible_data(request, webID[2:])
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
             # plot with bokeh
-            return JsonResponse(get_preview(webID[2:]))
+            return JsonResponse(get_preview(accessible_data[0]))
 
-        except TypeError:
+        except TypeError as e:
+            print('Type error in previewplot: ', e)
             raise Http404
+        except IndexError as e:
+            # print('index error: ', e)
+            if request.user.is_authenticated:
+                # TODO: Rethink how to handle unallowed requests
+                print('Index Error in previewplot: ', e)
+                raise Http404
+            else:
+                # TODO: Redirect to login
+                raise Http404
+                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+                # return redirect('vfwheron:login')
+        except Exception as e:
+            print('An unhandled error in previewplot: ', e)
 
     elif webID[0:3] == 'wps':
-        print ('you have to implement something to show wps results!')
+        print('def previewplot: You have to implement something to show wps results!')
         raise Http404
 
     else:
@@ -672,7 +696,6 @@ def workspace_data(request):
         :return:
         """
         dataset_dict = {}
-        old_dataset_dict = {}
         error_dict = {}
 
         # if min_time != 0:
@@ -682,7 +705,10 @@ def workspace_data(request):
         # from_var = 'public.tbl_data'
         # where_var = 'tbl_data.meta_id = ' + str(requested_id)
 
-        accessible_ids, error_ids = get_accessible_data(request, requested_id)
+        accessible_data = get_accessible_data(request, requested_id)
+        error_ids = accessible_data['blocked']
+        accessible_ids = accessible_data['open']
+
         result_dataset = Entries.objects. \
             values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
                    'datasource__datatype__name').filter(pk__in=accessible_ids)
@@ -704,33 +730,16 @@ def workspace_data(request):
                                                                'outputs': dataset['datasource__datatype__name']
                                                                }
                                      })
-            old_dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
-                                                 'abbr': dataset['variable__symbol'],
-                                                 'unit': dataset['variable__unit__symbol'],
-                                                 'type': dataset['datasource__datatype__name'],
-                                                 'start': '',
-                                                 'end': '',
-                                                 'pickle': 0,
-                                                 'dropBtn': {'orgid': dataset['id'],
-                                                             'type': 'data',
-                                                             'name': dataset['variable__name'] + ' (' +
-                                                                     dataset['variable__symbol'] + ' in ' +
-                                                                     dataset['variable__unit__symbol'] + ') - ' +
-                                                                     str(dataset['id']),
-                                                             'inputs': [],
-                                                             'outputs': [dataset['datasource__datatype__name']]}
-                                                 }
-                                 })  # when pickled add id of wps db object here
 
         # TODO: Need timestamp in name to see if different selection
-        return {'data': dataset_dict, 'error': error_dict, 'old_data': old_dataset_dict}
+        return {'data': dataset_dict, 'error': error_dict}
 
     try:
         min_time = request.GET.get('minTime')
         max_time = request.GET.get('maxTime')
         # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
         result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
-        return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'workspaceData2': result['old_data']})
+        return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
     except TypeError:
         raise Http404
@@ -769,11 +778,15 @@ def entries_pagination(request):
 
 
 def advanced_filter(request):
-    if request.method == 'POST':
-        form = AdvancedFilterForm(request.POST)
-        if form.is_valid():
-            pass  # does nothing, just trigger the validation
-    else:
-        form = AdvancedFilterForm()
-    print('form: ', form)
-    return render(request, 'vfwheron/advanced_filter.html', {'form': form})
+    print('request: ', request.GET)
+    selection = NmPersonsEntries.objects.all().distinct('entry_id')
+    # print('selection: ', selection)
+    # for i in selection:
+    #     print('i: ', i)
+    # print('selection: ', len(selection))
+    myFilter = NMPersonsFilter(request.GET, queryset=selection)
+
+    selection = myFilter.qs
+
+    context = {'myFilter': myFilter, 'selection': selection}
+    return render(request, 'vfwheron/advanced_filter.html', context)

@@ -522,12 +522,17 @@ padding: 2px;
     background-color: rgba(0, 60, 136, .9)!important;
 }
 
+
+/**
+ * Style of table for selections in entrieslist.html
+ */
+
 .outerPaginationTable, .innerPaginationTable {
     width: 100%;
     border: 1px solid black;
     border-collapse: collapse;
 }
-.table-bordered table:hover {background-color: #ddd;}
+.innerPaginationTable:hover {background-color: #ddd;}
 .AccessTrue, .AccessFalse {
     margin: 5px;
     height: 12px;

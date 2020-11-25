@@ -366,13 +366,13 @@ function build_modal_checkbox(item, newNode, option) {
 
 function build_modal_dropdown(item, newNode, countDropDowns) {
     let htmlSelect = document.createElement("SELECT");
-    let storeData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let boxLen = 0;
     let aptStoreData = {};
     let aptResultData = {};
 
-    for (let i in storeData) if (item.keywords[0] == storeData[i].type) aptStoreData[i] = storeData[i];
+    for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
     for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
     boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length;
     // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???

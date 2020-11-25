@@ -111,6 +111,15 @@ button {
   cursor: pointer;
 }*/
 
+/**
+ * Styling of markers for the datatype on buttons
+Types from wps io:
+NUMPY_TYPES = ['array', '2darray', 'ndarray']
+SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
+DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
+SPECIALS = ['raster']
+*/
+
 /*.process {*/
 /*  !*height: auto;*!*/
 /*  !*width: 350px;*!*/

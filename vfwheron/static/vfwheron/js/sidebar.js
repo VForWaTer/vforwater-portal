@@ -177,6 +177,7 @@ function update_datastore_button(wpsDBInfo) {
     if (wpsDBInfo['id'].substring(0,3) == 'wps') {
         storageEntry.source = wpsDBInfo['id'].substring(0,3)
         storageEntry.dbID = wpsDBInfo['id'].substring(3,)
+        storageEntry.inputs = wpsDBInfo['inputs']
     }
     workspaceData[datasetKey] = storageEntry
     /*$.each(wpsDBInfo, function (keyID, value) {
@@ -230,6 +231,7 @@ function remove_single_data(removeData) {
     // removeData.remove();  // could be used when the element where send directly
     // remove data from session:
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+
     delete workspaceData[removeData];
     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
     sessionStorageData = workspaceData

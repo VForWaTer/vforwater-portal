@@ -1,6 +1,6 @@
-{% load static %}
-{% load i18n %}
-{% get_current_language as LANGUAGE_CODE %}
+{#{% load static %}#}
+{#{% load i18n %}#}
+{#{% get_current_language as LANGUAGE_CODE %}#}
 
 <div id="entries" class="entries">
 
@@ -82,7 +82,8 @@
         </td>
       </tr>
     {% empty %}
-      <h1>Sorry, nothing to show for your Selection.</>
+      <h1>Loading your data.</h1>
+{#      <h1>Sorry, nothing to show for your Selection.</h1>#}
     {% endfor %}
     </tbody>
   </table>
