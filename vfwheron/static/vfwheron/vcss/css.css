@@ -127,7 +127,7 @@ SPECIALS = ['raster']
 /*  !*display: inline-block;*!*/
 /*}*/
 .string,.array, .integer, .positiveInteger, .dateTime,
-.boolean, .float, .image{
+.boolean, .float, .html, .plot{
     margin: 5px;
     height: 12px;
     width: 12px;
@@ -139,18 +139,39 @@ SPECIALS = ['raster']
   /*  display: flex;*/
   /*align-items: center;*/
 }
-.pickle,.timeseries, .merged-pickle, .merged-ts-pickle,
-.ts-array, .ts-pickle, .ts-aggregate {
+
+/*hirachy:*/
+/*array*/
+/*  - iarray*/
+/*    - varray*/
+/*  - timeseries*/
+/*    - vtimeseries*/
+/* ndarray*/
+/*  - raster*/
+/*    - vraster*/
+/*  - 2darray*/
+/*  - idataframe*/
+/*    - vdataframe*/
+/*  - time-dataframe*/
+/*    - vtime-dataframe*/
+/* html*/
+/*  - plot*/
+
+.array, .iarray, .varray, .timeseries, .vtimeseries,
+.ndarray, .raster, .vraster, ._2darray, .idataframe, .vdataframe,
+.time-dataframe, .vtime-dataframe {
     margin: 5px;
     height: 12px;
     width: 12px;
     border-radius: 50%;
 }
 
-.pickle:hover,.timeseries:hover, .merged-pickle:hover, .merged-ts-pickle:hover,
-.ts-array:hover, .ts-pickle:hover, .ts-aggregate:hover, .string:hover,.array:hover, .integer:hover,
-.positiveInteger:hover, .dateTime:hover,
-.boolean:hover, .float:hover, .image:hover {
+
+.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
+.ndarray:hover, .raster:hover, .vraster:hover, ._2darray:hover, .idataframe:hover, .vdataframe:hover,
+.time-dataframe:hover, .vtime-dataframe:hover,
+.string:hover,.array:hover, .integer:hover, .positiveInteger:hover, .dateTime:hover,
+.boolean:hover, .float:hover, .plot:hover, .html:hover {
 /*    height: 200%;
     width: 200%;*/
     transform: scale(2);
@@ -180,24 +201,29 @@ SPECIALS = ['raster']
 11 colorblind safe colors from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
  */
 /*.array{background-color:rgb(165,0,38); content: "AR";}*/
-.array{background-color: rgb(165,0,38)}
-.timeseries{background-color: rgb(215,48,39)}
-.ts-array{background-color: rgb(244,109,67)}
-.ts-pickle{background-color: rgb(253,174,97)}
-.ts-aggregate{background-color: rgb(254,224,144)}
+.array{background-color: rgb(0, 0, 255)}
+.iarray{background-color: rgb(0, 100, 255)}
+.varray{background-color: rgb(0, 150, 255)}
+.timeseries{background-color: rgb(100, 100, 255)}
+.vtimeseries{background-color: rgb(150, 150, 255)}
+.ndarray{background-color: rgb(255, 0, 0)}
+.raster{background-color: rgb(255, 100, 0)}
+.vraster{background-color: rgb(255, 150, 0)}
+._2darray{background-color: rgb(255, 50, 150)}
+.idataframe{background-color: rgb(100, 0, 50)}
+.vdataframe{background-color: rgb(150, 0, 80)}
+.time-dataframe{background-color: rgb(190, 120, 10)}
+.vtime-dataframe{background-color: rgb(160, 110, 90)}
+.html{background-color: rgb(0, 255, 0)}
+.plot{background-color: rgb(76, 191, 82)}
+
 .string{background-color: rgb(255,255,191); border: 1px solid #ffbf26;}
-.pickle{background-color: rgb(224,243,248); border: 1px solid darkturquoise;}
-.aggregate{background-color: rgb(171,217,233)}
-.merged-pickle{background-color: rgb(116,173,209)}
-.merged-ts-pickle{background-color: rgb(69,117,180)}
 .boolean{background-color: rgb(50, 74, 147); border: 1px solid black;}
 /*.float{background-color:rgb(49,54,149)}*/
 .float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
 .integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
 .positiveInteger{background-color: rgb(151, 90, 177); border: 1px solid rgb(83, 10, 114)}
-.dateTime{background-color: rgb(90, 182, 179); border: 1px solid rgb(2, 59, 76)
-}
-.image{background-color: rgb(19, 154, 24); border: 1px solid #91ff59;}
+.dateTime{background-color: rgb(90, 182, 179); border: 1px solid rgb(2, 59, 76)}
 
 
 /*Create a "toggle switch" (on/off button) from a checkbox
