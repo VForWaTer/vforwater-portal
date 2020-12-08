@@ -19,7 +19,7 @@ $(function() {
 		    });
 
 		    $("#wpstool").on('dragover',function() {
-		    	colsole.log("drag over");
+		    	console.log("drag over");
 		    })
 		    
 		    

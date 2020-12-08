@@ -38,7 +38,7 @@ iframe {
 }
 
 .modal-back:hover, .modal-back:focus,
-.result_modal-back:hover, .result_modal-back:focus,
+.result_modal-close:hover, .result_modal-close:focus,
 .work_modal-cancel:hover, .work_modal-cancel:focus,
 .work_modal-run:hover, .work_modal-run:focus,
 .work_modal-ok:hover, .work_modal-ok:focus{
@@ -47,7 +47,7 @@ iframe {
     cursor: pointer;
 }
 
-.result_modal-back, .work_modal-cancel, .work_modal-run, .work_modal-ok{
+.result_modal-close, .work_modal-cancel, .work_modal-run, .work_modal-ok{
   color: white;
   float: right;
   font-size: 20px;
@@ -57,9 +57,7 @@ iframe {
   /*font-weight: bold;*/
 }
 
-.modal-header,
-.result_modal-header,
-.work_modal-header{
+.modal-header{
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
     color: black;
@@ -78,6 +76,8 @@ iframe {
     color: black;
 }
 
+
+.result_modal-header, .work_modal-header,
 .result_modal-footer, .work_modal-footer{
     height: 38px;
     padding: 2px 12px;
@@ -95,6 +95,9 @@ button-footer {
     overflow: hidden;
 }
 
+.fa-close:hover, .fa-expand:hover {
+    color: black;
+}
 /*styles for Toolbox buttons*/
 /*!**
  * Reset button styles.

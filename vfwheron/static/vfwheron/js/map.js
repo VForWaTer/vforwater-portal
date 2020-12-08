@@ -488,7 +488,7 @@ function create_map() {
                 'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" value="More" ' +
                 'data-toggle="tooltip" title="Show more information about the dataset."></b></a>'}
         function storeBtn(listIndex) {
-            if (!json.Embargo[listIndex] || UNBLOCKED_IDS.includes(json.id[listIndex])) {
+            if (json.Embargo[listIndex] === "False" || UNBLOCKED_IDS.includes(json.id[listIndex])) {
                 return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
                     'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" value="Pass to datastore" ' +
                     'data-toggle="tooltip" title="Put dataset to session datastore"></b></a>'

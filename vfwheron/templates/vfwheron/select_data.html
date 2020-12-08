@@ -82,4 +82,17 @@ var jsonMenu = "{{ Filter_Menu|escapejs }}";
 var unblockedIds = "{{ unblocked_ids }}";
 // Get the element with id="defaultMapTab" and click on it
 document.getElementById("defaultFilterTab").click();
+
+let test = "{{ test|escapejs }}"
+</script>
+
+<script>
+  $(document).ready(function() {
+    $("form").submit(function () {
+      let val = $("input[type=submit][clicked=true]").val();
+      console.log('_____________________________')
+      console.log('clickval', val)
+    });
+    {#advancedfilterform#}
+  })
 </script>

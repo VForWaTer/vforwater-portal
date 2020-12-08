@@ -23,8 +23,10 @@
   <!-- Modal content -->
   <div class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">
 {#  <div class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">#}
-    <div class="modal-header" id="result_modal-header" style="margin-left: -10px; margin-right: -10px;">
-      <span class="close">&times;</span>
+    <div class="result_modal-header" id="result_modal-header" style="margin-left: -10px; margin-right: -10px;">
+      <i class="fa fa-close fa-lg close" title="Close" style="cursor: pointer; position: relative; top: 7px;"></i>
+      <i class="fa fa-expand fa-lg togglefullscreen" title="Toggle fullscreen"
+         style="cursor: pointer; position: relative; top: 8px; left: 4px;"></i>
       <h3 id="result_mod_head"></h3>
     </div>
 {#    <table>#}
@@ -37,7 +39,7 @@
 {#      </tr>#}
 {#    </table>#}
     <div class="result_modal-footer" id="result_modal-footer" style="margin-left: -10px; margin-right: -10px;">
-      <span-b class="result_modal-back">{% trans "Close" %}</span-b>
+      <span-b class="result_modal-close">{% trans "Close" %}</span-b>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
       <h3></h3>
     </div>
@@ -50,15 +52,17 @@
   // Get the modal
   let rModal = document.getElementById("resultModal");
   // Get the <span> element that closes the modal
-  let span = document.getElementsByClassName("close")[0];
-  {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
-  let rspan_b = document.getElementsByClassName("result_modal-back")[0];
   // When the user clicks on <span> (x), close the modal
+  let span = document.getElementsByClassName("close")[0];
+  let rspan_b = document.getElementsByClassName("result_modal-close")[0];
+  {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
+  let modalToggleSize = document.getElementsByClassName("togglefullscreen")[0];
   {% comment %}  span.onclick = function () {
         closeModal()
     };{% endcomment %}
   span.onclick = () => close_result_Modal();
   rspan_b.onclick = () => close_result_Modal();
+  modalToggleSize.onclick = () => toggle_Modal_size();
   {#span_c.onclick = function () {closeModal()};#}
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = (event) => {if (event.target == rModal) close_result_Modal()};
@@ -66,6 +70,12 @@
   function close_result_Modal() {
     rModal.style.display = "none";
     bokehResultScript.parentNode.removeChild(bokehResultScript);
+  }
+
+  function toggle_Modal_size() {
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    console.log('w,h: ', w, h)
   }
 
 </script>

@@ -454,10 +454,12 @@ class Persons(models.Model):
     """
     Filter for persons in advanced filter.
     """
+    is_organisation = models.BooleanField(default=False)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
     affiliation = models.CharField(max_length=1024, blank=True, null=True)
     organisation_name = models.CharField(max_length=1024, blank=True, null=True)
+    organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
 
     db_alias_child = {'last_name': 'Name'}  # menu text

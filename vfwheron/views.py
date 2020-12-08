@@ -171,18 +171,16 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
         requested_ids = [requested_ids]
     elif isinstance(requested_ids, str):
         requested_ids = [int(requested_ids)]
-
     # first get datasets without embargo / open for for everyone
     accessible_data = list(Entries.objects.
                            values_list('id', flat=True).filter(pk__in=requested_ids, embargo=False))
-
     # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
     if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
         accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
         accessible_data.extend(accessible_embargo_datasets)
-
     # check if there is still data not accessible and create error for these
     error_list = list(set(requested_ids) - set(accessible_data))
+    return {'open': accessible_data, 'blocked': error_list}
 
     return accessible_data, error_list
 
@@ -513,6 +511,7 @@ def previewplot(request):
     :return:
     """
     webID = request.GET.get('preview')
+    # return JsonResponse(get_preview(webID))
     if webID[0:2] == 'db':
         try:
             accessible_data = get_accessible_data(request, webID[2:])
@@ -659,7 +658,6 @@ def show_info(request):
         #         deleteable.append(i)
         # for i in deleteable:
         #     del preview[i]
-
         return JsonResponse(preview)
 
     webID = request.GET.get('show_info')
@@ -764,7 +762,6 @@ def entries_pagination(request):
         owndata = None
 
     page = request.GET.get('page', 1)
-
     paginator = Paginator(entries_list, 5)
     try:
         entriespage = paginator.page(page)
