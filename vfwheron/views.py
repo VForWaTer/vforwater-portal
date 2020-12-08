@@ -63,7 +63,12 @@ logger = logging.getLogger(__name__)
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
-def build_expressive_name(user):
+def expressive_layer_name(user: object) -> str:
+    """
+    Build an expressive name for the layer o the geoserver
+    :param user:
+    :return: String of user id + username + "_layer"
+    """
     namestring = str(user.id) + "_"
     if user.first_name and user.last_name:
         namestring += (user.first_name + "_" + user.last_name)
@@ -97,31 +102,23 @@ class HomeView(TemplateView):
     except JSONDecodeError:
         print('\033[91mno geoserver\033[0m ', sys.exc_info()[0])
 
-    # dataExt = get_bbox_from_data()
-    # def set_user_menu(self):
-    #     if self.request.user.is_authenticated:
-    #         if self.request.user.is_superuser:
-    #             data_layer = 'default_layer'
-    #         else:
-    #             data_layer = build_expressive_name(self.request.user)
-    #             # data_layer = str(self.request.user.id) + '_' + str(self.request.user) + '_layer'
-    #     else:
-    #         data_layer = self.data_layer
-    #     return data_layer
-
     # TODO: Test with users if this makes any sense
     def __set_layer_name(self):
         if self.request.user.is_authenticated:
             if self.request.user.is_superuser:
                 self.data_layer = 'admin_layer'
             else:
-                self.data_layer = build_expressive_name(self.request.user)
+                self.data_layer = expressive_layer_name(self.request.user)
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs):
         self.__set_layer_name()
         # get_dataset(self, **kwargs)
-        if not self.request.user.is_authenticated:
+
+        try:
+            unblocked_ids = self.request.session['datasets']
+        except KeyError:
+            unblocked_ids = []
             self.request.session['datasets'] = []
 
         try:
@@ -139,7 +136,7 @@ class HomeView(TemplateView):
         self.data_ext = get_bbox_from_data()
 
         return {'dataExt': self.data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
-                'messages': messages.get_messages(self.request), 'unblocked_ids': self.request.session['datasets']}
+                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids}
 
 
 class TestView(View):
@@ -164,7 +161,7 @@ class Echo:
 def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     """
     Use request object to check if user has read access to a list of data (entries_id). Output is a list with
-    accessible data and a second list with unaccessible data.
+    accessible data and a second list with inaccessible data.
 
     :param request:
     :param requested_ids:
@@ -174,20 +171,42 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
         requested_ids = [requested_ids]
     elif isinstance(requested_ids, str):
         requested_ids = [int(requested_ids)]
-
     # first get datasets without embargo / open for for everyone
     accessible_data = list(Entries.objects.
                            values_list('id', flat=True).filter(pk__in=requested_ids, embargo=False))
-
     # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
     if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
         accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
         accessible_data.extend(accessible_embargo_datasets)
-
     # check if there is still data not accessible and create error for these
     error_list = list(set(requested_ids) - set(accessible_data))
+    return {'open': accessible_data, 'blocked': error_list}
 
     return accessible_data, error_list
+
+def get_dataset(s_id: int) -> object:
+    """
+
+    :param s_id: ID in metacatalob
+    :return:
+    """
+    entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+
+    # build string of values for django query
+    type_values = {'generic1ddata': ['index', 'value', 'precision'],
+                   'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
+                   'genericgeometrydata': ['index', 'geom', 'srid'],
+                   'geomtimeseries': ['tstamp', 'geom', 'srid'],
+                   'timeseries': ['tstamp', 'value', 'precision'],
+                   'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
+    db_values = type_values[entry_type]
+
+    query_values = []
+    for value in db_values:
+        query_values.append('{}__{}'.format(entry_type, value))
+
+    query_filter = {entry_type: s_id}
+    return Entries.objects.filter(**query_filter).values_list(*query_values)
 
 
 class DatasetDownloadView(TemplateView):
@@ -233,7 +252,9 @@ class DatasetDownloadView(TemplateView):
         if 'csv' in request.GET:
             # if 'download_data' in request.GET:
             s_id = json.loads(request.GET.get('csv'))
-            accessible_data, error_list = get_accessible_data(request, s_id)
+            accessible_data = get_accessible_data(request, s_id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
 
             if len(accessible_data) > 0:
                 # TODO: There are 3 Solutions to get data from the different tables.
@@ -247,22 +268,7 @@ class DatasetDownloadView(TemplateView):
 
                 # Solution 2:
                 # ===========
-                entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
-                type_values = {'generic1ddata': ['index', 'value', 'precision'],
-                               'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
-                               'genericgeometrydata': ['index', 'geom', 'srid'],
-                               'geomtimeseries': ['tstamp', 'geom', 'srid'],
-                               'timeseries': ['tstamp', 'value', 'precision'],
-                               'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
-
-                # build string of values for django query
-                db_values = type_values[entry_type]
-                query_values = []
-                for value in db_values:
-                    query_values.append('{}__{}'.format(entry_type, value))
-
-                query_filter = {entry_type: s_id}
-                rows = Entries.objects.filter(**query_filter).values_list(*query_values)
+                rows = get_dataset(accessible_data[0])
 
                 pseudo_buffer = Echo()
                 writer = csv.writer(pseudo_buffer)
@@ -272,7 +278,9 @@ class DatasetDownloadView(TemplateView):
 
         if 'shp' in request.GET:
             s_id = request.GET.get('shp')
-            accessible_data, error_list = get_accessible_data(request, s_id)
+            accessible_data = get_accessible_data(request, s_id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
 
             if len(accessible_data) > 0:
                 layer_name = 'shp_{}_{}_{}'.format(request.user, request.user.id, s_id)
@@ -297,7 +305,9 @@ class DatasetDownloadView(TemplateView):
         # TODO: schema Location shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
-            accessible_data, error_list = get_accessible_data(request, id)
+            accessible_data = get_accessible_data(request, id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
 
             if len(accessible_data) > 0:
                 layer_name = 'XML_{}_{}_{}'.format(request.user, request.user.id, id)
@@ -456,6 +466,8 @@ class FailedLoginView(View):
     @staticmethod
     def get(request):
         print('failed login view get')
+        for i in request:
+            print('request: ', i)
         messages.warning(request, 'Login failed.')
         return redirect('vfwheron:home')
 
@@ -469,16 +481,14 @@ class GeoserverView(View):
     def get(request, service, layer, bbox, srid):
         """
 
-        :param request:
-        :type request:
-        :param service:
-        :type service:
-        :param layer:
-        :type layer:
-        :param bbox:
-        :type bbox:
+        :param service: e.g. wfs
+        :type service: str
+        :param layer: name of the requested layer
+        :type layer: str
+        :param bbox: style e.g. -976.82,530.56,2741.65,702.43
+        :type bbox: str
         :param srid:
-        :type srid:
+        :type srid: int
         :return:
         :rtype:
         """
@@ -502,11 +512,38 @@ def previewplot(request):
     :param request:
     :return:
     """
-    try:
-        # plot with bokeh
-        return JsonResponse(get_preview(request.GET.get('preview')))
+    webID = request.GET.get('preview')
+    # return JsonResponse(get_preview(webID))
+    if webID[0:2] == 'db':
+        try:
+            accessible_data = get_accessible_data(request, webID[2:])
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
+            # plot with bokeh
+            return JsonResponse(get_preview(accessible_data[0]))
 
-    except TypeError:
+        except TypeError as e:
+            print('Type error in previewplot: ', e)
+            raise Http404
+        except IndexError as e:
+            # print('index error: ', e)
+            if request.user.is_authenticated:
+                # TODO: Rethink how to handle unallowed requests
+                print('Index Error in previewplot: ', e)
+                raise Http404
+            else:
+                # TODO: Redirect to login
+                raise Http404
+                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+                # return redirect('vfwheron:login')
+        except Exception as e:
+            print('An unhandled error in previewplot: ', e)
+
+    elif webID[0:3] == 'wps':
+        print('def previewplot: You have to implement something to show wps results!')
+        raise Http404
+
+    else:
         raise Http404
 
 
@@ -556,8 +593,9 @@ def filter_map_selection(request):
     try:
         m_ids = None
         entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_map_selection')))
-        dataExt = get_bbox_from_data(str(entry_ids['all_filters'])[1:-1])
-        id_layer = 'ID_layer'  # + user
+        dataExt = get_bbox_from_data(entry_ids['all_filters'])
+        print('request.user: ', request.user)
+        id_layer = 'ID_layer' + str(request.user)
         if get_layer(id_layer, HomeView.store, HomeView.workspace):
             delete_layer(id_layer, HomeView.store, HomeView.workspace)
         create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(entry_ids['all_filters'])[1:-1])
@@ -579,6 +617,7 @@ def filter_map_selection(request):
 
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
+# TODO: Handle this with an http request!
 def show_info(request):
     """
     On request collect metadata for preview on map and selection in the sidebar.
@@ -586,7 +625,13 @@ def show_info(request):
     :param request:
     :return:
     """
-    try:
+    def collectData(ids):
+        """
+
+        :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
+        :type ids: str
+        :return: dict
+        """
         # get field names from models:
         field = []
         field_name = {}
@@ -596,17 +641,16 @@ def show_info(request):
                 field.append(fieldpath)
                 field_name[fieldpath] = j[1]
         # build dict of lists for preview:
-        ids = json.loads(request.GET.get('show_info'))
         preview = defaultdict(list)
-        for k in ids:
-            preview['id'].append(k)
-            imgtag = Entries.objects.filter(id=str(k)).values(*field)
+        preview['id'].append(ids)
+        imgtag = Entries.objects.filter(id=str(ids)).values(*field)
 
-            for i in imgtag[0]:
-                # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
-                preview[translation.gettext(field_name[i])].append(str(imgtag[0][i])) if imgtag[0][
-                                                                                             i] is not None else \
-                    preview[translation.gettext(field_name[i])].append('-')
+        for i in imgtag[0]:
+            # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
+            if imgtag[0][i] is not None:
+                preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
+            else:
+                preview[translation.gettext(field_name[i])].append('-')
 
         # remove rows only containing no value:
         # comparelist = ['-'] * len(ids)
@@ -616,11 +660,25 @@ def show_info(request):
         #         deleteable.append(i)
         # for i in deleteable:
         #     del preview[i]
-
         return JsonResponse(preview)
 
-    except TypeError:
+    webID = request.GET.get('show_info')
+    if webID[0:3] == 'wps':
+        print("webID is wps: ", webID)
+        print('you have to implement something to show wps results!')
         raise Http404
+    else:
+        if webID[0:2] == 'db':
+            ids = webID[2:]
+        else:
+            ids = webID
+
+        try:
+            # print('json.loads(webID): ', json.loads(ids))
+            return collectData(ids)
+
+        except TypeError:
+            raise Http404
 
 
 def workspace_data(request):
@@ -647,7 +705,9 @@ def workspace_data(request):
         # from_var = 'public.tbl_data'
         # where_var = 'tbl_data.meta_id = ' + str(requested_id)
 
-        accessible_ids, error_ids = get_accessible_data(request, requested_id)
+        accessible_data = get_accessible_data(request, requested_id)
+        error_ids = accessible_data['blocked']
+        accessible_ids = accessible_data['open']
 
         result_dataset = Entries.objects. \
             values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
@@ -657,13 +717,19 @@ def workspace_data(request):
             error_dict = {'message': 'no access', 'id': error_ids}
 
         for dataset in result_dataset:
-            dataset_dict.update({dataset['id']: {'name': dataset['variable__name'],
-                                                 'abbr': dataset['variable__symbol'],
-                                                 'unit': dataset['variable__unit__symbol'],
-                                                 'type': dataset['datasource__datatype__name'],
-                                                 'start': '',
-                                                 'end': '',
-                                                 'pickle': 0}})  # when pickled add id of wps db object here
+            dataset_dict.update({'db'+str(dataset['id']): {'name': dataset['variable__name'],
+                                                               'abbr': dataset['variable__symbol'],
+                                                               'unit': dataset['variable__unit__symbol'],
+                                                               'type': dataset['datasource__datatype__name'],
+                                                               'source': 'db',
+                                                               'dbID': dataset['id'],
+                                                               'orgID': 'db' + str(dataset['id']),
+                                                               'start': '',
+                                                               'end': '',
+                                                               'inputs': [],
+                                                               'outputs': dataset['datasource__datatype__name']
+                                                               }
+                                     })
 
         # TODO: Need timestamp in name to see if different selection
         return {'data': dataset_dict, 'error': error_dict}
@@ -680,25 +746,46 @@ def workspace_data(request):
 
 
 def entries_pagination(request):
-    entries_list = Entries.objects.all().order_by('title')
-    page = request.GET.get('page', 1)
+    """
 
-    paginator = Paginator(entries_list, 6)
+    :param request: list of integers
+    :type request: object
+    :return:
+    """
+    datasets = json.loads(request.GET.get('datasets', 1))
+    if datasets:
+        # entries_list = NmPersonsEntries.objects.all().order_by('entry__title').filter(entry_id=datasets).distinct()
+        entries_list = Entries.objects.all().order_by('title').filter(pk__in=json.loads(request.GET.get('datasets', 1)))
+    else:
+        entries_list = Entries.objects.all().order_by('title')
+    try:
+        owndata = request.session['datasets']
+    except KeyError:
+        owndata = None
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(entries_list, 5)
     try:
         entriespage = paginator.page(page)
     except PageNotAnInteger:
         entriespage = paginator.page(1)
     except EmptyPage:
         entriespage = paginator.page(paginator.num_pages)
-    return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage})
+
+    return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage,
+                                                         'ownData': owndata})
 
 
-def advanced_Filter(request):
-    if request.method == 'POST':
-        form = AdvancedFilterForm(request.POST)
-        if form.is_valid():
-            pass  # does nothing, just trigger the validation
-    else:
-        form = AdvancedFilterForm()
-    print('form: ', form)
-    return render(request, 'vfwheron/advanced_filter.html', {'form': form})
+def advanced_filter(request):
+    print('request: ', request.GET)
+    selection = NmPersonsEntries.objects.all().distinct('entry_id')
+    # print('selection: ', selection)
+    # for i in selection:
+    #     print('i: ', i)
+    # print('selection: ', len(selection))
+    myFilter = NMPersonsFilter(request.GET, queryset=selection)
+
+    selection = myFilter.qs
+
+    context = {'myFilter': myFilter, 'selection': selection}
+    return render(request, 'vfwheron/advanced_filter.html', context)

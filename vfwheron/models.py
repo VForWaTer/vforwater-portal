@@ -454,10 +454,12 @@ class Persons(models.Model):
     """
     Filter for persons in advanced filter.
     """
+    is_organisation = models.BooleanField(default=False)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
     affiliation = models.CharField(max_length=1024, blank=True, null=True)
     organisation_name = models.CharField(max_length=1024, blank=True, null=True)
+    organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
 
     db_alias_child = {'last_name': 'Name'}  # menu text
@@ -588,7 +590,8 @@ class Variables(models.Model):
         db_table = 'variables'
 
     def __str__(self):
-        return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
+        return '{n} ({s}) [{u}]'.format(n=self.name, s=self.symbol, u=self.unit.symbol)
+        # return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
 
 
 class BasicFilter:

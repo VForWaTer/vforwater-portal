@@ -15,11 +15,11 @@ $(function() {
 		    });
 		    $("#workspace li").on('dragend',function(event) {
 		        console.log("Drag End");
-		        document.getElementById("wpstool").contentWindow.document.getElementsByTagName("input")[1].value = dragged.id;		
+		        document.getElementById("wpstool").contentWindow.document.getElementsByTagName("input")[1].value = dragged.id;
 		    });
-		    
+
 		    $("#wpstool").on('dragover',function() {
-		    	colsole.log("drag over");
+		    	console.log("drag over");
 		    })
 		    
 		    
@@ -41,7 +41,7 @@ $(function() {
 		            total +=1;
 		        });
 
-		
+
 		        $(clientFrameWindow.document).find('body,html').on('drop',function(event) {
 		            event.preventDefault();
 		            event.stopPropagation();

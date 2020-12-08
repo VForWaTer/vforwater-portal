@@ -40,19 +40,20 @@ def __DB_load_label(ID):
     # return label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
 
 
-def __DB_load_data(ID):
+def __DB_load_data_avg(ID, scale='day'):
     datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     if datatable == 'timeseries':
         # TODO: Use django ORM instead of pure sql
         # connect to database and fetch day(x), daily average, daily min, daily max, # of daily values
         cursor = connections['default'].cursor()
         # noinspection SqlResolve
-        cursor.execute("SELECT date_trunc('day', tstamp) as date, avg(value), "
-                       "min(value), max(value), count(*), avg(precision) "
+        cursor.execute("SELECT date_trunc('{2}', tstamp) as date, "
+                       "avg(value), min(value), max(value), count(*), "
+                       "avg(precision) as prec_avg, min(precision) as prec_min, max(precision) as prec_max "
                        "FROM {0} "
                        "WHERE entry_id = {1} "
-                       "GROUP BY date_trunc('day', tstamp)"
-                       "ORDER BY date ASC;".format(datatable, ID))
+                       "GROUP BY date_trunc('{2}', tstamp)"
+                       "ORDER BY date ASC;".format(datatable, ID, scale))
         dbresult = cursor.fetchall()
         cursor.close()
         result = list(zip(*dbresult))
@@ -64,86 +65,129 @@ def __DB_load_data(ID):
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
-def get_bokeh_standard(DBdata, label=""):
+def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
+    """
+
+    :param db_data: data result from DB_load_data_avg
+    :param size:
+    :param label:
+    :return:
+    """
     # use first five time steps to estimate resolution/step size of data
     stepsize = []
     steps = 0
     while steps < 5:
-        stepsize.append(DBdata['data'][0][steps+1] - DBdata['data'][0][steps])
+        stepsize.append(db_data['data'][0][steps + 1] - db_data['data'][0][steps])
         steps += 1
 
     # check if data is continuous. If not write position of missing values in noDataPos
     stepsize = min(stepsize)
-    datalength = len(DBdata['data'][0])
+    datalength = len(db_data['data'][0])
     noDataPos = []
     for steps in range(1, datalength):
-        if DBdata['data'][0][steps] - DBdata['data'][0][steps-1] > stepsize:
-            noDataPos.append(steps-1)
+        if db_data['data'][0][steps] - db_data['data'][0][steps - 1] > stepsize:
+            noDataPos.append(steps - 1)
 
-    nanIndata = False
+    # check if dataset has values for precision
+    has_precision = True
+    try:
+        sum(db_data['data'][7])
+    except TypeError:
+        has_precision = False
+
+    nan_in_data = False
     # To get a discontinuous line add 'nan' when a time step is missing.
-    whiteLine = ()
+    white_line = ()
     if len(noDataPos) > 0:
-        nanIndata = True
-        whiteLine = tuple([float('nan')] * datalength)
+        nan_in_data = True
+        white_line = tuple([float('nan')] * datalength)
         for position in noDataPos[::-1]:
-            DBdata['data'][0] = DBdata['data'][0][: position+1] + \
-                                (DBdata['data'][0][position]+stepsize, DBdata['data'][0][position+1]-stepsize,) + \
-                                DBdata['data'][0][position+1:]
-            DBdata['data'][1] = DBdata['data'][1][: position+1] + (float('nan'), float('nan'),) + \
-                                DBdata['data'][1][position+1:]
-            DBdata['data'][5] = DBdata['data'][5][: position+1] + (float('nan'), float('nan'),) + \
-                                DBdata['data'][5][position+1:]
-            bandbef = (DBdata['data'][2][position]+DBdata['data'][3][position])/2
-            bandaft = (DBdata['data'][2][position+1]+DBdata['data'][3][position+1])/2
-            DBdata['data'][2] = DBdata['data'][2][: position+1] + (bandbef, bandaft,) + DBdata['data'][2][position+1:]
-            DBdata['data'][3] = DBdata['data'][3][: position+1] + (bandbef, bandaft,) + DBdata['data'][3][position+1:]
-            DBdata['data'][4] = DBdata['data'][4][: position+1] + (0, 0,) + DBdata['data'][4][position+1:]
-            whiteLine = whiteLine[: position+1] + (bandbef, bandaft,) + whiteLine[position+1:]
+            db_data['data'][0] = db_data['data'][0][: position + 1] + \
+                                 (db_data['data'][0][position] + stepsize,
+                                  db_data['data'][0][position + 1] - stepsize,) + \
+                                 db_data['data'][0][position + 1:]
+            db_data['data'][1] = db_data['data'][1][: position + 1] + (float('nan'), float('nan'),) + \
+                                 db_data['data'][1][position + 1:]
+            bandbef = (db_data['data'][2][position] + db_data['data'][3][position]) / 2
+            bandaft = (db_data['data'][2][position + 1] + db_data['data'][3][position + 1]) / 2
+            db_data['data'][2] = db_data['data'][2][: position + 1] + (bandbef, bandaft,) + db_data['data'][2][
+                                                                                            position + 1:]
+            db_data['data'][3] = db_data['data'][3][: position + 1] + (bandbef, bandaft,) + db_data['data'][3][
+                                                                                            position + 1:]
+            db_data['data'][4] = db_data['data'][4][: position + 1] + (0, 0,) + db_data['data'][4][position + 1:]
+            white_line = white_line[: position + 1] + (bandbef, bandaft,) + white_line[position + 1:]
+        if has_precision:
+            for position in noDataPos[::-1]:
+                db_data['data'][5] = db_data['data'][5][: position + 1] + (float('nan'), float('nan'),) + \
+                                     db_data['data'][5][position + 1:]
+                db_data['data'][6] = db_data['data'][6][: position + 1] + (float('nan'), float('nan'),) + \
+                                     db_data['data'][6][position + 1:]
+                db_data['data'][7] = db_data['data'][7][: position + 1] + (float('nan'), float('nan'),) + \
+                                     db_data['data'][7][position + 1:]
+                prec_bandbef = (db_data['data'][6][position] + db_data['data'][7][position]) / 2
+                prec_bandaft = (db_data['data'][6][position + 1] + db_data['data'][7][position + 1]) / 2
 
-    source = ColumnDataSource({'date': DBdata['data'][0], 'y': DBdata['data'][1],
-                               'ymin': DBdata['data'][2], 'ymax': DBdata['data'][3],
-                               'count': DBdata['data'][4], 'precision': DBdata['data'][5]})
+    source = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][1],
+                               'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
+                               'count': db_data['data'][4]})
     # Plot average as main plot
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
-                      y_axis_label=label,
-                      plot_width=700, plot_height=500, toolbar_location="above",
+                      y_axis_label=label, sizing_mode='scale_both',
+                      plot_width=size[0], plot_height=size[1] - 50, toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
+
+    # plot first average precision to have it in the background
+    if has_precision:
+        precision = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][5],
+                                      'ymin': db_data['data'][6], 'ymax': db_data['data'][7]})
+        mainplot.line(x='date', y='y', source=precision, line_width=2, line_dash='dashed',
+                      legend_label="average_precision", color='darksalmon')
+        mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
+                            ys=[db_data['data'][6], db_data['data'][7]], level='underlay',
+                            color=['darksalmon', 'darksalmon'], line_dash='dashed',
+                            legend_label="min & max precision values")
+        mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=precision, level='underlay',
+                                 fill_color='darksalmon', fill_alpha=0.3))
+        # add errorbars
+        data = np.array(db_data['data'][1], dtype=np.float)
+        lower_error = tuple(subtract(data, np.array(db_data['data'][7], dtype=np.float)))
+        upper_error = tuple(add(data, np.array(db_data['data'][7], dtype=np.float)))
+        low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
+        up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
+        error_source = ColumnDataSource({'date': db_data['data'][0], 'upper': upper_error, 'lower': lower_error,
+                                         'upper_avg': up_avg_error, 'lower_avg': low_avg_error})
+        mainplot.add_layout(Whisker(source=error_source, base="date", upper="upper", lower="lower", line_width=0.5))
+        mainplot.vbar(x='date', width=1000*60*59*24, top='upper_avg', bottom='lower_avg', source=error_source,
+                      fill_color="darksalmon", line_color="black", fill_alpha=0.3, line_width=0.5)
+
     # plot average line
     mainplot.line(x='date', y='y', source=source, line_width=2, legend_label="average")
-    # add errorbars TODO: Not working yet. Maybe because lack of values for precision. Test again when data available.
-    # precision = np.array(DBdata['data'][5], dtype=np.float)
-    # data = np.array(DBdata['data'][1], dtype=np.float)
-    # lower_error = tuple(subtract(data, precision))
-    # upper_error = tuple(add(data, precision))
-    # error_source = ColumnDataSource({'date': DBdata['data'][0], 'upper': upper_error, 'lower': lower_error})
-    # mainplot.add_layout(
-    #     Whisker(source=error_source, base="date", upper="upper", lower="lower")
-    # )
 
     # TODO: Figure out how to use 'source' for multi_line.
     #  Maybe use Glyph? (https://docs.bokeh.org/en/latest/docs/reference/models/glyphs/multi_line.html)
     #  Glyphs maybe also helpful for hover_tool on multiline?
-    # plot.add_tools(HoverTool(tooltips=[("value", "$y"), ("Date", "@date{%d %b %Y}")], formatters={"date":
-    # "datetime"}, mode="mouse"))
+    mainplot.add_tools(HoverTool(tooltips=[("value", "$y"), ("Date", "@date{%d %b %Y}")], formatters={"date":
+    "datetime"}, mode="mouse"))
 
     mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
 
     # plot min/max as multiline and fill area with band
-    mainplot.multi_line(xs=[DBdata['data'][0], DBdata['data'][0]],
-                        ys=[DBdata['data'][2], DBdata['data'][3]], level='underlay',
+    mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
+                        ys=[db_data['data'][2], db_data['data'][3]], level='underlay',
                         color=['lightblue', 'lightblue'], legend_label="min & max values")
     mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
                              fill_color='lightblue', fill_alpha=0.5))
-    # plot white line to hide small band for no data areas
-    if nanIndata:
-        mainplot.line(x=DBdata['data'][0], y=whiteLine, line_width=2, line_color='white', line_cap='round')
-    # plot bars for the number of values in each group as secondary 'by'plot
-    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=DBdata['axis']['y2max'])
-    bin_width = DBdata['data'][0][1] - DBdata['data'][0][0]
-    distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', 700)
 
+    # plot white line to hide small band for no data areas
+    if nan_in_data:
+        mainplot.line(x=db_data['data'][0], y=white_line, line_width=2, line_color='white', line_cap='round')
+
+    # plot bars for the number of values in each group as secondary 'by'plot
+    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=db_data['axis']['y2max'])
+    bin_width = db_data['data'][0][1] - db_data['data'][0][0]
+    distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', size[0])
+    distriplot.x_range = mainplot.x_range
     # Style the plot
     mainplot.title.text_font_size = "14pt"
     mainplot.xaxis.axis_label_text_font_size = "14pt"
@@ -154,30 +198,30 @@ def get_bokeh_standard(DBdata, label=""):
     return {'script': script, 'div': div}
 
 
-def get_bokeh_direction(DBdata, ti):
-    # use data in percent => transform Dbdata to percent
+def get_bokeh_direction(db_data, ti):
+    # use data in percent => transform db_data to percent
     pct_data = []
-    for tc in range(0, len(DBdata)):  # 4
-        all_direct = DBdata[tc][1]
-        datalist = [DBdata[tc][0], all_direct]
-        for single_bin in range(2, len(DBdata[tc])):
-            datalist.append(DBdata[tc][single_bin]*100/all_direct)
+    for tc in range(0, len(db_data)):  # 4
+        all_direct = db_data[tc][1]
+        datalist = [db_data[tc][0], all_direct]
+        for single_bin in range(2, len(db_data[tc])):
+            datalist.append(db_data[tc][single_bin] * 100 / all_direct)
         pct_data.append(tuple(datalist))
 
-    dbdatadict = {item[0]: item[2:] for item in pct_data}
-    df = pd.DataFrame(dbdatadict)
-    dbdatadictstr = {str(int(time.mktime(item[0].timetuple()) * 1000)): list(item[2:]) for item in pct_data}
+    db_datadict = {item[0]: item[2:] for item in pct_data}
+    df = pd.DataFrame(db_datadict)
+    db_datadictstr = {str(int(time.mktime(item[0].timetuple()) * 1000)): list(item[2:]) for item in pct_data}
 
     hist = [0] * 36
     maxlist = [0] * 36
     data_list = list(zip(*(pct_data)))
 
     for i in range(2, len(data_list)):
-        hist[i-3] = mean(data_list[i])
-        maxlist[i-3] = max(data_list[i])
+        hist[i - 3] = mean(data_list[i])
+        maxlist[i - 3] = max(data_list[i])
 
     # maxhist = sorted(maxlist)[-3]
-    maxhist = mean(maxlist)*0.8  # don't use real max of dataset, too many discordant values
+    maxhist = mean(maxlist) * 0.8  # don't use real max of dataset, too many discordant values
     sumhist = sum(hist)
     start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     end = [-radians((i * 10) - 75) for i in list(range(0, 36))]
@@ -186,7 +230,7 @@ def get_bokeh_direction(DBdata, ti):
     labeltext = ("Selection of " + ti + "ly histograms")
     titletext = (ti + 'ly median and sum of all histograms').capitalize()
     pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
-    jssource = ColumnDataSource(data=dbdatadictstr)
+    jssource = ColumnDataSource(data=db_datadictstr)
 
     mainplot = figure(title=titletext, plot_width=400, plot_height=400,
                       x_axis_type=None, y_axis_type=None, tools="save",
@@ -272,17 +316,17 @@ def get_bokeh_direction(DBdata, ti):
     mainplot.multi_line(xs=[[diagonal, -diagonal], [-diagonal, diagonal], [-out_rim, out_rim], [0, 0]],
                         ys=[[diagonal, -diagonal], [diagonal, -diagonal], [0, 0], [-out_rim, out_rim]],
                         line_color="grey", line_width=0.5, line_alpha=0.8)
-    mainplot.x_range = Range1d(-out_rim*1.1, out_rim*1.1)
-    mainplot.y_range = Range1d(-out_rim*1.1, out_rim*1.1)
+    mainplot.x_range = Range1d(-out_rim * 1.1, out_rim * 1.1)
+    mainplot.y_range = Range1d(-out_rim * 1.1, out_rim * 1.1)
     mainplot.legend.location = "top_left"
     mainplot.legend.click_policy = "hide"
 
-    allcounts = [i[1] for i in DBdata]
-    alldates = [i[0] for i in DBdata]
+    allcounts = [i[1] for i in db_data]
+    alldates = [i[0] for i in db_data]
 
     # plot bars for the number of values in each group as secondary 'by' plot
     mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(allcounts))
-    bin_width = DBdata[0][0] - DBdata[1][0]
+    bin_width = db_data[0][0] - db_data[1][0]
     source = ColumnDataSource({'date': alldates, 'count': allcounts})
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
 
@@ -309,27 +353,28 @@ def __DB_load_directiondata(id, ti):
     return dbresult
 
 
-def get_timeseries_plot(data):
-    mainplot = get_main_plot(data, y_label='value', x_label="Time", x_type="datetime", type='line',
+def get_timeseries_plot(data, size):
+    mainplot = get_main_plot(data, size, y_label='value', x_label="Time", x_type="datetime", type='line',
                              title='Daily average, min and max values')
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def get_xy_plot(data):
+def get_xy_plot(data, size):
     x_label = data.columns[0]
     y_label = data.columns[1]
 
-    mainplot = get_main_plot(data, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
+    mainplot = get_main_plot(data, size, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
+    mainplot.sizing_mode = 'scale_both'
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def get_main_plot(data, y_label='value', x_label="x axis", x_type="linear", type="line",
+def get_main_plot(data, size, y_label='value', x_label="x axis", x_type="linear", type="line",
                   title='Daily average, min and max values'):
     mainplot = figure(title=title, x_axis_label=x_label, x_axis_type=x_type,
                       y_axis_label=y_label,
-                      plot_width=700, plot_height=500, toolbar_location="above",
+                      plot_width=size[0], plot_height=size[1], toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
     # plot line
@@ -351,10 +396,20 @@ def get_main_plot(data, y_label='value', x_label="x axis", x_type="linear", type
     return mainplot
 
 
-def distribution_plot(source, mapper, bin_width, title, plot_width):
+def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_width: int):
+    """
+    Small bar on top of the main plot to show how many datasets are available in each trunc.
+
+    :param source: a ColumnDataSource
+    :param mapper: e.g. {'field': 'count', 'transform': LinearColorMapper(id='1092', ...)}
+    :param bin_width: bin width in format of x axes, e.g. 1 day
+    :param title: headline for distribution
+    :param plot_width: width of the plot
+    :return:
+    """
     p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
                plot_width=plot_width, plot_height=50, toolbar_location="above", background_fill_color="black",
-               tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom")
+               tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom", sizing_mode='scale_width')
     p.vbar(x='date', source=source, width=bin_width, bottom=0, top=1, color=mapper)
     p.xaxis.visible = False
     p.xgrid.visible = False
@@ -365,14 +420,26 @@ def distribution_plot(source, mapper, bin_width, title, plot_width):
     return p
 
 
-def get_preview(id):
+def get_preview(id: str, size=[700, 500]):
+    """
+    Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
+
+    :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
+    :param size: size of resulting plot [width, height]
+    :type size: list
+    :return: html ready to render
+    """
     # id = 2657 # small test dataset
-    wps_result = True if 'wps' in id[0:3] else False
+    try:
+        wps_result = True if 'wps' in id[0:3] else False
+    except:
+        wps_result = False
     use_redis = True
     in_cache = False
+
     try:
         r = redis.StrictRedis()
-        img = r.get("preview_{}".format('b' + id))
+        img = r.get("preview_{}".format('b' + id + size))
     except:
         use_redis = False
 
@@ -387,12 +454,12 @@ def get_preview(id):
         label = __DB_load_label(id)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            DBdata = __DB_load_directiondata(id, ti)
-            # img = get_bokeh_standard(DBdata, label)
-            img = get_bokeh_direction(DBdata, ti)
+            db_data = __DB_load_directiondata(id, ti)
+            # img = get_bokeh_standard(db_data, label)
+            img = get_bokeh_direction(db_data, ti)
         else:
-            DBdata = __DB_load_data(id)
-            img = get_bokeh_standard(DBdata, label)
+            db_data = __DB_load_data_avg(id)
+            img = get_bokeh_standard(db_data, size, label)
 
         if use_redis:
             r.set("preview_{}".format('b' + id), img)
@@ -404,9 +471,9 @@ def get_preview(id):
             if 'pickle' in DBstring[1]:
                 df = pd.read_pickle(DBstring[2])
                 if 'ts-pickle' in DBstring[1]:
-                    img = get_timeseries_plot(df)
+                    img = get_timeseries_plot(df, size)
                 elif DBstring[1] == 'pickle':
-                    img = get_xy_plot(df)
+                    img = get_xy_plot(df, size)
             elif DBstring[1] == 'image':
                 try:
                     file = open(DBstring[2], mode='r')
@@ -420,7 +487,7 @@ def get_preview(id):
                 print('Error: Con not plot. Unknown type')
 
         # with open(DBstring, 'rb') as f:
-            #    data = pickle.load(f)
+        #    data = pickle.load(f)
         except FileNotFoundError:
             print('The data file %s was not found.' % (DBstring[2]))
 

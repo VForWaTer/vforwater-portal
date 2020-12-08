@@ -26,6 +26,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib import messages
 
 from itertools import chain
+from author_manage.models import Resource
 from author_manage.apps import authorManageConfig
 
 logger = logging.getLogger(__name__)
@@ -283,10 +284,10 @@ class CancelDeletionRequestView(generic.View):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         logger.info("Deletion request for '%s' was canceled by %s \n" %
-                    (request_to_delete.resource.name, request.user.username))
+                    (request_to_delete.resource.id, request.user.username))
         logger.info(
             "An email was sent to the Staff members from %s, Subject: Cancel the Deletion Request for '%s' \n" %
-            (request.user.username, request_to_delete.resource.name))
+            (request.user.username, request_to_delete.resource.id))
         request_to_delete.delete()
         # return redirect("/profile/my-resources")
         return redirect('author_manage:my-resources')
@@ -326,10 +327,10 @@ class ResourcesOverview(generic.ListView):
         """
         context = super(ResourcesOverview, self).get_context_data(**kwargs)
         context['is_admin'] = self.request.user.is_staff
-        context['query'] = self.query;
+        context['query'] = self.query
         context['query_pagination_string'] = ''
-        context['can_access'] = self.request.user.reader.filter(
-            id__in=self.model)  # list of resources for which the user has an access permission
+        context['can_access'] = Resource.objects.filter(readers=self.request.user)  # list of resources for which the user has an access permission
+        # context['can_access'] = self.request.user.reader.filter(id__in=self.model)  # list of resources for which the user has an access permission
         context['requested_resources'] = Resource.objects.filter(
             id__in=AccessRequest.objects.filter(sender=self.request.user).values('resource_id'))
         return context
@@ -432,9 +433,9 @@ class ApproveAccessRequest(generic.View):
         msg.send()
         req.delete()
         logger.info("Request from %s to access '%s' was approved by %s \n" %
-                    (req.sender, req.resource.name, request.user.username))
+                    (req.sender, req.resource.id, request.user.username))
         logger.info("An email was sent from %s to %s, Subject: Access request for '%s' approved \n" %
-                    (request.user.username, req.sender, req.resource.name))
+                    (request.user.username, req.sender, req.resource.id))
         return redirect('author_manage:profile')
 
 
@@ -487,9 +488,9 @@ class DenyAccessRequest(generic.View):
         msg.send()
         req.delete()
         logger.info("Request from %s to access '%s' was denied by %s \n" %
-                    (req.sender, req.resource.name, request.user.username))
+                    (req.sender, req.resource.id, request.user.username))
         logger.info("An email was sent from %s to %s, Subject: Access Request for '%s' denied \n" %
-                    (request.user.username, req.sender, req.resource.name))
+                    (request.user.username, req.sender, req.resource.id))
         return redirect('author_manage:profile')
 
 
@@ -607,9 +608,9 @@ class CancelAccessRequest(generic.View):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         logger.info("Access request for '%s' was canceled by %s \n" %
-                    (request_to_delete.resource.name, request.user.username))
+                    (request_to_delete.resource.id, request.user.username))
         logger.info("An email was sent from %s to '%s' owners, Subject: Cancel the Access Request for '%s' \n" %
-                    (request.user.username, request_to_delete.resource.name, request_to_delete.resource.name))
+                    (request.user.username, request_to_delete.resource.id, request_to_delete.resource.id))
         return redirect('author_manage:resources-overview')
 
 
@@ -645,7 +646,7 @@ class OpenResourceView(generic.View):
         if (not resource.readers.filter(id=request.user.id).exists()) and (not request.user.is_staff):
             raise PermissionDenied
 
-        logger.info("User %s accessed '%s' with id = %s \n" % (request.user.username, resource.name, resource.id))
+        logger.info("User %s accessed '%s' with id = %s \n" % (request.user.username, resource.type, resource.id))
         # Download function that tests the functionality.
         # It could be replaced with another view according to the specific resource
         return download(request, resource)
@@ -720,7 +721,7 @@ class PermissionEditingView(generic.ListView):
         if resource.owners.filter(id=request.user.id).exists():
             return super().dispatch(request, *args, **kwargs)
 
-        logger.info("User %s tried to edit the permissions of resource %s \n" % (request.user.username, resource.name))
+        logger.info("User %s tried to edit the permissions of resource %s \n" % (request.user.username, resource.id))
         raise PermissionDenied
 
     def post(self, request, *args, **kwargs):
@@ -762,7 +763,7 @@ class PermissionEditingView(generic.ListView):
                 msg = EmailMultiAlternatives('Access Permission granted', text_content, email_from, email_to)
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
-                logger.info("Access permission for '%s' was granted by %s \n" % (resource.name, request.user.username))
+                logger.info("Access permission for '%s' was granted by %s \n" % (resource.id, request.user.username))
                 logger.info("An email was sent from %s to '%s' , Subject: Access permission granted \n" %
                             (request.user.username, user.username))
 
@@ -781,7 +782,7 @@ class PermissionEditingView(generic.ListView):
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
                 logger.info("Access permission for '%s' was removed by %s from %s \n" %
-                            (resource.name, request.user.username, user.username))
+                            (resource.id, request.user.username, user.username))
                 logger.info("An email was sent from %s to '%s' , Subject: Access permission removed \n" %
                             (request.user.username, user.username))
 
@@ -804,7 +805,7 @@ class PermissionEditingView(generic.ListView):
                 msg = EmailMultiAlternatives('Ownership granted', text_content, email_from, email_to)
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
-                logger.info("ownership for '%s' was granted by %s \n" % (resource.name, request.user.username))
+                logger.info("ownership for '%s' was granted by %s \n" % (resource.id, request.user.username))
                 logger.info("An email was sent from %s to '%s' , Subject: ownership granted \n" %
                             (request.user.username, user.username))
 
@@ -827,7 +828,7 @@ class PermissionEditingView(generic.ListView):
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
                 logger.info("ownership for '%s' was revoked by %s from %s \n" %
-                            (resource.name, request.user.username, user.username))
+                            (resource.id, request.user.username, user.username))
                 logger.info("An email was sent from %s to '%s' , Subject: ownership revoked \n" %
                             (request.user.username, user.username))
 
@@ -1065,7 +1066,7 @@ class ApproveDeletionRequest(generic.View):
         msg.attach_alternative(html_content1, "text/html")
         msg.send()
         logger.info("An email was sent from %s to %s, Subject: Deletion Request for '%s' accepted \n" %
-                    (request.user.username, req.sender, req.resource.name))
+                    (request.user.username, req.sender, req.resource.id))
 
         # notifies all the owners
         email_to = [x[0] for x in res.owners.values_list('email')]
@@ -1074,14 +1075,14 @@ class ApproveDeletionRequest(generic.View):
         msg.attach_alternative(html_content2, "text/html")
         msg.send()
         logger.info(
-            "An email was sent to all '%s' owners, Object: '%s' is deleted " % (req.resource.name, req.resource.name))
+            "An email was sent to all '%s' owners, Object: '%s' is deleted " % (req.resource.id, req.resource.id))
 
         # deletes the resource and the deletion request
         res.delete()
         req.delete()
 
         logger.info("Request from %s to delete '%s' accepted by %s \n" % (
-        req.sender, req.resource.name, request.user.username))
+        req.sender, req.resource.id, request.user.username))
 
         return redirect('author_manage:profile')
 
@@ -1135,9 +1136,9 @@ class DenyDeletionRequest(generic.View):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         logger.info("Request from %s to delete '%s' was denied by %s \n" %
-                    (req.sender, req.resource.name, request.user.username))
+                    (req.sender, req.resource.id, request.user.username))
         logger.info("An email was sent from %s to %s, Subject: Deletion Request for '%s' denied\n" %
-                    (request.user.username, req.sender, req.resource.name))
+                    (request.user.username, req.sender, req.resource.id))
 
         # deletes the request
         req.delete()

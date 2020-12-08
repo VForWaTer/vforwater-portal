@@ -1,9 +1,12 @@
 let zoomToExt;
 let wfsLayerName;
-let selectedIdsFilter = null;
 let olmap, hit_cL, clusterLayer, hiddenLayer;
 let selectCluster;
 let wfsPointSource;
+
+// console.log('get1: ', selectedIds.quickMenu)
+// console.log('set: ', selectedIds.quickMenu=toarray(1))
+// console.log('get2: ', selectedIds.quickMenu)
 // let dcz = new ol.interaction.DoubleClickZoom();
 
 /* build style for cluster */
@@ -39,7 +42,11 @@ function clusterStyle(feature) {
 // Fetch V-FOR-WaTer base layer
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
-    let mapSource = new ol.source.XYZ({url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"});
+    let mapSource = new ol.source.XYZ({
+        attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
+        'SRTM | Map style from <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
+        url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"
+    });
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
         'EPSG:4326', 'EPSG:3857'); // bbox of available data
 
@@ -52,9 +59,22 @@ function create_map() {
         preload: Infinity,
         source: mapSource
     });
-// get OSM in case local map is not loading:
+// get OSM/OTM in case local map is not loading:
     mapLayer.getSource().on('tileloaderror', function () {
-        let source = new ol.source.OSM();
+        // let source = new ol.source.OSM({
+        //     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
+        let source = new ol.source.XYZ({
+            attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
+            'SRTM | Map style from <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
+            '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
+            url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+        });
+        // let source = new ol.source.XYZ({
+        //     attributions: [' Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>' +
+        //     '-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
+        //     '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
+        //     url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+        // })
         mapLayer.setSource(source)
     });
 
@@ -70,27 +90,30 @@ function create_map() {
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            let url = GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857';
-            let xhr = new XMLHttpRequest();
-            xhr.open('GET', url);
-            let onError = function () {
-                console.log('Error in building vector wfsPointSource');
-                wfsPointSource.removeLoadedExtent(extent);
-            };
-            xhr.onerror = onError;
-            xhr.onload = function () {
-                if (xhr.status == 200) {
-                    wfsPointSource.addFeatures(
-                        wfsPointSource.getFormat().readFeatures(xhr.responseText));
-                } else {
-                    console.log('error in onload for wfs');
-                    onError();
-                }
-            };
-            xhr.send();
+            fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
+                // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+                // credentials: 'same-origin'}
+                )
+                .then(function (response) {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        return Promise.reject(response);
+                    }
+                })
+                .then(function (response) {
+                    wfsPointSource.addFeatures(wfsPointSource.getFormat().readFeatures(response));
+                })
+                .catch(function (error) {
+                    console.log('Error in building vector wfsPointSource: ', error);
+                    wfsPointSource.removeLoadedExtent(extent);
+                })
         },
         strategy: ol.loadingstrategy.bbox
     });
+
+    // TODO: Bei Gelegenheit mal sentinel Daten einführen
+    //     url = https://sgx.geodatenzentrum.de/wms_sentinel2_de?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2019
 
     /* Elements that make up the popup. */
     let container = document.getElementById('popup');
@@ -183,7 +206,7 @@ function create_map() {
 
         controls: [
             new ol.control.Zoom({duration: 300}),
-            new ol.control.Attribution(),
+            new ol.control.Attribution({collapsed: false, collapsible: false, }),
             new ol.control.ZoomSlider(),
             new ol.control.MousePosition({
                 projection: 'EPSG:4326',
@@ -462,10 +485,10 @@ function create_map() {
         // build buttons for each dataset
         function moreBtn(listIndex) {
             return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
-                'type="submit" onclick=\"moreInfoModal(\'' + json.id[listIndex] + '\')\" value="More" ' +
+                'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" value="More" ' +
                 'data-toggle="tooltip" title="Show more information about the dataset."></b></a>'}
         function storeBtn(listIndex) {
-            if (!json.Embargo[listIndex] || UNBLOCKED_IDS.includes(json.id[listIndex])) {
+            if (json.Embargo[listIndex] === "False" || UNBLOCKED_IDS.includes(json.id[listIndex])) {
                 return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
                     'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" value="Pass to datastore" ' +
                     'data-toggle="tooltip" title="Put dataset to session datastore"></b></a>'

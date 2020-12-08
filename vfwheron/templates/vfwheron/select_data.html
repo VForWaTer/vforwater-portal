@@ -51,7 +51,9 @@
 </div>
 
 <div id="advancedFilter" class="filter-tabcontent">
-  {% include 'vfwheron/advanced_filter.html' %}
+{#  {% include 'vfwheron/advanced_filter.html' %}#}
+{#  {% block advanced_filter %}#}
+{#  {% endblock %}#}
 </div>
 
 <div id="quickFilter" class="filter-tabcontent">
@@ -62,7 +64,7 @@
     </div>
         <a><b>
             <input class="w3-btn-block w3-blue w3-btn:hover" type="submit"
-                onclick="many_datasets()" value={% trans "Pass&#32datasets&#32to&#32data&#32store" %} data-toggle="tooltip"
+                onclick="workspace_dataset(JSON.stringify(selectedIds.result))" value={% trans "Pass&#32datasets&#32to&#32data&#32store" %} data-toggle="tooltip"
                 title={% trans "Pass&#32all&#32selected&#32datasets&#32to&#32session&#32data&#32store." %}></b>
         </a>
         <a><b>
@@ -77,7 +79,20 @@
 {#TODO: Do I need this, or can I just use the csrftoken in vfw.js?#}
  csrf_token = '{{ csrf_token }}';
 var jsonMenu = "{{ Filter_Menu|escapejs }}";
-var unblockedIds = "{{ unblocked_ids|escapejs }}";
+var unblockedIds = "{{ unblocked_ids }}";
 // Get the element with id="defaultMapTab" and click on it
 document.getElementById("defaultFilterTab").click();
+
+let test = "{{ test|escapejs }}"
+</script>
+
+<script>
+  $(document).ready(function() {
+    $("form").submit(function () {
+      let val = $("input[type=submit][clicked=true]").val();
+      console.log('_____________________________')
+      console.log('clickval', val)
+    });
+    {#advancedfilterform#}
+  })
 </script>

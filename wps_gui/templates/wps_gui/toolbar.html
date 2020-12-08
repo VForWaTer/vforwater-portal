@@ -98,10 +98,11 @@
     <table style="width:100%">
       <div class="list-group">
         {% for process in wps.processes %}
+          {% if process.identifier != "dbloader" %}
           <tr>
             <div id="{{ process.identifier }}" class="process w3-card-2"
                  onclick="wpsprocess('{{ service }}', '{{ process.identifier }}')"
-                 title="{{ process.abstract }}" draggable="true" ondragstart="drag(event)"
+                 title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
                  data-service="{{ service }}" data-process="{{ process.identifier }}"
                  style="cursor:pointer;">
               <button-header class="w3-container" style="font-size: smaller">
@@ -122,6 +123,7 @@
 
             </div>
           </tr>
+          {% endif %}
         {% endfor %}
       </div>
     </table>

@@ -18,7 +18,8 @@ urlpatterns = [
     url(r'^failedlogin$', views.FailedLoginView.as_view(), name='failedlogin'),
     url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),
     url(r'^entries_pagination$', views.entries_pagination, name='entries_pagination'),
-    url(r'^advanced_Filter$', views.advanced_Filter, name='advanced_Filter'),
+    url(r'^advanced_filter$', views.advanced_filter),
+    # url(r'^advanced_filter$', views.filter_entries),
     # addresses for ajax:
     url(r'^previewplot$', views.previewplot, name='previewplot'),
     url(r'^short_datainfo', views.short_datainfo, name='short_datainfo'),

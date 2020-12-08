@@ -4,6 +4,8 @@ The filter doesn't have to care about users, as all metadata is supposed to be a
 
 import json
 import logging
+
+import django_filters
 from django.db.models import Max, Min
 
 from author_manage.views import MyResourcesView
@@ -11,7 +13,7 @@ from heron.settings import DEBUG
 # import vfwheron.models_metacatalog_dev as mc_dev
 
 from vfwheron.models import Keywords, EntrygroupTypes, Variables, Licenses, Entries, Details, Persons, BasicFilter, \
-    LocationFilter
+    LocationFilter, NmPersonsEntries
 
 logger = logging.getLogger(__name__)
 

@@ -1,16 +1,140 @@
-//Change visibility of basiseinzugsgebiete with button
-// function toggleLayer(layerName) {
-//     if (layerName.getVisible() == true) {
-//         layerName.setVisible(false);
-//     } else {
-//         layerName.setVisible(true);
-//     }
-// }
 let draw, modify, selectedFeatures, vector;
-let selectedIdsMap = null;
+let activeMap = true;
+// TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
+let sessionStorageData = {};
+
+let selectedIds = {
+    mapIds: null,
+    quickMenuIds: null,
+    combinedIds: null,
+
+   /**
+    * @param {array} idList
+    */
+    set map(idList) {
+        this.mapIds = idList;
+        this._setCombinedIds()
+    },
+    get map() {
+        return this.mapIds
+    },
+
+    /**
+    * @param {array} idList
+    */
+    set quickMenu(idList) {
+        this.quickMenuIds = idList;
+        this._setCombinedIds()
+    },
+    get quickMenu() {
+        return this.quickMenuIds
+    },
+    get result() {
+        return this.combinedIds
+    },
+
+    resetIds: function () {
+        this.mapIds = null;
+        this.quickMenuIds = null;
+        this.combinedIds = null;
+    },
+
+    /**
+     * if selection changes update table (when HTML in table tab)
+     * @param {array} oldCombinedIds
+     */
+    _updateFilterTable: function (oldIds) {
+        if (!activeMap && this.combinedIds != oldIds) {
+            filter_pagination(1);
+        }
+    },
+
+    /**
+    * update combined Ids when selection on map or in Quick Menu
+    */
+    _setCombinedIds: function () {
+        let oldIds = this.combinedIds
+        if (this.mapIds == null) {
+            this.combinedIds = this.quickMenuIds
+        } else if (this.quickMenuIds == null) {
+            this.combinedIds = this.mapIds
+        } else {
+            this.combinedIds = this.mapIds.filter(x => this.quickMenuIds.includes(x))
+        }
+        this._updateFilterTable(oldIds);
+    }
+};
+
+class storeData {
+    data = {};
+
+    constructor(definition) {
+        console.log('constructor: ', definition)
+        this.data.name = definition.name;
+        this.data.abbr = definition.abbr;
+        this.data.unit = definition.unit;
+        this.data.type = definition.type;
+        this.data.source = definition.source;
+        this.data.dbID = definition.dbID;
+        this.data.webID = definition.source + definition.dbID; // + 'from' + start + 'to' + end
+        this.data.dispName = createBtnName(definition.name, definition.abbr, definition.unit, definition.dbID);
+        this.data.orgID = definition.orgID;
+        this.data.start = definition.start;
+        this.data.end = definition.end;
+        this.data.inputs = definition.inputs;
+        this.data.outputs = definition.outputs;
+        this.data.error = null;
+        this.data.toolName = null;
+    }
+
+    save() {
+        console.log('data: ', this.data)
+        let thisID = this.data.webID;
+        //let data[thisID] = this.data
+        //sessionStorage.setItem("data", JSON.stringify(data))
+        // console.log('storeVar: ', dataStorageVar)
+        //dataStorageVar.store = this;
+        // storeVar[this.webID] = this
+        // console.log('this: ', this)
+        // console.log('storeVar: ', dataStorageVar)
+    }
+}
+
+function createBtnName(name, abbr, unit, dbID){
+    let btnName;
+    let vnLen = name.length;
+    if (vnLen + abbr.length + unit.length <= 13) {
+        btnName = name + '(' + abbr + ' in ' + unit + ') - ' + dbID;
+    } else if (vnLen + abbr.length <= 15) {
+        btnName = name + '(' + abbr + ') - ' + dbID;
+    } else if (vnLen <= 17) {
+        btnName = name + ' - ' + dbID;
+    } else {
+        btnName = abbr + ' in ' + unit + ' - ' + dbID;
+    }
+    return btnName
+}
+
+function sidebar_btn_html(storeID, btnData, btnName, title) {
+    let drag_html = "";
+    if (window.location.pathname == '/workspace/') {
+        drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
+    }
+    let elementID = "sidebtn" + storeID;
+    console.log('___ elementID: ', elementID)
+    return '<li ' + drag_html + ' class="w3-padding task" ' +
+        'data-id="' + storeID + '" btnName="' + btnName + '" onmouseover="" ' +
+        'style="cursor:pointer;" id="' + elementID + '">' +
+        '<span class="w3-medium" title="' + title + '">' +
+        '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
+        '</span><span class="data ' + btnData['type'] + '"></span>' +
+        '<a onclick="remove_single_data(\'' + storeID + '\')" ' +
+        'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +
+        '</a><br></li>';
+}
 
 function resetDraw() {
-    selectedIdsMap = null;
+    selectedIds.map = null;
     selectedFeatures.clear();
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
@@ -107,7 +231,7 @@ function drawPolygon(shortParent, shortChild) {
         });*/
 
     selectedFeatures = select.getFeatures();
-    selectedIdsMap = null;
+    selectedIds.map = null;
     let sketch, listener, polygon;
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
@@ -134,7 +258,7 @@ function drawPolygon(shortParent, shortChild) {
         sketch = null;
         delaySelectActivate();
         selectedFeatures.clear();
-        selectedIdsMap = null;
+        selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
         // let features = hiddenLayer.getSource().getFeatures();
 
@@ -145,9 +269,9 @@ function drawPolygon(shortParent, shortChild) {
         }
         /* get id of selected features for menu */
         selectedFeatures.getArray().forEach(function (val) {
-            selectedIdsMap.push(parseInt(val.getId().replace(append_str, '')))
+            selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))
         });
-        mapSelectFuntion(shortParent, shortChild, selectedIdsMap);
+        mapSelectFuntion(shortParent, shortChild, selectedIds.map);
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -181,15 +305,16 @@ function drawPolygon(shortParent, shortChild) {
 
     draw.on('drawend', function () {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
-        selectedIdsMap = [];
+        selectedIds.map = [];
+        // console.log(' _ - _ - _ selected features: ', selectedFeatures)
         // let writer = new ol.format.KML();
         // let geojsonStr = writer.writeFeatures(source.getFeatures());
         selectedFeatures.getArray().forEach(function (val) {
-            selectedIdsMap.push(parseInt(val.getId().replace(append_str, '')))
+            selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
         });
         // draw.finishDrawing();
-        if (selectedIdsMap.length > 0) {
-            mapSelectFunction(shortParent, shortChild, selectedIdsMap);
+        if (selectedIds.map.length > 0) {
+            mapSelectFunction(shortParent, shortChild, selectedIds.map);
         }
         olmap.removeInteraction(draw);
         toggle_draw(document.getElementById("draw_polygon"))
@@ -354,7 +479,7 @@ function moreInfoModal(id) {
         url: DEMO_VAR + "/home/show_info",
         dataType: 'json',
         data: {
-            show_info: JSON.stringify([id]),
+            show_info: id,
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
     })
@@ -397,7 +522,10 @@ function moreInfoModal(id) {
     modal.style.display = "block";
 }
 
-// send request to view to get info about selection; can be a single id or a list of ids
+/**
+ * send request to view to get info about selection
+ * @param {string} id - can be a single id or a list of ids
+ */
 function workspace_dataset(id) {
     if (id !== 'null') {
         $.ajax({
@@ -419,8 +547,17 @@ function workspace_dataset(id) {
                         if (!stored[key]) stored[key] = value;
                     });
                     sessionStorage.setItem("dataBtn", JSON.stringify(stored))
+                    sessionStorageData = stored;
                 } else {
                     sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
+                    sessionStorageData = json['workspaceData']
+
+                    $.each(json['workspaceData2'], function (k, v) {
+                        let dataset = new storeData(json['workspaceData2'][k])
+                        //dataset.save(json['workspaceData2'][k])
+                        console.log('dataset.data: ', dataset.data)
+                        sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
+                    });
                 }
                 // build buttons
                 build_datastore_button(json['workspaceData']);
@@ -428,7 +565,10 @@ function workspace_dataset(id) {
     }
 }
 
-/* Send ID to server to build preview and add preview image to html */
+/**
+ * Send ID to server to build preview and add preview image to html
+ * @param {int} id - Id of dataset
+ */
 function show_preview(id) {
     document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
     $.ajax({
@@ -474,6 +614,7 @@ function show_preview(id) {
 function toggleMapTable(evt, tabName) {
   // Declare all variables
   let i, tabcontent, tablinks;
+  activeMap = tabName === "Map";
 
   // Get all elements with class="tabcontent" and hide them
   tabcontent = document.getElementsByClassName("tabcontent");
@@ -520,7 +661,7 @@ function filter_pagination(page) {
         url: DEMO_VAR + "/home/entries_pagination",
         datatype: 'json',
         data: {
-            page: page,
+            page: page, datasets: JSON.stringify(selectedIds.result),
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with the post request
     })
@@ -529,15 +670,14 @@ function filter_pagination(page) {
 
         })
         .fail(function (e) {
-            console.error('fehler: ', e)
+            console.error('Fehler: ', e)
         })
 }
 
 
 function advanced_filter_query(selection) {
-    console.log('test: ', selection)
     $.ajax({
-        url: "/home/advanced_Filter",
+        url: "/home/advanced_filter",
         datatype: 'json',
         data: {
             selection: selection,
@@ -550,6 +690,120 @@ function advanced_filter_query(selection) {
 
         })
         .fail(function (e) {
-            console.error('fehler: ', e)
+            console.error('Fehler: ', e)
         })
+}
+
+
+class SidebarButton {
+    /**
+     * Create base Object to create buttons from.
+     * @param {string} id - The id used in the html code.
+     * @param {string} orgid - The id used on the server.
+     * @param {list} inputs - List of input types.
+     * @param {list} outputs - List of output types.
+     */
+    constructor(id, orgid, inputs, outputs) {
+    if (this.constructor === SidebarButton) {
+        throw new TypeError('Abstract class "SidebarButton" cannot be instantiated directly.');
+    }
+    this.id = id;
+    this.orgid = orgid;
+    this.inputs = inputs;
+    this.outputs = outputs;
+  }
+}
+
+class SidebarButtonData extends SidebarButton {
+    /**
+     * Create base Object to create buttons for selected data.
+     * @param {string} id - The id used in the html code.
+     * @param {string} orgid - The id used on the server.
+     * @param {list} inputs - List of input types.
+     * @param {list} outputs - List of output types.
+     * @param {string} name - Name of Dataset.
+     * @param {string} unit - Unit of Dataset.
+     * @param {string} abbr - Abbreviation of the name of the dataset.
+     * @param {string} title - Title used in the popup for the dataset.
+     * @param {date} start - Start date of selected data.
+     * @param {date} end - End date of selected data.
+     * @param {boolean} pickle - True (1) if pickled, else false (0).
+     */
+    constructor(id, orgid, inputs, outputs, name, unit
+                , abbr, title, pickle, start, end) {
+        super(id, orgid, inputs, outputs);
+        this.name = name;
+        this.unit = unit;
+        this.abbr = abbr;
+        this.title = this.titlefunc();
+        this.pickle = pickle;
+        this.start = start;
+        this.end = end;
+        this.type = 'data';
+        this.btnName = createBtnName(this.name, this.abbr, this.unit, this.orgid);
+
+    }
+
+    titlefunc() {
+        return this.name + ' (' + this.abbr + ' in ' + this.unit + ')';
+    }
+}
+
+class SidebarButtonResult extends SidebarButton {
+    /**
+     * Create base Object to create buttons for selected data.
+     * @param {string} id - The id used in the html code.
+     * @param {string} orgid - The id used on the server.
+     * @param {list} inputs - List of input types.
+     * @param {list} outputs - List of output types.
+     * @param {string} name - Name of Dataset.
+     * @param {string} unit - Unit of Dataset.
+     * @param {string} title - Title used in the popup for the dataset.
+     */
+    constructor(id, orgid, inputs, outputs, name, unit) {
+        super(id, orgid, inputs, outputs);
+        this.name = name;
+        this.unit = unit;
+        this.title = this.titlefunc();
+        this.pickle = true;
+        this.type = 'data';
+        this.btnName = this.btnNamefunc();
+    }
+
+    btnNamefunc() {
+        var newName = name;
+        if (sessionStorage.getItem("resultBtn")) {
+            let result_btns = JSON.parse(sessionStorage.getItem("resultBtn"));
+            newName = name;
+            if (Object.keys(result_btns).includes(name)) {
+                var i = 0;
+                while (Object.keys(result_btns).includes(newName)) {
+                    newName = name + i++;
+                }
+            }
+        }
+        return newName
+    }
+
+    titlefunc() {
+        return this.name + ' in ' + this.unit;
+    }
+}
+
+class SidebarButtonWPS extends SidebarButton {
+    /**
+     * Create base Object to create buttons for wps processes.
+     * @param {string} id - The id used in the html code.
+     * @param {string} orgid - The id used on the server.
+     * @param {string} name - name written on the button.
+     * @param {list} inputs - List of input types.
+     * @param {list} outputs - List of output types.
+     * @param {string} type - define if data or tool.
+     */
+    constructor(id, orgid, name, inputs, outputs) {
+        super(id, orgid, name);
+        this.inputs = inputs;
+        this.outputs = outputs;
+        this.type = 'tool'
+    }
 }
