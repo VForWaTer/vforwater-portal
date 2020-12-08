@@ -466,6 +466,8 @@ class FailedLoginView(View):
     @staticmethod
     def get(request):
         print('failed login view get')
+        for i in request:
+            print('request: ', request)
         messages.warning(request, 'Login failed.')
         return redirect('vfwheron:home')
 
