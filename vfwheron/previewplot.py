@@ -124,8 +124,8 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
                                      db_data['data'][6][position + 1:]
                 db_data['data'][7] = db_data['data'][7][: position + 1] + (float('nan'), float('nan'),) + \
                                      db_data['data'][7][position + 1:]
-                prec_bandbef = (db_data['data'][6][position] + db_data['data'][7][position]) / 2
-                prec_bandaft = (db_data['data'][6][position + 1] + db_data['data'][7][position + 1]) / 2
+                # prec_bandbef = (db_data['data'][6][position] + db_data['data'][7][position]) / 2
+                # prec_bandaft = (db_data['data'][6][position + 1] + db_data['data'][7][position + 1]) / 2
 
     source = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][1],
                                'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
@@ -137,40 +137,16 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
 
-    # plot first average precision to have it in the background
-    if has_precision:
-        precision = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][5],
-                                      'ymin': db_data['data'][6], 'ymax': db_data['data'][7]})
-        mainplot.line(x='date', y='y', source=precision, line_width=2, line_dash='dashed',
-                      legend_label="average_precision", color='darksalmon')
-        mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
-                            ys=[db_data['data'][6], db_data['data'][7]], level='underlay',
-                            color=['darksalmon', 'darksalmon'], line_dash='dashed',
-                            legend_label="min & max precision values")
-        mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=precision, level='underlay',
-                                 fill_color='darksalmon', fill_alpha=0.3))
-        # add errorbars
-        data = np.array(db_data['data'][1], dtype=np.float)
-        lower_error = tuple(subtract(data, np.array(db_data['data'][7], dtype=np.float)))
-        upper_error = tuple(add(data, np.array(db_data['data'][7], dtype=np.float)))
-        low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
-        up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
-        error_source = ColumnDataSource({'date': db_data['data'][0], 'upper': upper_error, 'lower': lower_error,
-                                         'upper_avg': up_avg_error, 'lower_avg': low_avg_error})
-        mainplot.add_layout(Whisker(source=error_source, base="date", upper="upper", lower="lower", line_width=0.5))
-        mainplot.vbar(x='date', width=1000*60*59*24, top='upper_avg', bottom='lower_avg', source=error_source,
-                      fill_color="darksalmon", line_color="black", fill_alpha=0.3, line_width=0.5)
-
     # plot average line
-    mainplot.line(x='date', y='y', source=source, line_width=2, legend_label="average")
+    mainplot.line(x='date', y='y', source=source, line_width=2, legend_label="average", level="overlay")
 
     # TODO: Figure out how to use 'source' for multi_line.
     #  Maybe use Glyph? (https://docs.bokeh.org/en/latest/docs/reference/models/glyphs/multi_line.html)
     #  Glyphs maybe also helpful for hover_tool on multiline?
-    mainplot.add_tools(HoverTool(tooltips=[("value", "$y"), ("Date", "@date{%d %b %Y}")], formatters={"date":
-    "datetime"}, mode="mouse"))
+    mainplot.add_tools(HoverTool(tooltips=[("value", "@y"), ("Date", "@date{%d %b %Y}")],
+                                 formatters={"@date": "datetime"}, mode="mouse"))
 
-    mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
+    # mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
 
     # plot min/max as multiline and fill area with band
     mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
@@ -183,6 +159,33 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     if nan_in_data:
         mainplot.line(x=db_data['data'][0], y=white_line, line_width=2, line_color='white', line_cap='round')
 
+    # plot first average precision to have it in the background
+    if has_precision:
+        # precision = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][5],
+        #                               'ymin': db_data['data'][6], 'ymax': db_data['data'][7]})
+        # mainplot.line(x='date', y='y', source=precision, line_width=2, line_dash='dashed',
+        #               legend_label="average_precision", color='darksalmon')
+        # mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
+        #                     ys=[db_data['data'][6], db_data['data'][7]], level='underlay',
+        #                     color=['darksalmon', 'darksalmon'], line_dash='dashed',
+        #                     legend_label="min & max precision values")
+        # mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=precision, level='underlay',
+        #                          fill_color='darksalmon', fill_alpha=0.3))
+
+        # add errorbars
+        data = np.array(db_data['data'][1], dtype=np.float)
+        lower_error = tuple(subtract(data, np.array(db_data['data'][7], dtype=np.float)))
+        upper_error = tuple(add(data, np.array(db_data['data'][7], dtype=np.float)))
+        low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
+        up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
+        error_source = ColumnDataSource({'date': db_data['data'][0], 'upper': upper_error, 'lower': lower_error,
+                                         'upper_avg': up_avg_error, 'lower_avg': low_avg_error})
+        mainplot.add_layout(Whisker(source=error_source, base="date", upper="upper", lower="lower",
+                                    line_width=0.5))
+        mainplot.vbar(x='date', width=1000 * 60 * 59 * 24, top='upper_avg', bottom='lower_avg', source=error_source,
+                      fill_color="darksalmon", line_color="black", fill_alpha=0.3, line_width=0.5,
+                      legend_label="Average precision")
+
     # plot bars for the number of values in each group as secondary 'by'plot
     mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=db_data['axis']['y2max'])
     bin_width = db_data['data'][0][1] - db_data['data'][0][0]
@@ -193,7 +196,8 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     mainplot.xaxis.axis_label_text_font_size = "14pt"
     mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
     mainplot.yaxis.axis_label_text_font_size = "14pt"
-
+    mainplot.legend.click_policy = "hide"
+    # mainplot.sizing_mode = "stretch_both"
     script, div = components(column(distriplot, mainplot), wrap_script=False)
     return {'script': script, 'div': div}
 
@@ -415,8 +419,8 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     p.xgrid.visible = False
     p.yaxis.visible = False
     p.ygrid.visible = False
-    p.add_tools(HoverTool(tooltips=[("value", "@count"), ("Date", "@date{%d %b %Y}")],
-                          formatters={"date": "datetime"}, mode="mouse"))
+    p.add_tools(HoverTool(tooltips=[("Values/Day", "@count"), ("Date", "@date{%d %b %Y}")],
+                          formatters={"@date": "datetime"}, mode="mouse"))
     return p
 
 
