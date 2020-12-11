@@ -684,6 +684,8 @@ function menuItemListener(link) {
             //         }
             //     }
             // })
+
+            // get bokeh plot from django
             $.ajax({
                 url: DEMO_VAR + "/home/previewplot",
                 datatype: 'json',
@@ -699,11 +701,8 @@ function menuItemListener(link) {
                     if ('html' in requestResult) {
                         document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
                     } else {  // plot from bokeh
-                        document.getElementById("mod_result").innerHTML = requestResult.div; // add plot
-                        bokehResultScript = document.createElement('script');
-                        bokehResultScript.type = 'text/javascript';
-                        bokehResultScript.text = requestResult.script;
-                        document.head.appendChild(bokehResultScript);
+                        sessionStorage['Bokeh'] = JSON.stringify(requestResult);
+                        place_bokeh("mod_result", requestResult)
                     }
                     // popClose.classList.remove('w3-hide');
                     // positionPopup(popup);
