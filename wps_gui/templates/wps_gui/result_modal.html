@@ -21,7 +21,7 @@
 <div id="resultModal" class="w3-modal">
 
   <!-- Modal content -->
-  <div class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">
+  <div id="resultModal-content" class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">
 {#  <div class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">#}
     <div class="result_modal-header" id="result_modal-header" style="margin-left: -10px; margin-right: -10px;">
       <i class="fa fa-close fa-lg close" title="Close" style="cursor: pointer; position: relative; top: 7px;"></i>
@@ -70,13 +70,26 @@
   function close_result_Modal() {
     rModal.style.display = "none";
     bokehResultScript.parentNode.removeChild(bokehResultScript);
+    {#document.getElementById("resultModal-content").style.width = "initial";#}
+    reset_Modal("resultModal-content", modalToggleSize)
+    sessionStorage.removeItem('Bokeh')
   }
 
   function toggle_Modal_size() {
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-    console.log('w,h: ', w, h)
+    if (modalToggleSize.classList.contains('fa-expand')){
+      document.getElementById("resultModal-content").style.width = window.innerWidth.toString()+"px";
+      modalToggleSize.classList.remove('fa-expand');
+      modalToggleSize.classList.add('fa-compress');
+    } else {
+      reset_Modal("resultModal-content", modalToggleSize)
+    }
+    place_bokeh("mod_result", JSON.parse(sessionStorage['Bokeh']))
   }
 
+  function reset_Modal(modalID, toggleElement) {
+    document.getElementById(modalID).style.width = "700px";
+    toggleElement.classList.remove('fa-compress');
+    toggleElement.classList.add('fa-expand');
+  }
 </script>
 
