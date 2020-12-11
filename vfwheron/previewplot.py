@@ -124,16 +124,15 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
                                      db_data['data'][6][position + 1:]
                 db_data['data'][7] = db_data['data'][7][: position + 1] + (float('nan'), float('nan'),) + \
                                      db_data['data'][7][position + 1:]
-                # prec_bandbef = (db_data['data'][6][position] + db_data['data'][7][position]) / 2
-                # prec_bandaft = (db_data['data'][6][position + 1] + db_data['data'][7][position + 1]) / 2
 
     source = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][1],
                                'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
                                'count': db_data['data'][4]})
     # Plot average as main plot
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
-                      y_axis_label=label, sizing_mode='scale_both',
-                      plot_width=size[0], plot_height=size[1] - 50, toolbar_location="above",
+                      y_axis_label=label,
+                      # sizing_mode='stretch_both',
+                      plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
 
@@ -161,17 +160,6 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
 
     # plot first average precision to have it in the background
     if has_precision:
-        # precision = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][5],
-        #                               'ymin': db_data['data'][6], 'ymax': db_data['data'][7]})
-        # mainplot.line(x='date', y='y', source=precision, line_width=2, line_dash='dashed',
-        #               legend_label="average_precision", color='darksalmon')
-        # mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
-        #                     ys=[db_data['data'][6], db_data['data'][7]], level='underlay',
-        #                     color=['darksalmon', 'darksalmon'], line_dash='dashed',
-        #                     legend_label="min & max precision values")
-        # mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=precision, level='underlay',
-        #                          fill_color='darksalmon', fill_alpha=0.3))
-
         # add errorbars
         data = np.array(db_data['data'][1], dtype=np.float)
         lower_error = tuple(subtract(data, np.array(db_data['data'][7], dtype=np.float)))
@@ -191,14 +179,14 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     bin_width = db_data['data'][0][1] - db_data['data'][0][0]
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', size[0])
     distriplot.x_range = mainplot.x_range
-    # Style the plot
+
+    # Style plot
     mainplot.title.text_font_size = "14pt"
     mainplot.xaxis.axis_label_text_font_size = "14pt"
     mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
     mainplot.yaxis.axis_label_text_font_size = "14pt"
     mainplot.legend.click_policy = "hide"
-    # mainplot.sizing_mode = "stretch_both"
-    script, div = components(column(distriplot, mainplot), wrap_script=False)
+    script, div = components(column(distriplot, mainplot, sizing_mode="scale_both"), wrap_script=False)
     return {'script': script, 'div': div}
 
 
@@ -412,8 +400,9 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     :return:
     """
     p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
-               plot_width=plot_width, plot_height=50, toolbar_location="above", background_fill_color="black",
-               tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom", sizing_mode='scale_width')
+               # plot_width=plot_width,
+               plot_height=50, toolbar_location="above", background_fill_color="black",
+               tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom", sizing_mode='stretch_width')
     p.vbar(x='date', source=source, width=bin_width, bottom=0, top=1, color=mapper)
     p.xaxis.visible = False
     p.xgrid.visible = False

@@ -807,3 +807,11 @@ class SidebarButtonWPS extends SidebarButton {
         this.type = 'tool'
     }
 }
+
+function place_bokeh(divID, data) {
+    document.getElementById(divID).innerHTML = data.div; // add plot
+    bokehResultScript = document.createElement('script');
+    bokehResultScript.type = 'text/javascript';
+    bokehResultScript.text = data.script;
+    document.head.appendChild(bokehResultScript);
+}
