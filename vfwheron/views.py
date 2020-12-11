@@ -36,8 +36,9 @@ import time
 # from .filter_metacatalog_dev import FilterMethods, Menu, build_id_list
 # from .filter import FilterMethods, Menu, build_id_list, Table
 from .filter import FilterMethods, Menu, build_id_list, Table
+from .filters import NMPersonsFilter
 from .models import Entries, Timeseries, Timeseries2D, Generic1DData, Generic2DData, GenericGeometryData, \
-    GeomTimeseries
+    GeomTimeseries, NmPersonsEntries
 
 import logging
 import os
@@ -717,19 +718,19 @@ def workspace_data(request):
             error_dict = {'message': 'no access', 'id': error_ids}
 
         for dataset in result_dataset:
-            dataset_dict.update({'db'+str(dataset['id']): {'name': dataset['variable__name'],
-                                                               'abbr': dataset['variable__symbol'],
-                                                               'unit': dataset['variable__unit__symbol'],
-                                                               'type': dataset['datasource__datatype__name'],
-                                                               'source': 'db',
-                                                               'dbID': dataset['id'],
-                                                               'orgID': 'db' + str(dataset['id']),
-                                                               'start': '',
-                                                               'end': '',
-                                                               'inputs': [],
-                                                               'outputs': dataset['datasource__datatype__name']
-                                                               }
-                                     })
+            dataset_dict.update({'db' + str(dataset['id']): {'name': dataset['variable__name'],
+                                                             'abbr': dataset['variable__symbol'],
+                                                             'unit': dataset['variable__unit__symbol'],
+                                                             'type': dataset['datasource__datatype__name'],
+                                                             'source': 'db',
+                                                             'dbID': dataset['id'],
+                                                             'orgID': 'db' + str(dataset['id']),
+                                                             'start': '',
+                                                             'end': '',
+                                                             'inputs': [],
+                                                             'outputs': dataset['datasource__datatype__name']
+                                                             }
+                                 })
 
         # TODO: Need timestamp in name to see if different selection
         return {'data': dataset_dict, 'error': error_dict}
@@ -755,7 +756,8 @@ def entries_pagination(request):
     datasets = json.loads(request.GET.get('datasets', 1))
     if datasets:
         # entries_list = NmPersonsEntries.objects.all().order_by('entry__title').filter(entry_id=datasets).distinct()
-        entries_list = Entries.objects.all().order_by('title').filter(pk__in=json.loads(request.GET.get('datasets', 1)))
+        entries_list = Entries.objects.all().order_by('title').filter(
+            pk__in=json.loads(request.GET.get('datasets', 1)))
     else:
         entries_list = Entries.objects.all().order_by('title')
     try:
