@@ -28,6 +28,8 @@
 
     <hr style="margin-bottom:0px;">
 
+  <div ondrop="workspace_dataset(event.dataTransfer.getData('text'))"  ondragover="dragover_handler(event)">
+{#  <div ondrop="workspace_dataset(JSON.stringify(event))"  ondragover="allowDrop(event)">#}
     <div class="w3-container w3-light-turquoise">
       <b title={%  trans "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use." %}>{%  trans "Data store" %}</b>
     </div>
@@ -38,6 +40,7 @@
                 title={% trans "Remove&#32all&#32datasets&#32from&#32data&#32store" %}>
             </b>
     </ul>
+    </div>
   </nav>
 {#context menu in sidebar.js#}
 
