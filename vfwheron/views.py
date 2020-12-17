@@ -342,15 +342,17 @@ class LoginView(View):
         """
         if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
             logger.debug('Redirect to home/rsp/login/init...')
-            logger.debug('Redirect to home/rsp/login/init...')
             return redirect('vfwheron:watts_rsp:login_init')
-        elif settings.DEBUG == True:  # default django login
+        elif settings.DEBUG:  # default django login
             return redirect('vfwheron:login')
         else:
             raise Http404
 
     def dispatch(self, request, *args, **kwargs):
         """
+        When clicked on login, this is the first(?) function to access.
+        If not user.is_authenticated, next function is post and redirect to watts
+        (django-watts-rsp/auth.py->WattsBackend->redirect) or django login.
 
         :param request:
         :type request:

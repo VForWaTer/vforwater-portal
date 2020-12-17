@@ -815,3 +815,26 @@ function place_bokeh(divID, data) {
     bokehResultScript.text = data.script;
     document.head.appendChild(bokehResultScript);
 }
+
+/**
+ * @private
+ * @listens event:DragEvent
+ * @param {Object} ev Start of the drag event outside of the canvas.
+ */
+function dragstart_handler(ev) {
+    console.log('+ dragstart: ', ev)
+    console.log('+ ev.target: ', ev.target)
+    console.log('+ ev.target.id: ', ev.target.id)
+    // console.log('+ ev.target[\'data-id\']: ', ev.target.data\-id)
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+    // ev.dataTransfer.setData("text/plain", ev.target['data-id']);
+}
+
+/**
+ * @private
+ * @listens event:DragEvent
+ * @param {Object} ev The drag event on the Canvas.
+ */
+function dragover_handler(ev) {
+    ev.preventDefault();
+}
