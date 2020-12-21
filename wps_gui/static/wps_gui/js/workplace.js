@@ -29,23 +29,43 @@ function drop(ev) {
 
 // TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
 //  if process_id == btn_id place btn in dropzone (on save)
+/**
+ * Load metadata of a wps process.
+ * in- and outputs and so on of a tool are not loaded when page loads but on its first use and stored in
+ * the sessionStorage for the next time the user wants to use this tool
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ */
 function wpsprocess(service, identifier) {
-    $.ajax({
-        url: DEMO_VAR + "/workspace/processview",
-        //url: DEMO_VAR+"/wps_gui/"+service+"/process",
-        dataType: 'json',
-        data: {
-            processview: JSON.stringify({id: identifier, serv: service}),
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (json) {
-            build_modal(json, service, identifier)
-    })
-        .fail(function (e) {
-            console.log('Failed: ', e)
-        });
-}
+    let tools = JSON.parse(sessionStorage.getItem('tools'))
+    if (!tools) {
+        tools = {}
+    }
+    if (!tools[service]) {
+        tools[service] = {}
+    }
+    if (tools[service][identifier]) {
+        build_modal(tools[service][identifier], service, identifier)
+    } else {
+        $.ajax({
+            url: DEMO_VAR + "/workspace/processview",
+            //url: DEMO_VAR+"/wps_gui/"+service+"/process",
+            dataType: 'json',
+            data: {
+                processview: JSON.stringify({id: identifier, serv: service}),
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+        })
+            .done(function (json) {
+                build_modal(json, service, identifier)
+                tools[service][identifier] = json
+                sessionStorage.setItem('tools', JSON.stringify(tools))
+        })
+            .fail(function (e) {
+                console.log('Failed: ', e)
+            });
+        }
+    }
 
 function drop_and_save() {
     console.error('lets store it')
@@ -98,6 +118,7 @@ function modal_run_process() {
     /** first loop over each dropdown in input, then over values in dropdown **/
     for (let i = 0; i < dropDInputs.length; i++) {
             dDInput = dropDInputs[i].selectedOptions;
+            console.log('dDInput: ', dDInput)
             if (dDInput.length > 1) {
                 for (let j = 0; j < dDInput.length; j++) {
                     valueList.push(dDInput[j].value)
@@ -151,6 +172,7 @@ function modal_run_process() {
     } else {
         outputName = outputs[0].value;
     }
+    console.log('input: ', {id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue})
     $.ajax({
         url: DEMO_VAR + "/workspace/processrun",
         data: {
@@ -183,7 +205,7 @@ function modal_run_process() {
                         status: json.execution_status,
                         dropBtn: json.result[i].dropBtn
                     }
-                    let btnName = set_result_btn_name(outputName);
+                    console.log("btnData: ", btnData)
                     add_resultbtn_to_sessionstore(btnName, btnData);
                     document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, btnData);
                 }
@@ -281,6 +303,8 @@ function add_resultbtn_to_sessionstore(btnName, json) {
             console.error('Error! Names should be unique! Problem with race conditions?')
         }
     }
+    console.log('json: ', json)
+    console.log('btnName: ', btnName)
     result_btns[btnName] = {
         type: json.type,
         wps: json.wps,
