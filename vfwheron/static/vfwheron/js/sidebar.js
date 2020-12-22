@@ -510,7 +510,12 @@ function setModalValues(btnName, btnValues) {
     //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
     // }
     for (let i of btnName) {
-        document.getElementById(i.identifier).value = btnValues[i.identifier]
+        if (document.getElementById(i.identifier).type == "checkbox") {
+            document.getElementById(i.identifier).checked = btnValues[i.identifier]
+        }
+        // else {
+            document.getElementById(i.identifier).value = btnValues[i.identifier]
+        // }
     }
     /** first loop over each dropdown in input, then over values in dropdown **/
     // for (let i = 0; i < dropDInputs.length; i++) {
