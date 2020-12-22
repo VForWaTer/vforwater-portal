@@ -264,38 +264,59 @@ canvas.installEditPolicy(connection.connectionPolicy);
  * @param {Object} ev Start of the drag event outside of the canvas, set by dragstart_handler
  */
 function drop_handler(ev) {
-    console.log('- ev: ', ev)
-    console.log('- ev.target: ', ev.dataType)
-    console.log('- ev.dataTransfer: ', ev.dataTransfer)
-    console.log('- ev.dataTransfer.getData: ', ev.dataTransfer.getData)
-    console.log('- ev.dataTransfer.getData("text"): ', ev.dataTransfer.getData("text"))
     ev.preventDefault();  // needed for Firefox
     let x = ev.layerX
     let y = ev.layerY
     let box_param = ''
-    let data = {}
-    let id = ev.dataTransfer.getData("text")
-    console.log('id: ', id)
-    console.log('id: ', id.substring(0, 2))
-    if (id.substring(0,2) === 'id' && !isNaN(id.substring(2))) {
-        id = id.substring(2)
-        box_param = JSON.parse(sessionStorage.getItem("dataBtn"))[id]['dropBtn']
-        // box_param = data[id]
+    let receivedData = JSON.parse(ev.dataTransfer.getData("text"))
+    let id = receivedData[0]
+    let parentid = receivedData[1]
+
+    if (parentid === 'workspace') {
+        let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
+        // TODO: improve data object to avoid building this obj manually!
+        box_param = {
+            inputs: [],
+            name: metadata.name + ' - ' + metadata.dbID,
+            orgid: metadata.ordID,
+            outputs: [metadata.outputs],
+            type: 'data'
+        }
+    } else if (parentid === 'toolbar') {
+        // TODO: improve data object to avoid building this obj manually!
+        let inputs = []
+        let outputs = []
+        let metadata = JSON.parse(sessionStorage.getItem("tools"))['PyWPS_vforwater'][id]
+        if (metadata.dataInputs) {
+            for (let i of metadata.dataInputs) {
+                inputs.push(i.dataType)
+            }
+        }
+        if (metadata.processOutputs) {
+            for (let i of metadata.processOutputs) {
+                inputs.push(i.dataType)
+            }
+        }
+        box_param = {
+            inputs: inputs,
+            name: metadata.title,
+            orgid: metadata.identifier,
+            outputs: outputs,
+            type: 'tool'
+        }
+    } else if (parentid === 'workspace_results') {
+        box_param = JSON.parse(sessionStorage.getItem("resultBtn"))[id]['dropBtn']
     }
-    console.log('id: ', id)
-    console.log('data: ', data)
 
     // assign text width:
     let c = document.getElementById('textWidthCanvas');
     let ctx = c.getContext("2d");
     ctx.font = "15px Arial";
     let textwidth = ctx.measureText(box_param.name).width
-    // console.log('___TEXT size in px: ', textwidth)
-    // console.log('___TEXT size in pt: ', 3/4 * textwidth)
-    // console.log('___TEXT size in em: ', (3/4 * textwidth)/12)
-
-    // console.log('box_param: ', box_param)
     // console.log('box_param.name: ', box_param.name)
-    let box = new Box(box_param.name, box_param.orgid, box_param.type, box_param.inputs, box_param.outputs, textwidth)
+    let box = new Box(
+        box_param.name, box_param.orgid, box_param.type,
+        box_param.inputs, box_param.outputs, textwidth
+    )
     canvas.add(box.box, x, y);
 }
