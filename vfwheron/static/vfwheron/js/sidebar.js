@@ -499,11 +499,24 @@ function showDataInfo(properties) {
     positionPopup(popup);
 }
 
-// TODO: Fill Tool with previous values
+/**
+ * Fill a process modal with values from a result.
+ *
+ * @param {list} btnName list of dataInputs of a wps process
+ * @param {dict} btnValues names of input fields as keys with values
+ */
 function setModalValues(btnName, btnValues) {
-    let inModal = document.getElementById('mod_in');
-    let radioInputs = inModal.getElementsByTagName('input');
-    let dropDInputs = inModal.getElementsByTagName('select');
+    // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
+    //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
+    // }
+    for (let i of btnName) {
+        if (document.getElementById(i.identifier).type == "checkbox") {
+            document.getElementById(i.identifier).checked = btnValues[i.identifier]
+        }
+        // else {
+            document.getElementById(i.identifier).value = btnValues[i.identifier]
+        // }
+    }
     /** first loop over each dropdown in input, then over values in dropdown **/
     // for (let i = 0; i < dropDInputs.length; i++) {
     //
@@ -633,12 +646,16 @@ function menuItemListener(link) {
                 });
             break;
         case "OpenTool":
+            // TODO: Store different tools when input changes!
             /** Re-open the tool */
             wpsToOpen = result[btnName].wps;
             service = document.getElementById(wpsToOpen).getAttribute("data-service");
-            wpsprocess(service, wpsToOpen)
+            wpsprocess(service, wpsToOpen);
             /** Fill the tool with selection made to receive this result button */
-            setModalValues(btnName, JSON.parse(sessionStorage['resultBtn'])[btnName])
+            setModalValues(
+                JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
+                JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
+            )
             popup.classList.remove(popActive);
             break;
         case "DownloadDMD":

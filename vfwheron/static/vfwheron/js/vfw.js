@@ -66,10 +66,10 @@ let selectedIds = {
 };
 
 class storeData {
-    data = {};
 
     constructor(definition) {
         console.log('constructor: ', definition)
+        this.data = {};
         this.data.name = definition.name;
         this.data.abbr = definition.abbr;
         this.data.unit = definition.unit;
@@ -817,17 +817,19 @@ function place_bokeh(divID, data) {
 }
 
 /**
+ * Set Data to receive in the drop event, which is a list consisting of
+ * the id of the moving element and of the parent element.
  * @private
  * @listens event:DragEvent
  * @param {Object} ev Start of the drag event outside of the canvas.
  */
 function dragstart_handler(ev) {
-    console.log('+ dragstart: ', ev)
-    console.log('+ ev.target: ', ev.target)
-    console.log('+ ev.target.id: ', ev.target.id)
-    // console.log('+ ev.target[\'data-id\']: ', ev.target.data\-id)
-    ev.dataTransfer.setData("text/plain", ev.target.id);
-    // ev.dataTransfer.setData("text/plain", ev.target['data-id']);
+    ev.dataTransfer.setData("text/plain", JSON.stringify([
+        // ev.target.id,
+        ev.target.getAttribute('data-process'),
+        ev.path[1].id,
+        ev.target.getAttribute('data-service')
+    ]));
 }
 
 /**

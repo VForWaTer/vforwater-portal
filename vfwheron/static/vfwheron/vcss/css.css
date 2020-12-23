@@ -225,32 +225,38 @@ button-footer {
 11 colorblind safe colors from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
  */
 /*.array{background-color:rgb(165,0,38); content: "AR";}*/
-.array{background-color: rgb(0, 0, 255)}
-.iarray{background-color: rgb(0, 100, 255)}
-.varray{background-color: rgb(0, 150, 255)}
-.timeseries{background-color: rgb(100, 100, 255)}
-.vtimeseries{background-color: rgb(150, 150, 255)}
-.ndarray{background-color: rgb(255, 0, 0)}
-.raster{background-color: rgb(255, 100, 0)}
-.vraster{background-color: rgb(255, 150, 0)}
-._2darray{background-color: rgb(255, 50, 150)}
-.idataframe{background-color: rgb(100, 0, 50)}
-.vdataframe{background-color: rgb(150, 0, 80)}
-.time-dataframe{background-color: rgb(190, 120, 10)}
-.vtime-dataframe{background-color: rgb(160, 110, 90)}
-.html{background-color: rgb(0, 255, 0)}
-.plot{background-color: rgb(76, 191, 82)}
+.array{background-color: rgb(0, 0, 255); fill: rgb(0, 0, 255)}
+.iarray{background-color: rgb(0, 100, 255); fill: rgb(0, 100, 255)}
+.varray{background-color: rgb(0, 150, 255); fill: rgb(0, 150, 255)}
+.timeseries{background-color: rgb(100, 100, 255); fill: rgb(100, 100, 255)}
+.vtimeseries{background-color: rgb(150, 150, 255); fill: rgb(150, 150, 255)}
+.ndarray{background-color: rgb(255, 0, 0); fill: rgb(255, 0, 0)}
+.raster{background-color: rgb(255, 100, 0); fill: rgb(255, 100, 0)}
+.vraster{background-color: rgb(255, 150, 0); fill: rgb(255, 150, 0)}
+._2darray{background-color: rgb(255, 50, 150); fill: rgb(255, 50, 150)}
+.idataframe{background-color: rgb(100, 0, 50); fill: rgb(100, 0, 50)}
+.vdataframe{background-color: rgb(150, 0, 80); fill: rgb(150, 0, 80)}
+.time-dataframe{background-color: rgb(190, 120, 10); fill: rgb(190, 120, 10)}
+.vtime-dataframe{background-color: rgb(160, 110, 90); fill: rgb(160, 110, 90)}
+.html{background-color: rgb(0, 255, 0); fill: rgb(0, 255, 0)}
+.plot{background-color: rgb(76, 191, 82); fill: rgb(76, 191, 82)}
 
-.string{background-color: rgb(255,255,191); border: 1px solid #ffbf26;}
-.boolean{background-color: rgb(50, 74, 147); border: 1px solid black;}
+.string{background-color: rgb(255,255,191); fill: rgb(255,255,191);
+    border: 1px solid #ffbf26; stroke: #ffbf26;}
+.boolean{background-color: rgb(50, 74, 147); fill: rgb(50, 74, 147);
+    border: 1px solid black; stroke: black}
 /*.float{background-color:rgb(49,54,149)}*/
-.float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
-.integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
-.positiveInteger{background-color: rgb(151, 90, 177); border: 1px solid rgb(83, 10, 114)}
-.dateTime{background-color: rgb(90, 182, 179); border: 1px solid rgb(2, 59, 76)}
+.float{background-color: rgb(125, 115, 244); fill: rgb(125, 115, 244);
+    border: 1px solid rgb(56, 28, 168); stroke: rgb(56, 28, 168)}
+.integer{background-color: rgb(218, 133, 255); fill: rgb(218, 133, 255);
+    border: 1px solid rgb(121, 19, 165); stroke: rgb(121, 19, 165)}
+.positiveInteger{background-color: rgb(151, 90, 177); fill: rgb(151, 90, 177);
+    border: 1px solid rgb(83, 10, 114); stroke: rgb(83, 10, 114)}
+.dateTime{background-color: rgb(90, 182, 179); fill: rgb(90, 182, 179);
+    border: 1px solid rgb(2, 59, 76); stroke: rgb(2, 59, 76)}
 
 
-/*Create a "toggle switch" (on/off button) from a checkbox
+/* Create a "toggle switch" (on/off button) from a checkbox
 (source: https://www.w3schools.com/howto/howto_css_switch.asp) */
  /* The switch - the box around the slider */
 .toggleswitch {

@@ -101,7 +101,7 @@
           {% if process.identifier != "dbloader" %}
           <tr>
             <div id="{{ process.identifier }}" class="process w3-card-2"
-                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}')"
+                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}');"
                  title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
                  data-service="{{ service }}" data-process="{{ process.identifier }}"
                  style="cursor:pointer;">
