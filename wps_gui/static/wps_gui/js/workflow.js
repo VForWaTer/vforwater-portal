@@ -271,6 +271,7 @@ function drop_handler(ev) {
     let receivedData = JSON.parse(ev.dataTransfer.getData("text"))
     let id = receivedData[0]
     let parentid = receivedData[1]
+    let service = receivedData[2]
 
     if (parentid === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
@@ -286,7 +287,13 @@ function drop_handler(ev) {
         // TODO: improve data object to avoid building this obj manually!
         let inputs = []
         let outputs = []
-        let metadata = JSON.parse(sessionStorage.getItem("tools"))['PyWPS_vforwater'][id]
+        let metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
+        console.log('metadata: ', metadata)
+        if (!metadata) {
+            console.log('load tool!')
+            get_wpsprocess(service, id);
+            metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
+        }
         if (metadata.dataInputs) {
             for (let i of metadata.dataInputs) {
                 inputs.push(i.dataType)
@@ -294,7 +301,7 @@ function drop_handler(ev) {
         }
         if (metadata.processOutputs) {
             for (let i of metadata.processOutputs) {
-                inputs.push(i.dataType)
+                outputs.push(i.dataType)
             }
         }
         box_param = {

@@ -650,7 +650,7 @@ function menuItemListener(link) {
             /** Re-open the tool */
             wpsToOpen = result[btnName].wps;
             service = document.getElementById(wpsToOpen).getAttribute("data-service");
-            wpsprocess(service, wpsToOpen)
+            wpsprocess(service, wpsToOpen);
             /** Fill the tool with selection made to receive this result button */
             setModalValues(
                 JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],

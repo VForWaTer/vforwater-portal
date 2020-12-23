@@ -35,7 +35,7 @@ function drop(ev) {
  * the sessionStorage for the next time the user wants to use this tool
  * @param {string} service - wps service as stored in database
  * @param {string} identifier - identifier of a wps process
- */
+ **/
 function wpsprocess(service, identifier) {
     let tools = JSON.parse(sessionStorage.getItem('tools'))
     if (!tools) {
@@ -63,9 +63,48 @@ function wpsprocess(service, identifier) {
         })
             .fail(function (e) {
                 console.log('Failed: ', e)
-            });
-        }
+        });
     }
+    }
+
+/**
+ * Load metadata of a wps process.
+ * in- and outputs and so on of a tool are not loaded when page loads but on its first use and stored in
+ * the sessionStorage for the next time the user wants to use this tool
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ * @return {obj} json - object of a wps process as saved in sessionStorage
+ */
+function get_wpsprocess(service, identifier) {
+    let tools = JSON.parse(sessionStorage.getItem('tools'))
+    if (!tools) {
+        tools = {}
+    }
+    if (!tools[service]) {
+        tools[service] = {}
+    }
+    if (tools[service][identifier]) {
+        return tools[service][identifier]
+    } else {
+        $.ajax({
+            url: DEMO_VAR + "/workspace/processview",
+            //url: DEMO_VAR+"/wps_gui/"+service+"/process",
+            dataType: 'json',
+            data: {
+                processview: JSON.stringify({id: identifier, serv: service}),
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+        })
+            .done(function (json) {
+                tools[service][identifier] = json
+                sessionStorage.setItem('tools', JSON.stringify(tools))
+                return json
+        })
+            .fail(function (e) {
+                console.log('Failed: ', e)
+        });
+    }
+}
 
 function drop_and_save() {
     console.error('lets store it')

@@ -410,10 +410,10 @@ def edit_input(inputs):
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif key_value[0] == 'number' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'start' and key_value[1] is '':
+        elif key_value[0] == 'start' and key_value[1] == '':
             pass
             # wps_input.append((key_value[0], '0, 0'))
-        elif key_value[0] == 'end' and key_value[1] is '':
+        elif key_value[0] == 'end' and key_value[1] == '':
             pass
             # wps_input.append((key_value[0], '0, 0'))
         elif isinstance(key_value[1], bool):
