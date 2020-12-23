@@ -825,8 +825,8 @@ function place_bokeh(divID, data) {
  */
 function dragstart_handler(ev) {
     ev.dataTransfer.setData("text/plain", JSON.stringify([
-        // ev.target.id,
-        ev.target.getAttribute('data-process'),
+        ev.target.id,
+        // ev.target.getAttribute('data-process'),
         ev.path[1].id,
         ev.target.getAttribute('data-service')
     ]));
