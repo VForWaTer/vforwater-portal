@@ -183,7 +183,6 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     error_list = list(set(requested_ids) - set(accessible_data))
     return {'open': accessible_data, 'blocked': error_list}
 
-    return accessible_data, error_list
 
 def get_dataset(s_id: int) -> object:
     """
@@ -628,7 +627,7 @@ def show_info(request):
     :param request:
     :return:
     """
-    def collectData(ids):
+    def collect_data(ids):
         """
 
         :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
@@ -667,7 +666,6 @@ def show_info(request):
 
     webID = request.GET.get('show_info')
     if webID[0:3] == 'wps':
-        print("webID is wps: ", webID)
         print('you have to implement something to show wps results!')
         raise Http404
     else:
@@ -678,7 +676,7 @@ def show_info(request):
 
         try:
             # print('json.loads(webID): ', json.loads(ids))
-            return collectData(ids)
+            return collect_data(ids)
 
         except TypeError:
             raise Http404

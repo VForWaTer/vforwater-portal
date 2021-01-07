@@ -470,6 +470,11 @@ $(document).ready(function (menuTitle) {
     });
 }); // end ready
 
+/**
+ * Load metadata and preview plot of dataset from server.
+ *
+ * @param {string} id of dataset as string.
+ */
 function moreInfoModal(id) {
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
@@ -518,6 +523,57 @@ function moreInfoModal(id) {
         .always(function (json) {
             document.getElementById("mod_prev").classList.remove("loader");
         });
+
+    // TODO: to use fetch figur out how to replace request in django
+    /*fetch(DEMO_VAR + '/home/showinfo/id' + id,
+        {headers: {'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'},
+            // credentials: 'include'
+        },
+    )
+        .then((resp) => resp.json())
+        /!*
+        .then(function (response) {
+                    if (response.ok) {return response.json();
+                    } else {return Promise.reject(response);
+                    }
+                })*!/
+        .then(function (properties) {
+            let metaText = '<table>';
+            // loop over "properties" dict with metadata, build columns
+            for (let j in properties) {
+                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+                metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+            }
+            document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
+            showDataInfo(properties);
+        });
+
+    fetch(DEMO_VAR + '/home/previewplot/id' + id,
+        {headers: {'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'},
+            // credentials: 'include'
+        },
+    )
+        .then(function (response) {
+                    if (response.ok) {return response.json();
+                    } else {return Promise.reject(response);
+                    }
+                })
+        .then(function (json) {
+            document.getElementById("mod_prev").innerHTML = json.div; // add plot
+            // bokehPreviewScript is a global variable to set and remove the script of bokeh
+            bokehPreviewScript = document.createElement('script');
+            bokehPreviewScript.type = 'text/javascript';
+            bokehPreviewScript.text = json.script;
+            document.head.appendChild(bokehPreviewScript);
+        })
+        .catch(e => {
+            console.warn('fehler: ', e);
+        })
+        .finally(() => {
+            document.getElementById("mod_prev").classList.remove("loader");
+        });*/
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
 }
