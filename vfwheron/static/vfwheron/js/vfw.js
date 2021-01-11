@@ -471,7 +471,7 @@ $(document).ready(function (menuTitle) {
 }); // end ready
 
 /**
- * Load metadata and preview plot of dataset from server.
+ * Load metadata and preview plot of dataset from server asynchronous.
  *
  * @param {string} id of dataset as string.
  */
@@ -479,101 +479,62 @@ function moreInfoModal(id) {
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
     document.getElementById("mod_prev").classList.add("loader");
-    // TODO: If the first ajax finishes first there is an additional table id="popupTable". Check why and avoid it!
-    $.ajax({
-        url: DEMO_VAR + "/home/show_info",
-        dataType: 'json',
-        data: {
-            show_info: id,
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (properties) {
-            let metaText = '<table>';
-            // loop over "properties" dict with metadata, build columns
-            for (let j in properties) {
-                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-                metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
-            }
-            document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
-            showDataInfo(properties);
-        });
+    // TODO: Error in any of the two requests shows no return. Fix to show at least one!
+    // The following is used to make sure to add first the table then the plot. The other way round isn't working yet.
+        $.when(ajaxTable(), ajaxPlot())
+            .done(function (tableVar, plotVar) {
+                if (tableVar) {
+                    tableToModal(tableVar[0])
+                }
+                if (plotVar) {
+                    plotToModal(plotVar[0])
+                }
+            })
+            .fail(e => {
+                document.getElementById('mod_dat_inf').innerHTML =
+                    '<p>We have problems fetching your data. Please try again later</p>';
+                console.warn('fehler: ', e)
+            })
+            .always(() => {
+                document.getElementById("mod_prev").classList.remove("loader");
+            });
+    function tableToModal(properties) {
+        let metaText = '<table>';
+        // loop over "properties" dict with metadata, build columns
+        for (let j in properties) {
+            // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+            metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+        }
+        document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
+        showDataInfo(properties);
+    }
+    function plotToModal(json) {
+        document.getElementById('mod_prev').innerHTML = json.div; // add plot
+        // bokehPreviewScript is a global variable to set and remove the script of bokeh
+        bokehPreviewScript = document.createElement('script');
+        bokehPreviewScript.type = 'text/javascript';
+        bokehPreviewScript.text = json.script;
+        document.head.appendChild(bokehPreviewScript);
+    }
 
     // load preview image parallel to metadata
-    $.ajax({
-        url: DEMO_VAR + "/home/previewplot",
-        datatype: 'image/png;base64',
-        // datatype: 'html',
-        data: {
-            preview: id,
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (json) {
-            document.getElementById("mod_prev").innerHTML = json.div; // add plot
-            // bokehPreviewScript is a global variable to set and remove the script of bokeh
-            bokehPreviewScript = document.createElement('script');
-            bokehPreviewScript.type = 'text/javascript';
-            bokehPreviewScript.text = json.script;
-            document.head.appendChild(bokehPreviewScript);
+    function ajaxPlot() {
+        // id = 'bla'
+        return $.ajax({
+            url: DEMO_VAR + "/home/previewplot",
+            datatype: 'image/png;base64',
+            // datatype: 'html',
+            data: {
+                preview: id,
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
         })
-        .fail(function (e) {
-            console.warn('fehler: ', e)
-        })
-        .always(function (json) {
-            document.getElementById("mod_prev").classList.remove("loader");
-        });
-
-    // TODO: to use fetch figur out how to replace request in django
-    /*fetch(DEMO_VAR + '/home/showinfo/id' + id,
-        {headers: {'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'},
-            // credentials: 'include'
-        },
-    )
-        .then((resp) => resp.json())
-        /!*
-        .then(function (response) {
-                    if (response.ok) {return response.json();
-                    } else {return Promise.reject(response);
-                    }
-                })*!/
-        .then(function (properties) {
-            let metaText = '<table>';
-            // loop over "properties" dict with metadata, build columns
-            for (let j in properties) {
-                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-                metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
-            }
-            document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
-            showDataInfo(properties);
-        });
-
-    fetch(DEMO_VAR + '/home/previewplot/id' + id,
-        {headers: {'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'},
-            // credentials: 'include'
-        },
-    )
-        .then(function (response) {
-                    if (response.ok) {return response.json();
-                    } else {return Promise.reject(response);
-                    }
-                })
-        .then(function (json) {
-            document.getElementById("mod_prev").innerHTML = json.div; // add plot
-            // bokehPreviewScript is a global variable to set and remove the script of bokeh
-            bokehPreviewScript = document.createElement('script');
-            bokehPreviewScript.type = 'text/javascript';
-            bokehPreviewScript.text = json.script;
-            document.head.appendChild(bokehPreviewScript);
-        })
-        .catch(e => {
-            console.warn('fehler: ', e);
-        })
-        .finally(() => {
-            document.getElementById("mod_prev").classList.remove("loader");
-        });*/
+            /*.fail(e => {
+                console.log('im fail')
+                $.when(ajaxTable()).then(function (plotVar) {plotToModal(plotVar[0])});
+                console.warn('fehler: ', e)
+            })*/
+    }
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
 }
