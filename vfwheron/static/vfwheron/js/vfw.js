@@ -476,28 +476,41 @@ $(document).ready(function (menuTitle) {
  * @param {string} id of dataset as string.
  */
 function moreInfoModal(id) {
+    let tb=false, pb=false;
+    let modLock=false;
+    let pdata, tdata;
+
+    let ajaxTable = function () {
+        return $.ajax({
+            url: DEMO_VAR + "/home/show_info",
+            dataType: 'json',
+            data: {
+                show_info: id,
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with post request
+        })
+    }
+    // load preview image parallel to metadata
+    let ajaxPlot = function () {
+        // id = 'bla'
+        return $.ajax({
+            url: DEMO_VAR + "/home/previewplot",
+            datatype: 'image/png;base64',
+            // datatype: 'html',
+            data: {
+                preview: id,
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+        })
+            /*.fail(e => {
+                $.when(ajaxTable()).then(function (plotVar) {plotToModal(plotVar[0])});
+                console.warn('fehler: ', e)
+            })*/
+    }
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
     document.getElementById("mod_prev").classList.add("loader");
-    // TODO: Error in any of the two requests shows no return. Fix to show at least one!
-    // The following is used to make sure to add first the table then the plot. The other way round isn't working yet.
-        $.when(ajaxTable(), ajaxPlot())
-            .done(function (tableVar, plotVar) {
-                if (tableVar) {
-                    tableToModal(tableVar[0])
-                }
-                if (plotVar) {
-                    plotToModal(plotVar[0])
-                }
-            })
-            .fail(e => {
-                document.getElementById('mod_dat_inf').innerHTML =
-                    '<p>We have problems fetching your data. Please try again later</p>';
-                console.warn('fehler: ', e)
-            })
-            .always(() => {
-                document.getElementById("mod_prev").classList.remove("loader");
-            });
+    // The following is used to make sure to add first the table then the plot.
     function tableToModal(properties) {
         let metaText = '<table>';
         // loop over "properties" dict with metadata, build columns
@@ -516,25 +529,36 @@ function moreInfoModal(id) {
         bokehPreviewScript.text = json.script;
         document.head.appendChild(bokehPreviewScript);
     }
-
-    // load preview image parallel to metadata
-    function ajaxPlot() {
-        // id = 'bla'
-        return $.ajax({
-            url: DEMO_VAR + "/home/previewplot",
-            datatype: 'image/png;base64',
-            // datatype: 'html',
-            data: {
-                preview: id,
-                'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
-        })
-            /*.fail(e => {
-                console.log('im fail')
-                $.when(ajaxTable()).then(function (plotVar) {plotToModal(plotVar[0])});
-                console.warn('fehler: ', e)
-            })*/
+    function fillModal(td, pd) {
+        tableToModal(td)
+        if (pdata !== false) {
+            plotToModal(pd)
+        }
     }
+
+    // Following .done calls are made to ensure that table is first and plot is second created in the modal
+    ajaxTable()
+        .done((data) => {
+            tdata = data
+            tb = true
+            if (pb == true && modLock == false) {
+                modLock = true
+                fillModal(tdata, pdata)
+            }
+        })
+        .always(document.getElementById("mod_prev").classList.remove("loader"))
+    ajaxPlot()
+        .done((data) => {
+            pdata = data
+            pb = true
+            if (tb == true && modLock == false) {
+                modLock = true
+                fillModal(tdata, pdata)
+            }
+        })
+        .fail(() => {pb=true; pdata=false})
+        // .always(document.getElementById("mod_prev").classList.remove("loader"))
+
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
 }
