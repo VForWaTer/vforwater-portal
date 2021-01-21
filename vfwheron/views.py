@@ -522,7 +522,10 @@ def previewplot(request):
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
             # plot with bokeh
-            return JsonResponse(get_preview(accessible_data[0]))
+            if accessible_data[0] == 19:
+                return JsonResponse(get_fullres_plot(accessible_data[0]))
+            else:
+                return JsonResponse(get_preview(accessible_data[0]))
 
         except TypeError as e:
             print('Type error in previewplot: ', e)
@@ -627,7 +630,8 @@ def show_info(request):
     :param request:
     :return:
     """
-    def collect_data(ids):
+
+    def collectData(ids):
         """
 
         :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
@@ -676,7 +680,7 @@ def show_info(request):
 
         try:
             # print('json.loads(webID): ', json.loads(ids))
-            return collect_data(ids)
+            return collectData(ids)
 
         except TypeError:
             raise Http404

@@ -40,7 +40,40 @@ def __DB_load_label(ID):
     # return label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
 
 
-def __DB_load_data_avg(ID, scale='day'):
+def __DB_load_data(ID: str):
+    """
+
+    :param ID:
+    :return:
+    """
+    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+    if datatable == 'timeseries':
+        # TODO: Use django ORM instead of pure sql
+        # connect to database and fetch day(x), daily average, daily min, daily max, # of daily values
+        cursor = connections['default'].cursor()
+        # noinspection SqlResolve
+        cursor.execute("SELECT tstamp as date, value, precision "
+                       "FROM {0} "
+                       "WHERE entry_id = {1} "
+                       "ORDER BY date ASC;".format(datatable, ID))
+        dbresult = cursor.fetchall()
+        cursor.close()
+
+        result = list(zip(*dbresult))
+
+        axis = {'ymin': min(map(operator.sub, result[1], result[2])),
+                'ymax': max(map(operator.add, result[1], result[2]))}
+        return {'data': result, 'axis': axis}
+    else:
+        print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
+
+def __DB_load_data_avg(ID: int, scale='day'):
+    """
+
+    :param ID: Entry ID
+    :param scale:
+    :return:
+    """
     datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     if datatable == 'timeseries':
         # TODO: Use django ORM instead of pure sql
@@ -63,6 +96,124 @@ def __DB_load_data_avg(ID, scale='day'):
         return {'data': result, 'axis': axis}
     else:
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
+
+
+def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
+    stepsize = []
+    steps = 0
+    while steps < 5:
+        stepsize.append(db_data['data'][0][steps + 1] - db_data['data'][0][steps])
+        steps += 1
+
+    # check if data is continuous. If not write position of missing values in noDataPos
+    stepsize = min(stepsize)
+    datalength = len(db_data['data'][0])
+    noDataPos = []
+    for steps in range(1, datalength):
+        if db_data['data'][0][steps] - db_data['data'][0][steps - 1] > stepsize:
+            noDataPos.append(steps - 1)
+
+    # check if dataset has values for precision
+    has_precision = True
+    try:
+        sum(db_data['data'][2])
+    except TypeError:
+        has_precision = False
+
+    nan_in_data = False
+    # To get a discontinuous line add 'nan' when a time step is missing.
+    white_line = ()
+    if len(noDataPos) > 0:
+        nan_in_data = True
+        white_line = tuple([float('nan')] * datalength)
+        for position in noDataPos[::-1]:
+            print('has no data pos')
+            db_data['data'][0] = db_data['data'][0][: position + 1] + \
+                                 (db_data['data'][0][position] + stepsize,
+                                  db_data['data'][0][position + 1] - stepsize,) + \
+                                 db_data['data'][0][position + 1:]
+            db_data['data'][1] = db_data['data'][1][: position + 1] + (float('nan'), float('nan'),) + \
+                                 db_data['data'][1][position + 1:]
+            # bandbef = (db_data['data'][2][position] + db_data['data'][3][position]) / 2
+            # bandaft = (db_data['data'][2][position + 1] + db_data['data'][3][position + 1]) / 2
+            # db_data['data'][2] = db_data['data'][2][: position + 1] + (bandbef, bandaft,) + db_data['data'][2][
+            #                                                                                 position + 1:]
+            # db_data['data'][3] = db_data['data'][3][: position + 1] + (bandbef, bandaft,) + db_data['data'][3][
+            #                                                                                 position + 1:]
+            # db_data['data'][4] = db_data['data'][4][: position + 1] + (0, 0,) + db_data['data'][4][position + 1:]
+            # white_line = white_line[: position + 1] + (bandbef, bandaft,) + white_line[position + 1:]
+        if has_precision:
+            for position in noDataPos[::-1]:
+                db_data['data'][2] = db_data['data'][2][: position + 1] + (float('nan'), float('nan'),) + \
+                                     db_data['data'][2][position + 1:]
+                # db_data['data'][6] = db_data['data'][6][: position + 1] + (float('nan'), float('nan'),) + \
+                #                      db_data['data'][6][position + 1:]
+                # db_data['data'][7] = db_data['data'][7][: position + 1] + (float('nan'), float('nan'),) + \
+                #                      db_data['data'][7][position + 1:]
+    source = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][1]})
+                               # 'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
+                               # 'count': db_data['data'][4]})
+    # Plot average as main plot
+    mainplot = figure(title='Full timeseries', x_axis_label='Time', x_axis_type="datetime",
+                      y_axis_label=label,
+                      # sizing_mode='stretch_both',
+                      plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
+                      tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
+    # plot.toolbar.autohide = True
+
+    # plot value line
+    mainplot.line(x='date', y='y', source=source, line_width=3)  #, legend_label="measured values")
+
+    # TODO: Figure out how to use 'source' for multi_line.
+    #  Maybe use Glyph? (https://docs.bokeh.org/en/latest/docs/reference/models/glyphs/multi_line.html)
+    #  Glyphs maybe also helpful for hover_tool on multiline?
+    mainplot.add_tools(HoverTool(tooltips=[("Value", "@y"),
+                                           ("Time", "@date{%T %Z}"),
+                                           ("Date", "@date{%d %b %Y}")],
+                                 formatters={"@date": "datetime"}, mode="mouse"))
+    # mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
+
+    # plot min/max as multiline and fill area with band
+    # mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
+    #                     ys=[db_data['data'][2], db_data['data'][3]], level='underlay',
+    #                     color=['lightblue', 'lightblue'], legend_label="min & max values")
+    # mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
+    #                          fill_color='lightblue', fill_alpha=0.5))
+
+    # plot white line to hide small band for no data areas
+    if nan_in_data:
+        mainplot.line(x=db_data['data'][0], y=white_line, line_width=2, line_color='white', line_cap='round')
+
+    # plot first average precision to have it in the background
+    if has_precision:
+        # add errorbars
+        data = np.array(db_data['data'][1], dtype=np.float)
+        lower_error = tuple(subtract(data, np.array(db_data['data'][2], dtype=np.float)))
+        upper_error = tuple(add(data, np.array(db_data['data'][2], dtype=np.float)))
+        # low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
+        # up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
+        error_source = ColumnDataSource({'date': db_data['data'][0],
+                                         'upper': upper_error, 'lower': lower_error})
+        mainplot.add_layout(Whisker(source=error_source, base="date", upper="upper", lower="lower",
+                                    line_width=0.5))
+        # mainplot.vbar(x='date', width=1000 * 60 * 59 * 24, top='upper_avg', bottom='lower_avg', source=error_source,
+        #               fill_color="darksalmon", line_color="black", fill_alpha=0.3, line_width=0.5,
+        #               legend_label="Precision")
+
+    # plot bars for the number of values in each group as secondary 'by'plot
+    # mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=db_data['axis']['y2max'])
+    # bin_width = db_data['data'][0][1] - db_data['data'][0][0]
+    # distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', size[0])
+    # distriplot.x_range = mainplot.x_range
+
+    # Style plot
+    mainplot.title.text_font_size = "14pt"
+    mainplot.xaxis.axis_label_text_font_size = "14pt"
+    mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
+    mainplot.yaxis.axis_label_text_font_size = "14pt"
+    # mainplot.legend.click_policy = "mute"
+    script, div = components(column(mainplot, sizing_mode="scale_both"), wrap_script=False)
+    return {'script': script, 'div': div}
 
 
 def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
@@ -413,6 +564,46 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     return p
 
 
+def check_cache(name: str):
+    """
+    Check if redis is used to cache images, and if image 'name' is cached.
+    Return state of redis, if image in cache and image if it is in cache.
+
+    :rtype: tuple
+    :param name:
+    :return:
+    """
+    use_redis = True
+    in_cache = False
+    img = None
+    try:
+        r = redis.StrictRedis()
+        img = r.get(name)
+    except:
+        use_redis = False
+
+    if use_redis:
+        if img is None:
+            in_cache = False
+        else:
+            img = str(img, 'utf-8')
+            in_cache = True
+    return use_redis, in_cache, img
+
+
+def get_fullres_plot(id: str, size=[700, 500]):
+    use_redis, in_cache, img = check_cache("fullview_{}".format('b' + str(id) + str(size)))
+    if not in_cache:
+        label = __DB_load_label(id)
+        db_data = __DB_load_data(id)
+        img = get_bokeh_std_fullres(db_data, size, label)
+
+        if use_redis:
+            r = redis.StrictRedis()
+            r.set("fullview_{}".format('b' + id + size), img)
+    return img
+
+
 def get_preview(id: str, size=[700, 500]):
     """
     Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
@@ -427,21 +618,22 @@ def get_preview(id: str, size=[700, 500]):
         wps_result = True if 'wps' in id[0:3] else False
     except:
         wps_result = False
-    use_redis = True
-    in_cache = False
 
-    try:
-        r = redis.StrictRedis()
-        img = r.get("preview_{}".format('b' + id + size))
-    except:
-        use_redis = False
-
-    if use_redis:
-        if img is None:
-            in_cache = False
-        else:
-            img = str(img, 'utf-8')
-            in_cache = True
+    use_redis, in_cache, img = check_cache("preview_{}".format('b' + id + size))
+    # use_redis = True
+    # in_cache = False
+    # try:
+    #     r = redis.StrictRedis()
+    #     img = r.get("preview_{}".format('b' + id + size))
+    # except:
+    #     use_redis = False
+    #
+    # if use_redis:
+    #     if img is None:
+    #         in_cache = False
+    #     else:
+    #         img = str(img, 'utf-8')
+    #         in_cache = True
 
     if not in_cache and not wps_result:
         label = __DB_load_label(id)
@@ -455,7 +647,8 @@ def get_preview(id: str, size=[700, 500]):
             img = get_bokeh_standard(db_data, size, label)
 
         if use_redis:
-            r.set("preview_{}".format('b' + id), img)
+            r = redis.StrictRedis()
+            r.set("preview_{}".format('b' + id + size), img)
 
     if wps_result:
         DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
