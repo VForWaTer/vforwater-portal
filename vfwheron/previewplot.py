@@ -5,12 +5,13 @@ import ast
 import copy
 import json
 import pickle
-from datetime import time
+import operator
+from datetime import time, datetime
 from math import radians, ceil, sqrt
 
 from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
-    DateSlider, DateRangeSlider, Whisker
+    DateSlider, DateRangeSlider, Whisker, BoxAnnotation
 from bokeh.transform import linear_cmap
 from bokeh.plotting import figure
 from bokeh.embed import components
@@ -21,7 +22,7 @@ from django.http.response import JsonResponse
 from numpy import mean, subtract, add
 import numpy as np
 
-from vfwheron.models import Entries
+from vfwheron.models import Entries, Timeseries
 
 import redis
 import pandas as pd
@@ -31,11 +32,10 @@ from wps_gui.models import WpsResults
 
 
 def __DB_load_label(ID):
-    label = Entries.objects.filter(id=ID).values_list('variable__name',
-                                                      'variable__symbol',
-                                                      'variable__unit__symbol')
-    SUP = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
-    superscript_label = label[0][2].replace("^", "").translate(SUP)
+    label = Entries.objects.filter(id=ID)\
+        .values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
+    sup = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+    superscript_label = label[0][2].replace("^", "").translate(sup)
     return label[0][0] + ' (' + label[0][1] + ')' + ' [' + superscript_label + ']'
     # return label[0][0] + ' (' + label[0][1] + ')' + ' [' + label[0][2] + ']'
 
@@ -48,21 +48,16 @@ def __DB_load_data(ID: str):
     """
     datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     if datatable == 'timeseries':
-        # TODO: Use django ORM instead of pure sql
-        # connect to database and fetch day(x), daily average, daily min, daily max, # of daily values
-        cursor = connections['default'].cursor()
-        # noinspection SqlResolve
-        cursor.execute("SELECT tstamp as date, value, precision "
-                       "FROM {0} "
-                       "WHERE entry_id = {1} "
-                       "ORDER BY date ASC;".format(datatable, ID))
-        dbresult = cursor.fetchall()
-        cursor.close()
+        # request data with django ORM
+        djresult = Timeseries.objects.filter(entry_id=ID)\
+            .values_list('tstamp', 'value', 'precision')
+        result = list(zip(*djresult))
+        if result[2][1] is None:
+            axis = {'ymin': min(result[1]), 'ymax': max(result[1])}
+        else:
+            axis = {'ymin': min(map(operator.sub, result[1], result[2])),
+                    'ymax': max(map(operator.add, result[1], result[2]))}
 
-        result = list(zip(*dbresult))
-
-        axis = {'ymin': min(map(operator.sub, result[1], result[2])),
-                'ymax': max(map(operator.add, result[1], result[2]))}
         return {'data': result, 'axis': axis}
     else:
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
@@ -122,12 +117,17 @@ def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
 
     nan_in_data = False
     # To get a discontinuous line add 'nan' when a time step is missing.
-    white_line = ()
+    # white_line = ()
+    defect_start_end = []
     if len(noDataPos) > 0:
         nan_in_data = True
-        white_line = tuple([float('nan')] * datalength)
+        # defect_line = tuple([float('nan')] * datalength)
+        defect_x = []
+        defect_y = []
         for position in noDataPos[::-1]:
-            print('has no data pos')
+            defect_start_end.append([db_data['data'][0][position], db_data['data'][0][position+1]])
+            # when data is missing add nan at the first and the last position of missing data
+            # concat data till the missing data position, add two nan positions and concat the rest
             db_data['data'][0] = db_data['data'][0][: position + 1] + \
                                  (db_data['data'][0][position] + stepsize,
                                   db_data['data'][0][position + 1] - stepsize,) + \
@@ -141,7 +141,13 @@ def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
             # db_data['data'][3] = db_data['data'][3][: position + 1] + (bandbef, bandaft,) + db_data['data'][3][
             #                                                                                 position + 1:]
             # db_data['data'][4] = db_data['data'][4][: position + 1] + (0, 0,) + db_data['data'][4][position + 1:]
-            # white_line = white_line[: position + 1] + (bandbef, bandaft,) + white_line[position + 1:]
+            # defect_line = defect_line[: position - 1] + \
+            #              (db_data['data'][1][position], db_data['data'][1][position + 3],) + \
+            #              defect_line[position + 2:]
+            defect_x.extend([db_data['data'][0][position]-stepsize, db_data['data'][0][position],
+                             db_data['data'][0][position+3], db_data['data'][0][position]+stepsize])
+            defect_y.extend([float('nan'), db_data['data'][1][position],
+                             db_data['data'][1][position+3], float('nan'), ])
         if has_precision:
             for position in noDataPos[::-1]:
                 db_data['data'][2] = db_data['data'][2][: position + 1] + (float('nan'), float('nan'),) + \
@@ -154,9 +160,9 @@ def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
                                # 'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
                                # 'count': db_data['data'][4]})
     # Plot average as main plot
-    mainplot = figure(title='Full timeseries', x_axis_label='Time', x_axis_type="datetime",
+    mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
-                      # sizing_mode='stretch_both',
+                      # title='Full timeseries', sizing_mode='stretch_both',
                       plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
@@ -182,7 +188,15 @@ def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
-        mainplot.line(x=db_data['data'][0], y=white_line, line_width=2, line_color='white', line_cap='round')
+        # mainplot.line(x=db_data['data'][0], y=defect_line, line_width=3, line_color='red', line_cap='round',
+        mainplot.line(x=defect_x, y=defect_y, line_width=3, line_color='red', line_cap='round',
+                      legend_label='Missing values', visible=False)
+        # mainplot.BoxAnnotation(top=80, fill_alpha=0.1, fill_color='red')
+        mainplot.legend.click_policy = "hide"
+        for i in defect_start_end:
+            box = BoxAnnotation(left=pd.to_datetime(i[0]), right=pd.to_datetime(i[1]),
+                                fill_alpha=0.2, fill_color='red')
+            mainplot.add_layout(box)
 
     # plot first average precision to have it in the background
     if has_precision:
@@ -341,7 +355,7 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     return {'script': script, 'div': div}
 
 
-def get_bokeh_direction(db_data, ti):
+def direction_plot(db_data, ti):
     # use data in percent => transform db_data to percent
     pct_data = []
     for tc in range(0, len(db_data)):  # 4
@@ -496,24 +510,24 @@ def __DB_load_directiondata(id, ti):
     return dbresult
 
 
-def get_timeseries_plot(data, size):
-    mainplot = get_main_plot(data, size, y_label='value', x_label="Time", x_type="datetime", type='line',
+def timeseries_plot(data, size):
+    mainplot = main_xyplot(data, size, y_label='value', x_label="Time", x_type="datetime", type='line',
                              title='Daily average, min and max values')
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def get_xy_plot(data, size):
+def xyplot(data, size):
     x_label = data.columns[0]
     y_label = data.columns[1]
 
-    mainplot = get_main_plot(data, size, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
+    mainplot = main_xyplot(data, size, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
     mainplot.sizing_mode = 'scale_both'
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def get_main_plot(data, size, y_label='value', x_label="x axis", x_type="linear", type="line",
+def main_xyplot(data, size, y_label='value', x_label="x axis", x_type="linear", type="line",
                   title='Daily average, min and max values'):
     mainplot = figure(title=title, x_axis_label=x_label, x_axis_type=x_type,
                       y_axis_label=y_label,
@@ -592,7 +606,7 @@ def check_cache(name: str):
 
 
 def get_fullres_plot(id: str, size=[700, 500]):
-    use_redis, in_cache, img = check_cache("fullview_{}".format('b' + str(id) + str(size)))
+    use_redis, in_cache, img = check_cache("plot_{}".format('b' + str(id) + str(size)))
     if not in_cache:
         label = __DB_load_label(id)
         db_data = __DB_load_data(id)
@@ -600,7 +614,7 @@ def get_fullres_plot(id: str, size=[700, 500]):
 
         if use_redis:
             r = redis.StrictRedis()
-            r.set("fullview_{}".format('b' + id + size), img)
+            r.set("plot_{}".format('b' + id + size), img)
     return img
 
 
@@ -618,8 +632,8 @@ def get_preview(id: str, size=[700, 500]):
         wps_result = True if 'wps' in id[0:3] else False
     except:
         wps_result = False
-
-    use_redis, in_cache, img = check_cache("preview_{}".format('b' + id + size))
+    imgname = "preview_{}".format('b' + str(id) + str(size))
+    use_redis, in_cache, img = check_cache(imgname)
     # use_redis = True
     # in_cache = False
     # try:
@@ -641,14 +655,14 @@ def get_preview(id: str, size=[700, 500]):
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
             db_data = __DB_load_directiondata(id, ti)
             # img = get_bokeh_standard(db_data, label)
-            img = get_bokeh_direction(db_data, ti)
+            img = direction_plot(db_data, ti)
         else:
             db_data = __DB_load_data_avg(id)
             img = get_bokeh_standard(db_data, size, label)
 
         if use_redis:
             r = redis.StrictRedis()
-            r.set("preview_{}".format('b' + id + size), img)
+            r.set(imgname, img)
 
     if wps_result:
         DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
@@ -657,9 +671,9 @@ def get_preview(id: str, size=[700, 500]):
             if 'pickle' in DBstring[1]:
                 df = pd.read_pickle(DBstring[2])
                 if 'ts-pickle' in DBstring[1]:
-                    img = get_timeseries_plot(df, size)
+                    img = timeseries_plot(df, size)
                 elif DBstring[1] == 'pickle':
-                    img = get_xy_plot(df, size)
+                    img = xyplot(df, size)
             elif DBstring[1] == 'image':
                 try:
                     file = open(DBstring[2], mode='r')
