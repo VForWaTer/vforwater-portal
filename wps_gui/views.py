@@ -4,6 +4,7 @@ import json
 import re
 import sys
 import jsonpickle
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.http.response import Http404
@@ -19,8 +20,15 @@ from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, 
 
 import logging
 logger = logging.getLogger(__name__)
-datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
-             'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
+datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
+             'raster', 'ndarray', 'vraster', '2darray', 'idataframe', 'vdataframe',
+             'time-dataframe', 'vtime-dataframe',
+             # outdated values:
+             'ts-aggregate', 'ts-pickle', 'ts-merge', 'aggregate',
+             'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle'
+             ]
+# datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
+#              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
 
 # from heron_wps.forms import InputForm
 
@@ -243,6 +251,7 @@ def handle_wps_output(execution, wps_process, inputs):
     path = ''
 
     loopcount = 0
+    # itereate through list of ouputs
     for output in execution.processOutputs:
         loopcount += 1
 
@@ -255,8 +264,10 @@ def handle_wps_output(execution, wps_process, inputs):
                 all_outputs = {'execution_status': 'error in wps process',
                                'error': error_dict['message']}
                 break
+        # if no error:
         else:
             one_output = {}
+            # check datatype
             try:
                 keywords = json.loads(output.abstract)['keywords'][0]
                 one_output['type'] = keywords

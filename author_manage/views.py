@@ -10,6 +10,9 @@ from django.core.files import File
 from django.conf import settings
 import os
 from django.utils.decorators import method_decorator
+
+from vfwheron.models import Details
+from .filters import PersonsFilter, DetailsFilter
 from .forms import AddNewResourceForm
 from django.template.context_processors import csrf
 from . import utilities
@@ -1244,3 +1247,37 @@ def get_sorted_requests(access_request_queryset, deletion_request_queryset):
             result.append(shorter_list[i])
 
     return result
+
+
+def upload_persons(request):
+    """
+    Options for upload form to define person and person roles
+
+    :param request:
+    :return:
+    """
+    print('request: ', request.GET)
+    selection = NmPersonsEntries.objects.all().distinct('entry_id')
+    myFilter = PersonsFilter(request.GET, queryset=selection)
+
+    selection = myFilter.qs
+    print('selection: ', selection)
+    context = {'myFilter': myFilter, 'selection': selection}
+    return render(request, 'author_manage/upload_persons.html', context)
+
+
+def upload_details(request):
+    """
+    Options for upload form to define details
+
+    :param request:
+    :return:
+    """
+    print('request: ', request.GET)
+    selection = Details.objects.all().distinct('entry_id')
+    myFilter = DetailsFilter(request.GET, queryset=selection)
+
+    selection = myFilter.qs
+    print('selection: ', selection)
+    context = {'myFilter': myFilter, 'selection': selection}
+    return render(request, 'author_manage/upload_details.html', context)

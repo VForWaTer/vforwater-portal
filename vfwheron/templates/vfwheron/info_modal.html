@@ -56,12 +56,15 @@
     };{% endcomment %}
   span_b.onclick = () => closeInfoModal();
   {#span_c.onclick = function () {closeModal()};#}
+
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = (event) => {if (event.target == modal) closeInfoModal()};
 
   function closeInfoModal() {
     modal.style.display = "none";
-    bokehPreviewScript.parentNode.removeChild(bokehPreviewScript);
+    if (bokehPreviewScript) {
+      bokehPreviewScript.parentNode.removeChild(bokehPreviewScript);
+    }
   }
 
 </script>

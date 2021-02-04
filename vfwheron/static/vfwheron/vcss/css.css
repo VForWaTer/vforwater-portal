@@ -79,6 +79,11 @@ iframe {
     color: black;
 }
 
+.modal-abstract {
+    max-height: 150px;
+    overflow-y: scroll;
+}
+
 
 .result_modal-header, .work_modal-header,
 .result_modal-footer, .work_modal-footer{
@@ -150,7 +155,7 @@ button-footer {
     /*  !*background-color: blue;*!*/
     /*  !*display: inline-block;*!*/
     /*}*/
-.string, .array, .integer, .positiveInteger, .dateTime,
+.string, .array, .list, .integer, .positiveInteger, .dateTime,
 .boolean, .float, .html, .plot {
     margin: 5px;
     height: 12px;
@@ -194,7 +199,7 @@ button-footer {
 .array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
 .ndarray:hover, .raster:hover, .vraster:hover, ._2darray:hover, .idataframe:hover, .vdataframe:hover,
 .time-dataframe:hover, .vtime-dataframe:hover,
-.string:hover,.array:hover, .integer:hover, .positiveInteger:hover, .dateTime:hover,
+.string:hover, .list:hover, .integer:hover, .positiveInteger:hover, .dateTime:hover,
 .boolean:hover, .float:hover, .plot:hover, .html:hover {
 /*    height: 200%;
     width: 200%;*/
@@ -254,6 +259,8 @@ button-footer {
     border: 1px solid rgb(83, 10, 114); stroke: rgb(83, 10, 114)}
 .dateTime{background-color: rgb(90, 182, 179); fill: rgb(90, 182, 179);
     border: 1px solid rgb(2, 59, 76); stroke: rgb(2, 59, 76)}
+.list{background-color: rgb(90, 127, 182); fill: rgb(90, 127, 182);
+    border: 1px solid rgb(2, 38, 76); stroke: rgb(2, 38, 76)}
 
 
 /* Create a "toggle switch" (on/off button) from a checkbox

@@ -100,6 +100,56 @@ class storeData {
     }
 }
 
+const DATATYPE = new class AbstractType {
+     // constructor(type) {
+     constructor() {
+         this.HIERACHY = {
+             'iarray': ['array'],
+             'varray': ['iarray', 'array'],
+             'timeseries': ['array'],
+             'vtimeseries': ['timeseries', 'array'],
+             'raster': ['ndarray'],
+             'vraster': ['raster', 'ndarray'],
+             '2darray': ['ndarray'],
+             'idataframe': ['ndarray'],
+             'vdataframe': ['idataframe', 'ndarray'],
+             'time-dataframe': ['ndarray'],
+             'vtime-dataframe': ['time-dataframe', 'ndarray']
+         }
+         // this.identifier = type;
+         // this.type = type;
+     }
+
+     /**
+      * Check if your data/output is valid for a process.
+      *
+      * @param {string} inputType - Datatype you want to use in process
+      * @param {string} outputType - Datatype accepted from process
+      * @return {boolean}
+      */
+     validInput(inputType, outputType) {
+         return true? outputType in this.HIERACHY[inputType] || inputType == outputType: false
+     }
+
+    /**
+      * Return possible inputTypes for given type(s) of data.
+      *
+      * @param {array} inputType - Datatype(s) you want to use in process
+      * @return {set} - set of strings with accepted input types
+      */
+     accepts(inputTypeList) {
+         let acceptedList = inputTypeList;
+         for (let i in inputTypeList) {
+             acceptedList = acceptedList.concat(this.HIERACHY[inputTypeList[i]])
+         }
+        // TODO: Use set more often. They are faster for 'has' tasks.
+         // let uniqueList = [...new Set(acceptedList)];
+         // return uniqueList
+        return new Set(acceptedList)
+    }
+}
+
+
 function createBtnName(name, abbr, unit, dbID){
     let btnName;
     let vnLen = name.length;
@@ -534,9 +584,11 @@ function moreInfoModal(id) {
         if (pdata !== false) {
             plotToModal(pd)
         }
+        document.getElementById("mod_prev").classList.remove("loader")
     }
 
     // Following .done calls are made to ensure that table is first and plot is second created in the modal
+    // TODO: better errorhandling, especially for ajaxTable
     ajaxTable()
         .done((data) => {
             tdata = data
@@ -546,7 +598,7 @@ function moreInfoModal(id) {
                 fillModal(tdata, pdata)
             }
         })
-        .always(document.getElementById("mod_prev").classList.remove("loader"))
+        // .always(document.getElementById("mod_prev").classList.remove("loader"))
     ajaxPlot()
         .done((data) => {
             pdata = data

@@ -9,6 +9,21 @@
   <link rel="stylesheet" type="text/css" href="{% static 'wps_gui/vcss/workplace.css' %}">
 </head>
 <body>
+<div id="workflowbuilder">
+  <b class="w3-btn-group">
+<input class="w3-btn w3-blue w3-left" type="submit" onclick="load_workflow()"
+       value="Load workflow" data-toggle="tooltip"
+       title="Click to load a saved workflow">
+<input class="w3-btn w3-blue w3-left" type="submit" onclick="save_workflow()"
+       value="Save workflow" data-toggle="tooltip"
+       title="Click to save current workflow">
+<input class="w3-btn w3-green w3-right" type="submit" onclick="run_workflow()"
+       value="Run workflow" data-toggle="tooltip"
+       title="Click to run current workflow">
+<input class="w3-btn w3-red w3-right" type="submit" onclick="clear_workflow()"
+       value="Clear workflow" data-toggle="tooltip"
+       title="Click to clear current workflow">
+    </b>
 {% comment %}<div id="dropdiv" title="Drag & Drop your Data and Tools here">Dropzone
         <canvas id="dropzone" style="background: white; border:1px solid #d3d3d3; "
                 title="Drag & Drop your Data and Tools here">
@@ -19,6 +34,7 @@
      title="Drag & Drop your Data and Tools here">
   Dropzone
 </div>
+</div>
 {% block modal %}
   {% include 'wps_gui/modal.html' %}
 {% endblock modal %}
@@ -26,11 +42,6 @@
 {#    {% include 'vfwheron/info_modal.html' %}#}
 {#{% endblock modal %}#}
 </body>
-
-
-{#<a data-toggle="modal" href="#processModal">Edit Contact</a>#}
-{##}
-{#{% include "process.html" %}#}
 </html>
 
 {#<script src="https://unpkg.com/gojs/release/go-debug.js"></script>#}
