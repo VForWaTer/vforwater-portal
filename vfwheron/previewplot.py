@@ -614,7 +614,7 @@ def get_fullres_plot(id: str, size=[700, 500]):
 
         if use_redis:
             r = redis.StrictRedis()
-            r.set("plot_{}".format('b' + id + size), img)
+            r.set("plot_{}".format('b' + str(id) + str(size)), img)
     return img
 
 
