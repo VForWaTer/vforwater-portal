@@ -412,7 +412,16 @@ def edit_input(inputs):
                 new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[2])
                 wps_input.append(new_pair)
         elif key_value[0] in datatypes:
-            wps_input.append((key_value[0], ast.literal_eval(WpsResults.objects.get(id=key_value[1][5:]).outputs)[0]))
+            #print('key_value[0]: ', key_value[0])
+            #print('key_value[1]: ', key_value[1][0:3])
+            #print('key_value[1]: ', key_value[1][3:])
+            if key_value[1][0:3] == 'wps':
+             #   print('db get: ', ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path'])
+                wps_input.append((key_value[0],
+                                  ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path']))
+            else:
+                wps_input.append((key_value[0], ast.literal_eval(WpsResults.objects.get(id=key_value[1][5:]).outputs)[0]))
+            #print('wps_inputs: ', wps_input)
         elif key_value[0] == 'sql-filter':
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif key_value[0] == 'name_time' and key_value[1].isdigit():
