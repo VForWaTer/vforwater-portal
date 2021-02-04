@@ -693,6 +693,7 @@ def workspace_data(request):
     :param request:
     :return:
     """
+
     def build_selection(requested_id, min_time=0, max_time=0):
         """
         function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
