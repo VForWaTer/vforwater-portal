@@ -470,54 +470,95 @@ $(document).ready(function (menuTitle) {
     });
 }); // end ready
 
+/**
+ * Load metadata and preview plot of dataset from server asynchronous.
+ *
+ * @param {string} id of dataset as string.
+ */
 function moreInfoModal(id) {
+    let tb=false, pb=false;
+    let modLock=false;
+    let pdata, tdata;
+
+    let ajaxTable = function () {
+        return $.ajax({
+            url: DEMO_VAR + "/home/show_info",
+            dataType: 'json',
+            data: {
+                show_info: id,
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with post request
+        })
+    }
+    // load preview image parallel to metadata
+    let ajaxPlot = function () {
+        // id = 'bla'
+        return $.ajax({
+            url: DEMO_VAR + "/home/previewplot",
+            datatype: 'image/png;base64',
+            // datatype: 'html',
+            data: {
+                preview: id,
+                'csrfmiddlewaretoken': csrf_token,
+            }, // data sent with the post request
+        })
+            /*.fail(e => {
+                $.when(ajaxTable()).then(function (plotVar) {plotToModal(plotVar[0])});
+                console.warn('fehler: ', e)
+            })*/
+    }
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
     document.getElementById("mod_prev").classList.add("loader");
-    // TODO: If the first ajax finishes first there is an additional table id="popupTable". Check why and avoid it!
-    $.ajax({
-        url: DEMO_VAR + "/home/show_info",
-        dataType: 'json',
-        data: {
-            show_info: id,
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (properties) {
-            let metaText = '<table>';
-            // loop over "properties" dict with metadata, build columns
-            for (let j in properties) {
-                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-                metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
-            }
-            document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
-            showDataInfo(properties);
-        });
+    // The following is used to make sure to add first the table then the plot.
+    function tableToModal(properties) {
+        let metaText = '<table>';
+        // loop over "properties" dict with metadata, build columns
+        for (let j in properties) {
+            // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+            metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+        }
+        document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
+        showDataInfo(properties);
+    }
+    function plotToModal(json) {
+        document.getElementById('mod_prev').innerHTML = json.div; // add plot
+        // bokehPreviewScript is a global variable to set and remove the script of bokeh
+        bokehPreviewScript = document.createElement('script');
+        bokehPreviewScript.type = 'text/javascript';
+        bokehPreviewScript.text = json.script;
+        document.head.appendChild(bokehPreviewScript);
+    }
+    function fillModal(td, pd) {
+        tableToModal(td)
+        if (pdata !== false) {
+            plotToModal(pd)
+        }
+    }
 
-    // load preview image parallel to metadata
-    $.ajax({
-        url: DEMO_VAR + "/home/previewplot",
-        datatype: 'image/png;base64',
-        // datatype: 'html',
-        data: {
-            preview: id,
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (json) {
-            document.getElementById("mod_prev").innerHTML = json.div; // add plot
-            // bokehPreviewScript is a global variable to set and remove the script of bokeh
-            bokehPreviewScript = document.createElement('script');
-            bokehPreviewScript.type = 'text/javascript';
-            bokehPreviewScript.text = json.script;
-            document.head.appendChild(bokehPreviewScript);
+    // Following .done calls are made to ensure that table is first and plot is second created in the modal
+    ajaxTable()
+        .done((data) => {
+            tdata = data
+            tb = true
+            if (pb == true && modLock == false) {
+                modLock = true
+                fillModal(tdata, pdata)
+            }
         })
-        .fail(function (e) {
-            console.warn('fehler: ', e)
+        .always(document.getElementById("mod_prev").classList.remove("loader"))
+    ajaxPlot()
+        .done((data) => {
+            pdata = data
+            pb = true
+            if (tb == true && modLock == false) {
+                modLock = true
+                fillModal(tdata, pdata)
+            }
         })
-        .always(function (json) {
-            document.getElementById("mod_prev").classList.remove("loader");
-        });
+        .fail(() => {pb=true; pdata=false})
+        // .always(document.getElementById("mod_prev").classList.remove("loader"))
+
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
 }
@@ -825,8 +866,8 @@ function place_bokeh(divID, data) {
  */
 function dragstart_handler(ev) {
     ev.dataTransfer.setData("text/plain", JSON.stringify([
-        // ev.target.id,
-        ev.target.getAttribute('data-process'),
+        ev.target.id,
+        // ev.target.getAttribute('data-process'),
         ev.path[1].id,
         ev.target.getAttribute('data-service')
     ]));

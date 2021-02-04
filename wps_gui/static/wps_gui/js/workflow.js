@@ -279,7 +279,7 @@ function drop_handler(ev) {
         box_param = {
             inputs: [],
             name: metadata.name + ' - ' + metadata.dbID,
-            orgid: metadata.ordID,
+            orgid: metadata.orgID,
             outputs: [metadata.outputs],
             type: 'data'
         }

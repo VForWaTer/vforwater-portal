@@ -20,6 +20,9 @@ urlpatterns = [
     url(r'^entries_pagination$', views.entries_pagination, name='entries_pagination'),
     url(r'^advanced_filter$', views.advanced_filter),
     # url(r'^advanced_filter$', views.filter_entries),
+    # addresses for fetch:
+    # url(r'^previewplot/id(db[\d]{1,6}|wps[\d]{1,6})$', views.PreviewPlot.as_view()),
+    # url(r'^showinfo/id(db[\d]{1,6}|wps[\d]{1,6})$', views.ShowInfo.as_view()),
     # addresses for ajax:
     url(r'^previewplot$', views.previewplot, name='previewplot'),
     url(r'^short_datainfo', views.short_datainfo, name='short_datainfo'),

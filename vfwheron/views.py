@@ -24,7 +24,8 @@ from future.builtins import isinstance
 from heron.settings import LOCAL_GEOSERVER, DEBUG
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfwheron.previewplot import get_preview
+from vfwheron.previewplot import get_preview, get_fullres_plot
+from .filters import VariableFilter
 from .forms import AdvancedFilterForm
 
 mpl.use('Agg')
@@ -183,7 +184,6 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     error_list = list(set(requested_ids) - set(accessible_data))
     return {'open': accessible_data, 'blocked': error_list}
 
-    return accessible_data, error_list
 
 def get_dataset(s_id: int) -> object:
     """
@@ -504,8 +504,8 @@ class GeoserverView(View):
         url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
               'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
                                                                 srid, bbox, srid)
-        request = urllib.request.Request(url)
-        response = urllib.request.urlopen(request)
+        request_url = urllib.request.Request(url)
+        response = urllib.request.urlopen(request_url)
         return HttpResponse(response.read().decode('utf-8'))
 
 
@@ -523,7 +523,10 @@ def previewplot(request):
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
             # plot with bokeh
-            return JsonResponse(get_preview(accessible_data[0]))
+            # if accessible_data[0] == 19:
+            return JsonResponse(get_fullres_plot(accessible_data[0]))
+            # else:
+            # return JsonResponse(get_preview(accessible_data[0]))
 
         except TypeError as e:
             print('Type error in previewplot: ', e)
@@ -628,6 +631,7 @@ def show_info(request):
     :param request:
     :return:
     """
+
     def collectData(ids):
         """
 
@@ -667,7 +671,6 @@ def show_info(request):
 
     webID = request.GET.get('show_info')
     if webID[0:3] == 'wps':
-        print("webID is wps: ", webID)
         print('you have to implement something to show wps results!')
         raise Http404
     else:
@@ -793,3 +796,9 @@ def advanced_filter(request):
 
     context = {'myFilter': myFilter, 'selection': selection}
     return render(request, 'vfwheron/advanced_filter.html', context)
+
+
+def error_404_view(request, exception):
+    # data = {"name": "Some Error"}
+    # return render(request,'vfwheron/404.html', data)
+    return render(request, 'vfwheron/404.html')
