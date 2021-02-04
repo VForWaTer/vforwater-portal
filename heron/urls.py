@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^user/', include('author_manage.urls', namespace='author_manage')),
 ]
 
+handler404 = 'vfwheron.views.error_404_view'
 
 # This is just to test the upload in the development environment
 if settings.DEBUG and settings.DEBUG is not '':

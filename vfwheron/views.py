@@ -796,3 +796,9 @@ def advanced_filter(request):
 
     context = {'myFilter': myFilter, 'selection': selection}
     return render(request, 'vfwheron/advanced_filter.html', context)
+
+
+def error_404_view(request, exception):
+    # data = {"name": "Some Error"}
+    # return render(request,'vfwheron/404.html', data)
+    return render(request, 'vfwheron/404.html')
