@@ -605,20 +605,14 @@ def check_cache(cache_obj: dict):
 def get_fullres_plot(id: str, size=[700, 500]):
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
                  'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size))}
-    # use_redis, in_cache, img = check_cache("plot_{}".format('b' + str(id) + str(size)))
     cache_obj, img = check_cache(cache_obj)
 
     if not cache_obj['in_cache']:
-    # if not in_cache:
         label = __DB_load_label(id)
         db_data = __DB_load_data(id)
         img = get_bokeh_std_fullres(db_data, size, label)
-
         if cache_obj['use_redis']:
-        # if use_redis:
-        #     r = redis.StrictRedis()//
-        #     r.set("plot_{}".format('b' + str(id) + str(size)),img)
-            cache_obj['redis'].set("plot_{}".format(cache_obj['name']), img)
+            cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
     return img
 
 
