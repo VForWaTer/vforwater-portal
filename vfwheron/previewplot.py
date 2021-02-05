@@ -578,7 +578,7 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     return p
 
 
-def check_cache(name: str):
+def check_cache(cache_obj: dict):
     """
     Check if redis is used to cache images, and if image 'name' is cached.
     Return state of redis, if image in cache and image if it is in cache.
@@ -587,34 +587,38 @@ def check_cache(name: str):
     :param name:
     :return:
     """
-    use_redis = True
-    in_cache = False
     img = None
     try:
-        r = redis.StrictRedis()
-        img = r.get(name)
+        img = cache_obj['redis'].get(cache_obj['name'])
     except:
-        use_redis = False
+        cache_obj['use_redis'] = False
 
-    if use_redis:
+    if cache_obj['use_redis']:
         if img is None:
-            in_cache = False
+            cache_obj['in_cache'] = False
         else:
             img = str(img, 'utf-8')
-            in_cache = True
-    return use_redis, in_cache, img
+            cache_obj['in_cache'] = True
+    return cache_obj, img
 
 
 def get_fullres_plot(id: str, size=[700, 500]):
-    use_redis, in_cache, img = check_cache("plot_{}".format('b' + str(id) + str(size)))
-    if not in_cache:
+    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+                 'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size))}
+    # use_redis, in_cache, img = check_cache("plot_{}".format('b' + str(id) + str(size)))
+    cache_obj, img = check_cache(cache_obj)
+
+    if not cache_obj['in_cache']:
+    # if not in_cache:
         label = __DB_load_label(id)
         db_data = __DB_load_data(id)
         img = get_bokeh_std_fullres(db_data, size, label)
 
-        if use_redis:
-            r = redis.StrictRedis()
-            r.set("plot_{}".format('b' + str(id) + str(size)), img)
+        if cache_obj['use_redis']:
+        # if use_redis:
+        #     r = redis.StrictRedis()//
+        #     r.set("plot_{}".format('b' + str(id) + str(size)),img)
+            cache_obj['redis'].set("plot_{}".format(cache_obj['name']), img)
     return img
 
 
