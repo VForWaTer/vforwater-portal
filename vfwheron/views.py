@@ -13,7 +13,7 @@ from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
 from django.http import StreamingHttpResponse
-from django.http.response import JsonResponse, HttpResponse, Http404
+from django.http.response import JsonResponse, HttpResponse, Http404, FileResponse
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views import View
@@ -803,3 +803,28 @@ def error_404_view(request, exception):
     # data = {"name": "Some Error"}
     # return render(request,'vfwheron/404.html', data)
     return render(request, 'vfwheron/404.html')
+
+
+class DownloadView(View):
+    """
+    Give direct access to data without using the webportal
+    """
+
+    @staticmethod
+    def get(request, name):
+
+        if name == 'vfwVM':
+            file_path = '/data/VBox_VFORWaTer.zip'
+            # file_path = '/home/marcus/tmp/customs.shp'
+            # file_path = os.path.join('/data/VBox_VFORWaTer.zip')
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as fh:
+                    response = FileResponse(open(file_path, 'rb'))
+                    print('response: ', response)
+                    return response
+            else:
+                print('no file at: ', file_path)
+                error_404_view(request, 'not available')
+            # raise Http404
+        else:
+            error_404_view(request, 'not available')
