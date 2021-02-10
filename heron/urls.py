@@ -18,6 +18,7 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.views.generic.base import RedirectView
+from vfwheron import views as vfw_views
 
 
 urlpatterns = [
@@ -28,6 +29,7 @@ urlpatterns = [
     url(r'^monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
     url(r'^visual/', include('heron_visual.urls', namespace='heron_visual')),
     url(r'^upload/', include('upload.urls', namespace='upload')),
+    url(r'^download/(?P<name>\w{4,5})$', vfw_views.DownloadView.as_view()),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     url(r'^user/', include('author_manage.urls', namespace='author_manage')),
 ]
