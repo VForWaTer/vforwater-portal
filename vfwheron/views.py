@@ -543,7 +543,7 @@ def previewplot(request):
                 # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
                 # return redirect('vfwheron:login')
         except Exception as e:
-            print('An unhandled error in previewplot: ', e)
+            print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
 
     elif webID[0:3] == 'wps':
         print('def previewplot: You have to implement something to show wps results!')
