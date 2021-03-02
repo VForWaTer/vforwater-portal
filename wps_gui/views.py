@@ -251,12 +251,15 @@ def handle_wps_output(execution, wps_process, inputs):
     path = ''
 
     loopcount = 0
-    # itereate through list of ouputs
+    # iterate through list of outputs
     for output in execution.processOutputs:
         loopcount += 1
 
         if output.identifier == 'error':
-            error_dict = json.loads(output.data[0])
+            error_dict = {}
+            error = False
+            error_dict['error'] = output.data[0] == 'True'
+            # error_dict = json.loads(output.data[0])
             all_outputs['error'] = error_dict
 
             if error_dict['error'] is not False:
@@ -267,6 +270,7 @@ def handle_wps_output(execution, wps_process, inputs):
         # if no error:
         else:
             one_output = {}
+
             # check datatype
             try:
                 keywords = json.loads(output.abstract)['keywords'][0]
@@ -335,14 +339,14 @@ def process_run(request):
     # if request.user.is_authenticated:
     if True:
         request_input = json.loads(request.GET.get('processrun'))
-        inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
+        inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""),
+                          request_input.get("type_list", "")))
         inputs = edit_input(inputs)
         wps = get_wps_service_engine(request_input.get("serv", ""))
         wps_process = request_input.get("id", "")
         execution = wps.execute(wps_process, inputs)
 
         all_outputs = handle_wps_output(execution, wps_process, inputs)
-
     else:
         all_outputs = {'execution_status': 'auth_error'}
         print('user is not authenticated. ', all_outputs)
@@ -361,14 +365,16 @@ def db_load(request):
     wps_process = 'dbloader'
     request_input = json.loads(request.GET.get('dbload'))
     orgid = request_input.get('dataset')
+
+    # check if user has access to dataset
     accessible_data = get_accessible_data(request, orgid[2:])
     accessible_data = accessible_data['open']
-
     if len(accessible_data) < 1:
         return JsonResponse({'Error': 'No accessible dataset.'})
     elif len(accessible_data) > 1:
         return JsonResponse({'Error': 'You have to adjust function for list of datasets.'})
 
+    # format inputs for wps server
     inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", "")))
     inputs = edit_input(inputs)
 
@@ -405,24 +411,35 @@ def db_load(request):
 
 
 def edit_input(inputs):
+
+    def filepath(fid):
+        pass
+
     wps_input = []
     for key_value in inputs:
-        if key_value[0] in datatypes and isinstance(key_value[1], list):
-            for value in key_value[1]:
-                new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[2])
-                wps_input.append(new_pair)
-        elif key_value[0] in datatypes:
-            #print('key_value[0]: ', key_value[0])
-            #print('key_value[1]: ', key_value[1][0:3])
-            #print('key_value[1]: ', key_value[1][3:])
-            if key_value[1][0:3] == 'wps':
-             #   print('db get: ', ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path'])
-                wps_input.append((key_value[0],
-                                  ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path']))
-            else:
-                wps_input.append((key_value[0], ast.literal_eval(WpsResults.objects.get(id=key_value[1][5:]).outputs)[0]))
-            #print('wps_inputs: ', wps_input)
-        elif key_value[0] == 'sql-filter':
+        if isinstance(key_value[1], list):
+            for value, type_value in zip(key_value[1], key_value[2]):
+                if type_value in datatypes:
+                    # new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[2])
+                    # wps_input.append(new_pair)
+                    if value[0:3] == 'wps':
+                        ast.literal_eval(WpsResults.objects.get(id=value[3:]).outputs)['path']
+                        wps_input.append((key_value[0],
+                                          ast.literal_eval(WpsResults.objects.get(id=value[3:]).outputs)['path']))
+                    else:
+                        wps_input.append((key_value[0],
+                                          ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[0]))
+        elif isinstance(key_value[1], bool):
+            wps_input.append((key_value[0], str(key_value[1])))
+        elif key_value[1][0:2] == 'db' and key_value[1][2:].isdecimal():
+            wps_input.append((key_value[0], key_value[1][2:]))
+        elif key_value[1][0:3] == 'wps' and key_value[1][3:].isdecimal():
+            wps_input.append((key_value[0],
+                              ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path']))
+
+            # TODO: a lot of old stuff following here. Rethink what is still needed and update!
+
+        elif key_value[1] == 'sql-filter':
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif key_value[0] == 'name_time' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
@@ -431,15 +448,15 @@ def edit_input(inputs):
         elif key_value[0] == 'number' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif key_value[0] == 'start' and key_value[1] == '':
+            print('You have to implement how to handle a start date in input data')
             pass
             # wps_input.append((key_value[0], '0, 0'))
         elif key_value[0] == 'end' and key_value[1] == '':
+            print('You have to implement how to handle a end date in input data')
             pass
             # wps_input.append((key_value[0], '0, 0'))
-        elif isinstance(key_value[1], bool):
-            wps_input.append((key_value[0], str(key_value[1])))
         else:
-            wps_input.append(key_value)
+            wps_input.append((key_value[0], key_value[1]))
     return wps_input
 
 

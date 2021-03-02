@@ -9,7 +9,7 @@ let wfsPointSource;
 // console.log('get2: ', selectedIds.quickMenu)
 // let dcz = new ol.interaction.DoubleClickZoom();
 
-/* build style for cluster */
+/** build style for cluster **/
 let styleCache = {};
 
 function clusterStyle(feature) {
@@ -39,7 +39,7 @@ function clusterStyle(feature) {
     return [style];
 }
 
-// Fetch V-FOR-WaTer base layer
+/** Fetch V-FOR-WaTer base layer **/
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({
@@ -54,12 +54,12 @@ function create_map() {
     if (wfsLayerName.search("Error") !== -1) {
         console.error(wfsLayerName)
     }
-// build the background map
+/** build the background map **/
     let mapLayer = new ol.layer.Tile({
         preload: Infinity,
         source: mapSource
     });
-// get OSM/OTM in case local map is not loading:
+/** get OSM/OTM in case local map is not loading: **/
     mapLayer.getSource().on('tileloaderror', function () {
         // let source = new ol.source.OSM({
         //     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
@@ -86,7 +86,7 @@ function create_map() {
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
 
-    /* get data points */
+    /** get data points **/
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
@@ -115,18 +115,18 @@ function create_map() {
     // TODO: Bei Gelegenheit mal sentinel Daten einführen
     //     url = https://sgx.geodatenzentrum.de/wms_sentinel2_de?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2019
 
-    /* Elements that make up the popup. */
+    /** Elements that make up the popup. **/
     let container = document.getElementById('popup');
     let content = document.getElementById('popup-content');
     let paginat = document.getElementById('popup-paginat')
     let closer = document.getElementById('popup-closer');
-    /* Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
+    /** Add a click handler to hide the popup. * @return {boolean} Don't follow the href. **/
     closer.onclick = function () {
         metaData_Overlay.setPosition(undefined);
         closer.blur();
         return false;
     };
-    /* Create an metaData_Overlay to anchor the popup to the map. */
+    /** Create an metaData_Overlay to anchor the popup to the map. **/
     let metaData_Overlay = new ol.Overlay(/* @type {olx.OverlayOptions} */ ({
         element: container,
         autoPan: true,
@@ -135,7 +135,7 @@ function create_map() {
         }
     }));
 
-    /* Make (animated) cluster layer from data points */
+    /** Make (animated) cluster layer from data points **/
     clusterLayer = new ol.layer.AnimatedCluster({
         name: 'Cluster',
         className: 'cluster-layer',
@@ -144,7 +144,7 @@ function create_map() {
             source: wfsPointSource
         }),
         animationDuration: 0,
-        // Cluster style
+        /** Cluster style  **/
         style: clusterStyle
     });
     hiddenLayer = new ol.layer.VectorImage({
@@ -153,7 +153,7 @@ function create_map() {
     });
 
 
-    // Style for selection/single circles around cluster
+    /** Style for selection/single circles around cluster  **/
     /*    let img = new ol.style.Circle({
             radius: 8,
             stroke: new ol.style.Stroke({
@@ -174,7 +174,7 @@ function create_map() {
         });*/
 
 
-    /* functionality for zoom to extent button */
+    /** functionality for zoom to extent button **/
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
         tipLabel: 'Zoom to your available data',
@@ -182,7 +182,7 @@ function create_map() {
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
-    /* build app for box with drawbuttons */
+    /** build app for box with drawbuttons **/
     window.cApp = {};
     let cApp = window.cApp;
     cApp.drawControls = function () {
@@ -195,7 +195,7 @@ function create_map() {
     };
     ol.inherits(cApp.drawControls, ol.control.Control);
 
-    /* Initialise map */
+    /** Initialise map **/
     let map_tar = document.getElementById("map");
     olmap = new ol.Map({
         // renderer: 'canvas',
@@ -221,10 +221,10 @@ function create_map() {
         view: mapView//dataview
     });
 
-    /* get information about your data in a popup when you click on a data point in the map */
+    /** get information about your data in a popup when you click on a data point in the map **/
     olmap.on('singleclick', checkMode);
 
-    // check what is clicked
+    /** check what is clicked **/
     function checkMode(evt) {
         if (hit_cL) {
             content.innerHTML = '';
@@ -242,18 +242,18 @@ function create_map() {
     }
 
     function buildPopup(evt) {
-        // Create spinning loader while getting meta data from server
+        /** Create spinning loader while getting meta data from server **/
         metaData_Overlay.setPosition(evt.coordinate);
 
-        let nCol = 5; // number of columns of metadata per page
+        let nCol = 5; /** number of columns of metadata per page **/
         let clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
         let pos = evt.coordinate;
         let l = clickedFeatures.length;
         let wfsLen = wfsLayerName.length;
-        if (l > 0 && l <= nCol) { // check how many datasets are selected
+        if (l > 0 && l <= nCol) { /** check how many datasets are selected **/
             let ids = [];
             let name, id;
-            // bulid list with selection to send to server
+            /** bulid list with selection to send to server **/
             for (let i = 0; i < l; i++) {
                 name = clickedFeatures[i].getId();
                 id = parseInt(name.substr(wfsLen + 1, 8));
@@ -282,9 +282,9 @@ function create_map() {
             popupContent(idDict[1]);
 
 
-            // add paginatation to popup:
+            /** add paginatation to popup: **/
             paginat.innerHTML = buildPagi(idDict, page);
-            // end of paginatation
+            /** end of paginatation **/
             // TODO: need a list to click to next objects, to select ids
         }
         metaData_Overlay.setPosition(pos);
@@ -292,7 +292,7 @@ function create_map() {
     }
 
 
-    // select data with doubleclick
+    /** select data with doubleclick **/
     //olmap.on('doubleclick', selectDataset);
     // TODO: Cluster gives error when click on sketched polygon. Not used yet anyways, so uncommented until usefull
     /*    selectCluster = new ol.interaction.SelectCluster(
@@ -334,7 +334,7 @@ function create_map() {
             });
         olmap.addInteraction(selectCluster);*/
 
-    /* change cursor to pointer when hover over data */
+    /** change cursor to pointer when hover over data **/
     olmap.on('pointermove', function (evt) {
         if (evt.dragging) {
             return;
@@ -369,7 +369,7 @@ function create_map() {
             $(".infos").html("");
         })*/
 
-// Popup related functions
+/** Popup related functions **/
     function buildPagi(idDict, page) {
         let pagi = '';
         let nDat = 16; // number of Datasets shown at once
@@ -434,14 +434,14 @@ function create_map() {
             '<style>table tr:nth-child(even){background-color:#c8ebee;}</style>' +
             '<table id="metaTable">';
 
-        // request info from server
+        /** request info from server **/
         $.ajax({
             url: DEMO_VAR + "/home/short_datainfo",
             dataType: 'json',
             data: {
                 short_info: JSON.stringify(ids),
                 'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
+            }, /** data sent with the post request **/
         })
             .done(function (json) {
                 document.getElementById('popup-content').innerHTML = buildPopupText(json, popUpText);
@@ -482,7 +482,8 @@ function create_map() {
             popUpText += '</tr>'
         }
         popUpText += '<tr><td><b></b></td>';
-        // build buttons for each dataset
+
+        /** build buttons for each dataset **/
         function moreBtn(listIndex) {
             return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
                 'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" value="More" ' +

@@ -627,7 +627,7 @@ def prepare_data(db_data: object):
         nan_in_data = True
         defect_x = []
         defect_y = []
-        if num_datacolumns >= 5:
+        if num_datacolumns >= 5:  # if preview with average, min, max  values
             for pos in noDataPos[::-1]:
                 db_data['data'][0] = db_data['data'][0][: pos + 1] + \
                                      (db_data['data'][0][pos] + stepsize,
@@ -651,7 +651,7 @@ def prepare_data(db_data: object):
                       'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
                       'count': db_data['data'][4]})
             missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
-        else:
+        else:  # if full dataset, without average, min, max values
             for pos in noDataPos[::-1]:
                 db_data['data'][0] = db_data['data'][0][: pos + 1] + \
                                      (db_data['data'][0][pos] + stepsize,
@@ -666,13 +666,16 @@ def prepare_data(db_data: object):
             source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1]})
             missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
 
+    # no missing values but min, max, average values
     elif len(db_data) > 2:
         source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1],
                                'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
                                'count': db_data['data'][4]})
+    # no missing values and no min, max, average values
     elif len(db_data) <= 2:
         source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1]})
 
+    # if precission values:
     if has_precision:
         for pos in noDataPos[::-1]:
             for p_set in precision_data:

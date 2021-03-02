@@ -269,7 +269,7 @@ function drop_handler(ev) {
     let y = ev.layerY
     let box_param = ''
     let receivedData = JSON.parse(ev.dataTransfer.getData("text"))
-    let id = receivedData[0]
+    let id = receivedData[0]  // process name
     let parentid = receivedData[1]
     let service = receivedData[2]
 
