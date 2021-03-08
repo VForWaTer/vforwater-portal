@@ -441,11 +441,11 @@ def edit_input(inputs):
 
         elif key_value[1] == 'sql-filter':
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'name_time' and key_value[1].isdigit():
+        elif key_value[1] == 'name_time' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'name' and key_value[1].isdigit():
+        elif key_value[1] == 'name' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'number' and key_value[1].isdigit():
+        elif key_value[1] == 'number' and key_value[1].isdigit():
             wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
         elif key_value[0] == 'start' and key_value[1] == '':
             print('You have to implement how to handle a start date in input data')

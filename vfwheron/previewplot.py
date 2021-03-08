@@ -196,7 +196,6 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     #  Glyphs maybe also helpful for hover_tool on multiline?
     mainplot.add_tools(HoverTool(tooltips=[("value", "@y"), ("Date", "@date{%d %b %Y}")],
                                  formatters={"@date": "datetime"}, mode="mouse"))
-
     # mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
 
     # plot min/max as multiline and fill area with band

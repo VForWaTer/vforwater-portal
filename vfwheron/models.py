@@ -378,7 +378,8 @@ class Licenses(models.Model):
         db_table = 'licenses'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.title, self.id)
+        return '{} ({})'.format(self.short_title, self.title)
+        # return '{} <ID={}>'.format(self.title, self.id)
 
 
 class Logs(models.Model):

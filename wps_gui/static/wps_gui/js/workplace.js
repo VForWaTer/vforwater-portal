@@ -62,7 +62,7 @@ function wpsprocess(service, identifier) {
                 sessionStorage.setItem('tools', JSON.stringify(tools))
         })
             .fail(function (e) {
-                console.log('Failed: ', e)
+                console.error('Failed: ', e)
         });
     }
     }
@@ -101,7 +101,7 @@ function get_wpsprocess(service, identifier) {
                 return json
         })
             .fail(function (e) {
-                console.log('Failed: ', e)
+                console.error('Failed: ', e)
         });
     }
 }

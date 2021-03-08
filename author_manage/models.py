@@ -24,6 +24,7 @@ from vfwheron.models import Entries, Persons, NmPersonsEntries
 
 class CustomUser(User):  # == Reader in Resource
     class Meta:
+        ordering = ['id']
         # uses proxy model to extend behavior of  Django built-in user (does not generate an extra table in the
         # database)
         proxy = True
@@ -31,11 +32,13 @@ class CustomUser(User):  # == Reader in Resource
 
 class Maintainer(CustomUser):
     class Meta:
+        ordering = ['id']
         proxy = True
 
 
 class Owner(Maintainer):
     class Meta:
+        ordering = ['id']
         proxy = True
 
 
@@ -64,6 +67,7 @@ class Request(models.Model):
     type = ""
 
     class Meta:
+        ordering = ['id']
         # the Request model must be an abstract class, to put some common information into the AccessRequest and DeletionRequest  model
         # This model will not be used to create any database table
         abstract = True

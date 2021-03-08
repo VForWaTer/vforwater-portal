@@ -130,3 +130,36 @@ rect {
     fill: pink;
 }
 */
+
+/*
+ * Style for draw2d type indicators (conflict to sidebar indicators)
+ */
+/*rect.draw2d_ResizeHandle*/
+/*{*/
+/*    fill: rgba(255, 0, 0, 0);*/
+/*    stroke: rgba(255, 0, 0, 0);*/
+/*}*/
+/*
+.timeseries {
+    fill: red;
+    stroke: indianred;
+    height: 150px;
+}
+.string {
+    fill: yellow;
+    stroke: lightgoldenrodyellow;
+    height: 150px;
+}
+.boolean {
+    fill: green;
+    stroke: limegreen;
+    height: 150px;
+}
+*/
+
+/*
+ * Draw a box
+ */
+.workflowBox {
+
+}
