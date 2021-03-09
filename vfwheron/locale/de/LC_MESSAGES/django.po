@@ -39,6 +39,10 @@ msgstr ""
 msgid "  Workflow"
 msgstr ""
 
+#: templates/author_manage/add-new-resource.html:14
+msgid "Requests"
+msgstr "Anfragen"
+
 #: templates/vfwheron/base.html:53 templates/vfwheron/sidemenu.html:16
 msgid "  Monitor"
 msgstr ""

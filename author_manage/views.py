@@ -332,8 +332,9 @@ class ResourcesOverview(generic.ListView):
         context['is_admin'] = self.request.user.is_staff
         context['query'] = self.query
         context['query_pagination_string'] = ''
-        context['can_access'] = Resource.objects.filter(readers=self.request.user)  # list of resources for which the user has an access permission
-        # context['can_access'] = self.request.user.reader.filter(id__in=self.model)  # list of resources for which the user has an access permission
+        # list of resources for which the user has an access permission
+        context['can_access'] = Resource.objects.filter(readers=self.request.user)
+        # context['can_access'] = self.request.user.reader.filter(id__in=self.model)
         context['requested_resources'] = Resource.objects.filter(
             id__in=AccessRequest.objects.filter(sender=self.request.user).values('resource_id'))
         return context
@@ -358,7 +359,7 @@ class ResourcesOverviewSearch(ResourcesOverview):
         """
         if 'q' in self.request.GET and self.request.GET['q']:
             self.query = self.request.GET['q']
-            self.model = Resource.objects.filter(name__icontains=self.query)
+            self.model = Resource.objects.filter(dataEntry__entries__title__icontains=self.query)
             self.can_access = self.request.user.reader.filter(id__in=self.model)
             current_user_has_requested = AccessRequest.objects.filter(sender=self.request.user).values('resource_id')
             self.requested_resources = Resource.objects.filter(id__in=current_user_has_requested)
@@ -1159,6 +1160,7 @@ class AddNewResourceView(generic.View):
     # adds a new resource with the given informations
     def post(self, request):
         """
+        Store in resource table (and owner, reader...)
 
         @param request:
         @type request:
@@ -1168,10 +1170,10 @@ class AddNewResourceView(generic.View):
         form = AddNewResourceForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
-            instance.save()
-            instance.owners.add(request.user.id)
-            instance.readers.add(request.user.id)
-            logger.info("User %s created the '%s' Resource \n" % (request.user.username, instance.name))
+            # instance.save()
+            # instance.owners.add(request.user.id)
+            # instance.readers.add(request.user.id)
+            logger.info("User %s created the '%s' Resource \n" % (request.user.username, instance.link))
 
         else:
             logger.info("User %s tried to inconsistently create a resource \n" % request.user.username)
@@ -1195,10 +1197,9 @@ class AddNewResourceView(generic.View):
 @method_decorator(login_required, name='dispatch')
 class EditNameView(generic.View):
     """
-
+    updates the firstname and the lastname with the given firstname and lastname
     """
 
-    # updates the firstname and the lastname with the given firstname and lastname
     def post(self, request):
         """
 
@@ -1256,7 +1257,7 @@ def upload_persons(request):
     :param request:
     :return:
     """
-    print('request: ', request.GET)
+    print('persons upload request: ', request.GET)
     selection = NmPersonsEntries.objects.all().distinct('entry_id')
     myFilter = PersonsFilter(request.GET, queryset=selection)
 
@@ -1273,7 +1274,7 @@ def upload_details(request):
     :param request:
     :return:
     """
-    print('request: ', request.GET)
+    print('details upload request: ', request.GET)
     selection = Details.objects.all().distinct('entry_id')
     myFilter = DetailsFilter(request.GET, queryset=selection)
 
