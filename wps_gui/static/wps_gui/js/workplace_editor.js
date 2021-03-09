@@ -1,3 +1,5 @@
+/** this is an unused example yet **/
+
 // {% comment %}   $(window).load(function () {
 //
 //      var canvas = new draw2d.Canvas("dropdiv");

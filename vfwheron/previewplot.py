@@ -94,71 +94,23 @@ def __DB_load_data_avg(ID: int, scale='day'):
 
 
 def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
-    stepsize = []
-    steps = 0
-    while steps < 5:
-        stepsize.append(db_data['data'][0][steps + 1] - db_data['data'][0][steps])
-        steps += 1
+    """
+    Plot with full resolution, hence one line with errorbars, no band
 
-    # check if data is continuous. If not write position of missing values in noDataPos
-    stepsize = min(stepsize)
-    datalength = len(db_data['data'][0])
-    noDataPos = []
-    for steps in range(1, datalength):
-        if db_data['data'][0][steps] - db_data['data'][0][steps - 1] > stepsize:
-            noDataPos.append(steps - 1)
+    :param db_data: dict - data from database
+    :param size: list - size of plot
+    :param label: str - title for plot
+    :return:
+    """
+    plot_data = prepare_data(db_data)
 
-    # check if dataset has values for precision
-    has_precision = True
-    try:
-        sum(db_data['data'][2])
-    except TypeError:
-        has_precision = False
+    # stepsize = plot_data['stepsize']
+    has_precision = plot_data['has_precision']
+    nan_in_data = plot_data['nan_in_data']
+    source = ColumnDataSource(plot_data['source'])
+    error_source = ColumnDataSource(plot_data['error_source'])
+    missing_source = ColumnDataSource(plot_data['missing_data'])
 
-    nan_in_data = False
-    # To get a discontinuous line add 'nan' when a time step is missing.
-    # white_line = ()
-    defect_start_end = []
-    if len(noDataPos) > 0:
-        nan_in_data = True
-        # defect_line = tuple([float('nan')] * datalength)
-        defect_x = []
-        defect_y = []
-        for position in noDataPos[::-1]:
-            defect_start_end.append([db_data['data'][0][position], db_data['data'][0][position+1]])
-            # when data is missing add nan at the first and the last position of missing data
-            # concat data till the missing data position, add two nan positions and concat the rest
-            db_data['data'][0] = db_data['data'][0][: position + 1] + \
-                                 (db_data['data'][0][position] + stepsize,
-                                  db_data['data'][0][position + 1] - stepsize,) + \
-                                 db_data['data'][0][position + 1:]
-            db_data['data'][1] = db_data['data'][1][: position + 1] + (float('nan'), float('nan'),) + \
-                                 db_data['data'][1][position + 1:]
-            # bandbef = (db_data['data'][2][position] + db_data['data'][3][position]) / 2
-            # bandaft = (db_data['data'][2][position + 1] + db_data['data'][3][position + 1]) / 2
-            # db_data['data'][2] = db_data['data'][2][: position + 1] + (bandbef, bandaft,) + db_data['data'][2][
-            #                                                                                 position + 1:]
-            # db_data['data'][3] = db_data['data'][3][: position + 1] + (bandbef, bandaft,) + db_data['data'][3][
-            #                                                                                 position + 1:]
-            # db_data['data'][4] = db_data['data'][4][: position + 1] + (0, 0,) + db_data['data'][4][position + 1:]
-            # defect_line = defect_line[: position - 1] + \
-            #              (db_data['data'][1][position], db_data['data'][1][position + 3],) + \
-            #              defect_line[position + 2:]
-            defect_x.extend([db_data['data'][0][position]-stepsize, db_data['data'][0][position],
-                             db_data['data'][0][position+3], db_data['data'][0][position]+stepsize])
-            defect_y.extend([float('nan'), db_data['data'][1][position],
-                             db_data['data'][1][position+3], float('nan'), ])
-        if has_precision:
-            for position in noDataPos[::-1]:
-                db_data['data'][2] = db_data['data'][2][: position + 1] + (float('nan'), float('nan'),) + \
-                                     db_data['data'][2][position + 1:]
-                # db_data['data'][6] = db_data['data'][6][: position + 1] + (float('nan'), float('nan'),) + \
-                #                      db_data['data'][6][position + 1:]
-                # db_data['data'][7] = db_data['data'][7][: position + 1] + (float('nan'), float('nan'),) + \
-                #                      db_data['data'][7][position + 1:]
-    source = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][1]})
-                               # 'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
-                               # 'count': db_data['data'][4]})
     # Plot average as main plot
     mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
@@ -170,55 +122,36 @@ def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
     # plot value line
     mainplot.line(x='date', y='y', source=source, line_width=3)  #, legend_label="measured values")
 
-    # TODO: Figure out how to use 'source' for multi_line.
-    #  Maybe use Glyph? (https://docs.bokeh.org/en/latest/docs/reference/models/glyphs/multi_line.html)
-    #  Glyphs maybe also helpful for hover_tool on multiline?
     mainplot.add_tools(HoverTool(tooltips=[("Value", "@y"),
                                            ("Time", "@date{%T %Z}"),
                                            ("Date", "@date{%d %b %Y}")],
                                  formatters={"@date": "datetime"}, mode="mouse"))
-    # mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
-
-    # plot min/max as multiline and fill area with band
-    # mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
-    #                     ys=[db_data['data'][2], db_data['data'][3]], level='underlay',
-    #                     color=['lightblue', 'lightblue'], legend_label="min & max values")
-    # mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
-    #                          fill_color='lightblue', fill_alpha=0.5))
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
-        # mainplot.line(x=db_data['data'][0], y=defect_line, line_width=3, line_color='red', line_cap='round',
-        mainplot.line(x=defect_x, y=defect_y, line_width=3, line_color='red', line_cap='round',
-                      legend_label='Missing values', visible=False)
+        mainplot.line(x='defect_x', y='defect_y', line_width=3, line_color='red', line_cap='round',
+                      legend_label='Missing values', source=missing_source,
+                      # visible=False
+                      )
         # mainplot.BoxAnnotation(top=80, fill_alpha=0.1, fill_color='red')
         mainplot.legend.click_policy = "hide"
-        for i in defect_start_end:
-            box = BoxAnnotation(left=pd.to_datetime(i[0]), right=pd.to_datetime(i[1]),
+        mis_list = [*range(0, len(plot_data['missing_data']), 4)]
+        for i in mis_list:
+            box = BoxAnnotation(left=plot_data['missing_data']['defect_x'][i+1],
+                                right=plot_data['missing_data']['defect_x'][i+2],
                                 fill_alpha=0.2, fill_color='red')
             mainplot.add_layout(box)
 
     # plot first average precision to have it in the background
     if has_precision:
         # add errorbars
-        data = np.array(db_data['data'][1], dtype=np.float)
-        lower_error = tuple(subtract(data, np.array(db_data['data'][2], dtype=np.float)))
-        upper_error = tuple(add(data, np.array(db_data['data'][2], dtype=np.float)))
-        # low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
-        # up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
-        error_source = ColumnDataSource({'date': db_data['data'][0],
-                                         'upper': upper_error, 'lower': lower_error})
+        # # low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
+        # # up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
         mainplot.add_layout(Whisker(source=error_source, base="date", upper="upper", lower="lower",
                                     line_width=0.5))
         # mainplot.vbar(x='date', width=1000 * 60 * 59 * 24, top='upper_avg', bottom='lower_avg', source=error_source,
         #               fill_color="darksalmon", line_color="black", fill_alpha=0.3, line_width=0.5,
         #               legend_label="Precision")
-
-    # plot bars for the number of values in each group as secondary 'by'plot
-    # mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=db_data['axis']['y2max'])
-    # bin_width = db_data['data'][0][1] - db_data['data'][0][0]
-    # distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', size[0])
-    # distriplot.x_range = mainplot.x_range
 
     # Style plot
     mainplot.title.text_font_size = "14pt"
@@ -238,61 +171,15 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     :param label:
     :return:
     """
-    # use first five time steps to estimate resolution/step size of data
-    stepsize = []
-    steps = 0
-    while steps < 5:
-        stepsize.append(db_data['data'][0][steps + 1] - db_data['data'][0][steps])
-        steps += 1
+    plot_data = prepare_data(db_data)
 
-    # check if data is continuous. If not write position of missing values in noDataPos
-    stepsize = min(stepsize)
-    datalength = len(db_data['data'][0])
-    noDataPos = []
-    for steps in range(1, datalength):
-        if db_data['data'][0][steps] - db_data['data'][0][steps - 1] > stepsize:
-            noDataPos.append(steps - 1)
+    stepsize = plot_data['stepsize']
+    has_precision = plot_data['has_precision']
+    nan_in_data = plot_data['nan_in_data']
+    source = ColumnDataSource(plot_data['source'])
+    error_source = ColumnDataSource(plot_data['error_source'])
+    # missing_source = ColumnDataSource(plot_data['missing_data'])
 
-    # check if dataset has values for precision
-    has_precision = True
-    try:
-        sum(db_data['data'][7])
-    except TypeError:
-        has_precision = False
-
-    nan_in_data = False
-    # To get a discontinuous line add 'nan' when a time step is missing.
-    white_line = ()
-    if len(noDataPos) > 0:
-        nan_in_data = True
-        white_line = tuple([float('nan')] * datalength)
-        for position in noDataPos[::-1]:
-            db_data['data'][0] = db_data['data'][0][: position + 1] + \
-                                 (db_data['data'][0][position] + stepsize,
-                                  db_data['data'][0][position + 1] - stepsize,) + \
-                                 db_data['data'][0][position + 1:]
-            db_data['data'][1] = db_data['data'][1][: position + 1] + (float('nan'), float('nan'),) + \
-                                 db_data['data'][1][position + 1:]
-            bandbef = (db_data['data'][2][position] + db_data['data'][3][position]) / 2
-            bandaft = (db_data['data'][2][position + 1] + db_data['data'][3][position + 1]) / 2
-            db_data['data'][2] = db_data['data'][2][: position + 1] + (bandbef, bandaft,) + db_data['data'][2][
-                                                                                            position + 1:]
-            db_data['data'][3] = db_data['data'][3][: position + 1] + (bandbef, bandaft,) + db_data['data'][3][
-                                                                                            position + 1:]
-            db_data['data'][4] = db_data['data'][4][: position + 1] + (0, 0,) + db_data['data'][4][position + 1:]
-            white_line = white_line[: position + 1] + (bandbef, bandaft,) + white_line[position + 1:]
-        if has_precision:
-            for position in noDataPos[::-1]:
-                db_data['data'][5] = db_data['data'][5][: position + 1] + (float('nan'), float('nan'),) + \
-                                     db_data['data'][5][position + 1:]
-                db_data['data'][6] = db_data['data'][6][: position + 1] + (float('nan'), float('nan'),) + \
-                                     db_data['data'][6][position + 1:]
-                db_data['data'][7] = db_data['data'][7][: position + 1] + (float('nan'), float('nan'),) + \
-                                     db_data['data'][7][position + 1:]
-
-    source = ColumnDataSource({'date': db_data['data'][0], 'y': db_data['data'][1],
-                               'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
-                               'count': db_data['data'][4]})
     # Plot average as main plot
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
@@ -309,30 +196,24 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     #  Glyphs maybe also helpful for hover_tool on multiline?
     mainplot.add_tools(HoverTool(tooltips=[("value", "@y"), ("Date", "@date{%d %b %Y}")],
                                  formatters={"@date": "datetime"}, mode="mouse"))
-
     # mainplot.add_tools(HoverTool(tooltips=[("value at pointer", "$y")], mode="mouse"))
 
     # plot min/max as multiline and fill area with band
-    mainplot.multi_line(xs=[db_data['data'][0], db_data['data'][0]],
-                        ys=[db_data['data'][2], db_data['data'][3]], level='underlay',
+    mainplot.multi_line(xs=[plot_data['source']['date'], plot_data['source']['date']],
+                        ys=[plot_data['source']['ymin'], plot_data['source']['ymax']],
+                        level='underlay',
                         color=['lightblue', 'lightblue'], legend_label="min & max values")
     mainplot.add_layout(Band(base='date', lower='ymin', upper='ymax', source=source, level='underlay',
                              fill_color='lightblue', fill_alpha=0.5))
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
-        mainplot.line(x=db_data['data'][0], y=white_line, line_width=2, line_color='white', line_cap='round')
+        mainplot.line(x='defect_x', y='defect_y', source=source,
+                      line_width=2, line_color='white', line_cap='round')
 
     # plot first average precision to have it in the background
     if has_precision:
         # add errorbars
-        data = np.array(db_data['data'][1], dtype=np.float)
-        lower_error = tuple(subtract(data, np.array(db_data['data'][7], dtype=np.float)))
-        upper_error = tuple(add(data, np.array(db_data['data'][7], dtype=np.float)))
-        low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
-        up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
-        error_source = ColumnDataSource({'date': db_data['data'][0], 'upper': upper_error, 'lower': lower_error,
-                                         'upper_avg': up_avg_error, 'lower_avg': low_avg_error})
         mainplot.add_layout(Whisker(source=error_source, base="date", upper="upper", lower="lower",
                                     line_width=0.5))
         mainplot.vbar(x='date', width=1000 * 60 * 59 * 24, top='upper_avg', bottom='lower_avg', source=error_source,
@@ -341,7 +222,8 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
 
     # plot bars for the number of values in each group as secondary 'by'plot
     mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=db_data['axis']['y2max'])
-    bin_width = db_data['data'][0][1] - db_data['data'][0][0]
+    bin_width = stepsize
+    # bin_width = db_data['data'][0][1] - db_data['data'][0][0]
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', size[0])
     distriplot.x_range = mainplot.x_range
 
@@ -511,8 +393,8 @@ def __DB_load_directiondata(id, ti):
 
 
 def timeseries_plot(data, size):
-    mainplot = main_xyplot(data, size, y_label='value', x_label="Time", x_type="datetime", type='line',
-                             title='Daily average, min and max values')
+    mainplot = xyplot_base_figure(data, size, y_label='value', x_label="Time", x_type="datetime",
+                                  type='line', title='Daily average, min and max values')
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
@@ -521,14 +403,26 @@ def xyplot(data, size):
     x_label = data.columns[0]
     y_label = data.columns[1]
 
-    mainplot = main_xyplot(data, size, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
+    mainplot = xyplot_base_figure(data, size, y_label=y_label, x_label=x_label, x_type="linear", type='scatter', title='')
     mainplot.sizing_mode = 'scale_both'
     script, div = components(mainplot, wrap_script=False)
     return {'script': script, 'div': div}
 
 
-def main_xyplot(data, size, y_label='value', x_label="x axis", x_type="linear", type="line",
-                  title='Daily average, min and max values'):
+def xyplot_base_figure(data, size, y_label='value', x_label="x axis", x_type="linear", type="line",
+                       title='Daily average, min and max values'):
+    """
+    Create the base xy plot used to add specific information.
+
+    :param data: pandas dataframe
+    :param size: size of plot in px
+    :param y_label: string
+    :param x_label: string
+    :param x_type: linear, log, datetime or mercator
+    :param type: yet implemented is line and scatter
+    :param title: string with name of plot
+    :return: bokeh figure
+    """
     mainplot = figure(title=title, x_axis_label=x_label, x_axis_type=x_type,
                       y_axis_label=y_label,
                       plot_width=size[0], plot_height=size[1], toolbar_location="above",
@@ -562,7 +456,7 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     :param bin_width: bin width in format of x axes, e.g. 1 day
     :param title: headline for distribution
     :param plot_width: width of the plot
-    :return:
+    :return: bokeh figure object
     """
     p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
                # plot_width=plot_width,
@@ -578,14 +472,13 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     return p
 
 
-def check_cache(cache_obj: dict):
+def check_cache(cache_obj: dict) -> tuple:
     """
     Check if redis is used to cache images, and if image 'name' is cached.
     Return state of redis, if image in cache and image if it is in cache.
 
-    :rtype: tuple
     :param name:
-    :return:
+    :return: returns two values. First cache object, second Bokeh image as dict of 'script' and 'div'
     """
     img = None
     try:
@@ -602,7 +495,16 @@ def check_cache(cache_obj: dict):
     return cache_obj, img
 
 
-def get_fullres_plot(id: str, size=[700, 500]):
+def get_fullres_plot(id: str, size: list = [700, 500]) -> dict:
+    """
+    Check if plot is stored with redis or build a new one with Bokeh.
+    Bokeh builds an object with 'script' and 'div'. Redis stores this as string, which is fine, as
+    the data is send to the website as string anyways.
+
+    :param id: Entry id in metacatalog
+    :param size:
+    :return: Bokeh image consisting of 'script' and 'div'
+    """
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
                  'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size))}
     cache_obj, img = check_cache(cache_obj)
@@ -630,24 +532,13 @@ def get_preview(id: str, size=[700, 500]):
         wps_result = True if 'wps' in id[0:3] else False
     except:
         wps_result = False
-    imgname = "preview_{}".format('b' + str(id) + str(size))
-    use_redis, in_cache, img = check_cache(imgname)
-    # use_redis = True
-    # in_cache = False
-    # try:
-    #     r = redis.StrictRedis()
-    #     img = r.get("preview_{}".format('b' + id + size))
-    # except:
-    #     use_redis = False
-    #
-    # if use_redis:
-    #     if img is None:
-    #         in_cache = False
-    #     else:
-    #         img = str(img, 'utf-8')
-    #         in_cache = True
 
-    if not in_cache and not wps_result:
+    imgname = "preview_{}".format('b' + str(id) + str(size))
+    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+                 'in_cache': False, 'name': imgname}
+    cache_obj, img = check_cache(cache_obj)
+
+    if not cache_obj['in_cache'] and not wps_result:
         label = __DB_load_label(id)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
@@ -658,14 +549,13 @@ def get_preview(id: str, size=[700, 500]):
             db_data = __DB_load_data_avg(id)
             img = get_bokeh_standard(db_data, size, label)
 
-        if use_redis:
-            r = redis.StrictRedis()
+        if cache_obj['use_redis']:
+            r = cache_obj['redis']
             r.set(imgname, img)
 
     if wps_result:
         DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
         try:
-            # if 'ts-pickle' in DBstring[1]:
             if 'pickle' in DBstring[1]:
                 df = pd.read_pickle(DBstring[2])
                 if 'ts-pickle' in DBstring[1]:
@@ -684,9 +574,127 @@ def get_preview(id: str, size=[700, 500]):
             else:
                 print('Error: Con not plot. Unknown type')
 
-        # with open(DBstring, 'rb') as f:
-        #    data = pickle.load(f)
         except FileNotFoundError:
             print('The data file %s was not found.' % (DBstring[2]))
 
     return img
+
+
+def prepare_data(db_data: object):
+    """
+    Fill gaps in datasets and prepare for
+
+    :param db_data:
+    :return:
+    """
+    # use first five time steps to estimate resolution/step size of data
+    stepsize = []
+    steps = 0
+    error_source = {}
+    missing_data = {}
+
+    while steps < 5:
+        stepsize.append(db_data['data'][0][steps + 1] - db_data['data'][0][steps])
+        steps += 1
+
+    # check if data is continuous. If not write position of missing values in noDataPos
+    stepsize = min(stepsize)
+    datalength = len(db_data['data'][0])
+    noDataPos = []
+    for steps in range(1, datalength):
+        if db_data['data'][0][steps] - db_data['data'][0][steps - 1] > stepsize:
+            noDataPos.append(steps - 1)
+
+    # check if dataset has values for precision
+    has_precision = True
+    num_datacolumns = len(db_data['data'])
+    if num_datacolumns == 8:  # avg and error data
+        precision_data = [5, 6, 7]
+    elif num_datacolumns == 5:  # avg data
+        has_precision = False
+    elif num_datacolumns == 3:  # full data and error
+        precision_data = [2]
+    elif num_datacolumns == 2:  # full data without error
+        has_precision = False
+    else:
+        print('ERROR from "prepare_data()": Unknown data structure.')
+
+    nan_in_data = False
+
+    # To get a discontinuous line add 'nan' when a time step is missing.
+    if len(noDataPos) > 0:
+        nan_in_data = True
+        defect_x = []
+        defect_y = []
+        if num_datacolumns >= 5:  # if preview with average, min, max  values
+            for pos in noDataPos[::-1]:
+                db_data['data'][0] = db_data['data'][0][: pos + 1] + \
+                                     (db_data['data'][0][pos] + stepsize,
+                                      db_data['data'][0][pos + 1] - stepsize,) + \
+                                     db_data['data'][0][pos + 1:]
+                db_data['data'][1] = db_data['data'][1][: pos + 1] + (float('nan'), float('nan'),) + \
+                                     db_data['data'][1][pos + 1:]
+                bandbef = (db_data['data'][2][pos] + db_data['data'][3][pos]) / 2
+                bandaft = (db_data['data'][2][pos + 1] + db_data['data'][3][pos + 1]) / 2
+                db_data['data'][2] = db_data['data'][2][: pos + 1] + (bandbef, bandaft,) + db_data['data'][2][
+                                                                                           pos + 1:]
+                db_data['data'][3] = db_data['data'][3][: pos + 1] + (bandbef, bandaft,) + db_data['data'][3][
+                                                                                           pos + 1:]
+                db_data['data'][4] = db_data['data'][4][: pos + 1] + (0, 0,) + db_data['data'][4][pos + 1:]
+                # white_line = white_line[: pos + 1] + (bandbef, bandaft,) + white_line[pos + 1:]
+                defect_x.extend([db_data['data'][0][pos] - stepsize, db_data['data'][0][pos],
+                                 db_data['data'][0][pos + 3], db_data['data'][0][pos] + stepsize])
+                defect_y.extend([float('nan'), db_data['data'][1][pos],
+                                 db_data['data'][1][pos + 3], float('nan'), ])
+            source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1],
+                      'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
+                      'count': db_data['data'][4]})
+            missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
+        else:  # if full dataset, without average, min, max values
+            for pos in noDataPos[::-1]:
+                db_data['data'][0] = db_data['data'][0][: pos + 1] + \
+                                     (db_data['data'][0][pos] + stepsize,
+                                      db_data['data'][0][pos + 1] - stepsize,) + \
+                                     db_data['data'][0][pos + 1:]
+                db_data['data'][1] = db_data['data'][1][: pos + 1] + (float('nan'), float('nan'),) + \
+                                     db_data['data'][1][pos + 1:]
+                defect_x.extend([db_data['data'][0][pos] - stepsize, db_data['data'][0][pos],
+                                 db_data['data'][0][pos + 3], db_data['data'][0][pos] + stepsize])
+                defect_y.extend([float('nan'), db_data['data'][1][pos],
+                                 db_data['data'][1][pos + 3], float('nan'), ])
+            source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1]})
+            missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
+
+    # no missing values but min, max, average values
+    elif len(db_data) > 2:
+        source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1],
+                               'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
+                               'count': db_data['data'][4]})
+    # no missing values and no min, max, average values
+    elif len(db_data) <= 2:
+        source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1]})
+
+    # if precission values:
+    if has_precision:
+        for pos in noDataPos[::-1]:
+            for p_set in precision_data:
+                db_data['data'][p_set] = db_data['data'][p_set][: pos + 1] + (float('nan'), float('nan'),) + \
+                                         db_data['data'][p_set][pos + 1:]
+        if len(precision_data) > 1:
+            data = np.array(db_data['data'][1], dtype=np.float)
+            lower_error = tuple(subtract(data, np.array(db_data['data'][7], dtype=np.float)))
+            upper_error = tuple(add(data, np.array(db_data['data'][7], dtype=np.float)))
+            low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
+            up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
+            error_source = pd.DataFrame({'date': db_data['data'][0],
+                                         'upper': upper_error, 'lower': lower_error,
+                                         'upper_avg': up_avg_error, 'lower_avg': low_avg_error})
+        else:
+            data = np.array(db_data['data'][1], dtype=np.float)
+            lower_error = tuple(subtract(data, np.array(db_data['data'][2], dtype=np.float)))
+            upper_error = tuple(add(data, np.array(db_data['data'][2], dtype=np.float)))
+            error_source = pd.DataFrame({'date': db_data['data'][0],
+                                         'upper': upper_error, 'lower': lower_error})
+
+    return {'stepsize': stepsize, 'has_precision': has_precision, 'nan_in_data': nan_in_data,
+            'source': source, 'error_source': error_source, 'missing_data': missing_data}

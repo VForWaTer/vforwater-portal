@@ -171,7 +171,6 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
         drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
     }
     let elementID = "sidebtn" + storeID;
-    console.log('___ elementID: ', elementID)
     return '<li ' + drag_html + ' class="w3-padding task" ' +
         'data-id="' + storeID + '" btnName="' + btnName + '" onmouseover="" ' +
         'style="cursor:pointer;" id="' + elementID + '">' +

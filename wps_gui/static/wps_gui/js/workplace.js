@@ -54,7 +54,7 @@ function wpsprocess(service, identifier) {
             data: {
                 processview: JSON.stringify({id: identifier, serv: service}),
                 'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
+            }, /** data sent with the post request **/
         })
             .done(function (json) {
                 build_modal(json, service, identifier)
@@ -62,7 +62,7 @@ function wpsprocess(service, identifier) {
                 sessionStorage.setItem('tools', JSON.stringify(tools))
         })
             .fail(function (e) {
-                console.log('Failed: ', e)
+                console.error('Failed: ', e)
         });
     }
     }
@@ -101,7 +101,7 @@ function get_wpsprocess(service, identifier) {
                 return json
         })
             .fail(function (e) {
-                console.log('Failed: ', e)
+                console.error('Failed: ', e)
         });
     }
 }
@@ -110,8 +110,13 @@ function drop_and_save() {
     console.error('lets store it')
 }
 
+/**
+ * Check if an input is required and if it is required check if the input has a value.
+ *
+ * @param {HTMLElement} checkElement Element to be checked if filled.
+ */
 function check_required(checkElement) {
-    // check if an Element of a wps is required
+    /** check if an Element of a wps is required **/
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -145,49 +150,71 @@ function check_required(checkElement) {
 // TODO: Improve code by using HTML Forms
 function modal_run_process() {
     color_modal("dodgerblue");
+
     /** collect inputs **/
     var inKey = [];
     var inValue = [];
+    var inType = [];
     let dDInput = 0;
     let inModal = document.getElementById('mod_in');
     let inputInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
     let valueList = [];
+    let typeList = [];
+    let stored;
 
     /** first loop over each dropdown in input, then over values in dropdown **/
     for (let i = 0; i < dropDInputs.length; i++) {
-            dDInput = dropDInputs[i].selectedOptions;
-            console.log('dDInput: ', dDInput)
-            if (dDInput.length > 1) {
-                for (let j = 0; j < dDInput.length; j++) {
-                    valueList.push(dDInput[j].value)
-                }
-                inValue.push(valueList);
-                inKey.push(dropDInputs[i].name);
+        dDInput = dropDInputs[i].selectedOptions;
+
+        /** if many dropdowns **/
+        if (dDInput.length > 1) {
+            for (let j = 0; j < dDInput.length; j++) {
+                // valueList.push(dDInput[j].value)
+                stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[j].value]
+                valueList.push(stored['source'] + stored['dbID'])
+                typeList.push(stored['type']);
+            }
+            inValue.push(valueList);
+            inKey.push(dropDInputs[i].name);
+            inType.push(typeList);
+
+        /** else if one dropdowns **/
+        } else {
+            if (dDInput[0].value.substring(0, 2) == 'db') {
+                stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
+                inValue.push(stored['source'] + stored['dbID']);
+                inType.push(stored['type']);
             } else {
-                inKey.push(dropDInputs[i].name);
                 inValue.push(dDInput[0].value);
+                inType.push(stored['type']);
+            }
+            inKey.push(dropDInputs[i].name);
         }
     }
-
     for (let i = 0; i < inputInputs.length; i++) {
         if (inputInputs[i].type == "radio") {
             if (inputInputs[i].checked == true) {
                 inKey.push(inputInputs[i].name);
                 inValue.push(inputInputs[i].value);
+                inType.push('string');
             }
         } else if (inputInputs[i].type == "checkbox") {
             inKey.push(inputInputs[i].name);
             if (inputInputs[i].checked == true) {
                 inValue.push(true);
+                inType.push('boolean');
             } else {
                 inValue.push(false);
+                inType.push('boolean');
             }
         } else {
             inKey.push(inputInputs[i].name);
             inValue.push(inputInputs[i].value);
+            inType.push('');
         }
     }
+
     /** collect outputs **/
     let outModal = document.getElementById('mod_out');
     let outputs = outModal.getElementsByTagName('input');
@@ -201,25 +228,28 @@ function modal_run_process() {
             outDict[outputs[i].name] = outputs[i].value;
         }
     }
+
     /** find respective process **/
     let modhead = document.getElementById('mod_head');
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
+
     let outputName;
     if (outputs[0].value === "") {
         outputName = identifier + "_";
     } else {
         outputName = outputs[0].value;
     }
-    console.log('input: ', {id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue})
+
     $.ajax({
         url: DEMO_VAR + "/workspace/processrun",
         data: {
-            processrun: JSON.stringify({id: identifier, serv: wpsservice, key_list: inKey, value_list: inValue}),
+            processrun: JSON.stringify({id: identifier, serv: wpsservice,
+                key_list: inKey, value_list: inValue, type_list: inType}),
             'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
+        }, /** data sent with the post request **/
     })
-        .done(function (json) { // Results are stored in the sessionStorage
+        .done(function (json) {  /** Results are stored in the sessionStorage **/
             if (json.execution_status == "ProcessSucceeded") {
                 json.wps = identifier;
                 json.inputs = {};
@@ -229,13 +259,10 @@ function modal_run_process() {
                     i++;
                 });
                 color_modal("forestgreen");
-                console.log('json.result: ', json.result)
+
                 for (let i in json.result) {
                     let btnName = set_result_btn_name(outputName);
-                    console.log('json.result[i]: ', json.result[i])
-                    console.log('json.result[i].dropBtn: ', json.result[i].dropBtn)
                     json.result[i].dropBtn.name = btnName;
-                    console.log('json.result[i].dropBtn.name: ', json.result[i].dropBtn.name)
                     let btnData = {
                         type: json.result[i].type,
                         wpsID: json.result[i].wpsID,
@@ -244,7 +271,6 @@ function modal_run_process() {
                         status: json.execution_status,
                         dropBtn: json.result[i].dropBtn
                     }
-                    console.log("btnData: ", btnData)
                     add_resultbtn_to_sessionstore(btnName, btnData);
                     document.getElementById("workspace_results").innerHTML += build_resultstore_button(btnName, btnData);
                 }
@@ -258,7 +284,7 @@ function modal_run_process() {
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
                 color_modal("firebrick");
-                // Use Timeout to ensure color changed before popup appears
+                /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
                 }, 5);
@@ -294,7 +320,7 @@ function run_wps(input_dict) {
                 key_list: input_dict.keys(), value_list: input_dict.values()}),
             // processrun: JSON.stringify(input_dict),
             'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
+        }, /** data sent with the post request **/
     })
         .done (function (json) {
             return json
@@ -327,7 +353,7 @@ function color_modal(color) {
     modalColor.style.backgroundColor = color;
 }
 
-// A Object with names and values from the input object / not used yet
+/** A Object with names and values from the input object / not used yet **/
 function modalObj(processId, processInput, processOutput) {
     this.processId = processId;
     this.processInput = processInput;
@@ -342,8 +368,6 @@ function add_resultbtn_to_sessionstore(btnName, json) {
             console.error('Error! Names should be unique! Problem with race conditions?')
         }
     }
-    console.log('json: ', json)
-    console.log('btnName: ', btnName)
     result_btns[btnName] = {
         type: json.type,
         wps: json.wps,
@@ -383,11 +407,12 @@ function remove_single_result(removeData) {
 }
 
 function remove_all_results() {
-    // remove button from portal
+    /** remove button from portal **/
     $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key) {
         remove_single_result(key);
     });
-    // remove button from session
+
+    /** remove button from session **/
     sessionStorage.removeItem("resultBtn");
 }
 
@@ -434,12 +459,18 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
     let boxLen = 0;
     let aptStoreData = {};
     let aptResultData = {};
+    let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
 
-    for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
-    for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
+    for (let i in sessionStoreData) if (acceptedDataTypes.has(sessionStoreData[i].type)) {
+        aptStoreData[i] = sessionStoreData[i];
+    }
+    for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
+    // for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
+    // for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
     boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length;
     // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???
     if (item.minOccurs > 1) htmlSelect.required = true;
+
     /** check if input data is available; only build dropdown if there is data to select from **/
     if (boxLen == 0) {
         htmlSelect = document.createElement("DIV");
@@ -466,15 +497,17 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
         if (item.maxOccurs > 1 || item.minOccurs > 1) {
             htmlSelect.multiple = true;
         }
-        // /** If more then one option is needed to select show a second box with selection **/
+        /** If more then one option is needed to select, show a second box with selection **/
     }
     newNode.appendChild(htmlSelect);
     return countDropDowns;
 }
 
 function build_dropdown_opt(item, optionGroup, sidebarData) {
-    let opt = document.createElement("OPTION");
+    // let opt = document.createElement("OPTION");
+    let opt;
     Object.keys(sidebarData).forEach(function (singleData) {
+        opt = document.createElement("OPTION");
         if (sidebarData[singleData].abbr && sidebarData[singleData].unit) {
             opt.innerText = `${singleData} ${sidebarData[singleData].name} (${sidebarData[singleData].abbr}
             in ${sidebarData[singleData].unit})`;
@@ -482,10 +515,9 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
             opt.innerText = `${singleData}`;
         }
         opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
-
+        // opt.setAttribute('data-datatype', sidebarData[singleData].type);
         if (item.keywords.length == 1) opt.selected = true;
         optionGroup.appendChild(opt);
-        opt = document.createElement("OPTION");
     })
     return optionGroup
 }
@@ -505,7 +537,8 @@ function build_modal(wpsInfo, service, identifier) {
     }
 
     element.innerHTML = newElement;
-    //inputs:
+
+    /** inputs: **/
     document.getElementById("mod_in").innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
@@ -515,16 +548,21 @@ function build_modal(wpsInfo, service, identifier) {
         element = document.getElementById("mod_in");
         newNode = document.createElement("p");
 
-        /** Set title of Input and set the required flag if necessary **/
+        /** Set title of Input and set the 'required' flag if necessary **/
         let titleText = "";
         if ('minOccurs' in item) {
-            if (item.minOccurs > 0 && item.dataType != 'boolean') {
+            if (item.minOccurs == 0) {
+                titleText = " " + item.title + ": "
+            } else if (item.defaultValue) {
+                titleText = " " + item.title + ": "
+            } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
                 titleText = " " + item.title + " (*) : ";
                 inElement.required = true;
-            } else {
-                titleText = " " + item.title + ": "
             }
+        } else {
+                titleText = " " + item.title + ": "
         }
+
         // if (item.minOccurs === 1) inElement.required = true;
         nodeText = document.createTextNode(titleText);
         newNode.appendChild(nodeText);
@@ -630,3 +668,22 @@ function build_modal(wpsInfo, service, identifier) {
     // console.log('+++: ', JSON.stringify(modalObj))
 }
 
+function load_workflow() {
+    console.log("load isn't implemented yet.")
+    console.log("load just a test workflow.")
+    let workflow
+    sessionStorage.setItem('workflow', JSON.stringify(workflow))
+}
+
+function save_workflow() {
+    console.log("save isn't implemented yet: ",
+        JSON.parse(document.getElementById('is_authenticated').value))
+}
+
+function run_workflow() {
+    console.log("run isn't implemented yet.")
+}
+
+function clear_workflow() {
+    console.log("clear isn't implemented yet.")
+}

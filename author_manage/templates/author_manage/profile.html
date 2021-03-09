@@ -12,7 +12,7 @@ class="active";
 <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/base.css' %}"/>
 <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-req.css' %}" />
 <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/profile.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/resources-overview.css' %}" />
+{#<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/resources-overview.css' %}" />#}
 {% endblock %}
 
 {% block body %}
@@ -39,8 +39,8 @@ class="active";
 
 {% block requests_or_resources %}
 <div class="mini-nav">
-   <a href="{% url 'author_manage:profile' %}" class="current w3-btn w3-blue">{% trans "  Requests" %}</a></li>
-   <a href="{% url 'author_manage:profile' %}my-resources" class="noncurrent w3-btn w3-blue">{% trans "  My Resources" %}</a></li>
+{#   <a href="{% url 'author_manage:profile' %}" class="current w3-btn w3-blue"><strong>{% trans "  Requests" %}</strong></a></li>#}
+   <a href="{% url 'author_manage:profile' %}my-resources" class="noncurrent w3-btn w3-blue"><strong>{% trans "  My Resources" %}</strong></a></li>
 </div>
 
 <!-- in case the user does not have any current requests -->

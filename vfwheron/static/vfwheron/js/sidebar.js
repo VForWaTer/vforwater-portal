@@ -1,4 +1,4 @@
-//Toggle between showing and hiding the sidenav, and add overlay effect
+/** Toggle between showing and hiding the sidenav, and add overlay effect **/
 function w3_open() {
     // Get the Sidenav
     var mySidenav = document.getElementById("mySidenav");
@@ -15,7 +15,7 @@ function w3_open() {
     }
 }
 
-//Close the sidenav with the close button
+/** Close the sidenav with the close button **/
 function w3_close() {
     var mySidenav = document.getElementById("mySidenav");
 
@@ -25,7 +25,7 @@ function w3_close() {
     overlayBg.style.display = "none";
 }
 
-//Toggle between showing and hiding the sidemenu, and add overlay effect
+/** Toggle between showing and hiding the sidemenu, and add overlay effect **/
 function Sidemenu_open() {
     // Get the Sidemenu
     var mySidemenu = document.getElementById("mySidemenu");
@@ -42,7 +42,7 @@ function Sidemenu_open() {
     }
 }
 
-//Close the sidemenu with the close button
+/** Close the sidemenu with the close button **/
 function Sidemenu_close() {
     var mySidemenu = document.getElementById("mySidemenu");
 
@@ -52,13 +52,17 @@ function Sidemenu_close() {
     overlaymenu.style.display = "none";
 }
 
-// Get the User Selection in Workspace
-// Button information is stored in an HTML object with Id 'workdata'
-// it is stored as a string, so the following function transforms this string back to a dictionary
+/**
+ * Get the User Selection in Workspace
+ * Button information is stored in an HTML object with Id 'workdata'
+ * it is stored as a string, so the following function transforms this string back to a dictionary
+ */
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
-    // Initiate creation of data Button in data and result store. When called from outside of 'Home' check if data is
-    // already pickled. If not pickle it. (TODO: Should be monitored if a lot of data gets pickled but never used!)
+    /** Initiate creation of data Button in data and result store.
+     * When called from outside of 'Home' check if data is
+     * already pickled. If not pickle it. **/
+    // (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
         build_datastore_button(workspaceData);
@@ -84,13 +88,14 @@ function show_data() {
  * @param workspaceData
  */
 function preload_datastore_button(workspaceData) {
-    // USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY
+    /** USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY **/
     for (let dataset in workspaceData) {
         let preload = {};
         if (workspaceData[dataset]['source'] === 'db') {
             // TODO: Think about using uuid instead of entry_id
             preload = {key_list: ['entry_id', 'uuid', 'start', 'end'],
-                value_list: [workspaceData[dataset]['dbID'].toString(), '',
+                value_list: [workspaceData[dataset]['orgID'].toString(), '',
+                // value_list: [workspaceData[dataset]['dbID'].toString(), '',
                     workspaceData[dataset]['start'], workspaceData[dataset]['end']],
                 dataset: dataset
             };
@@ -100,7 +105,7 @@ function preload_datastore_button(workspaceData) {
                 // dataType: 'json',
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
-                }, // data sent with post request
+                }, /** data sent with post request **/
             })
                 .done(function (wpsDBInfo) {
                     if (wpsDBInfo.Error) {
@@ -174,11 +179,18 @@ function update_datastore_button(wpsDBInfo) {
     // let workspaceData = sessionStorageData
     let datasetKey = wpsDBInfo['orgid']
     let storageEntry = workspaceData[datasetKey]
+    let btnName = createBtnName(storageEntry['name'], storageEntry['abbr'],
+        storageEntry['unit'], wpsDBInfo['id'].substring(3,))
+    let title = `${storageEntry['name']} (${storageEntry['abbr']} in ${storageEntry['unit']})`;
+    let button = document.getElementById('sidebtn'+wpsDBInfo['orgid'])
+
     if (wpsDBInfo['id'].substring(0,3) == 'wps') {
         storageEntry.source = wpsDBInfo['id'].substring(0,3)
         storageEntry.dbID = wpsDBInfo['id'].substring(3,)
         storageEntry.inputs = wpsDBInfo['inputs']
     }
+    button.innerHTML = sidebar_btn_html(wpsDBInfo['id'].substring(3,),
+        storageEntry, btnName, title)
     workspaceData[datasetKey] = storageEntry
     /*$.each(wpsDBInfo, function (keyID, value) {
         if (workspaceData[keyID] && workspaceData[keyID]['wpsID']) {
@@ -203,7 +215,6 @@ function build_datastore_button(json) {
     //     $.each(json['workspaceData'], function (key, value) {
     let html = "";
     $.each(json, function (k, v) {
-        console.log('key, value: ', k, v)
         let btnName = createBtnName(v['name'], v['abbr'], v['unit'], v['dbID'])
         let title = `${v['name']} (${v['abbr']} in ${v['unit']})`;
         // check if buttons already exist before creating a new one:
@@ -224,12 +235,76 @@ function build_datastore_button(json) {
     // }
 }
 
-// Remove data / elements from workspace
+// TODO: create html of build_resultstore_button and build_datastore_button in one function
+// /**
+//  * Build html for store buttons.
+//  * data-id is used to find results on server
+//  * id is used for the remove button
+//  * @param  {string} name name for the button
+//  * @param  {obj} json Object holding all necessary info about result
+//  * @param  {string} title for the button title
+//  * @param  {string} key is used for the button id
+//  * @param  {boolean} result to set the 'is-result' flag
+//  * @return {string} HTML Code for the button
+//  **/
+// function store_btn_html(name, json, title, key, result) {
+//     console.log("Page path is: ", window.location.pathname)
+//     let drag_html = ''
+//     let is_result = ''
+//     if (window.location.pathname == '/workspace/') {
+//         drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
+//     }
+//     if (result) {
+//         is_result = ' is-result'
+//     }
+//     return
+//     '<li ' + drag_html +
+//         'class="w3-padding task' + is_result +'" ' +
+//         'data-id="wps' + json.wpsID + '" ' +
+//         'btnName="' + name + '" ' +
+//         'onmouseover="" ' +
+//         'style="cursor:pointer;" ' +
+//         'id="' + name + '">' +
+//         '<span class="w3-medium" ' +
+//             'title="' + title + '">' +
+//             '<div class="task__content">' + name + '</div>' +
+//             '<div class="task__actions"></div>' +
+//         '</span>' +
+//         '<span class="' + json['type'] + '"></span>' +
+//         '<a href="javascript:void(0)" ' +
+//             'onclick="remove_single_result(\'' + name + '\')" ' +
+//             'class="w3-hover-white">' +
+//             '<i class="fa fa-remove fa-fw"></i>' +
+//         '</a><br></li>';
+//
+//     '<li draggable="true" ' +
+//         'class="w3-padding task" ' +
+//         'data-id="' + key + '" ' +
+//         'btnName="' + btnName + '" ' +
+//         'onmouseover="" ' +
+//         'style="cursor:pointer;" ' +
+//         'id="id' + key + '">' +
+//         '<span class="w3-medium" ' +
+//             'title="' + title + '">' +
+//             '<div class="task__content">' + btnName + '</div>' +
+//             '<div class="task__actions"></div>' +
+//         '</span>' +
+//         '<span class="data ' + value['type'] + '"></span>' +
+//         '<a href="javascript:void(0)" ' +
+//             'onclick="remove_single_data(' + key + ')" ' +
+//             'class="w3-hover-white w3-right">' +
+//             '<i class="fa fa-remove fa-fw"></i>' +
+//         '</a><br></li>';
+// }
+
+
+/** Remove data / elements from workspace **/
 function remove_single_data(removeData) {
-    // remove data from portal:
+    /** remove data from portal: **/
     document.getElementById("sidebtn" + removeData).remove();
     // removeData.remove();  // could be used when the element where send directly
-    // remove data from session:
+
+    /** remove data from session: **/
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
 
     delete workspaceData[removeData];
@@ -238,7 +313,7 @@ function remove_single_data(removeData) {
 }
 
 function remove_all_datasets() {
-    // remove button from portal
+    /** remove button from portal **/
     let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (key, value) {
         if ("name" in value) {
@@ -246,7 +321,7 @@ function remove_all_datasets() {
             // document.getElementById("id" + key).remove()
         }
     });
-    // remove button from session
+    /** remove button from session **/
     sessionStorage.removeItem("dataBtn");
     sessionStorageData = {};
 }
