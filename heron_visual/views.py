@@ -1,6 +1,6 @@
 import json
 
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render
 
 #from heron_wps.forms import InputForm
 from bokeh.plotting import figure, output_file, show
