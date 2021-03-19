@@ -27,6 +27,7 @@ datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
              'ts-aggregate', 'ts-pickle', 'ts-merge', 'aggregate',
              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle'
              ]
+basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number']
 # datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
 #              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
 
@@ -150,11 +151,6 @@ class ProcessView(TemplateView):
 
         wps = get_wps_service_engine(selected_process['serv'])
         wps_process = wps.describeprocess(selected_process['id'])
-        # print('jsonpickle.encode(wps_process): ', jsonpickle.encode(wps_process))
-        # for i in wps_process:
-        #     print('i: ', i)
-        # print('jsonpickle.encode(wps_process, unpicklable=False): ', jsonpickle.encode(wps_process,
-        # unpicklable=False))
 
         # TODO: use of jsonpickle only to simplify readability of wps_process.
         #  Shouldn't be necessary to use jsonpickle for that. Please improve!
@@ -184,10 +180,8 @@ class ProcessView(TemplateView):
                                         else:
                                             innerdict['abstract'] = v
                                 except ValueError:
-                                    # print('v: ', v)
                                     innerdict['abstract'] = v
                             elif v is not None and v != []:
-                                # if not v is None and not v == []:
                                 if isinstance(v, str) and re.search("(?<=/#)\w+", v):
                                     match = re.search("(?<=/#)\w+", v)
                                     innerdict[k] = match.group(0)
@@ -249,8 +243,8 @@ def handle_wps_output(execution, wps_process, inputs):
     all_outputs = {'execution_status': execution.status}
     all_outputs['result'] = {}
     path = ''
-
     loopcount = 0
+
     # iterate through list of outputs
     for output in execution.processOutputs:
         loopcount += 1
@@ -267,37 +261,40 @@ def handle_wps_output(execution, wps_process, inputs):
                 all_outputs = {'execution_status': 'error in wps process',
                                'error': error_dict['message']}
                 break
-        # if no error:
-        else:
-            one_output = {}
 
-            # check datatype
+        # if no error build output for a result button in portal:
+        else:
+            single_output = {}
+
+            # get datatype
             try:
                 keywords = json.loads(output.abstract)['keywords'][0]
-                one_output['type'] = keywords
+                single_output['type'] = keywords
                 if 'pickle' in keywords:
                     path = output.data[0]
             except TypeError as e:
-                one_output['type'] = output.dataType
-                print('No keywords (TypeError: {})'.format(e))
+                if output.dataType in basicdatatypes:
+                    single_output['type'] = output.dataType
+                else:
+                    print('No keywords or type (TypeError: {})'.format(e))
             except KeyError as e:
                 print('this is a key error: ', e)
 
+            # get data
             if output.data:
-                one_output['data'] = output.data[0]
+                single_output['data'] = output.data[0]
 
-            # TODO: Discuss if several outputs should have single or multiple buttons, and
-            #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
+            # TODO: Decide how to handle errors from WPS (show nothing, everything and user can check what is okay?)
             if output.data and len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
                 db_output_data = output.data[0]
             elif path != '':
                 try:
-                    file_name = path[:-4] + one_output['type'] + path[-4:]
+                    file_name = path[:-4] + single_output['type'] + path[-4:]
                     text_file = open(file_name, "w")
                     text_file.write(output.data[0])
                     text_file.close()
                     db_output_data = file_name
-                    one_output['data'] = output.data[0]
+                    single_output['data'] = output.data[0]
                 except Exception as e:
                     print('Warning: no file was created for long string')
                     print(e)
@@ -305,21 +302,21 @@ def handle_wps_output(execution, wps_process, inputs):
                 db_output_data = ''
 
             if db_output_data != '':
-                db_output = [output.identifier, one_output['type'], db_output_data]
+                db_output = [output.identifier, single_output['type'], db_output_data]
                 # create db entry
                 wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
 
-                one_output['wpsID'] = wpsid
-                one_output['dropBtn'] = {'orgid': wpsid,
+                single_output['wpsID'] = wpsid
+                single_output['dropBtn'] = {'orgid': wpsid,
                                          'type': 'data',
                                          'name': '',
                                          'inputs': [],
-                                         'outputs': [one_output['type']]}
+                                         'outputs': [single_output['type']]}
             else:
                 print('*** no output to write to db ***')
-                one_output['error'] = 'no output to write to db'
+                single_output['error'] = 'no output to write to db'
 
-            all_outputs['result'][output.identifier] = one_output
+            all_outputs['result'][output.identifier] = single_output
             # TODO: Have to handle bytes result
             # if type(output.data[0]) is bytes:
             #     if len(output.data[0]) > 30:

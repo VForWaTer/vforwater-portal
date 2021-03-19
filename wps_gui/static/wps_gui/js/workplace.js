@@ -45,7 +45,7 @@ function wpsprocess(service, identifier) {
         tools[service] = {}
     }
     if (tools[service][identifier]) {
-        build_modal(tools[service][identifier], service, identifier)
+        build_modal(tools[service][identifier], service)
     } else {
         $.ajax({
             url: DEMO_VAR + "/workspace/processview",
@@ -57,7 +57,7 @@ function wpsprocess(service, identifier) {
             }, /** data sent with the post request **/
         })
             .done(function (json) {
-                build_modal(json, service, identifier)
+                build_modal(json, service)
                 tools[service][identifier] = json
                 sessionStorage.setItem('tools', JSON.stringify(tools))
             })
@@ -282,7 +282,7 @@ function modal_run_process() {
                         inputs: json.inputs,
                         name: btnName,
                         type: json.result[i].type,
-                        outputs: json.result[i].type,
+                        outputs: json.result[i].data,
                         wps: json.wps,
                         source: "wps",
                         status: json.execution_status,
@@ -620,6 +620,13 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
     return countDropDowns;
 }
 
+/**
+ * Collect elements for a dropdown HTMLElement.
+ *
+ * @param {Object} item - Data description from the wps process.
+ * @param {HTMLElement} optionGroup - HTML group Element. Different groups to seperate Data and Results in dropdown
+ * @param {Object} sidebarData - The relevant elements from the sessionStorage
+ */
 function build_dropdown_opt(item, optionGroup, sidebarData) {
     // let opt = document.createElement("OPTION");
     let opt;
@@ -639,30 +646,47 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
     return optionGroup
 }
 
-function build_modal(wpsInfo, service, identifier) {
+/**
+ * Build modal (popup) for a selected wps tool.
+ *
+ * @param {object} wpsInfo - Complete description from the process
+ * @param {string} service - which wps server
+ */
+function build_modal(wpsInfo, service) {
     // let availableInputs = get_available_inputs();
+    // let wpsInfo = get_wpsprocess(service, identifier);
+    let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let element = document.getElementById("mod_head");
     let newElement = "";
+
+    if (!sessionStoreData) {
+        sessionStoreData = {}
+    }
+    if (!resultData) {
+        resultData = {}
+    }
+
     element.innerHTML = wpsInfo.title;
     element.dataset.service = service;
-    element.dataset.process = identifier;
+    element.dataset.process = wpsInfo.identifier;
     element = document.getElementById("mod_abs");
     if (wpsInfo.abstract) {
         newElement = wpsInfo.abstract;
-    } else {
-        newElement = ""
+        // } else {
+        //     newElement = ""
     }
-
     element.innerHTML = newElement;
 
     /** inputs: **/
-    document.getElementById("mod_in").innerHTML = "";
+    // TODO: Is reuse of element in new context okay? Fix if not.
+    element = document.getElementById("mod_in");
+    element.innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
     let countDropDowns = 0;
 
     wpsInfo.dataInputs.forEach(function (item) {
-        element = document.getElementById("mod_in");
         newNode = document.createElement("p");
 
         /** Set title of Input and set the 'required' flag if necessary **/
@@ -704,15 +728,20 @@ function build_modal(wpsInfo, service, identifier) {
             }
         } else if ('keywords' in item) {
             countDropDowns = build_modal_dropdown(item, newNode, countDropDowns)
+
+            /** Set input element according to dataType */
         } else {
-            inElement = document.createElement("input");
+            inElement = document.createElement("INPUT");
             inElement.id = item.identifier;
             inElement.name = item.identifier;
+            inElement.setAttribute("list", item.identifier + '_list');
+
             if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
             switch (item.dataType) {
                 case 'string':
                     inElement.type = "text";
                     //inElement.className = "input"
+                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) {
                         inElement.value = item.defaultValue;
                     }
@@ -724,20 +753,24 @@ function build_modal(wpsInfo, service, identifier) {
                     break;
                 case 'dateTime':
                     inElement.type = "datetime-local";
+                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'float':
                     inElement.type = "number";
                     inElement.step = "0.000001";
+                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'integer':
                     inElement.type = "number";
+                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'positiveInteger':
                     inElement.type = "number";
                     inElement.min = "0";
+                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'ComplexData':
@@ -777,12 +810,37 @@ function build_modal(wpsInfo, service, identifier) {
     if (typeof (newNode) === 'object') element.appendChild(newNode);
     let modal = document.getElementById("workModal");
     // modal.setAttribute("name", invoke_btn_id);
-    modal.setAttribute("name", identifier);
+    modal.setAttribute("name", wpsInfo.identifier);
     modal.style.display = "block";
-    let currentModal = new modalObj(identifier, outElementIdList);
+    let currentModal = new modalObj(wpsInfo.identifier, outElementIdList);
     // TODO: get right name for sessionstorage
     // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
     // console.log('+++: ', JSON.stringify(modalObj))
+}
+
+/**
+ * Create DATALIST to add a dropdown to a text box
+ *
+ * @param {object} item
+ * @param {object} resultData
+ * @param {object} sessionStoreData
+ */
+function set_textfield_opt(item, resultData, sessionStoreData) {
+    let inDatalist = "";
+    let type = item.dataType;
+    inDatalist = document.createElement("DATALIST");
+    inDatalist.setAttribute("id", item.identifier + '_list');
+    let optElement = "";
+    Object.entries(resultData).forEach(function (dataset) {
+        if (dataset[1].type === type) {
+            optElement = document.createElement("OPTION");
+            optElement.setAttribute("value", dataset[1].outputs);
+            optElement.innerText = dataset[1].name;
+            inDatalist.appendChild(optElement);
+
+        }
+    })
+    return inDatalist
 }
 
 function load_workflow() {
