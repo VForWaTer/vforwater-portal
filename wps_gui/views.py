@@ -156,7 +156,7 @@ class ProcessView(TemplateView):
         #  Shouldn't be necessary to use jsonpickle for that. Please improve!
         # simply serialize wps to json
         whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
-        # print('a: ',whole_wpsprocess_json)
+
         # convert to dict to remove unwanted keys and empty values
         whole_wpsprocess = json.loads(whole_wpsprocess_json)
         whole_wpsprocess.pop('_root', None)

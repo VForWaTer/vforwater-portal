@@ -31,8 +31,9 @@ function drop(ev) {
 //  if process_id == btn_id place btn in dropzone (on save)
 /**
  * Load metadata of a wps process.
- * in- and outputs and so on of a tool are not loaded when page loads but on its first use and stored in
- * the sessionStorage for the next time the user wants to use this tool
+ * The in- and outputs (and so on) of a tool are not loaded when page loads but on its first use.
+ * Then stored in the sessionStorage for the next time the user wants to use this tool.
+ *
  * @param {string} service - wps service as stored in database
  * @param {string} identifier - identifier of a wps process
  **/
@@ -459,14 +460,14 @@ function add_resultbtn_to_sessionstore(btnName, json) {
  * Build a button in the result store.
  * data-id is used to find results on server, id is used for the remove button
  *
- * @param  {string} name name for the button
- * @param  {obj} json Object holding all necessary info about result
- * @return {string} HTML Code for the button
+ * @param  {string} name - name for the button
+ * @param  {obj} json - Object holding all necessary info about result
+ * @return {string} - HTML Code for the button
  **/
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" ondragstart="dragstart_handler(event)" class="w3-padding task is-result" ' +
-        'data-id="wps' + json.wpsID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
+        'data-id="wps' + json.dbID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
         'id="' + name + '"><span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
         '<span class="' + json['type'] + '"></span>' +
@@ -551,6 +552,11 @@ function build_modal_radio(item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
+/**
+ * @param {string} item
+ * @param {HTMLElement} newNode - The new HTML Element where the checkbox will be added
+ * @param {string} option -
+ */
 function build_modal_checkbox(item, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
@@ -569,6 +575,13 @@ function build_modal_checkbox(item, newNode, option) {
     newNode.appendChild(nodeText);
 }
 
+/**
+ * Function is called when the input should be a dataset.
+ *
+ * @param {json} item - description of wps input.
+ * @param {HTMLParagraphElement} newNode
+ * @param {number} countDropDowns
+ */
 function build_modal_dropdown(item, newNode, countDropDowns) {
     let htmlSelect = document.createElement("SELECT");
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
@@ -691,15 +704,15 @@ function build_modal(wpsInfo, service) {
 
         /** Set title of Input and set the 'required' flag if necessary **/
         let titleText = "";
-        if ('minOccurs' in item) {
-            if (item.minOccurs == 0) {
-                titleText = " " + item.title + ": "
-            } else if (item.defaultValue) {
-                titleText = " " + item.title + ": "
-            } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
-                titleText = " " + item.title + " (*) : ";
-                inElement.required = true;
-            }
+        // if ('minOccurs' in item) {  // outer if seems to be unused
+        if (item.minOccurs == 0) {
+            titleText = " " + item.title + ": "
+        } else if (item.defaultValue) {
+            titleText = " " + item.title + ": "
+        } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
+            titleText = " " + item.title + " (*) : ";
+            inElement.required = true;
+            // }
         } else {
             titleText = " " + item.title + ": "
         }

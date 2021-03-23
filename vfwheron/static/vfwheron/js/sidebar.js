@@ -655,7 +655,7 @@ function setModalValues(btnName, btnValues) {
 /**
  * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
  *
- * @param (html) link HTML Code of the clicked link
+ * @param {html} link - HTML Element of the clicked link
  */
 function menuItemListener(link) {
     let wpsToOpen = "";
