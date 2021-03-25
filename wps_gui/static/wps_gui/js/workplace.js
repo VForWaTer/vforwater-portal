@@ -145,6 +145,16 @@ function check_required(checkElement) {
     }
     return passed
 }
+/**
+ * Check if an input has a regex pattern and if input is correct.
+ *
+ * @param {HTMLElement} checkElement Element to be checked if filled.
+ */
+function check_pattern(checkElement) {
+    /** check if an Element of a wps is required **/
+    console.log('TODO: Add pattern check where necessary.')
+    return true
+}
 
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
@@ -180,7 +190,7 @@ function modal_run_process() {
             inKey.push(dropDInputs[i].name);
             inType.push(typeList);
 
-            /** else if one dropdowns **/
+            /** else if one dropdown **/
         } else {
             if (dDInput[0].value.substring(0, 2) == 'db') {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
@@ -534,10 +544,34 @@ function remove_all_results() {
     })
 }
 
+/**
+ * @param {json} item - input information loaded from Session Storage
+ * @param {string} newNode - The new HTML Element where the checkbox will be added
+ */
+function build_modal_regexText(item, newNode) {
+    inElement = document.createElement("INPUT");
+    inElement.id = item.identifier;
+    inElement.name = item.identifier;
+    inElement.setAttribute("pattern", item.keywords[1]);
+    inElement.type = "text";
+    if ('defaultValue' in item) {
+        inElement.value = item.defaultValue;
+    }
+    if ('abstract' in item) {
+        inElement.title = item.abstract;
+    }
+    newNode.appendChild(inElement);
+}
+
+/**
+ * @param {json} item - input information loaded from Session Storage
+ * @param {string} newNode - The new HTML Element where the checkbox will be added
+ * @param {string} option - String with predefined value from wps process
+ */
 function build_modal_radio(item, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
-    let inElement = document.createElement("input");
+    let inElement = document.createElement("INPUT");
     inElement.type = "radio";
     // inElement.setAttribute("type", "radio");
     inElement.value = option;
@@ -553,9 +587,9 @@ function build_modal_radio(item, newNode, option) {
 }
 
 /**
- * @param {string} item
+ * @param {json} item - input information loaded from Session Storage
  * @param {HTMLElement} newNode - The new HTML Element where the checkbox will be added
- * @param {string} option -
+ * @param {string} option - String with predefined value from wps process
  */
 function build_modal_checkbox(item, newNode, option) {
     // let radioNode = document.createElement("p");
@@ -739,6 +773,8 @@ function build_modal(wpsInfo, service) {
                     // inElement.setAttribute("type", "radio")
                 }
             }
+        } else if ('keywords' in item && item.keywords.includes('pattern')) {
+            build_modal_regexText(item, newNode)
         } else if ('keywords' in item) {
             countDropDowns = build_modal_dropdown(item, newNode, countDropDowns)
 

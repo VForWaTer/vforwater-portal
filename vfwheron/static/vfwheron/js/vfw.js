@@ -159,8 +159,6 @@ const DATATYPE = new class AbstractType {
             }
         }
         // TODO: Use set more often. They are faster for 'has' tasks.
-         // let uniqueList = [...new Set(acceptedList)];
-         // return uniqueList
         return new Set(acceptedList)
     }
 }
@@ -575,6 +573,7 @@ function moreInfoModal(id) {
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
     document.getElementById("mod_prev").classList.add("loader");
+
     // The following is used to make sure to add first the table then the plot.
     function tableToModal(properties) {
         let metaText = '<table>';

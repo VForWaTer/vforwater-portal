@@ -44,38 +44,43 @@ def home(request):
         # service = 'PyWPS_vforwater'
         service = WebProcessingService.objects.values_list('name', flat=True)[0]
         wps = get_wps_service_engine(service)
-        countLoop = 0
+        loopCount = 0
         for process in wps.processes:
             describedprocess = wps.describeprocess(process.identifier)
-            wps.processes[countLoop].processin = []
+            wps.processes[loopCount].processin = []
             for i in describedprocess.dataInputs:
                 if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
                     if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
                         # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
                         keywords = ast.literal_eval(i.abstract[:1+i.abstract.find("}", 10)])['keywords']
-                        wps.processes[countLoop].processin.append(keywords)
+                        wps.processes[loopCount].processin.append(keywords)
                     else:
-                        wps.processes[countLoop].processin.append(i.dataType)
+                        wps.processes[loopCount].processin.append(i.dataType)
                 # if i.allowedValues == [] and isinstance(i.dataType, str):
-                #     wps.processes[countLoop].processin.append('string')
+                #     wps.processes[loopCount].processin.append('string')
                 # elif i.allowedValues == [] and not isinstance(i.dataType, str):
-                #     wps.processes[countLoop].processin.append(i.dataType)
+                #     wps.processes[loopCount].processin.append(i.dataType)
                 elif i.allowedValues[0] == '_keywords':
-                    wps.processes[countLoop].processin.append(i.allowedValues[1:])
+                    if i.allowedValues[1] == 'pattern':
+                        patternList = i.allowedValues[1:]
+                        patternList.insert(0, i.dataType)
+                        wps.processes[loopCount].processin.append(patternList)
+                    else:
+                        wps.processes[loopCount].processin.append(i.allowedValues[1:])
 
-            wps.processes[countLoop].processout = []
+            wps.processes[loopCount].processout = []
             for i in describedprocess.processOutputs:
                 if 'error' not in i.identifier:
                     if i.abstract is not None:
                         if 'keywords' in json.loads(i.abstract):
-                            wps.processes[countLoop].processout.append(json.loads(i.abstract)['keywords'])
+                            wps.processes[loopCount].processout.append(json.loads(i.abstract)['keywords'])
                     elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
-                        wps.processes[countLoop].processout.append(i.dataType)
+                        wps.processes[loopCount].processout.append(i.dataType)
                     # elif isinstance(i.dataType, float):
-                    #     wps.processes[countLoop].processout.append('float')
+                    #     wps.processes[loopCount].processout.append('float')
                     # elif i.metadata[0] == '_keywords':
-                    #     wps.processes[countLoop].processout.append(i.allowedValues[1:])
-            countLoop += 1
+                    #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
+            loopCount += 1
     except:
         logger.error(sys.exc_info()[0])
         service = ''
