@@ -101,7 +101,11 @@ class HomeView(TemplateView):
 
     try:
         test_geoserver_env(store, workspace)
-    except JSONDecodeError:
+    # except ConnectionError:
+    #     print('\033[91mConnection Error! No geoserver\033[0m ')
+    # except JSONDecodeError:
+    #     print('\033[91mJSONDecodeError! No geoserver\033[0m ')
+    except:
         print('\033[91mno geoserver\033[0m ', sys.exc_info()[0])
 
     # TODO: Test with users if this makes any sense
