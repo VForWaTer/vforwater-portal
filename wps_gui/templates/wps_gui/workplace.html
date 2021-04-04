@@ -9,18 +9,32 @@
   <link rel="stylesheet" type="text/css" href="{% static 'wps_gui/vcss/workplace.css' %}">
 </head>
 <body>
-<div id="dropdiv" title="Drag & Drop your Data and Tools here">Dropzone
-  {#    <canvas id="dropzone" style="background: white; border:1px solid #d3d3d3; "#}
-  {#            title="Drag & Drop your Data and Tools here">#}
-  {#        Your browser does not support the HTML5 canvas tag.#}
-  {#    </canvas>#}
+<div id="workflowbuilder">
+  <b class="w3-btn-group">
+<input class="w3-btn w3-blue w3-left" type="submit" onclick="load_workflow()"
+       value="Load workflow" data-toggle="tooltip"
+       title="Click to load a saved workflow">
+<input class="w3-btn w3-blue w3-left" type="submit" onclick="save_workflow()"
+       value="Save workflow" data-toggle="tooltip"
+       title="Click to save current workflow">
+<input class="w3-btn w3-green w3-right" type="submit" onclick="run_workflow()"
+       value="Run workflow" data-toggle="tooltip"
+       title="Click to run current workflow">
+<input class="w3-btn w3-red w3-right" type="submit" onclick="clear_workflow()"
+       value="Clear workflow" data-toggle="tooltip"
+       title="Click to clear current workflow">
+    </b>
+{% comment %}<div id="dropdiv" title="Drag & Drop your Data and Tools here">Dropzone
+        <canvas id="dropzone" style="background: white; border:1px solid #d3d3d3; "
+                title="Drag & Drop your Data and Tools here">
+            Your browser does not support the HTML5 canvas tag.
+        </canvas>
+</div>{% endcomment %}
+<div id="dropdiv" ondragover="dragover_handler(event)" ondrop="drop_handler(event)"
+     title="Drag & Drop your Data and Tools here">
+  Dropzone
 </div>
-{% comment %}    <div class="row">
-        <div class="col-md-8 col-md-offset-2 respo-text-grey">
-        <canvas id="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)"
-             title="Drag & Drop your Data and Tools here">Dropzone</canvas>
-        </div>
-    </div>{% endcomment %}
+</div>
 {% block modal %}
   {% include 'wps_gui/modal.html' %}
 {% endblock modal %}
@@ -28,14 +42,22 @@
 {#    {% include 'vfwheron/info_modal.html' %}#}
 {#{% endblock modal %}#}
 </body>
-
-
-{#<a data-toggle="modal" href="#processModal">Edit Contact</a>#}
-{##}
-{#{% include "process.html" %}#}
 </html>
+
+{#<script src="https://unpkg.com/gojs/release/go-debug.js"></script>#}
 <script src="{% static 'wps_gui/js/draw2d.js' %}" type="text/javascript"></script>
 <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>
-<script src="{% static 'heron_visual/js/bokeh-2.0.2.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'heron_visual/js/bokeh-tables-2.0.2.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'heron_visual/js/bokeh-widgets-2.0.2.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'wps_gui/js/workflow.js' %}" type="text/javascript"></script>
+<script src="{% static 'wps_gui/js/clickConnect.js' %}" type="text/javascript"></script>
+<script src="{% static 'wps_gui/js/dragConnect.js' %}" type="text/javascript"></script>
+{#<script src="{% static 'wps_gui/js/workplace_editor.js' %}" type="text/javascript"></script>#}
+<script src="{% static 'heron_visual/js/bokeh-2.2.1.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'heron_visual/js/bokeh-tables-2.2.1.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'heron_visual/js/bokeh-widgets-2.2.1.min.js' %}" type="text/javascript"></script>
+
+{#<SCRIPT src="./lib/jquery.autoresize.js"></SCRIPT>#}
+{#<SCRIPT src="./lib/jquery-touch_punch.js"></SCRIPT>#}
+{#<SCRIPT src="./lib/jquery.contextmenu.js"></SCRIPT>#}
+
+{#The follwing canvas is only to measure text width (in workflow.js/drophandler) #}
+<canvas id="textWidthCanvas"></canvas>

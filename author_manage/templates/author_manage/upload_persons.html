@@ -1,0 +1,20 @@
+{% extends add-new-resource.html %}
+
+{% block wizard %}
+  <form method="get" name="advancedfilterform">
+    <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
+        {{ myFilter.form.as_p }}
+
+
+      <button class="btn btn-primary" type="submit">Search</button>
+
+{#      <a onclick="filter_pagination({{ i }})">{{ i }}</a>#}
+
+{#        <input type="submit" />#}
+    </div>
+</form>
+  <p>bla</p>
+{% for obj in selection %}
+    {{ obj.variable }} - ${{ obj.license }}<br />
+{% endfor %}
+{% endblock %}

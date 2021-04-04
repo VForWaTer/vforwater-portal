@@ -1,0 +1,272 @@
+/*{
+  "abstract": "Will aggregate a given timeseries by the specifiedfunction to the given time step.",
+  "dataInputs": [
+    {
+      "abstract": "hohoho nola?",
+      "allowedValues": [
+        "_keywords",
+        "timeseries",
+        "array",
+        "pickle"
+      ],
+      "anyValue": False,
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": None,
+      "identifier": "ts-pickle",
+      "keywords": [],
+      "maxOccurs": 1,
+      "metadata": [],
+      "minOccurs": 1,
+      "supportedValues": [],
+      "title": "Reference to the pickled object"
+    },
+    {
+      "abstract": "hohoho nola?",
+      "allowedValues": [
+        "mean",
+        "median",
+        "prod",
+        "sum",
+        "std",
+        "var"
+      ],
+      "anyValue": False,
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": "mean",
+      "identifier": "func",
+      "keywords": [],
+      "maxOccurs": 1,
+      "metadata": [],
+      "minOccurs": 1,
+      "supportedValues": [],
+      "title": "The aggregation function to be used."
+    },
+    {
+      "abstract": "hohoho nola?",
+      "allowedValues": [],
+      "anyValue": True,
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": None,
+      "identifier": "by",
+      "keywords": [],
+      "maxOccurs": 1,
+      "metadata": [],
+      "minOccurs": 1,
+      "supportedValues": [],
+      "title": "The time period for aggregation, has to be supported by pandas.TimeGrouper"
+    }
+  ],
+  "identifier": "aggregate_m",
+  "keywords": [],
+  "metadata": [],
+  "processOutputs": [
+    {
+      "abstract": "hohoho nola?",
+      "allowedValues": [],
+      "anyValue": False,
+      "data": [],
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": None,
+      "fileName": None,
+      "filePath": None,
+      "identifier": "ts-pickle",
+      "keywords": [],
+      "metadata": [],
+      "mimeType": None,
+      "reference": None,
+      "supportedValues": [],
+      "title": "Output reference"
+    },
+    {
+      "abstract": "hohoho nola?",
+      "allowedValues": [],
+      "anyValue": False,
+      "data": [],
+      "dataType": "//www.w3.org/TR/xmlschema-2/#boolean",
+      "defaultValue": None,
+      "fileName": None,
+      "filePath": None,
+      "identifier": "error",
+      "keywords": [],
+      "metadata": [],
+      "mimeType": None,
+      "reference": None,
+      "supportedValues": [],
+      "title": "Error occurred during process"
+    }
+  ],
+  "processVersion": None,
+  "statusSupported": True,
+  "storeSupported": True,
+  "title": "Time series aggregator_M",
+  "verbose": False
+}*/
+
+{
+  "_root": [
+    [],
+    [],
+    [],
+    [
+      [
+        [],
+        [],
+        [],
+        [
+          [],
+          [
+            [],
+            [],
+            [],
+            []
+          ]
+        ]
+      ],
+      [
+        [],
+        [],
+        [],
+        [
+          [],
+          [
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+          ],
+          []
+        ]
+      ],
+      [
+        [],
+        [],
+        [],
+        [
+          [],
+          []
+        ]
+      ]
+    ],
+    [
+      [
+        [],
+        [],
+        [],
+        [
+          []
+        ]
+      ],
+      [
+        [],
+        [],
+        [],
+        [
+          []
+        ]
+      ]
+    ]
+  ],
+  "abstract": "Will aggregate a given timeseries by the specifiedfunction to the given time step.",
+  "dataInputs": [
+    {
+      "abstract": None,
+      "allowedValues": [
+        "_keywords",
+        "timeseries",
+        "array",
+        "pickle"
+      ],
+      "anyValue": False,
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": None,
+      "identifier": "ts-pickle",
+      "keywords": [],
+      "maxOccurs": 1,
+      "metadata": [],
+      "minOccurs": 1,
+      "supportedValues": [],
+      "title": "Reference to the pickled object"
+    },
+    {
+      "abstract": None,
+      "allowedValues": [
+        "mean",
+        "median",
+        "prod",
+        "sum",
+        "std",
+        "var"
+      ],
+      "anyValue": False,
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": "mean",
+      "identifier": "func",
+      "keywords": [],
+      "maxOccurs": 1,
+      "metadata": [],
+      "minOccurs": 1,
+      "supportedValues": [],
+      "title": "The aggregation function to be used."
+    },
+    {
+      "abstract": None,
+      "allowedValues": [],
+      "anyValue": True,
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": None,
+      "identifier": "by",
+      "keywords": [],
+      "maxOccurs": 1,
+      "metadata": [],
+      "minOccurs": 1,
+      "supportedValues": [],
+      "title": "The time period for aggregation, has to be supported by pandas.TimeGrouper"
+    }
+  ],
+  "identifier": "aggregate_m",
+  "keywords": [],
+  "metadata": [],
+  "processOutputs": [
+    {
+      "abstract": None,
+      "allowedValues": [],
+      "anyValue": False,
+      "data": [],
+      "dataType": "//www.w3.org/TR/xmlschema-2/#string",
+      "defaultValue": None,
+      "fileName": None,
+      "filePath": None,
+      "identifier": "ts-pickle",
+      "keywords": [],
+      "metadata": [],
+      "mimeType": None,
+      "reference": None,
+      "supportedValues": [],
+      "title": "Output reference"
+    },
+    {
+      "abstract": None,
+      "allowedValues": [],
+      "anyValue": False,
+      "data": [],
+      "dataType": "//www.w3.org/TR/xmlschema-2/#boolean",
+      "defaultValue": None,
+      "fileName": None,
+      "filePath": None,
+      "identifier": "error",
+      "keywords": [],
+      "metadata": [],
+      "mimeType": None,
+      "reference": None,
+      "supportedValues": [],
+      "title": "Error occurred during process"
+    }
+  ],
+  "processVersion": None,
+  "statusSupported": True,
+  "storeSupported": True,
+  "title": "Time series aggregator_M",
+  "verbose": False
+}

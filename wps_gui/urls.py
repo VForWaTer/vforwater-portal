@@ -11,6 +11,8 @@ app_name = 'wps_gui'
 
 urlpatterns = [
     url(r'^$', views.home, name='home'),
-    url(r'^processview$', views.ProcessView.as_view()),
+    url(r'^processview$', views.ProcessView.as_view(), name='processview'),
+    url(r'^dbload$', views.db_load, name='dbload'),
+    url(r'^processrun$', views.process_run, name='processrun'),
     # url(r'^(?P<service>\w+)/', include(service_urls)),
 ]

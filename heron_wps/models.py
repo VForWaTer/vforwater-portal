@@ -12,6 +12,7 @@ class WebProcessingService(models.Model):
     password = models.CharField(max_length=100, blank=True)
 
     class Meta:
+        managed = True
         verbose_name = 'Web Processing Service'
         verbose_name_plural = 'Web Processing Services'
 

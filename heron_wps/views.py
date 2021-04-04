@@ -105,5 +105,5 @@ def process(request, service, identifier):
                      }
 
         return render(request, 'heron_wps/result.html', context_p)
-
+    
     return render(request, 'heron_wps/process.html', context)

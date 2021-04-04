@@ -1,0 +1,123 @@
+{#{% load static %}#}
+{#{% load i18n %}#}
+{#{% get_current_language as LANGUAGE_CODE %}#}
+
+<div id="entries" class="entries">
+
+  {#	<style>div.entries {height: 80%; width: 100%;}</style>#}
+
+  {#Table:#}
+  <table class="table table-bordered">
+    <thead>
+    <tr>
+      <td colspan="0">
+        <table class="outerPaginationTable">
+          <tr style="font-size: 90%; color: white; background-color: grey;">
+            <th></th>
+            <th class="col1">Title</th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+          <tr style="font-size: 90%;">
+            <td class="col1"></td>
+            <td>Abstract</td>
+            <td>Datatype</td>
+            <td>Temporal Scale</td>
+            <td>Spatial Scale</td>
+          </tr>
+          <tr style="font-size: 90%;">
+            <td class="col1"></td>
+            <td>Variable</td>
+            <td>Keywords</td>
+            <td>From</td>
+            <td>License</td>
+          </tr>
+          <tr style="font-size: 90%;">
+            <td class="col1"></td>
+            <td>Citation</td>
+            <td>Version</td>
+            <td>To</td>
+            <td>Has embargo</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for entry in entries %}
+      <tr>
+        <td colspan="0">
+{#          <table class="innerPaginationTable" draggable="true">#}
+          <table class="innerPaginationTable" id={{ entry.id }} draggable="true" ondragstart="dragstart_handler(event)">
+            <tr class=
+                        {% if ownData and entry.id in ownData %} "embargoFalse">
+                        {% else %} "embargo{{ entry.embargo }}">
+                        {% endif %}
+              <th></th>
+              <th title="Title" colspan="0"> {{ entry.title|ljust:"200" }} </th>
+              <th></th>
+              <th></th>
+              <th></th>
+            </tr>
+            <tr>
+              <td></td>
+              <td title="Abstract"> {{ entry.abstract }} </td>
+              <td title="Datatype"> {{ entry.datasource.datatype.name|capfirst }} </td>
+              <td title="Temporal Scale"> {{ entry.datasource.temporal_scale.resolution }} </td>
+              <td title="Spatial Scale"> {{ entry.datasource.spatial_scale.extent }} </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td title="Variable"> {{ entry.variable|capfirst }} </td>
+              <td title="Keywords"> {{ entry.variable.keyword.value|lower|capfirst }} </td>
+              <td title="From"> {{ entry.datasource.temporal_scale.observation_start }} </td>
+              <td title={% if entry.license.short_title %} {{ entry.license.short_title }}
+              {%  else %} "License" {% endif %}> {{ entry.license.title }} </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td title="Citation"> {{ entry.citation }} </td>
+              <td title="Version" style="text-align: center;"> v{{ entry.version }} </td>
+              <td title="To"> {{ entry.datasource.temporal_scale.observation_end }} </td>
+              <td title="Has embargo"> {{ entry.embargo|yesno:"Yes,No" }} </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    {% empty %}
+      <h1>Loading your data.</h1>
+{#      <h1>Sorry, nothing to show for your Selection.</h1>#}
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {#Pagination:#}
+  {% if entries.has_other_pages %}
+    <ul class="pagination">
+      {% if entries.has_previous %}
+        <a onclick="filter_pagination(1)">&#9474;&#8882;</a>
+        <a onclick="filter_pagination({{ entries.previous_page_number }})">&#8882;</a>
+      {% else %}
+        <a class="disabled"><span>&#9474;&#8882;</span></a>
+        <a class="disabled"><span>&#8882;</span></a>
+      {% endif %}
+      {% for i in entries.paginator.page_range %}
+        {% if entries.paginator.num_pages < 11 or i > entries.number|add:"-5" and i < entries.number|add:"5" %}
+          {% if entries.number == i %}
+            <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
+          {% else %}
+            <a onclick="filter_pagination({{ i }})">{{ i }}</a>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {% if entries.has_next %}
+        <a onclick="filter_pagination({{ entries.next_page_number }})">&#8883;</a>
+        <a onclick="filter_pagination({{ entries.paginator.num_pages }})">&#8883;&#9474;</a>
+      {% else %}
+        <a class="disabled"><span>&#8883;</span></a>
+        <a class="disabled"><span>&#8883;&#9474;</span></a>
+      {% endif %}
+    </ul>
+  {% endif %}
+</div>

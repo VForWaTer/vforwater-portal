@@ -1,0 +1,29 @@
+<!-- template for add-new-resource page -->
+{% extends "author_manage/profile.html" %}
+
+{% block styles %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/profile.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/my-resources.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/add-new-resource.css' %}" />
+{% endblock %}
+
+{% block requests_or_resources %}
+  <h1>This page is still under construction and has no function.</h1>
+<div class="mini-nav">
+   <a href="{% url 'author_manage:profile' %}"
+      class="noncurrent w3-btn w3-blue"><strong>Requests</strong></a></li>
+   <a href="{% url 'author_manage:profile' %}my-resources"
+      class="current w3-btn w3-blue"><strong>My Resources</strong></a></li>
+</div>
+<div class="add-res">
+   <form action = "" method="post" enctype="multipart/form-data" class="add-res-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="add w3-btn w3-blue">Add</button>
+   </form>
+</div>
+{% endblock %}
+
+{% block wizard %}
+{% endblock %}

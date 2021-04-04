@@ -7,7 +7,7 @@
 
   {#    <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>#}
   <style>
-    .respo-sidenav {
+    .w3-sidenav {
       margin-top: 80px;
     }
   </style>
@@ -32,7 +32,10 @@
     console.group(id)
     invalues.forEach(function (val) {
       console.log(val)
-      if (Array.isArray(val) && val.length > 1) {
+      if (val.includes('pattern')) {
+        element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
+                'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
+      } else if (Array.isArray(val) && val.length > 1) {
         let newHeader = "";
         val.forEach(function (inVal) {
           newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +
@@ -69,16 +72,16 @@
 <!-- TODO: check if still in use. If not delete that parm -->
 <!--   Sidenav/menu -->
 <!--   Show Data selected in Home in Data Store and start database loader -->
-<nav class="respo-sidenav respo-collapse respo-white respo-animate-right" style="z-index:0;width:300px;right:0"
+<nav class="w3-sidenav w3-collapse w3-white w3-animate-right" style="z-index:0;width:300px;right:0"
      id="myToolbar">
   <br>
-  <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()"
+  <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()"
      title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
   <hr style="margin-bottom:0;">
-  <div class="respo-container ">
+  <div class="w3-container ">
     <p></p>
   </div>
-  <div class="respo-container respo-light-turquoise">
+  <div class="w3-container w3-light-turquoise">
     <b title={% trans "Select&#32your&#32tool&#32here." %}>{% trans " Toolbox" %}</b>
   </div>
   <div class="row col-md-8 col-md-offset-2" id="toolbar">
@@ -101,42 +104,44 @@
     <table style="width:100%">
       <div class="list-group">
         {% for process in wps.processes %}
+          {% if process.identifier != "dbloader" %}
           <tr>
-            <div id="{{ process.identifier }}" class="process respo-card-2"
-                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}')"
-                 title="{{ process.abstract }}" draggable="true" ondragstart="drag(event)"
+            <div id="{{ process.identifier }}" class="process w3-card-2"
+                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}');"
+                 title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
                  data-service="{{ service }}" data-process="{{ process.identifier }}"
                  style="cursor:pointer;">
-              <button-header class="respo-container" style="font-size: smaller">
+              <button-header class="w3-container" style="font-size: smaller">
               </button-header>
               <div value="{{ process.processin }}"
                       {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
-                   class=" respo-container"
+                   class=" w3-container"
 
                       {% comment %}onclick='location.href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"'{% endcomment %}
               >
                 <h7 class="title">{{ process.title }}
                 </h7>
               </div>
-              <button-footer class="respo-container" style="font-size: smaller">
+              <button-footer class="w3-container" style="font-size: smaller">
                 {#                                    <p>No output envisaged</p>#}
               </button-footer>
               <style onload="inoutIndicator('{{ process.identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
 
             </div>
           </tr>
+          {% endif %}
         {% endfor %}
       </div>
     </table>
     {#    </div>#}
   </div>
-  <div class="respo-container">
+  <div class="w3-container">
     <p></p>
   </div>
 </nav>
 
 {#  Overlay effect when opening sidenav on small screens#}
-<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer"
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
 </body>
 

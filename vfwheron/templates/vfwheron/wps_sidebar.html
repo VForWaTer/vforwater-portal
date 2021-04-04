@@ -7,7 +7,7 @@
 
   <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>
   <style>
-  .respo-sidenav {margin-top: 37px;}
+  .w3-sidenav {margin-top: 37px;}
   </style>
   <script src="{% static 'vfwheron/js/data_drag.js' %}" type="text/javascript"></script>
 </head>
@@ -17,40 +17,40 @@
 <!-- TODO: check if still in use. If not delete that parm -->
 <param id="workdata" value ="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
 <!--   Sidenav/menu -->
-  <nav class="respo-sidenav respo-collapse respo-white respo-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br>
-    <div class="respo-container respo-row">
-      <div class="respo-col s4">
+  <nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br>
+    <div class="w3-container w3-row">
+      <div class="w3-col s4">
         <img src="{% static 'vfwheron/images/logo_main.png' %}" style="width:200px"><br>
       </div>
     </div>
-    <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>{%  trans "  Close Menu" %}</a>
+    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>{%  trans "  Close Menu" %}</a>
     <hr style="margin-bottom:0px;">
 
 
     <hr style="margin-bottom:0px;">
 
-    <div class="respo-container respo-light-turquoise">
+    <div class="w3-container w3-light-turquoise">
       <b title={%  trans "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use." %}>{%  trans "Data store" %}</b>
     </div>
-    <ul class="respo-ul respo-card-4 respo-white" id="workspace">
-        <b class="respo-btn-group">
-            <input class="respo-btn respo-blue respo-right" type="submit"
+    <ul class="w3-ul w3-card-4 w3-white" id="workspace">
+        <b class="w3-btn-group">
+            <input class="w3-btn w3-blue w3-right" type="submit"
                 onclick="remove_all_datasets()" value={%  trans "Remove&#32all&#32datasets" %} data-toggle="tooltip"
                 title={%  trans "Remove&#32all&#32datasets&#32from&#32data&#32store" %}>
             </b>
         <!-- for test use only -->
-		 <li draggable="true" class="respo-padding" id="2559">
-				<span class="respo-medium" title="discharge (Q in m³/s)">discharge (Q in m³/s) - 2559</span>
-				<a href="javascript:void(0)" onclick="remove_single_data('2559')" ;="" class="respo-hover-white respo-right">
+		 <li draggable="true" class="w3-padding" id="2559">
+				<span class="w3-medium" title="discharge (Q in m³/s)">discharge (Q in m³/s) - 2559</span>
+				<a href="javascript:void(0)" onclick="remove_single_data('2559')" ;="" class="w3-hover-white w3-right">
 					<i class="fa fa-remove fa-fw"></i>
 				</a><br>
-			</li>  
-			<li draggable="true" class="respo-padding" id="3559">
-				<span class="respo-medium" title="discharge (Q in m³/s)">discharge (Q in m³/s) - 3559</span>
-				<a href="javascript:void(0)" onclick="remove_single_data('3559')" ;="" class="respo-hover-white respo-right">
+			</li>
+			<li draggable="true" class="w3-padding" id="3559">
+				<span class="w3-medium" title="discharge (Q in m³/s)">discharge (Q in m³/s) - 3559</span>
+				<a href="javascript:void(0)" onclick="remove_single_data('3559')" ;="" class="w3-hover-white w3-right">
 					<i class="fa fa-remove fa-fw"></i>
 				</a><br>
-			</li>     
+			</li>
     </ul>
   </nav>
 </div>
@@ -79,5 +79,5 @@
   </nav>
 
 {#  Overlay effect when opening sidenav on small screens#}
-<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
 </body>

@@ -1,31 +1,21 @@
 /* latin-ext */
 @font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Raleway'), local('Raleway-Regular'), url(https://fonts.gstatic.com/s/raleway/v11/yQiAaD56cjx1AooMTSghGfY6323mHUZFJMgTvxaG2iE.woff2) format('woff2');
-  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
+    font-family: 'Raleway';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Raleway'), local('Raleway-Regular'), url(https://fonts.gstatic.com/s/raleway/v11/yQiAaD56cjx1AooMTSghGfY6323mHUZFJMgTvxaG2iE.woff2) format('woff2');
+    unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
 }
 /* latin */
 @font-face {
-  font-family: 'Raleway';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Raleway'), local('Raleway-Regular'), url(https://fonts.gstatic.com/s/raleway/v11/0dTEPzkLWceF7z0koJaX1A.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+    font-family: 'Raleway';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Raleway'), local('Raleway-Regular'), url(https://fonts.gstatic.com/s/raleway/v11/0dTEPzkLWceF7z0koJaX1A.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
-.popup {
-    position: absolute;
-    background-color: rgb(239, 251, 251);
-    -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-    padding: 2px;
-    border-radius: 10px;
-    border: 1px solid #cccccc;
-    bottom: 12px;
-    left: -50px;
-    /*min-width: 280px;*/
-      }
+
+
 /* more styling at the end of ol.css */
 iframe {
     margin-top: 20px;
@@ -38,6 +28,34 @@ iframe {
 }
 
 
+ /* Style the buttons that are used to open and close the accordion panel */
+.groupaccordion {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  outline: none;
+  transition: 0.4s;
+}
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .groupaccordion:hover {
+  background-color: #ccc;
+}
+/* Style the accordion panel. Note: hidden by default */
+.grouppanel {
+  padding: 0 18px;
+  background-color: white;
+  display: none;
+  overflow: hidden;
+}
+
+
+/* !**
+* Styling of modal.
+**! */
 .modal-back{
     color: black;
     float: right;
@@ -47,7 +65,7 @@ iframe {
 }
 
 .modal-back:hover, .modal-back:focus,
-.result_modal-back:hover, .result_modal-back:focus,
+.result_modal-close:hover, .result_modal-close:focus,
 .work_modal-cancel:hover, .work_modal-cancel:focus,
 .work_modal-run:hover, .work_modal-run:focus,
 .work_modal-ok:hover, .work_modal-ok:focus{
@@ -56,7 +74,8 @@ iframe {
     cursor: pointer;
 }
 
-.result_modal-back, .work_modal-cancel, .work_modal-run, .work_modal-ok{
+.result_modal-close,
+.work_modal-cancel, .work_modal-run, .work_modal-ok{
   color: white;
   float: right;
   font-size: 20px;
@@ -66,27 +85,31 @@ iframe {
   /*font-weight: bold;*/
 }
 
-.modal-header,
-.result_modal-header,
-.work_modal-header{
+.modal-header {
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
     color: black;
 }
 
-.modal-body,
-.result_modal-body {
+.modal-body {
     /*padding: 2px 16px;*/
     width: fit-content;
 }
 
-.modal-footer{
+.modal-footer {
     height: 38px;
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
     color: black;
 }
 
+.modal-abstract {
+    max-height: 150px;
+    overflow-y: scroll;
+}
+
+
+.result_modal-header, .work_modal-header,
 .result_modal-footer, .work_modal-footer{
     height: 38px;
     padding: 2px 12px;
@@ -104,21 +127,103 @@ button-footer {
     overflow: hidden;
 }
 
-/*styles for Toolbox buttons*/
-.string,.array, .integer,
-.boolean, .float, .image{
+.fa-close:hover,
+.fa-expand:hover, .fa-compress:hover {
+    color: black;
+}
+
+/*.modal-preview, .modal-result {*/
+/*    height: 500px;*/
+/*    width: 700px;*/
+/*}*/
+#infoModal {
+
+}
+#resultModal-content {
+    height: fit-content;
+    width: 700px;
+    /*max-height: 100vh;*/
+    /*height:50vh;*/
+    /*width:20vw;*/
+}
+/* !**
+* End styling of modal.
+**! */
+
+    /*styles for Toolbox buttons*/
+    /*!**
+     * Reset button styles.
+     * It takes a bit of work to achieve a neutral look.
+     *!
+    button {
+      padding: 0;
+      border: none;
+      font: inherit;
+      color: inherit;
+      background-color: transparent;
+      !* show a hand cursor on hover; some argue that we
+      should keep the default arrow cursor for buttons *!
+      cursor: pointer;
+    }*/
+    /**
+     * Styling of markers for the datatype on buttons
+    Types from wps io:
+    NUMPY_TYPES = ['array', '2darray', 'ndarray']
+    SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
+    DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
+    SPECIALS = ['raster']
+    */
+    /*.process {*/
+    /*  !*height: auto;*!*/
+    /*  !*width: 350px;*!*/
+    /*  !*background-color: blue;*!*/
+    /*  !*display: inline-block;*!*/
+    /*}*/
+.string, .array, .list, .integer, .positiveInteger, .dateTime,
+.boolean, .float, .html, .plot, .figure, .image {
     margin: 5px;
     height: 12px;
     width: 12px;
 }
-.pickle,.timeseries, .merged-pickle, .merged-ts-pickle,
-.ts-array, .ts-pickle, .ts-aggregate {
+
+/*hirachy:*/
+/*array*/
+/*  - iarray*/
+/*    - varray*/
+/*  - timeseries*/
+/*    - vtimeseries*/
+/* ndarray*/
+/*  - raster*/
+/*    - vraster*/
+/*  - 2darray*/
+/*  - idataframe*/
+/*    - vdataframe*/
+/*  - time-dataframe*/
+/*    - vtime-dataframe*/
+/* html*/
+/*  - plot*/
+
+.array, .iarray, .varray, .timeseries, .vtimeseries,
+.ndarray, .raster, .vraster, ._2darray, .idataframe, .vdataframe,
+.time-dataframe, .vtime-dataframe {
     margin: 5px;
     height: 12px;
     width: 12px;
     border-radius: 50%;
 }
 
+
+.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
+.ndarray:hover, .raster:hover, .vraster:hover, ._2darray:hover, .idataframe:hover, .vdataframe:hover,
+.time-dataframe:hover, .vtime-dataframe:hover,
+.string:hover, .list:hover, .integer:hover, .positiveInteger:hover, .dateTime:hover,
+.boolean:hover, .float:hover, .plot:hover, .html:hover,
+.figure:hover, .image:hover {
+/*    height: 200%;
+    width: 200%;*/
+    transform: scale(2);
+    vertical-align: text-bottom;
+}
 
 .left-hemisphere {
     margin: 5px;
@@ -132,19 +237,140 @@ button-footer {
     width: 6px;
     border-radius: 6px 0 0 6px;
 }
-.array{background-color: rgb(165,0,38)}
-.timeseries{background-color: rgb(215,48,39)}
-.ts-array{background-color: rgb(244,109,67)}
-.ts-pickle{background-color: rgb(253,174,97)}
-.ts-aggregate{background-color: rgb(254,224,144)}
-.string{background-color: rgb(255,255,191); border: 1px solid #ffbf26;}
-.pickle{background-color: rgb(224,243,248); border: 1px solid darkturquoise;}
-.aggregate{background-color: rgb(171,217,233)}
-.merged-pickle{background-color: rgb(116,173,209)}
-.merged-ts-pickle{background-color: rgb(69,117,180)}
-.boolean{background-color: rgb(50, 74, 147); border: 1px solid black;}
-.float{background-color: rgb(125, 115, 244); border: 1px solid rgb(56, 28, 168)}
-.integer{background-color: rgb(218, 133, 255); border: 1px solid rgb(121, 19, 165)}
-.image{background-color: rgb(19, 154, 24); border: 1px solid #91ff59;}
+/*.array::before{content: "A";}
+.timeseries::before{content: "T";}
+.ts-array::before{content: "TA";}
+.ts-pickle::before{content: "TP";}
+.ts-aggregate::before{content: "TAr";}
+.string::before{content: "S";}
+.pickle::before{content: "P";}*/
+/*
+11 colorblind safe colors from http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
+ */
+/*.array{background-color:rgb(165,0,38); content: "AR";}*/
+.array{background-color: rgb(0, 0, 255); fill: rgb(0, 0, 255)}
+.iarray{background-color: rgb(0, 100, 255); fill: rgb(0, 100, 255)}
+.varray{background-color: rgb(0, 150, 255); fill: rgb(0, 150, 255)}
+.timeseries{background-color: rgb(100, 100, 255); fill: rgb(100, 100, 255)}
+.vtimeseries{background-color: rgb(150, 150, 255); fill: rgb(150, 150, 255)}
+.ndarray{background-color: rgb(255, 0, 0); fill: rgb(255, 0, 0)}
+.raster{background-color: rgb(255, 100, 0); fill: rgb(255, 100, 0)}
+.vraster{background-color: rgb(255, 150, 0); fill: rgb(255, 150, 0)}
+._2darray{background-color: rgb(255, 50, 150); fill: rgb(255, 50, 150)}
+.idataframe{background-color: rgb(100, 0, 50); fill: rgb(100, 0, 50)}
+.vdataframe{background-color: rgb(150, 0, 80); fill: rgb(150, 0, 80)}
+.time-dataframe{background-color: rgb(190, 120, 10); fill: rgb(190, 120, 10)}
+.vtime-dataframe{background-color: rgb(160, 110, 90); fill: rgb(160, 110, 90)}
+.html{background-color: rgb(0, 255, 0); fill: rgb(0, 255, 0)}
+.plot{background-color: rgb(76, 191, 82); fill: rgb(76, 191, 82)}
+.figure{background-color: rgb(71, 142, 75); fill: rgb(45, 83, 47)}
+.image{background-color: rgb(50, 80, 51); fill: rgb(58, 113, 61)
+}
+
+.string{background-color: rgb(255,255,191); fill: rgb(255,255,191);
+    border: 1px solid #ffbf26; stroke: #ffbf26;}
+.boolean{background-color: rgb(50, 74, 147); fill: rgb(50, 74, 147);
+    border: 1px solid black; stroke: black}
+/*.float{background-color:rgb(49,54,149)}*/
+.float{background-color: rgb(125, 115, 244); fill: rgb(125, 115, 244);
+    border: 1px solid rgb(56, 28, 168); stroke: rgb(56, 28, 168)}
+.integer{background-color: rgb(218, 133, 255); fill: rgb(218, 133, 255);
+    border: 1px solid rgb(121, 19, 165); stroke: rgb(121, 19, 165)}
+.positiveInteger{background-color: rgb(151, 90, 177); fill: rgb(151, 90, 177);
+    border: 1px solid rgb(83, 10, 114); stroke: rgb(83, 10, 114)}
+.dateTime{background-color: rgb(90, 182, 179); fill: rgb(90, 182, 179);
+    border: 1px solid rgb(2, 59, 76); stroke: rgb(2, 59, 76)}
+.list{background-color: rgb(90, 127, 182); fill: rgb(90, 127, 182);
+    border: 1px solid rgb(2, 38, 76); stroke: rgb(2, 38, 76)}
+/*.pattern{background-color: rgb(90, 127, 182); fill: rgb(90, 127, 182);*/
+/*    border: 1px solid rgb(2, 38, 76); stroke: rgb(2, 38, 76)}*/
 
 
+/* Create a "toggle switch" (on/off button) from a checkbox
+(source: https://www.w3schools.com/howto/howto_css_switch.asp) */
+ /* The switch - the box around the slider */
+.toggleswitch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  vertical-align: text-bottom;
+}
+
+/* Hide default HTML checkbox */
+.toggleswitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.toggleslider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .3s;
+  transition: .3s;
+  border-radius: 17px;
+}
+
+.toggleslider:before {
+  position: absolute;
+  content: "";
+  height: 13px;
+  width: 13px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .3s;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .toggleslider {
+  background-color: #2196F3;
+}
+
+input:focus + .toggleslider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .toggleslider:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+
+.pagination {
+  display: inline-block;
+}
+.pagination a {
+  float: left;
+  padding: 8px 16px;
+  text-decoration: none;
+  border: none;
+  color: black;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+}
+.pagination a:hover {
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+.pagination .disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pagination .active {
+  /*opacity: 0.6;*/
+  cursor: default;
+  background-color: dodgerblue;
+    color: white;
+}

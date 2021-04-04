@@ -11,7 +11,7 @@
 
 {% block content %}
 
-  <header class="respo-container respo-padding-bottom respo-center" style="padding-top:22px">
+  <header class="w3-container w3-padding-bottom w3-center" style="padding-top:22px">
       {% if form.errors %}
         <h5><b>{% trans "Your login failed! Please try again." %}</b></h5>
       {% elif user.is_authenticated %}
@@ -21,11 +21,11 @@
       {% endif %}
   </header>
 
-  <div class="respo-row-padding respo-margin-bottom respo-center">
+  <div class="w3-row-padding w3-margin-bottom w3-center">
 
-    <div class="respo-container respo-light-turquoise respo-padding-16 respo-third-n">
-      <div class="respo-left"><i class="fa fa-user respo-xxxlarge"></i> <strong>Login</strong></div>
-      <div class="respo-clear"></div>
+    <div class="w3-container w3-light-turquoise w3-padding-16 w3-third-n">
+      <div class="w3-left"><i class="fa fa-user w3-xxxlarge"></i> <strong>Login</strong></div>
+      <div class="w3-clear"></div>
       <form method="post">
           {% csrf_token %}
           {{ form.as_p }}

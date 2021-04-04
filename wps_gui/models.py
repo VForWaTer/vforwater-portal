@@ -14,6 +14,7 @@ class WebProcessingService(models.Model):
     class Meta:
         verbose_name = 'Web Processing Service'
         verbose_name_plural = 'Web Processing Services'
+        managed = True
 
     def __str__(self):
         return self.name
@@ -33,3 +34,4 @@ class WpsResults(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.wps, self.inputs)
+        managed = True

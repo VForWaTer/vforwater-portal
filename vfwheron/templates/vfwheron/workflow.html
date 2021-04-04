@@ -1,9 +1,9 @@
 <meta charset="UTF-8">
 
-{% extends "vfwheron/base.html" %} 
+{% extends "vfwheron/base.html" %}
 {% load static %}
-{% load i18n %} 
-{% get_current_language as LANGUAGE_CODE %} 
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 {% block title %}- Heron WPS{% endblock %}
 
 {% block sidebar %}
@@ -12,8 +12,7 @@
 
 {% block content %}
 
-<!-- <script type="text/javascript">$(document).ready(function(){$("#wpstool").attr("src", "{% url 'wps_workflow:index' %}")})</script>
---->
+{#<script type="text/javascript">$(document).ready(function(){$("#wpstool").attr("src", "{% url 'wps_workflow:index' %}")})</script>#}
 <!--  <div class="row"> -->
 		<div class="col-md-8 col-md-offset-2" id="wpscontainer">
 			<iframe id="wpstool" src="{% url 'wps_workflow:index' %}"

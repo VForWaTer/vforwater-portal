@@ -39,6 +39,10 @@ msgstr ""
 msgid "  Workflow"
 msgstr ""
 
+#: templates/author_manage/add-new-resource.html:14
+msgid "Requests"
+msgstr "Anfragen"
+
 #: templates/vfwheron/base.html:53 templates/vfwheron/sidemenu.html:16
 msgid "  Monitor"
 msgstr ""
@@ -53,7 +57,7 @@ msgstr "Hilfe"
 
 #: templates/vfwheron/base.html:64 templates/vfwheron/sidemenu.html:23
 msgid "  Portal Help"
-msgstr "Hilfe"
+msgstr " Hilfe"
 
 #: templates/vfwheron/base.html:67 templates/vfwheron/sidemenu.html:26
 msgid "  Web Site"
@@ -71,9 +75,17 @@ msgstr "  Quellcode"
 msgid "Profile"
 msgstr "Profil"
 
+#: templates/vfwheron/base.html:104
+msgid "  Currently no requests."
+msgstr "  Derzeit keine Anfragen."
+
 #: templates/vfwheron/base.html:105 templates/vfwheron/sidemenu.html:51
 msgid "Resource Overview"
-msgstr "Resourcenüberblick"
+msgstr "Ressourcenüberblick"
+
+#: templates/vfwheron/base.html:105 templates/vfwheron/sidemenu.html:51
+msgid "My Resources"
+msgstr "Meine Ressourcen"
 
 #: templates/vfwheron/base.html:106
 msgid "  Logout"

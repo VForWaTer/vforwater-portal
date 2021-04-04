@@ -1,0 +1,143 @@
+{#TODO: Not sure what to do with this page. Usefull?#}
+
+<!-- template for the resources overview page (searching for resources , accessing/sending request) -->
+
+{% extends "author_manage/base.html" %}
+{% block overview %}
+  class="active";
+{% endblock %}
+
+{% block styles %}
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-info.css' %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-req.css' %}"/>
+{#  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/resources-overview.css' %}"/>#}
+{% endblock %}
+
+{% block body %}
+
+  <!-- search box for resources -->
+  <div class="search">
+    <h1>This page is still under construction.</h1>
+    <form action="{% url 'author_manage:search-resources' %}" method="get">
+      <input type="text" name="q" class="search-box" value={{ query }}>
+      <input type="submit" value="Search" class="search-btn">
+    </form>
+    <br>
+
+    <div class="container">
+      {% if resources_list %}
+
+        <!-- found resources -->
+        <div class="results">
+          {% if query %}
+            <p>You searched for: <strong>{{ query }}</strong></p>
+            <p>Found {{ paginator.count }} resource{{ paginator.count|pluralize }}.</p>
+          {% endif %}
+        </div>
+
+        {% for res in resources_list %}
+
+          <!-- modal dialog with meta info about the resource (and access button if the user has permissions) -->
+          <a href="#{{ res.id }}" class="resource-name"> {{ res.dataEntry.title }} </a>
+          <div id="{{ res.id }}" class="modalDialog">
+            <div class="info">
+              <a href="" title="Close" id="x" class="w3-btn w3-blue"> x </a>
+              <h2 id="details">Details</h2>
+              <br>
+              <p>Name: <strong>{{ res.name }}</strong></p>
+              <p>Type: <strong>{{ res.type }}</strong></p>
+              <p>CreationDate: <strong>{{ res.dataEntry.datasource.creation }}</strong></p>
+              <p>Description: <strong>{{ res.dataEntry.datasource.datatype.description }}</strong></p>
+              {% if res in can_access or is_admin %}
+                {% comment %}<button class="acc-btn-info-dialog">
+            <a href="../../resources/{{res.id}}" class="acc-info-dialog"download>Access</a>
+            </button>{% endcomment %}
+                {% comment %}<button class="acc-tmp-btn" onclick="window.location.href='../resources/{{res.id}}'">
+            Access
+            </button>{% endcomment %}
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- user can access the resource if he has permissions or is an admin -->
+          {% if res in can_access or is_admin %}
+            {#      <a href="../resources/{{res.id}}" class="access-btn">Access</a>#}
+
+            <!-- if the user has sent an access request he has the option to cancel it -->
+          {% elif res in requested_resources %}
+            <a href="#cancel-request-{{ res.id }}" class="cancel-btn"> Cancel Request </a>
+            <div id="cancel-request-{{ res.id }}" class="modalDialog">
+              <div>
+                <a href="" title="Close" id="x"> x </a>
+                <form action="{% url 'author_manage:cancel-access-request' res.id %}" method="post">
+                  {% csrf_token %}
+                  <div>
+                    <p> Are you sure you want to <strong>cancel</strong> the access request for resource:
+                      <strong>{{ res.name }}</strong>?
+                    </p>
+                    <br>
+                  </div>
+                  <input type="submit" id="no" value="yes, cancel request">
+                  <a href="" title="Close" id="close"> Close </a>
+                </form>
+              </div>
+            </div>
+            <br>
+
+            <!-- otherwise he can send an access request -->
+          {% else %}
+            <a href="#send-request-{{ res.id }}" class="send-btn"> Send Request </a>
+            <div id="send-request-{{ res.id }}" class="modalDialog">
+              <div>
+                <a href="" title="Close" id="x"> x </a>
+                <form action="{% url 'author_manage:send-access-request' res.id %}" method="post">
+                  {% csrf_token %}
+                  <div class
+                  "row">
+                  <p> Are you sure you want to <strong>send</strong> an access request for resource
+                    <strong>{{ res.name }}</strong>?
+                  </p>
+                  <br>
+              </div>
+              <div class="row">
+                <label for="descr">Message: </label><br>
+                <textarea id="descr" name="descr" placeholder="optional" maxlength="250" cols="51" rows="7"></textarea>
+              </div>
+              <input id="yes" type="submit" value="yes, send request">
+              <a href="" title="Close" id="close"> Close </a>
+              </form>
+            </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+        </div>
+        </div>
+
+        <!-- pagination functionality for the resources -->
+        {# The pagination code below is taken from https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html #}
+        {% if is_paginated %}
+          <ul class="pagination">
+            {% if page_obj.has_previous %}
+              <li><a href="?{{ query_pagination_string }}page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+            {% else %}
+              <li class="disabled"><span>&laquo;</span></li>
+            {% endif %}
+            {% for i in paginator.page_range %}
+              {% if page_obj.number == i %}
+                <li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+              {% else %}
+                <li><a href="?{{ query_pagination_string }}page={{ i }}">{{ i }}</a></li>
+              {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+              <li><a href="?{{ query_pagination_string }}page={{ page_obj.next_page_number }}">&raquo;</a></li>
+            {% else %}
+              <li class="disabled"><span>&raquo;</span></li>
+            {% endif %}
+          </ul>
+        {% endif %}
+      {% else %}
+        <p class="no-results">No resources matched your search criteria.</p>
+      {% endif %}
+{% endblock %}

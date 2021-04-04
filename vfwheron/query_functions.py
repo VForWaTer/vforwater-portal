@@ -3,45 +3,33 @@
 
 """
 import re
+
+from django.contrib.gis.db.models.aggregates import Extent
 from django.db import connections
+import logging
+
+from vfwheron.models import Entries
+
+logger = logging.getLogger(__name__)
 
 
-def get_bbox_from_data(selected_ids=None):  # get bbox for available data
+def get_bbox_from_data(*args):
     """
+    Get geometry of bbox for available data in the style: [xmin, ymin, xmax, ymax].
 
-    :param selected_ids:
-    :type selected_ids:
-    :return:
-    :rtype:
+    :param args: Ids inside the bounding box
+    :type args: list
+    :return: list
     """
     try:
-        cursor = connections['vforwater'].cursor()  # connect to database
-        if selected_ids:
-            cursor.execute(
-                'SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)),srid),3857)) FROM tbl_meta '
-                'LEFT JOIN lt_location ON tbl_meta.geometry_id = lt_location.id WHERE tbl_meta.id in ('
-                + selected_ids + ');'
-            )
+        if args:
+            bounds = Entries.objects.filter(pk__in=args[0]).aggregate(Extent('location'))
         else:
-            # request bbox in srid of openlayers:
-            cursor.execute(
-                'SELECT ST_Extent(ST_Transform(ST_SetSRID(ST_Point(ST_X(geom), ST_Y(geom)),srid),3857)) '
-                'FROM lt_location;'
-            )
-        i = cursor.fetchall()[0][0]
-        cursor.close()
-        m = re.findall("(\d+.\d*)", i)  # get string with coordinates
-    except Exception as ex:
-        print('exeption in bbox: ', ex)
-        m = ['645336.034469495', '6395474.75106861', '666358.204722283', '6416613.20733359']
-    return list(map(lambda x: float(x), m))  # change string to list of floats
+            bounds = Entries.objects.all().aggregate(Extent('location'))
+    except TypeError as ex:
+        print('\033[91m Exeption in loading bbox: {}\033[0m'.format(ex))
+        logger.warning('\033[91m Data Extend cannot be loaded in query_functions.py. Using fixed values.\033[0m')
+        bounds = {'location__extent': [11.221124, 52.08632, 11.222354, 52.086891]}
 
+    return list(bounds['location__extent'])
 
-#
-# def dictfetchall(cursor):
-#     "Return all rows from a cursor as a dict"
-#     columns = [col[0] for col in cursor.description]
-#     return [
-#         dict(zip(columns, row))
-#         for row in cursor.fetchall()
-#     ]

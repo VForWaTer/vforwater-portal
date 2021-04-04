@@ -28,7 +28,7 @@ sudo systemctl start postgresql                       # start cluster
   /usr/pgsql-11/bin/postgresql-11-setup initdb
   systemctl start postgresql-11
   ]
-  
+
 sudo su - postgres                                    # login as DB admin
 createdb vfw_start                                    # create testing database
 psql -d vfw_start                                     # connect to the new database
@@ -64,21 +64,18 @@ sudo service postgresql restart
 
 #****
 # Fill database:
-psql -U testuser -W vfw_start < create_tables.sql
-psql -U testuser -W vfw_start < insert_metadata.sql
+psql -U testuser -W vfw_start < db_schema_dump.sql
+psql -U testuser -W vfw_start < db_data_dump.sql
 sudo pip3 install pandas psycopg2-binary
-python3 insert_testdata.py
-# (in case of "ImportError: libcrypt.so.1: cannot open shared object file: No such file or directory" you have to "sudo dnf install libxcrypt-compat" before running "insert_testdata.py")
 
 
 #####
 # install geoserver (from http://geoserver.org/release/stable/ choose the platform independent binary):
 # for details see: https://docs.geoserver.org/stable/en/user/installation/linux.html
 ##
-# if no Java is installed first install Java Runtime Environment (JRE) e.g. from https://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html
-sudo dnf install rpm
-sudo rpm -U ~/Downloads/jre-8u191-linux-x64.rpm # install JRE package
-rm ~/Downloads/jre-8u191-linux-x64.rpm          # delete downloaded JRE package
+# if no Java is installed first install Java Runtime Environment (JRE) e.g. from https://jdk.java.net/java-se-ri/11 or fo
+sudo dnf install java-11-openjdk
+
 ##
 # Download the archive from geoserver and unpack to the directory where you would like the program to be located,
 # e.g. in /usr/share/geoserver
@@ -97,11 +94,12 @@ sh /usr/share/geoserver/bin/startup.sh
 # set up a wps server (here pywps)
 # follow https://pywps.readthedocs.io/en/master/install.html
 # or for fedora:
-pip3 install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-dev
+pip3 install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-stable
 pip3 install -r requirements.txt
 
 # setup of simple demo wps server
-git clone git://github.com/geopython/pywps-flask.git pywps-flask
+pip install flask
+git clone https://github.com/geopython/pywps-flask.git
 cd pywps-flask
 python demo.py
 
@@ -112,7 +110,7 @@ python demo.py
 ## https://github.com/VForWaTer/vforwater-portal
 wget https://github.com/VForWaTer/vforwater-portal/archive/master.zip
 #unzip...
-sudo pip3 install django django_crontab django-cors-headers psycopg2 pyzip matplotlib future redis markdown lxml  # install dependencies
+pip3 install -r requirements.txt  # install dependencies
 ###
 cd vforwater
 mv heron/settings.py_example heron/settings.py

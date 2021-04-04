@@ -111,8 +111,8 @@ INSTALLED_APPS = [
     'wps_gui',
     'heron_monitor',
     'heron_visual',
-    'heron_upload',
-    'AuthorizationManagement.apps.AuthorizationmanagementConfig',
+    'upload',
+    'author_manage.apps.authorManageConfig',
 ]
 
 MIDDLEWARE = [
@@ -155,15 +155,12 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 # http://diegobz.net/2011/02/10/django-database-router-using-settings/
 
-DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
+# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(VFW_DIR, 'django.db'),
-    },
-    'vforwater': {
+
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vfw_start',
         'HOST': 'localhost',

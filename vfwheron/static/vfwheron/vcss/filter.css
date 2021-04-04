@@ -1,9 +1,54 @@
 /*TODO: This upper part isn't used now. Maybe a start to style the accordions of the filter menu*/
 /* Dropdown Button */
 :root{
-    --color_Item: #00BAEE;
+    --color_Item: #00baee;
     --color_Child: #AADDF9;
     --color_Parent: #D9EFFD;
+}
+
+.switch-field {
+    display: flex;
+    margin-bottom: 36px;
+    overflow: hidden;
+}
+
+.switch-field input {
+    position: absolute !important;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    width: 1px;
+    border: 0;
+    overflow: hidden;
+}
+
+.switch-field label {
+    background-color: lightgrey;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    padding: 8px 16px;
+    margin-right: -1px;
+   /* border: 1px solid rgba(0, 0, 0, 0.1);*/
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.switch-field label:hover {
+    cursor: pointer;
+}
+
+.switch-field input:checked + label {
+    background-color: var(--color_Item);
+    box-shadow: none;
+}
+
+.switch-field label:first-of-type {
+    border-radius: 14px 0 0 14px;
+}
+
+.switch-field label:last-of-type {
+    border-radius: 0 14px 14px 0;
 }
 
 .filter-btn-block{
@@ -362,7 +407,7 @@ div.ui-rangeslider label {
   display: none;
 }
 
-.respo-modal-content{
+.w3-modal-content{
     margin:auto;
     background-color:#fff;
     position:relative;
@@ -427,4 +472,59 @@ padding: 2px;
 
 .activeM {
     background-color: rgba(0, 60, 136, .9)!important;
+}
+
+
+/**
+ * Style of table for selections in entrieslist.html
+ */
+
+.outerPaginationTable, .innerPaginationTable {
+    width: 100%;
+    border: 1px solid black;
+    border-collapse: collapse;
+    /*background-color: whitesmoke;*/
+}
+.innerPaginationTable:hover {background-color: #ddd;}
+.AccessTrue, .AccessFalse {
+    margin: 5px;
+    height: 12px;
+    width: 12px;
+    font-weight: bold;
+}
+.embargoFalse {
+    background-color: lightgreen;
+
+}
+.embargoTrue {
+    background-color: #b15656;
+    color: white;
+}
+tbody td {
+  text-align: center;
+    padding: 2px;
+}
+thead th, tbody th {
+  text-align: left;
+}
+.outerPaginationTable td:nth-child(1),
+.innerPaginationTable td:nth-child(1){
+    /*background-color: pink;*/
+    width:36px;
+}
+.outerPaginationTable td:nth-child(2),
+.innerPaginationTable td:nth-child(2){
+    min-width:40%;
+}
+.outerPaginationTable td:nth-child(3),
+.innerPaginationTable td:nth-child(3){
+    width:17%;
+}
+.outerPaginationTable td:nth-child(4),
+.innerPaginationTable td:nth-child(4){
+    width:24%;
+}
+.outerPaginationTable td:nth-child(5),
+.innerPaginationTable td:nth-child(5){
+    width:15%;
 }

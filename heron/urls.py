@@ -17,21 +17,25 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.urls import path
 from django.views.generic.base import RedirectView
+from vfwheron import views as vfw_views
 
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='vfwheron/', permanent=False)),
-    url(r'^vfwheron/', include('vfwheron.urls')),
+    url(r'^$', RedirectView.as_view(url='home/', permanent=False)),
+    url(r'^home/', include('vfwheron.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^wps_gui/', include('wps_gui.urls', namespace='wps_gui')),
-    url(r'^heron_monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
-    url(r'^heron_visual/', include('heron_visual.urls', namespace='heron_visual')),
-    url(r'^heron_upload/', include('heron_upload.urls', namespace='heron_upload')),
+    url(r'^workspace/', include('wps_gui.urls', namespace='wps_gui')),
+    url(r'^monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
+    url(r'^visual/', include('heron_visual.urls', namespace='heron_visual')),
+    url(r'^upload/', include('upload.urls', namespace='upload')),
+    url(r'^download/(?P<name>\w{4,5})$', vfw_views.DownloadView.as_view()),
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
-    url(r'^AuthorizationManagement/', include('AuthorizationManagement.urls', namespace='AuthorizationManagement')),
+    url(r'^user/', include('author_manage.urls', namespace='author_manage')),
 ]
 
+handler404 = 'vfwheron.views.error_404_view'
 
 # This is just to test the upload in the development environment
 if settings.DEBUG and settings.DEBUG is not '':

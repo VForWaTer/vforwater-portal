@@ -1,8 +1,17 @@
-#dropdiv {
+#workflowbuilder {
     position: absolute;
     right: 300px;
     left: 300px;
     top: 80px;
+    /*padding: 10px;*/
+    bottom: 1px;
+}
+
+#dropdiv {
+    position: inherit;
+    right: 0px;
+    left: 0px;
+    top: 34px;
     bottom: 1px;
     padding: 10px;
     border: 1px solid #00021d;
@@ -16,6 +25,13 @@
     background-color: #f1f1f1;
     border: 1px solid #d3d3d3;
     text-align: center;
+}
+
+.box-data {
+    fill: ghostwhite;
+    stroke-width: 0.5;
+    stroke: lightslategray;
+    /*width: 200px;*/
 }
 
 /*Modal:*/
@@ -92,4 +108,58 @@ p.modal-datainfo {
 }
 .divTblRight {
     width: 220px;
+}
+
+.red_border_figure {
+    fill: chocolate;
+    stroke: cornflowerblue;
+    height: 150px;
+}
+
+.draw2d_shape_basic_Label {
+    padding: 10px;
+    background-color: blue;
+    /*fill: lightyellow;*/
+    color: darkblue;
+}
+
+/*
+rect {
+  resize: both;
+  overflow: auto;
+    fill: pink;
+}
+*/
+
+/*
+ * Style for draw2d type indicators (conflict to sidebar indicators)
+ */
+/*rect.draw2d_ResizeHandle*/
+/*{*/
+/*    fill: rgba(255, 0, 0, 0);*/
+/*    stroke: rgba(255, 0, 0, 0);*/
+/*}*/
+/*
+.timeseries {
+    fill: red;
+    stroke: indianred;
+    height: 150px;
+}
+.string {
+    fill: yellow;
+    stroke: lightgoldenrodyellow;
+    height: 150px;
+}
+.boolean {
+    fill: green;
+    stroke: limegreen;
+    height: 150px;
+}
+*/
+
+/*
+ * Draw a box
+ */
+.workflowBox {
+
 }

@@ -5,7 +5,7 @@
 <head>
     {#  <script src="{% static 'vfwheron/js/sidebar.js' %}" type="text/javascript"></script>#}
     <style>
-        .respo-sidenav {
+        .w3-sidenav {
             margin-top: 37px;
         }
     </style>
@@ -22,14 +22,14 @@
 <param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js; cannot find any
   usage => can it be deleited? -->
 <!--   Sidenav/menu -->
-<nav class="respo-sidenav respo-collapse respo-white respo-animate-left" style="z-index:3;width:300px;" id="mySidenav">
+<nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav">
     <br>
-    <div class="respo-container respo-row">
-        <div class="respo-col s4">
+    <div class="w3-container w3-row">
+        <div class="w3-col s4">
             <img src="{% static 'vfwheron/images/logo_main.png' %}" style="width:200px"><br>
         </div>
     </div>
-    <a href="#" class="respo-padding-8 respo-hide-large respo-dark-grey respo-hover-black" onclick="respo_close()"
+    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()"
        title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
     <hr style="margin-bottom:0px;">
 
@@ -42,12 +42,12 @@
 
     <hr style="margin-bottom:0px;">
 
-    <div class="respo-container respo-light-turquoise">
+    <div class="w3-container w3-light-turquoise">
         <b title={% trans "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use." %}>{% trans "Data store" %}</b>
     </div>
-    <ul class="respo-ul respo-card-4 respo-white" id="workspace">
-        <b class="respo-btn-group">
-            <input class="respo-btn respo-blue respo-right" type="submit"
+    <ul class="w3-ul w3-card-4 w3-white" id="workspace">
+        <b class="w3-btn-group">
+            <input class="w3-btn w3-blue w3-right" type="submit"
                    onclick="remove_all_datasets()" value={% trans "Remove&#32all&#32datasets" %} data-toggle="tooltip"
                    title={% trans "Remove&#32all&#32datasets&#32from&#32data&#32store" %}>
         </b>
@@ -55,12 +55,12 @@
     <hr>
 {#    <hr style="margin-bottom:75%;">#}
 
-    <div class="respo-container respo-light-turquoise">
+    <div class="w3-container w3-light-turquoise">
         <b title={% trans "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available." %}>{% trans "Result store" %}</b>
     </div>
-    <ul class="respo-ul respo-card-4 respo-white" id="workspace_results">
-        <b class="respo-btn-group">
-            <input class="respo-btn respo-blue respo-right" type="submit"
+    <ul class="w3-ul w3-card-4 w3-white" id="workspace_results">
+        <b class="w3-btn-group">
+            <input class="w3-btn w3-blue w3-right" type="submit"
                    onclick="remove_all_results()" value={% trans "Remove&#32all&#32results" %} data-toggle="tooltip"
                    title={% trans "Remove&#32all&#32results&#32from&#32result&#32store" %}>
         </b>
@@ -77,10 +77,10 @@
 {% comment %}<nav id="poptext" class="popuptext">
     <ul class="context-menu__items">
         <li class="context-menu__item">
-            <a href="#" class="respo-medium" onclick="show_data(key)">Show metadata</a>
+            <a href="#" class="w3-medium" onclick="show_data(key)">Show metadata</a>
         </li>
         <li class="context-menu__item">
-            <a href="#" class="respo-medium" onclick="show_data(key)">Show preview</a>
+            <a href="#" class="w3-medium" onclick="show_data(key)">Show preview</a>
         </li>
     </ul>
 </nav>{% endcomment %}
@@ -144,9 +144,9 @@
     </ul>
 </nav>
 
-<nav id="loader-popup" class="mod-popup respo-center">
+<nav id="loader-popup" class="mod-popup w3-center">
     {#    TODO: figure out how to aport download, then there is no need to hide the closer#}
-    <a href="#" id="pop-closer" class="mod-popup-closer respo-hide"></a>
+    <a href="#" id="pop-closer" class="mod-popup-closer w3-hide"></a>
     <div id="pop-content-side">
     </div>
     <a>
@@ -156,11 +156,11 @@
     </a>
 </nav>
 
-<nav id="img-popup" class="context-menu respo-center">
+<nav id="img-popup" class="context-menu w3-center">
     <div id="imgPopup"></div>
 </nav>
 {#  Overlay effect when opening sidenav on small screens#}
-<div class="respo-overlay respo-hide-large respo-animate-opacity" onclick="respo_close()" style="cursor:pointer"
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
 
 {% block rModal %}
