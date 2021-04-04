@@ -291,7 +291,6 @@ class DatasetDownloadView(TemplateView):
 
             if len(accessible_data) > 0:
                 layer_name = 'XML_{}_{}_{}'.format(request.user, request.user.id, id)
-                # srid = str(Entries.objects.filter(pk=id).values_list('genericgeometrydata__srid', flat=True)[0])
                 srid = 4326
                 # create layer on geoserver to request xml file
                 create_layer(request, layer_name, store, workspace, id)
@@ -390,7 +389,6 @@ class HelpView(TemplateView):
 
     """
 
-    #     template_name = 'vfwheron/help.html'
     def get(self, request):
         """
 
@@ -474,12 +472,7 @@ class GeoserverView(View):
         :return:
         :rtype:
         """
-        # wfsLayerName = 'new_ID_as_identifier_update'
-        # wfsLayerName = layer
         work_space_name = HomeView.workspace  # 'CAOS_update'
-        # url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
-        #       '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
-        #       '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
         url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
               'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
                                                                 srid, bbox, srid)
@@ -501,16 +494,12 @@ def previewplot(request):
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
             # plot with bokeh
-            # if accessible_data[0] == 19:
             return JsonResponse(get_fullres_plot(accessible_data[0]))
-            # else:
-            # return JsonResponse(get_preview(accessible_data[0]))
 
         except TypeError as e:
             print('Type error in previewplot: ', e)
             raise Http404
         except IndexError as e:
-            # print('index error: ', e)
             if request.user.is_authenticated:
                 # TODO: Rethink how to handle unallowed requests
                 print('Index Error in previewplot: ', e)
@@ -518,8 +507,6 @@ def previewplot(request):
             else:
                 # TODO: Redirect to login
                 raise Http404
-                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-                # return redirect('vfwheron:login')
         except Exception as e:
             print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
 
@@ -563,7 +550,6 @@ def short_datainfo(request):
 
     except TypeError:
         raise Http404
-        # return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
 
 def filter_selection(request):
@@ -765,8 +751,6 @@ def advanced_filter(request):
 
 
 def error_404_view(request, exception):
-    # data = {"name": "Some Error"}
-    # return render(request,'vfwheron/404.html', data)
     return render(request, 'vfwheron/404.html')
 
 
@@ -780,7 +764,6 @@ class DownloadView(View):
 
         if name == 'vfwVM':
 
-            # file_path = os.path.join('/data/VBox_VFORWaTer.zip')
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as fh:
                     response = FileResponse(open(file_path, 'rb'))
