@@ -1,4 +1,4 @@
-from PIL.PngImagePlugin import _idat
+# from PIL.PngImagePlugin import _idat
 from django.conf import settings
 from django.contrib.auth import user_logged_in
 from django.contrib.auth.models import User, AbstractUser

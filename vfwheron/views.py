@@ -21,7 +21,8 @@ from django.views.generic import TemplateView
 from django.contrib import messages
 from future.builtins import isinstance
 
-from heron.settings import LOCAL_GEOSERVER, DEBUG
+from author_manage.views import MyResourcesView
+from heron.settings import LOCAL_GEOSERVER, DEBUG, DEMO_VAR
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
 from vfwheron.previewplot import get_preview, get_fullres_plot
@@ -101,11 +102,18 @@ class HomeView(TemplateView):
 
     try:
         test_geoserver_env(store, workspace)
-    except JSONDecodeError:
+    # except ConnectionError:
+    #     print('\033[91mConnection Error! No geoserver\033[0m ')
+    # except JSONDecodeError:
+    #     print('\033[91mJSONDecodeError! No geoserver\033[0m ')
+    except:
         print('\033[91mno geoserver\033[0m ', sys.exc_info()[0])
 
     # TODO: Test with users if this makes any sense
     def __set_layer_name(self):
+        """
+        Set name for layer in geoserver according to username or as admin_layer.
+        """
         if self.request.user.is_authenticated:
             if self.request.user.is_superuser:
                 self.data_layer = 'admin_layer'
@@ -113,7 +121,13 @@ class HomeView(TemplateView):
                 self.data_layer = expressive_layer_name(self.request.user)
 
     # Put here everything you need at startup and for refresh of 'Home'
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs: object):
+        """
+        Collect data needed for startup of V-FOR-WaTer Portal home.
+
+        :param kwargs:
+        :return:
+        """
         self.__set_layer_name()
         # get_dataset(self, **kwargs)
 
@@ -458,7 +472,7 @@ class ToggleLanguageView(View):
                 request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
         logger.debug('new language: {}'.format(translation.get_language()))
         logger.debug('translation test: {}'.format(translation.gettext("help")))
-        return redirect('/')
+        return redirect(DEMO_VAR + '/')
 
 
 class FailedLoginView(View):

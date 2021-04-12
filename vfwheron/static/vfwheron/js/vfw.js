@@ -101,24 +101,34 @@ class storeData {
 }
 
 const DATATYPE = new class AbstractType {
-     // constructor(type) {
-     constructor() {
-         this.HIERACHY = {
-             'iarray': ['array'],
-             'varray': ['iarray', 'array'],
-             'timeseries': ['array'],
-             'vtimeseries': ['timeseries', 'array'],
-             'raster': ['ndarray'],
-             'vraster': ['raster', 'ndarray'],
-             '2darray': ['ndarray'],
-             'idataframe': ['ndarray'],
-             'vdataframe': ['idataframe', 'ndarray'],
-             'time-dataframe': ['ndarray'],
-             'vtime-dataframe': ['time-dataframe', 'ndarray']
-         }
-         // this.identifier = type;
-         // this.type = type;
-     }
+    // constructor(type) {
+    constructor() {
+        this.HIERACHY = {
+            'array': ['iarray', 'timeseries'],
+            'iarray': ['varray'],
+            'timeseries': ['vtimeseries'],
+            'ndarray': ['raster', '2darray', 'idataframe', 'time-dataframe'],
+            'raster': ['vraster'],
+            'idataframe': ['vdataframe'],
+            'time-dataframe': ['vtime-dataframe'],
+            'html': ['plot']
+        }
+        this.bHIERACHY = {
+            'iarray': ['array'],
+            'varray': ['iarray', 'array'],
+            'timeseries': ['array'],
+            'vtimeseries': ['timeseries', 'array'],
+            'raster': ['ndarray'],
+            'vraster': ['raster', 'ndarray'],
+            '2darray': ['ndarray'],
+            'idataframe': ['ndarray'],
+            'vdataframe': ['idataframe', 'ndarray'],
+            'time-dataframe': ['ndarray'],
+            'vtime-dataframe': ['time-dataframe', 'ndarray']
+        }
+        // this.identifier = type;
+        // this.type = type;
+    }
 
      /**
       * Check if your data/output is valid for a process.
@@ -132,25 +142,29 @@ const DATATYPE = new class AbstractType {
      }
 
     /**
-      * Return possible inputTypes for given type(s) of data.
-      *
-      * @param {array} inputType - Datatype(s) you want to use in process
-      * @return {set} - set of strings with accepted input types
-      */
-     accepts(inputTypeList) {
-         let acceptedList = inputTypeList;
-         for (let i in inputTypeList) {
-             acceptedList = acceptedList.concat(this.HIERACHY[inputTypeList[i]])
-         }
+     * Return possible inputTypes for given type(s) of data.
+     *
+     * @param {list} inputTypeList - Datatype(s) you want to use in process
+     * @return {set} - set of strings with accepted input types
+     */
+    accepts(inputTypeList) {
+        let acceptedList = inputTypeList;
+        // TODO: Use a recursive function to be prepared for a deeper hierarchy
+        for (let i of inputTypeList) {
+            acceptedList = acceptedList.concat(this.HIERACHY[i])
+            if (Array.isArray(this.HIERACHY[i])) {
+                for (let j of this.HIERACHY[i]) {
+                    acceptedList = acceptedList.concat(this.HIERACHY[j])
+                }
+            }
+        }
         // TODO: Use set more often. They are faster for 'has' tasks.
-         // let uniqueList = [...new Set(acceptedList)];
-         // return uniqueList
         return new Set(acceptedList)
     }
 }
 
 
-function createBtnName(name, abbr, unit, dbID){
+function createBtnName(name, abbr, unit, dbID) {
     let btnName;
     let vnLen = name.length;
     if (vnLen + abbr.length + unit.length <= 13) {
@@ -525,8 +539,8 @@ $(document).ready(function (menuTitle) {
  * @param {string} id of dataset as string.
  */
 function moreInfoModal(id) {
-    let tb=false, pb=false;
-    let modLock=false;
+    let tb = false, pb = false;
+    let modLock = false;
     let pdata, tdata;
 
     let ajaxTable = function () {
@@ -559,6 +573,7 @@ function moreInfoModal(id) {
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
     document.getElementById("mod_prev").classList.add("loader");
+
     // The following is used to make sure to add first the table then the plot.
     function tableToModal(properties) {
         let metaText = '<table>';

@@ -73,18 +73,60 @@ function show_data() {
     }
     if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
         let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+        let groups = {};
         if (resultData) {
             let html = "";
+            let ghtml = "";
+            let mhtml = "";
             $.each(resultData, function (btnName, value) {
-                html += build_resultstore_button(btnName, value);
+                if (!value.group) {
+                    html += build_resultstore_button(btnName, value);
+                } else {
+                    if (!(value.group in groups)) {
+                        groups[value.group] = [];
+                    }
+                    groups[value.group].push([btnName, value])
+                }
             });
+            $.each(groups, function (groupname, members) {
+                mhtml = "";
+                ghtml = "";
+                members.forEach(function (singlemember) {
+                    return mhtml += build_resultstore_button(singlemember[0], singlemember[1]);
+                })
+                html += build_resultgroup_button(groupname, members)
+                // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
+                // html += ghtml
+            })
+            // ghtml += build_resultgroup_button(value.group)
             document.getElementById("workspace_results").innerHTML += html;
+
+            add_groupaccordion_toggle()
         }
     }
 }
 
 /**
- * If there is a selection from the Filtermenu preload it and store the pickle
+ * add accordion function to group button
+ */
+function add_groupaccordion_toggle() {
+    let acc = document.getElementsByClassName("groupaccordion");
+    for (let i of acc) {
+        i.addEventListener("click", function () {
+            this.classList.toggle("active");
+            let panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+                panel.style.display = "none";
+            } else {
+                panel.style.display = "block";
+            }
+        });
+    }
+}
+
+/**
+ * If in workspace is a selection from the Filtermenu, preload it and store the wps ID
+ *
  * @param workspaceData
  */
 function preload_datastore_button(workspaceData) {
@@ -93,9 +135,10 @@ function preload_datastore_button(workspaceData) {
         let preload = {};
         if (workspaceData[dataset]['source'] === 'db') {
             // TODO: Think about using uuid instead of entry_id
-            preload = {key_list: ['entry_id', 'uuid', 'start', 'end'],
+            preload = {
+                key_list: ['entry_id', 'uuid', 'start', 'end'],
                 value_list: [workspaceData[dataset]['orgID'].toString(), '',
-                // value_list: [workspaceData[dataset]['dbID'].toString(), '',
+                    // value_list: [workspaceData[dataset]['dbID'].toString(), '',
                     workspaceData[dataset]['start'], workspaceData[dataset]['end']],
                 dataset: dataset
             };
@@ -110,8 +153,7 @@ function preload_datastore_button(workspaceData) {
                 .done(function (wpsDBInfo) {
                     if (wpsDBInfo.Error) {
                         console.warn(wpsDBInfo.Error)
-                    }
-                    else {
+                    } else {
                         update_datastore_button(wpsDBInfo);
                     }
                 },)
@@ -182,10 +224,10 @@ function update_datastore_button(wpsDBInfo) {
     let btnName = createBtnName(storageEntry['name'], storageEntry['abbr'],
         storageEntry['unit'], wpsDBInfo['id'].substring(3,))
     let title = `${storageEntry['name']} (${storageEntry['abbr']} in ${storageEntry['unit']})`;
-    let button = document.getElementById('sidebtn'+wpsDBInfo['orgid'])
+    let button = document.getElementById('sidebtn' + wpsDBInfo['orgid'])
 
-    if (wpsDBInfo['id'].substring(0,3) == 'wps') {
-        storageEntry.source = wpsDBInfo['id'].substring(0,3)
+    if (wpsDBInfo['id'].substring(0, 3) == 'wps') {
+        storageEntry.source = wpsDBInfo['id'].substring(0, 3)
         storageEntry.dbID = wpsDBInfo['id'].substring(3,)
         storageEntry.inputs = wpsDBInfo['inputs']
     }
@@ -589,7 +631,7 @@ function setModalValues(btnName, btnValues) {
             document.getElementById(i.identifier).checked = btnValues[i.identifier]
         }
         // else {
-            document.getElementById(i.identifier).value = btnValues[i.identifier]
+        document.getElementById(i.identifier).value = btnValues[i.identifier]
         // }
     }
     /** first loop over each dropdown in input, then over values in dropdown **/
@@ -613,7 +655,7 @@ function setModalValues(btnName, btnValues) {
 /**
  * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
  *
- * @param (html) link HTML Code of the clicked link
+ * @param {html} link - HTML Element of the clicked link
  */
 function menuItemListener(link) {
     let wpsToOpen = "";

@@ -64,10 +64,9 @@ sudo service postgresql restart
 
 #****
 # Fill database:
-psql -U testuser -W vfw_start < create_tables.sql
-psql -U testuser -W vfw_start < insert_metadata.sql
+psql -U testuser -W vfw_start < db_schema_dump.sql
+psql -U testuser -W vfw_start < db_data_dump.sql
 sudo pip3 install pandas psycopg2-binary
-python3 insert_testdata.py
 
 
 #####

@@ -27,6 +27,7 @@ datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
              'ts-aggregate', 'ts-pickle', 'ts-merge', 'aggregate',
              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle'
              ]
+basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number']
 # datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
 #              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
 
@@ -43,38 +44,43 @@ def home(request):
         # service = 'PyWPS_vforwater'
         service = WebProcessingService.objects.values_list('name', flat=True)[0]
         wps = get_wps_service_engine(service)
-        countLoop = 0
+        loopCount = 0
         for process in wps.processes:
             describedprocess = wps.describeprocess(process.identifier)
-            wps.processes[countLoop].processin = []
+            wps.processes[loopCount].processin = []
             for i in describedprocess.dataInputs:
                 if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
                     if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
                         # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
                         keywords = ast.literal_eval(i.abstract[:1+i.abstract.find("}", 10)])['keywords']
-                        wps.processes[countLoop].processin.append(keywords)
+                        wps.processes[loopCount].processin.append(keywords)
                     else:
-                        wps.processes[countLoop].processin.append(i.dataType)
+                        wps.processes[loopCount].processin.append(i.dataType)
                 # if i.allowedValues == [] and isinstance(i.dataType, str):
-                #     wps.processes[countLoop].processin.append('string')
+                #     wps.processes[loopCount].processin.append('string')
                 # elif i.allowedValues == [] and not isinstance(i.dataType, str):
-                #     wps.processes[countLoop].processin.append(i.dataType)
+                #     wps.processes[loopCount].processin.append(i.dataType)
                 elif i.allowedValues[0] == '_keywords':
-                    wps.processes[countLoop].processin.append(i.allowedValues[1:])
+                    if i.allowedValues[1] == 'pattern':
+                        patternList = i.allowedValues[1:]
+                        patternList.insert(0, i.dataType)
+                        wps.processes[loopCount].processin.append(patternList)
+                    else:
+                        wps.processes[loopCount].processin.append(i.allowedValues[1:])
 
-            wps.processes[countLoop].processout = []
+            wps.processes[loopCount].processout = []
             for i in describedprocess.processOutputs:
                 if 'error' not in i.identifier:
                     if i.abstract is not None:
                         if 'keywords' in json.loads(i.abstract):
-                            wps.processes[countLoop].processout.append(json.loads(i.abstract)['keywords'])
+                            wps.processes[loopCount].processout.append(json.loads(i.abstract)['keywords'])
                     elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
-                        wps.processes[countLoop].processout.append(i.dataType)
+                        wps.processes[loopCount].processout.append(i.dataType)
                     # elif isinstance(i.dataType, float):
-                    #     wps.processes[countLoop].processout.append('float')
+                    #     wps.processes[loopCount].processout.append('float')
                     # elif i.metadata[0] == '_keywords':
-                    #     wps.processes[countLoop].processout.append(i.allowedValues[1:])
-            countLoop += 1
+                    #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
+            loopCount += 1
     except:
         logger.error(sys.exc_info()[0])
         service = ''
@@ -150,17 +156,12 @@ class ProcessView(TemplateView):
 
         wps = get_wps_service_engine(selected_process['serv'])
         wps_process = wps.describeprocess(selected_process['id'])
-        # print('jsonpickle.encode(wps_process): ', jsonpickle.encode(wps_process))
-        # for i in wps_process:
-        #     print('i: ', i)
-        # print('jsonpickle.encode(wps_process, unpicklable=False): ', jsonpickle.encode(wps_process,
-        # unpicklable=False))
 
         # TODO: use of jsonpickle only to simplify readability of wps_process.
         #  Shouldn't be necessary to use jsonpickle for that. Please improve!
         # simply serialize wps to json
         whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
-        # print('a: ',whole_wpsprocess_json)
+
         # convert to dict to remove unwanted keys and empty values
         whole_wpsprocess = json.loads(whole_wpsprocess_json)
         whole_wpsprocess.pop('_root', None)
@@ -184,10 +185,8 @@ class ProcessView(TemplateView):
                                         else:
                                             innerdict['abstract'] = v
                                 except ValueError:
-                                    # print('v: ', v)
                                     innerdict['abstract'] = v
                             elif v is not None and v != []:
-                                # if not v is None and not v == []:
                                 if isinstance(v, str) and re.search("(?<=/#)\w+", v):
                                     match = re.search("(?<=/#)\w+", v)
                                     innerdict[k] = match.group(0)
@@ -249,8 +248,8 @@ def handle_wps_output(execution, wps_process, inputs):
     all_outputs = {'execution_status': execution.status}
     all_outputs['result'] = {}
     path = ''
-
     loopcount = 0
+
     # iterate through list of outputs
     for output in execution.processOutputs:
         loopcount += 1
@@ -267,37 +266,40 @@ def handle_wps_output(execution, wps_process, inputs):
                 all_outputs = {'execution_status': 'error in wps process',
                                'error': error_dict['message']}
                 break
-        # if no error:
-        else:
-            one_output = {}
 
-            # check datatype
+        # if no error build output for a result button in portal:
+        else:
+            single_output = {}
+
+            # get datatype
             try:
                 keywords = json.loads(output.abstract)['keywords'][0]
-                one_output['type'] = keywords
+                single_output['type'] = keywords
                 if 'pickle' in keywords:
                     path = output.data[0]
             except TypeError as e:
-                one_output['type'] = output.dataType
-                print('No keywords (TypeError: {})'.format(e))
+                if output.dataType in basicdatatypes:
+                    single_output['type'] = output.dataType
+                else:
+                    print('No keywords or type (TypeError: {})'.format(e))
             except KeyError as e:
                 print('this is a key error: ', e)
 
+            # get data
             if output.data:
-                one_output['data'] = output.data[0]
+                single_output['data'] = output.data[0]
 
-            # TODO: Discuss if several outputs should have single or multiple buttons, and
-            #  how to handle errors from WPS (show nothing, everything and user can check what is okay?)
+            # TODO: Decide how to handle errors from WPS (show nothing, everything and user can check what is okay?)
             if output.data and len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
                 db_output_data = output.data[0]
             elif path != '':
                 try:
-                    file_name = path[:-4] + one_output['type'] + path[-4:]
+                    file_name = path[:-4] + single_output['type'] + path[-4:]
                     text_file = open(file_name, "w")
                     text_file.write(output.data[0])
                     text_file.close()
                     db_output_data = file_name
-                    one_output['data'] = output.data[0]
+                    single_output['data'] = output.data[0]
                 except Exception as e:
                     print('Warning: no file was created for long string')
                     print(e)
@@ -305,21 +307,21 @@ def handle_wps_output(execution, wps_process, inputs):
                 db_output_data = ''
 
             if db_output_data != '':
-                db_output = [output.identifier, one_output['type'], db_output_data]
+                db_output = [output.identifier, single_output['type'], db_output_data]
                 # create db entry
                 wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
 
-                one_output['wpsID'] = wpsid
-                one_output['dropBtn'] = {'orgid': wpsid,
+                single_output['wpsID'] = wpsid
+                single_output['dropBtn'] = {'orgid': wpsid,
                                          'type': 'data',
                                          'name': '',
                                          'inputs': [],
-                                         'outputs': [one_output['type']]}
+                                         'outputs': [single_output['type']]}
             else:
                 print('*** no output to write to db ***')
-                one_output['error'] = 'no output to write to db'
+                single_output['error'] = 'no output to write to db'
 
-            all_outputs['result'][output.identifier] = one_output
+            all_outputs['result'][output.identifier] = single_output
             # TODO: Have to handle bytes result
             # if type(output.data[0]) is bytes:
             #     if len(output.data[0]) > 30:
