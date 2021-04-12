@@ -225,13 +225,15 @@ function update_datastore_button(wpsDBInfo) {
         storageEntry['unit'], wpsDBInfo['id'].substring(3,))
     let title = `${storageEntry['name']} (${storageEntry['abbr']} in ${storageEntry['unit']})`;
     let button = document.getElementById('sidebtn' + wpsDBInfo['orgid'])
+    let parent = document.getElementById('sidebtn' + wpsDBInfo['orgid']).parentElement
 
     if (wpsDBInfo['id'].substring(0, 3) == 'wps') {
         storageEntry.source = wpsDBInfo['id'].substring(0, 3)
         storageEntry.dbID = wpsDBInfo['id'].substring(3,)
         storageEntry.inputs = wpsDBInfo['inputs']
     }
-    button.innerHTML = sidebar_btn_html(wpsDBInfo['id'].substring(3,),
+    button.remove();
+    parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'].substring(3,),
         storageEntry, btnName, title)
     workspaceData[datasetKey] = storageEntry
     /*$.each(wpsDBInfo, function (keyID, value) {
