@@ -16,20 +16,40 @@
 {% endcomment %}
 {#{% include "vfwheron/filter_entries.html" %}#}
 {#{% block advanced_filter %}#}
-<form method="get" name="advancedfilterform">
+<form method="get" name="advancedfilterform" id="advancedfilter-form">
     <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
-        {{ myFilter.form.as_p }}
+        {{ advFilter.form.as_p }}
 
 
       <button class="btn btn-primary" type="submit">Search</button>
 
-      <a onclick="filter_pagination({{ i }})">{{ i }}</a>
+{#      <a onclick="filter_pagination({{ i }})">bla{{ i }}</a>#}
 
 {#        <input type="submit" />#}
     </div>
 </form>
-{% for obj in selection %}
+<p>Selection:</p>
+{% for obj in selection.qs %}
     {{ obj.variable }} - ${{ obj.license }}<br />
 {% endfor %}
 
 {#{% endblock %}#}
+{% comment %}
+ <script>
+    $(document).on('submit','#advancedfilter-form',function(e){
+        e.preventDefault();
+        $.ajax({
+            type:'POST',
+            url:'{% url "home" %}',
+            data:
+            {
+                task:$("#task").val(),
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            },
+            success:function(){
+                  alert('Saved');
+                    }
+            })
+        });
+    </script>
+{% endcomment %}

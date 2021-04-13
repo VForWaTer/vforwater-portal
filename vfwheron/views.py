@@ -805,11 +805,14 @@ def advanced_filter(request):
     # for i in selection:
     #     print('i: ', i)
     # print('selection: ', len(selection))
-    myFilter = NMPersonsFilter(request.GET, queryset=selection)
+    filter = NMPersonsFilter(request.GET, queryset=selection)
+    # print('selection: ', selection)
+    selection = filter.qs
+    for i in selection:
+        print('i: ', i.entry_id)
+    # print('selection 2: ', selection)
 
-    selection = myFilter.qs
-
-    context = {'myFilter': myFilter, 'selection': selection}
+    context = {'advFilter': filter, 'selection': selection}
     return render(request, 'vfwheron/advanced_filter.html', context)
 
 
