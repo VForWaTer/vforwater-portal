@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: Catch if there is no geoserver running at all. Not only here, but in view.py!
-def test_geoserver_env(store, workspace):
+def test_geoserver_env(store: str, workspace: str):
     """
     Function to test if the workspace and store to build the layers in exist. If not the function first tries to set up
     the new workspace in geoserver, and then in an inner function add the store with the login information for the
@@ -21,11 +21,7 @@ def test_geoserver_env(store, workspace):
     from the django settings.
 
     :param store:
-    :type store:
     :param workspace:
-    :type workspace:
-    :return:
-    :rtype:
     """
 
     def __build_store():
@@ -44,10 +40,10 @@ def test_geoserver_env(store, workspace):
                         '</connectionParameters>' \
                         '<Parameter><name>Expose primary keys</name><value>true</value></Parameter>' \
                         '</dataStore>'.format(store=store, host=DATABASES['default']['HOST'],
-                                                 port=DATABASES['default']['PORT'],
-                                                 dbname=DATABASES['default']['NAME'],
-                                                 user=DATABASES['default']['USER'],
-                                                 passwd=DATABASES['default']['PASSWORD'])
+                                              port=DATABASES['default']['PORT'],
+                                              dbname=DATABASES['default']['NAME'],
+                                              user=DATABASES['default']['USER'],
+                                              passwd=DATABASES['default']['PASSWORD'])
         rest_url = '{}/rest/workspaces/{}/datastores'.format(LOCAL_GEOSERVER, workspace)
         rest_build = requests.post(rest_url, auth=eval(SECRET_GEOSERVER), data=datastore_xml,
                                    headers={'Content-type': 'text/xml'})
@@ -91,22 +87,17 @@ def test_geoserver_env(store, workspace):
         __build_store()
 
 
-def create_layer(request, filename, datastore, workspace, selection=None, srid=4326):
+def create_layer(request, filename: str, datastore: str, workspace: str,
+                 selection=None, srid: int = 4326):
     """
 
     :param selection:
     :param request:
     :type request:
-    :param filename:
-    :type filename:
-    :param datastore:
-    :type datastore:
-    :param workspace:
-    :type workspace:
-    :param srid:
-    :type srid:
-    :return:
-    :rtype:
+    :param filename: Name of layer for Geoserver
+    :param datastore: Name of datastore where to find the layer
+    :param workspace: Name of workspace where to store the datastore
+    :param srid:  The coordinate reference system according to the EPSG database for the new layer.
     """
     xml = __build_new_layer_xml(request, filename, datastore, workspace, srid, selection)
     url = '{}/rest/workspaces/{}/datastores/{}/featuretypes'.format(LOCAL_GEOSERVER, workspace, datastore)
@@ -116,17 +107,12 @@ def create_layer(request, filename, datastore, workspace, selection=None, srid=4
         print('create layer: ', str(build.status_code) + ': ' + build.text)
 
 
-def get_layer(filename, datastore, workspace):
+def get_layer(filename: str, datastore: str, workspace: str) -> bool:
     """
 
-    :param filename:
-    :type filename:
-    :param datastore:
-    :type datastore:
-    :param workspace:
-    :type workspace:
-    :return:
-    :rtype:
+    :param filename: Name of layer for Geoserver.
+    :param datastore: Name of store the layer is stored in.
+    :param workspace: Name of workspace for the store.
     """
     url = '{}/rest/workspaces/{}/datastores/{}/featuretypes/{}'.format(LOCAL_GEOSERVER, workspace, datastore, filename)
     build = requests.get(url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"})
@@ -136,17 +122,12 @@ def get_layer(filename, datastore, workspace):
     return True
 
 
-def delete_layer(filename, datastore, workspace):
+def delete_layer(filename: str, datastore: str, workspace: str):
     """
 
-    :param filename:
-    :type filename:
-    :param datastore:
-    :type datastore:
-    :param workspace:
-    :type workspace:
-    :return:
-    :rtype:
+    :param filename: Name of layer for Geoserver.
+    :param datastore: Name of store the layer is stored in.
+    :param workspace: Name of workspace for the store.
     """
     # first delete layer, then feature!
     url = '{}/rest/layers/{}'.format(LOCAL_GEOSERVER, filename)
@@ -186,20 +167,17 @@ def __create_attributes(attributes_list):
 
 
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in '__build_xml_from_id'?)
-def __build_new_layer_xml(request, filename, datastore, workspace, srid, selection):
+def __build_new_layer_xml(request, filename: str, datastore: str, workspace: str,
+                          srid: int, selection):
     """
 
     :param selection:
     :param request:
     :type request:
-    :param filename:
-    :type filename:
-    :param datastore:
-    :type datastore:
-    :param workspace:
-    :type workspace:
-    :param srid:
-    :type srid:
+    :param filename: Name of layer for Geoserver.
+    :param datastore: Name of store the layer is stored in.
+    :param workspace: Name of workspace for the store.
+    :param srid:  The coordinate reference system according to the EPSG database for the new layer.
     :return:
     :rtype:
     """

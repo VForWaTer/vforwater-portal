@@ -2,6 +2,7 @@
 <html lang="en">
 
 {% load static %}
+{% load i18n %}
 
 <head>
   <meta charset="UTF-8">
@@ -12,17 +13,17 @@
 <div id="workflowbuilder">
   <b class="w3-btn-group">
 <input class="w3-btn w3-blue w3-left" type="submit" onclick="load_workflow()"
-       value="Load workflow" data-toggle="tooltip"
-       title="Click to load a saved workflow">
+       value="{% trans "Load workflow" %}" data-toggle="tooltip"
+       title="{% trans "Click to load a saved workflow" %}">
 <input class="w3-btn w3-blue w3-left" type="submit" onclick="save_workflow()"
-       value="Save workflow" data-toggle="tooltip"
-       title="Click to save current workflow">
+       value="{% trans "Save workflow" %}" data-toggle="tooltip"
+       title="{% trans "Click to save current workflow" %}">
 <input class="w3-btn w3-green w3-right" type="submit" onclick="run_workflow()"
-       value="Run workflow" data-toggle="tooltip"
-       title="Click to run current workflow">
+       value="{% trans "Run workflow" %}" data-toggle="tooltip"
+       title="{% trans "Click to run current workflow" %}">
 <input class="w3-btn w3-red w3-right" type="submit" onclick="clear_workflow()"
-       value="Clear workflow" data-toggle="tooltip"
-       title="Click to clear current workflow">
+       value="{% trans "Clear workflow" %}" data-toggle="tooltip"
+       title="{% trans "Click to clear current workflow" %}">
     </b>
 {% comment %}<div id="dropdiv" title="Drag & Drop your Data and Tools here">Dropzone
         <canvas id="dropzone" style="background: white; border:1px solid #d3d3d3; "
@@ -31,8 +32,8 @@
         </canvas>
 </div>{% endcomment %}
 <div id="dropdiv" ondragover="dragover_handler(event)" ondrop="drop_handler(event)"
-     title="Drag & Drop your Data and Tools here">
-  Dropzone
+     title="{% trans "Drag & Drop your Data and Tools here" %}">
+  {% trans "Dropzone" %}
 </div>
 </div>
 {% block modal %}

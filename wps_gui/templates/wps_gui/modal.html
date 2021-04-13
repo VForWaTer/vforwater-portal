@@ -94,10 +94,10 @@
   wspan.onclick = () => closeModal();
   wspan_r.onclick = () => {
     {#modal.style.display = "none";#}
-    if (check_required(modal)) modal_run_process()
+    if (check_required(modal) && check_pattern(modal)) modal_run_process()
   };
   wspan_ok.onclick = () => {
-    if (check_required(modal)) drop_and_save();
+    if (check_required(modal) && check_pattern(modal)) drop_and_save();
     closeModal();
   };
   wspan_c.onclick = () => {

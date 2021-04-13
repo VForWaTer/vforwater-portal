@@ -46,8 +46,10 @@
             onclick="draw_polygon()" id="toggle_draw" title={% trans "Click&#32here&#32to&#32draw&#32the&#32area&#32you&#32want&#32to&#32filter." %}>{% trans "Draw SELECTION area" %}</h5>
     </div>{% endcomment %}
 <div class="tab">
-  <button class="filter-tablinks" onclick="toggleFilter(event, 'quickFilter')" id="defaultFilterTab">Quick</button>
-  <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()">Advanced</button>
+  <button class="filter-tablinks" onclick="toggleFilter(event, 'quickFilter')" id="defaultFilterTab"
+  title="{% trans "Quick update of results on each click event"%}">{% trans "Quick"%}</button>
+  <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()"
+  title="{% trans "Set attributes and click on search to update results"%}">{% trans "Advanced" %}</button>
 </div>
 
 <div id="advancedFilter" class="filter-tabcontent">

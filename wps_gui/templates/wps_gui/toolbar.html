@@ -30,7 +30,10 @@
     let element = document.getElementById(id);
     //console.log('- invalues: ', invalues)
     invalues.forEach(function (val) {
-      if (Array.isArray(val) && val.length > 1) {
+      if (val.includes('pattern')) {
+        element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
+                'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
+      } else if (Array.isArray(val) && val.length > 1) {
         let newHeader = "";
         val.forEach(function (inVal) {
           newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +

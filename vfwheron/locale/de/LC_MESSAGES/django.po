@@ -193,6 +193,46 @@ msgstr " Metadaten herunterladen"
 msgid " Download data & metadata"
 msgstr " Daten & Metadaten herunterladen"
 
+#: templates/wps_gui/workplace.html:16
+msgid "Load workflow"
+msgstr "Prozesskette laden"
+
+#: templates/wps_gui/workplace.html:17
+msgid "Click to load a saved workflow"
+msgstr "Hier klicken um eine gespeicherte Prozesskette zu laden"
+
+#: templates/wps_gui/workplace.html:19
+msgid "Save workflow"
+msgstr "Prozesskette speichern"
+
+#: templates/wps_gui/workplace.html:20
+msgid "Click to save current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu speichern"
+
+#: templates/wps_gui/workplace.html:25
+msgid "Clear workflow"
+msgstr "Löschen"
+
+#: templates/wps_gui/workplace.html:26
+msgid "Click to clear current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu entfernen"
+
+#: templates/wps_gui/workplace.html:22
+msgid "Run workflow"
+msgstr "Start"
+
+#: templates/wps_gui/workplace.html:23
+msgid "Click to run current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu starten"
+
+#: templates/wps_gui/workplace.html:35
+msgid "Drag & Drop your Data and Tools here"
+msgstr "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu erstellen"
+
+#: templates/wps_gui/workplace.html:36
+msgid "Dropzone"
+msgstr "Ablagebereich"
+
 #: templates/vfwheron/base_sidebar.html:78
 #: templates/vfwheron/wps_sidebar.html:76
 msgid " Remove dataset"
@@ -221,6 +261,22 @@ msgstr "Willkommen! Bitte einloggen."
 #: templates/vfwheron/select_data.html:38
 msgid "Filter menu"
 msgstr "Filtermenü"
+
+#: templates/vfwheron/select_data.html:49
+msgid "Quick"
+msgstr "Schnell"
+
+#: templates/vfwheron/select_data.html:50
+msgid "Quick update of results on each click event"
+msgstr "Schnelles Anpassen der Ergebnisse bei jedem Klick"
+
+#: templates/vfwheron/select_data.html:51
+msgid "Advanced"
+msgstr "Erweitert"
+
+#: templates/vfwheron/select_data.html:52
+msgid "Set attributes and click on search to update results"
+msgstr "Die gewünschten Optionen setzen und erst durch einen klick auf den suchen Knopf die Ergebnisse erhalten"
 
 #: map.html:36
 msgid "Click&#32on&#32map&#32to&#32draw.&#32Doubleclick&#32to&#32start&#32drawing."
