@@ -43,8 +43,8 @@ function clusterStyle(feature) {
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({
-        attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
-        'SRTM | Map style from <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
+        attributions: [gettext("Map data from") + ' <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
+        'SRTM | ' + gettext("Map style from") + ' <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
         url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"
     });
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
@@ -177,7 +177,7 @@ function create_map() {
     /** functionality for zoom to extent button **/
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
-        tipLabel: 'Zoom to your available data',
+        tipLabel: gettext('Zoom to your available data'),
         extent: dataExt,
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
@@ -205,7 +205,10 @@ function create_map() {
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
 
         controls: [
-            new ol.control.Zoom({duration: 300}),
+            new ol.control.Zoom({
+                zoomInTipLabel: gettext("Zoom in"),
+                zoomOutTipLabel: gettext("Zoom out"),
+                duration: 300}),
             new ol.control.Attribution({collapsed: false, collapsible: false, }),
             new ol.control.ZoomSlider(),
             new ol.control.MousePosition({
@@ -451,7 +454,6 @@ function create_map() {
                     document.getElementsByClassName("loadspin")[0].classList.remove("loadspin");
                     document.getElementById("pagi" + page).classList.add("active");
                 }
-
             })
             .fail(function (e) {
                 console.error('fehler: ', e)
@@ -465,7 +467,6 @@ function create_map() {
         // });
 
     }
-
 
     function buildPopupText(json, popUpText) {
         let valueLen;
@@ -486,17 +487,20 @@ function create_map() {
         /** build buttons for each dataset **/
         function moreBtn(listIndex) {
             return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
-                'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" value="More" ' +
-                'data-toggle="tooltip" title="Show more information about the dataset."></b></a>'}
+                'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" data-toggle="tooltip" ' +
+                'value=' + gettext("More") + ' title="' + gettext("Show more information about the dataset.") + '">' +
+                '</b></a>'}
         function storeBtn(listIndex) {
             if (json.Embargo[listIndex] === "False" || UNBLOCKED_IDS.includes(json.id[listIndex])) {
                 return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
-                    'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" value="Pass to datastore" ' +
-                    'data-toggle="tooltip" title="Put dataset to session datastore"></b></a>'
+                    'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" ' +
+                    'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
+                    'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
             } else {
                 return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
-                    'onclick=\"requestDataset(\'' + json.id[listIndex] + '\')\" value="Send request" ' +
-                    'data-toggle="tooltip" title="Send an access request to the data owner."></b></a>'
+                    'onclick=\"requestDataset(\'' + json.id[listIndex] + '\')\" ' +
+                    'value="' + gettext("Send request") + '" data-toggle="tooltip" ' +
+                    'title="' + gettext("Send an access request to the data owner.") + '"></b></a>'
             }
         }
         for (let k = 0; k < valueLen; k++) {

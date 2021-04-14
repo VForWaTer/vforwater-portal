@@ -17,11 +17,15 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.urls import path
 from django.views.generic.base import RedirectView
 from vfwheron import views as vfw_views
+from django.views.i18n import JavaScriptCatalog
 
-
+# TODO: for JS translations see:
+#  https://docs.djangoproject.com/en/2.2/topics/i18n/translation/#note-on-performance
 urlpatterns = [
+    path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     url(r'^$', RedirectView.as_view(url='home/', permanent=False)),
     url(r'^home/', include('vfwheron.urls')),
     url(r'^admin/', admin.site.urls),
