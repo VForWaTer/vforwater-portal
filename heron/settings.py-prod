@@ -200,6 +200,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# When defining a model, if no field in a model is defined with primary_key=True an implicit primary key is added.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

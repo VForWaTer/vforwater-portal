@@ -36,6 +36,18 @@ msgid "  WPS GUI"
 msgstr ""
 
 #: templates/vfwheron/base.html:50
+msgid "Map"
+msgstr "Karte"
+
+#: templates/vfwheron/base.html:50
+msgid "Powered by"
+msgstr "Betrieben von"
+
+#: templates/vfwheron/home.html:17
+msgid "Table"
+msgstr "Tabelle"
+
+#: templates/vfwheron/home.html:19
 msgid "  Workflow"
 msgstr ""
 
@@ -90,6 +102,10 @@ msgstr "Meine Ressourcen"
 #: templates/vfwheron/base.html:106
 msgid "  Logout"
 msgstr "  Ausloggen"
+
+#: templates/vfwheron/base.html:147
+msgid "Upload Data"
+msgstr "Daten hochladen"
 
 #: templates/vfwheron/base.html:108
 msgid "  Logout like login"
@@ -526,9 +542,6 @@ msgstr "Datentyp"
 msgid "Sensor comment"
 msgstr "Sensorkommentar"
 
-#: map.js:286
-msgid "Preview"
-msgstr "Vorschau"
-
-
-
+#: models.py:632
+msgid "Filter from map"
+msgstr "Kartenfilter"
