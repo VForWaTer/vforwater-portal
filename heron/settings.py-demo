@@ -93,7 +93,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': Path(VFW_DIR) / 'debug.log',
+            'filename': str(Path(VFW_DIR) / 'debug.log'),
             # 'filename': os.path.join(VFW_DIR, 'debug.log'),
             'formatter': 'verbose'
         },
@@ -120,9 +120,9 @@ LOGGING = {
             'propagate': True,
         },
         'django': {
-            'handlers':['file'],
+            'handlers': ['file'],
             'propagate': True,
-            'level':'WARN',
+            'level': 'WARN',
         },
         'django.db.backends': {
             'handlers': ['file'],
