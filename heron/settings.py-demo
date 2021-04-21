@@ -61,15 +61,15 @@ secretFile = Path(VFW_DIR) / 'secret.txt'
 # if not os.path.isfile(secretFile):
 if not Path(secretFile).is_file():
     SECRET_KEY = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
-    with open(secretFile, 'w+') as f:
+    with open(str(secretFile), 'w+') as f:
         f.write(SECRET_KEY)
 else:
-    with open(secretFile) as f:
+    with open(str(secretFile)) as f:
         SECRET_KEY = f.read().strip()
 # secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
 secretGeoServer = Path(VFW_DIR) / 'secret_geoserver.txt'
 if Path(secretGeoServer).is_file():
-    with open(secretGeoServer) as gs:
+    with open(str(secretGeoServer)) as gs:
         SECRET_GEOSERVER = gs.read().strip()
 else:
         # TODO: Print to log file
