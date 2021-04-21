@@ -9,8 +9,6 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
-
-# import os
 from pathlib import Path
 
 USE_X_FORWARDED_HOST = True
@@ -18,27 +16,17 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 FORCE_SCRIPT_NAME = '/demo'
 ##PATH_INFO = '/'
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-# TODO: change paths to pathlib, the new standard since django 3.1
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Build paths inside the project like this: Path(BASE_DIR) / ...
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # TODO: path should not be set to wps results, but wps results should be an URL
 DATA_DIR = '/home/vfwtools/pywps'
 
 # For now, place all data files in VFW_DIR and not into source directory.
-# HOME_DIR = os.path.expanduser('~')
-try:
-    HOME_DIR = Path.home()
-except AttributeError:
-    import os
-    HOME_DIR = Path(str(os.path.expanduser('~')))
-# VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
+HOME_DIR = Path.home()
 VFW_DIR = Path(HOME_DIR) / '.vforwater'
-# if not os.path.exists(VFW_DIR):
 if not Path(VFW_DIR).exists():
     Path(VFW_DIR).mkdir()
-    # os.makedirs(VFW_DIR)
 
 # Variable to set the demo path in static files
 DEMO_VAR = '/demo'
@@ -61,15 +49,15 @@ secretFile = Path(VFW_DIR) / 'secret.txt'
 # if not os.path.isfile(secretFile):
 if not Path(secretFile).is_file():
     SECRET_KEY = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
-    with open(str(secretFile), 'w+') as f:
+    with open(secretFile, 'w+') as f:
         f.write(SECRET_KEY)
 else:
-    with open(str(secretFile)) as f:
+    with open(secretFile) as f:
         SECRET_KEY = f.read().strip()
 # secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
 secretGeoServer = Path(VFW_DIR) / 'secret_geoserver.txt'
 if Path(secretGeoServer).is_file():
-    with open(str(secretGeoServer)) as gs:
+    with open(secretGeoServer) as gs:
         SECRET_GEOSERVER = gs.read().strip()
 else:
         # TODO: Print to log file
