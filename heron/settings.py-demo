@@ -81,8 +81,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': str(Path(VFW_DIR) / 'debug.log'),
-            # 'filename': os.path.join(VFW_DIR, 'debug.log'),
+            'filename': Path(VFW_DIR) / 'debug.log',
             'formatter': 'verbose'
         },
     },
@@ -313,7 +312,7 @@ import logging.handlers
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d;%(funcName)s()] - %(message)s')  #
 filehandler = logging.handlers.RotatingFileHandler(
-    str(BASE_DIR) + '/wps.log', mode='a', maxBytes=128 * 1024, backupCount=1, encoding=None, delay=0)
+    Path(BASE_DIR) / 'wps.log', mode='a', maxBytes=128 * 1024, backupCount=1, encoding=None, delay=0)
 filehandler.setFormatter(formatter)
 wps_log = logging.getLogger('wps')
 
