@@ -472,7 +472,9 @@ class ToggleLanguageView(View):
                 request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
         logger.debug('new language: {}'.format(translation.get_language()))
         logger.debug('translation test: {}'.format(translation.gettext("help")))
-        return redirect(DEMO_VAR + '/')
+        response = redirect(DEMO_VAR + '/')
+        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request.session[translation.LANGUAGE_SESSION_KEY])
+        return response
 
 
 class FailedLoginView(View):
