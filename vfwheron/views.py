@@ -835,8 +835,7 @@ class DownloadView(View):
         if name == 'vfwVM':
             file_path = '/data/VBox_VFORWaTer.zip'
             # file_path = '/home/marcus/tmp/customs.shp'
-            # file_path = os.path.join('/data/VBox_VFORWaTer.zip')
-            if os.path.exists(file_path):
+            if Path(file_path).exists():
                 with open(file_path, 'rb') as fh:
                     response = FileResponse(open(file_path, 'rb'))
                     print('response: ', response)
