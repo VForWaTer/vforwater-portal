@@ -16,6 +16,10 @@ from django.utils.translation import gettext, gettext_lazy
 # TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
 #  explanation
 
+# TODO: Models are read at startup. To get translations later when the project is running
+#  make translations lazy.
+#  https://simpleisbetterthancomplex.com/tips/2016/10/17/django-tip-18-translations.html
+
 
 # class DjangoMigrations(models.Model):
 #     """
@@ -31,13 +35,6 @@ from django.utils.translation import gettext, gettext_lazy
 
 ### New Database Schemata for vfw 2.0
 ### from metacatalog 2.0
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
 
 
 class DatasourceTypes(models.Model):

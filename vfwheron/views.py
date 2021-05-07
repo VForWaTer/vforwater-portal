@@ -1,8 +1,8 @@
 import csv
 import json
 import sys
-from json import JSONDecodeError
 
+import pandas as pd
 import requests
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from pyzip import PyZip
@@ -22,20 +22,18 @@ from django.contrib import messages
 from future.builtins import isinstance
 
 from author_manage.views import MyResourcesView
-from heron.settings import LOCAL_GEOSERVER, DEBUG, DEMO_VAR
+from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfwheron.previewplot import get_preview, get_fullres_plot
+from vfwheron.previewplot import get_fullres_plot, get_bokeh_std_fullres, format_label
+from wps_gui.models import WpsResults
+from .data_tools import get_timescale, fill_data_gaps, precision_to_minmax
 from .filters import VariableFilter
 from .forms import AdvancedFilterForm
 
 mpl.use('Agg')
 
 from .query_functions import get_bbox_from_data
-from datetime import datetime, date
-import time
-# import vfwheron.filter_metacatalog_dev as filter_mcdev
-# from .filter_metacatalog_dev import FilterMethods, Menu, build_id_list
 # from .filter import FilterMethods, Menu, build_id_list, Table
 from .filter import FilterMethods, Menu, build_id_list, Table
 from .filters import NMPersonsFilter
@@ -43,7 +41,7 @@ from .models import Entries, Timeseries, Timeseries2D, Generic1DData, Generic2DD
     GeomTimeseries, NmPersonsEntries
 
 import logging
-import os
+from pathlib import Path
 # for debugging:
 from time import time
 from django.db import connections
@@ -434,7 +432,8 @@ class HelpView(TemplateView):
         :return:
         :rtype:
         """
-        f = open(os.path.join(settings.BASE_DIR, 'USERHELP.md'), 'r')
+
+        f = open(Path(settings.BASE_DIR) / 'USERHELP.md', 'r')
         context = {}
         i = 0
         for line in f:
@@ -452,6 +451,8 @@ class ToggleLanguageView(View):
     @staticmethod
     def post(request):
         """
+        Set a cookie to switch language of web site. Tutorial how to set language cookie at
+        https://samulinatri.com/blog/django-translation/
 
         :param request:
         :type request:
@@ -532,7 +533,7 @@ def previewplot(request):
     :return:
     """
     webID = request.GET.get('preview')
-    # return JsonResponse(get_preview(webID))
+
     if webID[0:2] == 'db':
         try:
             accessible_data = get_accessible_data(request, webID[2:])
@@ -562,7 +563,43 @@ def previewplot(request):
             print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
 
     elif webID[0:3] == 'wps':
-        print('def previewplot: You have to implement something to show wps results!')
+        dataset = WpsResults.objects.filter(id=webID[3::])
+        typelist = ast.literal_eval(dataset.values('outputs')[0]['outputs'])
+        path = DATA_DIR + typelist['path'][1::]
+        with open(path + ".json") as json_file:
+            metadata = json.load(json_file)
+        json_file.close()
+        label = format_label(metadata['meta']['variable']['name'],
+                               metadata['meta']['variable']['symbol'],
+                               metadata['meta']['variable']['unit']['symbol'])
+
+        if typelist['type'] == 'timeseries':
+            df = pd.read_csv(path + ".csv")
+            df['tstamp'] = pd.to_datetime(df['tstamp'])
+            df.rename(columns={metadata['meta']['variable']['name']: "value"}, inplace = True)
+            if 'scale' in metadata:
+                # TODO: scale should be in metadata. Add and get it here
+                scale = metadata['scale']
+            else:
+                scale = get_timescale(df)
+
+            # prepare dataset for plot
+            del df['entry_id']
+            plot_data = {'df': df, 'scale': scale}
+            # timescale = pd.to_timedelta(timescale)
+            # plotdata = {'data': result, 'df': df, 'axis': axis, 'scale': timescale}
+            if 'precision' in plot_data['df'].columns:
+                plot_data['df'] = precision_to_minmax(plot_data['df'])
+                plot_data['has_preci'] = True
+            else:
+                plot_data['has_preci'] = False
+
+            plot_data = fill_data_gaps(plot_data)
+            return JsonResponse(get_bokeh_std_fullres(plot_data, size=[700, 500], label=label))
+
+        if 'figure' in typelist:
+            return JsonResponse('Warning: Not implemented yet.')
+
         raise Http404
 
     else:

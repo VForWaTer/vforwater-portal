@@ -16,7 +16,7 @@ from bokeh.palettes import Oranges9, Spectral11
 from numpy import mean
 
 from vfwheron.data_tools import __DB_load_directiondata, fill_data_gaps, __DB_load_data_avg, __DB_load_data, \
-    precision_to_minmax
+    precision_to_minmax, __get_axis_limits
 from vfwheron.models import Entries
 
 import redis
@@ -35,10 +35,10 @@ def __DB_load_label(ID: int):
     """
     label = Entries.objects.filter(id=ID)\
         .values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
-    return __format_label(label[0][0], label[0][1], label[0][2])
+    return format_label(label[0][0], label[0][1], label[0][2])
 
 
-def __format_label(name: str, symbol: str, unit_symbol: str):
+def format_label(name: str, symbol: str, unit_symbol: str):
     """
     format label for plots from variable name, symbol and unit symbol
 
@@ -451,6 +451,7 @@ def get_fullres_plot(id: str, size: list = [700, 500]) -> dict:
             db_data['df'] = precision_to_minmax(db_data['df'])
         plot_data = fill_data_gaps(db_data)
         # prepare plot
+        plot_data = __get_axis_limits(plot_data)
         label = __DB_load_label(id)
         img = get_bokeh_std_fullres(plot_data, size, label)
         if cache_obj['use_redis']:
@@ -488,6 +489,7 @@ def get_preview(id: str, size=[700, 500]):
             img = direction_plot(plot_data, ti)
         else:
             db_data = __DB_load_data_avg(id)
+            db_data = __get_axis_limits(db_data)
             img = get_bokeh_standard(db_data, size, label)
 
         if cache_obj['use_redis']:

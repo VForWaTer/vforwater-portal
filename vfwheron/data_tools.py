@@ -4,7 +4,7 @@ from django.db import connections
 from vfwheron.models import Entries, Timeseries
 
 
-def __get_timescale(df):
+def get_timescale(df):
     """
     Get a dataframe with a timestamp ('tstmp'), iterate over the first 11 values (or less for shorter datasets)
     and return the smallest time difference.
@@ -42,20 +42,42 @@ def __DB_load_data(ID: str):
         if timescale:
             timescale = pd.to_timedelta(timescale)
         else:
-            timescale = __get_timescale(df)
+            timescale = get_timescale(df)
 
-        if df['precision'].isnull().values.any():
-            precision = False
-            axis = {'ymin': df['value'].min(), 'ymax': df['value'].max()}
-        else:
-            precision = True
-            axis = {'ymin': (df['value'] - df['precision']).min(),
-                    'ymax': (df['value'] + df['precision']).max()}
+        if 'precision' in df.columns:
+            if df['precision'].isnull().values.any():
+                precision = False
+            else:
+                precision = True
 
-        return {'df': df, 'axis': axis, 'scale': timescale, 'has_preci': precision}
+        return {'df': df, 'scale': timescale, 'has_preci': precision}
     else:
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
+
+def __get_axis_limits(plot_data):
+    """
+    Take a dictionary with a dataframe, check if data has precision and set the limits of the axis accordingly.
+
+    :param plot_data: dict - {'df'}
+    :return: dict {'df', 'axis'}
+    """
+    df = plot_data['df']
+
+    if 'precision' in df.columns and not df['precision'].isnull().values.any():
+        axis = {'ymin': (df['value'] - df['precision']).min(),
+                'ymax': (df['value'] + df['precision']).max()}
+    elif 'precavg' in df.columns:
+        # y is for the main plot -> min and  max of the day of the day,
+        # y2 for the secondary plot with min and max in each group for each day
+        axis = {'ymin': df['min'].min, 'ymax': df['max'].max,
+                'y2min': df['precmin'].min, 'y2max': df['precmax'].max}
+        # axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
+    else:
+        axis = {'ymin': df['value'].min(), 'ymax': df['value'].max()}
+
+    plot_data['axis'] = axis
+    return plot_data
 
 def __DB_load_data_avg(ID: int, scale='day'):
     """
@@ -83,23 +105,16 @@ def __DB_load_data_avg(ID: int, scale='day'):
 
         df = pd.DataFrame(data={'tstamp': result[0], 'avg': result[1], 'min': result[2], 'max': result[3],
                                 'count': result[4], 'precavg': result[5], 'precmin': result[6], 'precmax': result[7]})
-        # y is for the main plot -> min and  max of the day of the day,
-        # y2 for the secondary plot with min and max in each group for each day
-        axis = {'ymin': df['min'].min, 'ymax': df['max'].max,
-                'y2min': df['precmin'].min, 'y2max': df['precmax'].max}
-        # axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
+        # try to get timescale from database. If not available get it from dataset
         timescale = Entries.objects.filter(id=ID).values_list('datasource__temporal_scale__resolution')[0][0]
         if timescale:
             timescale = pd.to_timedelta(timescale)
         else:
-            timescale = __get_timescale(df)
+            timescale = get_timescale(df)
 
-        if df['precavg'].isnull().values.any():
-            precision = False
-        else:
-            precision = True
+        precision = False if df['precavg'].isnull().values.any() else True
 
-        return {'data': df, 'axis': axis, 'scale': timescale, 'has_preci': precision}
+        return {'data': df, 'scale': timescale, 'has_preci': precision}
     else:
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
@@ -127,14 +142,13 @@ def fill_data_gaps(db_data: object):
     """
     Fill gaps in datasets and prepare for plot
 
-    :param db_data: dict - dictionary with pandas dataframe 'df' and 'scale'
+    :param db_data: dict - dictionary with pandas dataframe 'df', 'has_preci' and 'scale'
     :return:
     """
     # use first five time steps to estimate resolution/step size of data
     scale = db_data['scale']
     df = db_data['df']
     missing_data = {}
-
     # check if data has a scaling
     if not scale:
         scale = __get_scaling(df)
@@ -142,7 +156,6 @@ def fill_data_gaps(db_data: object):
     # check if data is continuous. If not write position of missing values in noDataPos
     noDataPos = __get_gap_position(df, scale, 'tstamp')
     # check if dataset has values for precision
-
     nan_in_data = False
     # To get a discontinuous line add 'nan' when a time step is missing.
     if len(noDataPos) > 0:
