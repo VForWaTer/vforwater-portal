@@ -234,14 +234,7 @@ def __get_gap_position(df, scale, index):
     :return: list - row(s) before the gap(s)
     """
     beforeGap = []
-    datalength = df.shape[0]
-    # loop is 1-2 magnitudes slower than pandas
-    # for row in range(1, datalength):
-    #     if df[index][row] - df[index][row - 1] > scale:
-    #         beforeGap.append(row - 1)
-    # df.iloc[0:5]
-
-    # nimm datetime als index und frag nach einer liste der datetimes die es geben sollte.
+    # use datetime as index and request the list of datetimes your looking for
     starttime = df[index][0]
     endtime = df.iloc[-1][index]
     # create a perfect DataFrame without gaps
@@ -249,43 +242,23 @@ def __get_gap_position(df, scale, index):
     # fill the empty frame without gaps with the data from original frame
     combined_dataframes = pd.merge(perfect_frame, df, how="outer", on="tstamp")
     # get rows without values
-    empty_rows = combined_dataframes.loc[combined_dataframes['value'].isna()]
+    empty_list = combined_dataframes.loc[combined_dataframes['value'].isna()].index.values
 
-    # check if one block of gaps or several gaps spread over dataframe
-    def __check_if_continous(df, index, scale):
-        # TODO: works only for one or two gaps in dataset. Extend!
-        """
+    # use two shifted lists for comparison to find the first value of a gap
+    shifted_list = np.append(0, empty_list)
+    empty_list = np.append(empty_list, 0)
+    diff_list = np.subtract(empty_list, shifted_list)
 
-        :param df: reduced dataframe from beginning of first gap until the end of the last gap
-        :param index: string - name of the column of the dataframe that is to be checked for gaps
-        :param scale:
-        :return:
-        """
-        starttime = df.iloc[0][index]
-        endtime = df.iloc[-1][index]
-        # create a perfect DataFrame without gaps
-        new_perfect_frame = pd.DataFrame(pd.date_range(start=starttime, end=endtime, freq=scale), columns=['tstamp'])
-        # compare size of perfect frame with given frame. Difference means there are gaps
-        if new_perfect_frame.shape[0] != df.shape[0]:
-            # copy dataframe
-            df_copy = df.copy(deep=True)
-            # set values for original gaps
-            df_copy.loc[:, 'value'] = 1
-            # fill empty perfect frame
-            combined_dataframes = pd.merge(new_perfect_frame, df_copy, how="outer", on="tstamp")
-            # get rows with values in the original frame
-            full_rows = combined_dataframes.loc[combined_dataframes['value'].isna()]
-            return full_rows.iloc[-1][index]
-        else:
-            print('_________ no filled rows between data gaps')
+    # get indices of the perfect dataframe (without gaps)
+    perfectframe_gaps = empty_list[diff_list > 1] - 1
+    # get list of dates just before the gap
+    gaps_date_list = combined_dataframes.loc[perfectframe_gaps.tolist()][index].tolist()
 
-    filled = __check_if_continous(empty_rows, index, scale)
-    later_gaps = (df.loc[df[index] == filled]).index.values.tolist()
+    # make a list of the indices (from the original dataframe) of the position before the gaps
+    for i in gaps_date_list:
+        beforeGapRow = df.loc[df[index] == i]
+        beforeGap.append(beforeGapRow.index[0])
 
-    index_list = empty_rows.index.values.tolist()
-    first_gap = [index_list[0]-1]
-
-    beforeGap = first_gap + later_gaps
     return beforeGap
 
 
