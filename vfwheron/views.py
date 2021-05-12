@@ -1,3 +1,4 @@
+import ast
 import csv
 import json
 import sys
@@ -25,9 +26,9 @@ from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfwheron.previewplot import get_fullres_plot, get_bokeh_std_fullres, format_label
+from vfwheron.previewplot import get_plot, get_bokeh_std_fullres, format_label
 from wps_gui.models import WpsResults
-from .data_tools import get_timescale, fill_data_gaps, precision_to_minmax
+from .data_tools import get_timescale, fill_data_gaps, precision_to_minmax, is_data_short
 from .filters import VariableFilter
 from .forms import AdvancedFilterForm
 
@@ -539,6 +540,7 @@ def previewplot(request):
             accessible_data = get_accessible_data(request, webID[2:])
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
+            full_res = is_data_short(accessible_data[0], 'db')
             # plot with bokeh
             # if accessible_data[0] == 19:
             return JsonResponse(get_fullres_plot(accessible_data[0]))
@@ -570,13 +572,13 @@ def previewplot(request):
             metadata = json.load(json_file)
         json_file.close()
         label = format_label(metadata['meta']['variable']['name'],
-                               metadata['meta']['variable']['symbol'],
-                               metadata['meta']['variable']['unit']['symbol'])
+                             metadata['meta']['variable']['symbol'],
+                             metadata['meta']['variable']['unit']['symbol'])
 
         if typelist['type'] == 'timeseries':
             df = pd.read_csv(path + ".csv")
             df['tstamp'] = pd.to_datetime(df['tstamp'])
-            df.rename(columns={metadata['meta']['variable']['name']: "value"}, inplace = True)
+            df.rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
             if 'scale' in metadata:
                 # TODO: scale should be in metadata. Add and get it here
                 scale = metadata['scale']
@@ -595,7 +597,7 @@ def previewplot(request):
                 plot_data['has_preci'] = False
 
             plot_data = fill_data_gaps(plot_data)
-            return JsonResponse(get_bokeh_std_fullres(plot_data, size=[700, 500], label=label))
+            return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=True, size=[700, 500], label=label))
 
         if 'figure' in typelist:
             return JsonResponse('Warning: Not implemented yet.')
