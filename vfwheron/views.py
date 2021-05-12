@@ -543,7 +543,7 @@ def previewplot(request):
             full_res = is_data_short(accessible_data[0], 'db')
             # plot with bokeh
             # if accessible_data[0] == 19:
-            return JsonResponse(get_fullres_plot(accessible_data[0]))
+            return JsonResponse(get_plot(id=accessible_data[0], full_res=full_res))
             # else:
             # return JsonResponse(get_preview(accessible_data[0]))
 
