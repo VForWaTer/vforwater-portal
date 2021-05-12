@@ -47,6 +47,8 @@ def is_data_short(ID: int, source: str):
     query_path = {'{0}'.format(datatable): ID}
     # TODO: Think about using the following queryset instead of creating it serveral times per plot
     datalength = Entries.objects.filter(**query_path).count()
+    if datalength == 0:  # if not qs.exists():
+        raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(ID))
 
     if datalength <= max_size_preview_plot:
         full = True
@@ -69,13 +71,10 @@ def __DB_load_data(ID: int, full_res: bool):
         # request data with django ORM
         qs = Timeseries.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
 
-        qs_length = qs.count()
-        if qs_length == 0:  # if not qs.exists():
-            raise EmptyResultSet('No db result in data_tools.DB_load_data for id={}'.format(ID))
-
         if full_res:
             df = pd.DataFrame(list(qs))
         else:
+            qs_length = qs.count()
             df = pd.DataFrame(list(qs[qs_length-max_size_preview_plot:qs_length]))
 
         timescale = Entries.objects.filter(id=ID).values_list('datasource__temporal_scale__resolution')[0][0]
