@@ -113,7 +113,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    # 'heron_wps',
     'wps_gui',
     'heron_monitor',
     'heron_visual',
@@ -283,3 +282,5 @@ wps_log.addHandler(filehandler)
 #         'localhost:4200'
 #     )
 # END OF settings from workflow app
+
+max_size_preview_plot = 50000
