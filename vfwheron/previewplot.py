@@ -15,6 +15,7 @@ from bokeh.palettes import Oranges9, Spectral11
 
 from numpy import mean
 
+from heron.settings import max_size_preview_plot
 from vfwheron.data_tools import __DB_load_directiondata, fill_data_gaps, __DB_load_data_avg, __DB_load_data, \
     precision_to_minmax, __get_axis_limits
 from vfwheron.models import Entries
@@ -52,11 +53,12 @@ def format_label(name: str, symbol: str, unit_symbol: str):
     return "{} ({}) [{}]".format(name, symbol, superscript_label)
 
 
-def get_bokeh_std_fullres(plot_data: object, size: list, label: str = "") -> object:
+def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: str = "") -> object:
     """
     Plot with full resolution, hence one line with errorbars, no band
 
     :param plot_data: dict - pandas dataframe to plot and some additional information
+    :param full_res: boolean - True if data is complete else only latest n values
     :param size: list - size of plot
     :param label: str - title for plot
     :return:
@@ -64,11 +66,15 @@ def get_bokeh_std_fullres(plot_data: object, size: list, label: str = "") -> obj
     nan_in_data = plot_data['nan_in_data']
     df = ColumnDataSource(plot_data['df'])
     missing_source = ColumnDataSource(plot_data['missing_data'])
-
+    if full_res:
+        title = ''
+    else:
+        title = "Showing only latest {0} datapoints.".format(str(max_size_preview_plot))
     # Plot average as main plot
     mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
-                      # title='Full timeseries', sizing_mode='stretch_both',
+                      title=title,
+                      # sizing_mode='stretch_both',
                       plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
@@ -76,14 +82,14 @@ def get_bokeh_std_fullres(plot_data: object, size: list, label: str = "") -> obj
     # plot value line
     mainplot.line(x='tstamp', y='value', source=df, line_width=3)  #, legend_label="measured values")
 
-    mainplot.add_tools(HoverTool(tooltips=[("Value", "@y"),
-                                           ("Time", "@date{%T %Z}"),
-                                           ("Date", "@date{%d %b %Y}")],
-                                 formatters={"@date": "datetime"}, mode="mouse"))
+    mainplot.add_tools(HoverTool(tooltips=[("Value", "@value"),
+                                           ("Time", "@tstamp{%T %Z}"),
+                                           ("Date", "@tstamp{%d %b %Y}")],
+                                 formatters={"@tstamp": "datetime"}, mode="mouse"))
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
-        mainplot.line(x='defect_x', y='defect_y', line_width=3, line_color='red', line_cap='round',
+        mainplot.line(x='tstamp', y='value', line_width=3, line_color='red', line_cap='round',
                       legend_label='Missing values', source=missing_source,
                       # visible=False
                       )
@@ -91,8 +97,8 @@ def get_bokeh_std_fullres(plot_data: object, size: list, label: str = "") -> obj
         mainplot.legend.click_policy = "hide"
         mis_list = [*range(0, len(plot_data['missing_data']), 4)]
         for i in mis_list:
-            box = BoxAnnotation(left=plot_data['missing_data']['defect_x'][i+1],
-                                right=plot_data['missing_data']['defect_x'][i+2],
+            box = BoxAnnotation(left=plot_data['missing_data']['tstamp'][i+1],
+                                right=plot_data['missing_data']['tstamp'][i+2],
                                 fill_alpha=0.2, fill_color='red')
             mainplot.add_layout(box)
 
@@ -162,7 +168,7 @@ def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
-        mainplot.line(x='defect_x', y='defect_y', source=source,
+        mainplot.line(x='tstamp', y='value', source=source,
                       line_width=2, line_color='white', line_cap='round')
 
     # plot first average precision to have it in the background
@@ -407,7 +413,7 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     return p
 
 
-def check_cache(cache_obj: dict) -> tuple:
+def get_cache(cache_obj: dict) -> tuple:
     """
     Check if redis is used to cache images, and if image 'name' is cached.
     Return state of redis, if image in cache and image if it is in cache.
@@ -430,30 +436,31 @@ def check_cache(cache_obj: dict) -> tuple:
     return cache_obj, img
 
 
-def get_fullres_plot(id: str, size: list = [700, 500]) -> dict:
+def get_plot(id: str, full_res: bool, size: list = [700, 500]) -> dict:
     """
     Check if plot is stored with redis or build a new one with Bokeh.
     Bokeh builds an object with 'script' and 'div'. Redis stores this as string, which is fine, as
     the data is send to the website as string anyways.
 
     :param id: Entry id in metacatalog
+    :param full_res: Boolean to set if plot should be of full dataset
     :param size:
     :return: Bokeh image consisting of 'script' and 'div'
     """
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
                  'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size))}
-    cache_obj, img = check_cache(cache_obj)
+    cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
         # get data
-        db_data = __DB_load_data(id)
+        db_data = __DB_load_data(id, full_res)
         if db_data['has_preci']:
             db_data['df'] = precision_to_minmax(db_data['df'])
         plot_data = fill_data_gaps(db_data)
         # prepare plot
         plot_data = __get_axis_limits(plot_data)
         label = __DB_load_label(id)
-        img = get_bokeh_std_fullres(plot_data, size, label)
+        img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
         if cache_obj['use_redis']:
             cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
     return img
@@ -477,7 +484,7 @@ def get_preview(id: str, size=[700, 500]):
     imgname = "preview_{}".format('b' + str(id) + str(size))
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
                  'in_cache': False, 'name': imgname}
-    cache_obj, img = check_cache(cache_obj)
+    cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache'] and not wps_result:
         label = __DB_load_label(id)

@@ -1,6 +1,10 @@
+# from typing import Literal
+
+import numpy as np
 import pandas as pd
 from django.db import connections
 
+from heron.settings import max_size_preview_plot
 from vfwheron.models import Entries, Timeseries
 
 
@@ -25,18 +29,49 @@ def get_timescale(df):
     return min(stepsize)
 
 
-# TODO: remove dependency for data from code. Only pandas df should be used => remove 'result'
-def __DB_load_data(ID: str):
+# TODO: In Python > 3.7 use Literal
+# def is_data_short(ID: int, source: Literal['db', 'wps']):
+def is_data_short(ID: int, source: str):
     """
-    Load data from database and return a dict with data, pandas df and axis
+    Get ID of a dataset, check the length of the dataset and return boolean if dataset is short (<= 50 000 values) or
+    too long to plot completly.
 
-    :param ID: string
+    :param ID: integer
+    :param source: string
+    :return: boolean
+    """
+    if source == 'db':
+        datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+    query_path = {'{0}'.format(datatable): ID}
+    # TODO: Think about using the following queryset instead of creating it serveral times per plot
+    datalength = Entries.objects.filter(**query_path).count()
+
+    if datalength <= max_size_preview_plot:
+        full = True
+    else:
+        full = False
+    return full
+
+
+def __DB_load_data(ID: int, full_res: bool):
+    """
+    Load data from database and return a dict with data, pandas df and axis. When full resolution == False limit length
+    of result according to settings.max_size_preview_plot
+
+    :param ID: integer
+    :param full_res: boolean
     :return: dict - {df, axis, scale, has_preci}
     """
     datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     if datatable == 'timeseries':
         # request data with django ORM
-        df = pd.DataFrame(list(Timeseries.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')))
+        qs = Timeseries.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
+
+        if full_res:
+            df = pd.DataFrame(list(qs))
+        else:
+            qs_length = qs.count()
+            df = pd.DataFrame(list(qs[qs_length-max_size_preview_plot:qs_length]))
 
         timescale = Entries.objects.filter(id=ID).values_list('datasource__temporal_scale__resolution')[0][0]
         if timescale:
@@ -149,6 +184,7 @@ def fill_data_gaps(db_data: object):
     scale = db_data['scale']
     df = db_data['df']
     missing_data = {}
+
     # check if data has a scaling
     if not scale:
         scale = __get_scaling(df)
@@ -188,22 +224,27 @@ def fill_data_gaps(db_data: object):
             source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1],
                                    'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
                                    'count': db_data['data'][4]})
-            missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
+            missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
         else:  # if full dataset, without average, min, max values
+            # copy random rows which happen to be the first two
+            empty_rows = df.loc[1:2].copy()
+            # set all columns except tstamp to nan
+            empty_rows.loc[:, empty_rows.columns != 'tstamp'] = float('nan')
             for pos in noDataPos[::-1]:
+                # set correct tstamp to new rows
+                empty_rows['tstamp'] = df['tstamp'][pos] + scale, df['tstamp'][pos + 1] - scale
                 # insert new rows with float index positions
-                df.loc[pos+0.3] = df['tstamp'][pos] + scale, float('nan'), float('nan')
-                df.loc[pos+0.6] = df['tstamp'][pos + 1] - scale, float('nan'), float('nan')
-
+                df.loc[pos+0.3] = empty_rows.loc[1]
+                # df.loc[pos+0.3] = df['tstamp'][pos] + scale, float('nan'), float('nan')
+                df.loc[pos+0.6] = empty_rows.loc[2]
+                # df.loc[pos+0.6] = df['tstamp'][pos + 1] - scale, float('nan'), float('nan')
                 defect_x.extend([df['tstamp'][pos] - scale, df['tstamp'][pos],
                                  df['tstamp'][pos + 1], df['tstamp'][pos + 1] + scale])
                 defect_y.extend([float('nan'), df['value'][pos], df['value'][pos + 1], float('nan'), ])
 
             # reset the index to integer
             df = df.sort_index().reset_index(drop=True)
-
-            missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
-
+            missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
     return {'df': df, 'scale': scale, 'nan_in_data': nan_in_data,
             'missing_data': missing_data, 'has_preci': db_data['has_preci']}
 
