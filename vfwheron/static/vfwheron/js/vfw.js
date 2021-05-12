@@ -186,7 +186,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
     }
     let elementID = "sidebtn" + storeID;
     return '<li ' + drag_html + ' class="w3-padding task" ' +
-        'data-id="' + storeID + '" btnName="' + btnName + '" onmouseover="" ' +
+        'data-id="' + btnData['source'] + btnData['dbID'] + '" btnName="' + btnName + '" onmouseover="" ' +
         'style="cursor:pointer;" id="' + elementID + '">' +
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +

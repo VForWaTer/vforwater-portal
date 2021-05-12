@@ -5,6 +5,7 @@ import sys
 
 import pandas as pd
 import requests
+from django.core.exceptions import EmptyResultSet
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from pyzip import PyZip
 
@@ -561,6 +562,8 @@ def previewplot(request):
                 raise Http404
                 # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
                 # return redirect('vfwheron:login')
+        except EmptyResultSet as e:
+            print('EmptyResultSet Error: ', e)
         except Exception as e:
             print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
 

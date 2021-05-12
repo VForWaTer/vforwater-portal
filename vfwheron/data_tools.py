@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+from django.core.exceptions import EmptyResultSet
 from django.db import connections
 
 from heron.settings import max_size_preview_plot
@@ -42,9 +43,12 @@ def is_data_short(ID: int, source: str):
     """
     if source == 'db':
         datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+
     query_path = {'{0}'.format(datatable): ID}
     # TODO: Think about using the following queryset instead of creating it serveral times per plot
     datalength = Entries.objects.filter(**query_path).count()
+    if datalength == 0:  # if not qs.exists():
+        raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(ID))
 
     if datalength <= max_size_preview_plot:
         full = True
