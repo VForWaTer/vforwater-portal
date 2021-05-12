@@ -333,3 +333,5 @@ wps_log.addHandler(filehandler)
 #         'localhost:4200'
 #     )
 # END OF settings from workflow app
+
+max_size_preview_plot = 50000
