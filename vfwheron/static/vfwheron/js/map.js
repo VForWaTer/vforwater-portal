@@ -182,6 +182,7 @@ function create_map() {
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
+
     /** build app for box with drawbuttons **/
     window.cApp = {};
     let cApp = window.cApp;
@@ -189,6 +190,7 @@ function create_map() {
         let element = document.createElement('div');
         element.className = 'custom-control ol-unselectable ol-control';
         element.appendChild(document.getElementById('filterbox'));
+        element.appendChild(document.getElementById('closed_filterbox'));
         ol.control.Control.call(this, {
             element: element
         });

@@ -13,7 +13,7 @@ from heron.settings import DEBUG
 # import vfwheron.models_metacatalog_dev as mc_dev
 
 from vfwheron.models import Keywords, EntrygroupTypes, Variables, Licenses, Entries, Details, Persons, BasicFilter, \
-    LocationFilter, NmPersonsEntries
+    NmPersonsEntries
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +204,8 @@ class Menu:
     # TODO: Check queries in detail (LtLocation is okay!)
     # menu_list = [LtLocation, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblSensor, TblVariable]
     # menu_list = [Variables]
-    menu_list = [LocationFilter, Variables, Licenses, Entries]
+    menu_list = [Variables, Licenses, Entries]
+    # menu_list = [LocationFilter, Variables, Licenses, Entries]
     # menu_list = [LtLocation, LtLicense, LtQuality, LtSite, LtSoil, LtUser, TblMeta, TblSensor, TblVariable]
 
     def __init__(self, user='default'):
@@ -402,8 +403,8 @@ class Table:
                         # can help
                         result = self.__build_recursive_json(grand_child)
                         recursive = True
-                    elif switch == 'draw':
-                        result = self.__build_draw_json(grand_child)
+                    # elif switch == 'draw':
+                    #     result = self.__build_draw_json(grand_child)
                     elif switch == 'bool':
                         result = self.__build_bool_json(grand_child)
                 else:
@@ -663,32 +664,32 @@ class Table:
         # if there are no values for the submenu, return nothing
         return {'json': all_childs, 'total': child_counter, 'server': map_childs}
 
-    def __build_draw_json(self, grand_child):
-        """
-
-        :param grand_child:
-        :type grand_child:
-        :return:
-        :rtype:
-        """
-        counter = 0
-        values = 'POINT'
-        total = Entries.objects.values('location').count()
-        grandchild_dict = {
-            'type': 'draw',
-            'name': values,
-            'total': total,
-            # 'chosen': False,
-            }
-        map_grandchild_dict = {
-            'type': 'draw',
-            'name': values,
-            }
-
-        if total >= self.min_amount:
-            counter = counter + 1
-        # if there are no values for the submenu, return nothing
-        return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
+    # def __build_draw_json(self, grand_child):
+    #     """
+    #
+    #     :param grand_child:
+    #     :type grand_child:
+    #     :return:
+    #     :rtype:
+    #     """
+    #     counter = 0
+    #     values = 'POINT'
+    #     total = Entries.objects.values('location').count()
+    #     grandchild_dict = {
+    #         'type': 'draw',
+    #         'name': values,
+    #         'total': total,
+    #         # 'chosen': False,
+    #         }
+    #     map_grandchild_dict = {
+    #         'type': 'draw',
+    #         'name': values,
+    #         }
+    #
+    #     if total >= self.min_amount:
+    #         counter = counter + 1
+    #     # if there are no values for the submenu, return nothing
+    #     return {'json': grandchild_dict, 'total': counter, 'server': map_grandchild_dict}
 
     def print_properties(self):
         """

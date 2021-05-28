@@ -574,19 +574,19 @@ class AdvancedFilter(BasicFilter):
     details = Details.objects.values_list('value', flat=True).distinct()
 
 
-class LocationFilter(models.Model):
-    """
-    Fake class to write location from Entries to a separate entry online in the menu.
-    """
-    location = models.PointField(srid=0)
-
-    db_alias_child = {'location': 'Location'}
-    db_alias_child_adv = {'bla': 'blala'}
-    menu_name = gettext("Filter from map")
-    path = ''
-    filter_type = {'location': 'draw'}
-
-    class Meta:
-        managed = False
-        db_table = 'entries'
-
+# class LocationFilter(models.Model):
+#     """
+#     Fake class to write location from Entries to a separate entry online in the menu.
+#     """
+#     location = models.PointField(srid=0)
+#
+#     db_alias_child = {'location': 'Location'}
+#     db_alias_child_adv = {'bla': 'blala'}
+#     menu_name = gettext("Filter from map")
+#     path = ''
+#     filter_type = {'location': 'draw'}
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'entries'
+#

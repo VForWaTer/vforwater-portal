@@ -48,8 +48,10 @@
 <div class="tab">
   <button class="filter-tablinks" onclick="toggleFilter(event, 'quickFilter')" id="defaultFilterTab"
   title="{% trans "Quick update of results on each click event"%}">{% trans "Quick"%}</button>
-  <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()"
-  title="{% trans "Set attributes and click on search to update results"%}">{% trans "Advanced" %}</button>
+{#  <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()"#}
+{#  title="{% trans "Set attributes and click on search to update results"%}">{% trans "Advanced" %}</button>#}
+  <button class="filter-tablinks" onclick="drawOnMapMenu(event, 'advancedFilter')"
+  title="{% trans "Click here to select from drawing"%}">{% trans "Draw" %}</button>
 </div>
 
 <div id="advancedFilter" class="filter-tabcontent">
