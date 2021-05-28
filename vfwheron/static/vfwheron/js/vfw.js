@@ -1,4 +1,8 @@
-let draw, modify, selectedFeatures, vector;
+let draw, drawSquare, modify, selectedFeatures;
+/**
+* Global Element (source layer) to drawn on
+*/
+let vector;
 let activeMap = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
 let sessionStorageData = {};
@@ -65,6 +69,9 @@ let selectedIds = {
     }
 };
 
+/**
+ * Class to store data used on different URLs. Every change should be stored in session storage.
+ */
 class storeData {
 
     constructor(definition) {
@@ -100,6 +107,11 @@ class storeData {
     }
 }
 
+/**
+ * wps tools datatypes and relationships to each other.
+ *
+ * @type {{validInput(string, string): boolean, accepts(list): set, HIERACHY: {idataframe: [string], timeseries: [string], array: string[], raster: [string], iarray: [string], html: [string], ndarray: string[], "time-dataframe": [string]}, bHIERACHY: {vtimeseries: string[], idataframe: [string], timeseries: [string], "vtime-dataframe": string[], vraster: string[], raster: [string], iarray: [string], varray: string[], vdataframe: string[], "2darray": [string], "time-dataframe": [string]}}}
+ */
 const DATATYPE = new class AbstractType {
     // constructor(type) {
     constructor() {
@@ -130,16 +142,16 @@ const DATATYPE = new class AbstractType {
         // this.type = type;
     }
 
-     /**
-      * Check if your data/output is valid for a process.
-      *
-      * @param {string} inputType - Datatype you want to use in process
-      * @param {string} outputType - Datatype accepted from process
-      * @return {boolean}
-      */
-     validInput(inputType, outputType) {
-         return true? outputType in this.HIERACHY[inputType] || inputType == outputType: false
-     }
+    /**
+     * Check if your data/output is valid for a process.
+     *
+     * @param {string} inputType - Datatype you want to use in process
+     * @param {string} outputType - Datatype accepted from process
+     * @return {boolean}
+     */
+    validInput(inputType, outputType) {
+        return true ? outputType in this.HIERACHY[inputType] || inputType == outputType : false
+    }
 
     /**
      * Return possible inputTypes for given type(s) of data.
@@ -164,6 +176,14 @@ const DATATYPE = new class AbstractType {
 }
 
 
+/**
+ * Create a name for buttons according to the length of the name string
+ *
+ * @param {string} name
+ * @param {string} abbr
+ * @param {string} unit
+ * @param {string} dbID
+ */
 function createBtnName(name, abbr, unit, dbID) {
     let btnName;
     let vnLen = name.length;
@@ -179,6 +199,14 @@ function createBtnName(name, abbr, unit, dbID) {
     return btnName
 }
 
+/**
+ * Create HTML element for buttons to be placed on the sidebar
+ *
+ * @param {string} storeID
+ * @param {dict} btnData
+ * @param {string} btnName
+ * @param {string} title
+ */
 function sidebar_btn_html(storeID, btnData, btnName, title) {
     let drag_html = "";
     if (window.location.pathname == '/workspace/') {
@@ -196,6 +224,9 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
         '</a><br></li>';
 }
 
+/**
+ * Reset the draw menu, clear selections in memory and on map
+ */
 function resetDraw() {
     selectedIds.map = null;
     selectedFeatures.clear();
@@ -204,8 +235,16 @@ function resetDraw() {
     olmap.removeLayer(vector);
 }
 
-// Menu to draw polygon on map
-function drawPolygon(shortParent, shortChild) {
+/**
+ * Menu to draw polygon on map
+ *
+ * @param {string} shortParent
+ * @param {string} shortChild
+ */
+function drawOnMapMenu(shortParent, shortChild) {
+    shortParent = 'P1'
+    shortChild = 'C1'
+// function drawPolygon(shortParent, shortChild) {
     // let div = document.getElementById('toggle_draw');
     filterbox_open();
     // itemButtonFunction(item, shortParent, shortChild, shortItem)
@@ -213,6 +252,9 @@ function drawPolygon(shortParent, shortChild) {
     // olmap.removeInteraction(selectCluster);
     let collection = new ol.Collection();
 
+    /**
+     * Element to be included on map
+     */
     let source = new ol.source.Vector({
         wrapX: false,
         features: collection,
@@ -267,6 +309,12 @@ function drawPolygon(shortParent, shortChild) {
         stopClick: true
     });
     // draw.setZIndex(-100);
+    drawSquare = new ol.interaction.Draw({
+        source: source,
+        type: 'Circle',
+        geometryFunction: ol.interaction.Draw.createBox(),
+        stopClick: true
+    });
 
     modify = new ol.interaction.Modify({
         // features: collection.getFeaturesCollection(),
@@ -299,22 +347,12 @@ function drawPolygon(shortParent, shortChild) {
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
 
-    /* Point features select/deselect as you move polygon.
+    /** Point features select/deselect as you move polygon.
         Deactivate select interaction. */
     modify.on('modifystart', function (event) {
         sketch = event.features;
         // select.setActive(false);
-        listener = event.features.getArray()[0].getGeometry().on('change', function (event) {
-            // clear features so they deselect when polygon moves away
-            selectedFeatures.clear();
-            polygon = event.target;
-
-            for (var i = 0; i < features.length; i++) {
-                if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) {
-                    selectedFeatures.push(features[i]);
-                }
-            }
-        });
+        listener = selectStartFun(event)
     }, this);
     /* Reactivate select function */
     modify.on('modifyend', function (event) {
@@ -344,26 +382,72 @@ function drawPolygon(shortParent, shortChild) {
         }, 300);
     }
 
+    /**
+     * Get geometry of drawing, check which features are inside drawing and push result to selectedFeatures.
+     *
+     * @param event
+     * @returns {*}
+     */
+    function selectStartFun(event) {
+        return event.feature.getGeometry().on('change', function (event) {
+            // clear features so they deselect when polygon moves away
+            selectedFeatures.clear();
+            polygon = event.target;
+
+            let fLen = features.length;
+            // TODO: find something faster then a loop!
+            for (let i = 0; i < fLen; i++) {
+                if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) {
+                    selectedFeatures.push(features[i]);
+                }
+            }
+        });
+    }
+
+    // add clickEvent to draw square button
+    let drwsqrst = document.getElementById('draw_square');
+    drwsqrst.addEventListener('click', function () {
+        // olmap.removeInteraction(modify);
+        // olmap.removeInteraction(draw);
+        removeInteractions();
+        olmap.addInteraction(drawSquare);
+        /* Deactivate select and delete any existing polygons.
+            Only one polygon drawn at a time. */
+    });
+    drawSquare.on('drawstart', function (event) {
+        source.clear();
+        listener = selectStartFun(event)
+    }, this);
+    drawSquare.on('drawend', function () {
+        // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
+        selectedIds.map = [];
+
+        /* get id of selected features for menu */
+        selectedFeatures.getArray().forEach(function (val) {
+            selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
+        });
+        if (selectedIds.map.length > 0) {
+            mapSelectFunction('P1', 'C1', selectedIds.map);
+        }
+        removeInteractions();
+        toggle_draw(document.getElementById("draw_square"))
+    });
+
+    // add clickEvent to draw polygon button
     let drwst = document.getElementById('draw_polygon');
     drwst.addEventListener('click', function () {
-        olmap.removeInteraction(modify);
-        // olmap.removeInteraction(selectClick);
+        // olmap.removeInteraction(modify);
+        // olmap.removeInteraction(drawSquare);
+        removeInteractions()
         olmap.addInteraction(draw);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
     });
     draw.on('drawstart', function (event) {
         source.clear();
-        sketch = event.feature;
         // olmap.removeInteraction(doubleClickZoom)
-        listener = sketch.getGeometry().on('change', function (event) {
-            selectedFeatures.clear();
-            polygon = event.target;
-            let fLen = features.length;
-            for (let i = 0; i < fLen; i++) {
-                if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) selectedFeatures.push(features[i]);
-            }
-        });
+        listener = selectStartFun(event)
+        // console.log('- listener: ', listener)
     }, this);
 
     draw.on('drawend', function () {
@@ -372,6 +456,8 @@ function drawPolygon(shortParent, shortChild) {
         // console.log(' _ - _ - _ selected features: ', selectedFeatures)
         // let writer = new ol.format.KML();
         // let geojsonStr = writer.writeFeatures(source.getFeatures());
+
+        /* get id of selected features for menu */
         selectedFeatures.getArray().forEach(function (val) {
             selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
         });
@@ -379,67 +465,69 @@ function drawPolygon(shortParent, shortChild) {
         if (selectedIds.map.length > 0) {
             mapSelectFunction(shortParent, shortChild, selectedIds.map);
         }
-        olmap.removeInteraction(draw);
+        // olmap.removeInteraction(draw);
+        removeInteractions();
         toggle_draw(document.getElementById("draw_polygon"))
     });
 
-
+    /** add clickEvent to modify button */
     let modst = document.getElementById('modify_polygon');
     modst.addEventListener('click', function () {
-        // olmap.removeInteraction(selectCluster);
-        olmap.removeInteraction(draw);
-        // olmap.removeInteraction(selectClick);
+        removeInteractions()
         olmap.addInteraction(modify);
     });
 
-    /*    let selst = document.getElementById('select_polygon');
-        selst.addEventListener('click', function () {
-            // olmap.removeInteraction(selectCluster);
-            olmap.removeInteraction(draw);
-            olmap.removeInteraction(modify);
-            olmap.addInteraction(selectClick);
-        });*/
-
-    let delst = document.getElementById('' +
-        'remove_polygon');
+    /** add clickEvent to remove button */
+    let delst = document.getElementById('remove_polygon');
     delst.addEventListener('click', function () {
         // olmap.removeInteraction(selectCluster);
-        // source.clear();
         source.clear();
         select.setActive(false);
         mapSelectFunction(shortParent, shortChild, []);
         resetDraw();
-        /*    selectClick.getFeatures().on('add', function (feature) {
-                source.removeFeature(feature.element);
-                feature.target.remove(feature.element);
-            });*/
     });
 
+    /** add clickEvent to close button */
     let closst = document.getElementById('draw_close');
     closst.addEventListener('click', function () {
-        olmap.removeInteraction(draw);
-        olmap.removeInteraction(modify);
-        // olmap.removeInteraction(selectClick);
+        removeInteractions()
         // olmap.addInteraction(selectCluster);
         filterbox_close()
     });
+
+    /**
+     * Remove interactions from draw menu options (draw, drawSquare and modify).
+     */
+    function removeInteractions() {
+        olmap.removeInteraction(draw);
+        olmap.removeInteraction(modify);
+        olmap.removeInteraction(drawSquare);
+    }
 }
 
-//Toggle between showing and hiding filterbox
+/**
+ * Toggle between showing and hiding filterbox
+ */
 function filterbox_open() {
     let filterbox = document.getElementById("filterbox");
+    let closed_filterbox = document.getElementById("closed_filterbox");
+    closed_filterbox.style.display = "none";
     filterbox.style.display = "block";
     // document.getElementById("toggle_draw").className = 'active'
 }
 
 function filterbox_close() {
     let filterbox = document.getElementById("filterbox");
+    let closed_filterbox = document.getElementById("closed_filterbox");
+    closed_filterbox.style.display = "block";
     filterbox.style.display = "none";
     // TODO: remove only if nothing selected
     // document.getElementById("toggle_draw").classList.remove('active')
 }
 
-// add toggle function for background of draw and modify button, and remove background by press on delete and close
+/**
+ * add toggle function for background of draw and modify button, and remove background by press on delete and close
+ */
 function toggle_draw(self) {
     let siblings = document.getElementsByClassName('draw-hover');
     let s;
@@ -456,17 +544,6 @@ function toggle_draw(self) {
     }
 
 }
-
-//Toggle between showing and hiding select_catchment
-/*function select_catchment_toggle() {
-    let selcatchment = document.getElementById("select_catchment");
-
-    if (selcatchment.style.display == "block") {
-        selcatchment.style.display = "none";
-    } else {
-        selcatchment.style.display = "block";
-    }
-}*/
 
 //Search
 function search_close() {
@@ -565,10 +642,10 @@ function moreInfoModal(id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
         })
-            /*.fail(e => {
-                $.when(ajaxTable()).then(function (plotVar) {plotToModal(plotVar[0])});
-                console.warn('fehler: ', e)
-            })*/
+        /*.fail(e => {
+            $.when(ajaxTable()).then(function (plotVar) {plotToModal(plotVar[0])});
+            console.warn('fehler: ', e)
+        })*/
     }
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
@@ -585,6 +662,7 @@ function moreInfoModal(id) {
         document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
         showDataInfo(properties);
     }
+
     function plotToModal(json) {
         document.getElementById('mod_prev').innerHTML = json.div; // add plot
         // bokehPreviewScript is a global variable to set and remove the script of bokeh
@@ -593,6 +671,7 @@ function moreInfoModal(id) {
         bokehPreviewScript.text = json.script;
         document.head.appendChild(bokehPreviewScript);
     }
+
     function fillModal(td, pd) {
         tableToModal(td)
         if (pdata !== false) {
@@ -792,7 +871,7 @@ function advanced_filter_query(selection) {
         }, // data sent with the post request
     })
         .done(function (json) {
-            console.log('json: ', json)
+            // console.log('json: ', json)
             document.getElementById("advancedFilter").innerHTML = json
 
         })
@@ -837,7 +916,7 @@ class SidebarButtonData extends SidebarButton {
      * @param {boolean} pickle - True (1) if pickled, else false (0).
      */
     constructor(id, orgid, inputs, outputs, name, unit
-                , abbr, title, pickle, start, end) {
+        , abbr, title, pickle, start, end) {
         super(id, orgid, inputs, outputs);
         this.name = name;
         this.unit = unit;
