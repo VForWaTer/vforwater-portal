@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(url='home/', permanent=False)),
     url(r'^home/', include('vfwheron.urls')),
     url(r'^admin/', admin.site.urls),
+    url(r'^legals$', vfw_views.Legals.as_view(), name='legals'),
     url(r'^workspace/', include('wps_gui.urls', namespace='wps_gui')),
     url(r'^monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
     url(r'^visual/', include('heron_visual.urls', namespace='heron_visual')),

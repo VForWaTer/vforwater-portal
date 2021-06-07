@@ -236,6 +236,10 @@ msgstr "Markierungen&#32aus&#32dem&#32Filtermenü&#32entfernen."
 msgid "  Help"
 msgstr "  Hilfe"
 
+#: templates/vfwheron/sidemenu.html:28
+msgid "  Legals"
+msgstr "  Impressum"
+
 #: templates/vfwheron/sidemenu.html:37
 msgid "  Documentation"
 msgstr "  Dokumentation"
@@ -247,6 +251,31 @@ msgstr " Daten & Metadaten herunterladen"
 #: views.py:485
 msgid "help"
 msgstr "Hilfe"
+
+#: templates/vfwheron/legals.html
+msgid "This page is still under construction."
+msgstr "Diese Seite befindet sich noch in der Entwicklung."
+
+#: templates/vfwheron/legals.html
+msgid "Provider"
+msgstr "Anbieter"
+
+#: templates/vfwheron/legals.html
+msgid "Copyright"
+msgstr "Copyright"
+
+#: templates/vfwheron/legals.html
+msgid "Disclaimer"
+msgstr "Haftung"
+
+#: templates/vfwheron/legals.html
+msgid "References to External Websites"
+msgstr "Verweise auf externe Web-Seiten"
+
+#: templates/vfwheron/legals.html
+msgid "Data Protection and IT Safety"
+msgstr "Datenschutz und IT-Sicherheit"
+
 
 #, fuzzy
 #~| msgid "Click on map to draw. Doubleclick to stop drawing."
