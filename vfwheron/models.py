@@ -200,7 +200,7 @@ class Entrygroups(models.Model):
                                      self.id)
 
 
-class GenericGeometryData(models.Model):
+class Generic_Geometry_Data(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.IntegerField()
     geom = models.GeometryField(srid=0)
@@ -216,7 +216,7 @@ class GenericGeometryData(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class Generic1DData(models.Model):
+class Generic_1D_Data(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.DecimalField(max_digits=999, decimal_places=999)
     value = models.DecimalField(max_digits=999, decimal_places=999)
@@ -232,7 +232,7 @@ class Generic1DData(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class Generic2DData(models.Model):
+class Generic_2D_Data(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.DecimalField(max_digits=999, decimal_places=999)
     value1 = models.DecimalField(max_digits=999, decimal_places=999)
@@ -250,7 +250,7 @@ class Generic2DData(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class GeomTimeseries(models.Model):
+class Geom_Timeseries(models.Model):
     # entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)  # This produces a django warning
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
@@ -474,11 +474,11 @@ class Thesaurus(models.Model):
     def __str__(self):
         return '<ID={}>   <UUID={}>    Name={}/{}'.format(self.id, self.uuid, self.name)
 
-
+# TODO: check if DecimalField or FloatField fits better to 'real' here.
 class Timeseries(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
-    value = models.DecimalField(max_digits=999, decimal_places=999)
+    data = models.DecimalField(max_digits=999, decimal_places=999)
     precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
@@ -491,7 +491,23 @@ class Timeseries(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class Timeseries2D(models.Model):
+class Timeseries_1D(models.Model):
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    tstamp = models.DateTimeField()
+    value = models.DecimalField(max_digits=999, decimal_places=999)
+    precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+
+    class Meta:
+        # app_label = 'mcdev'
+        managed = False
+        db_table = 'timeseries_1d'
+        unique_together = (('entry', 'tstamp'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
+
+
+class Timeseries_2D(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
     value1 = models.DecimalField(max_digits=999, decimal_places=999)

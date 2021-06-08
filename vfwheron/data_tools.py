@@ -6,7 +6,7 @@ from django.core.exceptions import EmptyResultSet
 from django.db import connections
 
 from heron.settings import max_size_preview_plot
-from vfwheron.models import Entries, Timeseries
+from vfwheron.models import Entries, Timeseries, Timeseries_1D
 
 
 def get_timescale(df):
@@ -42,11 +42,13 @@ def is_data_short(ID: int, source: str):
     :return: boolean
     """
     if source == 'db':
-        datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+        datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
+        # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
 
-    query_path = {'{0}'.format(datatable): ID}
+    query_path = {'{0}'.format(datapath): ID}
     # TODO: Think about using the following queryset instead of creating it serveral times per plot
-    datalength = Entries.objects.filter(**query_path).count()
+    datalength = Entries.objects.filter(timeseries_1d=ID).count()
+    # datalength = Entries.objects.filter(**query_path).count()
     if datalength == 0:  # if not qs.exists():
         raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(ID))
 
@@ -66,10 +68,11 @@ def __DB_load_data(ID: int, full_res: bool):
     :param full_res: boolean
     :return: dict - {df, axis, scale, has_preci}
     """
-    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
-    if datatable == 'timeseries':
+    # datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+    datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
+    if datapath == 'timeseries_1d':
         # request data with django ORM
-        qs = Timeseries.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
+        qs = Timeseries_1D.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
 
         if full_res:
             df = pd.DataFrame(list(qs))
