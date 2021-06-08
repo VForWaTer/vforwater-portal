@@ -64,7 +64,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     :return:
     """
     nan_in_data = plot_data['nan_in_data']
-    df = ColumnDataSource(plot_data['df'])
+    source = ColumnDataSource(plot_data['df'])
     missing_source = ColumnDataSource(plot_data['missing_data'])
     if full_res:
         title = ''
