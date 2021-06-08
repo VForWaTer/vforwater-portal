@@ -5,7 +5,7 @@ import sys
 
 import pandas as pd
 import requests
-from django.core.exceptions import EmptyResultSet
+from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from pyzip import PyZip
 
@@ -39,8 +39,8 @@ from .query_functions import get_bbox_from_data
 # from .filter import FilterMethods, Menu, build_id_list, Table
 from .filter import FilterMethods, Menu, build_id_list, Table
 from .filters import NMPersonsFilter
-from .models import Entries, Timeseries, Timeseries2D, Generic1DData, Generic2DData, GenericGeometryData, \
-    GeomTimeseries, NmPersonsEntries
+from .models import Entries, Timeseries, Timeseries_2D, Generic_1D_Data, Generic_2D_Data, Generic_Geometry_Data, \
+    Geom_Timeseries, NmPersonsEntries
 
 import logging
 from pathlib import Path
@@ -208,12 +208,12 @@ def get_dataset(s_id: int) -> object:
     entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
 
     # build string of values for django query
-    type_values = {'generic1ddata': ['index', 'value', 'precision'],
-                   'generic2ddata': ['index', 'value1', 'value2', 'precision1', 'precision2'],
-                   'genericgeometrydata': ['index', 'geom', 'srid'],
-                   'geomtimeseries': ['tstamp', 'geom', 'srid'],
-                   'timeseries': ['tstamp', 'value', 'precision'],
-                   'timeseries2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
+    type_values = {'generic_1d_data': ['index', 'value', 'precision'],
+                   'generic_2d_data': ['index', 'value1', 'value2', 'precision1', 'precision2'],
+                   'generic_geometry_data': ['index', 'geom', 'srid'],
+                   'geom_timeseries': ['tstamp', 'geom', 'srid'],
+                   'timeseries_1d': ['tstamp', 'value', 'precision'],
+                   'timeseries_2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
     db_values = type_values[entry_type]
 
     query_values = []
@@ -420,6 +420,23 @@ class DevLoginView(TemplateView):
         return render(request, 'home/login.html', {'context': context})
 
 
+class Legals(TemplateView):
+    """
+
+    """
+
+    def get(self, request):
+        """
+
+        :param request:
+        :type request:
+        :return:
+        :rtype:
+        """
+
+        return render(request, 'vfwheron/legals.html')
+
+
 class HelpView(TemplateView):
     """
 
@@ -563,7 +580,9 @@ def previewplot(request):
                 # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
                 # return redirect('vfwheron:login')
         except EmptyResultSet as e:
-            print('EmptyResultSet Error: ', e)
+            print('EmptyResultSet Error in previewplot: ', e)
+        except FieldError as e:
+            print('Field Error in previewplot: ', e)
         except Exception as e:
             print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
 

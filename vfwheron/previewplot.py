@@ -80,7 +80,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     # plot.toolbar.autohide = True
 
     # plot value line
-    mainplot.line(x='tstamp', y='value', source=df, line_width=3)  #, legend_label="measured values")
+    mainplot.line(x='tstamp', y='value', source=source, line_width=3)  #, legend_label="measured values")
 
     mainplot.add_tools(HoverTool(tooltips=[("Value", "@value"),
                                            ("Time", "@tstamp{%T %Z}"),
@@ -107,7 +107,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
         # add errorbars
         # # low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
         # # up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
-        mainplot.add_layout(Whisker(source=df, base="tstamp", upper="upper", lower="lower",
+        mainplot.add_layout(Whisker(source=source, base="tstamp", upper="upper", lower="lower",
                                     line_width=0.5))
         # mainplot.vbar(x='date', width=1000 * 60 * 59 * 24, top='upper_avg', bottom='lower_avg', source=error_source,
         #               fill_color="darksalmon", line_color="black", fill_alpha=0.3, line_width=0.5,
