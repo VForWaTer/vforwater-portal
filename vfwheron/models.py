@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
+from django.db.models import Q
 from django.utils.translation import gettext, gettext_lazy
 
 
@@ -183,7 +184,7 @@ class EntrygroupTypes(models.Model):
 
 
 class Entrygroups(models.Model):
-    type = models.ForeignKey(EntrygroupTypes, models.DO_NOTHING)
+    type = models.ForeignKey('EntrygroupTypes', models.DO_NOTHING)
     title = models.CharField(max_length=40, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     uuid = models.CharField(max_length=36)
@@ -455,8 +456,8 @@ class TemporalScales(models.Model):
         managed = False
         db_table = 'temporal_scales'
 
-    def __str__(self):
-        return '<ID={}> observation start/end={}/{}'.format(self.id, self.observation_start, self.observation_end)
+    # def __str__(self):
+    #     return '<ID={}> observation start/end={}/{}'.format(self.id, self.observation_start, self.observation_end)
 
 
 class Thesaurus(models.Model):

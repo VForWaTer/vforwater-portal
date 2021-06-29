@@ -14,17 +14,23 @@
 </form>
 
 {% endcomment %}
+
 {#{% include "vfwheron/filter_entries.html" %}#}
 {#{% block advanced_filter %}#}
-<form method="get" name="advancedfilterform" id="advancedfilter-form">
+<form method="get" name="quickfilterform" id="quickfilter-form">
+{% comment %}    {% csrf_token %}
+    {{ context }}{% endcomment %}
+    {{ quickfilter }}
+{#    {{ quickfilter.media }}#}
+{#    {{ quickFilter }}#}
     <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
 {#        {{ advFilter.form }}#}
 {#        {{ advFilter.form.as_p }}#}
-{% for obj in advFilter.form %}
-   {{ obj.name }}: {{ obj }} <br />
+{% for obj in quickfilter.form.as_p %}
+   <div>{{ obj.name }}: {{ obj }} </div></br>
 {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
 {% endfor %}
-  {{ advFilter.embargo }}
+{#  {{ quickFilter.embargo }}#}
       <button class="btn btn-primary" type="submit">Search</button>
 
 {#      <a onclick="filter_pagination({{ i }})">bla{{ i }}</a>#}
@@ -32,10 +38,10 @@
 {#        <input type="submit" />#}
     </div>
 </form>
-<p>Selection:</p>
-{% for obj in selection.qs %}
-    {{ obj.variable }} - ${{ obj.license }}<br />
-{% endfor %}
+{#<p>Selection:</p>#}
+{#{% for obj in selection.qs %}#}
+{#    {{ obj.variable }} - ${{ obj.license }}<br />#}
+{#{% endfor %}#}
 
 {#{% endblock %}#}
 {% comment %}

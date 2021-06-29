@@ -1,5 +1,10 @@
 from django import forms
+from django.contrib.contenttypes.models import ContentType
+from django.db.models.aggregates import Count
+from django.db.models import Q
+from django.utils import timezone
 
+from vfwheron.fields import RangeSliderField, SliderField
 from vfwheron.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
 
 
@@ -75,3 +80,40 @@ class AdvancedFilterForm(forms.Form):
         if not name and not email and not message:
             raise forms.ValidationError('You have to write something!')
 
+# CHOICES = [('1', 'First'), ('2', 'Second')]
+# >>> choice_field = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
+# >>> choice_field.choices
+# [('1', 'First'), ('2', 'Second')]
+# >>> choice_field.widget.choices
+# [('1', 'First'), ('2', 'Second')]
+# >>> choice_field.widget.choices = []
+# >>> choice_field.choices = [('1', 'First and only')]
+# >>> choice_field.widget.choices
+# [('1', 'First and only')]
+
+
+class QuickFilterForm(forms.Form):
+    variables_list = Entries.objects.values_list('variable__name', flat=True)\
+        .exclude(variable__name__isnull=True).distinct()
+    observation_min = Entries.objects.values('datasource__temporal_scale__observation_start') \
+        .filter(datasource__temporal_scale__observation_start__isnull=False) \
+        .earliest('datasource__temporal_scale__observation_start')
+    observation_max = Entries.objects.values('datasource__temporal_scale__observation_end') \
+        .filter(datasource__temporal_scale__observation_end__isnull=False) \
+        .earliest('datasource__temporal_scale__observation_end')
+    fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
+    institution_list = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)\
+        .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct()
+    project_list = Entries.objects.filter(nmentrygroups__group__type__name='Project') \
+        .values_list('nmentrygroups__group__title', flat=True)\
+        .exclude(nmentrygroups__group__title__isnull=True).distinct()
+
+    variables_choices = list(map(lambda x: (x, x), list(variables_list)))
+    institution_choices = list(map(lambda x: (x, x), list(institution_list)))
+    project_choices = list(map(lambda x: (x, x), list(project_list)))
+
+    variables = forms.ChoiceField(widget=forms.SelectMultiple, choices=variables_choices)
+    institution = forms.ChoiceField(widget=forms.SelectMultiple, choices=institution_choices)
+    project = forms.ChoiceField(widget=forms.SelectMultiple, choices=project_choices)
+    date = RangeSliderField(label="bla", minimum=1, maximum=10)
+    # date = SliderField(label="bla", minimum=1, maximum=10)

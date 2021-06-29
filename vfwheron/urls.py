@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),
     url(r'^entries_pagination$', views.entries_pagination, name='entries_pagination'),
     url(r'^advanced_filter$', views.advanced_filter),
+    url(r'^quick_filter$', views.quick_filter),
     # url(r'^advanced_filter$', views.filter_entries),
     # addresses for fetch:
     # url(r'^previewplot/id(db[\d]{1,6}|wps[\d]{1,6})$', views.PreviewPlot.as_view()),

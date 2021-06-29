@@ -6,7 +6,6 @@ import json
 import logging
 
 import django_filters
-from django import forms
 from django.db.models import Q
 from django.db.models import Max, Min
 from django.utils import timezone
@@ -30,6 +29,8 @@ def _build_path_value_pair(parent_menu: dict, child: str, item: str):
     :param item:
     :return:
     """
+
+    # print('parent_menu: ', parent_menu)
     path = ''
     value = ''
     if isinstance(item, str):
@@ -114,7 +115,7 @@ def build_id_list(menu: dict, filter_selection: dict):
         all_filter = without_draw
     else:
         all_filter = list(set(without_draw).intersection(set(draw_ids)))
-
+    print('all filters: ', all_filter)
     return {'all_filters': all_filter}
 
 
@@ -134,6 +135,8 @@ class FilterMethods:
         :return:
         :rtype:
         """
+        print('menu: ', menu)
+        print('filter_selection: ', filter_selection)
         result = {}
         query_filter = build_select_filters(menu, filter_selection)
         std_query = Entries.objects.filter(**query_filter['filters'])
@@ -172,6 +175,7 @@ class FilterMethods:
                 child_result.update({"C" + str(c): item_result})
                 c += 1
             result.update({parent: child_result})
+        print('result: ', result)
         return result
 
     @staticmethod
@@ -206,6 +210,18 @@ class Menu:
     # TODO: Check queries in detail (LtLocation is okay!)
     # menu_list = [Variables]
     menu_list = [Variables, Licenses, Entries]
+
+    variables = Entries.objects.values_list('variable__name', flat=True).distinct()
+    observation_min = Entries.objects.values('datasource__temporal_scale__observation_start') \
+        .filter(datasource__temporal_scale__observation_start__isnull=False) \
+        .earliest('datasource__temporal_scale__observation_start')
+    observation_max = Entries.objects.values('datasource__temporal_scale__observation_end') \
+        .filter(datasource__temporal_scale__observation_end__isnull=False) \
+        .earliest('datasource__temporal_scale__observation_end')
+    fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
+    institution = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True).distinct()
+    project = Entries.objects.filter(nmentrygroups__group__type__name='Project') \
+        .values_list('nmentrygroups__group__title', flat=True).distinct()
     # menu_list = [LocationFilter, Variables, Licenses, Entries]
 
     def __init__(self, user='default'):
@@ -247,6 +263,7 @@ class Menu:
         menu_map = {}  # menu for server
         count = 0
         for table in self.menu_list:
+            print('table: ', table)
             whole_menu = Table(table, self.min_amount, self.user_query_set)
             json_table = whole_menu.json_child['client']
             map_table = whole_menu.json_child['server']
@@ -707,68 +724,9 @@ class Table:
 def initialize_options():
     return
 
-# class Multiselect(forms.Form):
-#
-#     def __init__(self, choices):
-#         print('1')
-#         CHOICES = tuple(map(lambda x: (x, x), choices))
-#         print('2')
-#         CHOICES = (('Option 1', 'Option 1'),('Option 2', 'Option 2'),)
-#         self.field = forms.ChoiceField(choices=CHOICES,)
-#                                   # widget=forms.Select(attrs={'onchange': 'actionform.submit();'}))
-#         print('3')
-#         print('3: ', self.field)
-class Multiselect(forms.Form):
-
-    # CHOICES = ()
-    CHOICES = (('Option 1', 'Option 1'),('Option 2', 'Option 2'),)
-    field = forms.ChoiceField(choices=CHOICES)
-
-    # def set_options(self, choices):
-    #     self.CHOICES = choices
-
-class Option:
-    # from django.forms import MultiWidget, TextInput, ModelChoiceField
-    # widget = MultiWidget(widgets=[TextInput, TextInput])
-    # widgets = forms.Select(attrs=[1,2,3], choices=[5,6,7,]),
-    #
-    # print('_____________________', widget.render('name', ['john', 'paul']))
-
-    # bla = ModelChoiceField(queryset=Entries.objects.values_list('variable__name', flat=True).distinct(),
-    #                        empty_label = "Choose a countries",)
-    CHOICES = (('Option 1', 'Option 1'), ('Option 2', 'Option 2'),)
-    print('2')
-    # print(Multiselect().as_p())
-    print('3')
-    # print('4: ', Multiselect().as_p())
-    # print('4b: ', Multiselect())
-    # print('bla: ', Multiselect(Entries.objects.values_list('variable__name', flat=True).distinct()))
-    print('5')
-
-
-    def __init__(self, name, HTMLtype, items):
-        self.name = name
-        # TODO: Pass/build here directly the html code
-        self.HTMLtype = HTMLtype
-        self.items = items
-
-
 class QuickFilter:
 
-    variables = Option('variables', 'DDLmulti',
-                       Entries.objects.values_list('variable__name', flat=True).distinct())
-                       # forms.SelectMultiple(attrs={'size': 10, 'title': 'Your name'}))
-    fair_data = Option('fair_data', 'bool',
-                       Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now())))
-    institution = Option('institution', 'DDL',
-                       Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True).distinct())
-
-                 # 'observation_min': {'type': 'slider'},
-                 # 'observation_max': {'type': 'slider'},
-                 # 'fair_data': {'type': 'bool'},
-                 # 'institution': {'type': 'DDL'},
-                 # 'project': {'type': 'DDL'}
-                 # }
+    # options =
 
     def items(self):
 
@@ -778,13 +736,15 @@ class QuickFilter:
             .earliest('datasource__temporal_scale__observation_start')
         observation_max = Entries.objects.values('datasource__temporal_scale__observation_end') \
             .filter(datasource__temporal_scale__observation_end__isnull=False)\
-            .latest('datasource__temporal_scale__observation_end')
+            .earliest('datasource__temporal_scale__observation_end')
         fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
         institution = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True).distinct()
         project = Entries.objects.filter(nmentrygroups__group__type__name='Project')\
             .values_list('nmentrygroups__group__title', flat=True).distinct()
-        # user_data = Entries.objects.
-
-        # print('variables: ', variables)
 
         return ''
+
+    # def
+
+    class Meta:
+        managed = False

@@ -861,6 +861,37 @@ function filter_pagination(page) {
 }
 
 
+function quick_filter(selection) {
+    console.log('******')
+    console.log('selection: ', selection)
+    $.ajax({
+        url: "/home/quick_filter",
+        data: {
+            selection: selection,
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        type: "GET",
+        // datatype: 'json',
+        dataType: "text",
+    })
+        .done(function (json) {
+            console.log('da! ')
+            console.log('json: ', json)
+            document.getElementById("newQuickFilter").innerHTML = json
+            let script = document.getElementById("newQuickFilter").getElementsByTagName('script');
+            console.log('script: ', script);
+            console.log('script inner text: ', script[0].innerText);
+            $.globalEval(script[0].innerText)
+
+        })
+        .fail(function( xhr, status, errorThrown ) {
+    console.log( "Fehler: " + errorThrown );
+    console.log( "Status: " + status );
+    console.dir( xhr );
+        })
+}
+
+
 function advanced_filter_query(selection) {
     $.ajax({
         url: "/home/advanced_filter",
@@ -994,7 +1025,7 @@ class SidebarButtonWPS extends SidebarButton {
     }
 }
 
-function place_bokeh(divID, data) {
+function place_html_with_js(divID, data) {
     document.getElementById(divID).innerHTML = data.div; // add plot
     bokehResultScript = document.createElement('script');
     bokehResultScript.type = 'text/javascript';

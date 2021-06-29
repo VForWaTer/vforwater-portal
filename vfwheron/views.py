@@ -868,15 +868,40 @@ def advanced_filter(request):
     # for i in selection:
     #     print('i: ', i)
     # print('selection: ', len(selection))
-    filter = NMPersonsFilter(request.GET, queryset=selection)
+    advfilter = NMPersonsFilter(request.GET, queryset=selection)
+    selection = advfilter.qs
     # print('selection: ', selection)
     selection = filter.qs
     for i in selection:
         print('i: ', i.entry_id)
     # print('selection 2: ', selection)
 
-    context = {'advFilter': filter, 'selection': selection}
+    context = {'advFilter': advfilter, 'selection': selection}
     return render(request, 'vfwheron/advanced_filter.html', context)
+
+from .forms import QuickFilterForm
+
+def quick_filter(request):
+    print('1**********')
+    # print('request: ', request.GET)
+    # selection = NmPersonsEntries.objects.all().distinct('entry_id')
+    # print('selection: ', selection)
+    # for i in selection:
+    #     print('i: ', i)
+    # print('selection: ', len(selection))
+    # quickFilter = NMPersonsFilter(request.GET, queryset=selection)
+    # selection = quickFilter.qs
+    # print('selection: ', selection)
+    quickfilter = QuickFilterForm()
+    # print('2 ____________filter: ', quickfilter)
+    selection = []
+    print('quickfilter: ', quickfilter)
+    # print('quickfilter media: ', quickfilter.media)
+    # print('quickfilter media [js]: ', quickfilter.media['js'])
+    # print('quickfilter media js: ', JsonResponse({'data': Slider.media}))
+    context = {'quickfilter': quickfilter, 'selection': selection}
+    print('___ do not send ___')
+    return render(request, 'vfwheron/quick_filter.html', context)
 
 
 def error_404_view(request, exception):
