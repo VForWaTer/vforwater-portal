@@ -862,8 +862,6 @@ function filter_pagination(page) {
 
 
 function quick_filter(selection) {
-    console.log('******')
-    console.log('selection: ', selection)
     $.ajax({
         url: "/home/quick_filter",
         data: {
@@ -875,13 +873,11 @@ function quick_filter(selection) {
         dataType: "text",
     })
         .done(function (json) {
-            console.log('da! ')
-            console.log('json: ', json)
             document.getElementById("newQuickFilter").innerHTML = json
             let script = document.getElementById("newQuickFilter").getElementsByTagName('script');
-            console.log('script: ', script);
-            console.log('script inner text: ', script[0].innerText);
-            $.globalEval(script[0].innerText)
+            let runScriptFunc = new Function (script[0].innerText)
+            runScriptFunc()
+            // $.globalEval(script[0].innerText)
 
         })
         .fail(function( xhr, status, errorThrown ) {

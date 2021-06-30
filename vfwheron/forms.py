@@ -95,12 +95,13 @@ class AdvancedFilterForm(forms.Form):
 class QuickFilterForm(forms.Form):
     variables_list = Entries.objects.values_list('variable__name', flat=True)\
         .exclude(variable__name__isnull=True).distinct()
-    observation_min = Entries.objects.values('datasource__temporal_scale__observation_start') \
+    observation_min = Entries.objects.values_list('datasource__temporal_scale__observation_start') \
         .filter(datasource__temporal_scale__observation_start__isnull=False) \
-        .earliest('datasource__temporal_scale__observation_start')
-    observation_max = Entries.objects.values('datasource__temporal_scale__observation_end') \
+        .earliest('datasource__temporal_scale__observation_start')[0]
+    print('+ observation_min: ', observation_min)
+    observation_max = Entries.objects.values_list('datasource__temporal_scale__observation_end') \
         .filter(datasource__temporal_scale__observation_end__isnull=False) \
-        .earliest('datasource__temporal_scale__observation_end')
+        .latest('datasource__temporal_scale__observation_end')[0]
     fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
     institution_list = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)\
         .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct()
@@ -115,5 +116,6 @@ class QuickFilterForm(forms.Form):
     variables = forms.ChoiceField(widget=forms.SelectMultiple, choices=variables_choices)
     institution = forms.ChoiceField(widget=forms.SelectMultiple, choices=institution_choices)
     project = forms.ChoiceField(widget=forms.SelectMultiple, choices=project_choices)
-    date = RangeSliderField(label="bla", minimum=1, maximum=10)
+    # date = RangeSliderField(label="bla", minimum=1, maximum=10)
+    truedate = DateRangeSliderField(label="Date", minimum=observation_min, maximum=observation_max)
     # date = SliderField(label="bla", minimum=1, maximum=10)

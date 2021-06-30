@@ -32,12 +32,13 @@ from wps_gui.models import WpsResults
 from .data_tools import get_timescale, fill_data_gaps, precision_to_minmax, is_data_short
 from .filters import VariableFilter
 from .forms import AdvancedFilterForm
+from .widgets import Slider
 
 mpl.use('Agg')
 
 from .query_functions import get_bbox_from_data
 # from .filter import FilterMethods, Menu, build_id_list, Table
-from .filter import FilterMethods, Menu, build_id_list, Table
+from .filter import FilterMethods, Menu, build_id_list, Table, QuickFilter
 from .filters import NMPersonsFilter
 from .models import Entries, Timeseries, Timeseries_2D, Generic_1D_Data, Generic_2D_Data, Generic_Geometry_Data, \
     Geom_Timeseries, NmPersonsEntries
@@ -862,8 +863,8 @@ def entries_pagination(request):
 
 
 def advanced_filter(request):
-    print('request: ', request.GET)
-    selection = NmPersonsEntries.objects.all().distinct('entry_id')
+    # selection = NmPersonsEntries.objects.all().distinct('entry_id')
+    selection = Entries.objects.all().distinct('entry_id')
     # print('selection: ', selection)
     # for i in selection:
     #     print('i: ', i)
@@ -871,10 +872,6 @@ def advanced_filter(request):
     advfilter = NMPersonsFilter(request.GET, queryset=selection)
     selection = advfilter.qs
     # print('selection: ', selection)
-    selection = filter.qs
-    for i in selection:
-        print('i: ', i.entry_id)
-    # print('selection 2: ', selection)
 
     context = {'advFilter': advfilter, 'selection': selection}
     return render(request, 'vfwheron/advanced_filter.html', context)
