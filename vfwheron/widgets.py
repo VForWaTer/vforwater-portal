@@ -5,6 +5,24 @@ from django.utils.safestring import mark_safe
 import re
 
 
+class Slider(forms.HiddenInput):
+    def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
+        widget = super(Slider, self).__init__(*args, **kwargs)
+        self.minimum = str(minimum)
+        self.maximum = str(maximum)
+        self.step = str(step)
+        self.elem_name = str(elem_name)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        s = super(Slider, self).render(name, value, attrs)
+        self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
+        template = Template("""<div class="slidecontainer">
+        <input type="range" min={{ minimum }} max={{ maximum }} value={{ minimum }} class="slider"
+        id='valueslider_{{ id }}'><p>{{ id }}: <span id='slidOut_{{ id }}'></span></p></div>""")
+        html = template.render(Context({'id': self.elem_id, 'minimum': self.minimum, 'maximum': self.maximum}))
+        return mark_safe(s + html)
+
+
 class RangeSlider(forms.TextInput):
     def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
         widget = super(RangeSlider, self).__init__(*args, **kwargs)
@@ -36,7 +54,8 @@ class RangeSlider(forms.TextInput):
         return mark_safe(s + html)
 
 
-class DateRangeSlider(forms.DateTimeInput):
+class DateRangeSlider(forms.DateInput):
+    # TODO: Make sure min/max of Slider is min/max of data (no missing hours/..)
     def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
         widget = super(DateRangeSlider, self).__init__(*args, **kwargs)
         self.minimum = str(minimum)
@@ -47,17 +66,50 @@ class DateRangeSlider(forms.DateTimeInput):
     def render(self, name, value, attrs=None, renderer=None):
         s = super(DateRangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
-        html = """<div id="slider-range-""" + self.elem_id + """"></div>
+        html = """<div id="slider-date-range-""" + self.elem_id + """"></div>
         <script>
         $('#id_""" + self.elem_id + """').attr("readonly", true)
-        let minDate = new Date();
-        let maxDate = new Date();
-        $( "#slider-range-""" + self.elem_id + """" ).slider({
+        $( "#slider-date-range-""" + self.elem_id + """" ).slider({
         range: true,
         min: new Date('""" + self.minimum + """').getTime(),
         max: new Date('""" + self.maximum + """').getTime(),
         step: """ + self.step + """,
         values: [ new Date('""" + self.minimum + """'),new Date('""" + self.maximum + """') ],
+        slide: function( event, ui ) {
+          let minDate = new Date(ui.values[0]).toLocaleDateString();
+          let maxDate = new Date(ui.values[1]).toLocaleDateString();
+          $( "#id_""" + self.elem_id + """" ).val(" """ + self.elem_name + """ "+ minDate + " - " + maxDate );
+        }
+        });
+        // initial values of box:
+        let minStart = new Date($( "#slider-date-range-""" + self.elem_id + """" ).slider("values", 0)).toLocaleDateString()
+        let maxStart = new Date($( "#slider-date-range-""" + self.elem_id + """" ).slider("values", 1)).toLocaleDateString()
+        $( "#id_""" + self.elem_id + """" ).val(" """ + self.elem_name + """ " + minStart + " - " + maxStart);
+        </script>
+        """
+        return mark_safe(s + html)
+
+
+class DateTimeRangeSlider(forms.DateTimeInput):
+    def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
+        widget = super(DateTimeRangeSlider, self).__init__(*args, **kwargs)
+        self.minimum = str(minimum)
+        self.maximum = str(maximum)
+        self.step = str(step)
+        self.elem_name = str(elem_name)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        s = super(DateTimeRangeSlider, self).render(name, value, attrs)
+        self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
+        html = """<div id="slider-d-t-range-""" + self.elem_id + """"></div>
+        <script>
+        $('#id_""" + self.elem_id + """').attr("readonly", true)
+        $( "#slider-d-t-range-""" + self.elem_id + """" ).slider({
+        range: true,
+        min: new Date('""" + self.minimum + """').getTime(),
+        max: new Date('""" + self.maximum + """').getTime(),
+        step: """ + self.step + """,
+        values: [new Date('""" + self.minimum + """'), new Date('""" + self.maximum + """')],
         slide: function( event, ui ) {
           let minDate = new Date(ui.values[0]).toLocaleString();
           let maxDate = new Date(ui.values[1]).toLocaleString();
@@ -65,27 +117,9 @@ class DateRangeSlider(forms.DateTimeInput):
         }
         });
         // initial values of box:
-        let minStart = new Date($( "#slider-range-""" + self.elem_id + """" ).slider("values", 0)).toLocaleString()
-        let maxStart = new Date($( "#slider-range-""" + self.elem_id + """" ).slider("values", 1)).toLocaleString()
+        let minStart = new Date($( "#slider-d-t-range-""" + self.elem_id + """" ).slider("values", 0)).toLocaleString()
+        let maxStart = new Date($( "#slider-d-t-range-""" + self.elem_id + """" ).slider("values", 1)).toLocaleString()
         $( "#id_""" + self.elem_id + """" ).val(" """ + self.elem_name + """ " + minStart + " - " + maxStart);
         </script>
         """
-        return mark_safe(s + html)
-
-
-class Slider(forms.HiddenInput):
-    def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
-        widget = super(Slider, self).__init__(*args, **kwargs)
-        self.minimum = str(minimum)
-        self.maximum = str(maximum)
-        self.step = str(step)
-        self.elem_name = str(elem_name)
-
-    def render(self, name, value, attrs=None, renderer=None):
-        s = super(Slider, self).render(name, value, attrs)
-        self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
-        template = Template("""<div class="slidecontainer">
-        <input type="range" min={{ minimum }} max={{ maximum }} value={{ minimum }} class="slider"
-        id='valueslider_{{ id }}'><p>{{ id }}: <span id='slidOut_{{ id }}'></span></p></div>""")
-        html = template.render(Context({'id': self.elem_id, 'minimum': self.minimum, 'maximum': self.maximum}))
         return mark_safe(s + html)

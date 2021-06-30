@@ -4,7 +4,7 @@ from django.db.models.aggregates import Count
 from django.db.models import Q
 from django.utils import timezone
 
-from vfwheron.fields import RangeSliderField, SliderField
+from vfwheron.fields import RangeSliderField, SliderField, DateTimeRangeSliderField, DateRangeSliderField
 from vfwheron.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
 
 
@@ -117,5 +117,7 @@ class QuickFilterForm(forms.Form):
     institution = forms.ChoiceField(widget=forms.SelectMultiple, choices=institution_choices)
     project = forms.ChoiceField(widget=forms.SelectMultiple, choices=project_choices)
     # date = RangeSliderField(label="bla", minimum=1, maximum=10)
-    truedate = DateRangeSliderField(label="Date", minimum=observation_min, maximum=observation_max)
+    # truedate = DateTimeRangeSliderField(label="trueDate", minimum=observation_min, maximum=observation_max)
+    date = DateRangeSliderField(label="Date", minimum=observation_min, maximum=observation_max, step=86400000)
     # date = SliderField(label="bla", minimum=1, maximum=10)
+    # 'datasource__temporal_scale__observation_start'
