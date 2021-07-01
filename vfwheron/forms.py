@@ -64,25 +64,16 @@ class AdvancedFilterForm(forms.Form):
         if not name and not email and not message:
             raise forms.ValidationError('You have to write something!')
 
-# CHOICES = [('1', 'First'), ('2', 'Second')]
-# >>> choice_field = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES)
-# >>> choice_field.choices
-# [('1', 'First'), ('2', 'Second')]
-# >>> choice_field.widget.choices
-# [('1', 'First'), ('2', 'Second')]
-# >>> choice_field.widget.choices = []
-# >>> choice_field.choices = [('1', 'First and only')]
-# >>> choice_field.widget.choices
-# [('1', 'First and only')]
-
 
 class QuickFilterForm(forms.Form):
-    variables_list = Entries.objects.values_list('variable__name', flat=True)\
-        .exclude(variable__name__isnull=True).distinct()
+    """
+    Define the quick filter. ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox
+    """
+
+    # collect data for dateRangeSlider
     observation_min = Entries.objects.values_list('datasource__temporal_scale__observation_start') \
         .filter(datasource__temporal_scale__observation_start__isnull=False) \
         .earliest('datasource__temporal_scale__observation_start')[0]
-    print('+ observation_min: ', observation_min)
     observation_max = Entries.objects.values_list('datasource__temporal_scale__observation_end') \
         .filter(datasource__temporal_scale__observation_end__isnull=False) \
         .latest('datasource__temporal_scale__observation_end')[0]

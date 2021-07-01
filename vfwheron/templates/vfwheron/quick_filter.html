@@ -20,13 +20,13 @@
 <form method="get" name="quickfilterform" id="quickfilter-form">
 {% comment %}    {% csrf_token %}
     {{ context }}{% endcomment %}
-    {{ quickfilter }}
+{#    {{ quickfilter }}#}
 {#    {{ quickfilter.media }}#}
 {#    {{ quickFilter }}#}
     <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
 {#        {{ advFilter.form }}#}
 {#        {{ advFilter.form.as_p }}#}
-{% for obj in quickfilter.form.as_p %}
+{% for obj in quickfilter %}
    <div>{{ obj.name }}: {{ obj }} </div></br>
 {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
 {% endfor %}
