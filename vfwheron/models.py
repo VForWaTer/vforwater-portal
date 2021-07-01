@@ -44,7 +44,6 @@ class DatasourceTypes(models.Model):
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'datasource_types'
 
@@ -64,7 +63,6 @@ class Datasources(models.Model):
     spatial_scale = models.ForeignKey('SpatialScales', models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'datasources'
 
@@ -104,7 +102,6 @@ class Details(models.Model):
     filter_type = {'value': 'text'}
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'details'
         unique_together = (('entry', 'stem'),)
@@ -154,7 +151,6 @@ class Entries(models.Model):
     # filter_type = {'embargo': 'bool', 'location': 'draw'}
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'entries'
 
@@ -175,7 +171,6 @@ class EntrygroupTypes(models.Model):
     path = ''
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'entrygroup_types'
 
@@ -192,7 +187,6 @@ class Entrygroups(models.Model):
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'entrygroups'
 
@@ -208,7 +202,6 @@ class Generic_Geometry_Data(models.Model):
     srid = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'geneic_geometry_data'
         unique_together = (('entry', 'index'),)
@@ -224,7 +217,6 @@ class Generic_1D_Data(models.Model):
     precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'generic_1d_data'
         unique_together = (('entry', 'index'),)
@@ -242,7 +234,6 @@ class Generic_2D_Data(models.Model):
     precision2 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'generic_2d_data'
         unique_together = (('entry', 'index'),)
@@ -259,7 +250,6 @@ class Geom_Timeseries(models.Model):
     srid = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'geom_timeseries'
         unique_together = (('entry', 'tstamp'),)
@@ -279,7 +269,6 @@ class Keywords(models.Model):
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'keywords'
 
@@ -328,7 +317,6 @@ class Licenses(models.Model):
     filter_type = {'commercial_use': 'bool'}
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'licenses'
 
@@ -356,7 +344,6 @@ class NmEntrygroups(models.Model):
     group = models.ForeignKey(Entrygroups, models.DO_NOTHING)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_entrygroups'
         unique_together = (('entry', 'group'),)
@@ -367,7 +354,6 @@ class NmKeywordsEntries(models.Model):
     entry = models.ForeignKey(Entries, models.DO_NOTHING)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_keywords_entries'
         unique_together = (('keyword', 'entry'),)
@@ -383,7 +369,6 @@ class NmPersonsEntries(models.Model):
     order = models.IntegerField()
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_persons_entries'
         unique_together = (('person', 'entry'),)
@@ -398,7 +383,6 @@ class PersonRoles(models.Model):
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'person_roles'
 
@@ -425,7 +409,6 @@ class Persons(models.Model):
     full_name = '{} {}'.format(first_name, last_name)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'persons'
 
@@ -483,7 +466,6 @@ class Timeseries(models.Model):
     precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries'
         unique_together = (('entry', 'tstamp'),)
@@ -499,7 +481,6 @@ class Timeseries_1D(models.Model):
     precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries_1d'
         unique_together = (('entry', 'tstamp'),)
@@ -517,7 +498,6 @@ class Timeseries_2D(models.Model):
     precision2 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries_2d'
         unique_together = (('entry', 'tstamp'),)
@@ -532,7 +512,6 @@ class Units(models.Model):
     si = models.TextField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'units'
 
@@ -557,7 +536,6 @@ class Variables(models.Model):
     # print('\033[31m' + 'path: \033[0m', path)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'variables'
 

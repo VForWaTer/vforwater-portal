@@ -15,7 +15,7 @@ from vfwheron.models import Entries, NmKeywordsEntries, NmPersonsEntries, Detail
 # - variable
 # - [license (oder besser nach einem der bools in der lizenz)  kann man auch weglassen da embargo das wichtigste abbildet]
 #
-# advanced Filter (auf eigener seite?)
+# advanced Filter auf eigener seite (nicht aktuell)
 # - nach personen filtern
 # - liste 10 (25) häufigsten keywords, die nicht jeder entry hat und nutze die zum filtern
 # - list 5 (10) häufigsten Detai.stem und biete jeweils den wert zum filtern an
@@ -46,22 +46,6 @@ class AdvancedFilterForm(forms.Form):
     keywords = forms.ModelChoiceField(queryset=NmKeywordsEntries.objects.values_list('keyword__keywords', flat=True)
                                       .order_by('keyword__keywords').distinct('keyword__keywords'))
 
-    # details = forms.ModelChoiceField(queryset=Details.objects.values_list('key', 'value')
-    #                                  .order_by('value').distinct('value'))
-    # print('details: ', Details.objects.values('entry_id').distinct())
-    # print('original: ', Details.objects.values_list('key', 'value')
-    #       .order_by('value').distinct('value'))
-    # print('distinct entry: ', Details.objects.values_list('key', 'value')
-    #       .order_by('entry_id', 'id'))
-    # bla = Details.objects.values('entry_id').distinct()
-    # entries = bla.values('key', 'value')
-    # print('distinct entry: ', entries)
-    # print('len entry: ', len(entries))
-
-    # print('annotate: ', Details.objects.values('entry_id')
-    #       .annotate(entries='value'))
-    # print('annotate: ', Details.objects.values_list('key', 'value')
-    #       .annotate('entry_id'))
     project_type = forms.ModelChoiceField(queryset=EntrygroupTypes.objects.values_list('name', flat=True)
                                           .order_by('name').distinct('name'))
     versions = forms.ModelChoiceField(queryset=Entries.objects.values_list('version', flat=True)
@@ -102,22 +86,24 @@ class QuickFilterForm(forms.Form):
     observation_max = Entries.objects.values_list('datasource__temporal_scale__observation_end') \
         .filter(datasource__temporal_scale__observation_end__isnull=False) \
         .latest('datasource__temporal_scale__observation_end')[0]
-    fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
-    institution_list = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)\
-        .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct()
-    project_list = Entries.objects.filter(nmentrygroups__group__type__name='Project') \
-        .values_list('nmentrygroups__group__title', flat=True)\
-        .exclude(nmentrygroups__group__title__isnull=True).distinct()
+    # fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
 
-    variables_choices = list(map(lambda x: (x, x), list(variables_list)))
-    institution_choices = list(map(lambda x: (x, x), list(institution_list)))
-    project_choices = list(map(lambda x: (x, x), list(project_list)))
+    # create menu objects
+    variables = forms.\
+        ModelMultipleChoiceField(queryset=Entries.objects
+                                 .values_list('variable__name', flat=True)
+                                 .exclude(variable__name__isnull=True).distinct())
+    time = DateRangeSliderField(label="Date", minimum=observation_min.date(),
+                                maximum=observation_max.date(), step=86400000)
+    is_FAIR = forms.BooleanField()
+    institution = forms.\
+        ModelMultipleChoiceField(queryset=Entries.objects
+                                 .values_list('nmpersonsentries__person__organisation_name', flat=True)
+                                 .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct())
+    project = forms.\
+        ModelMultipleChoiceField(queryset=Entries.objects
+                                 .filter(nmentrygroups__group__type__name='Project')
+                                 .values_list('nmentrygroups__group__title', flat=True)
+                                 .exclude(nmentrygroups__group__title__isnull=True).distinct())
+    my_data = forms.BooleanField()
 
-    variables = forms.ChoiceField(widget=forms.SelectMultiple, choices=variables_choices)
-    institution = forms.ChoiceField(widget=forms.SelectMultiple, choices=institution_choices)
-    project = forms.ChoiceField(widget=forms.SelectMultiple, choices=project_choices)
-    # date = RangeSliderField(label="bla", minimum=1, maximum=10)
-    # truedate = DateTimeRangeSliderField(label="trueDate", minimum=observation_min, maximum=observation_max)
-    date = DateRangeSliderField(label="Date", minimum=observation_min, maximum=observation_max, step=86400000)
-    # date = SliderField(label="bla", minimum=1, maximum=10)
-    # 'datasource__temporal_scale__observation_start'
