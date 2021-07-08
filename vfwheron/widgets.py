@@ -6,12 +6,13 @@ import re
 
 
 class Slider(forms.HiddenInput):
-    def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
+    def __init__(self, minimum, maximum, step, elem_name, onchange, *args, **kwargs):
         widget = super(Slider, self).__init__(*args, **kwargs)
         self.minimum = str(minimum)
         self.maximum = str(maximum)
         self.step = str(step)
         self.elem_name = str(elem_name)
+        self.onchange = str(onchange)
 
     def render(self, name, value, attrs=None, renderer=None):
         s = super(Slider, self).render(name, value, attrs)
@@ -24,18 +25,20 @@ class Slider(forms.HiddenInput):
 
 
 class RangeSlider(forms.TextInput):
-    def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
+    def __init__(self, minimum, maximum, step, elem_name, onchange, *args, **kwargs):
         widget = super(RangeSlider, self).__init__(*args, **kwargs)
         self.minimum = str(minimum)
         self.maximum = str(maximum)
         self.step = str(step)
         self.elem_name = str(elem_name)
+        self.onchange = str(onchange)
 
     def render(self, name, value, attrs=None, renderer=None):
         s = super(RangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
         html = """<div id="slider-range-""" + self.elem_id + """"></div>
         <script>
+        """ + self.onchange + """
         $('#id_""" + self.elem_id + """').attr("readonly", true)
         $( "#slider-range-""" + self.elem_id + """" ).slider({
         range: true,
@@ -56,12 +59,13 @@ class RangeSlider(forms.TextInput):
 
 class DateRangeSlider(forms.DateInput):
     # TODO: Make sure min/max of Slider is min/max of data (no missing hours/..)
-    def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
+    def __init__(self, minimum, maximum, step, elem_name, onchange, *args, **kwargs):
         widget = super(DateRangeSlider, self).__init__(*args, **kwargs)
         self.minimum = str(minimum)
         self.maximum = str(maximum)
         self.step = str(step)
         self.elem_name = str(elem_name)
+        self.onchange = str(onchange)
 
     def render(self, name, value, attrs=None, renderer=None):
         s = super(DateRangeSlider, self).render(name, value, attrs)
@@ -78,6 +82,7 @@ class DateRangeSlider(forms.DateInput):
         slide: function( event, ui ) {
           let minDate = new Date(ui.values[0]).toLocaleDateString();
           let maxDate = new Date(ui.values[1]).toLocaleDateString();
+          """ + self.onchange + """
           $( "#id_""" + self.elem_id + """" ).val(" """ + self.elem_name + """ "+ minDate + " - " + maxDate );
         }
         });
@@ -91,18 +96,20 @@ class DateRangeSlider(forms.DateInput):
 
 
 class DateTimeRangeSlider(forms.DateTimeInput):
-    def __init__(self, minimum, maximum, step, elem_name, *args, **kwargs):
+    def __init__(self, minimum, maximum, step, elem_name, onchange, *args, **kwargs):
         widget = super(DateTimeRangeSlider, self).__init__(*args, **kwargs)
         self.minimum = str(minimum)
         self.maximum = str(maximum)
         self.step = str(step)
         self.elem_name = str(elem_name)
+        self.onchange = str(onchange)
 
     def render(self, name, value, attrs=None, renderer=None):
         s = super(DateTimeRangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
         html = """<div id="slider-d-t-range-""" + self.elem_id + """"></div>
         <script>
+        """ + self.onchange + """
         $('#id_""" + self.elem_id + """').attr("readonly", true)
         $( "#slider-d-t-range-""" + self.elem_id + """" ).slider({
         range: true,
