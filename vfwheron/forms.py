@@ -67,7 +67,8 @@ class AdvancedFilterForm(forms.Form):
 
 class QuickFilterForm(forms.Form):
     """
-    Define the quick filter. ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox
+    Define the quick filter. ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox.
+    "onchange" defines the function called on a change/click event and the values send to that function.
     """
 
     # collect data for dateRangeSlider

@@ -1,7 +1,7 @@
 {#{% extends "vfwheron/select_data.html" %}#}
 
 {#{% load static %}#}
-{#{% load i18n %}#}
+{% load i18n %}
 {#{% get_current_language as LANGUAGE_CODE %}#}
 {% comment %}
 
@@ -18,25 +18,38 @@
 {#{% include "vfwheron/filter_entries.html" %}#}
 {#{% block advanced_filter %}#}
 <form method="get" name="quickfilterform" id="quickfilter-form">
-{% comment %}    {% csrf_token %}
+  {% comment %}    {% csrf_token %}
     {{ context }}{% endcomment %}
-{#    {{ quickfilter }}#}
-{#    {{ quickfilter.media }}#}
-{#    {{ quickFilter }}#}
-    <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
-{#        {{ advFilter.form }}#}
-{#        {{ advFilter.form.as_p }}#}
-{% for obj in quickfilter %}
-   <div>{{ obj.name }}: {{ obj }} </div></br>
-{#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
-{% endfor %}
-{#  {{ quickFilter.embargo }}#}
-      <button class="btn btn-primary" type="submit">Search</button>
-
-{#      <a onclick="filter_pagination({{ i }})">bla{{ i }}</a>#}
-
-{#        <input type="submit" />#}
+  {#    {{ quickfilter }}#}
+  {#    {{ quickfilter.media }}#}
+  {#    {{ quickFilter }}#}
+  <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
+    {#     <table>#}
+    {#      {{ quickfilter.as_table }}#}
+    {#    </table>#}
+    {#        {{ advFilter.form }}#}
+    {#        {{ advFilter.form.as_p }}#}
+    {% for obj in quickfilter %}
+      <div>{{ obj.name }}: {{ obj }} </div></br>
+      {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
+    {% endfor %}
+    <button type="button" class="collapsible" id="quickfiltermore" onclick="collapsibleFun('quickfiltermore')">
+      {% trans "more..." %}</button>
+    <div class="content">
+      <p>
+      {% for obj in more %}
+        <div>{{ obj.name }}: {{ obj }} </div></br>
+        {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
+      {% endfor %}
+    </p>
     </div>
+    {#  {{ quickFilter.embargo }}#}
+    <button class="btn btn-primary" type="submit">Search</button>
+
+    {#      <a onclick="filter_pagination({{ i }})">bla{{ i }}</a>#}
+
+    {#        <input type="submit" />#}
+  </div>
 </form>
 {#<p>Selection:</p>#}
 {#{% for obj in selection.qs %}#}

@@ -913,6 +913,22 @@ function advanced_filter_query(selection) {
 }
 
 
+/**
+ * Takes the ID of a button element. Used to toggle show/hide of the element following to this button element.
+ * @param {string} element
+ */
+function collapsibleFun(element) {
+    let x = document.getElementById(element);
+    let content = x.nextElementSibling;
+    x.classList.toggle("openElement");
+    if (content.style.display === "block") {
+        content.style.display = "none";
+    } else {
+        content.style.display = "block";
+    }
+}
+
+
 class SidebarButton {
     /**
      * Create base Object to create buttons from.

@@ -874,9 +874,10 @@ def advanced_filter(request):
 
 def quick_filter(request):
     quickfilter = QuickFilterForm()
+    more = QuickFilterForm.More()
     selection = []
     print('quickfilter: ', quickfilter)
-    context = {'quickfilter': quickfilter, 'selection': selection}
+    context = {'quickfilter': quickfilter, 'more': more, 'selection': selection}
     return render(request, 'vfwheron/quick_filter.html', context)
 
 
