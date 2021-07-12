@@ -81,20 +81,36 @@ class QuickFilterForm(forms.Form):
 
     # create menu objects
     variables = forms.\
-        ModelMultipleChoiceField(queryset=Entries.objects
-                                 .values_list('variable__name', flat=True)
-                                 .exclude(variable__name__isnull=True).distinct())
-    time = DateRangeSliderField(label="Date", minimum=observation_min.date(),
-                                maximum=observation_max.date(), step=86400000)
-    is_FAIR = forms.BooleanField()
-    institution = forms.\
-        ModelMultipleChoiceField(queryset=Entries.objects
-                                 .values_list('nmpersonsentries__person__organisation_name', flat=True)
-                                 .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct())
-    project = forms.\
-        ModelMultipleChoiceField(queryset=Entries.objects
-                                 .filter(nmentrygroups__group__type__name='Project')
-                                 .values_list('nmentrygroups__group__title', flat=True)
-                                 .exclude(nmentrygroups__group__title__isnull=True).distinct())
-    my_data = forms.BooleanField()
+        ModelMultipleChoiceField(widget=forms.SelectMultiple(
+        attrs={'onchange': 'change_quickfilter({"variables": $("#id_variables").val()});'}),
+        queryset=Entries.objects.values_list('variable__name', flat=True)
+            .exclude(variable__name__isnull=True).distinct())
+    # time = DateRangeSliderField(label="Date", minimum=observation_min.date(),
+    date = DateRangeSliderField(label="Date", minimum=observation_min.date(),
+                                maximum=observation_max.date(), step=86400000,
+                                # widget=DateRangeSliderFiled(
+                                # attrs={'onchange': 'console.log("YEAH!");'}))
+                                onchange='change_quickfilter({"date": $("#id_date").val()});')
+    is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
+        attrs={'onchange': 'change_quickfilter({"is_FAIR": $("#id_is_FAIR").is(":checked")});'}))
+    # choices = [(0, 'create new folder'), (1, 'delete'), (2, 'read'), (3, 'unread')]
+    # action = forms.ChoiceField(choices=choices,
+    #                           widget=forms.Select(attrs={'onchange': 'console.log("YEAH!");'}))
+
+    class More(forms.Form):
+        institution = forms.\
+            ModelMultipleChoiceField(
+            widget=forms.
+                SelectMultiple(attrs={'onchange': 'change_quickfilter({"institution": $("#id_institution").val()});'}),
+            queryset=Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)
+                .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct())
+        project = forms.\
+            ModelMultipleChoiceField(widget=forms.SelectMultiple(
+            attrs={'onchange': 'change_quickfilter({"project": $("#id_project").val()});'}),
+            queryset=Entries.objects
+                .filter(nmentrygroups__group__type__name='Project')
+                .values_list('nmentrygroups__group__title', flat=True)
+                .exclude(nmentrygroups__group__title__isnull=True).distinct())
+        my_data = forms.BooleanField(widget=forms.CheckboxInput(
+            attrs={'onchange': 'change_quickfilter({"my_data": $("#id_my_data").is(":checked")});'}))
 

@@ -9,7 +9,8 @@ class SliderField(forms.DateTimeField):
         self.minimum = kwargs.pop('minimum', 0)
         self.maximum = kwargs.pop('maximum', 100)
         self.step = kwargs.pop('step', 1)
-        kwargs['widget'] = Slider(self.minimum, self.maximum, self.step, self.name)
+        self.onchange = kwargs.pop('onchange', '')
+        kwargs['widget'] = Slider(self.minimum, self.maximum, self.step, self.name, self.onchange)
         if 'label' not in kwargs.keys():
             kwargs['label'] = False
         super(SliderField, self).__init__(*args, **kwargs)
@@ -21,7 +22,8 @@ class RangeSliderField(forms.CharField):
         self.minimum = kwargs.pop('minimum', 0)
         self.maximum = kwargs.pop('maximum', 100)
         self.step = kwargs.pop('step', 1)
-        kwargs['widget'] = RangeSlider(self.minimum, self.maximum, self.step, self.name)
+        self.onchange = kwargs.pop('onchange', '')
+        kwargs['widget'] = RangeSlider(self.minimum, self.maximum, self.step, self.name, self.onchange)
         if 'label' not in kwargs.keys():
             kwargs['label'] = False
         super(RangeSliderField, self).__init__(*args, **kwargs)
@@ -33,7 +35,9 @@ class DateRangeSliderField(forms.DateField):
         self.minimum = kwargs.pop('minimum', 0)
         self.maximum = kwargs.pop('maximum', 100)
         self.step = kwargs.pop('step', 1)
-        kwargs['widget'] = DateRangeSlider(self.minimum, self.maximum, self.step, self.name)
+        self.onchange = kwargs.pop('onchange', '')
+        print('self.onchange in field: ', self.onchange)
+        kwargs['widget'] = DateRangeSlider(self.minimum, self.maximum, self.step, self.name, self.onchange)
         if 'label' not in kwargs.keys():
             kwargs['label'] = False
         super(DateRangeSliderField, self).__init__(*args, **kwargs)
@@ -53,7 +57,8 @@ class DateTimeRangeSliderField(forms.DateTimeField):
         self.minimum = kwargs.pop('minimum', 0)
         self.maximum = kwargs.pop('maximum', 100)
         self.step = kwargs.pop('step', 1)
-        kwargs['widget'] = DateTimeRangeSlider(self.minimum, self.maximum, self.step, self.name)
+        self.onchange = kwargs.pop('onchange', '')
+        kwargs['widget'] = DateTimeRangeSlider(self.minimum, self.maximum, self.step, self.name, self.onchange)
         if 'label' not in kwargs.keys():
             kwargs['label'] = False
         super(DateTimeRangeSliderField, self).__init__(*args, **kwargs)

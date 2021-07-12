@@ -888,6 +888,11 @@ function quick_filter(selection) {
 }
 
 
+function change_quickfilter(val) {
+    console.log('val: ', val)
+}
+
+
 function advanced_filter_query(selection) {
     $.ajax({
         url: "/home/advanced_filter",

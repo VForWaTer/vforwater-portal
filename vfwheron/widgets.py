@@ -70,7 +70,8 @@ class DateRangeSlider(forms.DateInput):
     def render(self, name, value, attrs=None, renderer=None):
         s = super(DateRangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
-        html = """<div id="slider-date-range-""" + self.elem_id + """"></div>
+        html = """
+        <div onmouseup='""" + self.onchange + """' id="slider-date-range-""" + self.elem_id + """"></div>
         <script>
         $('#id_""" + self.elem_id + """').attr("readonly", true)
         $( "#slider-date-range-""" + self.elem_id + """" ).slider({
@@ -82,8 +83,12 @@ class DateRangeSlider(forms.DateInput):
         slide: function( event, ui ) {
           let minDate = new Date(ui.values[0]).toLocaleDateString();
           let maxDate = new Date(ui.values[1]).toLocaleDateString();
-          """ + self.onchange + """
           $( "#id_""" + self.elem_id + """" ).val(" """ + self.elem_name + """ "+ minDate + " - " + maxDate );
+          // if (event.keyCode >= 37 && event.keyCode <= 40) {
+          // console.log(event.keyCode)
+          if (event.keyCode == 13) {
+          """ + self.onchange + """
+          }
         }
         });
         // initial values of box:
