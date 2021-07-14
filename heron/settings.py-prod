@@ -177,6 +177,7 @@ DATABASES = {
         'PORT': '5432',
         'USER': 'vfwportal',
         'PASSWORD': '',
+        'TEST': {'MIRROR': 'default',},
     }
 
 }

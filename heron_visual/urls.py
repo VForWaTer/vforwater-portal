@@ -1,5 +1,7 @@
 from django.conf.urls import url, include
 from heron_visual import views
+from django.urls import path, re_path
+
 
 app_name = 'visual'
 
@@ -7,6 +9,6 @@ service_urls = [
 ]
 
 urlpatterns = [
-    url(r'^$', views.home, name='home'),
-    url(r'^(?P<service>\w+)/', include(service_urls)),
+    re_path(r'^$', views.home, name='home'),
+    path('<service>/', include(service_urls)),
 ]

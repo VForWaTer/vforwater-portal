@@ -1,6 +1,7 @@
 import os
 
 
+# TODO: Use pathlib and remove this function
 def get_opposite_os_directory_sep():
     """
 

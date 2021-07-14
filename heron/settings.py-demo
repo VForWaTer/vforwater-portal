@@ -201,6 +201,7 @@ DATABASES = {
             'USER': 'postgres',
             'PORT': '5434',
             'HOST': 'localhost',
+            'TEST': {'MIRROR': 'default',},
              }
 #     'default': {
 # #        'ENGINE': 'django.db.backends.sqlite3',

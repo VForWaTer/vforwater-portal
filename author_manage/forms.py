@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import Resource
 
 class AddNewResourceForm(forms.ModelForm):
@@ -24,3 +25,4 @@ class AddNewResourceForm(forms.ModelForm):
         # self.fields['description'].widget.attrs.update({'class': 'new-res-description',
         #                                                 'placeholder': 'max 250 characters'})
         self.fields['link'].widget.attrs.update({'class': 'new-res-link'})
+
