@@ -888,8 +888,38 @@ function quick_filter(selection) {
 }
 
 
-function change_quickfilter(val) {
-    console.log('val: ', val)
+/**
+ * Build url from values from form object and from existing URL
+ *
+ * @param {string} selection
+ */
+function getFilterURL(selection) {
+
+    let nextURL;
+    let nextTitle = 'Quick Filter';
+    let nextState = { additionalInformation: 'Updated the URL with JS' };
+    let url = window.location
+    let urlParams = new URLSearchParams(url.search);
+
+    let selectedEntries = Object.entries(selection)
+
+    urlParams.set(Object.keys(selection), Object.values(Object.keys(selection)))
+    if (urlParams.has(selectedEntries[0][0])) {
+        urlParams.delete(selectedEntries[0][0])
+    }
+    if (selectedEntries[0][1] !== false && selectedEntries[0][1].length !== 0) {
+        urlParams.set(selectedEntries[0][0], selectedEntries[0][1])
+    }
+
+    nextURL = urlParams.toString() == '' ? url.origin + url.pathname : url.origin + url.pathname + '?' + urlParams.toString();
+
+    window.history.pushState(nextState, nextTitle, nextURL);
+    return nextURL;
+}
+
+
+function change_quickfilter(selection) {
+    let url = getFilterURL(selection)
 }
 
 
