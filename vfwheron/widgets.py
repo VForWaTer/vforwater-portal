@@ -36,7 +36,7 @@ class RangeSlider(forms.TextInput):
     def render(self, name, value, attrs=None, renderer=None):
         s = super(RangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
-        html = """<div id="slider-range-""" + self.elem_id + """"></div>
+        html = """<div onmouseup='""" + self.onchange + """' onmouseleave='""" + self.onchange + """' id="slider-range-""" + self.elem_id + """"></div>
         <script>
         """ + self.onchange + """
         $('#id_""" + self.elem_id + """').attr("readonly", true)
@@ -71,7 +71,7 @@ class DateRangeSlider(forms.DateInput):
         s = super(DateRangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
         html = """
-        <div onmouseup='""" + self.onchange + """' id="slider-date-range-""" + self.elem_id + """"></div>
+        <div onmouseup='""" + self.onchange + """' onmouseleave='""" + self.onchange + """' id="slider-date-range-""" + self.elem_id + """"></div>
         <script>
         $('#id_""" + self.elem_id + """').attr("readonly", true)
         $( "#slider-date-range-""" + self.elem_id + """" ).slider({
@@ -112,7 +112,7 @@ class DateTimeRangeSlider(forms.DateTimeInput):
     def render(self, name, value, attrs=None, renderer=None):
         s = super(DateTimeRangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
-        html = """<div id="slider-d-t-range-""" + self.elem_id + """"></div>
+        html = """<div onmouseup='""" + self.onchange + """' onmouseleave='""" + self.onchange + """' id="slider-d-t-range-""" + self.elem_id + """"></div>
         <script>
         """ + self.onchange + """
         $('#id_""" + self.elem_id + """').attr("readonly", true)
