@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from django.urls import path
+from django.urls import path, re_path
 
 from heron import settings
 from . import views
@@ -12,14 +12,17 @@ urlpatterns = [
     url(r'^watts_login$', views.LoginView.as_view(), name='watts_login'),
     url(r'^help$', views.HelpView.as_view(), name='help'),
     url(r'^logout$', views.LogoutView.as_view(), name='logout'),
-    url(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$',
+    re_path(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$',
         views.GeoserverView.as_view()),
-    url(r'^togglelang$', views.ToggleLanguageView.as_view(), name='togglelang'),
+    path('togglelang', views.ToggleLanguageView.as_view(), name='togglelang'),
     url(r'^failedlogin$', views.FailedLoginView.as_view(), name='failedlogin'),
     url(r'^datasetdownload$', views.DatasetDownloadView.as_view(), name='datasetdownload'),
     url(r'^entries_pagination$', views.entries_pagination, name='entries_pagination'),
     url(r'^advanced_filter$', views.advanced_filter),
-    url(r'^quick_filter$', views.quick_filter),
+    # url(r'^quick_filter$', views.quick_filter),
+    url(r'^quick_filter$', views.QuickFilter.as_view(), name='quick_filter'),
+    # url(r'^quickfilterargs(/<str:drink_name>/,...)$', views.QuickFilterResults.as_view(), name='quickfilterargs'),
+    path('quickfilterargs', views.QuickFilterResults.as_view(), name='quickfilterargs'),
     # url(r'^advanced_filter$', views.filter_entries),
     # addresses for fetch:
     # url(r'^previewplot/id(db[\d]{1,6}|wps[\d]{1,6})$', views.PreviewPlot.as_view()),
