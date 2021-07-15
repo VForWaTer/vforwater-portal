@@ -1,9 +1,11 @@
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.gis.db import models
 from django.db.models.aggregates import Count
 from django.db.models import Q
 from django.utils import timezone
 
+from author_manage.views import MyResourcesView
 from vfwheron.fields import RangeSliderField, SliderField, DateTimeRangeSliderField, DateRangeSliderField
 from vfwheron.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
 
@@ -23,6 +25,8 @@ from vfwheron.models import Entries, NmKeywordsEntries, NmPersonsEntries, Detail
 # - filter nach Projekt
 # - finde alle Versionen (checkmark)
 # - volltextsuche (sobald ich da ein konzept für metacatalog habe.)
+from vfwheron.widgets import DateRangeSlider
+
 
 class AdvancedFilterForm(forms.Form):
 
@@ -65,53 +69,55 @@ class AdvancedFilterForm(forms.Form):
             raise forms.ValidationError('You have to write something!')
 
 
+class QuickFilterQuerySets:
+    """
+    Queries and collection of data for filter menue
+    """
+    variables_qs = Entries.objects.values_list('variable__name', flat=True) \
+        .exclude(variable__name__isnull=True).distinct()
+    observation_min_qs = Entries.objects.values_list('datasource__temporal_scale__observation_start') \
+        .filter(datasource__temporal_scale__observation_start__isnull=False) \
+        .earliest('datasource__temporal_scale__observation_start')[0]
+    observation_max_qs = Entries.objects.values_list('datasource__temporal_scale__observation_end') \
+        .filter(datasource__temporal_scale__observation_end__isnull=False) \
+        .latest('datasource__temporal_scale__observation_end')[0]
+    fair_data_qs = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
+    institution_qs = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)\
+        .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct()
+    project_qs = Entries.objects\
+        .filter(nmentrygroups__group__type__name='Project')\
+        .values_list('nmentrygroups__group__title', flat=True)\
+        .exclude(nmentrygroups__group__title__isnull=True).distinct()
+
+
 class QuickFilterForm(forms.Form):
     """
     Define the quick filter. ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox.
     "onchange" defines the function called on a change/click event and the values send to that function.
     """
 
-    # collect data for dateRangeSlider
-    observation_min = Entries.objects.values_list('datasource__temporal_scale__observation_start') \
-        .filter(datasource__temporal_scale__observation_start__isnull=False) \
-        .earliest('datasource__temporal_scale__observation_start')[0]
-    observation_max = Entries.objects.values_list('datasource__temporal_scale__observation_end') \
-        .filter(datasource__temporal_scale__observation_end__isnull=False) \
-        .latest('datasource__temporal_scale__observation_end')[0]
-    # fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
-
     # create menu objects
-    variables = forms.\
-        ModelMultipleChoiceField(widget=forms.SelectMultiple(
+    variables = forms.ModelMultipleChoiceField(widget=forms.SelectMultiple(
         attrs={'onchange': 'change_quickfilter({"variables": $("#id_variables").val()});'}),
-        queryset=Entries.objects.values_list('variable__name', flat=True)
-            .exclude(variable__name__isnull=True).distinct())
+        queryset=QuickFilterQuerySets.variables_qs)
     # time = DateRangeSliderField(label="Date", minimum=observation_min.date(),
-    date = DateRangeSliderField(label="Date", minimum=observation_min.date(),
-                                maximum=observation_max.date(), step=86400000,
+    date = DateRangeSliderField(label="Date", minimum=QuickFilterQuerySets.observation_min_qs.date(),
+                                maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
                                 # widget=DateRangeSliderFiled(
                                 # attrs={'onchange': 'console.log("YEAH!");'}))
                                 onchange='change_quickfilter({"date": $("#id_date").val()});')
     is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
         attrs={'onchange': 'change_quickfilter({"is_FAIR": $("#id_is_FAIR").is(":checked")});'}))
-    # choices = [(0, 'create new folder'), (1, 'delete'), (2, 'read'), (3, 'unread')]
-    # action = forms.ChoiceField(choices=choices,
-    #                           widget=forms.Select(attrs={'onchange': 'console.log("YEAH!");'}))
 
     class More(forms.Form):
-        institution = forms.\
-            ModelMultipleChoiceField(
+        institution = forms.ModelMultipleChoiceField(
             widget=forms.
                 SelectMultiple(attrs={'onchange': 'change_quickfilter({"institution": $("#id_institution").val()});'}),
-            queryset=Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)
-                .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct())
+            queryset=QuickFilterQuerySets.institution_qs)
         project = forms.\
             ModelMultipleChoiceField(widget=forms.SelectMultiple(
-            attrs={'onchange': 'change_quickfilter({"project": $("#id_project").val()});'}),
-            queryset=Entries.objects
-                .filter(nmentrygroups__group__type__name='Project')
-                .values_list('nmentrygroups__group__title', flat=True)
-                .exclude(nmentrygroups__group__title__isnull=True).distinct())
+                attrs={'onchange': 'change_quickfilter({"project": $("#id_project").val()});'}),
+                queryset=QuickFilterQuerySets.project_qs)
         my_data = forms.BooleanField(widget=forms.CheckboxInput(
             attrs={'onchange': 'change_quickfilter({"my_data": $("#id_my_data").is(":checked")});'}))
 
