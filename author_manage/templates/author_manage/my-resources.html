@@ -1,0 +1,270 @@
+<!-- profile subpage which displays all the resources owned by the current user -->
+
+{% extends "author_manage/profile.html" %}
+
+{% block styles %}
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-info.css' %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-req.css' %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/profile.css' %}"/>
+  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/my-resources.css' %}"/>
+{% endblock %}
+
+{% block requests_or_resources %}
+  <div class="mini-nav">
+    <a href="{% url 'author_manage:profile' %}" class="noncurrent w3-btn w3-blue"><strong>Requests</strong></a></li>
+    {#       class="noncurrent"#}
+    {#    <a href="{% url 'author_manage:profile' %}my-resources" class="current">My Resources</a></li>#}
+  </div>
+
+  <div class="resources-container">
+    <!-- adding new resource -->
+    <a href="{% url 'author_manage:profile' %}my-resources/add-new-resource"
+       class="create-resource w3-btn w3-blue" title="Add new resource">
+      <i class="fa fa-plus"></i></a>
+    <br>
+
+    <!-- if the user does not own any resources -->
+    {% if not resource_list %}
+      <p class="body"> Currently no resources. </p>
+    {% endif %}
+
+    {% for resource in resource_list %}
+      <p>
+      <table>
+
+        <tr>
+          <th colspan="2">
+            <a href="#{{ resource.id }}" class="res-name"> {{ resource.dataEntry.title }} </a>
+          </th>
+          {% comment %}<th>
+                <!-- modal dialog showing meta info about the resource and an access button -->
+                <div id="{{ resource.id }}" class="modalDialog">
+                  <a href="" title="Close" id="x"> x </a>
+                  {#         <h2 id="details">Details</h2>#}
+                  <br>
+                  {#         <p>Name: <strong>{{resource.name}}</strong></p>#}
+              </th>{% endcomment %}
+        <tr>
+          <td>Abstract:</td>
+          <td>{{ resource.dataEntry.abstract }}</td>
+          {#              <td><strong>{{ resource.dataEntry }}</strong></td>#}
+        </tr>
+        <tr>
+          {% if resource.dataEntry.latest_version %}
+            <td>Version (latest):</td>
+            <td>{{ resource.dataEntry.version }} ({{ resource.dataEntry.latest_version }})</td>
+          {% else %}
+            <td>Version:</td>
+            <td>{{ resource.dataEntry.version }}</td>
+          {% endif %}
+        </tr>
+        <tr>
+          <td>Comment:</td>
+          <td>{{ resource.dataEntry.comment }}</td>
+        </tr>
+        <tr>
+          <td>License:</td>
+          <td title="{{ resource.dataEntry.license.link }}">
+            {{ resource.dataEntry.license }}</td>
+        </tr>
+        <tr>
+          <td>Variable (Symbol) [Unit]:</td>
+          <td>{{ resource.dataEntry.variable }}</td>
+        </tr>
+        <tr>
+          <td>Keywords:</td>
+          <td title="{{ resource.dataEntry.variable.keyword.full_path }}">
+            {{ resource.dataEntry.variable.keyword.value }}</td>
+        </tr>
+        <tr>
+          <td>Thesaurus:</td>
+          <td title="{{ resource.dataEntry.variable.keyword.thesaurus.description }},
+{{ resource.dataEntry.variable.keyword.thesaurus.url }}">
+            {{ resource.dataEntry.variable.keyword.thesaurus.title }}</td>
+        </tr>
+        {#          TODO: check if args.all works when data available#}
+        {% if resource.dataEntry.datasource.args.all %}
+          <tr>
+            <td>Datasource args:</td>
+            <td>{{ resource.dataEntry.datasource.args }}</td>
+          </tr>
+        {% endif %}
+        {% if resource.dataEntry.datasource.creation %}
+          <tr>
+            <td>Creation:</td>
+            <td>{{ resource.dataEntry.datasource.creation }}</td>
+          </tr>
+        {% endif %}
+        {% if resource.dataEntry.datasource.encoding %}
+          <tr>
+            <td>Encoding:</td>
+            <td>{{ resource.dataEntry.datasource.encoding }}</td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td>Datatype:</td>
+          <td title="{{ resource.dataEntry.datasource.datatype.description }}">
+            {{ resource.dataEntry.datasource.datatype.name }}</td>
+          {#                {{ resource.dataEntry.datasource.datatype.name }}</td>#}
+        </tr>
+        {% if resource.dataEntry.datasource.temporal_scale %}
+          <tr>
+            <td>Temporal resolution:</td>
+            <td>{{ resource.dataEntry.datasource.temporal_scale.resolution }}</td>
+          </tr>
+          <tr>
+            <td>Observation start:</td>
+            <td>{{ resource.dataEntry.datasource.temporal_scale.observation_start }}</td>
+          </tr>
+          <tr>
+            <td>Observation end:</td>
+            <td>{{ resource.dataEntry.datasource.temporal_scale.observation_end }}</td>
+          </tr>
+          <tr>
+            <td>Support:</td>
+            <td>{{ resource.dataEntry.datasource.temporal_scale.support }}</td>
+          </tr>
+        {% endif %}
+        {% if resource.dataEntry.datasource.spatial_scale %}
+          <tr>
+            <td>Spatial extent:</td>
+            <td>{{ resource.dataEntry.datasource.spatial_scale.extent }}</td>
+          </tr>
+          <tr>
+            <td>Spatial resolution:</td>
+            <td>{{ resource.dataEntry.datasource.spatial_scale.resolution }}</td>
+          </tr>
+          <tr>
+            <td>Spatial support:</td>
+            <td>{{ resource.dataEntry.datasource.spatial_scale.support }}</td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td>Embargo (end date):</td>
+          <td>{{ resource.dataEntry.embargo }} ({{ resource.dataEntry.embargo_end }})</td>
+        </tr>
+        <tr>
+          <td>Puclication date:</td>
+          <td>{{ resource.dataEntry.publication }}</td>
+        </tr>
+        {% if resource.dataEntry.datasource.lastupdate %}
+          <tr>
+            <td>Last update:</td>
+            <td>{{ resource.dataEntry.datasource.lastupdate }}</td>
+          </tr>
+        {% endif %}
+        <tr>
+          <td>UUID:</td>
+          <td>{{ resource.dataEntry.uuid }}</td>
+        </tr>
+        <tr>
+          <td>Citation:</td>
+          <td>{{ resource.dataEntry.citation }}</td>
+        </tr>
+        {#         <p>CreationDate: <strong>{{resource.creationDate}}</strong></p>#}
+        {#         <p>Description: <strong>{{resource.description}}</strong></p>#}
+        {% comment %}<button class="acc-btn-info-dialog">
+         <a href="../../resources/{{resource.id}}" class="acc-info-dialog"download>Access</a>
+         </button> {% endcomment %}
+        {% comment %}         <button class="acc-tmp-btn" onclick="window.location.href='../../resources/{{resource.id}}'">
+            Access
+          </button>{% endcomment %}
+        {#        </div>#}
+        </tr>
+        <!-- access button -->
+        {#   <a href="../../resources/{{resource.id}}" class="acc-btn">Access</a>#}
+
+        <!-- edit permissions button -->
+        <tr>
+          <td>
+            <a href="{% url 'author_manage:profile' %}my-resources/{{ resource.id }}-edit-users-permissions"
+               class="edit-perm w3-btn w3-blue"><strong>Edit Permissions</strong></a>
+          </td>
+
+          <td>
+            {% if resource in deletion_requested %}
+              <a href="#cancel-deletion-request-{{ resource.id }}" class="cancel-del-req"> Cancel Deletion Request </a>
+
+              <!-- modal dialog for canceling deletion request (when such exists) -->
+
+              <div id="cancel-deletion-request-{{ resource.id }}" class="modalDialog">
+                <div>
+                  <a href="" title="Close" id="x"> x </a>
+                  <form action="{% url 'author_manage:cancel-delete-request' resource.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                      <p> Are you sure you want to <strong>cancel</strong> the deletion request for resource:
+                        <strong>{{ resource.name }}</strong>?
+                      </p>
+                      <br>
+                      <input type="submit" id="no" value="yes, cancel request">
+                      <a href="" title="Close" id="close"> Close </a>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <br>
+            {% else %}
+
+              <!-- the admin has the right to delete his resource without request -->
+              {% if is_admin %}
+                {% comment %} TODO: Delete request is not working. Only needed for admin
+   <a href="#delete-resource-{{resource.id}}" class="delete-btn"> Delete </a>
+
+   <!-- modal dialog for deleting a resource (accessible only for the admin) -->
+   <div id="delete-resource-{{resource.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:delete-resource' resource.id %}" method="post">
+            {% csrf_token %}
+            <div class = "row">
+               <p> Are you sure you want to <strong>delete</strong> the resource
+                  <strong>{{resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="descr">Message: </label><br><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+            </div>
+            <input id="no" type="submit" value="Yes, delete resource">
+            <a href="" title="Close" id="close"> Close </a>
+         </form>
+      </div>
+   </div>
+{% endcomment %}
+                <!-- the regular user must send a deletion request -->
+              {% else %}
+                <a href="#send-deletion-request-{{ resource.id }}" class="delete-btn"> Delete </a>
+              {% endif %}
+
+              <!-- modal dialog for sending a deletion request -->
+              {% comment %}<div id="send-deletion-request-{{resource.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:send-delete-request' resource.id %}" method="post">
+            {% csrf_token %}
+            <div class = "row">
+               <p> Are you sure you want to send a request for <strong>deletion</strong> of resource:
+                  <strong>{{resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="descr">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+            </div>
+            <input id="no" type="submit" value="Yes, request deletion">
+            <a href="" title="Close" id="close"> Close </a>
+         </form>
+      </div>
+   </div>{% endcomment %}
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+      </p>
+    {% endfor %}
+  </div>
+{% endblock %}

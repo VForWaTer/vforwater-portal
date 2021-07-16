@@ -21,15 +21,14 @@ VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
 if not os.path.exists(VFW_DIR):
     os.makedirs(VFW_DIR)
 
-# Set where the server is running on
-HOST_NAME = "portal.vforwater.de"
-VFW_SERVER = 'https://' + HOST_NAME
-MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'http://localhost:8080/geoserver'
-
-
 # Variable to set the demo path in static files
 DEMO_VAR = ''
+
+# Set where the server is running on
+HOST_NAME = "portal.vforwater.de"
+VFW_SERVER = 'https://' + HOST_NAME + DEMO_VAR
+MAP_SERVER = "https://portal.vforwater.de"
+LOCAL_GEOSERVER = 'http://localhost:8080/geoserver'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -87,11 +86,16 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
-        },    
+        },
         'watts_rsp': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
+        # },
+        # 'wps_gui': {
+        #     'handlers': ['file'],
+        #     'level': 'DEBUG',
+        #     'propagate': True,
         }
     }
 
@@ -109,16 +113,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    # 'heron_wps',
     'wps_gui',
     'heron_monitor',
     'heron_visual',
-    'heron_upload',
+    'upload',
     # Three apps for wps_workflow
     # 'wps_workflow.apps.wps_workflowConfig',
     # 'django_crontab',
     # 'django.contrib.admindocs',
-    'AuthorizationManagement.apps.AuthorizationmanagementConfig',
+    'author_manage.apps.AuthorizationmanagementConfig',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +132,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'heron.middleware.LanguageCookieMiddleware.LanguageCookieMiddleware',
 ]
 
 ROOT_URLCONF = 'heron.urls'
@@ -157,15 +161,16 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 # http://diegobz.net/2011/02/10/django-database-router-using-settings/
 
-DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# TODO: Delete Router. Not necessary anymore now when only one database is used
+# DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
+# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(VFW_DIR, 'django.db'),
-    },
-    'vforwater': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': os.path.join(VFW_DIR, 'django.db'),
+#    },
+#    'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'vforwater_update',
         'HOST': 'localhost',
@@ -195,6 +200,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# When defining a model, if no field in a model is defined with primary_key=True an implicit primary key is added.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -276,3 +283,5 @@ wps_log.addHandler(filehandler)
 #         'localhost:4200'
 #     )
 # END OF settings from workflow app
+
+max_size_preview_plot = 50000

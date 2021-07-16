@@ -1,5 +1,5 @@
-//Toggle between showing and hiding the sidenav, and add overlay effect
-function respo_open() {
+/** Toggle between showing and hiding the sidenav, and add overlay effect **/
+function w3_open() {
     // Get the Sidenav
     var mySidenav = document.getElementById("mySidenav");
 
@@ -15,8 +15,8 @@ function respo_open() {
     }
 }
 
-//Close the sidenav with the close button
-function respo_close() {
+/** Close the sidenav with the close button **/
+function w3_close() {
     var mySidenav = document.getElementById("mySidenav");
 
     var overlayBg = document.getElementById("myOverlay");
@@ -25,7 +25,7 @@ function respo_close() {
     overlayBg.style.display = "none";
 }
 
-//Toggle between showing and hiding the sidemenu, and add overlay effect
+/** Toggle between showing and hiding the sidemenu, and add overlay effect **/
 function Sidemenu_open() {
     // Get the Sidemenu
     var mySidemenu = document.getElementById("mySidemenu");
@@ -42,7 +42,7 @@ function Sidemenu_open() {
     }
 }
 
-//Close the sidemenu with the close button
+/** Close the sidemenu with the close button **/
 function Sidemenu_close() {
     var mySidemenu = document.getElementById("mySidemenu");
 
@@ -52,58 +52,224 @@ function Sidemenu_close() {
     overlaymenu.style.display = "none";
 }
 
-// Get the User Selection in Workspace
-// Button information is stored in an HTML object with Id 'workdata'
-// it is stored as a string, so the following function transforms this string back to a dictionary
+/**
+ * Get the User Selection in Workspace
+ * Button information is stored in an HTML object with Id 'workdata'
+ * it is stored as a string, so the following function transforms this string back to a dictionary
+ */
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 function show_data() {
-    let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
-    if (workspaceData) {// && "value" in workspaceData) {
+    /** Initiate creation of data Button in data and result store.
+     * When called from outside of 'Home' check if data is
+     * already pickled. If not pickle it. **/
+    // (TODO: Should be monitored if a lot of data gets pickled but never used!)
+    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    if (workspaceData) {  // && "value" in workspaceData) {
         build_datastore_button(workspaceData);
+        if (window.location.pathname !== '/home/') {
+            // check if datasets are pickled and update buttons
+            preload_datastore_button(workspaceData);
+        }
     }
-    if (document.getElementById("workspace_results")) {
-        let resultData = JSON.parse(sessionStorage.getItem("resultBtnList"));
+    if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
+        let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+        let groups = {};
         if (resultData) {
-            var html = "";
-            resultData.forEach(function (btnName) {
-                html += build_resultstore_button(btnName, sessionStorage.getItem(btnName));
+            let html = "";
+            let ghtml = "";
+            let mhtml = "";
+            $.each(resultData, function (btnName, value) {
+                if (!value.group) {
+                    html += build_resultstore_button(btnName, value);
+                } else {
+                    if (!(value.group in groups)) {
+                        groups[value.group] = [];
+                    }
+                    groups[value.group].push([btnName, value])
+                }
             });
+            $.each(groups, function (groupname, members) {
+                mhtml = "";
+                ghtml = "";
+                members.forEach(function (singlemember) {
+                    return mhtml += build_resultstore_button(singlemember[0], singlemember[1]);
+                })
+                html += build_resultgroup_button(groupname, members)
+                // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
+                // html += ghtml
+            })
+            // ghtml += build_resultgroup_button(value.group)
             document.getElementById("workspace_results").innerHTML += html;
+
+            add_groupaccordion_toggle()
         }
     }
 }
 
-// build buttons in workspace and store selection in clients sessionStorage
+/**
+ * add accordion function to group button
+ */
+function add_groupaccordion_toggle() {
+    let acc = document.getElementsByClassName("groupaccordion");
+    for (let i of acc) {
+        i.addEventListener("click", function () {
+            this.classList.toggle("active");
+            let panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+                panel.style.display = "none";
+            } else {
+                panel.style.display = "block";
+            }
+        });
+    }
+}
+
+/**
+ * If in workspace is a selection from the Filtermenu, preload it and store the wps ID
+ *
+ * @param workspaceData
+ */
+function preload_datastore_button(workspaceData) {
+    /** USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY **/
+    for (let dataset in workspaceData) {
+        let preload = {};
+        if (workspaceData[dataset]['source'] === 'db') {
+            // TODO: Think about using uuid instead of entry_id
+            preload = {
+                key_list: ['entry_id', 'uuid', 'start', 'end'],
+                value_list: [workspaceData[dataset]['orgID'].toString(), '',
+                    // value_list: [workspaceData[dataset]['dbID'].toString(), '',
+                    workspaceData[dataset]['start'], workspaceData[dataset]['end']],
+                dataset: dataset
+            };
+            // run_wps(preload)
+            $.ajax({
+                url: DEMO_VAR + "/workspace/dbload",
+                // dataType: 'json',
+                data: {
+                    dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
+                }, /** data sent with post request **/
+            })
+                .done(function (wpsDBInfo) {
+                    if (wpsDBInfo.Error) {
+                        console.warn(wpsDBInfo.Error)
+                    } else {
+                        update_datastore_button(wpsDBInfo);
+                    }
+                },)
+                .fail(function (wpsDBInfo) {
+                    console.error('Error in preload of data. ', wpsDBInfo)
+                });
+            // TODO: change ajax to fetch, though data sent using fetch are not located inside request.POST but rather
+            //  inside request.body. There are then cases where the received data is in byte so you will need to decode
+            //  it first with json.loads(request.body.decode("utf-8")).
+            //  Instead of post maybe make use of django URLs
+            /*fetch(DEMO_VAR + "/workspace/dbload",
+                {method: 'POST',
+                    headers: { 'Accept': 'application/json, text/plain, *!/!*',
+        'Content-Type': 'application/json',
+        "X-CSRFToken": csrf_token },
+                    body: JSON.stringify({'dbload': preload}),
+                    // 'csrfmiddlewaretoken': csrf_token,
+                    credentials: 'same-origin'
+                })
+                .then(function (wpsDBInfo) {
+                    if (wpsDBInfo.Error) {
+                        console.warn(wpsDBInfo.Error)
+                    }
+                    else {
+                        console.log('back: ', wpsDBInfo)
+                        update_datastore_button(wpsDBInfo);
+                    }
+                })
+                .catch(function (wpsDBInfo) {
+                    console.error('Error in preload of data. ', wpsDBInfo)
+                })*/
+        }
+    }
+    // USE FOLLOWING CODE INSTEAD WHEN YOU PREFER TO UPDATE ALL DATASETS IN ONE REQUEST
+    // let preload = {};
+    // for (let dataset in workspaceData) {
+    //     if (!workspaceData[dataset]['pickle']) {
+    //         preload[dataset] = {type: workspaceData[dataset]['type'], start: workspaceData[dataset]['start'],
+    //         end: workspaceData[dataset]['end']};
+    //     }
+    // }
+    // if (Object.keys(preload).length == 0){}
+    // else {
+    //     // send request to preload datasets
+    //     // TODO: might take a while. Check how to cancel if webpage changes
+    //     // TODO: discuss if "load it all at once" is the best solution. (alternatives: each dataset or in chunks)
+    //     $.ajax({
+    //         url: DEMO_VAR + "/wps_gui/processview",
+    //         // dataType: 'json',
+    //         data: {
+    //             dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
+    //         }, // data sent with post request
+    //         success: function (wpsDBInfo) {
+    //             update_datastore_button(wpsDBInfo, 'pickle');
+    //         },
+    //         error: function (wpsDBInfo) {
+    //             console.log('Error in preload of data. ', wpsDBInfo)
+    //         }
+    //     });
+    // }
+}
+
+function update_datastore_button(wpsDBInfo) {
+    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    // let workspaceData = sessionStorageData
+    let datasetKey = wpsDBInfo['orgid']
+    let storageEntry = workspaceData[datasetKey]
+    let btnName = createBtnName(storageEntry['name'], storageEntry['abbr'],
+        storageEntry['unit'], wpsDBInfo['id'].substring(3,))
+    let title = `${storageEntry['name']} (${storageEntry['abbr']} in ${storageEntry['unit']})`;
+    let button = document.getElementById('sidebtn' + wpsDBInfo['orgid'])
+    let parent = document.getElementById('sidebtn' + wpsDBInfo['orgid']).parentElement
+
+    if (wpsDBInfo['id'].substring(0, 3) == 'wps') {
+        storageEntry.source = wpsDBInfo['id'].substring(0, 3)
+        storageEntry.dbID = wpsDBInfo['id'].substring(3,)
+        storageEntry.inputs = wpsDBInfo['inputs']
+    }
+    button.remove();
+    // parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'].substring(3,),
+    parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'],
+        storageEntry, btnName, title)
+    workspaceData[datasetKey] = storageEntry
+    /*$.each(wpsDBInfo, function (keyID, value) {
+        if (workspaceData[keyID] && workspaceData[keyID]['wpsID']) {
+            workspaceData[keyID]['source'] = value['source'];
+            workspaceData[keyID]['dbID'] = value['dbID'];
+            // workspaceData[keyID]['type'] = value['datatype'];
+            // workspaceData[keyID]['type'] = workspaceData[keyID]['type'] + ", "+ newClass;
+            document.getElementById("id" + keyID).getElementsByClassName("data")[0].classList.add(value['datatype']);
+        }
+    });*/
+    // document.getElementById("sidebtn" + wpsDBInfo['orgid']).getElementsByClassName("data")[0].classList.add(value['datatype']);
+    sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData));
+    sessionStorageData = workspaceData
+}
+
+/**
+ * build buttons in workspace and store selection in clients sessionStorage
+ * @param {object} json
+ */
 function build_datastore_button(json) {
     // if (json['workspaceData'] !== undefined) {
     //     $.each(json['workspaceData'], function (key, value) {
     let html = "";
-    $.each(json, function (key, value) {
-        let btnName;
-        let vnLen = value['name'].length;
-        if (vnLen + value['abbr'].length + value['unit'].length <= 14) {
-            btnName = `${value['name']} (${value['abbr']} in ${value['unit']}) - ${key}`;
-        } else if (vnLen + value['abbr'].length <= 16) {
-            btnName = `${value['name']} (${value['abbr']}) - ${key}`;
-        } else if (vnLen <= 18) {
-            btnName = `${value['name']} - ${key}`;
-        } else {
-            btnName = `${value['abbr']} in ${value['unit']} - ${key}`;
-        }
-        let title = `${value['name']} (${value['abbr']} in ${value['unit']})`;
+    $.each(json, function (k, v) {
+        let btnName = createBtnName(v['name'], v['abbr'], v['unit'], v['dbID'])
+        let title = `${v['name']} (${v['abbr']} in ${v['unit']})`;
         // check if buttons already exist before creating a new one:
-        if (document.getElementById("id" + key) === null) {
-            html += '<li draggable="true" class="respo-padding task" ' +
-                'data-id="' + key + '" btnName="' + btnName + '" onmouseover="" style="cursor:pointer;" id="id' + key + '">' +
-                '<span class="respo-medium" title="' + title + '"><div class="task__content">' + btnName + '</div>' +
-                '<div class="task__actions"></div></span><a href="javascript:void(0)"' +
-                'onclick="remove_single_data(' + key + ')" class="respo-hover-white respo-right">' +
-                '<i class="fa fa-remove fa-fw"></i></a><br></li>';
+        if (document.getElementById("sidebtn" + k) === null) {
+            html += sidebar_btn_html(k, v, btnName, title)
             /*
-            document.getElementById("workspace").innerHTML += '<li draggable="true" class="respo-padding" ' +
+            document.getElementById("workspace").innerHTML += '<li draggable="true" class="w3-padding" ' +
                 'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
-                '<span class="respo-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
-                'onclick="remove_single_data('+key+')"; class="respo-hover-white respo-right">' +
+                '<span class="w3-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
+                'onclick="remove_single_data('+key+')"; class="w3-hover-white w3-right">' +
                 '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
                 '<div id="w3popup" class="w3popup"><span class="popuptext" id="pop' + key + '"></span></div>' +
         '<li class="task" data-id="1"><div class="task__content">Build An App</div><div class="task__actions">' +
@@ -114,57 +280,95 @@ function build_datastore_button(json) {
     // }
 }
 
-// Remove data / elements from workspace
+// TODO: create html of build_resultstore_button and build_datastore_button in one function
+// /**
+//  * Build html for store buttons.
+//  * data-id is used to find results on server
+//  * id is used for the remove button
+//  * @param  {string} name name for the button
+//  * @param  {obj} json Object holding all necessary info about result
+//  * @param  {string} title for the button title
+//  * @param  {string} key is used for the button id
+//  * @param  {boolean} result to set the 'is-result' flag
+//  * @return {string} HTML Code for the button
+//  **/
+// function store_btn_html(name, json, title, key, result) {
+//     console.log("Page path is: ", window.location.pathname)
+//     let drag_html = ''
+//     let is_result = ''
+//     if (window.location.pathname == '/workspace/') {
+//         drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
+//     }
+//     if (result) {
+//         is_result = ' is-result'
+//     }
+//     return
+//     '<li ' + drag_html +
+//         'class="w3-padding task' + is_result +'" ' +
+//         'data-id="wps' + json.wpsID + '" ' +
+//         'btnName="' + name + '" ' +
+//         'onmouseover="" ' +
+//         'style="cursor:pointer;" ' +
+//         'id="' + name + '">' +
+//         '<span class="w3-medium" ' +
+//             'title="' + title + '">' +
+//             '<div class="task__content">' + name + '</div>' +
+//             '<div class="task__actions"></div>' +
+//         '</span>' +
+//         '<span class="' + json['type'] + '"></span>' +
+//         '<a href="javascript:void(0)" ' +
+//             'onclick="remove_single_result(\'' + name + '\')" ' +
+//             'class="w3-hover-white">' +
+//             '<i class="fa fa-remove fa-fw"></i>' +
+//         '</a><br></li>';
+//
+//     '<li draggable="true" ' +
+//         'class="w3-padding task" ' +
+//         'data-id="' + key + '" ' +
+//         'btnName="' + btnName + '" ' +
+//         'onmouseover="" ' +
+//         'style="cursor:pointer;" ' +
+//         'id="id' + key + '">' +
+//         '<span class="w3-medium" ' +
+//             'title="' + title + '">' +
+//             '<div class="task__content">' + btnName + '</div>' +
+//             '<div class="task__actions"></div>' +
+//         '</span>' +
+//         '<span class="data ' + value['type'] + '"></span>' +
+//         '<a href="javascript:void(0)" ' +
+//             'onclick="remove_single_data(' + key + ')" ' +
+//             'class="w3-hover-white w3-right">' +
+//             '<i class="fa fa-remove fa-fw"></i>' +
+//         '</a><br></li>';
+// }
+
+
+/** Remove data / elements from workspace **/
 function remove_single_data(removeData) {
-    // remove data from portal:
-    document.getElementById("id" + removeData).remove();
-    // remove data from session:
-    let workspaceData = JSON.parse(sessionStorage.getItem("btn"));
+    /** remove data from portal: **/
+    document.getElementById("sidebtn" + removeData).remove();
+    // removeData.remove();  // could be used when the element where send directly
+
+    /** remove data from session: **/
+    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+
     delete workspaceData[removeData];
-    sessionStorage.setItem("btn", JSON.stringify(workspaceData))
+    sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
+    sessionStorageData = workspaceData
 }
 
 function remove_all_datasets() {
-    // remove button from portal
-    $.each(JSON.parse(sessionStorage.getItem("btn")), function (key, value) {
+    /** remove button from portal **/
+    let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
+    $.each(storedData, function (key, value) {
         if ("name" in value) {
-            remove_single_data(parseInt(key));
+            remove_single_data(key);
             // document.getElementById("id" + key).remove()
         }
     });
-    // remove button from session
-    sessionStorage.removeItem("btn");
-}
-
-function remove_single_result(removeData) {
-    // remove data from portal:
-    document.getElementById(removeData).remove();
-    sessionStorage.removeItem(removeData);
-    // remove data from session:
-    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-    let resultBtnListLen = workspaceData.length;
-    if (resultBtnListLen <= 1) {
-        remove_all_results()
-    } else {
-        for (let i = 0; i < resultBtnListLen; i++) {
-            if (workspaceData[i] === removeData) {
-                workspaceData.splice(i, 1);
-                i--;
-            }
-        }
-    }
-    // TODO: only the name is deleted from the list. Also delete the respective content!
-    // delete workspaceData[removeData];
-    sessionStorage.setItem("resultBtnList", JSON.stringify(workspaceData))
-}
-
-function remove_all_results() {
-    let workspaceData = JSON.parse(sessionStorage.getItem("resultBtnList"));
-    for (let i in workspaceData) {
-        sessionStorage.removeItem('"' + workspaceData[i] + '"');
-        document.getElementById(workspaceData[i]).remove();
-    }
-    sessionStorage.removeItem("resultBtnList");
+    /** remove button from session **/
+    sessionStorage.removeItem("dataBtn");
+    sessionStorageData = {};
 }
 
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
@@ -229,7 +433,7 @@ function getPosition(e) {
 //
 
 /**
- * Variables.
+ * Global Variables for popup.
  */
 var contextMenuClassName = "context-menu";
 var contextMenuItemClassName = "context-menu__item";
@@ -249,7 +453,7 @@ var resultMenu = document.querySelector("#context-result");
 let popup = document.querySelector("#loader-popup");
 let content = document.querySelector('#pop-content-side');
 let popText = document.querySelector('#popupText');
-let popcloser = document.querySelector('#pop-closer');
+let popClose = document.querySelector('#pop-closer');
 let popActive = "mod-popup--active";
 let popInActive = "mod-popup--inactive";
 
@@ -398,10 +602,11 @@ function positionPopup(window) {
 /**
  * Dummy action function that logs an action when a menu item link is clicked
  *
- * @param {HTMLElement} link The link that was clicked
+ * @param {dict} properties
  */
-
-function show_data_info(properties) {
+function showDataInfo(properties) {
+    // TODO: This function changes the style of the table used instead of the map. (To the Style I is supposed to be.
+    //  Why only after this function and not without. What is this function doing?)
     let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
     // loop over "properties" dict with metadata, build columns
     for (let j in properties) {
@@ -410,68 +615,120 @@ function show_data_info(properties) {
     }
     content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
         '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-    popcloser.classList.remove('respo-hide');
+    popClose.classList.remove('w3-hide');
     positionPopup(popup);
 }
 
+/**
+ * Fill a process modal with values from a result.
+ *
+ * @param {list} btnName list of dataInputs of a wps process
+ * @param {dict} btnValues names of input fields as keys with values
+ */
+function setModalValues(btnName, btnValues) {
+    // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
+    //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
+    // }
+    for (let i of btnName) {
+        if (document.getElementById(i.identifier).type == "checkbox") {
+            document.getElementById(i.identifier).checked = btnValues[i.identifier]
+        }
+        // else {
+        document.getElementById(i.identifier).value = btnValues[i.identifier]
+        // }
+    }
+    /** first loop over each dropdown in input, then over values in dropdown **/
+    // for (let i = 0; i < dropDInputs.length; i++) {
+    //
+    //         // dDInput = dropDInputs[i].selectedOptions;
+    //     //     if (dDInput.length > 1) {
+    //     //         for (let j = 0; j < dDInput.length; j++) {
+    //     //             valueList.push(dDInput[j].value)
+    //     //         }
+    //     //         inValue.push(valueList);
+    //     //         inKey.push(dropDInputs[i].name);
+    //     //     } else {
+    //     //         inKey.push(dropDInputs[i].name);
+    //     //         inValue.push(dDInput[0].value);
+    //     // }
+    // }
 
+}
+
+/**
+ * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
+ *
+ * @param {html} link - HTML Element of the clicked link
+ */
 function menuItemListener(link) {
+    let wpsToOpen = "";
+    let service = {};
     let id = taskItemInContext.getAttribute("data-id");
+    let btnName = taskItemInContext.getAttribute('btnname');
+
+    let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
+    /*content.innerHTML = '<div id="loader"  class="fading-dot-loader">\n' +
+                    '  <div class="dot-loader1 dot-loader"></div>\n' +
+                    '  <div class="dot-loader2 dot-loader"></div>\n' +
+                    '  <div class="dot-loader3 dot-loader"></div>\n' +
+                    '  <div class="dot-loader4 dot-loader"></div>\n' +
+                    '  <div class="dot-loader5 dot-loader"></div>\n' +
+                    '  <div class="dot-loader6 dot-loader"></div> \n' +
+                    '</div>';*/
     popup.classList.add(popActive);
     popText.classList.remove(popInActive);
     positionPopup(popup);
-
     switch (link.getAttribute("data-action")) {
 
         case "View":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
+                url: DEMO_VAR + "/home/show_info",
                 dataType: 'json',
                 data: {
-                    show_info: JSON.stringify([id]),
+                    show_info: id,
                     'csrfmiddlewaretoken': csrf_token,
                 }, // data sent with the post request
-                success: function (properties) {
-                    show_data_info(properties);
-
-                }
-            });
+            })
+                .done(function (properties) {
+                    showDataInfo(properties);
+                })
             break;
-        case "Plot":
-            $.ajax({
-                url: DEMO_VAR + "/vfwheron/menu",
-                datatype: 'image/png;base64',
-                data: {
-                    preview: id,
-                    'csrfmiddlewaretoken': csrf_token,
-                }, // data sent with post
-                success: function (result) {
-                    content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
-                    popcloser.classList.remove('respo-hide');
-                    positionPopup(popup);
-                }
-            });
-            break;
+        // case "Plot":
+        //     $.ajax({
+        //         url: DEMO_VAR + "/home/menu",
+        //         datatype: 'json',
+        //         data: {
+        //             preview: id,
+        //             'csrfmiddlewaretoken': csrf_token,
+        //         }, // data sent with post
+        //         success: function (result) {
+        //             console.log('plot result: ', result)
+        //             content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
+        //             popClose.classList.remove('w3-hide');
+        //             positionPopup(popup);
+        //         }
+        //     });
+        //     break;
         case "Downloadcsv":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     csv: id,
                 }, // data sent with post request
-                success: function (json) {
+            })
+                .done(function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "Downloadshp":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 method: 'GET',
                 xhrFields: {
@@ -480,42 +737,55 @@ function menuItemListener(link) {
                 data: {
                     shp: id,
                 }, // data sent with post request
-                success: function (data) {
+            })
+                .done(function (data) {
                     let blob = new File([data], {type: "application/octet-stream"});
                     // let blob = new Blob([data], {type: "application/octet-binary"});
                     saveAs(blob, String(taskItemInContext.getAttribute("btnName")) + ".zip");
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
             break;
         case "Downloadxml":
             $.ajax({
-                url: DEMO_VAR + "/vfwheron/datasetdownload",
+                url: DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     xml: id,
                 }, // data sent with post request
-                success: function (json) {
+            })
+                .done(function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
-                },
-                complete: function () {
+                })
+                .always(function () {
                     popup.classList.remove(popActive);
-                }
-            });
+                });
+            break;
+        case "OpenTool":
+            // TODO: Store different tools when input changes!
+            /** Re-open the tool */
+            wpsToOpen = result[btnName].wps;
+            service = document.getElementById(wpsToOpen).getAttribute("data-service");
+            wpsprocess(service, wpsToOpen);
+            /** Fill the tool with selection made to receive this result button */
+            setModalValues(
+                JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
+                JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
+            )
+            popup.classList.remove(popActive);
             break;
         case "DownloadDMD":
+            console.error('Not implemented yet')
             break;
         case "Remove":
             remove_single_data(id);
             popup.classList.remove(popActive);
             break;
-        case "ViewR":
-            let result = JSON.parse(sessionStorage.getItem(id));
+        case "ViewResult":
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
             for (let j in result) {
                 if (result[j]) {
@@ -532,8 +802,56 @@ function menuItemListener(link) {
             }
             content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-            popcloser.classList.remove('respo-hide');
+            popClose.classList.remove('w3-hide');
             positionPopup(popup);
+            break;
+        case "Plot":
+            // TODO: Add Names on lines in Plot needs modification in wps or another database entry
+            // let allBtns = JSON.parse(sessionStorage['resultBtn'])
+            // let inputs = allBtns[btnName].inputs
+            // let btnNames = []
+            // $.each(inputs, function (key, value) {
+            //     if (typeof value === "object"){
+            //         for (let singleValue of value){
+            //             $.each(allBtns, function(key, value) {
+            //                 if (String(value.wpsID) == singleValue.substr(5)) {
+            //                     btnNames.push(key)
+            //                 }
+            //             })
+            //         }
+            //     }
+            // })
+
+            // get bokeh plot from django
+            $.ajax({
+                url: DEMO_VAR + "/home/previewplot",
+                datatype: 'json',
+                data: {
+                    preview: id,
+                    'csrfmiddlewaretoken': csrf_token,
+                }, // data sent with post
+            })
+                .done(function (requestResult) {
+                    // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
+                    // content.innerHTML = result.div;
+                    // let bokehResultScript;
+                    if ('html' in requestResult) {
+                        document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
+                    } else {  // plot from bokeh
+                        sessionStorage['Bokeh'] = JSON.stringify(requestResult);
+                        place_bokeh("mod_result", requestResult)
+                    }
+                    // popClose.classList.remove('w3-hide');
+                    // positionPopup(popup);
+                    let rModal = document.getElementById("resultModal");
+                    rModal.style.display = "block";
+                })
+                .fail(function (e) {
+                    console.error('Fehler: ', e)
+                })
+                .always(function () {
+                    popup.classList.remove(popActive);
+                })
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});
@@ -553,9 +871,9 @@ function menuItemListener(link) {
 }
 
 /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
-popcloser.onclick = function () {
+popClose.onclick = function () {
     // metaData_Overlay.setPosition(undefined);
-    // popcloser.blur();
+    // popClose.blur();
     popup.classList.remove(popActive);
     return false;
 };
@@ -572,11 +890,7 @@ $(function () {
 // TODO: remove popup when clicking outside of popup
 /*
 window.onclick = function(event) {
-    console.log(' - + click + - : ', event)
-    console.log(' - + click + - target: ', event.target)
-    console.log(' - + click + - parentNode: ', event.parentNode)
     if (event.target == popup) {
-        console.log('click inside')
         // popup.style.display = "none";
         popup.classList.remove(popActive);
     }

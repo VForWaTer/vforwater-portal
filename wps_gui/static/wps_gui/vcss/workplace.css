@@ -1,49 +1,69 @@
+#workflowbuilder {
+    position: absolute;
+    right: 300px;
+    left: 300px;
+    top: 80px;
+    /*padding: 10px;*/
+    bottom: 1px;
+}
+
 #dropdiv {
-  position: absolute;
-  right: 300px;
-  left:  300px;
-  top: 80px;
-  bottom: 1px;
-  padding: 10px;
-  border: 1px solid #00021d;
-  background: white;
+    position: inherit;
+    right: 0px;
+    left: 0px;
+    top: 34px;
+    bottom: 1px;
+    padding: 10px;
+    border: 1px solid #00021d;
+    background: white;
 }
 
 .tool-btn {
     cursor: move;
     position: absolute;
-  z-index: 9;
-  background-color: #f1f1f1;
-  border: 1px solid #d3d3d3;
-  text-align: center;
+    z-index: 9;
+    background-color: #f1f1f1;
+    border: 1px solid #d3d3d3;
+    text-align: center;
+}
+
+.box-data {
+    fill: ghostwhite;
+    stroke-width: 0.5;
+    stroke: lightslategray;
+    /*width: 200px;*/
 }
 
 /*Modal:*/
 .close {
-  color: white;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
 }
+
 .close:hover,
 .close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 p.modal-datainfo {
-  max-height: 120px;
-  overflow: auto;
+    max-height: 120px;
+    overflow: auto;
 }
 
 .modal-cancel, .modal-ok, .modal-run {
-  color: white;
-  float: right;
-  font-size: 20px;
-    padding: 4px 12px;
-  /*font-weight: bold;*/
+    color: white;
+    float: right;
+    font-size: 20px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 12px;
+    /*font-weight: bold;*/
 }
+
 .modal-cancel:hover, .modal-ok:hover, .modal-run:hover,
 .modal-cancel:focus, .modal-ok:focus, .modal-run:focus {
     color: #000;
@@ -52,16 +72,94 @@ p.modal-datainfo {
 }
 
 .modal-header {
-  padding: 2px 12px;
-  background-color: dodgerblue;
-  color: white;
+    padding: 2px 12px;
+    background-color: dodgerblue;
+    color: white;
 }
 
-.modal-body {padding: 2px 16px;}
+.modal-body {
+    padding: 2px 16px;
+}
 
 .modal-footer {
     height: 38px;
-  padding: 2px 12px;
-  background-color: dodgerblue;;
-  color: white;
+    padding: 2px 12px;
+    background-color: dodgerblue;
+    color: white;
+}
+
+/** Table to show dropdowns in modal in one line **/
+.divTable {
+    display: table;
+    margin: 1px 2px;
+}
+.divTbButtons {
+    alignment: center;
+    width: 30px;
+    margin: 2px;
+}
+.tblRow {
+    display: flex;
+    justify-content: center;
+}
+.tblCell {
+    display: flex;
+    align-items: center;
+}
+.divTblRight {
+    width: 220px;
+}
+
+.red_border_figure {
+    fill: chocolate;
+    stroke: cornflowerblue;
+    height: 150px;
+}
+
+.draw2d_shape_basic_Label {
+    padding: 10px;
+    background-color: blue;
+    /*fill: lightyellow;*/
+    color: darkblue;
+}
+
+/*
+rect {
+  resize: both;
+  overflow: auto;
+    fill: pink;
+}
+*/
+
+/*
+ * Style for draw2d type indicators (conflict to sidebar indicators)
+ */
+/*rect.draw2d_ResizeHandle*/
+/*{*/
+/*    fill: rgba(255, 0, 0, 0);*/
+/*    stroke: rgba(255, 0, 0, 0);*/
+/*}*/
+/*
+.timeseries {
+    fill: red;
+    stroke: indianred;
+    height: 150px;
+}
+.string {
+    fill: yellow;
+    stroke: lightgoldenrodyellow;
+    height: 150px;
+}
+.boolean {
+    fill: green;
+    stroke: limegreen;
+    height: 150px;
+}
+*/
+
+/*
+ * Draw a box
+ */
+.workflowBox {
+
 }

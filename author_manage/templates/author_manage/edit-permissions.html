@@ -1,0 +1,113 @@
+<!-- template for edit permissions page, accessible for every resource of an owner -->
+
+{% extends "author_manage/profile.html" %}
+
+{% block styles %}
+{% load static %}
+{#<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/resources-overview.css' %}" />#}
+<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/edit-permissions.css' %}" />
+{% endblock %}
+
+{% block body %}
+
+<!-- the user can search for other users, whom he wants to grant permissions-->
+<div class="search">
+   <p>Resource: <strong>{{resource.name}}</strong> </p> <br>
+   <p>Search for user:</p>
+   <form action="{% url 'author_manage:profile' %'}my-resources/{{resource.id}}-edit-users-permissions/search" method="get">
+      <input type="text" name='q' value="{{query}}" class="search-box" >
+      <input type="submit" value="Search" class="search-btn">
+   </form>
+   <br>
+
+   {% if query %}
+   <p>You searched for: <strong>{{ query }}</strong></p>
+
+   <!-- found users -->
+   {% if user_list %}
+   <p>Found {{paginator.count }} user{{ paginator.count|pluralize }}.</p>
+
+   <!-- no results from the searching -->
+   {% else %}
+   <p class="user-no-results">No resources matched your search criteria.</p>
+   {% endif %}
+   {% endif %}
+
+   <div class="container-edit-permissions">
+      {% if user_list %}
+      <form method="post">
+         {% csrf_token %}
+         {% for user in user_list %}
+         <input  type="hidden" name="usersIdsOnPage[]" value={{user.id}}>
+
+		 <!-- displaying each found user -->
+         <p class="username">{{user.username}}</p>
+
+		 <!-- in case the user is already owner of the resource his checkboxes are checked -->
+         {% if user in owners %}
+         <div class="checkbox-rd1">
+            <input  type="checkbox" name="reader[]" value={{user.id}}  checked="checked" id="{{user.id}}">
+            <label for="{{user.id}}"></label>
+         </div>
+         <div class="checkbox-ow1">
+            <input type="checkbox" name="owner[]" value={{user.id}}  checked="checked" id="{{user.username}}">
+            <label  for="{{user.username}}"></label>
+         </div>
+
+		 <!-- in case the user has 'reader' permissions for the resource -->
+         {% elif user in readers %}
+         <div class="checkbox-rd1">
+            <input  type="checkbox" name="reader[]" value={{user.id}} checked="checked" id="{{user.email}}">
+            <label for="{{user.email}}"></label>
+         </div>
+         <div class="checkbox-ow1">
+            <input type="checkbox" name="owner[]" value={{user.id}} id="{{user.date_joined}}">
+            <label  for="{{user.date_joined}}"></label>
+         </div>
+
+		 <!-- otherwise -->
+         {% else %}
+         <div class="checkbox-rd1">
+            <input  type="checkbox" name="reader[]" value={{user.id}} id="{{user.last_name}}">
+            <label for="{{user.last_name}}"></label>
+         </div>
+         <div class="checkbox-ow1">
+            <input type="checkbox" name="owner[]" value={{user.id}} id="{{user.first_name}}">
+            <label  for="{{user.first_name}}"></label>
+         </div>
+         {% endif %}
+         <br><br><br><br>
+         {% endfor %}
+   </div>
+   <p>
+   <button type="submit" class="confirm">Confirm</button>
+   </p>
+   <br>
+   </form>
+   {% endif %}
+</div>
+
+<!-- pagination functionality for the searching -->
+{# The pagination code below is taken from https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html #}
+{% if is_paginated %}
+<ul class="pagination">
+   {% if page_obj.has_previous %}
+   <li><a href="?{{query_pagination_string}}page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+   {% else %}
+   <li class="disabled"><span>&laquo;</span></li>
+   {% endif %}
+   {% for i in paginator.page_range %}
+   {% if page_obj.number == i %}
+   <li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+   {% else %}
+   <li><a href="?{{query_pagination_string}}page={{ i }}">{{ i }}</a></li>
+   {% endif %}
+   {% endfor %}
+   {% if page_obj.has_next %}
+   <li><a href="?{{query_pagination_string}}page={{ page_obj.next_page_number }}">&raquo;</a></li>
+   {% else %}
+   <li class="disabled"><span>&raquo;</span></li>
+   {% endif %}
+</ul>
+{% endif %}
+{% endblock %}

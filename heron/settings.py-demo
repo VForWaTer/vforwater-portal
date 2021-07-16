@@ -9,31 +9,33 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
-
-import os
+from pathlib import Path
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 FORCE_SCRIPT_NAME = '/demo'
 ##PATH_INFO = '/'
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Build paths inside the project like this: Path(BASE_DIR) / ...
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# TODO: path should not be set to wps results, but wps results should be an URL
+DATA_DIR = '/home/vfwtools/pywps'
 
 # For now, place all data files in VFW_DIR and not into source directory.
-HOME_DIR = os.path.expanduser('~')
-VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
-if not os.path.exists(VFW_DIR):
-    os.makedirs(VFW_DIR)
-
-# Set where the server is running on
-HOST_NAME = "portal.vforwater.de"
-VFW_SERVER = 'https://' + HOST_NAME + '/demo'
-MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
+HOME_DIR = Path.home()
+VFW_DIR = Path(HOME_DIR) / '.vforwater'
+if not Path(VFW_DIR).exists():
+    Path(VFW_DIR).mkdir()
 
 # Variable to set the demo path in static files
 DEMO_VAR = '/demo'
+
+# Set where the server is running on
+HOST_NAME = "portal.vforwater.de"
+VFW_SERVER = 'https://' + HOST_NAME + DEMO_VAR
+MAP_SERVER = "https://portal.vforwater.de"
+LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -42,22 +44,25 @@ DEMO_VAR = '/demo'
 # Generate secret on initial run. ("random" should be replaced with "secrets" for python >=3.6)
 import random, string
 
-secretFile = os.path.join(VFW_DIR, 'secret.txt')
-if not os.path.isfile(secretFile):
+secretFile = Path(VFW_DIR) / 'secret.txt'
+# secretFile = os.path.join(VFW_DIR, 'secret.txt')
+# if not os.path.isfile(secretFile):
+if not Path(secretFile).is_file():
     SECRET_KEY = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
     with open(secretFile, 'w+') as f:
         f.write(SECRET_KEY)
 else:
     with open(secretFile) as f:
         SECRET_KEY = f.read().strip()
-secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
-if os.path.isfile(secretGeoServer):
+# secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
+secretGeoServer = Path(VFW_DIR) / 'secret_geoserver.txt'
+if Path(secretGeoServer).is_file():
     with open(secretGeoServer) as gs:
         SECRET_GEOSERVER = gs.read().strip()
 else:
         # TODO: Print to log file
     print('secretGeoServer.txt is missing')
-    
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -76,7 +81,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(VFW_DIR, 'debug.log'),
+            'filename': Path(VFW_DIR) / 'debug.log',
             'formatter': 'verbose'
         },
     },
@@ -90,23 +95,28 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
-        },    
+        },
         'watts_rsp': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'AuthorizationManagement': {
+        'author_manage': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'django': {
-            'handlers':['file'],
+            'handlers': ['file'],
             'propagate': True,
-            'level':'WARN',
+            'level': 'WARN',
         },
         'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'wps_gui': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -128,26 +138,28 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    # 'heron_wps',
     'wps_gui',
     'heron_monitor',
     'heron_visual',
-    'heron_upload',
+    'upload',
     # Three apps for wps_workflow
     # 'wps_workflow.apps.wps_workflowConfig',
     # 'django_crontab',
     # 'django.contrib.admindocs',
-    'AuthorizationManagement.apps.AuthorizationmanagementConfig',
+    'author_manage.apps.authorManageConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'heron.middleware.LanguageCookieMiddleware.LanguageCookieMiddleware',
 ]
 
 ROOT_URLCONF = 'heron.urls'
@@ -175,24 +187,34 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 # http://diegobz.net/2011/02/10/django-database-router-using-settings/
-
+# TODO: Delete Router. Not necessary anymore now when only one database is used
 DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
+# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(VFW_DIR, 'django.db'),
-    },
-    'vforwater': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater_update',
-        'HOST': 'localhost',
-         #'HOST': 'portal.vforwater.de',
-        'PORT': '5433',
-        'USER': 'vfwportal',
-        'PASSWORD': '',
-    }
+             'ENGINE': 'django.contrib.gis.db.backends.postgis',
+             # 'NAME': 'vforwater_update',
+             'NAME': 'metacatalog-dev',
+             # 'NAME': 'vforwater_play7',
+            'USER': 'postgres',
+            'PORT': '5434',
+            'HOST': 'localhost',
+             }
+#     'default': {
+# #        'ENGINE': 'django.db.backends.sqlite3',
+# #        'NAME': os.path.join(VFW_DIR, 'django.db'),
+# #    },
+# #    'vforwater': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'vforwater_update',
+#         'HOST': 'localhost',
+#          #'HOST': 'portal.vforwater.de',
+#         'PORT': '5434',
+#         'USER': 'vfwportal',
+#         'PASSWORD': '',
+#     }
 
 }
 
@@ -215,6 +237,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# When defining a model, if no field in a model is defined with primary_key=True an implicit primary key is added.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -235,29 +259,30 @@ USE_TZ = True
 
 ##STATIC_URL = '/static/'
 ##STATIC_URL = 'https://portal.vforwater.de/demo/static/'
-STATIC_URL = '/demo/static/'
-STATIC_ROOT = '/var/www/html/demo/static/'
+STATIC_URL = DEMO_VAR + '/static/'
+STATIC_ROOT = '/var/www/html' + DEMO_VAR + '/static/'
 
 ##MEDIA_URL = '/media/'
-MEDIA_URL = '/demo/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = DEMO_VAR + '/media/'
+MEDIA_ROOT = Path(BASE_DIR) / 'media'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default URLs for user authentication
 LOGIN_URL = 'vfwheron:login'
 LOGIN_REDIRECT_URL = 'vfwheron:home'
 LOGOUT_REDIRECT_URL = 'vfwheron:home'
-LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron/failedlogin'
+LOGIN_SUCCESS_VIEW = VFW_SERVER + '/home/rsp/login/success'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/home/failedlogin'
 #LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron'
 #LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
 
 
 ##EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smarthost.kit.edu'                                                                                                                                                                                                            
-EMAIL_HOST_USER = 'info@vforwater.de'                                                                                                                                                                                              
-#EMAIL_HOST_PASSWORD = 'xxx'                                                                                                                                                                                                 
-EMAIL_PORT = 25 #587                                                                                                                                                                                                                        
+EMAIL_HOST = 'smarthost.kit.edu'
+EMAIL_HOST_USER = 'info@vforwater.de'
+#EMAIL_HOST_PASSWORD = 'xxx'
+EMAIL_PORT = 25 #587
 EMAIL_USE_TLS = False
 
 
@@ -277,18 +302,18 @@ if ON_VFW_SERVER:
     )
 
     # WaTTS settings
-    WATTS_RSP_ENDPOINT = 'https://watts.data.kit.edu/rsp/'
+    WATTS_RSP_ENDPOINT = 'https://watts-prod.data.kit.edu/rsp/'
     WATTS_SERVICE_NAME = 'rsp2'
     WATTS_ISSUER_ID = 'vforwater_demo'
     ##WATTS_PROVIDER_ID = 'iam'
     WATTS_PROVIDER_ID = 'eudat'
 
-# Settings from workflowPSE, here for wps_workflow app
+# Settings for logging in wps_gui app
 import logging.handlers
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d;%(funcName)s()] - %(message)s')  #
 filehandler = logging.handlers.RotatingFileHandler(
-    BASE_DIR + '/wps.log', mode='a', maxBytes=128 * 1024, backupCount=1, encoding=None, delay=0)
+    Path(BASE_DIR) / 'wps.log', mode='a', maxBytes=128 * 1024, backupCount=1, encoding=None, delay=0)
 filehandler.setFormatter(formatter)
 wps_log = logging.getLogger('wps')
 
@@ -309,3 +334,5 @@ wps_log.addHandler(filehandler)
 #         'localhost:4200'
 #     )
 # END OF settings from workflow app
+
+max_size_preview_plot = 50000

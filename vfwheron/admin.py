@@ -2,27 +2,29 @@ from django.contrib.gis import admin
 from django.forms import ModelForm
 
 from vfwheron import models
-
+# The Admin.py is used to create fields in the django admin web page
 
 # Register your models here.
 
-class TblMetaAdminForm(ModelForm):
+class EntriesAdminForm(ModelForm):
     class Meta:
-        model = models.TblMeta
-        fields = ['ts_start', 'ts_stop', 'external_id', 'creator', 'publisher', 'geometry', 'license', 'quality', 'site', 'soil', 'variable', 'sensor', 'source', 'comment', 'created_on', 'updated_on']
+        model = models.Entries
+        fields = ['title', 'abstract', 'external_id', 'location', 'geom', 'version', 'latest_version', 'comment',
+                  'license', 'variable', 'datasource', 'embargo', 'embargo_end', 'publication', 'lastupdate',
+                  'is_partial', 'uuid', 'citation']
 
 
-class TblMetaAdmin(admin.OSMGeoAdmin):
-    form = TblMetaAdminForm
-    list_display = ['id', 'variable_fname', 'creator_last_name']
+class EntriesAdmin(admin.OSMGeoAdmin):
+    form = EntriesAdminForm
+    list_display = ['id', 'title', 'abstract']
 
 
     def variable_fname(self, obj):
         return obj.variable.variable_name
 
 
-    variable_fname.admin_order_field = 'variable'
-    variable_fname.short_description = 'Variable Name'
+    variable_fname.admin_order_field = 'title'
+    variable_fname.short_description = 'Titel'
 
 
     def creator_last_name(self, obj):
@@ -32,48 +34,78 @@ class TblMetaAdmin(admin.OSMGeoAdmin):
     creator_last_name.short_description = 'creator Name'
 
 
-admin.site.register(models.TblMeta, TblMetaAdmin)
+admin.site.register(models.Entries, EntriesAdmin)
 
 
-class TblVariableAdminForm(ModelForm):
+class VariablesAdminForm(ModelForm):
     class Meta:
-        model = models.TblVariable
-        fields = ['variable_name', 'variable_abbrev', 'unit', 'variable_symbol']
+        model = models.Variables
+        fields = ['name', 'keyword', 'unit', 'symbol']
 
 
-class TblVariableAdmin(admin.ModelAdmin):
-    form = TblVariableAdminForm
-    list_display = ['variable_name', 'variable_abbrev']
+class VariablesAdmin(admin.ModelAdmin):
+    form = VariablesAdminForm
+    list_display = ['name', 'unit']
 
 
-admin.site.register(models.TblVariable, TblVariableAdmin)
+admin.site.register(models.Variables, VariablesAdmin)
 
 
-class LtLicenseAdminForm(ModelForm):
+class LicensesAdminForm(ModelForm):
     class Meta:
-        model = models.LtLicense
-        fields = ['license_abbrev', 'license_name', 'legal_text', 'text_url', 'access', 'share', 'edit', 'commercial']
+        model = models.Licenses
+        fields = ['short_title', 'title', 'summary', 'full_text', 'link', 'by_attribution', 'share_alike',
+                  'commercial_use']
 
 
-class LtLicenseAdmin(admin.ModelAdmin):
-    form = LtLicenseAdminForm
-    list_display = ['license_abbrev', 'license_name']
+class LicensesAdmin(admin.ModelAdmin):
+    form = LicensesAdminForm
+    list_display = ['short_title', 'title']
 
 
-admin.site.register(models.LtLicense, LtLicenseAdmin)
+admin.site.register(models.Licenses, LicensesAdmin)
 
 
-class LtUserAdminForm(ModelForm):
+class PersonsAdminForm(ModelForm):
     class Meta:
-        model = models.LtUser
-        fields = ['first_name', 'last_name', 'institution_name', 'email', 'department']
+        model = models.Persons
+        fields = ['first_name', 'last_name', 'affiliation', 'organisation_name', 'attribution']
 
 
-class LtUserAdmin(admin.ModelAdmin):
-    form = LtUserAdminForm
+class PersonsAdmin(admin.ModelAdmin):
+    form = PersonsAdminForm
     search_fields = ['first_name', 'last_name']
-    list_display = ['first_name', 'last_name', 'institution_name']
+    list_display = ['first_name', 'last_name', 'affiliation']
     list_filter = ['last_name']
 
 
-admin.site.register(models.LtUser, LtUserAdmin)
+admin.site.register(models.Persons, PersonsAdmin)
+#
+#
+# class LocalUserForm(ModelForm):
+#     class Meta:
+#         model = models.User
+#         fields = ['username', 'first_name', 'last_name', 'last_login', 'is_staff', 'is_superuser', 'email']
+#
+# class LocalUser(admin.ModelAdmin):
+#     form = LocalUserForm
+#     # search_fields = ['user', 'data']
+#     list_display = ['ext_user_id']
+#     # list_display = ['user', 'data']
+#     # list_filter = ['user']
+#
+# admin.site.register(models.User, LocalUser)
+
+# from vfwheron.models import Basiseinzugsgebiet
+# class BasiseinzugsgebietForm(ModelForm):
+#     class Meta:
+#         model = models.Basiseinzugsgebiet
+#         fields = ['langname', 'area', 'wasserkoer']
+#
+# class Basiseinzugsgebiet(admin.ModelAdmin):
+#     form = BasiseinzugsgebietForm
+#     # search_fields = ['langname', 'length']
+#     list_display = ['langname', 'area']
+#
+# admin.site.register(models.Basiseinzugsgebiet, Basiseinzugsgebiet)
+

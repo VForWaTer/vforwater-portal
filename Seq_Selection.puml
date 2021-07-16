@@ -1,0 +1,87 @@
+@startuml
+title Make a selection online in the menu
+
+hide footbox
+
+
+== click on option in menu ==
+' actor user #lightblue
+[-> menu_objects.js ++: itemButtonFunction
+menu_objects.js -> menu_objects.js: checkSiblings
+' checkSiblings checks what is clicked
+menu_objects.js -> menu_objects.js ++: showSelectionOnMap
+group ajax
+menu_objects.js -> views.py ++: **ajax**\nfilter_selection_map
+views.py -> views.py ++: MenuView.build_selection
+views.py -> filter.py ++: build_id_list
+loop parents in selection
+    loop childs in selection
+        opt draw: pass
+        else bool
+            filter.py -> filter.py: build_path_value_pair
+        else else
+            filter.py -> filter.py: build_path_value_pair
+        end
+    end
+end
+views.py <- filter.py : ""filtered ids""
+deactivate filter.py
+views.py -> query_functions.py ++: get_bbox_from_data
+views.py <- query_functions.py --
+opt if layer exists delete layer
+    views.py -> geoserver_layer.py ++: get_layer
+    return
+
+    views.py -> geoserver_layer.py ++: delete_layer
+    return
+end
+views.py -> geoserver_layer.py ++: create_layer
+return
+menu_objects.js <- views.py --: ""layername, ext, ids""
+deactivate views.py
+deactivate menu_objects.js
+end
+
+menu_objects.js -> menu_objects.js ++: getCountFromServer
+group ajax
+menu_objects.js -> views.py ++: **ajax**\nfilter_selection
+views.py -> filter.py ++: FilterMethods.selection_counts
+filter.py -> filter.py ++: build_select_filters
+loop parents in filter_selection
+note right: filter_selection build the query filter
+    loop childs in filter_selection
+        filter.py -> filter.py: build_path_value_pair
+    end
+end
+
+loop parents in long_filter
+    loop childs in long_filter
+note left: long_filter used to show \navailable datasets\n for the next selection
+        filter.py -> filter.py: build_path_value_pair
+    end
+end
+deactivate filter.py
+
+loop parent in menu
+    loop child in menu
+        filter.py -> filter.py: count items
+    end
+end
+views.py <- filter.py --: ""result (counts)""
+menu_objects.js <- views.py --: ""JSON (counts)""
+menu_objects.js -> menu_objects.js ++: _updateCounts(json)
+loop
+    loop
+        menu_objects.js -> menu_objects.js: update html \ndis-/enable buttons
+    end
+end
+deactivate menu_objects.js
+deactivate menu_objects.js
+deactivate menu_objects.js
+end
+[<- menu_objects.js
+
+
+
+@enduml
+-----------------------------------------------------------------------

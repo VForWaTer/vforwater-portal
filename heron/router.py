@@ -29,8 +29,10 @@ class DatabaseRouter(object):
         @return:
         @rtype:
         """
-        if model._meta.app_label in settings.DATABASE_APPS_MAPPING:
-            return settings.DATABASE_APPS_MAPPING[model._meta.app_label]
+        # if model._meta.app_label in settings.DATABASE_APPS_MAPPING:
+        #     return settings.DATABASE_APPS_MAPPING[model._meta.app_label]
+        if model._meta.app_label == 'vfw2':
+            return 'vfw2'
         return None
 
     def db_for_write(self, model, **hints):
@@ -43,8 +45,10 @@ class DatabaseRouter(object):
         @return:
         @rtype:
         """
-        if model._meta.app_label in settings.DATABASE_APPS_MAPPING:
-            return settings.DATABASE_APPS_MAPPING[model._meta.app_label]
+        # if model._meta.app_label in settings.DATABASE_APPS_MAPPING:
+        #     return settings.DATABASE_APPS_MAPPING[model._meta.app_label]
+        if model._meta.app_label == 'vfw2':
+            return 'vfw2'
         return None
 
     def allow_relation(self, obj1, obj2, **hints):
@@ -59,10 +63,13 @@ class DatabaseRouter(object):
         @return:
         @rtype:
         """
-        db_obj1 = settings.DATABASE_APPS_MAPPING.get(obj1._meta.app_label)
-        db_obj2 = settings.DATABASE_APPS_MAPPING.get(obj2._meta.app_label)
-        if db_obj1 and db_obj2:
-            return db_obj1 == db_obj2
+        # db_obj1 = settings.DATABASE_APPS_MAPPING.get(obj1._meta.app_label)
+        # db_obj2 = settings.DATABASE_APPS_MAPPING.get(obj2._meta.app_label)
+        # if db_obj1 and db_obj2:
+        #     return db_obj1 == db_obj2
+        if obj1._meta.app_label == 'vfw2' or \
+            obj2._meta.app_label == 'vfw2':
+            return True
         return None
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
@@ -79,8 +86,10 @@ class DatabaseRouter(object):
         @return:
         @rtype:
         """
-        if db in settings.DATABASE_APPS_MAPPING.values():
-            return settings.DATABASE_APPS_MAPPING.get(app_label) == db
-        elif app_label in settings.DATABASE_APPS_MAPPING:
-            return False
+        # if db in settings.DATABASE_APPS_MAPPING.values():
+        #     return settings.DATABASE_APPS_MAPPING.get(app_label) == db
+        # elif app_label in settings.DATABASE_APPS_MAPPING:
+        #     return False
+        if app_label == 'vfw2':
+            return db == 'vfw2'
         return None

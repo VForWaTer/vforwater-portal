@@ -1,0 +1,66 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-05-17 15:29+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: static/vfwheron/js/map.js:46
+msgid "Map data from"
+msgstr "Kartendaten von"
+
+#: static/vfwheron/js/map.js:47
+msgid "Map style from"
+msgstr "Kartenstil von"
+
+#: static/vfwheron/js/map.js:180
+msgid "Zoom to your available data"
+msgstr "Auf Ihre Verfügbaren Daten zoomen."
+
+#: static/vfwheron/js/map.js:209
+msgid "Zoom in"
+msgstr "Heranzoomen"
+
+#: static/vfwheron/js/map.js:210
+msgid "Zoom out"
+msgstr "Wegzoomen"
+
+#: static/vfwheron/js/map.js:496
+msgid "More"
+msgstr "Mehr"
+
+#: static/vfwheron/js/map.js:496
+msgid "Show more information about the dataset."
+msgstr "Zeige mehr Informationen über den Datensatz an."
+
+#: static/vfwheron/js/map.js:502
+msgid "Pass to datastore"
+msgstr "In die Datenablage"
+
+#: static/vfwheron/js/map.js:503
+msgid "Put dataset to session datastore."
+msgstr "Schiebt den Datensatz in die Datenablage zur Linken."
+
+#: static/vfwheron/js/map.js:507
+msgid "Send request"
+msgstr "Anfrage senden"
+
+#: static/vfwheron/js/map.js:508
+msgid "Send an access request to the data owner."
+msgstr "Den Besitzer der Daten nach Zugriff fragen."
+
+#~ msgid "Preview"
+#~ msgstr "Vorschau"

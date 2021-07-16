@@ -1,0 +1,253 @@
+<!-- template for the profile page (handling of requests) -->
+
+{% extends "author_manage/base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block profile %}
+class="active";
+{% endblock %}
+
+{% block styles %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/base.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-req.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/profile.css' %}" />
+{#<link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/resources-overview.css' %}" />#}
+{% endblock %}
+
+{% block body %}
+<!-- javascript code making the username edit form appear on click-->
+<script>
+   function showEditForm()
+   {
+   	document.getElementById('editName').style.display="block";
+   	document.getElementById('name').style.display="none";
+   }
+</script>
+
+<!-- edit first and/or last name form -->
+<div class="body">
+   <button onclick="showEditForm()" class="name w3-btn w3-blue" id="name"><strong>{{ user.first_name | capfirst}} {{user.last_name| capfirst}}</strong></button>
+   <form action="{% url 'author_manage:profile' %}edit-name/" id="editName" style="display:none;" method="post">
+      {% csrf_token %}
+      <input class="firstname" type=text placeholder="{{user.first_name}}" name="firstName">
+      <input class="lastname" type=text placeholder="{{user.last_name}}" name="lastName">
+      <input class="ok" type="submit" value="OK">
+   </form>
+   <p>({{user.username}})</p>
+</div>
+
+{% block requests_or_resources %}
+<div class="mini-nav">
+{#   <a href="{% url 'author_manage:profile' %}" class="current w3-btn w3-blue"><strong>{% trans "  Requests" %}</strong></a></li>#}
+   <a href="{% url 'author_manage:profile' %}my-resources" class="noncurrent w3-btn w3-blue"><strong>{% trans "  My Resources" %}</strong></a></li>
+</div>
+
+<!-- in case the user does not have any current requests -->
+{% if not requests_list %}
+<p class="body">{% trans "  Currently no requests." %}</p>
+{% endif %}
+
+<!-- requests for admin user -->
+{% if is_admin %}
+<div class="admin-container">
+   <p class="access-request"> Access Requests </p>
+   <p class="deletion-request"> Deletion Requests </p>
+   {% for request in requests_list %}
+
+   <!-- access requests -->
+   {% if request.type == 'access' %}
+   <div class="info-access-req-adm">
+      <p> From: <strong>{{request.sender.username}} </strong></p>
+      <p> For: <strong>{{request.resource.name}} </strong></p>
+      <p> Description: <strong>{{request.description}} </strong></p>
+      <p> Created on: <strong>{{request.creationDate}}</strong></p>
+   </div>
+   <!-- approving access requests (admin) -->
+   <a href="#approve-request-{{request.id}}" class="admin-acc-accept-btn"> Accept </a>
+   <div id="approve-request-{{request.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:approve-access-request' request.id %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+               <p> Are you sure you want to <strong>approve</strong> the access request for resource:
+                  <strong>{{request.resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="desc">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+               <input id="yes" type="submit" value="Yes, allow permission">
+               <a href="" title="close" id="close"> Close </a>
+            </div>
+         </form>
+      </div>
+   </div>
+
+   <!-- denying access requests (admin)-->
+   <a href="#deny-request-{{request.id}}" class="admin-acc-deny-btn"> Deny </a>
+   <div id="deny-request-{{request.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:deny-access-request' request.id %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+               <p> Are you sure you want to <strong>deny</strong> the access request for resource:
+                  <strong>{{request.resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="descr">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+            </div>
+            <input id="no" type="submit" value="Yes, deny permission">
+            <a href="" title="close" id="close"> Close </a>
+         </form>
+      </div>
+   </div>
+
+   <!-- deletion requests -->
+   {% elif request.type == 'deletion' %}
+   <div class="info-deletion-req-adm">
+      <p> From: <strong>{{request.sender.username}} </strong></p>
+      <p> For: <strong>{{request.resource.name}} </strong></p>
+      <p> Description: <strong>{{request.description}} </strong></p>
+      <p> Created on: <strong>{{request.creationDate}} </strong></p>
+   </div>
+
+   <!-- approving deletion requests -->
+   <a href="#approve-request-{{request.id}}" class="admin-del-accept-btn"> Accept </a>
+   <div id="approve-request-{{request.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:approve-deletion-request' request.id %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+               <p> Are you sure you want to <strong>delete</strong> resource:
+                  <strong>{{request.resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="descr">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+            </div>
+            <input id="yes" type="submit" value="Yes, delete resource">
+            <a href="" title="close" id="close"> Close </a>
+         </form>
+      </div>
+   </div>
+
+   <!-- denying deletion requests -->
+   <a href="#deny-request-{{request.id}}" class="admin-del-deny-btn"> Deny </a>
+   <div id="deny-request-{{request.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:deny-deletion-request' request.id %}" method="post">
+            {% csrf_token %}
+            <div class ="row">
+               <p> Are you sure you want to <strong>deny</strong> the deletion request for resource:
+                  <strong>{{request.resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="descr">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+            </div>
+            <input id="no" type="submit" value="Yes, deny deletion">
+            <a href="" title="close" id="close"> Close </a>
+         </form>
+      </div>
+   </div>
+   {% endif %}
+   {% endfor %}
+</div>
+
+<!-- requests for regular user -->
+{% else %}
+<div class="container-regular-user">
+   {% for access_request in requests_list %}
+   <div class="info-access-req">
+      <p> From: <strong>{{access_request.sender.username}} </strong></p>
+      <p> For: <strong>{{access_request.resource.name}} </strong></p>
+      <p> Description: <strong>{{access_request.description}} </strong></p>
+      <p> Created on: <strong>{{access_request.creationDate}} </strong></p>
+   </div>
+
+   <!--approving access requests -->
+   <a href="#approve-request-{{access_request.id}}" class="accept-btn"> Accept </a>
+   <div id="approve-request-{{access_request.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:approve-access-request' access_request.id %}" method="post">
+            {% csrf_token %}
+            <div class="row" id="are-you-sure">
+               <p> Are you sure you want to <strong>approve</strong> the access request for resource:
+                  <strong>{{access_request.resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="descr">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+            </div>
+            <input id="yes" type="submit" value="Yes, allow permission">
+            <a href="" title="close" id="close"> Close </a>
+         </form>
+      </div>
+   </div>
+
+   <!--denying access requests -->
+   <a href="#deny-request-{{access_request.id}}" class="deny-btn"> Deny </a>
+   <div id="deny-request-{{access_request.id}}" class="modalDialog">
+      <div>
+         <a href="" title="Close" id="x"> x </a>
+         <form action="{% url 'author_manage:deny-access-request' access_request.id %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+               <p> Are you sure you want to <strong>deny</strong> the access request for resource:
+                  <strong>{{access_request.resource.name}}</strong>?
+               </p>
+               <br>
+            </div>
+            <div class="row">
+               <label for="descr">Message: </label><br>
+               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
+            </div>
+            <input id="no" type="submit" value="Yes, deny permission">
+            <a href="" title="close" id="close"> Close </a>
+         </form>
+      </div>
+   </div>
+   {% endfor %}
+</div>
+{% endif %}
+
+<!--  pagination functionality for the requests-->
+{% if is_paginated %}
+<ul class="pagination">
+   {% if page_obj.has_previous %}
+   <li><a href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+   {% else %}
+   <li class="disabled"><span>&laquo;</span></li>
+   {% endif %}
+   {% for i in paginator.page_range %}
+   {% if page_obj.number == i %}
+   <li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+   {% else %}
+   <li><a href="?page={{ i }}">{{ i }}</a></li>
+   {% endif %}
+   {% endfor %}
+   {% if page_obj.has_next %}
+   <li><a href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+   {% else %}
+   <li class="disabled"><span>&raquo;</span></li>
+   {% endif %}
+</ul>
+{% endif %}
+{% endblock %}
+{% endblock %}
