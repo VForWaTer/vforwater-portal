@@ -178,11 +178,14 @@ DATABASES = {
 #    },
 #    'vforwater': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'vforwater_update',
+        'NAME': 'metacatalog-dev',
+        # 'NAME': 'vforwater_update',
         'HOST': 'localhost',
-        'PORT': '5432',
-        'USER': 'vfwportal',
-        'PASSWORD': '',
+        'PORT': '5434',
+        # 'PORT': '5432',
+        'USER': 'postgres',
+        # 'USER': 'vfwportal',
+        # 'PASSWORD': '',
         'TEST': {'MIRROR': 'default',},
     }
 
