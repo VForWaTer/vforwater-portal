@@ -9,17 +9,21 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
-
-import os
+from pathlib import Path
+# import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 # For now, place all data files in VFW_DIR and not into source directory.
-HOME_DIR = os.path.expanduser('~')
-VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
-if not os.path.exists(VFW_DIR):
-    os.makedirs(VFW_DIR)
+# HOME_DIR = os.path.expanduser('~')
+# VFW_DIR = os.path.join(HOME_DIR, '.vforwater')
+HOME_DIR = Path.home()
+VFW_DIR = Path(HOME_DIR) / '.vforwater'
+if not Path(VFW_DIR).exists():
+    Path(VFW_DIR).mkdir()
 
 # Variable to set the demo path in static files
 DEMO_VAR = ''
@@ -37,8 +41,8 @@ LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 # Generate secret on initial run. ("random" should be replaced with "secrets" for python >=3.6)
 import random, string
 
-secretFile = os.path.join(VFW_DIR, 'secret.txt')
-if not os.path.isfile(secretFile):
+secretFile = Path(VFW_DIR) / 'secret.txt'
+if not Path(secretFile).is_file():
     SECRET_KEY = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
     with open(secretFile, 'w+') as f:
         f.write(SECRET_KEY)
@@ -46,8 +50,8 @@ else:
     with open(secretFile) as f:
         SECRET_KEY = f.read().strip()
 
-secretGeoServer = os.path.join(VFW_DIR, 'secret_geoserver.txt')
-if os.path.isfile(secretGeoServer):
+secretGeoServer = Path(VFW_DIR) / 'secret_geoserver.txt'
+if Path(secretGeoServer).is_file():
     with open(secretGeoServer) as gs:
         SECRET_GEOSERVER = gs.read().strip()
 else:
@@ -57,7 +61,7 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['portal.vforwater.de','localhost']
+ALLOWED_HOSTS = ['portal.vforwater.de', 'localhost']
 
 # Logging
 LOGGING = {
@@ -72,7 +76,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(VFW_DIR, 'debug.log'),
+            'filename': Path(VFW_DIR) / 'debug.log',
             'formatter': 'verbose'
         },
     },
@@ -121,12 +125,14 @@ INSTALLED_APPS = [
     # 'wps_workflow.apps.wps_workflowConfig',
     # 'django_crontab',
     # 'django.contrib.admindocs',
-    'author_manage.apps.AuthorizationmanagementConfig',
+    'author_manage.apps.authorManageConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -225,7 +231,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/var/www/html/static/'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = Path(BASE_DIR) / 'media'
 
 # Default URLs for user authentication
 LOGIN_URL = 'vfwheron:login'
