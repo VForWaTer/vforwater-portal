@@ -23,7 +23,7 @@ urlpatterns = [
     # url(r'^quick_filter$', views.quick_filter),
     path('quick_filter', views.QuickFilter.as_view(), name='quick_filter'),
     # url(r'^quickfilterargs(/<str:drink_name>/,...)$', views.QuickFilterResults.as_view(), name='quickfilterargs'),
-    path('quickfilterargs', views.QuickFilterResults.as_view(), name='quickfilterargs'),
+    path('quick_filter_args/<selection>', views.QuickFilterResults.as_view(), name='quick_filter_args'),
     # url(r'^advanced_filter$', views.filter_entries),
     # addresses for fetch:
     # url(r'^previewplot/id(db[\d]{1,6}|wps[\d]{1,6})$', views.PreviewPlot.as_view()),

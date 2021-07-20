@@ -872,13 +872,34 @@ def advanced_filter(request):
     return render(request, 'vfwheron/advanced_filter.html', context)
 
 
-def quick_filter(request):
-    quickfilter = QuickFilterForm()
-    more = QuickFilterForm.More()
-    selection = []
-    print('quickfilter: ', quickfilter)
-    context = {'quickfilter': quickfilter, 'more': more, 'selection': selection}
-    return render(request, 'vfwheron/quick_filter.html', context)
+class QuickFilter(View):
+
+    @staticmethod
+    def get(request):
+        print('request: ', request)
+        total = Entries.objects.all().count()
+        quickfilter = QuickFilterForm()
+        more = QuickFilterForm.More()
+        selection = []
+        # print('quickfilter: ', quickfilter)
+        context = {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
+        return render(request, 'vfwheron/quick_filter.html', context)
+
+
+class QuickFilterResults(View):
+
+    @staticmethod
+    def get(request, selection):
+        print('request: ', request)
+        print('selection: ', selection)
+        print('QueryDict selection: ', QueryDict(selection))
+        # total = Entries.objects.all().count()
+        # quickfilter = QuickFilterForm()
+        # more = QuickFilterForm.More()
+        # selection = []
+        # # print('quickfilter: ', quickfilter)
+        # context = {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
+        # return render(request, 'vfwheron/quick_filter.html', context)
 
 
 def error_404_view(request, exception):

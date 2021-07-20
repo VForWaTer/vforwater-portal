@@ -896,30 +896,43 @@ function quick_filter(selection) {
 function getFilterURL(selection) {
 
     let nextURL;
-    let nextTitle = 'Quick Filter';
-    let nextState = { additionalInformation: 'Updated the URL with JS' };
     let url = window.location
-    let urlParams = new URLSearchParams(url.search);
+    let searchParams = new URLSearchParams(url.search);
 
-    let selectedEntries = Object.entries(selection)
+    let urlPath = url.origin + url.pathname;
+    let selectedKey = Object.keys(selection)[0]
+    let selectedValues = Object.values(selection)[0]
 
-    urlParams.set(Object.keys(selection), Object.values(Object.keys(selection)))
-    if (urlParams.has(selectedEntries[0][0])) {
-        urlParams.delete(selectedEntries[0][0])
-    }
-    if (selectedEntries[0][1] !== false && selectedEntries[0][1].length !== 0) {
-        urlParams.set(selectedEntries[0][0], selectedEntries[0][1])
-    }
+    searchParams.delete(selectedKey);
+    for (let value of selectedValues)  searchParams.append(selectedKey, value);
+    nextURL = searchParams.toString() == '' ? urlPath : urlPath + '?' + searchParams.toString();
+    window.history.pushState({additionalInformation: 'Updated the URL with JS'}, '', nextURL);
+    return '/home/quick_filter_args/' + searchParams.toString();
 
-    nextURL = urlParams.toString() == '' ? url.origin + url.pathname : url.origin + url.pathname + '?' + urlParams.toString();
-
-    window.history.pushState(nextState, nextTitle, nextURL);
-    return nextURL;
 }
 
 
+/**
+ * @param {string} selection
+ */
 function change_quickfilter(selection) {
     let url = getFilterURL(selection)
+    // url = '/home/quick_filter/2007/'
+    // url = '/home/quick_filter'
+    console.log('url: ', url)
+    $.ajax({
+        url: url,
+        // data: {
+        //     selection: selection,
+        //     'csrfmiddlewaretoken': csrf_token,
+        // }, // data sent with the post request
+        type: "GET",
+        // datatype: 'json',
+        dataType: "text",
+    })
+        .done(function (result) {
+            console.log('result: ', result)
+        })
 }
 
 
