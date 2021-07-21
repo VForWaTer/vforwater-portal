@@ -105,7 +105,8 @@ class QuickFilterForm(forms.Form):
                                 maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
                                 # widget=DateRangeSliderFiled(
                                 # attrs={'onchange': 'console.log("YEAH!");'}))
-                                onchange='change_quickfilter({"date": $("#id_date").val()});')
+                                onchange='change_quickfilter({"date": $("#id_date").data("values")});')
+                                # onchange='change_quickfilter({"date": $("#id_date").val()});')
     is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
         attrs={'onchange': 'change_quickfilter({"is_FAIR": $("#id_is_FAIR").is(":checked")});'}))
 

@@ -71,7 +71,8 @@ class DateRangeSlider(forms.DateInput):
         s = super(DateRangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
         html = """
-        <div onmouseup='""" + self.onchange + """' onmouseleave='""" + self.onchange + """' id="slider-date-range-""" + self.elem_id + """"></div>
+        <div onmouseup='""" + self.onchange + """' onmouseleave='""" + self.onchange + """'
+        id="slider-date-range-""" + self.elem_id + """"></div>
         <script>
         $('#id_""" + self.elem_id + """').attr("readonly", true)
         $( "#slider-date-range-""" + self.elem_id + """" ).slider({
@@ -81,9 +82,12 @@ class DateRangeSlider(forms.DateInput):
         step: """ + self.step + """,
         values: [ new Date('""" + self.minimum + """'),new Date('""" + self.maximum + """') ],
         slide: function( event, ui ) {
-          let minDate = new Date(ui.values[0]).toLocaleDateString();
-          let maxDate = new Date(ui.values[1]).toLocaleDateString();
-          $( "#id_""" + self.elem_id + """" ).val(" """ + self.elem_name + """ "+ minDate + " - " + maxDate );
+          let minDate = new Date(ui.values[0]);
+          let maxDate = new Date(ui.values[1]);
+          $( "#id_""" + self.elem_id + """" )
+          .val(" """ + self.elem_name + """ "+ minDate.toLocaleDateString() + " - " + maxDate.toLocaleDateString() );
+          $( "#id_""" + self.elem_id + """" )
+          .data("values", [minDate.toISOString().split('T')[0], maxDate.toISOString().split('T')[0]]);
           // if (event.keyCode >= 37 && event.keyCode <= 40) {
           // console.log(event.keyCode)
           if (event.keyCode == 13) {
