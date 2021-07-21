@@ -36,7 +36,6 @@ class DateRangeSliderField(forms.DateField):
         self.maximum = kwargs.pop('maximum', 100)
         self.step = kwargs.pop('step', 1)
         self.onchange = kwargs.pop('onchange', '')
-        print('self.onchange in field: ', self.onchange)
         kwargs['widget'] = DateRangeSlider(self.minimum, self.maximum, self.step, self.name, self.onchange)
         if 'label' not in kwargs.keys():
             kwargs['label'] = False

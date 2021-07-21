@@ -70,8 +70,10 @@ class DateRangeSlider(forms.DateInput):
     def render(self, name, value, attrs=None, renderer=None):
         s = super(DateRangeSlider, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
+        # TODO: implement behaviour when mouse leaves slider without buttonup event
+        # <div onmouseup='""" + self.onchange + """' onmouseleave='""" + self.onchange + """'
         html = """
-        <div onmouseup='""" + self.onchange + """' onmouseleave='""" + self.onchange + """'
+        <div onmouseup='""" + self.onchange + """'
         id="slider-date-range-""" + self.elem_id + """"></div>
         <script>
         $('#id_""" + self.elem_id + """').attr("readonly", true)
@@ -96,8 +98,10 @@ class DateRangeSlider(forms.DateInput):
         }
         });
         // initial values of box:
-        let minStart = new Date($( "#slider-date-range-""" + self.elem_id + """" ).slider("values", 0)).toLocaleDateString()
-        let maxStart = new Date($( "#slider-date-range-""" + self.elem_id + """" ).slider("values", 1)).toLocaleDateString()
+        let minStart = new Date($( "#slider-date-range-""" + self.elem_id + """" ).slider("values", 0))
+        .toLocaleDateString()
+        let maxStart = new Date($( "#slider-date-range-""" + self.elem_id + """" ).slider("values", 1))
+        .toLocaleDateString()
         $( "#id_""" + self.elem_id + """" ).val(" """ + self.elem_name + """ " + minStart + " - " + maxStart);
         </script>
         """

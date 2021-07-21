@@ -897,17 +897,23 @@ function getFilterURL(selection) {
 
     let nextURL;
     let url = window.location
-    let searchParams = new URLSearchParams(url.search);
+    let urlParams = new URLSearchParams(url.search);
 
     let urlPath = url.origin + url.pathname;
     let selectedKey = Object.keys(selection)[0]
     let selectedValues = Object.values(selection)[0]
 
-    searchParams.delete(selectedKey);
-    for (let value of selectedValues)  searchParams.append(selectedKey, value);
-    nextURL = searchParams.toString() == '' ? urlPath : urlPath + '?' + searchParams.toString();
+    urlParams.delete(selectedKey);
+    if (Symbol.iterator in Object(selectedValues)) {
+        for (let value of selectedValues) {
+            urlParams.append(selectedKey, value);
+        }
+    } else {
+        return false
+    }
+    nextURL = urlParams.toString() == '' ? urlPath : urlPath + '?' + urlParams.toString();
     window.history.pushState({additionalInformation: 'Updated the URL with JS'}, '', nextURL);
-    return '/home/quick_filter_args/' + searchParams.toString();
+    return '/home/quick_filter_args/' + urlParams.toString();
 
 }
 
@@ -919,20 +925,22 @@ function change_quickfilter(selection) {
     let url = getFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
-    console.log('url: ', url)
-    $.ajax({
-        url: url,
-        // data: {
-        //     selection: selection,
-        //     'csrfmiddlewaretoken': csrf_token,
-        // }, // data sent with the post request
-        type: "GET",
-        // datatype: 'json',
-        dataType: "text",
-    })
-        .done(function (result) {
-            console.log('result: ', result)
+    if (url !== false) {
+        console.log('url: ', url)
+        $.ajax({
+            url: url,
+            // data: {
+            //     selection: selection,
+            //     'csrfmiddlewaretoken': csrf_token,
+            // }, // data sent with the post request
+            type: "GET",
+            // datatype: 'json',
+            dataType: "text",
         })
+            .done(function (result) {
+                console.log('result: ', result)
+            })
+    }
 }
 
 
