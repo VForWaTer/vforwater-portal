@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
 from django.db.models import Q
+from django.http import QueryDict
 from django.utils.translation import gettext, gettext_lazy
 
 
@@ -415,6 +416,11 @@ class Persons(models.Model):
     def __str__(self):
         return '{} <ID={}>'.format(self.full_name, self.id)
 
+    @staticmethod
+    def filter_path(column, selection):
+        filter_items = {'nmpersonsentries__person__' + column + '__in': selection}
+        return filter_items
+
 
 class SpatialScales(models.Model):
     resolution = models.IntegerField()
@@ -542,6 +548,11 @@ class Variables(models.Model):
     def __str__(self):
         return '{n} ({s}) [{u}]'.format(n=self.name, s=self.symbol, u=self.unit.symbol)
         # return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
+
+    @staticmethod
+    def filter(queryset, column, selection):
+        filter_items = {'variable__' + column + '__in': selection}
+        return queryset.filter(**filter_items)
 
 
 class BasicFilter:
