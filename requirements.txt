@@ -1,7 +1,7 @@
 Bokeh==2.2.1
 django==2.2.19
 django_crontab==0.7.1
-django-cors-headers==3.2.1
+django-cors-headers==3.2.6
 django-filter
 docutils==0.16
 future
