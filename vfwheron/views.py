@@ -930,3 +930,8 @@ class DownloadView(View):
             # raise Http404
         else:
             error_404_view(request, 'not available')
+
+ # Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map
+def Eddytestdata(request):
+    print('________________________- here: ', request)
+    return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.tif', 'rb'))

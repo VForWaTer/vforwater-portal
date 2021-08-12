@@ -48,7 +48,7 @@ function create_map() {
         url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"
     });
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
-        'EPSG:4326', 'EPSG:3857'); // bbox of available data
+        'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
 
     wfsLayerName = document.getElementById('data_layer').value;
     if (wfsLayerName.search("Error") !== -1) {
@@ -152,6 +152,47 @@ function create_map() {
         source: wfsPointSource,
     });
 
+    /** Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map **/
+    console.log('org extent: ', JSON.parse(document.getElementById('dataExt').value))
+    console.log('transformed org extent: ', ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
+        'EPSG:4326', 'EPSG:3857'))
+    let orgtestextent = [652081.14, 5269701.79, 653681.14, 5270869.79]
+    console.log('extent: ', orgtestextent)
+    // let testExt = ol.proj.transformExtent([
+    //     652081.1400000000139698, 5269701.7900000000372529, 653681.1400000000139698, 5270869.7900000000372529
+    //         ], 'EPSG:25832', 'EPSG:3857'); // bbox of available data (extent, source, destination)
+    let testExt = [122693, 603444, 1229348.79, 6036114.62]
+    // let testExt = [1226937.04, 6034443.95, 1229348.79, 6036114.62]
+    console.log('testextent: ', testExt)
+    let testimage = new ol.source.ImageStatic({
+            url: '/home/testdata',
+            crossOrigin: '',
+            projection: 'EPSG:25832',
+            imageExtent: testExt,
+            // imageSmoothing: imageSmoothing.checked,
+        })
+
+    console.log('mapLayer: ', mapLayer)
+    function testcolor(pixels, data) {
+        console.log('pix: ', pixels)
+        console.log('data: ', data)
+    }
+
+    let testraster = new ol.source.Raster({
+        sources: [testimage],
+        operationType: 'image',
+        operation: function (pixels, data) {
+        console.log('pix: ', pixels)
+        console.log('data: ', data)
+    },
+    });
+    testraster.changed();
+
+    let testlayer = new ol.layer.Image({
+        source: testraster,
+        // source: testimage,
+    });
+    console.log('testlayer: ', testlayer)
 
     /** Style for selection/single circles around cluster  **/
     /*    let img = new ol.style.Circle({

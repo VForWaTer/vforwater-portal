@@ -28,6 +28,7 @@ urlpatterns = [
     # addresses for fetch:
     # url(r'^previewplot/id(db[\d]{1,6}|wps[\d]{1,6})$', views.PreviewPlot.as_view()),
     # url(r'^showinfo/id(db[\d]{1,6}|wps[\d]{1,6})$', views.ShowInfo.as_view()),
+    path('testdata', views.Eddytestdata, name='testdata'),
     # addresses for ajax:
     path('previewplot', views.previewplot, name='previewplot'),
     path('short_datainfo', views.short_datainfo, name='short_datainfo'),
