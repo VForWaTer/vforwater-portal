@@ -194,8 +194,7 @@ function create_map() {
     // });
     // console.log('testlayer: ', testlayer)
     let testlayer = new ol.layer.Image({
-            // extent: [652081.14,5269701.79,653681.14,5270869.79],
-            // extent: [-13884991, 2870341, -7455066, 6338219],
+            extent: testExt,
             source: new ol.source.ImageWMS({
                 url: 'http://localhost:8080/geoserver/wms',
                 params: {'LAYERS': 'NewRaster:Graswang_footprint_0012330'},
@@ -204,10 +203,6 @@ function create_map() {
             }),
         })
 
-            // new ol.layers.ImageWMS({
-            // url: 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-            // url: 'geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-        // }),
         // format: new ol.format.GeoJSON(),
         // loader: function (extent) {
         //     fetch('/home/testdata',
