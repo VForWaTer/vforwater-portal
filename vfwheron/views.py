@@ -932,6 +932,20 @@ class DownloadView(View):
             error_404_view(request, 'not available')
 
  # Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map
-def Eddytestdata(request):
-    print('________________________- here: ', request)
-    return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.tif', 'rb'))
+# def Eddytestdata(request):
+#     print('________________________- here: ', request)
+#     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.asc', 'rb'))
+#     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.tif', 'rb'))
+# def Eddytestdata(request):
+#     # url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
+#     #       'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
+#     #                                                         srid, bbox, srid)
+#     url = '{0}/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330' \
+#           '&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832' \
+#           '&format=application/openlayers'.format(LOCAL_GEOSERVER)
+#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
+#
+#     request_url = urllib.request.Request(url)
+#     response = urllib.request.urlopen(request_url)
+#     print('response: ', response)
+#     return HttpResponse(response.read().decode('utf-8'))
