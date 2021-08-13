@@ -152,80 +152,17 @@ function create_map() {
         source: wfsPointSource,
     });
 
-    /** Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map **/
-    // console.log('org extent: ', JSON.parse(document.getElementById('dataExt').value))
-    // console.log('transformed org extent: ', ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
-    //     'EPSG:4326', 'EPSG:3857'))
-    // let orgtestextent = [652081.14, 5269701.79, 653681.14, 5270869.79]
-    // console.log('extent: ', orgtestextent)
-    // // let testExt = ol.proj.transformExtent([
-    // //     652081.1400000000139698, 5269701.7900000000372529, 653681.1400000000139698, 5270869.7900000000372529
-    // //         ], 'EPSG:25832', 'EPSG:3857'); // bbox of available data (extent, source, destination)
-    // let testExt = [122693, 603444, 1229348.79, 6036114.62]
-    let testExt = [1226937.04, 6034443.95, 1229348.79, 6036114.62]
-    // console.log('testextent: ', testExt)
-    // let testimage = new ol.source.ImageStatic({
-    //         url: '/home/testdata',
-    //         crossOrigin: '',
-    //         projection: 'EPSG:25832',
-    //         imageExtent: testExt,
-    //         // imageSmoothing: imageSmoothing.checked,
-    //     })
-    //
-    // console.log('mapLayer: ', mapLayer)
-    // function testcolor(pixels, data) {
-    //     console.log('pix: ', pixels)
-    //     console.log('data: ', data)
-    // }
-    //
-    // let testraster = new ol.source.Raster({
-    //     sources: [testimage],
-    //     operationType: 'image',
-    //     operation: function (pixels, data) {
-    //     console.log('pix: ', pixels)
-    //     console.log('data: ', data)
-    // },
-    // });
-    // testraster.changed();
-    //
+     /** Load a 1-band rasterimage 'testlayer' from geoserver and render it as map **/
+    // let testExt = [1226937.04, 6034443.95, 1229348.79, 6036114.62]
     // let testlayer = new ol.layer.Image({
-    //     source: testraster,
-    //     // source: testimage,
-    // });
-    // console.log('testlayer: ', testlayer)
-    let testlayer = new ol.layer.Image({
-            extent: testExt,
-            source: new ol.source.ImageWMS({
-                url: 'http://localhost:8080/geoserver/wms',
-                params: {'LAYERS': 'NewRaster:Graswang_footprint_0012330'},
-                ratio: 1,
-                serverType: 'geoserver',
-            }),
-        })
-
-        // format: new ol.format.GeoJSON(),
-        // loader: function (extent) {
-        //     fetch('/home/testdata',
-        //         // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
-        //         // credentials: 'same-origin'}
-        //         )
-        //         .then(function (response) {
-        //             if (response.ok) {
-        //                 return response.text();
-        //             } else {
-        //                 return Promise.reject(response);
-        //             }
-        //         })
-        //         .then(function (response) {
-        //             wfsPointSource.addFeatures(wfsPointSource.getFormat().readFeatures(response));
-        //         })
-        //         .catch(function (error) {
-        //             console.log('Error in building map wmsLayer: ', error);
-        //             wfsPointSource.removeLoadedExtent(extent);
-        //         })
-        // },
-        // strategy: ol.loadingstrategy.bbox
-    // });
+    //     extent: testExt,
+    //     source: new ol.source.ImageWMS({
+    //         url: 'http://localhost:8080/geoserver/wms',
+    //         params: {'LAYERS': 'NewRaster:Graswang_footprint_0012330'},
+    //         ratio: 1,
+    //         serverType: 'geoserver',
+    //     }),
+    // })
 
     /** Style for selection/single circles around cluster  **/
     /*    let img = new ol.style.Circle({
@@ -252,8 +189,8 @@ function create_map() {
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
         tipLabel: gettext('Zoom to your available data'),
-        extent: testExt,
-        // extent: dataExt,
+        // extent: testExt,
+        extent: dataExt,
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
@@ -278,7 +215,8 @@ function create_map() {
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
-        layers: [mapLayer, testlayer, clusterLayer],
+        layers: [mapLayer, clusterLayer],
+        // layers: [mapLayer, testlayer, clusterLayer],
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
 
         controls: [
