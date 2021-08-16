@@ -7,6 +7,7 @@ import pandas as pd
 import requests
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
 from pyzip import PyZip
 
 import matplotlib as mpl
@@ -14,10 +15,10 @@ import urllib
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, QueryDict
 from django.http.response import JsonResponse, HttpResponse, Http404, FileResponse
 from django.shortcuts import redirect, render
-from django.utils import translation
+from django.utils import translation, timezone
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
@@ -54,7 +55,6 @@ from django.db import connections
 
 """
 logger = logging.getLogger(__name__)
-
 
 # class WorkflowView(TemplateView):
 #     """
@@ -890,16 +890,63 @@ class QuickFilterResults(View):
 
     @staticmethod
     def get(request, selection):
-        print('request: ', request)
-        print('selection: ', selection)
-        print('QueryDict selection: ', QueryDict(selection))
+
+        simple_queries = {'variables': 'variable__name__in',
+                          'institution': 'nmpersonsentries__person__organisation_name__in',
+                          'project': 'nmentrygroups__group__type__name__in'}
+
+        filter_dict = {}
+
+        for i in QueryDict(selection):
+            if i in simple_queries:
+                filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
+            elif i == 'date':
+                filter_dict['datasource__temporal_scale__observation_end__gte'] = \
+                    QueryDict(selection).getlist('date')[0]
+                filter_dict['datasource__temporal_scale__observation_start__lte'] = \
+                    QueryDict(selection).getlist('date')[1]
+            elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
+                fair = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+            elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
+                # TODO: figure out how to avoid the following useless query (need something in exclude query)
+                fair = Q(embargo=True) & Q(embargo=False)
+
+        # Do the same without loop
+        # if QueryDict(selection).getlist('variables'):
+        #     filter_dict['variable__name__in'] = QueryDict(selection).getlist('variables')
+        #
+        # if QueryDict(selection).getlist('institution'):
+        #     filter_dict['nmpersonsentries__person__organisation_name__in'] = QueryDict(selection).getlist('institution')
+        #
+        # if QueryDict(selection).getlist('project'):
+        #     filter_dict['nmentrygroups__group__type__name__in'] = QueryDict(selection).getlist('project')
+        #
+        # # get everything that has values between start and end date:
+        # if QueryDict(selection).getlist('date'):
+        #     filter_dict['datasource__temporal_scale__observation_end__gte'] = QueryDict(selection).getlist('date')[0]
+        #     filter_dict['datasource__temporal_scale__observation_start__lte'] = QueryDict(selection).getlist('date')[1]
+        #
+        # if QueryDict(selection).getlist('is_FAIR') == ['true']:
+        #     fair = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+        # else:
+        #     # TODO: figure out how to avoid the following useless query (need something in exclude query)
+        #     fair = Q(embargo=True) & Q(embargo=False)
+
+        print('total_results: ', Entries.objects.filter(**filter_dict).exclude(fair).count())
+        total_results = Entries.objects.filter(**filter_dict).exclude(fair).count()
+
+        print('filter_dict 2: ', filter_dict)
+
+        # filter_items = {'{0}'.format(path): child["I" + str(i)]['name']}
+        # item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
+
         # total = Entries.objects.all().count()
         # quickfilter = QuickFilterForm()
         # more = QuickFilterForm.More()
         # selection = []
         # # print('quickfilter: ', quickfilter)
-        # context = {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
-        # return render(request, 'vfwheron/quick_filter.html', context)
+
+        return JsonResponse({'selection': selection, 'total': total_results})
 
 
 def error_404_view(request, exception):
