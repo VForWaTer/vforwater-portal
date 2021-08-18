@@ -910,6 +910,14 @@ class QuickFilterResults(View):
             elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
                 # TODO: figure out how to avoid the following useless query (need something in exclude query)
                 fair = Q(embargo=True) & Q(embargo=False)
+            elif i == 'draw':
+                values = QueryDict(selection).getlist(i)[0]
+                it = iter([float(item) for item in values.split(',')])
+                poly = Polygon(tuple(zip(it, it)))
+                print('---poly 1: ', poly)
+                print('---poly 2: ', poly[0])
+
+                # print('---list(map(float, mylist): ', map(float, values))
 
         # Do the same without loop
         # if QueryDict(selection).getlist('variables'):

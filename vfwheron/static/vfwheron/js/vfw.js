@@ -361,6 +361,8 @@ function drawOnMapMenu(shortParent, shortChild) {
         selectedFeatures.clear();
         selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
+        selectionEdgeCoords = polygon;
+        change_quickfilter({'draw': polygon.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
         // let features = hiddenLayer.getSource().getFeatures();
 
         /* select features in polygon */
@@ -393,9 +395,11 @@ function drawOnMapMenu(shortParent, shortChild) {
             // clear features so they deselect when polygon moves away
             selectedFeatures.clear();
             polygon = event.target;
+            selectionEdgeCoords = polygon;
 
             let fLen = features.length;
-            // TODO: find something faster then a loop!
+            // TODO: Speed up by putting the following loop to (draw)end. Store here only the event and use the variable
+            //  in (draw)end. BUT this throws error in map.js/checkMode(evt). Figure out how to avoid this error first!
             for (let i = 0; i < fLen; i++) {
                 if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) {
                     selectedFeatures.push(features[i]);
@@ -431,6 +435,7 @@ function drawOnMapMenu(shortParent, shortChild) {
         }
         removeInteractions();
         toggle_draw(document.getElementById("draw_square"))
+        change_quickfilter({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
     });
 
     // add clickEvent to draw polygon button
@@ -468,6 +473,12 @@ function drawOnMapMenu(shortParent, shortChild) {
         // olmap.removeInteraction(draw);
         removeInteractions();
         toggle_draw(document.getElementById("draw_polygon"))
+
+        /*let extent = draw.getGeometry().getExtent();
+        clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
+          selectedFeatures.push(feature);
+        });*/
+        change_quickfilter({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
     });
 
     /** add clickEvent to modify button */

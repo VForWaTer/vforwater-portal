@@ -86,7 +86,7 @@ function create_map() {
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
 
-    /** get data points **/
+    /** get data points from server **/
     wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
