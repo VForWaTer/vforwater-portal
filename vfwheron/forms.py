@@ -73,19 +73,31 @@ class QuickFilterQuerySets:
     """
     Queries and collection of data for filter menue
     """
-    variables_qs = Entries.objects.values_list('variable__name', flat=True) \
-        .exclude(variable__name__isnull=True).distinct()
-    observation_min_qs = Entries.objects.values_list('datasource__temporal_scale__observation_start') \
+    variables_path = 'variable__name'
+    date_min_path = 'datasource__temporal_scale__observation_start'
+    date_max_path = 'datasource__temporal_scale__observation_end'
+
+
+    variables_base_qs = Entries.objects.values_list('variable__name', flat=True)
+    observation_base_min_qs = Entries.objects.values_list('datasource__temporal_scale__observation_start')
+    observation_base_max_qs = Entries.objects.values_list('datasource__temporal_scale__observation_end')
+    fair_data_base_qs = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
+    institution_base_qs = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)
+    project_base_qs = Entries.objects.filter(nmentrygroups__group__type__name='Project') \
+        .values_list('nmentrygroups__group__title', flat=True)
+
+    variables_qs = variables_base_qs.exclude(variable__name__isnull=True).distinct()
+    observation_min_qs = observation_base_min_qs \
         .filter(datasource__temporal_scale__observation_start__isnull=False) \
         .earliest('datasource__temporal_scale__observation_start')[0]
-    observation_max_qs = Entries.objects.values_list('datasource__temporal_scale__observation_end') \
+    observation_max_qs = observation_base_max_qs \
         .filter(datasource__temporal_scale__observation_end__isnull=False) \
         .latest('datasource__temporal_scale__observation_end')[0]
-    fair_data_qs = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
-    institution_qs = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)\
-        .exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct()
-    project_qs = Entries.objects\
-        .filter(nmentrygroups__group__type__name='Project')\
+    fair_data_qs = fair_data_base_qs
+    # institution_qs = institution_base_qs.distinct()
+    institution_qs = institution_base_qs.exclude(nmpersonsentries__person__organisation_name__isnull=True).distinct()
+    project_qs = project_base_qs \
+        .exclude(nmentrygroups__group__title__isnull=True) \
         .values_list('nmentrygroups__group__title', flat=True)\
         .exclude(nmentrygroups__group__title__isnull=True).distinct()
 
@@ -108,7 +120,7 @@ class QuickFilterForm(forms.Form):
                                 onchange='change_quickfilter({"date": $("#id_date").data("values")});')
                                 # onchange='change_quickfilter({"date": $("#id_date").val()});')
     is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
-        attrs={'onchange': 'change_quickfilter({"is_FAIR": $("#id_is_FAIR").is(":checked")});'}))
+        attrs={'onchange': 'change_quickfilter({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
 
     class More(forms.Form):
         institution = forms.ModelMultipleChoiceField(

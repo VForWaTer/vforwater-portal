@@ -62,7 +62,7 @@ function show_data() {
     /** Initiate creation of data Button in data and result store.
      * When called from outside of 'Home' check if data is
      * already pickled. If not pickle it. **/
-    // (TODO: Should be monitored if a lot of data gets pickled but never used!)
+        // (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
         build_datastore_button(workspaceData);

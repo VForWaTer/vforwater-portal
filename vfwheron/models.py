@@ -124,24 +124,27 @@ class Entries(models.Model):
     decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
 
     """
+    uuid = models.CharField(max_length=36)
     title = models.CharField(max_length=512)
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
-    location = models.PointField(srid=0)
-    geom = models.GeometryField(srid=0, blank=True, null=True)
+    location = models.PointField(srid=4326)
+    geom = models.GeometryField(srid=4326, blank=True, null=True)
     version = models.IntegerField()
     latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    is_partial = models.BooleanField()
     comment = models.TextField(blank=True, null=True)
+    citation = models.CharField(max_length=2048, blank=True, null=True)
+
     license = models.ForeignKey('Licenses', models.DO_NOTHING, blank=True, null=True)
     variable = models.ForeignKey('Variables', models.DO_NOTHING)
     datasource = models.ForeignKey(Datasources, models.DO_NOTHING, blank=True, null=True)
+
     embargo = models.BooleanField()
     embargo_end = models.DateTimeField(blank=True, null=True)
+
     publication = models.DateTimeField(blank=True, null=True)
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
-    is_partial = models.BooleanField()
-    uuid = models.CharField(max_length=36)
-    citation = models.CharField(max_length=2048, blank=True, null=True)
 
     db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract'}
     # db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract', 'location': 'Location'}
@@ -417,7 +420,7 @@ class Persons(models.Model):
         return '{} <ID={}>'.format(self.full_name, self.id)
 
     @staticmethod
-    def filter_path(column, selection):
+    def filter(column, selection):
         filter_items = {'nmpersonsentries__person__' + column + '__in': selection}
         return filter_items
 
@@ -539,6 +542,8 @@ class Variables(models.Model):
     menu_name = 'Variables'
     path = 'variable'
 
+    qf_path = 'variable__name'
+
     # print('\033[31m' + 'path: \033[0m', path)
 
     class Meta:
@@ -550,9 +555,9 @@ class Variables(models.Model):
         # return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
 
     @staticmethod
-    def filter(queryset, column, selection):
+    def filter(column, selection):
         filter_items = {'variable__' + column + '__in': selection}
-        return queryset.filter(**filter_items)
+        return filter_items
 
 
 class BasicFilter:

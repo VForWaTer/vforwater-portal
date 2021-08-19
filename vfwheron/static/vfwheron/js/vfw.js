@@ -1,7 +1,7 @@
 let draw, drawSquare, modify, selectedFeatures;
 /**
-* Global Element (source layer) to drawn on
-*/
+ * Global Element (source layer) to drawn on
+ */
 let vector;
 let activeMap = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
@@ -12,9 +12,9 @@ let selectedIds = {
     quickMenuIds: null,
     combinedIds: null,
 
-   /**
-    * @param {array} idList
-    */
+    /**
+     * @param {array} idList
+     */
     set map(idList) {
         this.mapIds = idList;
         this._setCombinedIds()
@@ -54,8 +54,8 @@ let selectedIds = {
     },
 
     /**
-    * update combined Ids when selection on map or in Quick Menu
-    */
+     * update combined Ids when selection on map or in Quick Menu
+     */
     _setCombinedIds: function () {
         let oldIds = this.combinedIds
         if (this.mapIds == null) {
@@ -348,7 +348,7 @@ function drawOnMapMenu(shortParent, shortChild) {
     let features = hiddenLayer.getSource().getFeatures();
 
     /** Point features select/deselect as you move polygon.
-        Deactivate select interaction. */
+     Deactivate select interaction. */
     modify.on('modifystart', function (event) {
         sketch = event.features;
         // select.setActive(false);
@@ -809,47 +809,47 @@ function show_preview(id) {
 // }
 
 function toggleMapTable(evt, tabName) {
-  // Declare all variables
-  let i, tabcontent, tablinks;
-  activeMap = tabName === "Map";
+    // Declare all variables
+    let i, tabcontent, tablinks;
+    activeMap = tabName === "Map";
 
-  // Get all elements with class="tabcontent" and hide them
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
 
-  // Get all elements with class="tablinks" and remove the class "active"
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
 
-  // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(tabName).style.display = "block";
-  evt.currentTarget.className += " active";
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
 }
 
 
 function toggleFilter(evt, tabName) {
-  // Declare all variables
-  let i, tabcontent, tablinks;
+    // Declare all variables
+    let i, tabcontent, tablinks;
 
-  // Get all elements with class="tabcontent" and hide them
-  tabcontent = document.getElementsByClassName("filter-tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
+    // Get all elements with class="tabcontent" and hide them
+    tabcontent = document.getElementsByClassName("filter-tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
 
-  // Get all elements with class="tablinks" and remove the class "active"
-  tablinks = document.getElementsByClassName("filter-tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
+    // Get all elements with class="tablinks" and remove the class "active"
+    tablinks = document.getElementsByClassName("filter-tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
 
-  // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(tabName).style.display = "block";
-  evt.currentTarget.className += " active";
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
 }
 
 
@@ -886,7 +886,7 @@ function quick_filter(selection) {
         .done(function (json) {
             document.getElementById("newQuickFilter").innerHTML = json
             let script = document.getElementById("newQuickFilter").getElementsByTagName('script');
-            let runScriptFunc = new Function (script[0].innerText)
+            let runScriptFunc = new Function(script[0].innerText)
             runScriptFunc()
             // $.globalEval(script[0].innerText)
 
@@ -911,19 +911,22 @@ function getFilterURL(selection) {
     let urlParams = new URLSearchParams(url.search);
 
     let urlPath = url.origin + url.pathname;
-    let selectedKey = Object.keys(selection)[0]
-    let selectedValues = Object.values(selection)[0]
+    if (selection) {
+        let selectedKey = Object.keys(selection)[0]
+        let selectedValues = Object.values(selection)[0]
 
-    urlParams.delete(selectedKey);
-    if (Symbol.iterator in Object(selectedValues)) {
-        for (let value of selectedValues) {
-            urlParams.append(selectedKey, value);
+        urlParams.delete(selectedKey);
+        if (Symbol.iterator in Object(selectedValues)) {
+            for (let value of selectedValues) {
+                urlParams.append(selectedKey, value);
+            }
+        } else {
+            return false
         }
-    } else {
-        return false
     }
     nextURL = urlParams.toString() == '' ? urlPath : urlPath + '?' + urlParams.toString();
     window.history.pushState({additionalInformation: 'Updated the URL with JS'}, '', nextURL);
+    if (urlParams.toString() == "") {urlParams = 'reset'}
     return '/home/quick_filter_args/' + urlParams.toString();
 
 }
@@ -949,7 +952,16 @@ function change_quickfilter(selection) {
             dataType: "text",
         })
             .done(function (result) {
+                let json = JSON.parse(result)
                 console.log('result: ', result)
+                console.log('json: ',  json)
+                /** update total Value for available datasets: */
+                $("#quickfilter-form p:first").html(
+                    function(i, txt) {return txt.replace(/\d+/, json['total'].toString());}
+                )
+
+                updateMapSelection(json)
+
             })
     }
 }
@@ -1000,14 +1012,14 @@ class SidebarButton {
      * @param {list} outputs - List of output types.
      */
     constructor(id, orgid, inputs, outputs) {
-    if (this.constructor === SidebarButton) {
-        throw new TypeError('Abstract class "SidebarButton" cannot be instantiated directly.');
+        if (this.constructor === SidebarButton) {
+            throw new TypeError('Abstract class "SidebarButton" cannot be instantiated directly.');
+        }
+        this.id = id;
+        this.orgid = orgid;
+        this.inputs = inputs;
+        this.outputs = outputs;
     }
-    this.id = id;
-    this.orgid = orgid;
-    this.inputs = inputs;
-    this.outputs = outputs;
-  }
 }
 
 class SidebarButtonData extends SidebarButton {

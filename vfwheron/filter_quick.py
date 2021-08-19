@@ -724,25 +724,17 @@ class Table:
 def initialize_options():
     return
 
-class QuickFilter:
+class QuickFilterFunctions:
 
     # options =
 
     def items(self):
 
-        variables = Entries.objects.values_list('variable__name', flat=True).distinct()
-        observation_min = Entries.objects.values('datasource__temporal_scale__observation_start') \
-            .filter(datasource__temporal_scale__observation_start__isnull=False)\
-            .earliest('datasource__temporal_scale__observation_start')
-        observation_max = Entries.objects.values('datasource__temporal_scale__observation_end') \
-            .filter(datasource__temporal_scale__observation_end__isnull=False)\
-            .earliest('datasource__temporal_scale__observation_end')
-        fair_data = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
-        institution = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True).distinct()
-        project = Entries.objects.filter(nmentrygroups__group__type__name='Project')\
-            .values_list('nmentrygroups__group__title', flat=True).distinct()
+    @staticmethod
+    def build_filter_options(selection):
+        for key in selection:
+            print('key: ', key)
 
-        return ''
 
     # def
 
