@@ -436,7 +436,7 @@ def get_cache(cache_obj: dict) -> tuple:
     return cache_obj, img
 
 
-def get_plot(id: str, full_res: bool, size: list = [700, 500]) -> dict:
+def get_plot(id: str, full_res: bool, date: list, size: list = [700, 500]) -> dict:
     """
     Check if plot is stored with redis or build a new one with Bokeh.
     Bokeh builds an object with 'script' and 'div'. Redis stores this as string, which is fine, as
@@ -444,16 +444,17 @@ def get_plot(id: str, full_res: bool, size: list = [700, 500]) -> dict:
 
     :param id: Entry id in metacatalog
     :param full_res: Boolean to set if plot should be of full dataset
+    :param date:
     :param size:
     :return: Bokeh image consisting of 'script' and 'div'
     """
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size))}
+                 'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size) + str(date))}
     cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
         # get data
-        db_data = __DB_load_data(id, full_res)
+        db_data = __DB_load_data(id, date, full_res)
         if db_data['has_preci']:
             db_data['df'] = precision_to_minmax(db_data['df'])
         plot_data = fill_data_gaps(db_data)
@@ -463,68 +464,70 @@ def get_plot(id: str, full_res: bool, size: list = [700, 500]) -> dict:
         img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
         if cache_obj['use_redis']:
             cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
-    return img
-
-
-def get_preview(id: str, size=[700, 500]):
-    """
-    Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
-
-    :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
-    :param size: size of resulting plot [width, height]
-    :type size: list
-    :return: html ready to render
-    """
-    # id = 2657 # small test dataset
-    try:
-        wps_result = True if 'wps' in id[0:3] else False
-    except:
-        wps_result = False
-
-    imgname = "preview_{}".format('b' + str(id) + str(size))
-    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': imgname}
-    cache_obj, img = get_cache(cache_obj)
-
-    if not cache_obj['in_cache'] and not wps_result:
-        label = __DB_load_label(id)
-        if label.find('direction') != -1:
-            ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            db_data = __DB_load_directiondata(id, ti)
-            plot_data = fill_data_gaps(db_data)
-            # img = get_bokeh_standard(db_data, label)
-            img = direction_plot(plot_data, ti)
-        else:
-            db_data = __DB_load_data_avg(id)
-            db_data = __get_axis_limits(db_data)
-            img = get_bokeh_standard(db_data, size, label)
-
-        if cache_obj['use_redis']:
-            r = cache_obj['redis']
-            r.set(imgname, img)
-
-    if wps_result:
-        DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
-        try:
-            if 'pickle' in DBstring[1]:
-                df = pd.read_pickle(DBstring[2])
-                if 'ts-pickle' in DBstring[1]:
-                    img = timeseries_plot(df, size)
-                elif DBstring[1] == 'pickle':
-                    img = xyplot(df, size)
-            elif DBstring[1] == 'image':
-                try:
-                    file = open(DBstring[2], mode='r')
-                    htmlimg = file.read()
-                    file.close()
-                except FileNotFoundError:
-                    print('Error: Can not load your image')
-                    htmlimg = 'Error: Can not load your image'
-                img = {'html': htmlimg}
-            else:
-                print('Error: Con not plot. Unknown type')
-
-        except FileNotFoundError:
-            print('The data file %s was not found.' % (DBstring[2]))
 
     return img
+
+#
+# def get_preview(id: str, date: list, size=[700, 500]):
+#     """
+#     Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
+#
+#     :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
+#     :param size: size of resulting plot [width, height]
+#     :type date: list
+#     :type size: list
+#     :return: html ready to render
+#     """
+#     # id = 2657 # small test dataset
+#     try:
+#         wps_result = True if 'wps' in id[0:3] else False
+#     except:
+#         wps_result = False
+#
+#     imgname = "preview_{}".format('b' + str(id) + str(size) + str(date))
+#     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+#                  'in_cache': False, 'name': imgname}
+#     cache_obj, img = get_cache(cache_obj)
+#
+#     if not cache_obj['in_cache'] and not wps_result:
+#         label = __DB_load_label(id)
+#         if label.find('direction') != -1:
+#             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
+#             db_data = __DB_load_directiondata(id, ti)
+#             plot_data = fill_data_gaps(db_data)
+#             # img = get_bokeh_standard(db_data, label)
+#             img = direction_plot(plot_data, ti)
+#         else:
+#             db_data = __DB_load_data_avg(id)
+#             db_data = __get_axis_limits(db_data)
+#             img = get_bokeh_standard(db_data, size, label)
+#
+#         if cache_obj['use_redis']:
+#             r = cache_obj['redis']
+#             r.set(imgname, img)
+#
+#     if wps_result:
+#         DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
+#         try:
+#             if 'pickle' in DBstring[1]:
+#                 df = pd.read_pickle(DBstring[2])
+#                 if 'ts-pickle' in DBstring[1]:
+#                     img = timeseries_plot(df, size)
+#                 elif DBstring[1] == 'pickle':
+#                     img = xyplot(df, size)
+#             elif DBstring[1] == 'image':
+#                 try:
+#                     file = open(DBstring[2], mode='r')
+#                     htmlimg = file.read()
+#                     file.close()
+#                 except FileNotFoundError:
+#                     print('Error: Can not load your image')
+#                     htmlimg = 'Error: Can not load your image'
+#                 img = {'html': htmlimg}
+#             else:
+#                 print('Error: Con not plot. Unknown type')
+#
+#         except FileNotFoundError:
+#             print('The data file %s was not found.' % (DBstring[2]))
+#
+#     return img

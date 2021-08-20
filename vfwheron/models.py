@@ -97,11 +97,6 @@ class Details(models.Model):
     description = models.TextField(blank=True, null=True)
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
 
-    db_alias_child_adv = {'value': 'details_text'}
-    menu_name_adv = 'Details'
-    path = 'details'
-    filter_type = {'value': 'text'}
-
     class Meta:
         managed = False
         db_table = 'details'
@@ -146,14 +141,6 @@ class Entries(models.Model):
     publication = models.DateTimeField(blank=True, null=True)
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
 
-    db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract'}
-    # db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract', 'location': 'Location'}
-    db_alias_child_adv = {'version': 'version'}
-    menu_name = 'Entries'
-    path = ''
-    filter_type = {'embargo': 'bool'}
-    # filter_type = {'embargo': 'bool', 'location': 'draw'}
-
     class Meta:
         managed = False
         db_table = 'entries'
@@ -168,11 +155,6 @@ class EntrygroupTypes(models.Model):
     """
     name = models.CharField(max_length=40)
     description = models.TextField()
-
-    db_alias_child = {'creation': 'creation/start', 'end': 'end of measurement', 'embargo': 'embargo'}
-    db_alias_child_adv = {'version': 'version'}
-    menu_name = 'Entries'
-    path = ''
 
     class Meta:
         managed = False
@@ -314,12 +296,6 @@ class Licenses(models.Model):
     share_alike = models.BooleanField()
     commercial_use = models.BooleanField()
 
-    db_alias_child = {'commercial_use': 'Commercial use allowed'}  # menu text
-    db_alias_child_adv = {'commercial_use': 'Commercial use allowed'}
-    menu_name = 'Licenses'
-    path = 'license'
-    filter_type = {'commercial_use': 'bool'}
-
     class Meta:
         managed = False
         db_table = 'licenses'
@@ -406,10 +382,6 @@ class Persons(models.Model):
     organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
 
-    db_alias_child = {'last_name': 'Name'}  # menu text
-    db_alias_child_adv = {'last_name': 'Name'}
-    menu_name = 'Variables'
-    path = 'variable'
     full_name = '{} {}'.format(first_name, last_name)
 
     class Meta:
@@ -422,6 +394,7 @@ class Persons(models.Model):
     @staticmethod
     def filter(column, selection):
         filter_items = {'nmpersonsentries__person__' + column + '__in': selection}
+        print('filter_items: ', filter_items)
         return filter_items
 
 
@@ -536,15 +509,6 @@ class Variables(models.Model):
     symbol = models.CharField(max_length=12)
     unit = models.ForeignKey(Units, models.DO_NOTHING)
     keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
-
-    db_alias_child = {'name': 'Name'}  # menu text
-    db_alias_child_adv = {'name': 'Name'}
-    menu_name = 'Variables'
-    path = 'variable'
-
-    qf_path = 'variable__name'
-
-    # print('\033[31m' + 'path: \033[0m', path)
 
     class Meta:
         managed = False

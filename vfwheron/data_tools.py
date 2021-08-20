@@ -32,13 +32,14 @@ def get_timescale(df):
 
 # TODO: In Python > 3.7 use Literal
 # def is_data_short(ID: int, source: Literal['db', 'wps']):
-def is_data_short(ID: int, source: str):
+def is_data_short(ID: int, source: str, date: list):
     """
     Get ID of a dataset, check the length of the dataset and return boolean if dataset is short (<= 50 000 values) or
     too long to plot completly.
 
     :param ID: integer
     :param source: string
+    :param date: list
     :return: boolean
     """
     if source == 'db':
@@ -46,9 +47,14 @@ def is_data_short(ID: int, source: str):
         # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
 
     query_path = {'{0}'.format(datapath): ID}
+
+    if date[0]:
+        query_path[datapath+'__tstamp__gte'] = date[0]
+        query_path[datapath+'__tstamp__lte'] = date[1]
+
     # TODO: Think about using the following queryset instead of creating it serveral times per plot
-    datalength = Entries.objects.filter(timeseries_1d=ID).count()
-    # datalength = Entries.objects.filter(**query_path).count()
+    datalength = Entries.objects.filter(**query_path).count()
+
     if datalength == 0:  # if not qs.exists():
         raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(ID))
 
@@ -59,12 +65,13 @@ def is_data_short(ID: int, source: str):
     return full
 
 
-def __DB_load_data(ID: int, full_res: bool):
+def __DB_load_data(ID: int, date: list, full_res: bool):
     """
     Load data from database and return a dict with data, pandas df and axis. When full resolution == False limit length
     of result according to settings.max_size_preview_plot
 
     :param ID: integer
+    :param date: list
     :param full_res: boolean
     :return: dict - {df, axis, scale, has_preci}
     """
@@ -72,7 +79,8 @@ def __DB_load_data(ID: int, full_res: bool):
     datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
     if datapath == 'timeseries_1d':
         # request data with django ORM
-        qs = Timeseries_1D.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
+        qs = Timeseries_1D.objects.filter(entry_id=ID, tstamp__gte=date[0],
+                                          tstamp__lte=date[1]).values('tstamp', 'value', 'precision')
 
         if full_res:
             df = pd.DataFrame(list(qs))
@@ -94,7 +102,7 @@ def __DB_load_data(ID: int, full_res: bool):
 
         return {'df': df, 'scale': timescale, 'has_preci': precision}
     else:
-        print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
+        print('*** CANNOT LOAD YOUR DATE. PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
 def __get_axis_limits(plot_data):

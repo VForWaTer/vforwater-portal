@@ -630,6 +630,8 @@ function moreInfoModal(id) {
     let tb = false, pb = false;
     let modLock = false;
     let pdata, tdata;
+    let urlParams = new URLSearchParams(window.location.search);
+    let date = urlParams.getAll('date');
 
     let ajaxTable = function () {
         return $.ajax({
@@ -650,6 +652,9 @@ function moreInfoModal(id) {
             // datatype: 'html',
             data: {
                 preview: id,
+                // date: date.toString(),
+                startdate: date[0].toString(),
+                enddate: date[1].toString(),
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
         })
@@ -765,6 +770,7 @@ function workspace_dataset(id) {
 /**
  * Send ID to server to build preview and add preview image to html
  * @param {int} id - Id of dataset
+ * TODO: Check if used at all
  */
 function show_preview(id) {
     document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
@@ -871,7 +877,9 @@ function filter_pagination(page) {
         })
 }
 
-
+/** The following function is used when Quick is one of several filter menues.
+ * Not needed when Quick is the standard menu. */
+/*
 function quick_filter(selection) {
     $.ajax({
         url: "/home/quick_filter",
@@ -884,23 +892,24 @@ function quick_filter(selection) {
         dataType: "text",
     })
         .done(function (json) {
-            document.getElementById("newQuickFilter").innerHTML = json
-            let script = document.getElementById("newQuickFilter").getElementsByTagName('script');
+            document.getElementById("quickFilter").innerHTML = json
+            let script = document.getElementById("quickFilter").getElementsByTagName('script');
             let runScriptFunc = new Function(script[0].innerText)
             runScriptFunc()
             // $.globalEval(script[0].innerText)
 
         })
-        .fail(function( xhr, status, errorThrown ) {
-    console.log( "Fehler: " + errorThrown );
-    console.log( "Status: " + status );
-    console.dir( xhr );
+        .fail(function (xhr, status, errorThrown) {
+            console.log("Fehler: " + errorThrown);
+            console.log("Status: " + status);
+            console.dir(xhr);
         })
 }
+*/
 
 
 /**
- * Build url from values from form object and from existing URL
+ * Build url from values from map, form object (send as selection) and from existing URL
  *
  * @param {string} selection
  */
@@ -933,6 +942,8 @@ function getFilterURL(selection) {
 
 
 /**
+ * Executed on every click in the quick filter and when filtered on the map.
+ *
  * @param {string} selection
  */
 function change_quickfilter(selection) {

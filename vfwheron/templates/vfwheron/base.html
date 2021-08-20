@@ -19,7 +19,7 @@
   <link rel="icon" href="{% static 'vfwheron/images/Favicon.ico' %}">
 
   <!--   our standard jquery for most of the portal  -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.js"></script>
   <link href="http://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet">
   <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.min.js" ></script>
 {% comment %}  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
@@ -168,11 +168,13 @@
                             <option class="w3-hover-blue nav" value="Manage Data" title="Manage Data">My Data</option>
                             <option class="w3-hover-blue nav" value="Logout" title="Logout">
 		    <a href="#" class="w3-hover-blue nav">
+		    -->
 		  <!--	<form action="{% url 'vfwheron:logout' %}" method="post"> {% csrf_token %}
 			<input class="w3-btn-simple" type="submit" name="logout" value="Logout" />
 		  </form>
 		  Logout
 		</a>
+		-->
 		<!--    </option> -->
             </div>
           </a>

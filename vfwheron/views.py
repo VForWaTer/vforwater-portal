@@ -1,13 +1,16 @@
 import ast
 import csv
+import datetime
 import json
 import sys
 
 import pandas as pd
 import requests
+from django.contrib.gis.db.models.aggregates import Extent
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
+from django.utils.timezone import make_aware
 from pyzip import PyZip
 
 import matplotlib as mpl
@@ -31,24 +34,20 @@ from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test
 from vfwheron.previewplot import get_plot, get_bokeh_std_fullres, format_label
 from wps_gui.models import WpsResults
 from .data_tools import get_timescale, fill_data_gaps, precision_to_minmax, is_data_short
-from .filters import VariableFilter
-from .forms import AdvancedFilterForm
-from .widgets import Slider
+from .forms import QuickFilterForm
 
 mpl.use('Agg')
 
+from django.contrib.gis.geos import Polygon
 from .query_functions import get_bbox_from_data
-# from .filter import FilterMethods, Menu, build_id_list, Table
-from .filter import FilterMethods, Menu, build_id_list, Table, QuickFilter
+from .filter import QuickFilter
 from .filters import NMPersonsFilter
-from .models import Entries, Timeseries, Timeseries_2D, Generic_1D_Data, Generic_2D_Data, Generic_Geometry_Data, \
-    Geom_Timeseries, NmPersonsEntries
+from .models import Entries
 
 import logging
 from pathlib import Path
 # for debugging:
 from time import time
-from django.db import connections
 
 # Create your views here.
 """
@@ -89,9 +88,11 @@ class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
     # Before you make migrations
-    Menu = Menu().get_menu()
-    JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'metacatalogdev'  # 'default_layer_prod'
+    QuickFilter.items(requests)
+    # data_layer = 'metacatalogdev'  # 'default_layer_prod'
+    data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
+    data_layer = 'playnew'
+    # data_layer = 'play'
 
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
@@ -152,8 +153,11 @@ class HomeView(TemplateView):
 
         self.data_ext = get_bbox_from_data()
 
-        return {'dataExt': self.data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
-                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids}
+        context = quick_filter_defaults(self)
+
+        return {'dataExt': self.data_ext, 'data_layer': self.data_layer,
+                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids,
+                **context}
 
 
 class TestView(View):
@@ -553,16 +557,18 @@ def previewplot(request):
     :return:
     """
     webID = request.GET.get('preview')
+    date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
+            make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
 
     if webID[0:2] == 'db':
         try:
             accessible_data = get_accessible_data(request, webID[2:])
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
-            full_res = is_data_short(accessible_data[0], 'db')
+            full_res = is_data_short(accessible_data[0], 'db', date)
             # plot with bokeh
             # if accessible_data[0] == 19:
-            return JsonResponse(get_plot(id=accessible_data[0], full_res=full_res))
+            return JsonResponse(get_plot(id=accessible_data[0], full_res=full_res, date=date))
             # else:
             # return JsonResponse(get_preview(accessible_data[0]))
 
@@ -701,7 +707,7 @@ def filter_map_selection(request):
 
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
-# TODO: Handle this with an http request!
+# TODO: Handle this with an http request (response, not request?)!
 def show_info(request):
     """
     On request collect metadata for preview on map and selection in the sidebar.
@@ -717,35 +723,22 @@ def show_info(request):
         :type ids: str
         :return: dict
         """
-        # get field names from models:
-        field = []
-        field_name = {}
-        for i in Menu().menu_list:
-            for j in i.db_alias_child.items():
-                fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
-                field.append(fieldpath)
-                field_name[fieldpath] = j[1]
         # build dict of lists for preview:
-        preview = defaultdict(list)
-        preview['id'].append(ids)
-        imgtag = Entries.objects.filter(id=str(ids)).values(*field)
+        db_info = Entries.objects.filter(id=int(ids))\
+            .values('uuid', 'variable__name', 'license__commercial_use', 'embargo', 'embargo_end', 'abstract',
+                    'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end')
+        table = {}
+        table['id'] = ids
+        table[translation.gettext('Name')] = translation.gettext(db_info[0]['variable__name'])
+        table[translation.gettext('Commercial use allowed')] = translation.gettext('Yes') \
+            if db_info[0]['license__commercial_use'] else translation.gettext('No')
+        table[translation.gettext('Embargo')] = translation.gettext('Yes') \
+            if db_info[0]['embargo'] == 'True' and timezone.now() < db_info[0]['embargo_end'].astimezone() \
+            else translation.gettext('No')
+        table[translation.gettext('Abstract')] = translation.gettext(db_info[0]['abstract']) \
+            if db_info[0]['abstract'] else '-'
 
-        for i in imgtag[0]:
-            # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
-            if imgtag[0][i] is not None:
-                preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
-            else:
-                preview[translation.gettext(field_name[i])].append('-')
-
-        # remove rows only containing no value:
-        # comparelist = ['-'] * len(ids)
-        # deleteable = []
-        # for i in preview:
-        #     if preview[i] == comparelist:
-        #         deleteable.append(i)
-        # for i in deleteable:
-        #     del preview[i]
-        return JsonResponse(preview)
+        return JsonResponse(table)
 
     webID = request.GET.get('show_info')
     if webID[0:3] == 'wps':
@@ -872,21 +865,30 @@ def advanced_filter(request):
     return render(request, 'vfwheron/advanced_filter.html', context)
 
 
+def quick_filter_defaults(request):
+    total = Entries.objects.exclude(Q(embargo=True) & Q(embargo_end__gte=timezone.now())).count()
+
+    quickfilter = QuickFilterForm()
+    more = QuickFilterForm.More()
+    selection = []
+    return {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
+
+
 class QuickFilter(View):
 
     @staticmethod
     def get(request):
-        print('request: ', request)
-        total = Entries.objects.all().count()
-        quickfilter = QuickFilterForm()
-        more = QuickFilterForm.More()
-        selection = []
-        # print('quickfilter: ', quickfilter)
-        context = {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
+        context = quick_filter_defaults(request)
         return render(request, 'vfwheron/quick_filter.html', context)
 
 
 class QuickFilterResults(View):
+
+    # @staticmethod
+    # def variables(selection):
+    #     print('++')
+    #     print('++', selection['variables'])
+    #     return
 
     @staticmethod
     def get(request, selection):
@@ -896,6 +898,7 @@ class QuickFilterResults(View):
                           'project': 'nmentrygroups__group__type__name__in'}
 
         filter_dict = {}
+        fair = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
 
         for i in QueryDict(selection):
             if i in simple_queries:
@@ -913,9 +916,11 @@ class QuickFilterResults(View):
             elif i == 'draw':
                 values = QueryDict(selection).getlist(i)[0]
                 it = iter([float(item) for item in values.split(',')])
-                poly = Polygon(tuple(zip(it, it)))
-                print('---poly 1: ', poly)
-                print('---poly 2: ', poly[0])
+                poly = Polygon(tuple(zip(it, it)), srid=4326)
+                filter_dict['location__intersects'] = poly
+                # bla = Entries.objects\
+                #     .raw('SELECT location FROM entries WHERE ST_Contains(ST_GEOMFROMTEXT(%s), location);', [poly])
+                # bla = Entries.objects.filter(location__intersects=poly)
 
                 # print('---list(map(float, mylist): ', map(float, values))
 
@@ -941,9 +946,20 @@ class QuickFilterResults(View):
         #     fair = Q(embargo=True) & Q(embargo=False)
 
         print('total_results: ', Entries.objects.filter(**filter_dict).exclude(fair).count())
-        total_results = Entries.objects.filter(**filter_dict).exclude(fair).count()
+        query = Entries.objects.filter(**filter_dict).exclude(fair).only('id')
+        total_results = query.count()
+        # total_results = Entries.objects.filter(**filter_dict).exclude(fair).count()
 
         print('filter_dict 2: ', filter_dict)
+
+        # From here collect data to update map:
+        dataExt = list(query.aggregate(Extent('location'))['location__extent'])
+        IDs = list(query.values_list('id', flat=True))
+        id_layer = 'ID_layer' + str(request.user)
+        if get_layer(id_layer, HomeView.store, HomeView.workspace):
+            delete_layer(id_layer, HomeView.store, HomeView.workspace)
+        create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
+
 
         # filter_items = {'{0}'.format(path): child["I" + str(i)]['name']}
         # item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
@@ -954,7 +970,8 @@ class QuickFilterResults(View):
         # selection = []
         # # print('quickfilter: ', quickfilter)
 
-        return JsonResponse({'selection': selection, 'total': total_results})
+        return JsonResponse({'selection': selection, 'total': total_results,
+                             'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': IDs})
 
 
 def error_404_view(request, exception):
