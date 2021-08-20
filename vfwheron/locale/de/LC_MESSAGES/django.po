@@ -232,6 +232,10 @@ msgstr "Filtermenü&#32zurücksetzen"
 msgid "Remove&#32selection&#32from&#32filter&#32menu."
 msgstr "Markierungen&#32aus&#32dem&#32Filtermenü&#32entfernen."
 
+#: templates/vfwheron/quick_filter.html:21
+msgid "Available datasets"
+msgstr "Verfügbare Datensätze"
+
 #: templates/vfwheron/quick_filter.html:37
 msgid "more..."
 msgstr "mehr..."

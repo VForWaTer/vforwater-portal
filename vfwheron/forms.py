@@ -99,8 +99,15 @@ class QuickFilterQuerySets:
     project_qs = project_base_qs \
         .exclude(nmentrygroups__group__title__isnull=True) \
         .values_list('nmentrygroups__group__title', flat=True)\
-        .exclude(nmentrygroups__group__title__isnull=True).distinct()
-
+        .distinct()
+    # print('====>: ', Entries.objects
+    #       .exclude(nmentrygroups__group__title__isnull=True)
+    #       .filter(nmentrygroups__group__type__name__exact='Project')
+    #       .values_list('nmentrygroups__group__title', flat=True))
+    # print('====>: ', Entries.objects
+    #       .exclude(nmentrygroups__group__title__isnull=True)
+    #       .filter(nmentrygroups__group__type__name__exact='Split dataset')
+    #       .values_list('nmentrygroups__group__title', flat=True))
 
 class QuickFilterForm(forms.Form):
     """

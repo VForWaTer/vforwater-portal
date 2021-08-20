@@ -83,7 +83,7 @@
     } else {
       reset_Modal("resultModal-content", modalToggleSize)
     }
-    place_bokeh("mod_result", JSON.parse(sessionStorage['Bokeh']))
+    place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))
   }
 
   function reset_Modal(modalID, toggleElement) {

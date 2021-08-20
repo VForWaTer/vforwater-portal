@@ -1,4 +1,4 @@
-let draw, drawSquare, modify, selectedFeatures;
+let draw, drawSquare, modify, selectedFeatures, selectionEdgeCoords;
 /**
  * Global Element (source layer) to drawn on
  */
@@ -24,8 +24,8 @@ let selectedIds = {
     },
 
     /**
-    * @param {array} idList
-    */
+     * @param {array} idList
+     */
     set quickMenu(idList) {
         this.quickMenuIds = idList;
         this._setCombinedIds()

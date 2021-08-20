@@ -189,39 +189,6 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 }
 
 
-/*from here definitions for the new menu*/
-/**** Accordion ****/
- /* Style the buttons that are used to open and close the accordion panel */
-.new_accord {
-    background-color: white;
-    color: #444;
-    cursor: pointer;
-    padding: 8px;
-    width: 100%;
-    text-align: left;
-    border: none;
-    outline: none;
-    transition: 0.2s;
-}
-
-/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-.active, .new_accord:hover {
-    background-color:  dodgerblue;
-    color: white;
-}
-
-/* Style the accordion panel. Note: hidden by default */
-.panel {
-    padding: 0 18px;
-    background-color: white;
-    overflow: hidden;
-    /*remove display for animated accordion:*/
-    /*display: none;*/
-    /*to use for animated accordion:*/
-    max-height: 0;
-    transition: max-height 0.2s ease-out;
-}
-
 /**** Range Slider ****/
 /* Style for range slider from https://refreshless.com/nouislider/examples/ */
     #input-select,
