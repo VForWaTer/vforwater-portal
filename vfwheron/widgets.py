@@ -1,5 +1,4 @@
 from django import forms
-from django.shortcuts import render
 from django.template import Template, Context
 from django.utils.safestring import mark_safe
 import re
