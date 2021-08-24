@@ -453,15 +453,25 @@ def get_plot(id: str, full_res: bool, date: list, size: list = [700, 500]) -> di
     cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
-        # get data
-        db_data = __DB_load_data(id, date, full_res)
-        if db_data['has_preci']:
-            db_data['df'] = precision_to_minmax(db_data['df'])
-        plot_data = fill_data_gaps(db_data)
-        # prepare plot
-        plot_data = __get_axis_limits(plot_data)
         label = __DB_load_label(id)
-        img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
+        if label.find('direction') != -1:
+            ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
+            db_data = __DB_load_directiondata(id, ti, date, full_res)
+            # plot_data = fill_data_gaps(db_data)
+            img = direction_plot(db_data, ti)
+        else:
+        #             db_data = __DB_load_data_avg(id)
+        #             db_data = __get_axis_limits(db_data)
+        #             img = get_bokeh_standard(db_data, size, label)
+        # get data
+            db_data = __DB_load_data(id, date, full_res)
+            if db_data['has_preci']:
+                db_data['df'] = precision_to_minmax(db_data['df'])
+            plot_data = fill_data_gaps(db_data)
+            # prepare plot
+            plot_data = __get_axis_limits(plot_data)
+            img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
+
         if cache_obj['use_redis']:
             cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
 

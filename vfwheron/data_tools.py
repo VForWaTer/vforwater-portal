@@ -48,7 +48,7 @@ def is_data_short(ID: int, source: str, date: list):
 
     query_path = {'{0}'.format(datapath): ID}
 
-    if date[0]:
+    if date and date[0]:
         query_path[datapath+'__tstamp__gte'] = date[0]
         query_path[datapath+'__tstamp__lte'] = date[1]
 
@@ -79,8 +79,11 @@ def __DB_load_data(ID: int, date: list, full_res: bool):
     datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
     if datapath == 'timeseries_1d':
         # request data with django ORM
-        qs = Timeseries_1D.objects.filter(entry_id=ID, tstamp__gte=date[0],
-                                          tstamp__lte=date[1]).values('tstamp', 'value', 'precision')
+        if date and date[0]:
+            qs = Timeseries_1D.objects.filter(entry_id=ID, tstamp__gte=date[0], tstamp__lte=date[1])\
+                .values('tstamp', 'value', 'precision')
+        else:
+            qs = Timeseries_1D.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
 
         if full_res:
             df = pd.DataFrame(list(qs))
@@ -102,7 +105,7 @@ def __DB_load_data(ID: int, date: list, full_res: bool):
 
         return {'df': df, 'scale': timescale, 'has_preci': precision}
     else:
-        print('*** CANNOT LOAD YOUR DATE. PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
+        print('*** CANNOT LOAD YOUR DATA. PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
 def __get_axis_limits(plot_data):
@@ -169,19 +172,21 @@ def __DB_load_data_avg(ID: int, scale='day'):
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
-def __DB_load_directiondata(id, ti):
+def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
     # TODO: Use django ORM instead of pure sql
+    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     cursor = connections['default'].cursor()
     # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
     sum_string = ""
     for i in range(1, 36):
-        sum_string += "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = %i ) as b%i," % (i, i)
+        sum_string += "count(*) FILTER (WHERE trunc(((data[1])+5)/10)::double precision = %i ) as b%i," % (i, i)
 
-    cursor.execute("SELECT date_trunc('%s', tstamp)::date as date, count(*), "
-                   "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = 0 "
-                   "or trunc(((value)+5)/10)::smallint = 36) as b0, %s "
-                   "from tbl_data where meta_id = %s "
-                   "group by date_trunc('%s', tstamp);" % (ti, sum_string[:-1], id, ti))
+    cursor.execute("SELECT date_trunc('{0}', tstamp)::date as date, count(*), "
+                   "count(*) FILTER (WHERE trunc(((data[1])+5)/10)::double precision = 0 "
+                   "or trunc(((data[1])+5)/10)::double precision = 36) as b0, {1} "
+                   "FROM {3} "
+                   "WHERE entry_id = {2} "
+                   "GROUP BY date_trunc('{0}', tstamp);".format(ti, sum_string[:-1], ID, datatable))
 
     dbresult = cursor.fetchall()
     cursor.close()

@@ -20,9 +20,7 @@ urlpatterns = [
     path('datasetdownload', views.DatasetDownloadView.as_view(), name='datasetdownload'),
     path('entries_pagination', views.entries_pagination, name='entries_pagination'),
     path('advanced_filter', views.advanced_filter),
-    # url(r'^quick_filter$', views.quick_filter),
-    path('quick_filter', views.QuickFilter.as_view(), name='quick_filter'),
-    # url(r'^quickfilterargs(/<str:drink_name>/,...)$', views.QuickFilterResults.as_view(), name='quickfilterargs'),
+    # path('quick_filter', views.QuickFilter.as_view(), name='quick_filter'),
     path('quick_filter_args/<selection>', views.QuickFilterResults.as_view(), name='quick_filter_args'),
     # url(r'^advanced_filter$', views.filter_entries),
     # addresses for fetch:
@@ -33,8 +31,6 @@ urlpatterns = [
     path('previewplot', views.previewplot, name='previewplot'),
     path('short_datainfo', views.short_datainfo, name='short_datainfo'),
     path('show_info', views.show_info, name='show_info'),
-    path('filter_selection', views.filter_selection, name='filter_selection'),
-    path('filter_map_selection', views.filter_map_selection, name='filter_map_selection'),
     path('workspace_data', views.workspace_data, name='workspace_data'),
 ]
 

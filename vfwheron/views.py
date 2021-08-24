@@ -557,9 +557,11 @@ def previewplot(request):
     :return:
     """
     webID = request.GET.get('preview')
-    date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
-            make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
-
+    if request.GET.get('startdate') != 'None':
+        date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
+                make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
+    else:
+        date = None
     if webID[0:2] == 'db':
         try:
             accessible_data = get_accessible_data(request, webID[2:])
@@ -567,7 +569,6 @@ def previewplot(request):
             accessible_data = accessible_data['open']
             full_res = is_data_short(accessible_data[0], 'db', date)
             # plot with bokeh
-            # if accessible_data[0] == 19:
             return JsonResponse(get_plot(id=accessible_data[0], full_res=full_res, date=date))
             # else:
             # return JsonResponse(get_preview(accessible_data[0]))
@@ -663,47 +664,6 @@ def short_datainfo(request):
     except TypeError:
         raise Http404
         # return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
-
-
-def filter_selection(request):
-    """
-    get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
-    :param request:
-    :return:
-    """
-    try:
-        return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
-                                                           json.loads(request.GET.get('filter_selection'))))
-
-    except TypeError:
-        raise Http404
-
-
-def filter_map_selection(request):
-    try:
-        m_ids = None
-        entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_map_selection')))
-        dataExt = get_bbox_from_data(entry_ids['all_filters'])
-        print('request.user: ', request.user)
-        id_layer = 'ID_layer' + str(request.user)
-        if get_layer(id_layer, HomeView.store, HomeView.workspace):
-            delete_layer(id_layer, HomeView.store, HomeView.workspace)
-        create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(entry_ids['all_filters'])[1:-1])
-        m_ids = entry_ids['all_filters']
-        # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
-        # existing layers
-        # ID_layer = 'ID_layer' + str(hashlib.md5(str(entry_ids['all_filters'])[1:-1].encode())) # + user
-        # if not get_ID_layer(ID_layer):
-        #     create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
-        #             else:
-        # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
-        #  restart of django
-        #                 delete_ID_layer(ID_layer)
-        #                 create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
-        return JsonResponse({'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': m_ids})
-
-    except TypeError:
-        raise Http404
 
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
@@ -884,12 +844,6 @@ class QuickFilter(View):
 
 class QuickFilterResults(View):
 
-    # @staticmethod
-    # def variables(selection):
-    #     print('++')
-    #     print('++', selection['variables'])
-    #     return
-
     @staticmethod
     def get(request, selection):
 
@@ -898,59 +852,30 @@ class QuickFilterResults(View):
                           'project': 'nmentrygroups__group__type__name__in'}
 
         filter_dict = {}
-        fair = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+        fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
 
         for i in QueryDict(selection):
             if i in simple_queries:
                 filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
             elif i == 'date':
                 filter_dict['datasource__temporal_scale__observation_end__gte'] = \
-                    QueryDict(selection).getlist('date')[0]
+                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[0], "%Y-%m-%d"))
                 filter_dict['datasource__temporal_scale__observation_start__lte'] = \
-                    QueryDict(selection).getlist('date')[1]
-            elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
-                fair = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[1], "%Y-%m-%d"))
+            # elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
+            #     fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
             elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
-                # TODO: figure out how to avoid the following useless query (need something in exclude query)
-                fair = Q(embargo=True) & Q(embargo=False)
+                # TODO: figure out how to avoid the following useless query
+                #  (this exists because in exclude query is something needed)
+                fair_query = Q(embargo=True) & Q(embargo=False)
             elif i == 'draw':
                 values = QueryDict(selection).getlist(i)[0]
                 it = iter([float(item) for item in values.split(',')])
                 poly = Polygon(tuple(zip(it, it)), srid=4326)
                 filter_dict['location__intersects'] = poly
-                # bla = Entries.objects\
-                #     .raw('SELECT location FROM entries WHERE ST_Contains(ST_GEOMFROMTEXT(%s), location);', [poly])
-                # bla = Entries.objects.filter(location__intersects=poly)
 
-                # print('---list(map(float, mylist): ', map(float, values))
-
-        # Do the same without loop
-        # if QueryDict(selection).getlist('variables'):
-        #     filter_dict['variable__name__in'] = QueryDict(selection).getlist('variables')
-        #
-        # if QueryDict(selection).getlist('institution'):
-        #     filter_dict['nmpersonsentries__person__organisation_name__in'] = QueryDict(selection).getlist('institution')
-        #
-        # if QueryDict(selection).getlist('project'):
-        #     filter_dict['nmentrygroups__group__type__name__in'] = QueryDict(selection).getlist('project')
-        #
-        # # get everything that has values between start and end date:
-        # if QueryDict(selection).getlist('date'):
-        #     filter_dict['datasource__temporal_scale__observation_end__gte'] = QueryDict(selection).getlist('date')[0]
-        #     filter_dict['datasource__temporal_scale__observation_start__lte'] = QueryDict(selection).getlist('date')[1]
-        #
-        # if QueryDict(selection).getlist('is_FAIR') == ['true']:
-        #     fair = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
-        # else:
-        #     # TODO: figure out how to avoid the following useless query (need something in exclude query)
-        #     fair = Q(embargo=True) & Q(embargo=False)
-
-        print('total_results: ', Entries.objects.filter(**filter_dict).exclude(fair).count())
-        query = Entries.objects.filter(**filter_dict).exclude(fair).only('id')
+        query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
         total_results = query.count()
-        # total_results = Entries.objects.filter(**filter_dict).exclude(fair).count()
-
-        print('filter_dict 2: ', filter_dict)
 
         # From here collect data to update map:
         dataExt = list(query.aggregate(Extent('location'))['location__extent'])
@@ -959,16 +884,6 @@ class QuickFilterResults(View):
         if get_layer(id_layer, HomeView.store, HomeView.workspace):
             delete_layer(id_layer, HomeView.store, HomeView.workspace)
         create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
-
-
-        # filter_items = {'{0}'.format(path): child["I" + str(i)]['name']}
-        # item_result.update({"I" + str(i): query1.filter(**filter_items).count()})
-
-        # total = Entries.objects.all().count()
-        # quickfilter = QuickFilterForm()
-        # more = QuickFilterForm.More()
-        # selection = []
-        # # print('quickfilter: ', quickfilter)
 
         return JsonResponse({'selection': selection, 'total': total_results,
                              'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': IDs})
