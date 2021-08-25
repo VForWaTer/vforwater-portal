@@ -197,37 +197,29 @@ def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object
     return {'script': script, 'div': div}
 
 
-def direction_plot(db_data, ti):
+def direction_plot(dataframe, ti):
     # use data in percent => transform db_data to percent
-    pct_data = []
-    for tc in range(0, len(db_data)):  # 4
-        all_direct = db_data[tc][1]
-        datalist = [db_data[tc][0], all_direct]
-        for single_bin in range(2, len(db_data[tc])):
-            datalist.append(db_data[tc][single_bin] * 100 / all_direct)
-        pct_data.append(tuple(datalist))
+    df = (dataframe.transpose().iloc[2:, 0:] / dataframe['sum']) * 100
+    df.columns = dataframe['tstamp']
 
-    db_datadict = {item[0]: item[2:] for item in pct_data}
-    df = pd.DataFrame(db_datadict)
-    db_datadictstr = {str(int(time.mktime(item[0].timetuple()) * 1000)): list(item[2:]) for item in pct_data}
+    db_datadictstr = {str(int(time.mktime(item.timetuple()) * 1000)): list(df[item]) for item in df.columns}
 
-    hist = [0] * 36
-    maxlist = [0] * 36
-    data_list = list(zip(*(pct_data)))
-
-    for i in range(2, len(data_list)):
-        hist[i - 3] = mean(data_list[i])
-        maxlist[i - 3] = max(data_list[i])
+    maxlist = df.max(1)
+    hist = df.mean(1)
 
     # maxhist = sorted(maxlist)[-3]
     maxhist = mean(maxlist) * 0.8  # don't use real max of dataset, too many discordant values
     sumhist = sum(hist)
+    # start = list(map(lambda i: -radians((i * 10) - 85), range(0, 36)))
     start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     end = [-radians((i * 10) - 75) for i in list(range(0, 36))]
     pdstart = [-radians((i * 10) - 95) for i in list(range(0, 36))]
-    pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
+    pdend = start
+    # pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     labeltext = ("Selection of " + ti + "ly histograms")
     titletext = (ti + 'ly median and sum of all histograms').capitalize()
+
+    # need two different sources for callback in Bokeh
     pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
     jssource = ColumnDataSource(data=db_datadictstr)
 
@@ -320,13 +312,11 @@ def direction_plot(db_data, ti):
     mainplot.legend.location = "top_left"
     mainplot.legend.click_policy = "hide"
 
-    allcounts = [i[1] for i in db_data]
-    alldates = [i[0] for i in db_data]
-
     # plot bars for the number of values in each group as secondary 'by' plot
-    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(allcounts))
-    bin_width = db_data[0][0] - db_data[1][0]
-    source = ColumnDataSource({'date': alldates, 'count': allcounts})
+    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(dataframe['sum']))
+    bin_width = df.columns[0]-df.columns[1]
+
+    source = ColumnDataSource({'date': dataframe['tstamp'], 'count': dataframe['sum']})
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
 
     script, div = components(column(distriplot, mainplot, slider, rslider), wrap_script=False)

@@ -76,8 +76,8 @@ def __DB_load_data(ID: int, date: list, full_res: bool):
     :return: dict - {df, axis, scale, has_preci}
     """
     # datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
-    datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
-    if datapath == 'timeseries_1d':
+    datatable = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
+    if datatable == 'timeseries_1d':
         # request data with django ORM
         if date and date[0]:
             qs = Timeseries_1D.objects.filter(entry_id=ID, tstamp__gte=date[0], tstamp__lte=date[1])\
@@ -190,7 +190,11 @@ def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
 
     dbresult = cursor.fetchall()
     cursor.close()
-    return dbresult
+
+    index = ['tstamp', 'sum'] + list(map(str, range(0, 36)))
+    df = pd.DataFrame(dbresult, columns=index)
+
+    return df
 
 
 def fill_data_gaps(db_data: object):
