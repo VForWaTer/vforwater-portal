@@ -173,10 +173,38 @@ def __DB_load_data_avg(ID: int, scale='day'):
 
 
 def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
+    """
+    Load data for rose plot from database.
+    :param ID:
+    :param ti:
+    :param date:
+    :param full_res:
+    :return:
+    """
     # TODO: Use django ORM instead of pure sql
+    # TODO: if iwg is interested in it: Check number of time intervals.
+    #  If this number is lower then 100 a smaller interval is used.
+    datestring = ' '
+    if date:
+        datestring = "AND tstamp >= '{0}'::timestamp AND tstamp < '{1}'::timestamp ".format(date[0], date[1])
+
     datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     cursor = connections['default'].cursor()
+
+    # adjust number of time frames according to the selected time frame
+    date_opt = ['year', 'month', 'week', 'day']
+    cursor.execute("SELECT date_trunc('{0}', tstamp)::date as date "
+                   "FROM {2} "
+                   "WHERE entry_id = {1} {3}"
+                   "GROUP BY date_trunc('{0}', tstamp);".format(ti, ID, datatable, datestring))
+    data_length = len(cursor.fetchall())
+    if data_length < 100 and date_opt.index(ti) < len(date_opt):
+        ti = date_opt[date_opt.index(ti)+1]
+    elif data_length > 1500 and date_opt.index(ti) > 0:
+        ti = date_opt[date_opt.index(ti)-1]
+
     # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
+    # TODO: check if this assumption above for the direction in now (that it is implemented with pandas) is still valid
     sum_string = ""
     for i in range(1, 36):
         sum_string += "count(*) FILTER (WHERE trunc(((data[1])+5)/10)::double precision = %i ) as b%i," % (i, i)
@@ -185,16 +213,15 @@ def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
                    "count(*) FILTER (WHERE trunc(((data[1])+5)/10)::double precision = 0 "
                    "or trunc(((data[1])+5)/10)::double precision = 36) as b0, {1} "
                    "FROM {3} "
-                   "WHERE entry_id = {2} "
-                   "GROUP BY date_trunc('{0}', tstamp);".format(ti, sum_string[:-1], ID, datatable))
+                   "WHERE entry_id = {2} {4}"
+                   "GROUP BY date_trunc('{0}', tstamp);".format(ti, sum_string[:-1], ID, datatable, datestring))
 
     dbresult = cursor.fetchall()
     cursor.close()
 
     index = ['tstamp', 'sum'] + list(map(str, range(0, 36)))
-    df = pd.DataFrame(dbresult, columns=index)
 
-    return df
+    return pd.DataFrame(dbresult, columns=index), ti
 
 
 def fill_data_gaps(db_data: object):

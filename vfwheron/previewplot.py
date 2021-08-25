@@ -197,7 +197,13 @@ def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object
     return {'script': script, 'div': div}
 
 
-def direction_plot(dataframe, ti):
+def direction_plot(dataframe: object, ti: str) -> object:
+    """
+
+    :param dataframe: pandas dataframe
+    :param ti: string defining 'week', 'month'...
+    :return:
+    """
     # use data in percent => transform db_data to percent
     df = (dataframe.transpose().iloc[2:, 0:] / dataframe['sum']) * 100
     df.columns = dataframe['tstamp']
@@ -446,7 +452,7 @@ def get_plot(id: str, full_res: bool, date: list, size: list = [700, 500]) -> di
         label = __DB_load_label(id)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            db_data = __DB_load_directiondata(id, ti, date, full_res)
+            db_data, ti = __DB_load_directiondata(id, ti, date, full_res)
             # plot_data = fill_data_gaps(db_data)
             img = direction_plot(db_data, ti)
         else:
