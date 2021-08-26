@@ -280,6 +280,14 @@ msgstr " Daten & Metadaten herunterladen"
 msgid "help"
 msgstr "Hilfe"
 
+#: views.py:661
+msgid "Variable name"
+msgstr "Variablenname"
+
+#: views.py:661
+msgid "Title"
+msgstr "Titel"
+
 #: templates/vfwheron/legals.html
 msgid "This page is still under construction."
 msgstr "Diese Seite befindet sich noch in der Entwicklung."
