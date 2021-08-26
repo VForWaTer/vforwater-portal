@@ -152,7 +152,8 @@ function create_map() {
         source: wfsPointSource,
     });
 
-    /** Style for selection/single circles around cluster  **/
+   /* /!** Style for selection/single circles around cluster  **!/
+    // used for Eddy footprint
         let img = new ol.style.Circle({
             radius: 8,
             stroke: new ol.style.Stroke({
@@ -172,10 +173,11 @@ function create_map() {
                 width: 1
             })
         });
-
+*/
+/*
 
      // TODO: Eddy footprint example
-     /** Load a 1-band rasterimage 'testlayer' from geoserver and render it as map **/
+     /!** Load a 1-band rasterimage 'testlayer' from geoserver and render it as map **!/
     let testExt = [1227200, 6035000, 1229000, 6036000]
     let testlayer = new ol.layer.Image({
         extent: testExt,
@@ -207,14 +209,14 @@ function create_map() {
     let testPointSource = new ol.source.Vector({features: [testpoint],});
     let testPointLayer = new ol.layer.Vector({source: testPointSource,});
 
-
+*/
 
     /** functionality for zoom to extent button **/
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
         tipLabel: gettext('Zoom to your available data'),
-        extent: testExt,  // eddy footprint testextent
-        // extent: dataExt,
+        // extent: testExt,  // eddy footprint testextent
+        extent: dataExt,
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
@@ -239,8 +241,8 @@ function create_map() {
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
-        // layers: [mapLayer, clusterLayer],
-        layers: [mapLayer, testPointLayer, testlayer, clusterLayer],  // Eddy footprint testlayer
+        layers: [mapLayer, clusterLayer],
+        // layers: [mapLayer, testPointLayer, testlayer, clusterLayer],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
 
         controls: [

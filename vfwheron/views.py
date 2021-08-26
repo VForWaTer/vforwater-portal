@@ -33,7 +33,7 @@ from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
 from vfwheron.previewplot import get_plot, get_bokeh_std_fullres, format_label
 from wps_gui.models import WpsResults
-from .data_tools import get_timescale, fill_data_gaps, precision_to_minmax, is_data_short
+from .data_tools import __get_timescale, fill_data_gaps, precision_to_minmax, is_data_short
 from .forms import QuickFilterForm
 
 mpl.use('Agg')
@@ -931,18 +931,18 @@ class DownloadView(View):
 # #     print('________________________- here: ', request)
 # #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.asc', 'rb'))
 # #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.tif', 'rb'))
-def Eddytestdata(request):
-    #     # url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
-    #     #       'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
-    #     #                                                         srid, bbox, srid)
-    #     url = '{0}/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330' \
-    #           '&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832' \
-    #           '&format=application/openlayers'.format(LOCAL_GEOSERVER)
-    url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-    # url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011930&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-    url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011630&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-
-    request_url = urllib.request.Request(url)
-    response = urllib.request.urlopen(request_url)
-    print('response: ', response)
-    return HttpResponse(response.read().decode('utf-8'))
+# def Eddytestdata(request):
+#     #     # url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
+#     #     #       'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
+#     #     #                                                         srid, bbox, srid)
+#     #     url = '{0}/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330' \
+#     #           '&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832' \
+#     #           '&format=application/openlayers'.format(LOCAL_GEOSERVER)
+#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
+#     # url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011930&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
+#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011630&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
+#
+#     request_url = urllib.request.Request(url)
+#     response = urllib.request.urlopen(request_url)
+#     print('response: ', response)
+#     return HttpResponse(response.read().decode('utf-8'))
