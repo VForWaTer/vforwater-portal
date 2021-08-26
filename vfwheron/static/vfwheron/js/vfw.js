@@ -622,13 +622,11 @@ function moreInfoModal(id) {
     let urlParams = new URLSearchParams(window.location.search);
     let startdate, enddate;
     let date = urlParams.getAll('date');
-    console.log('date: ', date)
+
     if ($.isEmptyObject(date)) {
-        console.log('date 1: ', date)
         startdate = 'None'
         enddate = 'None'
     } else {
-        console.log('date 2: ', date)
         startdate = date[0].toString();
         enddate = date[1].toString();
     }
@@ -673,7 +671,11 @@ function moreInfoModal(id) {
         // loop over "properties" dict with metadata, build columns
         for (let j in properties) {
             // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-            metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+            metaText += '<tr>' +
+                '<td><div style="max-width:120px;"><b>' + j + '</b></div></td>' +
+                '<td><div style="max-height:300px; max-width:320px; ' +
+                'overflow-x: hidden; overflow-y:auto;">' + properties[j] + '</div></td>' +
+                '</tr>';
         }
         document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
         showDataInfo(properties);
