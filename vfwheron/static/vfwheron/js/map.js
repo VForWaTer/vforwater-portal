@@ -65,7 +65,7 @@ function create_map() {
         //     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
         let source = new ol.source.XYZ({
             attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
-            'SRTM | Map style from <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
+            'SRTM | Map style from <a href="https://opentopomap.org/">OpenTopoMap</a> ' +
             '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
             url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
         });
