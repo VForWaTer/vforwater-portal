@@ -98,48 +98,12 @@ function reset_filter(){
     // clusterLayer.changed()
 }
 
-/* send json Object with selection (i.e. P6:{C1:I1}) to server and receive IDs of selection for wfs */
-function showSelectionOnMap(selection) {
-    $.ajax({
-        url: DEMO_VAR + "/home/filter_map_selection",
-        dataType: 'json',
-        data: {
-            filter_map_selection: JSON.stringify(selection),
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (json) {
-            zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
-            wfsLayerName = json['ID_layer'];
-            selectedIds.quickMenu = json['IDs'];
-            wfsPointSource.refresh();
-    })
-        .fail(function (e) {
-            console.warn('Cannot update your map: ', e)
-        })
-}
-
 /** update objects on map according to filter results */
 function updateMapSelection(json) {
     zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
     wfsLayerName = json['ID_layer'];
     selectedIds.quickMenu = json['IDs'];
     wfsPointSource.refresh();
-}
-
-/* send json Object with selection to server and get int(in a json) with amount of items back */
-async function getCountFromServer(selection) {
-    $.ajax({
-        url: DEMO_VAR + "/home/filter_selection",
-        dataType: 'json',
-        data: {
-            filter_selection: JSON.stringify(selection),
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (json) {
-            _updateCounts(json);
-    });
 }
 
 /**

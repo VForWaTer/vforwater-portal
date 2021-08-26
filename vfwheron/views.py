@@ -569,7 +569,7 @@ def previewplot(request):
             accessible_data = accessible_data['open']
             full_res = is_data_short(accessible_data[0], 'db', date)
             # plot with bokeh
-            return JsonResponse(get_plot(id=accessible_data[0], full_res=full_res, date=date))
+            return JsonResponse(get_plot(ID=accessible_data[0], full_res=full_res, date=date))
             # else:
             # return JsonResponse(get_preview(accessible_data[0]))
 
@@ -613,7 +613,7 @@ def previewplot(request):
                 # TODO: scale should be in metadata. Add and get it here
                 scale = metadata['scale']
             else:
-                scale = get_timescale(df)
+                scale = __get_timescale(df)
 
             # prepare dataset for plot
             del df['entry_id']
@@ -647,7 +647,7 @@ def short_datainfo(request):
     try:
         ids = json.loads(request.GET.get('short_info'))
         field = ['title', 'variable__name', 'embargo']
-        field_name = {'title': 'Titel', 'variable__name': 'Variablenname', 'embargo': 'Embargo'}
+        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'embargo': 'Embargo'}
         preview = defaultdict(list)
 
         for k in ids:
@@ -866,7 +866,7 @@ class QuickFilterResults(View):
             #     fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
             elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
                 # TODO: figure out how to avoid the following useless query
-                #  (this exists because in exclude query is something needed)
+                #  (this exists because in exclude query is always some input needed)
                 fair_query = Q(embargo=True) & Q(embargo=False)
             elif i == 'draw':
                 values = QueryDict(selection).getlist(i)[0]
@@ -878,15 +878,23 @@ class QuickFilterResults(View):
         total_results = query.count()
 
         # From here collect data to update map:
-        dataExt = list(query.aggregate(Extent('location'))['location__extent'])
+        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT
+        if query:
+            data_ext = list(query.aggregate(Extent('location'))['location__extent'])
+
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
         if get_layer(id_layer, HomeView.store, HomeView.workspace):
             delete_layer(id_layer, HomeView.store, HomeView.workspace)
-        create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
+
+        if IDs:
+            create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
+        else:
+            # TODO: Selection with no result has to be handled properly
+            pass
 
         return JsonResponse({'selection': selection, 'total': total_results,
-                             'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': IDs})
+                             'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
 
 
 def error_404_view(request, exception):

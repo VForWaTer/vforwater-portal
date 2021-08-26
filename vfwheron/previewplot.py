@@ -432,27 +432,27 @@ def get_cache(cache_obj: dict) -> tuple:
     return cache_obj, img
 
 
-def get_plot(id: str, full_res: bool, date: list, size: list = [700, 500]) -> dict:
+def get_plot(ID: str, full_res: bool, date: list, size: list = [700, 500]) -> dict:
     """
     Check if plot is stored with redis or build a new one with Bokeh.
     Bokeh builds an object with 'script' and 'div'. Redis stores this as string, which is fine, as
     the data is send to the website as string anyways.
 
-    :param id: Entry id in metacatalog
+    :param ID: Entry id in metacatalog
     :param full_res: Boolean to set if plot should be of full dataset
     :param date:
     :param size:
     :return: Bokeh image consisting of 'script' and 'div'
     """
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size) + str(date))}
+                 'in_cache': False, 'name': "plot_{}".format('b' + str(ID) + str(size) + str(date))}
     cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
-        label = __DB_load_label(id)
+        label = __DB_load_label(ID)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            db_data, ti = __DB_load_directiondata(id, ti, date, full_res)
+            db_data, ti = __DB_load_directiondata(ID, ti, date, full_res)
             # plot_data = fill_data_gaps(db_data)
             img = direction_plot(db_data, ti)
         else:
@@ -460,7 +460,7 @@ def get_plot(id: str, full_res: bool, date: list, size: list = [700, 500]) -> di
         #             db_data = __get_axis_limits(db_data)
         #             img = get_bokeh_standard(db_data, size, label)
         # get data
-            db_data = __DB_load_data(id, date, full_res)
+            db_data = __DB_load_data(ID, date, full_res)
             if db_data['has_preci']:
                 db_data['df'] = precision_to_minmax(db_data['df'])
             plot_data = fill_data_gaps(db_data)

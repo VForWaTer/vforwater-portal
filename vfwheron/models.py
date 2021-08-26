@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.db.models import Q
 from django.http import QueryDict
 from django.utils.translation import gettext, gettext_lazy
@@ -444,8 +445,8 @@ class Thesaurus(models.Model):
 class Timeseries(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
-    data = models.DecimalField(max_digits=999, decimal_places=999)
-    precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+    data = ArrayField(models.DecimalField(max_digits=999, decimal_places=999, blank=False, null=True), size=3)
+    precision = ArrayField(models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True), size=3)
 
     class Meta:
         managed = False

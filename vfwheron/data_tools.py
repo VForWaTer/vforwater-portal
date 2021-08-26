@@ -9,7 +9,7 @@ from heron.settings import max_size_preview_plot
 from vfwheron.models import Entries, Timeseries, Timeseries_1D
 
 
-def get_timescale(df):
+def __get_timescale(df, ID):
     """
     Get a dataframe with a timestamp ('tstmp'), iterate over the first 11 values (or less for shorter datasets)
     and return the smallest time difference.
@@ -17,17 +17,28 @@ def get_timescale(df):
     :param df: pandas dataframe
     :return: pandas timedelta
     """
-    stepsize = []
-    steps = 1
-    checklength = 11
 
-    if df.shape[0] <= checklength + 1:
-        checklength = df.shape[0] - 1
+    def __timescale_from_data(df):
+        stepsize = []
+        steps = 1
+        checklength = 11
 
-    while steps < checklength:
-        stepsize.append(df['tstamp'][steps + 1] - df['tstamp'][steps])
-        steps += 1
-    return min(stepsize)
+        if df.shape[0] <= checklength + 1:
+            checklength = df.shape[0] - 1
+
+        while steps < checklength:
+            stepsize.append(df['tstamp'][steps + 1] - df['tstamp'][steps])
+            steps += 1
+        return min(stepsize)
+
+    if ID:
+        timescale = Entries.objects.filter(id=ID).values_list('datasource__temporal_scale__resolution')[0][0]
+        if timescale:
+            return pd.to_timedelta(timescale)
+        else:
+            return __timescale_from_data(df)
+    else:
+        return __timescale_from_data(df)
 
 
 # TODO: In Python > 3.7 use Literal
@@ -65,6 +76,21 @@ def is_data_short(ID: int, source: str, date: list):
     return full
 
 
+def __unify_dataframe(df):
+    """
+    Check format of dataframe. When one value in data column it's the same as timeseries-1d, so just convert array to
+    number and rename 'data' column to 'value'.
+
+    :param df:
+    :return: df
+    """
+    if len(df['data'][0]) == 1:
+        df['value'] = df['data'].str.get(0)
+        df.drop(columns=['data'], inplace=True)
+
+    return df
+
+
 def __DB_load_data(ID: int, date: list, full_res: bool):
     """
     Load data from database and return a dict with data, pandas df and axis. When full resolution == False limit length
@@ -75,37 +101,67 @@ def __DB_load_data(ID: int, date: list, full_res: bool):
     :param full_res: boolean
     :return: dict - {df, axis, scale, has_preci}
     """
+    lookup_arguments = {'entry_id': ID}
+    if date and date[0]:
+        lookup_arguments['tstamp__gte'] = date[0]
+        lookup_arguments['tstamp__lte'] = date[1]
+
     # datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     datatable = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
+
     if datatable == 'timeseries_1d':
         # request data with django ORM
-        if date and date[0]:
-            qs = Timeseries_1D.objects.filter(entry_id=ID, tstamp__gte=date[0], tstamp__lte=date[1])\
-                .values('tstamp', 'value', 'precision')
-        else:
-            qs = Timeseries_1D.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
+        qs = Timeseries_1D.objects.filter(**lookup_arguments).values('tstamp', 'value', 'precision')
 
-        if full_res:
-            df = pd.DataFrame(list(qs))
-        else:
-            qs_length = qs.count()
-            df = pd.DataFrame(list(qs[qs_length-max_size_preview_plot:qs_length]))
-
-        timescale = Entries.objects.filter(id=ID).values_list('datasource__temporal_scale__resolution')[0][0]
-        if timescale:
-            timescale = pd.to_timedelta(timescale)
-        else:
-            timescale = get_timescale(df)
-
-        if 'precision' in df.columns:
-            if df['precision'].isnull().values.any():
-                precision = False
-            else:
-                precision = True
+        df = __reduce_dataset(qs, full_res)
+        timescale = __get_timescale(df, ID)
+        precision = __has_precision(df)
 
         return {'df': df, 'scale': timescale, 'has_preci': precision}
+
+    if datatable == 'timeseries':
+
+        qs = Timeseries.objects.filter(**lookup_arguments).values('tstamp', 'data', 'precision')
+        df = __reduce_dataset(qs, full_res)
+        df = __unify_dataframe(df)
+        timescale = __get_timescale(df, ID)
+
+        precision = __has_precision(df)
+
+        return {'df': df, 'scale': timescale, 'has_preci': precision}
+
     else:
-        print('*** CANNOT LOAD YOUR DATA. PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
+        print('*** CANNOT LOAD YOUR \'{0}\' DATA. PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***'.format(datatable))
+
+
+def __has_precision(df):
+    """
+    Check if dataset has any precision values.
+
+    :param df: pandas dataframe
+    :return: bool
+    """
+    precision = False
+    if 'precision' in df.columns:
+        if not df['precision'].isnull().values.any():
+            precision = True
+    return precision
+
+
+def __reduce_dataset(qs: object, full_res: bool):
+    """
+    Reduce length of dataset to length given in 'settings.max_size_preview_plot' to speed up loading time of preview.
+
+    :param qs: data as django queryset
+    :param full_res: bool
+    :return: pandas dataframe
+    """
+    if full_res:
+        df = pd.DataFrame(list(qs))
+    else:
+        qs_length = qs.count()
+        df = pd.DataFrame(list(qs[qs_length - max_size_preview_plot:qs_length]))
+    return df
 
 
 def __get_axis_limits(plot_data):
@@ -163,7 +219,7 @@ def __DB_load_data_avg(ID: int, scale='day'):
         if timescale:
             timescale = pd.to_timedelta(timescale)
         else:
-            timescale = get_timescale(df)
+            timescale = __get_timescale(df)
 
         precision = False if df['precavg'].isnull().values.any() else True
 

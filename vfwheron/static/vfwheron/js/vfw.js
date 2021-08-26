@@ -603,23 +603,12 @@ function getCookie(name) {
 // TODO: not used in this file. So from where comes the used token? Which one is better?
 let csrf_token = getCookie('csrftoken');
 
-//build menu on sidebar
-$(document).ready(function (menuTitle) {
-    $('#accordion').accordion({
-        heightStyle: "content",
-        active: false,
-        collapsible: true,
-    });
-    $("h5.w3-hover-blue.nav").click(function () {
-        // var menuValue = $(this).attr("value");
-// open accordion
-        $('div #subaccordion').accordion({
-            heightStyle: "content",
-            active: false,
-            collapsible: true,
-        });
-    });
-}); // end ready
+/**
+ * Check URL if a date is used to filter. If yes return that date.
+ * */
+function getDateFromURL() {
+
+}
 
 /**
  * Load metadata and preview plot of dataset from server asynchronous.
@@ -631,7 +620,18 @@ function moreInfoModal(id) {
     let modLock = false;
     let pdata, tdata;
     let urlParams = new URLSearchParams(window.location.search);
+    let startdate, enddate;
     let date = urlParams.getAll('date');
+    console.log('date: ', date)
+    if ($.isEmptyObject(date)) {
+        console.log('date 1: ', date)
+        startdate = 'None'
+        enddate = 'None'
+    } else {
+        console.log('date 2: ', date)
+        startdate = date[0].toString();
+        enddate = date[1].toString();
+    }
 
     let ajaxTable = function () {
         return $.ajax({
@@ -653,8 +653,8 @@ function moreInfoModal(id) {
             data: {
                 preview: id,
                 // date: date.toString(),
-                startdate: date[0].toString(),
-                enddate: date[1].toString(),
+                startdate: startdate,
+                enddate: enddate,
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
         })

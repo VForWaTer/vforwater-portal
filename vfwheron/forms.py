@@ -78,13 +78,14 @@ class QuickFilterQuerySets:
     date_max_path = 'datasource__temporal_scale__observation_end'
 
 
-    variables_base_qs = Entries.objects.values_list('variable__name', flat=True)
+    variables_base_qs = Entries.objects.values_list('variable__name', flat=True).order_by('variable__name')
     observation_base_min_qs = Entries.objects.values_list('datasource__temporal_scale__observation_start')
     observation_base_max_qs = Entries.objects.values_list('datasource__temporal_scale__observation_end')
     fair_data_base_qs = Entries.objects.filter(Q(embargo=False) | Q(embargo_end__lt=timezone.now()))
-    institution_base_qs = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)
+    institution_base_qs = Entries.objects.values_list('nmpersonsentries__person__organisation_name', flat=True)\
+        .order_by('nmpersonsentries__person__organisation_name')
     project_base_qs = Entries.objects.filter(nmentrygroups__group__type__name='Project') \
-        .values_list('nmentrygroups__group__title', flat=True)
+        .values_list('nmentrygroups__group__title', flat=True).order_by('nmentrygroups__group__title')
 
     variables_qs = variables_base_qs.exclude(variable__name__isnull=True).distinct()
     observation_min_qs = observation_base_min_qs \
