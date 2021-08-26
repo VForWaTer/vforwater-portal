@@ -152,27 +152,16 @@ function create_map() {
         source: wfsPointSource,
     });
 
-     /** Load a 1-band rasterimage 'testlayer' from geoserver and render it as map **/
-    // let testExt = [1226937.04, 6034443.95, 1229348.79, 6036114.62]
-    // let testlayer = new ol.layer.Image({
-    //     extent: testExt,
-    //     source: new ol.source.ImageWMS({
-    //         url: 'http://localhost:8080/geoserver/wms',
-    //         params: {'LAYERS': 'NewRaster:Graswang_footprint_0012330'},
-    //         ratio: 1,
-    //         serverType: 'geoserver',
-    //     }),
-    // })
-
     /** Style for selection/single circles around cluster  **/
-    /*    let img = new ol.style.Circle({
+        let img = new ol.style.Circle({
             radius: 8,
             stroke: new ol.style.Stroke({
-                color: '#00BAEE',
+                color: '#00021d',
+                // color: '#00BAEE',
                 width: 0.1
             }),
             fill: new ol.style.Fill({
-                color: "rgba(170, 221, 249,0.7)"
+                color: "rgb(53,161,220)"
             })
         });
         let style1 = new ol.style.Style({
@@ -182,15 +171,50 @@ function create_map() {
                 color: '#AADDF9',
                 width: 1
             })
-        });*/
+        });
+
+
+     // TODO: Eddy footprint example
+     /** Load a 1-band rasterimage 'testlayer' from geoserver and render it as map **/
+    let testExt = [1227200, 6035000, 1229000, 6036000]
+    let testlayer = new ol.layer.Image({
+        extent: testExt,
+        source: new ol.source.ImageWMS({
+            url: 'http://localhost:8080/geoserver/wms',
+            // params: {'LAYERS': 'testworkspace:Graswang_footprint_0011030'},
+            // params: {'LAYERS': 'testworkspace:Graswang_footprint_0010300'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0012330'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011530'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010000'},
+
+            params: {'LAYERS': 'NewRaster:Graswang_footprint_0010600'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011630'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010930'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011930'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010900'},
+            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0012100'},
+            ratio: 1,
+            serverType: 'geoserver',
+        }),
+    })
+    let testpoint = new ol.Feature({
+        // geometry: new ol.geom.Point([1240114.37, 6016817.06]),
+        // geometry: new ol.geom.Point([47.571, 11.032]),
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([11.0326, 47.5708])),
+        name: 'Graswang tower',
+    });
+    testpoint.setStyle(style1);
+    let testPointSource = new ol.source.Vector({features: [testpoint],});
+    let testPointLayer = new ol.layer.Vector({source: testPointSource,});
+
 
 
     /** functionality for zoom to extent button **/
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
         tipLabel: gettext('Zoom to your available data'),
-        // extent: testExt,
-        extent: dataExt,
+        extent: testExt,  // eddy footprint testextent
+        // extent: dataExt,
         duration: 2500,
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
@@ -215,8 +239,8 @@ function create_map() {
         // renderer: 'canvas',
         overlays: [metaData_Overlay],
         target: map_tar,
-        layers: [mapLayer, clusterLayer],
-        // layers: [mapLayer, testlayer, clusterLayer],
+        // layers: [mapLayer, clusterLayer],
+        layers: [mapLayer, testPointLayer, testlayer, clusterLayer],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
 
         controls: [
