@@ -955,7 +955,7 @@ function change_quickfilter(selection) {
     if (url !== false) {
         console.log('url: ', url)
         $.ajax({
-            url: url,
+            url: DEMO_VAR + url,
             // data: {
             //     selection: selection,
             //     'csrfmiddlewaretoken': csrf_token,
@@ -965,8 +965,8 @@ function change_quickfilter(selection) {
             dataType: "text",
         })
             .done(function (result) {
-                let json = JSON.parse(result)
                 console.log('result: ', result)
+                let json = JSON.parse(result)
                 console.log('json: ',  json)
                 /** update total Value for available datasets: */
                 $("#quickfilter-form p:first").html(
@@ -982,7 +982,7 @@ function change_quickfilter(selection) {
 
 function advanced_filter_query(selection) {
     $.ajax({
-        url: "/home/advanced_filter",
+        url: DEMO_VAR + "/home/advanced_filter",
         datatype: 'json',
         data: {
             selection: selection,
