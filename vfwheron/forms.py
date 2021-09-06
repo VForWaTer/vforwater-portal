@@ -118,27 +118,27 @@ class QuickFilterForm(forms.Form):
 
     # create menu objects
     variables = forms.ModelMultipleChoiceField(widget=forms.SelectMultiple(
-        attrs={'onchange': 'change_quickfilter({"variables": $("#id_variables").val()});'}),
+        attrs={'onchange': 'get_quick_selection({"variables": $("#id_variables").val()});'}),
         queryset=QuickFilterQuerySets.variables_qs)
     # time = DateRangeSliderField(label="Date", minimum=observation_min.date(),
     date = DateRangeSliderField(label="Date", minimum=QuickFilterQuerySets.observation_min_qs.date(),
                                 maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
                                 # widget=DateRangeSliderFiled(
                                 # attrs={'onchange': 'console.log("YEAH!");'}))
-                                onchange='change_quickfilter({"date": $("#id_date").data("values")});')
-                                # onchange='change_quickfilter({"date": $("#id_date").val()});')
+                                onchange='get_quick_selection({"date": $("#id_date").data("values")});')
+                                # onchange='get_quick_selection({"date": $("#id_date").val()});')
     is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
-        attrs={'onchange': 'change_quickfilter({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
+        attrs={'onchange': 'get_quick_selection({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
 
     class More(forms.Form):
         institution = forms.ModelMultipleChoiceField(
             widget=forms.
-                SelectMultiple(attrs={'onchange': 'change_quickfilter({"institution": $("#id_institution").val()});'}),
+                SelectMultiple(attrs={'onchange': 'get_quick_selection({"institution": $("#id_institution").val()});'}),
             queryset=QuickFilterQuerySets.institution_qs)
         project = forms.\
             ModelMultipleChoiceField(widget=forms.SelectMultiple(
-                attrs={'onchange': 'change_quickfilter({"project": $("#id_project").val()});'}),
+                attrs={'onchange': 'get_quick_selection({"project": $("#id_project").val()});'}),
                 queryset=QuickFilterQuerySets.project_qs)
         my_data = forms.BooleanField(widget=forms.CheckboxInput(
-            attrs={'onchange': 'change_quickfilter({"my_data": $("#id_my_data").is(":checked")});'}))
+            attrs={'onchange': 'get_quick_selection({"my_data": $("#id_my_data").is(":checked")});'}))
 

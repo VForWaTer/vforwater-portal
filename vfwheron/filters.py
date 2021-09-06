@@ -1,35 +1,6 @@
 import django_filters
-from django_filters import DateFilter, DateTimeFilter, DateTimeFromToRangeFilter
 
-from vfwheron.models import Entries, NmPersonsEntries
-
-
-#
-# class VariableFilter(django_filters.FilterSet):
-#     name = django_filters.CharFilter(method='my_custom_filter')
-#     # name = django_filters.CharFilter(lookup_expr='iexact')
-#     print('name: ', name)
-#
-#     class Meta:
-#         print('+++++')
-#         model = Entries
-#         fields = ['variable_name', 'created_on']
-#
-#     def my_custom_filter(self, queryset, name, value):
-#         print('self: ', self)
-#         print('queryset: ', queryset)
-#         print('name: ', name)
-#         print('value: ', value)
-#         return queryset.filter(**{
-#             name: value,
-#         })
-
-class VariableFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='iexact')
-
-    class Meta:
-        model = Entries
-        fields = ['title', 'abstract']
+from vfwheron.models import NmPersonsEntries
 
 
 # class NMPersonsFilter(django_filters.FilterSet):

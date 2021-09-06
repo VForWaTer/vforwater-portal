@@ -2,18 +2,9 @@
 The filter doesn't have to care about users, as all metadata is supposed to be accessible to all users.
 """
 
-import json
 import logging
-
-from django import forms
 from django.db.models import Q
-from django.db.models import Max, Min
 from django.utils import timezone
-
-from author_manage.views import MyResourcesView
-from heron.settings import DEBUG
-# import vfwheron.models_metacatalog_dev as mc_dev
-
 from vfwheron.models import Entries
 
 logger = logging.getLogger(__name__)

@@ -435,7 +435,7 @@ function drawOnMapMenu(shortParent, shortChild) {
         }
         removeInteractions();
         toggle_draw(document.getElementById("draw_square"))
-        change_quickfilter({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
+        get_quick_selection({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
     });
 
     // add clickEvent to draw polygon button
@@ -478,7 +478,7 @@ function drawOnMapMenu(shortParent, shortChild) {
         clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
           selectedFeatures.push(feature);
         });*/
-        change_quickfilter({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
+        get_quick_selection({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
     });
 
     /** add clickEvent to modify button */
@@ -948,7 +948,7 @@ function getFilterURL(selection) {
  *
  * @param {string} selection
  */
-function change_quickfilter(selection) {
+function get_quick_selection(selection) {
     let url = getFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
@@ -977,6 +977,41 @@ function change_quickfilter(selection) {
 
             })
     }
+}
+
+
+/**
+ * Update quickfilter onload() according to the given URL
+ */
+function change_quickfilter() {
+
+    let url = window.location
+    let urlParams = new URLSearchParams(url.search);
+    let urlKey, long_search_id;
+    let date = "";
+
+    if (urlParams !== false) {
+        for (urlKey of urlParams) {
+            if ($("#id_" + urlKey[0]).prop('type') == 'checkbox') {
+                $("#id_" + urlKey[0]).prop('checked', JSON.parse(urlKey[1].toLowerCase()));
+            } else if ($("#id_" + urlKey[0]).prop('type') == 'select-multiple' ||
+                $("#id_" + urlKey[0]).prop('type') == 'select') {
+                long_search_id = "#id_" + urlKey[0] + " [value=\"" + urlKey[1] + "\"]"
+                $(long_search_id).attr("selected", "selected");
+            } else if ($("#id_" + urlKey[0]).prop('name') == 'date') {
+                if (date == "") {
+                    date = (new Date(urlKey[1])).toLocaleDateString();
+                } else {
+                    $("#id_" + urlKey[0]).prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);
+                }
+            } else {
+                console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
+            }
+        }
+    } else {
+        // TODO: This might be useful to reset the quick filter menu
+    }
+
 }
 
 
