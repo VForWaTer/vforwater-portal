@@ -105,7 +105,8 @@ function create_map() {
                     wfsPointSource.addFeatures(wfsPointSource.getFormat().readFeatures(response));
                 })
                 .catch(function (error) {
-                    console.log('Error in building vector wfsPointSource: ', error);
+                    console.warn('No result for selected area. Unable to build vector layer.');
+                    // console.log('Error in building vector wfsPointSource: ', error);
                     wfsPointSource.removeLoadedExtent(extent);
                 })
         },
@@ -472,7 +473,7 @@ function create_map() {
             page = JSON.parse("[" + ids + "]").slice(-1);
             ids = JSON.parse("[" + ids + "]").slice(0, -1);
         }
-        if (page && page != 'none') document.getElementById("pagi" + page).classList.add("loadspin");
+        if (page && page !== 'none') document.getElementById("pagi" + page).classList.add("loadspin");
         let popupTableBeforeMeta = '<table id="popupTable"><td>';
         let popUpText = popupTableBeforeMeta +
             '<style>table tr:nth-child(even){background-color:#c8ebee;}</style>' +

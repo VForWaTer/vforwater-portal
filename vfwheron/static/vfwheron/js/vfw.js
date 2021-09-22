@@ -1,8 +1,8 @@
-let draw, drawSquare, modify, selectedFeatures, selectionEdgeCoords;
+let draw, drawSquare, modify, selectedFeatures, selectionEdgeCoords, selectionLayerSource;
 /**
  * Global Element (source layer) to drawn on
  */
-let dataPointsVectorLayer;
+let selectionLayer;
 let activeMap = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
 let sessionStorageData = {};
@@ -45,10 +45,10 @@ let selectedIds = {
 
     /**
      * if selection changes update table (when HTML in table tab)
-     * @param {array} oldCombinedIds
+     * @param {array} oldIds
      */
     _updateFilterTable: function (oldIds) {
-        if (!activeMap && this.combinedIds != oldIds) {
+        if (!activeMap && this.combinedIds !== oldIds) {
             filter_pagination(1);
         }
     },
@@ -231,22 +231,25 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
 function resetDraw() {
     selectedIds.map = null;
     selectedFeatures.clear();
+
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
-    olmap.removeLayer(dataPointsVectorLayer);
+    olmap.removeLayer(selectionLayer);
+
+    olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+            .forEach(layer => olmap.removeLayer(layer));
 }
 
 function addInteraction(type) {
-    console.log('***** add interaction: ', type)
     if (type == 'Polygon') {
         draw = new ol.interaction.Draw({
-            source: source,
+            source: selectionLayerSource,
             type: type,
             stopClick: true
         });
     } else if (type == 'Square') {
         draw = new ol.interaction.Draw({
-            source: source,
+            source: selectionLayerSource,
             type: 'Circle',
             geometryFunction: ol.interaction.Draw.createBox(),
             stopClick: true
@@ -269,15 +272,10 @@ function addInteraction(type) {
 /**
  * Menu to draw polygon on map
  *
- * @param {string} shortParent
- * @param {string} shortChild
+ * @param test
  */
 function drawOnMapMenu(test) {
-    console.log('+++ in drawOnMapMenu +++: ', test)
-// function drawPolygon(shortParent, shortChild) {
-    // let div = document.getElementById('toggle_draw');
     drawfilter_open();
-    // itemButtonFunction(item, shortParent, shortChild, shortItem)
     // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // olmap.removeInteraction(selectCluster);
     let collection = new ol.Collection();
@@ -285,7 +283,7 @@ function drawOnMapMenu(test) {
     /**
      * Element (layer) to be included on map
      */
-    let source = new ol.source.Vector({
+    selectionLayerSource = new ol.source.Vector({
         wrapX: false,
         features: collection,
         useSpatialIndex: false,
@@ -293,12 +291,12 @@ function drawOnMapMenu(test) {
     });
 
     // create source layer
-    dataPointsVectorLayer = new ol.layer.Vector({
-        source: source,
+    selectionLayer = new ol.layer.Vector({
+        source: selectionLayerSource,
         style: new ol.style.Style({
-            fill: new ol.style.Fill({
-                color: 'rgba(255, 255, 255, 0.2)'
-            }),
+            // fill: new ol.style.Fill({
+            //     color: 'rgba(255, 255, 255, 0.2)'
+            // }),
             stroke: new ol.style.Stroke({
                 color: '#ff0040',
                 width: 1
@@ -308,7 +306,7 @@ function drawOnMapMenu(test) {
         updateWhileAnimating: true, // optional, for instant visual feedback
         updateWhileInteracting: true // optional, for instant visual feedback
     });
-    olmap.addLayer(dataPointsVectorLayer);
+    olmap.addLayer(selectionLayer);
 
     /**
      * Create and add interactions
@@ -317,13 +315,13 @@ function drawOnMapMenu(test) {
     olmap.addInteraction(select);
 
     draw = new ol.interaction.Draw({
-        source: source,
+        source: selectionLayerSource,
         type: 'Polygon',
-        stopClick: true
+        stopClick: true,
     });
     // draw.setZIndex(-100);
     drawSquare = new ol.interaction.Draw({
-        source: source,
+        source: selectionLayerSource,
         type: 'Circle',
         geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
@@ -378,18 +376,6 @@ function drawOnMapMenu(test) {
         polygon = event.features.getArray()[0].getGeometry();
         selectionEdgeCoords = polygon;
         get_quick_selection({'draw': getEdgeCoords()});
-        // let features = hiddenLayer.getSource().getFeatures();
-
-        /* select features in polygon */
-        let fLen = features.length;
-        for (let i = 0; i < fLen; i++) {
-            if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) selectedFeatures.push(features[i]);
-        }
-        /* get id of selected features for menu */
-        selectedFeatures.getArray().forEach(function (val) {
-            selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))
-        });
-        mapSelectFuntion(shortParent, shortChild, selectedIds.map);
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -406,21 +392,18 @@ function drawOnMapMenu(test) {
      * @returns {*}
      */
     function selectStartFun(event) {
-        return event.feature.getGeometry().on('change', function (event) {
-            // clear features so they deselect when polygon moves away
-            // selectedFeatures.clear();
-            // polygon = event.target;
-            selectionEdgeCoords = event.target;
+        let changes;
+        try {changes = event.feature.getGeometry().on('change', function (event) {
+                // clear features so they deselect when polygon moves away
+                // selectedFeatures.clear();
+                // polygon = event.target;
+                selectionEdgeCoords = event.target;
 
-            // let fLen = features.length;
-            // TODO: Speed up by putting the following loop to (draw)end. Store here only the event and use the variable
-            //  in (draw)end. BUT this throws error in map.js/checkMode(evt). Figure out how to avoid this error first!
-            // for (let i = 0; i < fLen; i++) {
-            //     if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) {
-            //         selectedFeatures.push(features[i]);
-            //     }
-            // }
-        });
+            });
+        } catch (e) {
+            changes = {}
+        }
+        return changes
     }
 
     /**
@@ -436,7 +419,7 @@ function drawOnMapMenu(test) {
     }
 
     drawSquare.on('drawstart', function (event) {
-        source.clear();
+        selectionLayerSource.clear();
         listener = selectStartFun(event)
     }, this);
     drawSquare.on('drawend', function () {
@@ -451,7 +434,7 @@ function drawOnMapMenu(test) {
             mapSelectFunction(selectedIds.map);
         }*/
 
-        // remove preloaded layers defined by the url
+        // /* remove preloaded layers defined by the url */
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
 
@@ -461,31 +444,22 @@ function drawOnMapMenu(test) {
     });
 
     draw.on('drawstart', function (event) {
-        source.clear();
-        // olmap.removeInteraction(doubleClickZoom)
+        selectionLayerSource.clear();
         listener = selectStartFun(event)
-        // console.log('- listener: ', listener)
     }, this);
-
     draw.on('drawend', function () {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
-        selectedIds.map = [];
-        // console.log(' _ - _ - _ selected features: ', selectedFeatures)
-        // let writer = new ol.format.KML();
-        // let geojsonStr = writer.writeFeatures(source.getFeatures());
 
         /* get id of selected features for menu */
-        selectedFeatures.getArray().forEach(function (val) {
+    /*    selectedFeatures.getArray().forEach(function (val) {
             selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
-        });
-        // draw.finishDrawing();
-        if (selectedIds.map.length > 0) {
-            mapSelectFunction(selectedIds.map);
-        }
-        // olmap.removeInteraction(draw);
-        let url_layer = olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
-        console.log('url_layer: ', url_layer)
-        olmap.removeLayer(url_layer)
+        });*/
+
+        /* remove preloaded layers defined by the url */
+        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+            .forEach(layer => olmap.removeLayer(layer));
+
+        get_quick_selection({'draw': getEdgeCoords()});
         removeInteractions();
         toggle_draw(document.getElementById("draw_polygon"))
 
@@ -493,18 +467,9 @@ function drawOnMapMenu(test) {
         clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
           selectedFeatures.push(feature);
         });*/
-        get_quick_selection({'draw': getEdgeCoords()});
-        ol.observable.unByKey(listener);
+        // ol.observable.unByKey(listener);
     });
 
-/*    /!**
-     * Remove interactions from draw menu options (draw, drawSquare and modify).
-     *!/
-    function removeInteractions() {
-        olmap.removeInteraction(draw);
-        olmap.removeInteraction(modify);
-        olmap.removeInteraction(drawSquare);
-    }*/
 }
 
    /**
@@ -520,7 +485,6 @@ function drawOnMapMenu(test) {
  * Toggle between showing and hiding drawfilter
  */
 function drawfilter_open() {
-    console.log('*** in drawfilter_open() ***')
     let drawfilter = document.getElementById("drawfilter");
     let closed_drawfilter = document.getElementById("closed_drawfilter");
     closed_drawfilter.style.display = "none";
@@ -603,13 +567,6 @@ function getCookie(name) {
 
 // TODO: not used in this file. So from where comes the used token? Which one is better?
 let csrf_token = getCookie('csrftoken');
-
-/**
- * Check URL if a date is used to filter. If yes return that date.
- * */
-function getDateFromURL() {
-
-}
 
 /**
  * Load metadata and preview plot of dataset from server asynchronous.
@@ -705,7 +662,7 @@ function moreInfoModal(id) {
         .done((data) => {
             tdata = data
             tb = true
-            if (pb == true && modLock == false) {
+            if (pb === true && modLock === false) {
                 modLock = true
                 fillModal(tdata, pdata)
             }
@@ -715,7 +672,7 @@ function moreInfoModal(id) {
         .done((data) => {
             pdata = data
             pb = true
-            if (tb == true && modLock == false) {
+            if (tb === true && modLock === false) {
                 modLock = true
                 fillModal(tdata, pdata)
             }
@@ -760,10 +717,9 @@ function workspace_dataset(id) {
                     sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
                     sessionStorageData = json['workspaceData']
 
-                    $.each(json['workspaceData2'], function (k, v) {
+                    $.each(json['workspaceData2'], function (k) {
                         let dataset = new storeData(json['workspaceData2'][k])
                         //dataset.save(json['workspaceData2'][k])
-                        console.log('dataset.data: ', dataset.data)
                         sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
                     });
                 }
@@ -801,41 +757,32 @@ function show_preview(id) {
 }
 
 
-function toggleMapTable(evt, tabName) {
+/**
+ * Toggle function to switch between map and table view, and in the future between quick and advanced filter.
+ *
+ * @param {Event} evt
+ * @param {string} tabName
+ * @param {boolean} isFilter
+ */
+function toggleMapTableFilter(evt, tabName, isFilter = false) {
     // Declare all variables
     let i, tabcontent, tablinks;
-    activeMap = tabName === "Map";
+    let classNamePrefex = "";
+
+    if (isFilter) {
+        classNamePrefex = "filter-"
+    } else {
+        activeMap = tabName === "Map";
+    }
 
     // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
+    tabcontent = document.getElementsByClassName(classNamePrefex + "tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
         tabcontent[i].style.display = "none";
     }
 
     // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-
-    // Show the current tab, and add an "active" class to the button that opened the tab
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
-
-
-function toggleFilter(evt, tabName) {
-    // Declare all variables
-    let i, tabcontent, tablinks;
-
-    // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("filter-tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-
-    // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("filter-tablinks");
+    tablinks = document.getElementsByClassName(classNamePrefex + "tablinks");
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
@@ -920,9 +867,9 @@ function getFilterURL(selection) {
             return false
         }
     }
-    nextURL = urlParams.toString() == '' ? urlPath : urlPath + '?' + urlParams.toString();
+    nextURL = urlParams.toString() === '' ? urlPath : urlPath + '?' + urlParams.toString();
     window.history.pushState({additionalInformation: 'Updated the URL with JS'}, '', nextURL);
-    if (urlParams.toString() == "") {urlParams = 'reset'}
+    if (urlParams.toString() === "") {urlParams = 'reset'}
     return '/home/quick_filter_args/' + urlParams.toString();
 
 }
@@ -937,8 +884,7 @@ function get_quick_selection(selection) {
     let url = getFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
-    if (url !== false) {
-        console.log('url: ', url)
+    if (url !== false ) {
         $.ajax({
             url: DEMO_VAR + url,
             // data: {
@@ -950,16 +896,14 @@ function get_quick_selection(selection) {
             dataType: "text",
         })
             .done(function (result) {
-                // console.log('result: ', result)
                 let json = JSON.parse(result)
-                console.log('json: ',  json)
+
                 /** update total Value for available datasets: */
                 $("#quickfilter-form p:first").html(
                     function(i, txt) {return txt.replace(/\d+/, json['total'].toString());}
                 )
 
                 updateMapSelection(json)
-
             })
     }
 }
@@ -972,36 +916,43 @@ function update_quickfilter() {
 
     let url = window.location
     let urlParams = new URLSearchParams(url.search);
-    let urlKey, long_search_id;
+    let urlKey, long_search_id, ajax_element;
     let date = "";
+    let selector_string = "";
 
     if (urlParams !== false) {
         for (urlKey of urlParams) {
-            if ($("#id_" + urlKey[0]).prop('type') == 'checkbox') {
-                $("#id_" + urlKey[0]).prop('checked', JSON.parse(urlKey[1].toLowerCase()));
-            } else if ($("#id_" + urlKey[0]).prop('type') == 'select-multiple' ||
-                $("#id_" + urlKey[0]).prop('type') == 'select') {
-                long_search_id = "#id_" + urlKey[0] + " [value=\"" + urlKey[1] + "\"]"
+            selector_string = "#id_" + urlKey[0]
+            ajax_element = $(selector_string);
+
+            if (ajax_element.prop('type') === 'checkbox') {
+                ajax_element.prop('checked', JSON.parse(urlKey[1].toLowerCase()));
+            } else if (ajax_element.prop('type') === 'select-multiple' ||
+                ajax_element.prop('type') === 'select') {
+                long_search_id = selector_string + " [value=\"" + urlKey[1] + "\"]"
                 $(long_search_id).attr("selected", "selected");
-            } else if ($("#id_" + urlKey[0]).prop('name') == 'date') {
-                if (date == "") {
+            } else if (ajax_element.prop('name') === 'date') {
+                if (date === "") {
                     date = (new Date(urlKey[1])).toLocaleDateString();
                 } else {
-                    $("#id_" + urlKey[0]).prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);
+                    ajax_element.prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);
                 }
-            } else if (urlKey[0] == 'draw') {
+            } else if (urlKey[0] === 'draw') {
                 let coords_list = urlKey[1].split(',').map(Number)
                 let coords_len = coords_list.length;
                 let coords = []
                 for (let i = 0; i < coords_len; i += 2) {
                     coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i+1]]))
                 }
+
+                // TODO: Do not create a new layer, but reuse the layers in drawOnMapManu
+                //  to enable modification after refreshing website
                 let url_feature = new ol.Feature({geometry: new ol.geom.Polygon([coords]),});
-                let url_source = new ol.source.Vector({features: [url_feature],});
-                let url_layer = new ol.layer.Vector({source: url_source, name: 'url_layer'});
-                url_layer.setStyle(new ol.style.Style({
-                        stroke: new ol.style.Stroke({color: '#ff0000', width: 1})}))
-                olmap.addLayer(url_layer)
+                selectionLayerSource = new ol.source.Vector({features: [url_feature],});
+                selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
+                selectionLayer.setStyle(new ol.style.Style({
+                        stroke: new ol.style.Stroke({color: '#ff0040', width: 1})}))
+                olmap.addLayer(selectionLayer)
 
             } else {
                 console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
@@ -1113,7 +1064,6 @@ class SidebarButtonResult extends SidebarButton {
      * @param {list} outputs - List of output types.
      * @param {string} name - Name of Dataset.
      * @param {string} unit - Unit of Dataset.
-     * @param {string} title - Title used in the popup for the dataset.
      */
     constructor(id, orgid, inputs, outputs, name, unit) {
         super(id, orgid, inputs, outputs);

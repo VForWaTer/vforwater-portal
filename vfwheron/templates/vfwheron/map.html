@@ -115,10 +115,9 @@
         /** add clickEvent to remove button */
     let delst = document.getElementById('remove_polygon');
     delst.addEventListener('click', function () {
-        // olmap.removeInteraction(selectCluster);
+        removeInteractions()
         source.clear();
         select.setActive(false);
-        mapSelectFunction([]); // TODO: what is this?!?
         // get_quick_selection({});
         resetDraw();
     });
