@@ -230,11 +230,13 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
  */
 function resetDraw() {
     selectedIds.map = null;
+    selectionLayerSource.clear();
     selectedFeatures.clear();
 
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
-    olmap.removeLayer(selectionLayer);
+    // removeInteractions()
+    // olmap.removeLayer(selectionLayer);
 
     olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
         .forEach(layer => olmap.removeLayer(layer));

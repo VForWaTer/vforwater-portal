@@ -115,11 +115,14 @@
         /** add clickEvent to remove button */
     let delst = document.getElementById('remove_polygon');
     delst.addEventListener('click', function () {
-        removeInteractions()
-        source.clear();
-        select.setActive(false);
-        // get_quick_selection({});
-        resetDraw();
+
+      {#selectionLayerSource.clear();#}
+      {#selectedFeatures.clear();#}
+
+      {#source.clear();#}
+      {#select.setActive(false);#}
+      // get_quick_selection({});
+      resetDraw();
     });
 
 </script>
