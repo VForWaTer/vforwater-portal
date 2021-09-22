@@ -91,7 +91,7 @@ function reset_filter(){
     if (selectedFeatures !== undefined) {selectedFeatures.clear();}
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
-    olmap.removeLayer(dataPointsVectorLayer);
+    olmap.removeLayer(selectionLayer);
     drawfilter_close();
     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
     // clusterLayer.changed()
@@ -103,20 +103,4 @@ function updateMapSelection(json) {
     wfsLayerName = json['ID_layer'];
     selectedIds.quickMenu = json['IDs'];
     wfsPointSource.refresh();
-}
-
-/**
- * Checks if one of the siblings of the clicked item is active.
- * @param {object} item
- */
-function checkSiblings(item) {
-    if (item.classList.contains('activeI')) {
-        item.classList.remove('activeI');
-        return false;
-    } else {
-        // itemList = item.parentElement.getElementsByClassName("active");
-        $(item).addClass('activeI').siblings().removeClass('activeI');
-        // item.classList.add('active');
-        return true;
-    }
 }

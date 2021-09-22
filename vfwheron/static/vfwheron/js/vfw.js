@@ -237,7 +237,7 @@ function resetDraw() {
     olmap.removeLayer(selectionLayer);
 
     olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
-            .forEach(layer => olmap.removeLayer(layer));
+        .forEach(layer => olmap.removeLayer(layer));
 }
 
 function addInteraction(type) {
@@ -259,11 +259,11 @@ function addInteraction(type) {
             features: collection,
             // the SHIFT key must be pressed to delete vertices, so that new
             // vertices can be drawn at the same position of existing vertices
-        deleteCondition: function (event) {
-            return ol.events.condition.shiftKeyOnly(event) &&
-                ol.events.condition.singleClick(event);
-        }
-    });
+            deleteCondition: function (event) {
+                return ol.events.condition.shiftKeyOnly(event) &&
+                    ol.events.condition.singleClick(event);
+            }
+        });
     }
     map.addInteraction(draw);
 }
@@ -311,8 +311,8 @@ function drawOnMapMenu(test) {
     /**
      * Create and add interactions
      */
-    let select = new ol.interaction.Select();
-    olmap.addInteraction(select);
+    // let select = new ol.interaction.Select();
+    // olmap.addInteraction(select);
 
     draw = new ol.interaction.Draw({
         source: selectionLayerSource,
@@ -327,9 +327,21 @@ function drawOnMapMenu(test) {
         stopClick: true
     });
 
+    const overlayStyle = new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
+    const select = new ol.interaction.Select({style: overlayStyle,});
+    olmap.addInteraction(select)
+
     modify = new ol.interaction.Modify({
         // features: collection.getFeaturesCollection(),
-        features: collection,
+        features: select.getFeatures(),
+        style: overlayStyle,
+        insertVertexCondition: function () {
+            // prevent new vertices to be added to the polygons
+            return !select.getFeatures().getArray().every(function (feature) {
+                return feature.getGeometry().getType().match(/Polygon/);
+            });
+        },
+        // features: collection,
         // the SHIFT key must be pressed to delete vertices, so that new
         // vertices can be drawn at the same position of existing vertices
         deleteCondition: function (event) {
@@ -393,7 +405,8 @@ function drawOnMapMenu(test) {
      */
     function selectStartFun(event) {
         let changes;
-        try {changes = event.feature.getGeometry().on('change', function (event) {
+        try {
+            changes = event.feature.getGeometry().on('change', function (event) {
                 // clear features so they deselect when polygon moves away
                 // selectedFeatures.clear();
                 // polygon = event.target;
@@ -411,7 +424,7 @@ function drawOnMapMenu(test) {
      *
      * @returns Array
      */
-    function getEdgeCoords () {
+    function getEdgeCoords() {
         // return  ol.proj.transform(selectionEdgeCoords.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
         let coords = selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()
         selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
@@ -451,9 +464,9 @@ function drawOnMapMenu(test) {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
 
         /* get id of selected features for menu */
-    /*    selectedFeatures.getArray().forEach(function (val) {
-            selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
-        });*/
+        /*    selectedFeatures.getArray().forEach(function (val) {
+                selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
+            });*/
 
         /* remove preloaded layers defined by the url */
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
@@ -472,14 +485,14 @@ function drawOnMapMenu(test) {
 
 }
 
-   /**
-     * Remove interactions from draw menu options (draw, drawSquare and modify).
-     */
-    function removeInteractions() {
-        olmap.removeInteraction(draw);
-        olmap.removeInteraction(modify);
-        olmap.removeInteraction(drawSquare);
-    }
+/**
+ * Remove interactions from draw menu options (draw, drawSquare and modify).
+ */
+function removeInteractions() {
+    olmap.removeInteraction(draw);
+    olmap.removeInteraction(modify);
+    olmap.removeInteraction(drawSquare);
+}
 
 /**
  * Toggle between showing and hiding drawfilter
@@ -519,6 +532,7 @@ function toggle_draw(self) {
         // else dcz.setActive(true); // reactivate double click zoom when draw window is closed}
     }
 }
+
 //--- draw end ---------------------------------------------------------------------------------------------------------
 
 //Search
@@ -951,7 +965,8 @@ function update_quickfilter() {
                 selectionLayerSource = new ol.source.Vector({features: [url_feature],});
                 selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
                 selectionLayer.setStyle(new ol.style.Style({
-                        stroke: new ol.style.Stroke({color: '#ff0040', width: 1})}))
+                    stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
+                }))
                 olmap.addLayer(selectionLayer)
 
             } else {
