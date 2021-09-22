@@ -27,6 +27,7 @@ from django.views.generic import TemplateView
 from django.contrib import messages
 from future.builtins import isinstance
 
+import vfwheron
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
@@ -687,9 +688,11 @@ def show_info(request):
         db_info = Entries.objects.filter(id=int(ids))\
             .values('uuid', 'variable__name', 'license__commercial_use', 'embargo', 'embargo_end', 'abstract',
                     'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end')
-        table = {}
-        table['id'] = ids
-        table[translation.gettext('Name')] = translation.gettext(db_info[0]['variable__name'])
+        # table = {}
+        # table['id'] = ids
+        # table[translation.gettext('Name')] = translation.gettext(db_info[0]['variable__name'])
+        table = {'id': ids,
+                 translation.gettext('Name'): translation.gettext(db_info[0]['variable__name'])}
         table[translation.gettext('Commercial use allowed')] = translation.gettext('Yes') \
             if db_info[0]['license__commercial_use'] else translation.gettext('No')
         table[translation.gettext('Embargo')] = translation.gettext('Yes') \

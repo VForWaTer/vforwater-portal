@@ -2,7 +2,7 @@ let draw, drawSquare, modify, selectedFeatures, selectionEdgeCoords;
 /**
  * Global Element (source layer) to drawn on
  */
-let vector;
+let dataPointsVectorLayer;
 let activeMap = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
 let sessionStorageData = {};
@@ -224,6 +224,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
         '</a><br></li>';
 }
 
+//--- draw start -------------------------------------------------------------------------------------------------------
 /**
  * Reset the draw menu, clear selections in memory and on map
  */
@@ -232,8 +233,38 @@ function resetDraw() {
     selectedFeatures.clear();
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
-    olmap.removeLayer(vector);
+    olmap.removeLayer(dataPointsVectorLayer);
 }
+
+function addInteraction(type) {
+    console.log('***** add interaction: ', type)
+    if (type == 'Polygon') {
+        draw = new ol.interaction.Draw({
+            source: source,
+            type: type,
+            stopClick: true
+        });
+    } else if (type == 'Square') {
+        draw = new ol.interaction.Draw({
+            source: source,
+            type: 'Circle',
+            geometryFunction: ol.interaction.Draw.createBox(),
+            stopClick: true
+        });
+    } else if (type == 'Modify') {
+        draw = new ol.interaction.Modify({
+            features: collection,
+            // the SHIFT key must be pressed to delete vertices, so that new
+            // vertices can be drawn at the same position of existing vertices
+        deleteCondition: function (event) {
+            return ol.events.condition.shiftKeyOnly(event) &&
+                ol.events.condition.singleClick(event);
+        }
+    });
+    }
+    map.addInteraction(draw);
+}
+
 
 /**
  * Menu to draw polygon on map
@@ -241,19 +272,18 @@ function resetDraw() {
  * @param {string} shortParent
  * @param {string} shortChild
  */
-function drawOnMapMenu(shortParent, shortChild) {
-    shortParent = 'P1'
-    shortChild = 'C1'
+function drawOnMapMenu(test) {
+    console.log('+++ in drawOnMapMenu +++: ', test)
 // function drawPolygon(shortParent, shortChild) {
     // let div = document.getElementById('toggle_draw');
-    filterbox_open();
+    drawfilter_open();
     // itemButtonFunction(item, shortParent, shortChild, shortItem)
     // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // olmap.removeInteraction(selectCluster);
     let collection = new ol.Collection();
 
     /**
-     * Element to be included on map
+     * Element (layer) to be included on map
      */
     let source = new ol.source.Vector({
         wrapX: false,
@@ -263,7 +293,7 @@ function drawOnMapMenu(shortParent, shortChild) {
     });
 
     // create source layer
-    vector = new ol.layer.Vector({
+    dataPointsVectorLayer = new ol.layer.Vector({
         source: source,
         style: new ol.style.Style({
             fill: new ol.style.Fill({
@@ -273,34 +303,17 @@ function drawOnMapMenu(shortParent, shortChild) {
                 color: '#ff0040',
                 width: 1
             }),
-            /*  image: new ol.style.Circle({
-                  radius: 5,
-                  fill: new ol.style.Fill({
-                      color: '#ff0040'
-                  })
-              })*/
         }),
         // zindex: -100,
         updateWhileAnimating: true, // optional, for instant visual feedback
         updateWhileInteracting: true // optional, for instant visual feedback
     });
-    olmap.addLayer(vector);
-    // olmap.getLayers().extend([vector]);
+    olmap.addLayer(dataPointsVectorLayer);
 
-    let select = new ol.interaction.Select(
-        /*{
-        style: new ol.style.Style({
-     /!*       stroke: new ol.style.Stroke({
-                    color: 'green',
-                    width: 2.5
-                }),*!/
-            fill: new ol.style.Fill({
-                    color: 'rgba(255,0,0,0.1)'
-                })
-        }),
-        }*/
-    );
-
+    /**
+     * Create and add interactions
+     */
+    let select = new ol.interaction.Select();
     olmap.addInteraction(select);
 
     draw = new ol.interaction.Draw({
@@ -347,8 +360,10 @@ function drawOnMapMenu(shortParent, shortChild) {
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
 
-    /** Point features select/deselect as you move polygon.
-     Deactivate select interaction. */
+    /**
+     * Point features select/deselect as you move polygon.
+     Deactivate select interaction.
+     */
     modify.on('modifystart', function (event) {
         sketch = event.features;
         // select.setActive(false);
@@ -362,7 +377,7 @@ function drawOnMapMenu(shortParent, shortChild) {
         selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
         selectionEdgeCoords = polygon;
-        change_quickfilter({'draw': polygon.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
+        get_quick_selection({'draw': getEdgeCoords()});
         // let features = hiddenLayer.getSource().getFeatures();
 
         /* select features in polygon */
@@ -393,61 +408,58 @@ function drawOnMapMenu(shortParent, shortChild) {
     function selectStartFun(event) {
         return event.feature.getGeometry().on('change', function (event) {
             // clear features so they deselect when polygon moves away
-            selectedFeatures.clear();
-            polygon = event.target;
-            selectionEdgeCoords = polygon;
+            // selectedFeatures.clear();
+            // polygon = event.target;
+            selectionEdgeCoords = event.target;
 
-            let fLen = features.length;
+            // let fLen = features.length;
             // TODO: Speed up by putting the following loop to (draw)end. Store here only the event and use the variable
             //  in (draw)end. BUT this throws error in map.js/checkMode(evt). Figure out how to avoid this error first!
-            for (let i = 0; i < fLen; i++) {
-                if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) {
-                    selectedFeatures.push(features[i]);
-                }
-            }
+            // for (let i = 0; i < fLen; i++) {
+            //     if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) {
+            //         selectedFeatures.push(features[i]);
+            //     }
+            // }
         });
     }
 
-    // add clickEvent to draw square button
-    let drwsqrst = document.getElementById('draw_square');
-    drwsqrst.addEventListener('click', function () {
-        // olmap.removeInteraction(modify);
-        // olmap.removeInteraction(draw);
-        removeInteractions();
-        olmap.addInteraction(drawSquare);
-        /* Deactivate select and delete any existing polygons.
-            Only one polygon drawn at a time. */
-    });
+    /**
+     * Transforms coordinates for django, writes them in a variable and resets the original coordinates.
+     *
+     * @returns Array
+     */
+    function getEdgeCoords () {
+        // return  ol.proj.transform(selectionEdgeCoords.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
+        let coords = selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()
+        selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
+        return coords
+    }
+
     drawSquare.on('drawstart', function (event) {
         source.clear();
         listener = selectStartFun(event)
     }, this);
     drawSquare.on('drawend', function () {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
-        selectedIds.map = [];
+        // selectedIds.map = [];
 
-        /* get id of selected features for menu */
+        /*/!* get id of selected features for menu *!/
         selectedFeatures.getArray().forEach(function (val) {
             selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
         });
         if (selectedIds.map.length > 0) {
-            mapSelectFunction('P1', 'C1', selectedIds.map);
-        }
+            mapSelectFunction(selectedIds.map);
+        }*/
+
+        // remove preloaded layers defined by the url
+        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+            .forEach(layer => olmap.removeLayer(layer));
+
+        get_quick_selection({'draw': getEdgeCoords()});
         removeInteractions();
         toggle_draw(document.getElementById("draw_square"))
-        get_quick_selection({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
     });
 
-    // add clickEvent to draw polygon button
-    let drwst = document.getElementById('draw_polygon');
-    drwst.addEventListener('click', function () {
-        // olmap.removeInteraction(modify);
-        // olmap.removeInteraction(drawSquare);
-        removeInteractions()
-        olmap.addInteraction(draw);
-        /* Deactivate select and delete any existing polygons.
-            Only one polygon drawn at a time. */
-    });
     draw.on('drawstart', function (event) {
         source.clear();
         // olmap.removeInteraction(doubleClickZoom)
@@ -468,9 +480,12 @@ function drawOnMapMenu(shortParent, shortChild) {
         });
         // draw.finishDrawing();
         if (selectedIds.map.length > 0) {
-            mapSelectFunction(shortParent, shortChild, selectedIds.map);
+            mapSelectFunction(selectedIds.map);
         }
         // olmap.removeInteraction(draw);
+        let url_layer = olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+        console.log('url_layer: ', url_layer)
+        olmap.removeLayer(url_layer)
         removeInteractions();
         toggle_draw(document.getElementById("draw_polygon"))
 
@@ -478,35 +493,21 @@ function drawOnMapMenu(shortParent, shortChild) {
         clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
           selectedFeatures.push(feature);
         });*/
-        get_quick_selection({'draw': selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()});
+        get_quick_selection({'draw': getEdgeCoords()});
+        ol.observable.unByKey(listener);
     });
 
-    /** add clickEvent to modify button */
-    let modst = document.getElementById('modify_polygon');
-    modst.addEventListener('click', function () {
-        removeInteractions()
-        olmap.addInteraction(modify);
-    });
+/*    /!**
+     * Remove interactions from draw menu options (draw, drawSquare and modify).
+     *!/
+    function removeInteractions() {
+        olmap.removeInteraction(draw);
+        olmap.removeInteraction(modify);
+        olmap.removeInteraction(drawSquare);
+    }*/
+}
 
-    /** add clickEvent to remove button */
-    let delst = document.getElementById('remove_polygon');
-    delst.addEventListener('click', function () {
-        // olmap.removeInteraction(selectCluster);
-        source.clear();
-        select.setActive(false);
-        mapSelectFunction(shortParent, shortChild, []);
-        resetDraw();
-    });
-
-    /** add clickEvent to close button */
-    let closst = document.getElementById('draw_close');
-    closst.addEventListener('click', function () {
-        removeInteractions()
-        // olmap.addInteraction(selectCluster);
-        filterbox_close()
-    });
-
-    /**
+   /**
      * Remove interactions from draw menu options (draw, drawSquare and modify).
      */
     function removeInteractions() {
@@ -514,24 +515,24 @@ function drawOnMapMenu(shortParent, shortChild) {
         olmap.removeInteraction(modify);
         olmap.removeInteraction(drawSquare);
     }
-}
 
 /**
- * Toggle between showing and hiding filterbox
+ * Toggle between showing and hiding drawfilter
  */
-function filterbox_open() {
-    let filterbox = document.getElementById("filterbox");
-    let closed_filterbox = document.getElementById("closed_filterbox");
-    closed_filterbox.style.display = "none";
-    filterbox.style.display = "block";
+function drawfilter_open() {
+    console.log('*** in drawfilter_open() ***')
+    let drawfilter = document.getElementById("drawfilter");
+    let closed_drawfilter = document.getElementById("closed_drawfilter");
+    closed_drawfilter.style.display = "none";
+    drawfilter.style.display = "block";
     // document.getElementById("toggle_draw").className = 'active'
 }
 
-function filterbox_close() {
-    let filterbox = document.getElementById("filterbox");
-    let closed_filterbox = document.getElementById("closed_filterbox");
-    closed_filterbox.style.display = "block";
-    filterbox.style.display = "none";
+function drawfilter_close() {
+    let drawfilter = document.getElementById("drawfilter");
+    let closed_drawfilter = document.getElementById("closed_drawfilter");
+    closed_drawfilter.style.display = "block";
+    drawfilter.style.display = "none";
     // TODO: remove only if nothing selected
     // document.getElementById("toggle_draw").classList.remove('active')
 }
@@ -553,8 +554,8 @@ function toggle_draw(self) {
         if (self.id !== siblings[sLen].id && self.id !== 'draw_close') self.classList.add('activeM')
         // else dcz.setActive(true); // reactivate double click zoom when draw window is closed}
     }
-
 }
+//--- draw end ---------------------------------------------------------------------------------------------------------
 
 //Search
 function search_close() {
@@ -709,7 +710,7 @@ function moreInfoModal(id) {
                 fillModal(tdata, pdata)
             }
         })
-        // .always(document.getElementById("mod_prev").classList.remove("loader"))
+    // .always(document.getElementById("mod_prev").classList.remove("loader"))
     ajaxPlot()
         .done((data) => {
             pdata = data
@@ -719,8 +720,11 @@ function moreInfoModal(id) {
                 fillModal(tdata, pdata)
             }
         })
-        .fail(() => {pb=true; pdata=false})
-        // .always(document.getElementById("mod_prev").classList.remove("loader"))
+        .fail(() => {
+            pb = true;
+            pdata = false
+        })
+    // .always(document.getElementById("mod_prev").classList.remove("loader"))
 
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
@@ -796,25 +800,6 @@ function show_preview(id) {
         })
 }
 
-// // another accordion/ didn't work for me (Marcus)
-// var acc = document.getElementsByClassName("new_accord");
-// var i;
-//
-// for (i = 0; i < acc.length; i++) {
-//     acc[i].addEventListener("click", function() {
-//         /* Toggle between adding and removing the "active" class,
-//         to highlight the button that controls the panel */
-//         this.classList.toggle("active");
-//
-//         /* Toggle between hiding and showing the active panel */
-//         var panel = this.nextElementSibling;
-//         if (panel.style.display === "block") {
-//             panel.style.display = "none";
-//         } else {
-//             panel.style.display = "block";
-//         }
-//     });
-// }
 
 function toggleMapTable(evt, tabName) {
     // Declare all variables
@@ -944,7 +929,7 @@ function getFilterURL(selection) {
 
 
 /**
- * Executed on every click in the quick filter and when filtered on the map.
+ * Get state of quickfilter from url. Executed on every click in the quick filter and when filtered on the map.
  *
  * @param {string} selection
  */
@@ -965,7 +950,7 @@ function get_quick_selection(selection) {
             dataType: "text",
         })
             .done(function (result) {
-                console.log('result: ', result)
+                // console.log('result: ', result)
                 let json = JSON.parse(result)
                 console.log('json: ',  json)
                 /** update total Value for available datasets: */
@@ -983,7 +968,7 @@ function get_quick_selection(selection) {
 /**
  * Update quickfilter onload() according to the given URL
  */
-function change_quickfilter() {
+function update_quickfilter() {
 
     let url = window.location
     let urlParams = new URLSearchParams(url.search);
@@ -1004,6 +989,20 @@ function change_quickfilter() {
                 } else {
                     $("#id_" + urlKey[0]).prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);
                 }
+            } else if (urlKey[0] == 'draw') {
+                let coords_list = urlKey[1].split(',').map(Number)
+                let coords_len = coords_list.length;
+                let coords = []
+                for (let i = 0; i < coords_len; i += 2) {
+                    coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i+1]]))
+                }
+                let url_feature = new ol.Feature({geometry: new ol.geom.Polygon([coords]),});
+                let url_source = new ol.source.Vector({features: [url_feature],});
+                let url_layer = new ol.layer.Vector({source: url_source, name: 'url_layer'});
+                url_layer.setStyle(new ol.style.Style({
+                        stroke: new ol.style.Stroke({color: '#ff0000', width: 1})}))
+                olmap.addLayer(url_layer)
+
             } else {
                 console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
             }

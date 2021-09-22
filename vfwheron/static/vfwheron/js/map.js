@@ -221,14 +221,14 @@ function create_map() {
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
 
-    /** build app for box with drawbuttons **/
+    /** build app for box with draw buttons **/
     window.cApp = {};
     let cApp = window.cApp;
     cApp.drawControls = function () {
         let element = document.createElement('div');
         element.className = 'custom-control ol-unselectable ol-control';
-        element.appendChild(document.getElementById('filterbox'));
-        element.appendChild(document.getElementById('closed_filterbox'));
+        element.appendChild(document.getElementById('drawfilter'));
+        element.appendChild(document.getElementById('closed_drawfilter'));
         ol.control.Control.call(this, {
             element: element
         });

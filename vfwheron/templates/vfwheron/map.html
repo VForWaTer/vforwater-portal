@@ -24,7 +24,7 @@
 
 {#TODO: Don't like "show_data()" in map.html, but 2 onload in app don't work. Any better solution?#}
 {#<body onload="show_data()">#}
-<body onload="create_map(); show_data(); get_quick_selection(); change_quickfilter()">
+<body onload="create_map(); show_data(); get_quick_selection(); update_quickfilter()">
 	<!-- <body class="w3-light-grey" onload="create_map()">  -->
 	<div id="map" class="map"></div>
 
@@ -32,12 +32,12 @@
 	<param id="dataExt" value ="{{ dataExt }}"></param> <!-- param to bridge data from view to js  -->
 	<param id="data_layer" value ="{{ data_layer }}"></param> <!-- param to bridge data from view to js  -->
 
-  <div class="w3-center" id="closed_filterbox">
+  <div class="w3-center" id="closed_drawfilter">
     {% trans "Open&#32drawing&#32panel&#32and&#32deactivate&#32doubleclick&#32zoom." as Open %}
     <a href="javascript:void(0)" onclick=drawOnMapMenu(this); id="draw_toggle_plus" class="hover-white" title={{ Open }}
       ><i class="map_icon fa fa-plus-square-o fa-fw"></i></a>
   </div>
-	<div class="w3-center" id="filterbox" style="display:none">
+	<div class="w3-center" id="drawfilter" style="display:none">
 {#        <dl>#}
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32square.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_square %}
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32polygon.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_poly %}
@@ -45,14 +45,17 @@
     {% trans "Remove&#32drawing" as Remove %}
 {#    {% trans "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom." as Exit %}#}
     {% trans "Close&#32drawing&#32panel&#32and&#32reactivate&#32doubleclick&#32zoom." as Close %}
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="hover-white" title={{ Close }}
-    ><i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="hover-white" title={{ Close }}>
+      <i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
     <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_square" class="draw-hover" title={{ Draw_square }}
-    ><i class="map_icon fa fa-square-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_polygon" class="draw-hover" title={{ Draw_poly }}><i class="map_icon fa fa-pencil fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="modify_polygon" class="draw-hover" title={{ Edit }}><i class="map_icon fa fa-edit fa-fw"></i></a>
+      value="Square"><i class="map_icon fa fa-square-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_polygon" class="draw-hover" title={{ Draw_poly }}
+      value="Polygon"><i class="map_icon fa fa-pencil fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=toggle_draw(this); id="modify_polygon" class="draw-hover" title={{ Edit }}>
+      <i class="map_icon fa fa-edit fa-fw"></i></a>
     {#		  <a href="javascript:void(0)" id="select_polygon" class="draw-hover" title="Select Drawing"><i class="fa fa-hand-pointer-o fa-fw"></i></a>#}
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="remove_polygon" class="draw-hover" title={{ Remove }}><i class="map_icon fa fa-trash fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=toggle_draw(this); id="remove_polygon" class="draw-hover" title={{ Remove }}>
+      <i class="map_icon fa fa-trash fa-fw"></i></a>
 {#    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="w3-hover-white" title={{ Exit }}><i class="map_icon fa fa-remove fa-fw"></i></a>#}
 {#            </dl>#}
 	</div>
@@ -74,11 +77,53 @@
 {% endblock modal %}
 </body>
 
-<!--
+
 <script>
-   sample_locations = '{{ sample_locations }}';
+   // sample_locations = '{{ sample_locations }}';
+
+    /** add clickEvent to close button */
+    let closst = document.getElementById('draw_close');
+    closst.addEventListener('click', function () {
+        removeInteractions()
+        // olmap.addInteraction(selectCluster);
+        drawfilter_close()
+    });
+   // add clickEvent to draw square button
+    let drwsqrst = document.getElementById('draw_square');
+    drwsqrst.addEventListener('click', function () {
+        removeInteractions();
+        olmap.addInteraction(drawSquare);
+        /* Deactivate select and delete any existing polygons.
+            Only one polygon drawn at a time. */
+    });
+        // add clickEvent to draw polygon button
+    let drwst = document.getElementById('draw_polygon');
+    drwst.addEventListener('click', function () {
+        // olmap.removeInteraction(modify);
+        // olmap.removeInteraction(drawSquare);
+        removeInteractions()
+        olmap.addInteraction(draw);
+        /* Deactivate select and delete any existing polygons.
+            Only one polygon drawn at a time. */
+    });
+    /** add clickEvent to modify button */
+    let modst = document.getElementById('modify_polygon');
+    modst.addEventListener('click', function () {
+        removeInteractions()
+        olmap.addInteraction(modify);
+    });
+        /** add clickEvent to remove button */
+    let delst = document.getElementById('remove_polygon');
+    delst.addEventListener('click', function () {
+        // olmap.removeInteraction(selectCluster);
+        source.clear();
+        select.setActive(false);
+        mapSelectFunction([]); // TODO: what is this?!?
+        // get_quick_selection({});
+        resetDraw();
+    });
+
 </script>
--->
 {% comment %}<script type="text/javascript">
   {#let map = new olMap()#}
   {#let wfsPointSource;#}

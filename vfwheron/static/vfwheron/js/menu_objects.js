@@ -47,11 +47,10 @@ function dDMFilterFunction(dropDownName, inputName) {
 
 /**
  * Add onclick functionality to update selection on map while drawing.
- * @param {string} shortParent
- * @param {string} shortChild
  * @param {*[]|string} selected_Id
  */
-function mapSelectFunction(shortParent, shortChild, selected_Id) {
+function mapSelectFunction(selected_Id) {
+    console.log('from mapSelectFunction: selected_Id: ', selected_Id)
     let activeSibling = (selected_Id.length > 0) ? true:false;
     let mapselection = buildSelection(activeSibling, shortParent, shortChild, selected_Id);
     if (!jQuery.isEmptyObject(SELECTION)) {
@@ -92,8 +91,8 @@ function reset_filter(){
     if (selectedFeatures !== undefined) {selectedFeatures.clear();}
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
-    olmap.removeLayer(vector);
-    filterbox_close();
+    olmap.removeLayer(dataPointsVectorLayer);
+    drawfilter_close();
     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
     // clusterLayer.changed()
 }

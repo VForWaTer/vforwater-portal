@@ -51,7 +51,7 @@ div.map {
 }
 
 
-#filterbox {
+#drawfilter {
 border-radius: 4px;
 padding: 2px;
     /*display: block;*/
@@ -68,7 +68,7 @@ padding: 2px;
 .draw-hover:hover{
 background:rgba(0, 60, 136, .9)!important;
 }
-#draw_toggle, #closed_filterbox {
+#draw_toggle, #closed_drawfilter {
     border-radius: 4px;
     padding: 3px;
 }
