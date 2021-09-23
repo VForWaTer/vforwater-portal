@@ -45,24 +45,6 @@ function dDMFilterFunction(dropDownName, inputName) {
     }
 }
 
-/**
- * Add onclick functionality to update selection on map while drawing.
- * @param {*[]|string} selected_Id
- */
-function mapSelectFunction(selected_Id) {
-    console.log('from mapSelectFunction: selected_Id: ', selected_Id)
-    let activeSibling = (selected_Id.length > 0) ? true:false;
-    let mapselection = buildSelection(activeSibling, shortParent, shortChild, selected_Id);
-    if (!jQuery.isEmptyObject(SELECTION)) {
-        showSelectionOnMap(SELECTION);
-        getCountFromServer(mapselection);
-    }
-    else {
-        selectedIds.quickMenu = null;
-        showSelectionOnMap([]);
-        getCountFromServer(mapselection);
-    }
-}
 
 // TODO: When you decide to remove the wms map, use showAllPointsOnMap
 function showAllPointsOnMap(){

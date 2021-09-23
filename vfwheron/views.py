@@ -788,16 +788,21 @@ def workspace_data(request):
 
 def entries_pagination(request):
     """
+    Return result in several pages (5 datasets per page) instead of hundreds of results on one page.
 
     :param request: list of integers
     :type request: object
     :return:
     """
+    accessible_ids = []
     datasets = json.loads(request.GET.get('datasets', 1))
     if datasets:
         # entries_list = NmPersonsEntries.objects.all().order_by('entry__title').filter(entry_id=datasets).distinct()
         entries_list = Entries.objects.all().order_by('title').filter(
             pk__in=json.loads(request.GET.get('datasets', 1)))
+        accessible_data = get_accessible_data(request, datasets)
+        error_ids = accessible_data['blocked']
+        accessible_ids = accessible_data['open']
     else:
         entries_list = Entries.objects.all().order_by('title')
     try:
@@ -815,7 +820,8 @@ def entries_pagination(request):
         entriespage = paginator.page(paginator.num_pages)
 
     return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage,
-                                                         'ownData': owndata})
+                                                         'ownData': owndata,
+                                                         'accessible_ids': accessible_ids})
 
 
 def advanced_filter(request):

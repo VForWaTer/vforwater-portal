@@ -229,6 +229,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
  * Reset the draw menu, clear selections in memory and on map
  */
 function resetDraw() {
+    get_quick_selection({'draw': []})
     selectedIds.map = null;
     selectionLayerSource.clear();
     selectedFeatures.clear();
@@ -815,8 +816,9 @@ function filter_pagination(page) {
         datatype: 'json',
         data: {
             page: page, datasets: JSON.stringify(selectedIds.result),
+            // TODO: send filter options from URL instead of IDs
             'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
+        }, // data sent with post request
     })
         .done(function (json) {
             document.getElementById("paginationTable").innerHTML = json
