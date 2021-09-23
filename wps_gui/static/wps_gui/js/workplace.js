@@ -38,34 +38,39 @@ function drop(ev) {
  * @param {string} identifier - identifier of a wps process
  **/
 function wpsprocess(service, identifier) {
-    let tools = JSON.parse(sessionStorage.getItem('tools'))
-    if (!tools) {
-        tools = {}
-    }
-    if (!tools[service]) {
-        tools[service] = {}
-    }
+    let tools = get_sessionStorage_tools(service)
     if (tools[service][identifier]) {
         build_modal(tools[service][identifier], service)
     } else {
-        $.ajax({
-            url: DEMO_VAR + "/workspace/processview",
-            //url: DEMO_VAR+"/wps_gui/"+service+"/process",
-            dataType: 'json',
-            data: {
-                processview: JSON.stringify({id: identifier, serv: service}),
-                'csrfmiddlewaretoken': csrf_token,
-            }, /** data sent with the post request **/
-        })
+        load_wpsprocess(service, identifier)
             .done(function (json) {
                 build_modal(json, service)
                 tools[service][identifier] = json
                 sessionStorage.setItem('tools', JSON.stringify(tools))
             })
-            .fail(function (e) {
-                console.error('Failed: ', e)
-            });
     }
+}
+
+/**
+ * Actual function to load metadata of a wps process.
+ *
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ **/
+function load_wpsprocess(service, identifier) {
+    return $.ajax({
+        url: DEMO_VAR + "/workspace/processview",
+        //url: DEMO_VAR+"/wps_gui/"+service+"/process",
+        dataType: 'json',
+        async: false,
+        data: {
+            processview: JSON.stringify({id: identifier, serv: service}),
+            'csrfmiddlewaretoken': csrf_token,
+        }, /** data sent with the post request **/
+    })
+        .fail(function (e) {
+            console.error('Failed: ', e)
+        });
 }
 
 /**
@@ -77,33 +82,19 @@ function wpsprocess(service, identifier) {
  * @return {obj} json - object of a wps process as saved in sessionStorage
  */
 function get_wpsprocess(service, identifier) {
-    let tools = JSON.parse(sessionStorage.getItem('tools'))
-    if (!tools) {
-        tools = {}
-    }
-    if (!tools[service]) {
-        tools[service] = {}
-    }
+    let tools = get_sessionStorage_tools(service)
     if (tools[service][identifier]) {
         return tools[service][identifier]
     } else {
-        $.ajax({
-            url: DEMO_VAR + "/workspace/processview",
-            //url: DEMO_VAR+"/wps_gui/"+service+"/process",
-            dataType: 'json',
-            data: {
-                processview: JSON.stringify({id: identifier, serv: service}),
-                'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
-        })
+        load_wpsprocess(service, identifier)
             .done(function (json) {
                 tools[service][identifier] = json
                 sessionStorage.setItem('tools', JSON.stringify(tools))
                 return json
             })
-            .fail(function (e) {
+           /* .fail(function (e) {
                 console.error('Failed: ', e)
-            });
+            });*/
     }
 }
 
@@ -145,6 +136,7 @@ function check_required(checkElement) {
     }
     return passed
 }
+
 /**
  * Check if an input has a regex pattern and if input is correct.
  *
@@ -465,7 +457,7 @@ function add_resultbtn_to_sessionstore(btnName, json) {
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
-//TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
+//TODO: Is it necessary that a result knows which function it came from and what the input parameters were?
 /**
  * Build a button in the result store.
  * data-id is used to find results on server, id is used for the remove button
