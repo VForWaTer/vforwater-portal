@@ -103,12 +103,11 @@ function drop_and_save() {
 }
 
 /**
- * Check if an input is required and if it is required check if the input has a value.
+ * Check if an input (an Element of a wps) is required and if it is required check if the input has a value.
  *
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
-function check_required(checkElement) {
-    /** check if an Element of a wps is required **/
+function is_required(checkElement) {
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -152,7 +151,7 @@ function check_pattern(checkElement) {
 //  when you have the drop objects
 // TODO: Improve code by using HTML Forms
 function modal_run_process() {
-    color_modal("dodgerblue");
+    set_modalColor("dodgerblue");
 
     /** collect inputs **/
     var inKey = [];
@@ -267,7 +266,7 @@ function modal_run_process() {
                     json.inputs[value] = inValue[i];
                     i++;
                 });
-                color_modal("forestgreen");
+                set_modalColor("forestgreen");
 
                 if (Object.keys(json.result).length > 1) {
                     group = true;
@@ -308,14 +307,14 @@ function modal_run_process() {
                 }
             } else if (json.execution_status == "Exception") {
                 console.error('error in wps process')
-                color_modal("firebrick");
+                set_modalColor("firebrick");
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "error in wps process") {
-                color_modal("firebrick");
+                set_modalColor("firebrick");
                 console.error('Error in wps process: ', json.error)
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
-                color_modal("firebrick");
+                set_modalColor("firebrick");
                 /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
@@ -324,7 +323,7 @@ function modal_run_process() {
             }
         })
         .fail(function (json) {
-            color_modal("firebrick");
+            set_modalColor("firebrick");
             console.error('Error, No success: ', json)
         });
 }
@@ -362,7 +361,7 @@ function run_wps(input_dict) {
         })
         .fail(function (json) {
             console.error('Error, No success: ', json)
-            color_modal("firebrick");
+            set_modalColor("firebrick");
         })
 }
 
@@ -415,7 +414,7 @@ function set_group_btn_name(name, storage) {
  *
  * @param {string} color
  */
-function color_modal(color) {
+function set_modalColor(color) {
     let modalColor = document.getElementById("modal-header");
     modalColor.style.backgroundColor = color;
     modalColor = document.getElementById("modal-footer");

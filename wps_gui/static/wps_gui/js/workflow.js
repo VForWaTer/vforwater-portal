@@ -259,6 +259,7 @@ let connection = new Connection()
 canvas.installEditPolicy(connection.connectionPolicy);
 
 /**
+ * Used when an element is dropped in the dropzone.
  * @private
  * @listens event:DragEvent
  * @param {Object} ev Start of the drag event outside of the canvas, set by dragstart_handler
@@ -287,10 +288,9 @@ function drop_handler(ev) {
         // TODO: improve data object to avoid building this obj manually!
         let inputs = []
         let outputs = []
+        get_sessionStorage_tools(service)
         let metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
-        console.log('metadata: ', metadata)
         if (!metadata) {
-            console.log('load tool!')
             get_wpsprocess(service, id);
             metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
         }
@@ -326,4 +326,21 @@ function drop_handler(ev) {
         box_param.inputs, box_param.outputs, textwidth
     )
     canvas.add(box.box, x, y);
+}
+
+/**
+ * Check for a tools in sessionStorage. When tools or service does not exist this function creates it.
+ * @param {number} service
+ * @return {obj} json - object of a wps process as saved in sessionStorage
+ */
+function get_sessionStorage_tools(service) {
+    let tools = JSON.parse(sessionStorage.getItem('tools'))
+    if (!tools) {
+        tools = {}
+    }
+    if (!tools[service]) {
+        tools[service] = {}
+    }
+    sessionStorage.setItem('tools', JSON.stringify(tools))
+    return tools
 }
