@@ -54,12 +54,12 @@ function create_map() {
     if (wfsLayerName.search("Error") !== -1) {
         console.error(wfsLayerName)
     }
-/** build the background map **/
+    /** build the background map **/
     let mapLayer = new ol.layer.Tile({
         preload: Infinity,
         source: mapSource
     });
-/** get OSM/OTM in case local map is not loading: **/
+    /** get OSM/OTM in case local map is not loading: **/
     mapLayer.getSource().on('tileloaderror', function () {
         // let source = new ol.source.OSM({
         //     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
@@ -93,7 +93,7 @@ function create_map() {
             fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
                 // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
                 // credentials: 'same-origin'}
-                )
+            )
                 .then(function (response) {
                     if (response.ok) {
                         return response.text();
@@ -153,64 +153,64 @@ function create_map() {
         source: wfsPointSource,
     });
 
-   /* /!** Style for selection/single circles around cluster  **!/
-    // used for Eddy footprint
-        let img = new ol.style.Circle({
-            radius: 8,
-            stroke: new ol.style.Stroke({
-                color: '#00021d',
-                // color: '#00BAEE',
-                width: 0.1
+    /* /!** Style for selection/single circles around cluster  **!/
+     // used for Eddy footprint
+         let img = new ol.style.Circle({
+             radius: 8,
+             stroke: new ol.style.Stroke({
+                 color: '#00021d',
+                 // color: '#00BAEE',
+                 width: 0.1
+             }),
+             fill: new ol.style.Fill({
+                 color: "rgb(53,161,220)"
+             })
+         });
+         let style1 = new ol.style.Style({
+             image: img,
+             // Draw a link beetween points
+             stroke: new ol.style.Stroke({
+                 color: '#AADDF9',
+                 width: 1
+             })
+         });
+ */
+    /*
+
+         // TODO: Eddy footprint example
+         /!** Load a 1-band rasterimage 'testlayer' from geoserver and render it as map **!/
+        let testExt = [1227200, 6035000, 1229000, 6036000]
+        let testlayer = new ol.layer.Image({
+            extent: testExt,
+            source: new ol.source.ImageWMS({
+                url: 'http://localhost:8080/geoserver/wms',
+                // params: {'LAYERS': 'testworkspace:Graswang_footprint_0011030'},
+                // params: {'LAYERS': 'testworkspace:Graswang_footprint_0010300'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0012330'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011530'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010000'},
+
+                params: {'LAYERS': 'NewRaster:Graswang_footprint_0010600'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011630'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010930'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011930'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010900'},
+                // params: {'LAYERS': 'NewRaster:Graswang_footprint_0012100'},
+                ratio: 1,
+                serverType: 'geoserver',
             }),
-            fill: new ol.style.Fill({
-                color: "rgb(53,161,220)"
-            })
+        })
+        let testpoint = new ol.Feature({
+            // geometry: new ol.geom.Point([1240114.37, 6016817.06]),
+            // geometry: new ol.geom.Point([47.571, 11.032]),
+            geometry: new ol.geom.Point(ol.proj.fromLonLat([11.0326, 47.5708])),
+            name: 'Graswang tower',
         });
-        let style1 = new ol.style.Style({
-            image: img,
-            // Draw a link beetween points
-            stroke: new ol.style.Stroke({
-                color: '#AADDF9',
-                width: 1
-            })
-        });
-*/
-/*
+        testpoint.setStyle(style1);
+        let testPointSource = new ol.source.Vector({features: [testpoint],});
+        let testPointLayer = new ol.layer.Vector({source: testPointSource,});
 
-     // TODO: Eddy footprint example
-     /!** Load a 1-band rasterimage 'testlayer' from geoserver and render it as map **!/
-    let testExt = [1227200, 6035000, 1229000, 6036000]
-    let testlayer = new ol.layer.Image({
-        extent: testExt,
-        source: new ol.source.ImageWMS({
-            url: 'http://localhost:8080/geoserver/wms',
-            // params: {'LAYERS': 'testworkspace:Graswang_footprint_0011030'},
-            // params: {'LAYERS': 'testworkspace:Graswang_footprint_0010300'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0012330'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011530'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010000'},
-
-            params: {'LAYERS': 'NewRaster:Graswang_footprint_0010600'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011630'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010930'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0011930'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0010900'},
-            // params: {'LAYERS': 'NewRaster:Graswang_footprint_0012100'},
-            ratio: 1,
-            serverType: 'geoserver',
-        }),
-    })
-    let testpoint = new ol.Feature({
-        // geometry: new ol.geom.Point([1240114.37, 6016817.06]),
-        // geometry: new ol.geom.Point([47.571, 11.032]),
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([11.0326, 47.5708])),
-        name: 'Graswang tower',
-    });
-    testpoint.setStyle(style1);
-    let testPointSource = new ol.source.Vector({features: [testpoint],});
-    let testPointLayer = new ol.layer.Vector({source: testPointSource,});
-
-*/
+    */
 
     /** functionality for zoom to extent button **/
     zoomToExt = new ol.control.ZoomToExtent({ // zoom button
@@ -250,8 +250,9 @@ function create_map() {
             new ol.control.Zoom({
                 zoomInTipLabel: gettext("Zoom in"),
                 zoomOutTipLabel: gettext("Zoom out"),
-                duration: 300}),
-            new ol.control.Attribution({collapsed: false, collapsible: false, }),
+                duration: 300
+            }),
+            new ol.control.Attribution({collapsed: false, collapsible: false,}),
             new ol.control.ZoomSlider(),
             new ol.control.MousePosition({
                 projection: 'EPSG:4326',
@@ -414,7 +415,7 @@ function create_map() {
             $(".infos").html("");
         })*/
 
-/** Popup related functions **/
+    /** Popup related functions **/
     function buildPagi(idDict, page) {
         let pagi = '';
         let nDat = 16; // number of Datasets shown at once
@@ -465,9 +466,7 @@ function create_map() {
         return pagi;
     }
 
-}
-
-
+// }
     function popupContent(ids, page) {
         if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
             page = JSON.parse("[" + ids + "]").slice(-1);
@@ -509,7 +508,7 @@ function create_map() {
         // });
 
     }
-
+}
     function buildPopupText(json, popUpText) {
         let valueLen;
         // loop over "properties" dict with metadata, build columns
