@@ -301,7 +301,9 @@ function drop_handler(ev) {
         }
         if (metadata.processOutputs) {
             for (let i of metadata.processOutputs) {
-                outputs.push(i.dataType)
+                if (i.identifier !== 'error') {
+                    outputs.push(i.dataType)
+                }
             }
         }
         box_param = {
