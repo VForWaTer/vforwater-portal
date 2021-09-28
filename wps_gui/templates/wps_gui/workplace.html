@@ -31,9 +31,9 @@
             Your browser does not support the HTML5 canvas tag.
         </canvas>
 </div>{% endcomment %}
-<div id="dropdiv" ondragover="dragover_handler(event)" ondrop="drop_handler(event)"
-     title="{% trans "Drag & Drop your Data and Tools here" %}">
-  {% trans "Dropzone" %}
+<div id="dropdiv" ondragover="dragover_handler(event)" ondrop="drop_handler(event)">
+     <div title="{% trans "Drag & Drop your Data and Tools here" %}" style="padding: 10px">
+  {% trans "Dropzone" %}</div>
 </div>
 </div>
 {% block modal %}
