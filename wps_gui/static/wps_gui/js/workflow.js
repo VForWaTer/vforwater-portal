@@ -16,7 +16,10 @@ class Box {
         this._boxtype = type;
         this._inputs = inputs;
         this._outputs = outputs;
-        this._connectable_types = ['timeseries']
+        this._connectable_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
+            'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
+            'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image',
+            'string', 'boolean', 'float', 'integer', 'positiveInteger', 'dateTime', 'list']
     }
 
     /**
@@ -259,7 +262,7 @@ let connection = new Connection()
 canvas.installEditPolicy(connection.connectionPolicy);
 
 /**
- * Used when an element is dropped in the dropzone.
+ * Used when an element is dropped in the dropzone. Collects parameters to build box.
  * @private
  * @listens event:DragEvent
  * @param {Object} ev Start of the drag event outside of the canvas, set by dragstart_handler
