@@ -221,17 +221,17 @@ button-footer {
 }
 
 
-.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
+/*.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
 .ndarray:hover, .raster:hover, .vraster:hover, ._2darray:hover, .idataframe:hover, .vdataframe:hover,
 .time-dataframe:hover, .vtime-dataframe:hover,
 .string:hover, .list:hover, .integer:hover, .positiveInteger:hover, .dateTime:hover,
 .boolean:hover, .float:hover, .plot:hover, .html:hover,
 .figure:hover, .image:hover {
-/*    height: 200%;
-    width: 200%;*/
-    transform: scale(2);
+!*    height: 200%;
+    width: 200%;*!
+    transform: scale(2, 2);
     vertical-align: text-bottom;
-}
+}*/
 
 .left-hemisphere {
     margin: 5px;

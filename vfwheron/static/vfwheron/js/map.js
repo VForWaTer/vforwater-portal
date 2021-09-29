@@ -509,51 +509,55 @@ function create_map() {
 
     }
 }
-    function buildPopupText(json, popUpText) {
-        let valueLen;
-        // loop over "properties" dict with metadata, build columns
-        for (let j in json) {
-            // let values = eval('properties["' + j + '"]');
-            let values = json[j];
-            valueLen = values.length;
-            popUpText += `<tr><td><b>${j}</b></td>`;
-            // loop over dict values and build rows
-            for (let k = 0; k < valueLen; k++) {
-                popUpText += `<td>${values[k]}</td>`;
-            }
-            popUpText += '</tr>'
-        }
-        popUpText += '<tr><td><b></b></td>';
 
-        /** build buttons for each dataset **/
-        function moreBtn(listIndex) {
-            return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
-                'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" data-toggle="tooltip" ' +
-                'value=' + gettext("More") + ' title="' + gettext("Show more information about the dataset.") + '">' +
-                '</b></a>'}
-        function storeBtn(listIndex) {
-            if (json.Embargo[listIndex] === "False" || UNBLOCKED_IDS.includes(json.id[listIndex])) {
-                return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
-                    'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" ' +
-                    'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
-                    'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
-            } else {
-                return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
-                    'onclick=\"requestDataset(\'' + json.id[listIndex] + '\')\" ' +
-                    'value="' + gettext("Send request") + '" data-toggle="tooltip" ' +
-                    'title="' + gettext("Send an access request to the data owner.") + '"></b></a>'
-            }
-        }
+function buildPopupText(json, popUpText) {
+    let valueLen;
+    // loop over "properties" dict with metadata, build columns
+    for (let j in json) {
+        // let values = eval('properties["' + j + '"]');
+        let values = json[j];
+        valueLen = values.length;
+        popUpText += `<tr><td><b>${j}</b></td>`;
+        // loop over dict values and build rows
         for (let k = 0; k < valueLen; k++) {
-            popUpText += '<td>' + moreBtn(k) + storeBtn(k) + '</td>'
+            popUpText += `<td>${values[k]}</td>`;
         }
+        popUpText += '</tr>'
+    }
+    popUpText += '<tr><td><b></b></td>';
 
-        let popupTableAfterMeta = popUpText + '</table>';
-        // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
-        return popupTableAfterMeta //+ img_preview;
+    /** build buttons for each dataset **/
+    function moreBtn(listIndex) {
+        return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
+            'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" data-toggle="tooltip" ' +
+            'value=' + gettext("More") + ' title="' + gettext("Show more information about the dataset.") + '">' +
+            '</b></a>'
     }
 
-
-    function requestDataset(dataId) {
-        console.warn('Noch nicht implementiert.')
+    function storeBtn(listIndex) {
+        if (json.Embargo[listIndex] === "False" || UNBLOCKED_IDS.includes(json.id[listIndex])) {
+            return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
+                'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" ' +
+                'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
+                'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
+        } else {
+            return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
+                'onclick=\"requestDataset(\'' + json.id[listIndex] + '\')\" ' +
+                'value="' + gettext("Send request") + '" data-toggle="tooltip" ' +
+                'title="' + gettext("Send an access request to the data owner.") + '"></b></a>'
+        }
     }
+
+    for (let k = 0; k < valueLen; k++) {
+        popUpText += '<td>' + moreBtn(k) + storeBtn(k) + '</td>'
+    }
+
+    let popupTableAfterMeta = popUpText + '</table>';
+    // let img_preview = '</td><td><p id = "preview_img" ></p></td></table>';
+    return popupTableAfterMeta //+ img_preview;
+}
+
+
+function requestDataset(dataId) {
+    console.warn('Noch nicht implementiert.')
+}

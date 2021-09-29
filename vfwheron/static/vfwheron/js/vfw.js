@@ -709,12 +709,25 @@ function moreInfoModal(id) {
  * @param {string} id - can be a single id or a list of ids
  */
 function workspace_dataset(id) {
+    let urlParams = new URLSearchParams(window.location.search);
+    let startdate, enddate;
+    let date = urlParams.getAll('date');
+
+    if ($.isEmptyObject(date)) {
+        startdate = 'None'
+        enddate = 'None'
+    } else {
+        startdate = date[0].toString();
+        enddate = date[1].toString();
+    }
     if (id !== 'null') {
         $.ajax({
             url: DEMO_VAR + "/home/workspace_data",
             datatype: 'json',
             data: {
                 workspaceData: id,
+                startDate: startdate,
+                endDate: enddate,
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
         })
@@ -887,7 +900,9 @@ function getFilterURL(selection) {
     }
     nextURL = urlParams.toString() === '' ? urlPath : urlPath + '?' + urlParams.toString();
     window.history.pushState({additionalInformation: 'Updated the URL with JS'}, '', nextURL);
-    if (urlParams.toString() === "") {urlParams = 'reset'}
+    if (urlParams.toString() === "") {
+        urlParams = 'reset'
+    }
     return '/home/quick_filter_args/' + urlParams.toString();
 
 }
@@ -902,7 +917,7 @@ function get_quick_selection(selection) {
     let url = getFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
-    if (url !== false ) {
+    if (url !== false) {
         $.ajax({
             url: DEMO_VAR + url,
             // data: {
@@ -918,7 +933,9 @@ function get_quick_selection(selection) {
 
                 /** update total Value for available datasets: */
                 $("#quickfilter-form p:first").html(
-                    function(i, txt) {return txt.replace(/\d+/, json['total'].toString());}
+                    function (i, txt) {
+                        return txt.replace(/\d+/, json['total'].toString());
+                    }
                 )
 
                 updateMapSelection(json)
@@ -960,7 +977,7 @@ function update_quickfilter() {
                 let coords_len = coords_list.length;
                 let coords = []
                 for (let i = 0; i < coords_len; i += 2) {
-                    coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i+1]]))
+                    coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i + 1]]))
                 }
 
                 // TODO: Do not create a new layer, but reuse the layers in drawOnMapManu

@@ -728,12 +728,12 @@ def workspace_data(request):
     :return:
     """
 
-    def build_selection(requested_id, min_time=0, max_time=0):
+    def build_selection(requested_id, startdate='', enddate=''):
         """
         function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
         :param requested_id:
-        :param min_time:
-        :param max_time:
+        :param startdate: string
+        :param enddate: string
         :return:
         """
         dataset_dict = {}
@@ -765,8 +765,8 @@ def workspace_data(request):
                                                              'source': 'db',
                                                              'dbID': dataset['id'],
                                                              'orgID': 'db' + str(dataset['id']),
-                                                             'start': '',
-                                                             'end': '',
+                                                             'start': startdate,
+                                                             'end': enddate,
                                                              'inputs': [],
                                                              'outputs': dataset['datasource__datatype__name']
                                                              }
@@ -776,10 +776,9 @@ def workspace_data(request):
         return {'data': dataset_dict, 'error': error_dict}
 
     try:
-        min_time = request.GET.get('minTime')
-        max_time = request.GET.get('maxTime')
         # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
-        result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
+        result = build_selection(json.loads(request.GET.get('workspaceData')),
+                                 request.GET.get('startDate'), request.GET.get('endDate'))
         return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
     except TypeError:
