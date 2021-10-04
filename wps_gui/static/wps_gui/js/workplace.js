@@ -468,7 +468,7 @@ function add_resultbtn_to_sessionstore(btnName, json) {
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
-        'class="w3-padding task is-result" ' +
+        'class="w3-padding task is-result" data-sessionStore="resultBtn"' +
         'data-id="' + json.source + json.dbID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
         'id="' + name + '">' +
         '<span class="w3-medium" title="' + title + '">' +
@@ -488,7 +488,7 @@ function build_resultstore_button(name, json) {
 function build_resultgroup_button(groupname, members) {
     let mhtml = ''
     let ghtml = '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
-        'class="w3-padding task is-result-group groupaccordion" ' +
+        'class="w3-padding task is-result-group groupaccordion"' +
         '" btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
         'id="' + groupname + '"><span class="w3-medium">' +
         '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +

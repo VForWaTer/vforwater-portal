@@ -2,16 +2,22 @@ class Box {
 
     /**
      * Box class to be added (dropped) on a draw2d.Canvas Element.
-     * @param {String} name Name of the box
-     * @param {String} orgId ID of the dataset used on the website out of workflowjs
-     * @param {String} type Used to define style of box. Implemented is 'tool', which increases the height of the box
-     * @param {List} inputs List of strings to define port types. Implemented are timeseries, string, boolean
-     * @param {List} outputs List of strings to define port types. Implemented are timeseries, string, boolean
-     * @param {Number} ~90% of the width of the box
+     * @param {string} name Name of the box
+     * @param {string} name Name of the box
+     * @param {string} orgId ID of the dataset used on the website out of workflowjs
+     * @param {string} type Used to define style of box. Implemented is 'tool', which increases the height of the box
+     * @param {list} inputs List of strings to define port types. Implemented are timeseries, string, boolean
+     * @param {list} outputs List of strings to define port types. Implemented are timeseries, string, boolean
+     * @param {number} boxwidth ~90% of the width of the box
+     * @param {string} sessionstore Source of the button
+     * @param {string} service wps of tool
      */
-    constructor(name, orgId, type, inputs, outputs, boxwidth) {
+    constructor(name, orgId, type, inputs, outputs, boxwidth,
+                sessionstore, service) {
         this._boxname = name;
         this._boxwidth = boxwidth;
+        this._service = service;
+        this._sessionstore = sessionstore;
         this._orgid = orgId;
         this._boxtype = type;
         this._inputs = inputs;
@@ -72,13 +78,18 @@ class Box {
     _blankBox() {
         let boxHeight = 30;
         let boxTexty = 3;
-        if (this._boxtype === 'tool') {
+        let boxType = this._boxtype;
+        let boxId = 'box' + this._orgid;
+        let name = this._orgid;
+        let service = this._service;
+
+        if (boxType === 'tool') {
             boxHeight = 50;
             boxTexty = 12;
         }
-        let boxid = 'box' + this._orgid;
+
         let box = new draw2d.shape.basic.Rectangle({
-            id: boxid,
+            id: boxId,
             minWidth: 100,
             width: this._boxwidth * 1.1,
             height: boxHeight,
@@ -86,17 +97,26 @@ class Box {
             radius: 5,
             bgColor: '#D9EFFD',
             stroke: 0,
-            cssClass: 'box-' + this._boxtype
+            cssClass: 'box-' + this._boxtype,
         })
-        box.attr({id: boxid})
-        box.add(
-            new draw2d.shape.basic.Label({
+        box.attr({id: boxId})
+        let label = new draw2d.shape.basic.Label({
                 text: this._boxname,
                 stroke: 0,
                 fontSize: 15,
                 x: 5,  // Position of text in box
                 y: boxTexty
-            }),
+            })
+        if (boxType === 'tool') {
+            box.on('click', function () {
+                wpsprocess(service, name);
+            })
+            label.on('click', function () {
+                wpsprocess(service, name);
+            })
+        }
+        box.add(
+            label,
             new draw2d.layout.locator.Locator());
 
         // Don't show handles around rectangle when moving it
@@ -328,7 +348,7 @@ function drop_handler(ev) {
     // console.log('box_param.name: ', box_param.name)
     let box = new Box(
         box_param.name, box_param.orgid, box_param.type,
-        box_param.inputs, box_param.outputs, textwidth
+        box_param.inputs, box_param.outputs, textwidth, parentid, service
     )
     canvas.add(box.box, x, y);
 }

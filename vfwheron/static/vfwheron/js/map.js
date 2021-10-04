@@ -466,7 +466,7 @@ function create_map() {
         return pagi;
     }
 
-// }
+}
     function popupContent(ids, page) {
         if (typeof (ids) === 'string' && typeof (page) === 'undefined') {
             page = JSON.parse("[" + ids + "]").slice(-1);
@@ -508,7 +508,7 @@ function create_map() {
         // });
 
     }
-}
+// }
 
 function buildPopupText(json, popUpText) {
     let valueLen;

@@ -1,5 +1,6 @@
 # from inspect import getmembers
 import ast
+import datetime
 import json
 import re
 import sys
@@ -360,7 +361,7 @@ def db_load(request):
     """
     Function to preload data from database, convert it, and store a pickle of the data
     Example for input for wps dbloader:  [('entry_id', '12'), ('uuid', ''), ('start', '1990-10-31T09:06'),
-    ('end', '2020-11-21T09:07')]
+    ('end', datetime.datetime(2018, 12, 31, 0, 0))]
     :param request: dict
     :return:
     """
@@ -438,25 +439,10 @@ def edit_input(inputs):
         elif key_value[1][0:3] == 'wps' and key_value[1][3:].isdecimal():
             wps_input.append((key_value[0],
                               ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path']))
-
-            # TODO: a lot of old stuff following here. Rethink what is still needed and update!
-
-        elif key_value[1] == 'sql-filter':
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[1] == 'name_time' and key_value[1].isdigit():
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[1] == 'name' and key_value[1].isdigit():
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[1] == 'number' and key_value[1].isdigit():
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'start' and key_value[1] == '':
-            print('You have to implement how to handle a start date in input data')
-            pass
-            # wps_input.append((key_value[0], '0, 0'))
-        elif key_value[0] == 'end' and key_value[1] == '':
-            print('You have to implement how to handle a end date in input data')
-            pass
-            # wps_input.append((key_value[0], '0, 0'))
+        elif key_value[0] == 'start' or key_value[0] == 'end':
+            if key_value[1] != 'None':
+                wps_input.append((key_value[0], datetime.datetime.strptime(key_value[1], '%Y-%m-%d')
+                                  .strftime("%Y-%m-%dT%H:%M:%S")))
         else:
             wps_input.append((key_value[0], key_value[1]))
     return wps_input
