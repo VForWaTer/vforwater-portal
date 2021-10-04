@@ -368,6 +368,7 @@ def db_load(request):
     wps_process = 'dbloader'
     request_input = json.loads(request.GET.get('dbload'))
     orgid = request_input.get('dataset')
+    result = {}
 
     # check if user has access to dataset
     accessible_data = get_accessible_data(request, orgid[2:])
@@ -405,10 +406,12 @@ def db_load(request):
                                                   creation=timezone.now())
             except Exception as e:
                 print('Exception while creating DB entry: ', e)
-            result = {'orgid': orgid, 'id': 'wps' + dbkey.id, 'type': dtype, 'inputs': inputs}
-    except Exception as e:
-        print('Exception in db_load: ', e)
-        raise Http404
+
+            result = {'orgid': orgid, 'id': 'wps' + str(dbkey.id), 'type': dtype, 'inputs': inputs, 'outputs': ouput}
+
+    # except Exception as e:
+    #     print('Exception in db_load: ', e)
+    #     raise Http404
 
     return JsonResponse(result)
 
