@@ -488,7 +488,7 @@ function build_resultstore_button(name, json) {
 function build_resultgroup_button(groupname, members) {
     let mhtml = ''
     let ghtml = '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
-        'class="w3-padding task is-result-group groupaccordion"' +
+        'class="w3-padding task is-result-group groupaccordion" data-sessionStore="resultBtn"' +
         '" btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
         'id="' + groupname + '"><span class="w3-medium">' +
         '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +

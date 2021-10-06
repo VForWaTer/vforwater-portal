@@ -69,10 +69,15 @@
 
   function close_result_Modal() {
     rModal.style.display = "none";
-    bokehResultScript.parentNode.removeChild(bokehResultScript);
     {#document.getElementById("resultModal-content").style.width = "initial";#}
     reset_Modal("resultModal-content", modalToggleSize)
-    sessionStorage.removeItem('Bokeh')
+    if (modalToggleSize.style.display === "none") {
+      modalToggleSize.style.display = "block";
+    }
+    if (sessionStorage.getItem('Bokeh')) {
+      bokehResultScript.parentNode.removeChild(bokehResultScript);
+      sessionStorage.removeItem('Bokeh')
+    }
   }
 
   function toggle_Modal_size() {

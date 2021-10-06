@@ -1149,6 +1149,11 @@ class SidebarButtonWPS extends SidebarButton {
     }
 }
 
+/**
+ *
+ * @param {string} divID
+ * @param {*} data
+ */
 function place_html_with_js(divID, data) {
     document.getElementById(divID).innerHTML = data.div; // add plot
     bokehResultScript = document.createElement('script');

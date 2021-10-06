@@ -146,6 +146,7 @@ function preload_datastore_button(workspaceData) {
             $.ajax({
                 url: DEMO_VAR + "/workspace/dbload",
                 // dataType: 'json',
+                "timeout": 5000,
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
                 }, /** data sent with post request **/
@@ -665,6 +666,8 @@ function menuItemListener(link) {
     let service = {};
     let id = taskItemInContext.getAttribute("data-id");
     let btnName = taskItemInContext.getAttribute('btnname');
+    let store = taskItemInContext.getAttribute('data-sessionstore');
+    let item = JSON.parse(sessionStorage.getItem(store))[btnName];
 
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
@@ -806,6 +809,15 @@ function menuItemListener(link) {
             positionPopup(popup);
             break;
         case "Plot":
+            if (item.type == 'figure') {
+                // document.getElementById("pop-content-side").innerHTML = item.outputs; // add plot
+                document.getElementById("mod_result").innerHTML = item.outputs; // add plot
+                let rModal = document.getElementById("resultModal");
+                rModal.style.display = "block";
+                popup.classList.remove(popActive);
+                modalToggleSize.style.display = "none";
+                // modalToggleSize.hidden = true;
+            }
             // TODO: Add Names on lines in Plot needs modification in wps or another database entry
             // let allBtns = JSON.parse(sessionStorage['resultBtn'])
             // let inputs = allBtns[btnName].inputs
@@ -822,8 +834,10 @@ function menuItemListener(link) {
             //     }
             // })
 
-            // get bokeh plot from django
-            $.ajax({
+            else
+            {
+                // get bokeh plot from django
+                $.ajax({
                 url: DEMO_VAR + "/home/previewplot",
                 datatype: 'json',
                 data: {
@@ -852,6 +866,7 @@ function menuItemListener(link) {
                 .always(function () {
                     popup.classList.remove(popActive);
                 })
+        }
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});

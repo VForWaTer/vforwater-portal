@@ -249,11 +249,9 @@ def handle_wps_output(execution, wps_process, inputs):
     all_outputs = {'execution_status': execution.status}
     all_outputs['result'] = {}
     path = ''
-    loopcount = 0
 
     # iterate through list of outputs
     for output in execution.processOutputs:
-        loopcount += 1
 
         if output.identifier == 'error':
             error_dict = {}
@@ -277,7 +275,7 @@ def handle_wps_output(execution, wps_process, inputs):
                 keywords = json.loads(output.abstract)['keywords'][0]
                 single_output['type'] = keywords
                 if 'pickle' in keywords:
-                    path = output.data[0]
+                    path = eval(output.data[0])[0]  # get first value of string tuple
             except TypeError as e:
                 if output.dataType in basicdatatypes:
                     single_output['type'] = output.dataType
@@ -288,19 +286,22 @@ def handle_wps_output(execution, wps_process, inputs):
 
             # get data
             if output.data:
-                single_output['data'] = output.data[0]
+                if output.identifier == 'fig':
+                    single_output['data'] = output.data[0]
+                else:
+                    single_output['data'] = eval(output.data[0])[0]
 
             # TODO: Decide how to handle errors from WPS (show nothing, everything and user can check what is okay?)
-            if output.data and len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
-                db_output_data = output.data[0]
+            if output.data and len(single_output['data']) < 300:  # random number, typical pathlength < 260 chars
+                db_output_data = eval(output.data[0])[0]
             elif path != '':
                 try:
                     file_name = path[:-4] + single_output['type'] + path[-4:]
                     text_file = open(file_name, "w")
-                    text_file.write(output.data[0])
+                    text_file.write(eval(output.data[0])[0])
                     text_file.close()
                     db_output_data = file_name
-                    single_output['data'] = output.data[0]
+                    single_output['data'] = eval(output.data[0])[0]
                 except Exception as e:
                     print('Warning: no file was created for long string')
                     print(e)

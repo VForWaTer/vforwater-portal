@@ -183,7 +183,6 @@ class Box {
     }
 }
 
-
 class Connection {
 
     constructor() {
