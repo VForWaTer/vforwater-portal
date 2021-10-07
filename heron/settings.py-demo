@@ -23,11 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = '/home/vfwtools/pywps'
 
 # For now, place all data files in VFW_DIR and not into source directory.
-try:
-    HOME_DIR = Path.home()
-except AttributeError:
-    import os
-    HOME_DIR = Path(str(os.path.expanduser('~')))
+HOME_DIR = Path.home()
+# try:
+#     HOME_DIR = Path.home()
+# except AttributeError:
+#     import os
+#     HOME_DIR = Path(str(os.path.expanduser('~')))
 
 VFW_DIR = Path(HOME_DIR) / '.vforwater'
 if not Path(VFW_DIR).exists():
