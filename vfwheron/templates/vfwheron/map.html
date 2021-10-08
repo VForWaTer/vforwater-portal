@@ -80,6 +80,21 @@
 
 <script>
    // sample_locations = '{{ sample_locations }}';
+   function isStorageSupported(globalObject, storageType) {
+   try {
+      const storage = globalObject[storageType];
+      storage.setItem("test", "test");
+      storage.removeItem("test");
+      return true;
+ } catch (err) {
+   return false;
+ }
+}
+if (!isStorageSupported(window, "localStorage")) {
+  alert("You might experience problems on this webside. " +
+    "This might be due to your browser in general (we recommend Google Chrome), due to a " +
+    "private (incognito) mode, Android apps that use WebView, or you might have turned off JavaScript.");
+}
 
     /** add clickEvent to close button */
     let closst = document.getElementById('draw_close');
