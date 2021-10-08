@@ -871,7 +871,7 @@ function menuItemListener(link) {
                         if ('html' in requestResult) {
                             document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
                         } else {  // plot from bokeh
-                            sessionStorage['Bokeh'] = JSON.stringify(requestResult);
+                            sessionStorage['Bokeh'] = 'true';
                             place_html_with_js("mod_result", requestResult)
                         }
                         // popClose.classList.remove('w3-hide');
