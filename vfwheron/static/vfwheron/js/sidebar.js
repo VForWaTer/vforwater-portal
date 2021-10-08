@@ -668,7 +668,10 @@ function menuItemListener(link) {
     let btnName = taskItemInContext.getAttribute('btnname');
     let store = taskItemInContext.getAttribute('data-sessionstore');
     let item = JSON.parse(sessionStorage.getItem(store))[btnName];
-
+    if (!item) {
+        btnName = taskItemInContext.getAttribute('data-orgid');
+        item = JSON.parse(sessionStorage.getItem(store))[btnName];
+    }
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
     /*content.innerHTML = '<div id="loader"  class="fading-dot-loader">\n' +
@@ -809,6 +812,19 @@ function menuItemListener(link) {
             positionPopup(popup);
             break;
         case "Plot":
+            console.log('item: ', item)
+            console.log('id: ', id)
+            let urlParams = new URLSearchParams(window.location.search);
+            let startdate, enddate;
+            let date = urlParams.getAll('date');
+
+            if ($.isEmptyObject(date)) {
+                startdate = 'None'
+                enddate = 'None'
+            } else {
+                startdate = date[0].toString();
+                enddate = date[1].toString();
+            }
             if (item.type == 'figure') {
                 // document.getElementById("pop-content-side").innerHTML = item.outputs; // add plot
                 document.getElementById("mod_result").innerHTML = item.outputs; // add plot
@@ -838,35 +854,38 @@ function menuItemListener(link) {
             {
                 // get bokeh plot from django
                 $.ajax({
-                url: DEMO_VAR + "/home/previewplot",
-                datatype: 'json',
-                data: {
-                    preview: id,
-                    'csrfmiddlewaretoken': csrf_token,
-                }, // data sent with post
-            })
-                .done(function (requestResult) {
-                    // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
-                    // content.innerHTML = result.div;
-                    // let bokehResultScript;
-                    if ('html' in requestResult) {
-                        document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
-                    } else {  // plot from bokeh
-                        sessionStorage['Bokeh'] = JSON.stringify(requestResult);
-                        place_html_with_js("mod_result", requestResult)
-                    }
-                    // popClose.classList.remove('w3-hide');
-                    // positionPopup(popup);
-                    let rModal = document.getElementById("resultModal");
-                    rModal.style.display = "block";
+                    url: DEMO_VAR + "/home/previewplot",
+                    datatype: 'json',
+                    data: {
+                        preview: id,
+                        'csrfmiddlewaretoken': csrf_token,
+                        startdate: startdate,
+                        enddate: enddate,
+                    }, // data sent with post
                 })
-                .fail(function (e) {
-                    console.error('Fehler: ', e)
-                })
-                .always(function () {
-                    popup.classList.remove(popActive);
-                })
-        }
+                    .done(function (requestResult) {
+                        // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
+                        // content.innerHTML = result.div;
+                        // let bokehResultScript;
+                        console.log('make a previewplot')
+                        if ('html' in requestResult) {
+                            document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
+                        } else {  // plot from bokeh
+                            sessionStorage['Bokeh'] = JSON.stringify(requestResult);
+                            place_html_with_js("mod_result", requestResult)
+                        }
+                        // popClose.classList.remove('w3-hide');
+                        // positionPopup(popup);
+                        let rModal = document.getElementById("resultModal");
+                        rModal.style.display = "block";
+                    })
+                    .fail(function (e) {
+                        console.error('Fehler: ', e)
+                    })
+                    .always(function () {
+                        popup.classList.remove(popActive);
+                    })
+            }
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});

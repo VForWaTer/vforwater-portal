@@ -9,7 +9,7 @@ from heron.settings import max_size_preview_plot
 from vfwheron.models import Entries, Timeseries, Timeseries_1D
 
 
-def __get_timescale(df, ID):
+def __get_timescale(df, ID=None):
     """
     Get a dataframe with a timestamp ('tstmp'), iterate over the first 11 values (or less for shorter datasets)
     and return the smallest time difference.
@@ -26,8 +26,13 @@ def __get_timescale(df, ID):
         if df.shape[0] <= checklength + 1:
             checklength = df.shape[0] - 1
 
+        if 'tstamp' in df:
+            relcol = df['tstamp']
+        elif df.index.name == 'tstamp':
+            relcol = df.index
+
         while steps < checklength:
-            stepsize.append(df['tstamp'][steps + 1] - df['tstamp'][steps])
+            stepsize.append(relcol[steps + 1] - relcol[steps])
             steps += 1
         return min(stepsize)
 
@@ -352,6 +357,7 @@ def fill_data_gaps(db_data: object):
             # reset the index to integer
             df = df.sort_index().reset_index(drop=True)
             missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
+
     return {'df': df, 'scale': scale, 'nan_in_data': nan_in_data,
             'missing_data': missing_data, 'has_preci': db_data['has_preci']}
 
@@ -430,3 +436,33 @@ def precision_to_minmax(df):
         print('WARNING: there is a unknown dataset to convert precision in precision to minmax.')
 
     return df
+
+
+class DataTypes:
+    NUMPY_TYPES = ['array', '2darray', 'ndarray']
+    SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
+    DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
+    SPECIALS = ['raster']
+
+    def read_data(self, filepath: str, datatype: str):
+        if datatype in self.NUMPY_TYPES:
+            data = np.load(filepath + '.npz')
+        elif datatype in self.SERIES_TYPES:
+            data = pd.read_pickle(filepath + '.pkl')
+        elif datatype in self.DF_TYPES:
+            kwargs = dict()
+            if 'time' in datatype:
+                kwargs['parse_dates'] = [0]
+            data = pd.read_csv(self.filepath + '.csv', index_col=[0], **kwargs)
+
+            # if array-like, use only the first column
+            # if datatype in self.SERIES_TYPES:
+            #     data = data.iloc[:, 1].copy()
+
+        elif datatype == 'raster':
+            raise NotImplementedError('Raster files are not yet supported.')
+
+        else:
+            raise AttributeError("The datatype '%s' is not supported" % datatype)
+
+        return data

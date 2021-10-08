@@ -408,7 +408,7 @@ def db_load(request):
             except Exception as e:
                 print('Exception while creating DB entry: ', e)
 
-            result = {'orgid': orgid, 'id': 'wps' + str(dbkey.id), 'type': dtype, 'inputs': inputs, 'outputs': ouput}
+            result = {'orgid': orgid, 'id': 'wps' + str(dbkey.id), 'type': dtype, 'inputs': inputs, 'outputs': output}
 
     # except Exception as e:
     #     print('Exception in db_load: ', e)

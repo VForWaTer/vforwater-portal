@@ -432,7 +432,7 @@ def get_cache(cache_obj: dict) -> tuple:
     return cache_obj, img
 
 
-def get_plot(ID: str, full_res: bool, date: list, size: list = [700, 500]) -> dict:
+def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 500]) -> dict:
     """
     Check if plot is stored with redis or build a new one with Bokeh.
     Bokeh builds an object with 'script' and 'div'. Redis stores this as string, which is fine, as
