@@ -235,7 +235,7 @@ function update_datastore_button(wpsDBInfo) {
     }
     button.remove();
     // parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'].substring(3,),
-    parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'],
+    parent.innerHTML += sidebar_btn_html(datasetKey,
         storageEntry, btnName, title)
     workspaceData[datasetKey] = storageEntry
     /*$.each(wpsDBInfo, function (keyID, value) {
