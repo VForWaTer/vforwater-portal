@@ -365,6 +365,7 @@ function run_wps(input_dict) {
         })
 }
 
+
 /**
  * Check if result data in sessionStorage exists, if yes check if name already exists, if yes add numger to name.
  *

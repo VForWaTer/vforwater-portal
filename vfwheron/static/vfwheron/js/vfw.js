@@ -1177,16 +1177,16 @@ function place_html_with_js(divID, data) {
  * @param {Object} ev Start of the drag event outside of the canvas.
  */
 function dragstart_handler(ev) {
-    ev.dataTransfer.setData("text/plain", JSON.stringify([
+    let path = event.path || (event.composedPath && event.composedPath());
+    ev.dataTransfer.setData("text/html", JSON.stringify([
         ev.target.id,
         // ev.target.getAttribute('data-process'),
-        ev.path[1].id,
+        path[1].id,
         ev.target.getAttribute('data-service')
     ]));
 }
 
 /**
- * @private
  * @listens event:DragEvent
  * @param {Object} ev The drag event on the Canvas.
  */
