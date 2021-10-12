@@ -74,9 +74,9 @@
     if (modalToggleSize.style.display === "none") {
       modalToggleSize.style.display = "block";
     }
-    if (sessionStorage.getItem('Bokeh')) {
+    if (bokehImage) {
       bokehResultScript.parentNode.removeChild(bokehResultScript);
-      sessionStorage.removeItem('Bokeh')
+      bokehImage = false;
     }
   }
 
@@ -88,7 +88,8 @@
     } else {
       reset_Modal("resultModal-content", modalToggleSize)
     }
-    place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))
+    place_html_with_js("mod_result", bokehImage)
+    {#place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
   }
 
   function reset_Modal(modalID, toggleElement) {

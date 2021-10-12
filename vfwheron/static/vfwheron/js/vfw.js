@@ -6,6 +6,7 @@ let selectionLayer;
 let activeMap = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
 let sessionStorageData = {};
+let bokehImage = false;
 
 let selectedIds = {
     mapIds: null,

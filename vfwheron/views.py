@@ -35,7 +35,7 @@ from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test
 from vfwheron.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label
 from wps_gui.models import WpsResults
 from .data_tools import __get_timescale, fill_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
-    __get_axis_limits
+    __get_axis_limits, __reduce_dataset
 from .forms import QuickFilterForm
 
 mpl.use('Agg')
@@ -559,6 +559,7 @@ def previewplot(request):
     :return:
     """
     webID = request.GET.get('preview')
+    full_res = False
     if request.GET.get('startdate') != 'None':
         date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
                 make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
@@ -613,6 +614,8 @@ def previewplot(request):
             df = dataReader.read_data(filepath=path, datatype=typelist['type'])
             # df = pd.read_csv(path + ".csv")
             # df['tstamp'] = pd.to_datetime(df['tstamp'])
+            if len(df.index) > 50000:
+                df = __reduce_dataset(df, full_res)
 
             if metadata['meta']['variable']['name'] in df.columns:
                 df.rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
@@ -649,7 +652,7 @@ def previewplot(request):
             plot_data = __get_axis_limits(plot_data)
             # print('11 wps: ', plot_data)
             # return JsonResponse(get_plot(ID=plot_data))
-            return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=True, size=[700, 500], label=label))
+            return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=full_res, size=[700, 500], label=label))
 
         if 'figure' in typelist:
             return JsonResponse('Warning: Not implemented yet.')

@@ -157,15 +157,21 @@ def __reduce_dataset(qs: object, full_res: bool):
     """
     Reduce length of dataset to length given in 'settings.max_size_preview_plot' to speed up loading time of preview.
 
-    :param qs: data as django queryset
+    :param qs: data as django queryset or pandas dataframe
     :param full_res: bool
     :return: pandas dataframe
     """
-    if full_res:
-        df = pd.DataFrame(list(qs))
+    if isinstance(qs, pd.DataFrame):
+        if full_res:
+            df = qs
+        else:
+            df = qs.tail(max_size_preview_plot)
     else:
-        qs_length = qs.count()
-        df = pd.DataFrame(list(qs[qs_length - max_size_preview_plot:qs_length]))
+        if full_res:
+            df = pd.DataFrame(list(qs))
+        else:
+            qs_length = qs.count()
+            df = pd.DataFrame(list(qs[qs_length - max_size_preview_plot:qs_length]))
     return df
 
 
