@@ -654,6 +654,11 @@ function moreInfoModal(id) {
                 'overflow-x: hidden; overflow-y:auto;">' + properties[j] + '</div></td>' +
                 '</tr>';
         }
+        if (properties.Embargo == 'No'){
+            metaText += '<tr><td colspan = "2">' + storeBtn(id, "False") + '</td></tr>'
+        } else {
+            metaText += '<tr><td colspan = "2">' + storeBtn(id, "True") + '</td></tr>'
+        }
         document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
         showDataInfo(properties);
     }

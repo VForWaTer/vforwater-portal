@@ -510,6 +510,26 @@ function create_map() {
     }
 // }
 
+// function storeBtn(listIndex) {
+/**
+ * Create a html button to request a dataset or pass it to the data store, depending on embargo.
+ * @param {int} ssid
+ * @param {string} embargo "True" or "False"
+ */
+function storeBtn(ssid, embargo) {
+    if (embargo === "False" || UNBLOCKED_IDS.includes(ssid)) {
+        return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
+            'onclick=\"workspace_dataset(\'' + ssid + '\')\" ' +
+            'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
+            'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
+    } else {
+        return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
+            'onclick=\"requestDataset(\'' + ssid + '\')\" ' +
+            'value="' + gettext("Send request") + '" data-toggle="tooltip" ' +
+            'title="' + gettext("Send an access request to the data owner.") + '"></b></a>'
+    }
+}
+
 function buildPopupText(json, popUpText) {
     let valueLen;
     // loop over "properties" dict with metadata, build columns
@@ -527,29 +547,17 @@ function buildPopupText(json, popUpText) {
     popUpText += '<tr><td><b></b></td>';
 
     /** build buttons for each dataset **/
-    function moreBtn(listIndex) {
-        return '<a><b><input id="show_data_preview' + json.id[listIndex].toString() + '" class="w3-btn-block" ' +
-            'type="submit" onclick=\"moreInfoModal(\'db' + json.id[listIndex] + '\')\" data-toggle="tooltip" ' +
+    function moreBtn(ssid) {
+        return '<a><b><input id="show_data_preview' + ssid.toString() + '" class="w3-btn-block" ' +
+            'type="submit" onclick=\"moreInfoModal(\'db' + ssid + '\')\" data-toggle="tooltip" ' +
             'value=' + gettext("More") + ' title="' + gettext("Show more information about the dataset.") + '">' +
             '</b></a>'
     }
 
-    function storeBtn(listIndex) {
-        if (json.Embargo[listIndex] === "False" || UNBLOCKED_IDS.includes(json.id[listIndex])) {
-            return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
-                'onclick=\"workspace_dataset(\'' + json.id[listIndex] + '\')\" ' +
-                'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
-                'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
-        } else {
-            return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
-                'onclick=\"requestDataset(\'' + json.id[listIndex] + '\')\" ' +
-                'value="' + gettext("Send request") + '" data-toggle="tooltip" ' +
-                'title="' + gettext("Send an access request to the data owner.") + '"></b></a>'
-        }
-    }
-
     for (let k = 0; k < valueLen; k++) {
-        popUpText += '<td>' + moreBtn(k) + storeBtn(k) + '</td>'
+        let ssid = json.id[k];
+        popUpText += '<td>' + moreBtn(ssid) + storeBtn(ssid, json.Embargo[k]) + '</td>'
+        // popUpText += '<td>' + moreBtn(k) + storeBtn(k) + '</td>'
     }
 
     let popupTableAfterMeta = popUpText + '</table>';
