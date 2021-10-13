@@ -259,6 +259,7 @@ function modal_run_process() {
                 let groupName = ''
                 let i = 0;
                 let members = [];
+                let directshowdatatypes = ['figure', 'string', 'html']
 
                 json.wps = identifier;
                 json.inputs = {};
@@ -292,6 +293,9 @@ function modal_run_process() {
                         group: groupName
                     }
                     add_resultbtn_to_sessionstore(btnName, btnData);
+                    if (directshowdatatypes.includes(btnData.type)) {
+                        add_resultbtn_to_modal(btnData)
+                    }
 
                     if (group === false) {
                         document.getElementById("workspace_results").innerHTML
@@ -412,6 +416,7 @@ function set_group_btn_name(name, storage) {
 
 /**
  * Set color of header and footer of wps tool modal.
+ * On change of color also remove 'view result' button.
  *
  * @param {string} color
  */
@@ -420,6 +425,7 @@ function set_modalColor(color) {
     modalColor.style.backgroundColor = color;
     modalColor = document.getElementById("modal-footer");
     modalColor.style.backgroundColor = color;
+    document.getElementsByClassName("work_modal-output")[0].style.display = "none";
 }
 
 /**
@@ -430,6 +436,27 @@ function modalObj(processId, processInput, processOutput) {
     this.processInput = processInput;
     this.processOutput = processOutput;
 }
+
+
+/**
+ * Show hidden button in modal to enable quick preview of results.
+ *
+ * @param {{outputs, inputs: (*|{}), dbID: *, name: (*|string), dropBtn, wps: string, source: string, type, status: *, group: string}} json
+ */
+function add_resultbtn_to_modal(json) {
+    let wspan_out = document.getElementsByClassName("work_modal-output")[0];
+    wspan_out.style.display = "block";
+    wspan_out.onclick = () => {
+        if (json.type == 'figure') {
+            document.getElementById("mod_result").innerHTML = json.outputs; // add plot
+            let rModal = document.getElementById("resultModal");
+            rModal.style.display = "block";
+            popup.classList.remove(popActive);
+            modalToggleSize.style.display = "none";
+        }
+    };
+}
+
 
 /**
  * Add information of a result for a result button to the sessionStorage.

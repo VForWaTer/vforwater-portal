@@ -98,6 +98,9 @@ msgstr "Betrieben von"
 msgid "  Close Menu"
 msgstr "  Menü schließen"
 
+msgid "Close window"
+msgstr "Fenster schließen"
+
 #: templates/vfwheron/base_sidebar.html:34
 #: templates/vfwheron/wps_sidebar.html:33
 msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
@@ -359,8 +362,17 @@ msgstr "Datenschutz und IT-Sicherheit"
 #~ msgid "Remove&#32all&#32results&#32from&#32result&#32store"
 #~ msgstr "Alle&#32Ergebnisse&#32aus&#32der&#32Ergebnisablage&#32entfernen"
 
-#~ msgid " View result"
-#~ msgstr " Ergebnis anzeigen"
+msgid "View result"
+msgstr "Ergebnis anzeigen"
+
+msgid "required"
+msgstr "Notwendig"
+
+msgid "cancel"
+msgstr "Abbrechen"
+
+msgid "Place tool on Dropzone."
+msgstr "Prozess im Ablagebereich plazieren."
 
 #~ msgid " View as table"
 #~ msgstr " Ergebnistabelle"
@@ -406,8 +418,8 @@ msgstr "Datenschutz und IT-Sicherheit"
 #~ "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu "
 #~ "erstellen"
 
-#~ msgid "Dropzone"
-#~ msgstr "Ablagebereich"
+msgid "Dropzone"
+msgstr "Ablagebereich"
 
 #~ msgid "Advanced"
 #~ msgstr "Erweitert"

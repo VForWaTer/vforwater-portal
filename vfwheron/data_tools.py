@@ -65,8 +65,8 @@ def is_data_short(ID: int, source: str, date: list):
     query_path = {'{0}'.format(datapath): ID}
 
     if date and date[0]:
-        query_path[datapath+'__tstamp__gte'] = date[0]
-        query_path[datapath+'__tstamp__lte'] = date[1]
+        query_path[datapath + '__tstamp__gte'] = date[0]
+        query_path[datapath + '__tstamp__lte'] = date[1]
 
     # TODO: Think about using the following queryset instead of creating it serveral times per plot
     datalength = Entries.objects.filter(**query_path).count()
@@ -199,6 +199,7 @@ def __get_axis_limits(plot_data):
     plot_data['axis'] = axis
     return plot_data
 
+
 def __DB_load_data_avg(ID: int, scale='day'):
     """
 
@@ -266,9 +267,9 @@ def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
                    "GROUP BY date_trunc('{0}', tstamp);".format(ti, ID, datatable, datestring))
     data_length = len(cursor.fetchall())
     if data_length < 100 and date_opt.index(ti) < len(date_opt):
-        ti = date_opt[date_opt.index(ti)+1]
+        ti = date_opt[date_opt.index(ti) + 1]
     elif data_length > 1500 and date_opt.index(ti) > 0:
-        ti = date_opt[date_opt.index(ti)-1]
+        ti = date_opt[date_opt.index(ti) - 1]
 
     # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
     # TODO: check if this assumption above for the direction in now (that it is implemented with pandas) is still valid
@@ -352,9 +353,9 @@ def fill_data_gaps(db_data: object):
                 # set correct tstamp to new rows
                 empty_rows['tstamp'] = df['tstamp'][pos] + scale, df['tstamp'][pos + 1] - scale
                 # insert new rows with float index positions
-                df.loc[pos+0.3] = empty_rows.loc[1]
+                df.loc[pos + 0.3] = empty_rows.loc[1]
                 # df.loc[pos+0.3] = df['tstamp'][pos] + scale, float('nan'), float('nan')
-                df.loc[pos+0.6] = empty_rows.loc[2]
+                df.loc[pos + 0.6] = empty_rows.loc[2]
                 # df.loc[pos+0.6] = df['tstamp'][pos + 1] - scale, float('nan'), float('nan')
                 defect_x.extend([df['tstamp'][pos] - scale, df['tstamp'][pos],
                                  df['tstamp'][pos + 1], df['tstamp'][pos + 1] + scale])
@@ -380,7 +381,7 @@ def __get_scaling(df):
     testlength = df.shape[0] if df.shape[0] <= 10 else 10
 
     for row in range(1, testlength):
-        scalelist.append(df['tstamp'][row] - df['tstamp'][row-1])
+        scalelist.append(df['tstamp'][row] - df['tstamp'][row - 1])
     return min(scalelist)
 
 

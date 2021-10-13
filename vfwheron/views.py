@@ -642,7 +642,7 @@ def previewplot(request):
             plot_data = {'df': df, 'scale': scale}
             # timescale = pd.to_timedelta(timescale)
             # plotdata = {'data': result, 'df': df, 'axis': axis, 'scale': timescale}
-            if 'precision' in plot_data['df'].columns:
+            if 'precision' in plot_data['df'].columns and not df['precision'].isnull().all():
                 plot_data['df'] = precision_to_minmax(plot_data['df'])
                 plot_data['has_preci'] = True
             else:
