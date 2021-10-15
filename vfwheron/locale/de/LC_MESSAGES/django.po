@@ -371,7 +371,7 @@ msgstr "Notwendig"
 msgid "cancel"
 msgstr "Abbrechen"
 
-msgid "Place tool on Dropzone."
+msgid "Place tool in Dropzone."
 msgstr "Prozess im Ablagebereich plazieren."
 
 #~ msgid " View as table"

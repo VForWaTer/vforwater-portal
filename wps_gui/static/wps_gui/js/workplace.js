@@ -98,8 +98,20 @@ function get_wpsprocess(service, identifier) {
     }
 }
 
-function drop_and_save() {
-    console.error('lets store it')
+function drop_and_store(ev) {
+    let dropzone = document.getElementById('dropdiv');
+    let dropzone_coords = dropzone.getBoundingClientRect();
+    let x_pad = 0;
+    let y_pad = 0;
+    let x, y;
+    let modalData = prep_modal_data();
+
+    if (dropzone_coords.height > 100) {x_pad = 300};
+    if (dropzone_coords.width > 300) {y_pad = 200};
+    x = Math.floor((Math.random() * (dropzone_coords.width-x_pad))-x_pad + dropzone_coords.left);
+    y = Math.floor((Math.random() * (dropzone_coords.height-y_pad))+y_pad/2 - dropzone_coords.top);
+
+    drop_handler(modalData, x, y, modalData.id, 'toolbar', modalData.serv)
 }
 
 /**
@@ -143,17 +155,13 @@ function is_required(checkElement) {
  */
 function check_pattern(checkElement) {
     /** check if an Element of a wps is required **/
-    console.log('TODO: Add pattern check where necessary.')
+    console.warn('TODO: Add pattern check where necessary.')
     return true
 }
 
-// TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
-//  when you have the drop objects
-// TODO: Improve code by using HTML Forms
-function modal_run_process() {
-    set_modalColor("dodgerblue");
 
-    /** collect inputs **/
+function prep_modal_data() {
+     /** collect inputs **/
     var inKey = [];
     var inValue = [];
     var inType = [];
@@ -242,14 +250,21 @@ function modal_run_process() {
     } else {
         outputName = outputs[0].value;
     }
+    return {'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
+        'type_list': inType, 'outputName': outputName}
+}
+
+// TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
+//  when you have the drop objects
+// TODO: Improve code by using HTML Forms
+function modal_run_process() {
+    set_modalColor("dodgerblue");
+    let modal_input = prep_modal_data();
 
     $.ajax({
         url: DEMO_VAR + "/workspace/processrun",
         data: {
-            processrun: JSON.stringify({
-                id: identifier, serv: wpsservice,
-                key_list: inKey, value_list: inValue, type_list: inType
-            }),
+            processrun: JSON.stringify(modal_input),
             'csrfmiddlewaretoken': csrf_token,
         }, /** data sent with post request **/
     })
@@ -261,24 +276,24 @@ function modal_run_process() {
                 let members = [];
                 let directshowdatatypes = ['figure', 'string', 'html']
 
-                json.wps = identifier;
+                json.wps = modal_input.id;
                 json.inputs = {};
-                $.each(inKey, function (key, value) {
-                    json.inputs[value] = inValue[i];
+                $.each(modal_input.inKey, function (key, value) {
+                    json.inputs[value] = modal_input.inValue[i];
                     i++;
                 });
                 set_modalColor("forestgreen");
 
                 if (Object.keys(json.result).length > 1) {
                     group = true;
-                    groupName = set_group_btn_name(outputName, 'resultBtn');
+                    groupName = set_group_btn_name(modal_input.outputName, 'resultBtn');
                     // document.getElementById("workspace_results").innerHTML
                     //     += build_resultgroup_button(groupName);
                 }
 
                 console.log('result: ', json)
                 for (let i in json.result) {
-                    let btnName = set_result_btn_name(outputName);
+                    let btnName = set_result_btn_name(modal_input.outputName);
                     json.result[i].dropBtn.name = btnName;
                     let btnData = {
                         dbID: json.result[i].wpsID,
@@ -447,13 +462,13 @@ function add_resultbtn_to_modal(json) {
     let wspan_out = document.getElementsByClassName("work_modal-output")[0];
     wspan_out.style.display = "block";
     wspan_out.onclick = () => {
-        if (json.type == 'figure') {
+        if (json.type == 'figure' || json.type == 'string') {
             document.getElementById("mod_result").innerHTML = json.outputs; // add plot
-            let rModal = document.getElementById("resultModal");
-            rModal.style.display = "block";
-            popup.classList.remove(popActive);
-            modalToggleSize.style.display = "none";
         }
+        let rModal = document.getElementById("resultModal");
+        rModal.style.display = "block";
+        popup.classList.remove(popActive);
+        modalToggleSize.style.display = "none";
     };
 }
 

@@ -12,16 +12,21 @@ class Box {
      * @param {string} sessionstore Source of the button
      * @param {string} service wps of tool
      */
-    constructor(name, orgId, type, inputs, outputs, boxwidth,
+    constructor(name, orgId, type, inputs, outputs,
                 sessionstore, service) {
         this._boxname = name;
-        this._boxwidth = boxwidth;
         this._service = service;
         this._sessionstore = sessionstore;
         this._orgid = orgId;
         this._boxtype = type;
         this._inputs = inputs;
         this._outputs = outputs;
+        // assign text width:
+        let c = document.getElementById('textWidthCanvas');
+        let ctx = c.getContext("2d");
+        ctx.font = "15px Arial";
+        this._boxwidth = ctx.measureText(name).width
+        // this._boxwidth = 0;
         this._connectable_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
             'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
             'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image',
@@ -280,21 +285,62 @@ let canvas = new draw2d.Canvas('dropdiv');
 let connection = new Connection()
 canvas.installEditPolicy(connection.connectionPolicy);
 
+
+function process_drop_params(service, id) {
+    // TODO: improve data object to avoid building this obj manually!
+    let box_param = ''
+    let inputs = []
+    let outputs = []
+    get_sessionStorage_tools(service)
+    let metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
+    if (!metadata) {
+        get_wpsprocess(service, id);
+        metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
+    }
+    if (metadata.dataInputs) {
+        for (let i of metadata.dataInputs) {
+            inputs.push(i.dataType)
+        }
+    }
+    if (metadata.processOutputs) {
+        for (let i of metadata.processOutputs) {
+            if (i.identifier !== 'error') {
+                outputs.push(i.dataType)
+            }
+        }
+    }
+    box_param = {
+        inputs: inputs,
+        name: metadata.title,
+        orgid: metadata.identifier,
+        outputs: outputs,
+        type: 'tool'
+    }
+    return box_param;
+}
+
+
 /**
  * Used when an element is dropped in the dropzone. Collects parameters to build box.
  * @private
  * @listens event:DragEvent
  * @param {Object} ev Start of the drag event outside of the canvas, set by dragstart_handler
  */
-function drop_handler(ev) {
-    ev.preventDefault();  // needed for Firefox
-    let x = ev.layerX
-    let y = ev.layerY
+function drop_handler(ev, x, y, id, parentid, service) {
     let box_param = ''
-    let receivedData = JSON.parse(ev.dataTransfer.getData("text/html"))
-    let id = receivedData[0]  // process name
-    let parentid = receivedData[1]
-    let service = receivedData[2]
+    let receivedData;
+
+    try {
+        ev.preventDefault();  // needed for Firefox
+        receivedData = JSON.parse(ev.dataTransfer.getData("text/html"))
+        x = ev.layerX;
+        y = ev.layerY;
+        id = receivedData[0]  // process name
+        parentid = receivedData[1]
+        service = receivedData[2]
+    } catch {
+        console.log('catch ev: ', ev)
+    }
 
     if (parentid === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
@@ -307,47 +353,15 @@ function drop_handler(ev) {
             type: 'data'
         }
     } else if (parentid === 'toolbar') {
-        // TODO: improve data object to avoid building this obj manually!
-        let inputs = []
-        let outputs = []
-        get_sessionStorage_tools(service)
-        let metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
-        if (!metadata) {
-            get_wpsprocess(service, id);
-            metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
-        }
-        if (metadata.dataInputs) {
-            for (let i of metadata.dataInputs) {
-                inputs.push(i.dataType)
-            }
-        }
-        if (metadata.processOutputs) {
-            for (let i of metadata.processOutputs) {
-                if (i.identifier !== 'error') {
-                    outputs.push(i.dataType)
-                }
-            }
-        }
-        box_param = {
-            inputs: inputs,
-            name: metadata.title,
-            orgid: metadata.identifier,
-            outputs: outputs,
-            type: 'tool'
-        }
+        box_param = process_drop_params(service, id)
     } else if (parentid === 'workspace_results') {
         box_param = JSON.parse(sessionStorage.getItem("resultBtn"))[id]['dropBtn']
     }
 
-    // assign text width:
-    let c = document.getElementById('textWidthCanvas');
-    let ctx = c.getContext("2d");
-    ctx.font = "15px Arial";
-    let textwidth = ctx.measureText(box_param.name).width
     // console.log('box_param.name: ', box_param.name)
     let box = new Box(
         box_param.name, box_param.orgid, box_param.type,
-        box_param.inputs, box_param.outputs, textwidth, parentid, service
+        box_param.inputs, box_param.outputs, parentid, service
     )
     canvas.add(box.box, x, y);
 }
