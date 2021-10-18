@@ -63,25 +63,25 @@
             </tr>
             <tr>
               <td></td>
-              <td title="Abstract"><div style="max-height:100px; overflow-y:auto;"> {{ entry.abstract }} </div></td>
+              <td title="Abstract"><div style="max-height:100px; overflow-y:auto;"> {{ entry.abstract|default_if_none:"--" }} </div></td>
 {#              <td title="Abstract"> {{ entry.abstract }} </td>#}
-              <td title="Datatype"> {{ entry.datasource.datatype.name|capfirst }} </td>
-              <td title="Temporal Scale"> {{ entry.datasource.temporal_scale.resolution }} </td>
-              <td title="Spatial Scale"> {{ entry.datasource.spatial_scale.extent }} </td>
+              <td title="Datatype"> {{ entry.datasource__datatype__name|capfirst }} </td>
+              <td title="Temporal Scale"> {{ entry.datasource__temporal_scale__resolution|default_if_none:"--" }} </td>
+              <td title="Spatial Scale"> {{ entry.datasource__spatial_scale__extent|default_if_none:"--" }} </td>
             </tr>
             <tr>
               <td></td>
-              <td title="Variable"> {{ entry.variable|capfirst }} </td>
-              <td title="Keywords"> {{ entry.variable.keyword.value|lower|capfirst }} </td>
-              <td title="From"> {{ entry.datasource.temporal_scale.observation_start }} </td>
-              <td title={% if entry.license.short_title %} {{ entry.license.short_title }}
-              {%  else %} "License" {% endif %}> {{ entry.license.title }} </td>
+              <td title="Variable"> {{ entry.variable__name|capfirst }} ({{ entry.variable__symbol}}) [{{ entry.variable__unit__symbol}}]</td>
+              <td title="Keywords"> {{ entry.variable__keyword__value|lower|capfirst }} </td>
+              <td title="From"> {{ entry.datasource__temporal_scale__observation_start|default_if_none:"--" }} </td>
+              <td title={% if entry.license__short_title %} {{ entry.license__short_title }}
+              {%  else %} "License" {% endif %}> {{ entry.license__title }} </td>
             </tr>
             <tr>
               <td></td>
-              <td title="Citation"> {{ entry.citation }} </td>
-              <td title="Version" style="text-align: center;"> v{{ entry.version }} </td>
-              <td title="To"> {{ entry.datasource.temporal_scale.observation_end }} </td>
+              <td title="Citation"> {{ entry.citation|default_if_none:"--" }} </td>
+              <td title="Version" style="text-align: center;"> v{{ entry.version|default_if_none:"--" }} </td>
+              <td title="To"> {{ entry.datasource__temporal_scale__observation_end|default_if_none:"--" }} </td>
               <td title="Has embargo"> {{ entry.embargo|yesno:"Yes,No" }} </td>
             </tr>
           </table>

@@ -820,9 +820,13 @@ def entries_pagination(request):
     accessible_ids = []
     datasets = json.loads(request.GET.get('datasets', 1))
     if datasets:
-        # entries_list = NmPersonsEntries.objects.all().order_by('entry__title').filter(entry_id=datasets).distinct()
-        entries_list = Entries.objects.all().order_by('title').filter(
-            pk__in=json.loads(request.GET.get('datasets', 1)))
+        entries_list = Entries.objects.\
+            values('id', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
+                   'variable__unit__symbol', 'variable__keyword__value',
+                   'datasource__datatype__name', 'datasource__temporal_scale__resolution',
+                   'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',
+                   'datasource__spatial_scale__extent', 'license__short_title', 'license__title').order_by('title')\
+            .filter(pk__in=json.loads(request.GET.get('datasets', 1)))
         accessible_data = get_accessible_data(request, datasets)
         error_ids = accessible_data['blocked']
         accessible_ids = accessible_data['open']
