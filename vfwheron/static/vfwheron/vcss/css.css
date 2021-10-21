@@ -356,6 +356,9 @@ input:checked + .toggleslider:before {
 .pagination {
   display: inline-block;
 }
+.pagination div {
+  position: center;
+}
 .pagination a {
   float: left;
   padding: 8px 16px;

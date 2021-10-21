@@ -19,6 +19,7 @@ urlpatterns = [
     path('failedlogin', views.FailedLoginView.as_view(), name='failedlogin'),
     path('datasetdownload', views.DatasetDownloadView.as_view(), name='datasetdownload'),
     path('entries_pagination', views.entries_pagination, name='entries_pagination'),
+    path('short_info_pagination', views.short_info_pagination, name='short_info_pagination'),
     path('advanced_filter', views.advanced_filter),
     # path('quick_filter', views.QuickFilter.as_view(), name='quick_filter'),
     path('quick_filter_args/<selection>', views.QuickFilterResults.as_view(), name='quick_filter_args'),

@@ -691,6 +691,60 @@ def short_datainfo(request):
         # return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
 
 
+def short_info_pagination(request):
+    """
+    Requested from map.js popupContent
+    :param request:
+    :return:
+    """
+    try:
+        datasets = json.loads(request.GET.get('datasets'))
+        page = request.GET.get('page', 1)
+
+        field = ['title', 'id', 'variable__name', 'embargo', 'embargo_end']
+        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'embargo': 'Embargo',
+                      'has_access': 'has_access', 'embargo_end': 'embargo_end'}
+
+        if datasets:
+            entries_list = Entries.objects.values(*field).filter(pk__in=datasets)\
+                .order_by('variable__name', 'title', 'id')
+            accessible_data = get_accessible_data(request, datasets)
+            error_ids = accessible_data['blocked']
+            accessible_ids = accessible_data['open']
+        else:
+            entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
+
+        naive_today = timezone.make_naive(timezone.now())
+        paginator = Paginator(entries_list, 5)
+
+        try:
+            orgpage = paginator.page(page)
+        except PageNotAnInteger:
+            orgpage = paginator.page(1)
+        except EmptyPage:
+            orgpage = paginator.page(paginator.num_pages)
+
+        # TODO: That is to blame for having nothing in web site
+        newdict = defaultdict(list)
+        for d in orgpage:
+            for key, val in d.items():
+                if key != 'embargo_end':
+                    newdict[translation.gettext(field_name[key])].append(val)
+                else:
+                    if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
+                        newdict['has_access'].append({'access': True, 'ssid': d['id']})
+                    else:
+                        newdict['has_access'].append({'access': False, 'ssid': d['id']})
+
+        entries = dict(newdict.items())
+
+        return render(request, 'vfwheron/mapmodal_entrieslist.html', {'entries_page': entries,
+                                                                      'data_sets': datasets,
+                                                                      'org_page': orgpage})
+
+    except TypeError:
+        raise Http404
+
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
 # TODO: Handle this with an http request (response, not request?)!
 def show_info(request):
@@ -819,19 +873,18 @@ def entries_pagination(request):
     """
     accessible_ids = []
     datasets = json.loads(request.GET.get('datasets', 1))
+    field = {'id', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
+             'variable__unit__symbol', 'variable__keyword__value',
+             'datasource__datatype__name', 'datasource__temporal_scale__resolution',
+             'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',
+             'datasource__spatial_scale__extent', 'license__short_title', 'license__title'}
     if datasets:
-        entries_list = Entries.objects.\
-            values('id', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
-                   'variable__unit__symbol', 'variable__keyword__value',
-                   'datasource__datatype__name', 'datasource__temporal_scale__resolution',
-                   'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',
-                   'datasource__spatial_scale__extent', 'license__short_title', 'license__title').order_by('title')\
-            .filter(pk__in=json.loads(request.GET.get('datasets', 1)))
+        entries_list = Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
         accessible_data = get_accessible_data(request, datasets)
         error_ids = accessible_data['blocked']
         accessible_ids = accessible_data['open']
     else:
-        entries_list = Entries.objects.all().order_by('title')
+        entries_list = Entries.objects.values(*field).order_by('title')
     try:
         owndata = request.session['datasets']
     except KeyError:

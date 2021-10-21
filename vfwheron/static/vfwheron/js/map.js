@@ -39,6 +39,28 @@ function clusterStyle(feature) {
     return [style];
 }
 
+/**
+ * Get a modal (pop up) with some information about the datasets at the clicked location.
+ * @param {array} ids
+ * @param {int} page
+ */
+function buildMapModal(ids, page) {
+    $.ajax({
+        url: DEMO_VAR + "/home/short_info_pagination",
+        dataType: 'html',
+        data: {
+            datasets: JSON.stringify(ids), page: page,
+            'csrfmiddlewaretoken': csrf_token,
+        }, /** data sent with the post request **/
+    })
+        .done(function (html) {
+            document.getElementById("infomodal_paginationTable").innerHTML = html
+        })
+        .fail(function (html) {
+            console.error('html: ', html)
+        })
+}
+
 /** Fetch V-FOR-WaTer base layer **/
 function create_map() {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
@@ -272,18 +294,26 @@ function create_map() {
 
     /** check what is clicked **/
     function checkMode(evt) {
+        let clickedFeatures, ids, cleanedids, wfsLen;
         if (hit_cL) {
             content.innerHTML = '';
             try {
                 content.innerHTML = '<div id="loader" class="loader"></div>';
                 buildPopup(evt)
+                wfsLen = wfsLayerName.length;
+                clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+                ids = clickedFeatures.map(i => parseInt(i.getId().substr(wfsLen + 1, 8)));
+                cleanedids = ids.filter(value => {return !Number.isNaN(value);});
+                buildMapModal(cleanedids, 1);
+                mapmodal.style.display = "block";
             } catch (err) {
                 content.innerHTML = '<div id="loader">Failed to load your selection</div>';
                 console.log('err: ', err)
             }
 
         } else {
-            metaData_Overlay.setPosition(undefined) // removes popup from map when clicked on map
+            metaData_Overlay.setPosition(undefined)
+            mapmodal.style.display = "none";  // TODO: fix removal of modal when clicked outside
         }
     }
 

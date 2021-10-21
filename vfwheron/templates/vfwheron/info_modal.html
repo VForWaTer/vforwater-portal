@@ -34,7 +34,7 @@
       </tr>
     </table>
     <div class="modal-footer" id="modal-footer">
-      <span-b class="modal-back">{% trans "Back" %}</span-b>
+      <span-b class="modal-back" onclick="closeInfoModal()">{% trans "Back" %}</span-b>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
       <h3></h3>
     </div>
@@ -49,12 +49,12 @@
   // Get the <span> element that closes the modal
   {#let span = document.getElementsByClassName("close")[0];#}
   {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
-  let span_b = document.getElementsByClassName("modal-back")[0];
+  {#let span_b = document.getElementsByClassName("modal-back")[0];#}
   // When the user clicks on <span> (x), close the modal
   {% comment %}  span.onclick = function () {
         closeModal()
     };{% endcomment %}
-  span_b.onclick = () => closeInfoModal();
+  {#span_b.onclick = () => closeInfoModal();#}
   {#span_c.onclick = function () {closeModal()};#}
 
   // When the user clicks anywhere outside of the modal, close it

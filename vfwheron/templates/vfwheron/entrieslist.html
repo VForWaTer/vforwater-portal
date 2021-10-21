@@ -65,14 +65,14 @@
               <td></td>
               <td title="Abstract"><div style="max-height:100px; overflow-y:auto;"> {{ entry.abstract|default_if_none:"--" }} </div></td>
 {#              <td title="Abstract"> {{ entry.abstract }} </td>#}
-              <td title="Datatype"> {{ entry.datasource__datatype__name|capfirst }} </td>
+              <td title="Datatype"> {{ entry.datasource__datatype__name|capfirst|default_if_none:"--" }} </td>
               <td title="Temporal Scale"> {{ entry.datasource__temporal_scale__resolution|default_if_none:"--" }} </td>
               <td title="Spatial Scale"> {{ entry.datasource__spatial_scale__extent|default_if_none:"--" }} </td>
             </tr>
             <tr>
               <td></td>
               <td title="Variable"> {{ entry.variable__name|capfirst }} ({{ entry.variable__symbol}}) [{{ entry.variable__unit__symbol}}]</td>
-              <td title="Keywords"> {{ entry.variable__keyword__value|lower|capfirst }} </td>
+              <td title="Keywords"> {{ entry.variable__keyword__value|default_if_none:"--"|lower|capfirst }} </td>
               <td title="From"> {{ entry.datasource__temporal_scale__observation_start|default_if_none:"--" }} </td>
               <td title={% if entry.license__short_title %} {{ entry.license__short_title }}
               {%  else %} "License" {% endif %}> {{ entry.license__title }} </td>
