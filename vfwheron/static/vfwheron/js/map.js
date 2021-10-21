@@ -54,10 +54,12 @@ function buildMapModal(ids, page) {
         }, /** data sent with the post request **/
     })
         .done(function (html) {
-            document.getElementById("infomodal_paginationTable").innerHTML = html
+            document.getElementById("infomodal_paginationTable").innerHTML = html;
+            document.getElementById('infomodal_paginationTable').style.display = "block";
         })
-        .fail(function (html) {
-            console.error('html: ', html)
+        .fail(function (bug) {
+            console.error('Bug! TODO: Remove this Layer!: ', bug)
+            closeMapModal();
         })
 }
 
@@ -290,7 +292,7 @@ function create_map() {
             }
 
         } else {
-            mapmodal.style.display = "none";  // TODO: fix removal of modal when clicked outside
+            // console.log('Nothing to click here')
         }
     }
 
