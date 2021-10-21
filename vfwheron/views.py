@@ -663,34 +663,6 @@ def previewplot(request):
         raise Http404
 
 
-def short_datainfo(request):
-    """
-    Requested from map.js popupContent
-    :param request:
-    :return:
-    """
-    try:
-        ids = json.loads(request.GET.get('short_info'))
-        field = ['title', 'variable__name', 'embargo']
-        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'embargo': 'Embargo'}
-        preview = defaultdict(list)
-
-        for k in ids:
-            row_name = Entries.objects.filter(id=str(k)).values(*field)
-            counter = 0
-            for i in row_name[0]:
-                if counter == 1:
-                    preview['id'].append(k)
-                counter += 1
-                preview[translation.gettext(field_name[i])].append(str(row_name[0][i]).title())
-
-        return JsonResponse(preview)
-
-    except TypeError:
-        raise Http404
-        # return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
-
-
 def short_info_pagination(request):
     """
     Requested from map.js popupContent

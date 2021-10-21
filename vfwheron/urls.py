@@ -30,7 +30,6 @@ urlpatterns = [
     # path('testdata', views.Eddytestdata, name='testdata'),
     # addresses for ajax:
     path('previewplot', views.previewplot, name='previewplot'),
-    path('short_datainfo', views.short_datainfo, name='short_datainfo'),
     path('show_info', views.show_info, name='show_info'),
     path('workspace_data', views.workspace_data, name='workspace_data'),
 ]
