@@ -63,8 +63,8 @@
     {% if org_page.has_other_pages %}
       <ul class="pagination">
         {% if org_page.has_previous %}
-          <a onclick="buildMapModal({{ data_sets }}, 1)">&#9474;&#8882;</a>
-          <a onclick="buildMapModal({{ data_sets }}, {{ org_page.previous_page_number }})">&#8882;</a>
+          <a title="{% trans "First" %}" onclick="buildMapModal({{ data_sets }}, 1)">&#9474;&#8882;</a>
+          <a title="{% trans "Previous" %}" onclick="buildMapModal({{ data_sets }}, {{ org_page.previous_page_number }})">&#8882;</a>
         {% else %}
           <a class="disabled"><span>&#9474;&#8882;</span></a>
           <a class="disabled"><span>&#8882;</span></a>
@@ -79,8 +79,8 @@
           {% endif %}
         {% endfor %}
         {% if org_page.has_next %}
-          <a onclick="buildMapModal({{ data_sets }}, {{ org_page.next_page_number }})">&#8883;</a>
-          <a onclick="buildMapModal({{ data_sets }}, {{ org_page.paginator.num_pages }})">&#8883;&#9474;</a>
+          <a title="{% trans "Next" %}" onclick="buildMapModal({{ data_sets }}, {{ org_page.next_page_number }})">&#8883;</a>
+          <a title="{% trans "Last" %}" onclick="buildMapModal({{ data_sets }}, {{ org_page.paginator.num_pages }})">&#8883;&#9474;</a>
         {% else %}
           <a class="disabled"><span>&#8883;</span></a>
           <a class="disabled"><span>&#8883;&#9474;</span></a>

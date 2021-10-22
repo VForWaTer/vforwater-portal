@@ -103,8 +103,8 @@ msgstr "Fenster schließen"
 
 #: templates/vfwheron/base_sidebar.html:34
 #: templates/vfwheron/wps_sidebar.html:33
-msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
-msgstr "Bereich&#32um&#32die&#32ausgewählten&#32Datensätze&#32zur&#32weiteren&#32Bearbeitung&#32verfügbar&#32zu&#32machen."
+msgid "Area to make the datasets you have selected available for further use."
+msgstr "Bereich um die ausgewählten Datensätze zur weiteren Bearbeitung verfügbar zu machen."
 
 #: templates/vfwheron/base_sidebar.html:34
 #: templates/vfwheron/wps_sidebar.html:33
@@ -113,13 +113,13 @@ msgstr "Datenablage"
 
 #: templates/vfwheron/base_sidebar.html:39
 #: templates/vfwheron/wps_sidebar.html:38
-msgid "Remove&#32all&#32datasets"
-msgstr "Alle&#32Datensätze&#32entfernen"
+msgid "Remove all datasets"
+msgstr "Alle Datensätze entfernen"
 
 #: templates/vfwheron/base_sidebar.html:40
 #: templates/vfwheron/wps_sidebar.html:39
-msgid "Remove&#32all&#32datasets&#32from&#32data&#32store"
-msgstr "Alle&#32ausgewählten&#32Datensätze&#32aus&#32der&#32Datenablage&#32entfernen"
+msgid "Remove all datasets from data store"
+msgstr "Alle ausgewählten Datensätze aus der Datenablage entfernen"
 
 #: templates/vfwheron/base_sidebar.html:50
 #: templates/vfwheron/wps_sidebar.html:61
@@ -166,6 +166,67 @@ msgstr "Tabelle"
 #: templates/vfwheron/info_modal.html:37
 msgid "Back"
 msgstr "zurück"
+
+#: templates/vfwheron/info_modal.html:37
+msgid "Showing only latest {0} datapoints."
+msgstr "Nur die letzten {0} Datenpunkte werden angezeigt."
+
+#: static/vfwheron/js/map.js:496
+msgid "Last"
+msgstr "Ende"
+
+#: static/vfwheron/js/map.js:496
+msgid "Missing values"
+msgstr "Fehlende Werte"
+
+#: static/vfwheron/js/map.js:496
+msgid "Next"
+msgstr "Nächster"
+
+#: static/vfwheron/js/map.js:496
+msgid "Previous"
+msgstr "Vorausgehend"
+
+#: static/vfwheron/js/map.js:496
+msgid "Time"
+msgstr "Zeit"
+
+#: static/vfwheron/js/map.js:496
+msgid "Date"
+msgstr "Datum"
+
+#: st
+#: static/vfwheron/js/map.js:496
+msgid "Value"
+msgstr "Wert"
+
+#: static/vfwheron/js/map.js:496
+msgid "First"
+msgstr "Anfang"
+
+#: static/vfwheron/js/map.js:496
+msgid "More"
+msgstr "Mehr"
+
+#: static/vfwheron/js/map.js:496
+msgid "Show more information about the dataset."
+msgstr "Zeige mehr Informationen über den Datensatz an."
+
+#: static/vfwheron/js/map.js:502remove
+msgid "Pass to datastore"
+msgstr "In die Datenablage"
+
+#: static/vfwheron/js/map.js:503
+msgid "Put dataset to session datastore."
+msgstr "Schiebt den Datensatz in die Datenablage zur Linken."
+
+#: static/vfwheron/js/map.js:507
+msgid "Send request"
+msgstr "Anfrage senden"
+
+#: static/vfwheron/js/map.js:508
+msgid "Send an access request to the data owner."
+msgstr "Den Besitzer der Daten nach Zugriff fragen."
 
 #: templates/vfwheron/map.html:37
 msgid "Click&#32on&#32map&#32to&#32draw&#32a&#32square.&#32Doubleclick&#32to&#32stop&#32drawing."
@@ -283,6 +344,14 @@ msgstr " Daten & Metadaten herunterladen"
 msgid "help"
 msgstr "Hilfe"
 
+#: views.py:485
+msgid "Commercial use allowed"
+msgstr "Kommerzielle Nutzung erlaubt "
+
+#: views.py:661
+msgid "Abstract"
+msgstr "Kurzbeschreibung"
+
 #: views.py:661
 msgid "Variable name"
 msgstr "Variablenname"
@@ -353,11 +422,11 @@ msgstr "Datenschutz und IT-Sicherheit"
 #~ msgid "Result store"
 #~ msgstr "Ergebnisablage"
 
-#~ msgid "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available."
-#~ msgstr "Bereich&#32um&#32die&#Ergebnisse&#32zur&#32weiteren&#32Prozessierung&#32oder&#32zur&#32Ansicht&#32bereit&#32zu&#32stellen."
+msgid "Area to make your results ready for further processing or visualisation available."
+msgstr "Bereich um die Ergebnisse zur weiteren Prozessierung oder zur Ansicht bereit zu stellen."
 
-#~ msgid "Remove&#32all&#32results"
-#~ msgstr "Alle&#32Ergebnisse&#32entfernen"
+msgid "Remove all results"
+msgstr "Alle Ergebnisse entfernen"
 
 #~ msgid "Remove&#32all&#32results&#32from&#32result&#32store"
 #~ msgstr "Alle&#32Ergebnisse&#32aus&#32der&#32Ergebnisablage&#32entfernen"
@@ -372,7 +441,7 @@ msgid "cancel"
 msgstr "Abbrechen"
 
 msgid "Place tool in Dropzone."
-msgstr "Prozess im Ablagebereich plazieren."
+msgstr "Prozess im Ablagebereich platzieren."
 
 #~ msgid " View as table"
 #~ msgstr " Ergebnistabelle"
@@ -389,34 +458,32 @@ msgstr "Prozess im Ablagebereich plazieren."
 #~ msgid " Remove result"
 #~ msgstr " Ergebnis entfernen"
 
-#~ msgid "Load workflow"
-#~ msgstr "Prozesskette laden"
+msgid "Load workflow"
+msgstr "Prozesskette laden"
 
-#~ msgid "Click to load a saved workflow"
-#~ msgstr "Hier klicken um eine gespeicherte Prozesskette zu laden"
+msgid "Click to load a saved workflow"
+msgstr "Hier klicken um eine gespeicherte Prozesskette zu laden"
 
-#~ msgid "Save workflow"
-#~ msgstr "Prozesskette speichern"
+msgid "Save workflow"
+msgstr "Prozesskette speichern"
 
-#~ msgid "Click to save current workflow"
-#~ msgstr "Hier klicken um die aktuelle Prozesskette zu speichern"
+msgid "Click to save current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu speichern"
 
-#~ msgid "Clear workflow"
-#~ msgstr "Löschen"
+msgid "Clear workflow"
+msgstr "Löschen"
 
-#~ msgid "Click to clear current workflow"
-#~ msgstr "Hier klicken um die aktuelle Prozesskette zu entfernen"
+msgid "Click to clear current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu entfernen"
 
-#~ msgid "Run workflow"
-#~ msgstr "Start"
+msgid "Run workflow"
+msgstr "Start"
 
-#~ msgid "Click to run current workflow"
-#~ msgstr "Hier klicken um die aktuelle Prozesskette zu starten"
+msgid "Click to run current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu starten"
 
-#~ msgid "Drag & Drop your Data and Tools here"
-#~ msgstr ""
-#~ "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu "
-#~ "erstellen"
+msgid "Drag & Drop your Data and Tools here"
+msgstr "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu erstellen"
 
 msgid "Dropzone"
 msgstr "Ablagebereich"

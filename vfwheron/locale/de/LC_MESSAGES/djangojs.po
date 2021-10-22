@@ -38,29 +38,5 @@ msgstr "Heranzoomen"
 msgid "Zoom out"
 msgstr "Wegzoomen"
 
-#: static/vfwheron/js/map.js:496
-msgid "More"
-msgstr "Mehr"
-
-#: static/vfwheron/js/map.js:496
-msgid "Show more information about the dataset."
-msgstr "Zeige mehr Informationen über den Datensatz an."
-
-#: static/vfwheron/js/map.js:502
-msgid "Pass to datastore"
-msgstr "In die Datenablage"
-
-#: static/vfwheron/js/map.js:503
-msgid "Put dataset to session datastore."
-msgstr "Schiebt den Datensatz in die Datenablage zur Linken."
-
-#: static/vfwheron/js/map.js:507
-msgid "Send request"
-msgstr "Anfrage senden"
-
-#: static/vfwheron/js/map.js:508
-msgid "Send an access request to the data owner."
-msgstr "Den Besitzer der Daten nach Zugriff fragen."
-
 #~ msgid "Preview"
 #~ msgstr "Vorschau"

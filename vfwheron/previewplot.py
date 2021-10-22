@@ -5,6 +5,8 @@ import ast
 from datetime import time
 from math import radians, ceil, sqrt
 
+from django.utils.translation import gettext
+from bokeh.io import show
 from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
     DateSlider, DateRangeSlider, Whisker, BoxAnnotation
@@ -69,7 +71,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     if full_res:
         title = ''
     else:
-        title = "Showing only latest {0} datapoints.".format(str(max_size_preview_plot))
+        title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
     # Plot average as main plot
     mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
@@ -82,15 +84,15 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     # plot value line
     mainplot.line(x='tstamp', y='value', source=source, line_width=3)  #, legend_label="measured values")
 
-    mainplot.add_tools(HoverTool(tooltips=[("Value", "@value"),
-                                           ("Time", "@tstamp{%T %Z}"),
-                                           ("Date", "@tstamp{%d %b %Y}")],
+    mainplot.add_tools(HoverTool(tooltips=[(gettext("Value"), "@value"),
+                                           (gettext("Time"), "@tstamp{%T %Z}"),
+                                           (gettext("Date"), "@tstamp{%d %b %Y}")],
                                  formatters={"@tstamp": "datetime"}, mode="mouse"))
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
         mainplot.line(x='tstamp', y='value', line_width=3, line_color='red', line_cap='round',
-                      legend_label='Missing values', source=missing_source,
+                      legend_label=gettext('Missing values'), source=missing_source,
                       # visible=False
                       )
         # mainplot.BoxAnnotation(top=80, fill_alpha=0.1, fill_color='red')
