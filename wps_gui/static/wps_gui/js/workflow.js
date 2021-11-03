@@ -11,13 +11,15 @@ class Box {
      * @param {number} boxwidth ~90% of the width of the box
      * @param {string} sessionstore Source of the button
      * @param {string} service wps of tool
+     * @param {string} boxid originally given from draw2d
      */
     constructor(name, orgId, type, inputs, outputs,
-                sessionstore, service) {
+                sessionstore, service, boxID) {
         this._boxname = name;
         this._service = service;
         this._sessionstore = sessionstore;
         this._orgid = orgId;
+        this._boxid = boxID;
         this._boxtype = type;
         this._inputs = inputs;
         this._outputs = outputs;
@@ -60,7 +62,7 @@ class Box {
             if (this._connectable_types.includes(this._outputs[i])) {
                 relOutPort_y = 100
             } else {
-                relOutPort_y = 95
+                relOutPort_y = 97
             }
             this._createOutPort(box, this._outputs[i], 100 - (parseInt(i) + 1) * outPortDist, relOutPort_y)
         }
@@ -68,7 +70,7 @@ class Box {
             if (this._connectable_types.includes(this._inputs[i])) {
                 relInPort_y = 0
             } else {
-                relInPort_y = 5
+                relInPort_y = 3
             }
             this._createInPort(box, this._inputs[i], (parseInt(i) + 1) * inPortDist, relInPort_y)
         }
@@ -84,7 +86,7 @@ class Box {
         let boxHeight = 30;
         let boxTexty = 3;
         let boxType = this._boxtype;
-        let boxId = 'box' + this._orgid;
+        // let boxId = 'box' + this._orgid;
         let name = this._orgid;
         let service = this._service;
 
@@ -94,7 +96,7 @@ class Box {
         }
 
         let box = new draw2d.shape.basic.Rectangle({
-            id: boxId,
+            // id: boxId,
             minWidth: 100,
             width: this._boxwidth * 1.1,
             height: boxHeight,
@@ -120,6 +122,9 @@ class Box {
                 wpsprocess(service, name);
             })
         }
+        box.on('removed', function(ev) {
+            update_workflow({'state': 'remove', 'id': ev.id})
+        })
         box.add(
             label,
             new draw2d.layout.locator.Locator());
@@ -151,6 +156,9 @@ class Box {
             console.log('parent: ', port.getParent())
             // console.log('policy: ', port.installEditPolicy(new draw2d.policy.ResizeSelectionFeedbackPolicy()))
         })
+        port.setConnectionDirection(2)
+        port.setValue('TestValue Out')
+        port.setUserData('TestUserData Out')
         return blankbox
     }
 
@@ -184,6 +192,9 @@ class Box {
         // console.log('onDragEnter: ', port.onDragEnter(function () {console.log('Enter')}))
         // port.attr({selectable: false})
         // port.setDraggable(false)
+        port.setConnectionDirection(0)
+        port.setValue('TestValue')
+        port.setUserData('TestUserData')
         return blankbox
     }
 }
@@ -299,13 +310,26 @@ function process_drop_params(service, id) {
     }
     if (metadata.dataInputs) {
         for (let i of metadata.dataInputs) {
-            inputs.push(i.dataType)
+            if ('keywords' in i) {
+
+                for (let j of i['keywords']) {
+                    inputs.push(j)
+                }
+            } else {
+                inputs.push(i.dataType)
+            }
         }
     }
     if (metadata.processOutputs) {
         for (let i of metadata.processOutputs) {
             if (i.identifier !== 'error') {
+                if ('keywords' in i) {
+                for (let j in i.keywords) {
+                    outputs.push(j)
+                }
+            } else {
                 outputs.push(i.dataType)
+            }
             }
         }
     }
@@ -320,13 +344,38 @@ function process_drop_params(service, id) {
 }
 
 
+function update_workflow(event) {
+    let workflow = get_sessionStorage_workflow()
+    if (event.state === 'remove') {
+        delete workflow[event.id]
+    // } else if (event.state == 'drop' && event.element._boxtype == 'tool') {
+    } else if (event.state === 'drop') {
+        workflow[event.element.box.id] = {
+            name: event.element._name,
+            orgid: event.element._orgid,
+            boxtype: event.element._boxtype,
+            inputs: event.element._inputs,
+            outputs: event.element._outputs,
+            source: event.element._sessionstore,
+            service: event.element._service
+        }
+    }
+    sessionStorage.setItem('workflow', JSON.stringify(workflow))
+    // workflow[box.id] = box
+}
+
 /**
  * Used when an element is dropped in the dropzone. Collects parameters to build box.
- * @private
  * @listens event:DragEvent
  * @param {Object} ev Start of the drag event outside of the canvas, set by dragstart_handler
+ * @param {integer} x
+ * @param {integer} y
+ * @param {integer} id
+ * @param {string} source which sesseionstore
+ * @param {string} service
+ * @return {string} boxID - global ID of box dropped on workarea
  */
-function drop_handler(ev, x, y, id, parentid, service) {
+function drop_handler(ev, x, y, id, source, service) {
     let box_param = ''
     let receivedData;
 
@@ -336,13 +385,12 @@ function drop_handler(ev, x, y, id, parentid, service) {
         x = ev.layerX;
         y = ev.layerY;
         id = receivedData[0]  // process name
-        parentid = receivedData[1]
+        source = receivedData[1]
         service = receivedData[2]
     } catch {
         console.log('catch ev: ', ev)
     }
-
-    if (parentid === 'workspace') {
+    if (source === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
         // TODO: improve data object to avoid building this obj manually!
         box_param = {
@@ -352,23 +400,28 @@ function drop_handler(ev, x, y, id, parentid, service) {
             outputs: [metadata.outputs],
             type: 'data'
         }
-    } else if (parentid === 'toolbar') {
+    } else if (source === 'toolbar') {
         box_param = process_drop_params(service, id)
-    } else if (parentid === 'workspace_results') {
+    } else if (source === 'workspace_results') {
         box_param = JSON.parse(sessionStorage.getItem("resultBtn"))[id]['dropBtn']
     }
 
+    let boxID = box_param.orgid + get_workflow_id_affix()
     // console.log('box_param.name: ', box_param.name)
     let box = new Box(
         box_param.name, box_param.orgid, box_param.type,
-        box_param.inputs, box_param.outputs, parentid, service
+        box_param.inputs, box_param.outputs, source, service, boxID
     )
+
     canvas.add(box.box, x, y);
+    update_workflow({'state': 'drop', 'element': box});
+    // reduce_lap(x, y)
+    return boxID;
 }
 
 /**
  * Check for a tools in sessionStorage. When tools or service does not exist this function creates it.
- * @param {number} service
+ * @param {string} service
  * @return {obj} json - object of a wps process as saved in sessionStorage
  */
 function get_sessionStorage_tools(service) {
@@ -381,4 +434,34 @@ function get_sessionStorage_tools(service) {
     }
     sessionStorage.setItem('tools', JSON.stringify(tools))
     return tools
+}
+
+
+/**
+ * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
+ * @return {obj} json - object of a Workflow
+ */
+function get_sessionStorage_workflow() {
+    let workflow = JSON.parse(sessionStorage.getItem('workflow'))
+    if (!workflow) {
+        workflow = {}
+        sessionStorage.setItem('workflow', JSON.stringify(workflow))
+    }
+    return workflow
+}
+
+
+/**
+ * Get a number to create a unique id for workflow elements. Counts plus one with each call.
+ * @return {string} number
+ */
+function get_workflow_id_affix() {
+    let affix = JSON.parse(sessionStorage.getItem('workflowIdAffix'))
+    if (!affix) {
+        affix = 1;
+    } else {
+        affix += 1;
+    }
+    sessionStorage.setItem('workflowIdAffix', JSON.stringify(affix))
+    return "_box" + affix.toString()
 }

@@ -98,18 +98,47 @@ function get_wpsprocess(service, identifier) {
     }
 }
 
+function add_connection(tool_id, data_id) {
+    // canvas.installEditPolicy(connection.connectionPolicy);
+    // let box = new Box(
+    //     box_param.name, box_param.orgid, box_param.type,
+    //     box_param.inputs, box_param.outputs, source, service, boxID
+    // )
+    //
+    // canvas.add(box.box, x, y);
+    let connection = new Connection()
+
+}
+
+/**
+ * Collect data to drop element. (When Okay in Modal is pressed)
+ * Check if any inputs or outputs are selected and drop resprective elements, too.
+ *
+ * @param {object} ev - object passed with drop event
+ **/
 function drop_and_store(ev) {
+    /** Prepare and drop a tool button **/
     let dropzone = document.getElementById('dropdiv');
     let dropzone_coords = dropzone.getBoundingClientRect();
     let x_pad = 0;
     let y_pad = 0;
-    let x, y;
+    let x, y, tool_id, data_id;
     let modalData = prep_modal_data();
 
     if (dropzone_coords.height > 100) {x_pad = 300};
     if (dropzone_coords.width > 300) {y_pad = 200};
     x = Math.floor((Math.random() * (dropzone_coords.width-x_pad))-x_pad + dropzone_coords.left);
     y = Math.floor((Math.random() * (dropzone_coords.height-y_pad))+y_pad/2 - dropzone_coords.top);
+    // if (sessionStorage.getItem('box')) {
+    //     sessionStorage.setItem('box', JSON.stringify(modalData))
+    // }
+
+    tool_id = drop_handler(modalData, x, y, modalData.id, 'toolbar', modalData.serv)
+
+    /** Check if tool is connected with other elements to drop **/
+    let box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
+        'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
+        'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
 
     drop_handler(modalData, x, y, modalData.id, 'toolbar', modalData.serv)
 }
@@ -165,12 +194,14 @@ function prep_modal_data() {
     var inKey = [];
     var inValue = [];
     var inType = [];
+    var inId = [];
     let dDInput = 0;
     let inModal = document.getElementById('mod_in');
     let inputInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
     let valueList = [];
     let typeList = [];
+    let inIdList = [];
     let stored;
 
     /** first loop over each dropdown in input, then over values in dropdown **/
@@ -184,10 +215,12 @@ function prep_modal_data() {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[j].value]
                 valueList.push(stored['source'] + stored['dbID'])
                 typeList.push(stored['type']);
+                inIdList.push(dDInput[j].value);
             }
             inValue.push(valueList);
             inKey.push(dropDInputs[i].name);
             inType.push(typeList);
+            inId.push(inIdList);
 
             /** else if one dropdown **/
         } else {
@@ -200,6 +233,7 @@ function prep_modal_data() {
                 inType.push(stored['type']);
             }
             inKey.push(dropDInputs[i].name);
+            inId.push(dDInput[0].value);
         }
     }
     for (let i = 0; i < inputInputs.length; i++) {
@@ -208,20 +242,24 @@ function prep_modal_data() {
                 inKey.push(inputInputs[i].name);
                 inValue.push(inputInputs[i].value);
                 inType.push('string');
+                inId.push('');
             }
         } else if (inputInputs[i].type == "checkbox") {
             inKey.push(inputInputs[i].name);
             if (inputInputs[i].checked == true) {
                 inValue.push(true);
                 inType.push('boolean');
+                inId.push('');
             } else {
                 inValue.push(false);
                 inType.push('boolean');
+                inId.push('');
             }
         } else {
             inKey.push(inputInputs[i].name);
             inValue.push(inputInputs[i].value);
             inType.push('');
+            inId.push('');
         }
     }
 
@@ -251,7 +289,7 @@ function prep_modal_data() {
         outputName = outputs[0].value;
     }
     return {'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
-        'type_list': inType, 'outputName': outputName}
+        'type_list': inType, 'outputName': outputName, 'inId_list': inId}
 }
 
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
@@ -291,7 +329,6 @@ function modal_run_process() {
                     //     += build_resultgroup_button(groupName);
                 }
 
-                console.log('result: ', json)
                 for (let i in json.result) {
                     let btnName = set_result_btn_name(modal_input.outputName);
                     json.result[i].dropBtn.name = btnName;
@@ -472,6 +509,9 @@ function add_resultbtn_to_modal(json) {
     };
 }
 
+function set_preview_content(json) {
+
+}
 
 /**
  * Add information of a result for a result button to the sessionStorage.
