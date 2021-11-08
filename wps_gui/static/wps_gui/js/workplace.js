@@ -106,7 +106,16 @@ function add_connection(tool_id, data_id) {
     // )
     //
     // canvas.add(box.box, x, y);
-    let connection = new Connection()
+    // console.log('toolbox getOutputPort(0): ', toolbox.getOutputPort(0))
+    // console.log('toolbox getOutputPort(): ', toolbox.getOutputPort())
+    console.log('canvas ports: ', canvas.getAllPorts())
+    let connection = new draw2d.Connection({
+        source: sourcePort,
+        target: targetPort
+    });
+    // let connection = createConnection(dataport, toolport);
+    // let connection = createConnection(start.getOutputPort(0),end.getInputPort(0));
+    canvas.add(connection);
 
 }
 
@@ -122,26 +131,85 @@ function drop_and_store(ev) {
     let dropzone_coords = dropzone.getBoundingClientRect();
     let x_pad = 0;
     let y_pad = 0;
-    let x, y, tool_id, data_id;
+    let x, y, tool_id, data_id, newbox, toolbox, databox, metadata, dataport, toolport;
     let modalData = prep_modal_data();
 
     if (dropzone_coords.height > 100) {x_pad = 300};
     if (dropzone_coords.width > 300) {y_pad = 200};
     x = Math.floor((Math.random() * (dropzone_coords.width-x_pad))-x_pad + dropzone_coords.left);
     y = Math.floor((Math.random() * (dropzone_coords.height-y_pad))+y_pad/2 - dropzone_coords.top);
-    // if (sessionStorage.getItem('box')) {
-    //     sessionStorage.setItem('box', JSON.stringify(modalData))
-    // }
 
-    tool_id = drop_handler(modalData, x, y, modalData.id, 'toolbar', modalData.serv)
+    newbox = drop_handler(modalData, x, y, modalData.id, 'toolbar', modalData.serv)
+    tool_id = newbox.boxID;
+    toolbox = newbox.box;
 
     /** Check if tool is connected with other elements to drop **/
     let box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
         'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
         'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
 
-    drop_handler(modalData, x, y, modalData.id, 'toolbar', modalData.serv)
+    for (let i in modalData.type_list) {
+        if (box_types.includes(modalData.type_list[i]) && modalData.inId_list[i]) {
+            metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
+            newbox = drop_handler(metadata, x-40, y-40, 'sidebtn' + modalData.inId_list[i], 'workspace')
+            tool_id = newbox.boxID;
+            databox = newbox.box;
+            dataport = databox.getOutputPort(0);
+            // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
+            toolport = toolbox.getInputPort(parseInt(i));
+            // add_connection(dataport, toolport);
+        }
+    }
 }
+
+// TODO: avoid overlap!
+/*function reduce_lap(x, y) {
+    // console.log('ev: ', ev)
+    // let box_param = process_drop_params(service, id)
+    let dropzone = document.getElementById('dropdiv');
+    // console.log('dropzone: ', dropzone.getBoundingClientRect())
+    let dropzone_coords = dropzone.getBoundingClientRect()
+    let dropzone_size = [dropzone_coords.width, dropzone_coords.height]
+    let dropzone_offset = [dropzone_coords.left, dropzone_coords.top]
+    let boxes = [];
+    let box_dist = [];
+    let box_row = [];
+    let bx, by, i, j;
+
+    let rectangles = document.getElementsByTagName("rect");
+    // console.log('rectangles: ', rectangles)
+
+    for (i of rectangles) {
+        if (i.className.baseVal.startsWith("box")) {
+            boxes.push(i)
+            // console.log('i1: ', i)
+            // console.log('i2: ', i.getBoundingClientRect())
+            // console.log('i3: ', document.elementFromPoint(x, y))
+        }
+    }
+    for (i of boxes) {
+        console.log('boxes: ', boxes)
+        box_row = [];
+        for (j of boxes) {
+            bx = i.getBoundingClientRect().x - j.getBoundingClientRect().x
+            by = i.getBoundingClientRect().y - j.getBoundingClientRect().y
+            box_row.push([bx, by, Math.sqrt((bx*bx)+(by*by))])
+        }
+        box_dist.push(box_row)
+    }
+    console.log('box_dixst: ', box_dist)
+    // if ((a.left >= b.right || a.top >= b.bottom ||
+    //     a.right <= b.left || a.bottom <= b.top):
+    // {
+    //     // no overlap
+    // }
+    // else
+    // {
+    //     // overlap
+    // }
+
+    // sessionStorage.setItem('box', JSON.stringify(box))
+}*/
 
 /**
  * Check if an input (an Element of a wps) is required and if it is required check if the input has a value.

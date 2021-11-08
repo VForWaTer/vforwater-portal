@@ -157,8 +157,8 @@ class Box {
             // console.log('policy: ', port.installEditPolicy(new draw2d.policy.ResizeSelectionFeedbackPolicy()))
         })
         port.setConnectionDirection(2)
-        port.setValue('TestValue Out')
-        port.setUserData('TestUserData Out')
+        port.setValue(this._orgid)
+        port.setUserData(this._service)
         return blankbox
     }
 
@@ -189,12 +189,31 @@ class Box {
             console.log('parent: ', port.getParent())
             // console.log('policy: ', port.installEditPolicy(new draw2d.policy.ResizeSelectionFeedbackPolicy()))
         })
+        port.on("connect", function(emitterPort, connection){
+            // console.log('emitterPort: ', emitterPort.getValue())
+            // console.log('emitterPort: ', emitterPort.getUserData())
+            if (connection.port.getCssClass() === connection.connection.sourcePort.getCssClass()) {
+
+            }
+            console.log('connection: ', connection.connection.sourcePort.getUserData())
+            console.log('connection: ', connection.connection.sourcePort.getValue())
+            console.log('connection: ', connection.connection.sourcePort.getCssClass())
+            console.log('connection port: ', connection.port.getValue())
+            console.log('connection port: ', connection.port.getUserData())
+            console.log('connection port: ', connection.port.getCssClass())
+            console.log('port: ', port)
+            console.log('port: ', port.getValue())
+            console.log('port: ', port.getUserData())
+            console.log(port.getCoronaWidth())
+ });
         // console.log('onDragEnter: ', port.onDragEnter(function () {console.log('Enter')}))
         // port.attr({selectable: false})
         // port.setDraggable(false)
         port.setConnectionDirection(0)
-        port.setValue('TestValue')
-        port.setUserData('TestUserData')
+        // port.setValue('TestValue')
+        // port.setUserData('TestUserData')
+        port.setValue(this._orgid)
+        port.setUserData(this._service)
         return blankbox
     }
 }
@@ -346,6 +365,8 @@ function process_drop_params(service, id) {
 
 function update_workflow(event) {
     let workflow = get_sessionStorage_workflow()
+    let workflow_name = document.getElementById('workflow_name')
+    console.log('workflow name: ', workflow_name)
     if (event.state === 'remove') {
         delete workflow[event.id]
     // } else if (event.state == 'drop' && event.element._boxtype == 'tool') {
@@ -373,7 +394,7 @@ function update_workflow(event) {
  * @param {integer} id
  * @param {string} source which sesseionstore
  * @param {string} service
- * @return {string} boxID - global ID of box dropped on workarea
+ * @return {dict} {box, boxID} - box object and global ID of box dropped on workarea
  */
 function drop_handler(ev, x, y, id, source, service) {
     let box_param = ''
@@ -392,6 +413,8 @@ function drop_handler(ev, x, y, id, source, service) {
     }
     if (source === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
+        service = 'dataBtn'
+        console.log('metadata: ', metadata)
         // TODO: improve data object to avoid building this obj manually!
         box_param = {
             inputs: [],
@@ -416,7 +439,7 @@ function drop_handler(ev, x, y, id, source, service) {
     canvas.add(box.box, x, y);
     update_workflow({'state': 'drop', 'element': box});
     // reduce_lap(x, y)
-    return boxID;
+    return {'box': box.box, 'boxID': boxID};
 }
 
 /**
@@ -444,9 +467,25 @@ function get_sessionStorage_tools(service) {
 function get_sessionStorage_workflow() {
     let workflow = JSON.parse(sessionStorage.getItem('workflow'))
     if (!workflow) {
-        workflow = {}
+        workflow = set_sessionStorage_workflow_name()
         sessionStorage.setItem('workflow', JSON.stringify(workflow))
     }
+    return workflow
+}
+
+
+/**
+ * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
+ * @return {obj} json - object of a Workflow
+ */
+function set_sessionStorage_workflow_name(name = 'my workflow') {
+    let workflow = JSON.parse(sessionStorage.getItem('workflow'))
+    if (!workflow) {
+        workflow = {'name': name}
+    } else {
+        workflow['name'] = name;
+    }
+    sessionStorage.setItem('workflow', JSON.stringify(workflow))
     return workflow
 }
 

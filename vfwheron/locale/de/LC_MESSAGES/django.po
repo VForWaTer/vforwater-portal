@@ -473,6 +473,12 @@ msgstr "Hier klicken um die aktuelle Prozesskette zu speichern"
 msgid "Clear workflow"
 msgstr "Löschen"
 
+msgid "Name of current workflow"
+msgstr "Name der aktuellen Prozesskette"
+
+msgid "Name of current workflow with a max length of 50 characters. Allowed are characters, numbers, underscore and dash."
+msgstr "Name der aktuellen Prozesskette mit einer maximalen Länge von 50 Zeichen. Erlaubt sind Buchstaben, Zahlen, Unterstrich und Minus"
+
 msgid "Click to clear current workflow"
 msgstr "Hier klicken um die aktuelle Prozesskette zu entfernen"
 
