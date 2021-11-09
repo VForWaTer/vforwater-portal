@@ -19,7 +19,7 @@
            value="{% trans "Save workflow" %}" data-toggle="tooltip"
            title="{% trans "Click to save current workflow" %}">
     <input class="w3-center" id="workflow_name" rows="1" maxlength="50"
-           title="{% trans "Name of current workflow with a max length of 50 characters. Allowed are characters, numbers, underscore and dash." %}"
+           title="{% trans "Name of current workflow with a max length of 50 characters. Allowed are characters, numbers, space, underscore and dash." %}"
            style="resize: none; height: 34px;"
            value="my workflow" pattern="[A-Za-z0-9\s_-]{1,50}">
     <input class="w3-btn w3-green w3-right" type="submit" onclick="run_workflow()"

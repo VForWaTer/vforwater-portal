@@ -106,7 +106,7 @@ class Box {
             stroke: 0,
             cssClass: 'box-' + this._boxtype,
         })
-        box.attr({id: boxId})
+           box.attr({id: this._boxid})
         let label = new draw2d.shape.basic.Label({
                 text: this._boxname,
                 stroke: 0,
@@ -299,7 +299,6 @@ class Connection {
     }
 }
 
-
 // define drag and drop interaction from outside to canvas to the draw2d canvas
 function onclick_handler(ev) {
 }
@@ -308,14 +307,18 @@ function vfw_drag() {
 
 }
 
-
 let canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
 let connection = new Connection()
 canvas.installEditPolicy(connection.connectionPolicy);
 
-
+/**
+ * Collect metadata of element needed to draw a box.
+ * @param service
+ * @param id
+ * @returns {{outputs: *[], inputs: *[], name, type: string, orgid: string}}
+ */
 function process_drop_params(service, id) {
     // TODO: improve data object to avoid building this obj manually!
     let box_param = ''
@@ -363,16 +366,18 @@ function process_drop_params(service, id) {
 }
 
 
+/**
+ * Remove elements from sessionStorage or add new elements according to the event on the Dropzone ('dropdiv')
+ * @param event
+ */
 function update_workflow(event) {
     let workflow = get_sessionStorage_workflow()
-    let workflow_name = document.getElementById('workflow_name')
-    console.log('workflow name: ', workflow_name)
     if (event.state === 'remove') {
         delete workflow[event.id]
     // } else if (event.state == 'drop' && event.element._boxtype == 'tool') {
     } else if (event.state === 'drop') {
         workflow[event.element.box.id] = {
-            name: event.element._name,
+            name: event.element._boxname,
             orgid: event.element._orgid,
             boxtype: event.element._boxtype,
             inputs: event.element._inputs,
@@ -503,4 +508,26 @@ function get_workflow_id_affix() {
     }
     sessionStorage.setItem('workflowIdAffix', JSON.stringify(affix))
     return "_box" + affix.toString()
+}
+
+
+/**
+ * Collect information from session Storage and draw workflow boxes as given there.
+ */
+function draw_workflow() {
+    let box = {};
+    let coords = {};
+    let workflow = get_sessionStorage_workflow();
+    for (let i in workflow) {
+        if (i == 'name') {
+            document.getElementById("workflow_name").setAttribute('value', workflow[i])
+        } else {
+            box = new Box(
+                workflow[i].name, workflow[i].orgid, workflow[i].boxtype, workflow[i].inputs,
+                workflow[i].outputs, workflow[i].source, workflow[i].service, i
+            )
+            coords = get_drop_coords();
+            canvas.add(box.box, coords['x'], coords['y']);
+        }
+    }
 }
