@@ -64,7 +64,7 @@ class Box {
             } else {
                 relOutPort_y = 97
             }
-            this._createOutPort(box, this._outputs[i], 100 - (parseInt(i) + 1) * outPortDist, relOutPort_y)
+            this._createOutPort(box, this._outputs[i], 100 - (parseInt(i) + 1) * outPortDist, relOutPort_y, i)
         }
         for (let i in this._inputs) {
             if (this._connectable_types.includes(this._inputs[i])) {
@@ -72,7 +72,7 @@ class Box {
             } else {
                 relInPort_y = 3
             }
-            this._createInPort(box, this._inputs[i], (parseInt(i) + 1) * inPortDist, relInPort_y)
+            this._createInPort(box, this._inputs[i], (parseInt(i) + 1) * inPortDist, relInPort_y, i)
         }
         return box
     }
@@ -106,14 +106,14 @@ class Box {
             stroke: 0,
             cssClass: 'box-' + this._boxtype,
         })
-           box.attr({id: this._boxid})
+        box.attr({id: this._boxid})
         let label = new draw2d.shape.basic.Label({
-                text: this._boxname,
-                stroke: 0,
-                fontSize: 15,
-                x: 5,  // Position of text in box
-                y: boxTexty
-            })
+            text: this._boxname,
+            stroke: 0,
+            fontSize: 15,
+            x: 5,  // Position of text in box
+            y: boxTexty
+        })
         if (boxType === 'tool') {
             box.on('click', function () {
                 wpsprocess(service, name);
@@ -122,7 +122,7 @@ class Box {
                 wpsprocess(service, name);
             })
         }
-        box.on('removed', function(ev) {
+        box.on('removed', function (ev) {
             update_workflow({'state': 'remove', 'id': ev.id})
         })
         box.add(
@@ -143,7 +143,7 @@ class Box {
      * @param {Number} relPorty Relative position of y in percent; 0,0 is upper left.
      * @return {draw2d.shape} The input Objected with an port added.
      */
-    _createOutPort(blankbox, porttype, relPortx, relPorty) {
+    _createOutPort(blankbox, porttype, relPortx, relPorty, portNum) {
         // let port = new draw2d.OutputPort();
         let port = blankbox.createPort(
             'output',
@@ -152,13 +152,13 @@ class Box {
         port.setCssClass(porttype)
 
         port.on('click', function () {
-            console.log('clicked on outPort, this: ', this)
-            console.log('parent: ', port.getParent())
+            // console.log('parent: ', port.getParent())
             // console.log('policy: ', port.installEditPolicy(new draw2d.policy.ResizeSelectionFeedbackPolicy()))
         })
         port.setConnectionDirection(2)
         port.setValue(this._orgid)
-        port.setUserData(this._service)
+        // port.setUserData(this._service)
+        port.setUserData({'service': this._service, 'boxid': this._boxid, 'orgid': this._orgid, 'index': portNum})
         return blankbox
     }
 
@@ -171,7 +171,7 @@ class Box {
      * @param {Number} relPorty relative position of y in percent; 0,0 is upper left
      * @return {draw2d.shape} The input Objected with an port added.
      */
-    _createInPort(blankbox, porttype, relPortx, relPorty) {
+    _createInPort(blankbox, porttype, relPortx, relPorty, portNum) {
         let port;
         port = blankbox.createPort(
             'input',
@@ -185,27 +185,36 @@ class Box {
 
         port.setCssClass(porttype)
         port.on('click', function () {
-            console.log('clicked Inport: this: ', this)
-            console.log('parent: ', port.getParent())
-            // console.log('policy: ', port.installEditPolicy(new draw2d.policy.ResizeSelectionFeedbackPolicy()))
         })
-        port.on("connect", function(emitterPort, connection){
+        port.on("connect", function (emitterPort, connection) {
             // console.log('emitterPort: ', emitterPort.getValue())
-            // console.log('emitterPort: ', emitterPort.getUserData())
             if (connection.port.getCssClass() === connection.connection.sourcePort.getCssClass()) {
-
+                let source = {
+                    'datatype': connection.connection.sourcePort.getCssClass(),
+                    'service': connection.connection.sourcePort.getUserData()['service'],
+                    'boxid': connection.connection.sourcePort.getUserData()['boxid'],
+                    'orgid': connection.connection.sourcePort.getUserData()['orgid'],
+                    'index': parseInt(connection.connection.sourcePort.getUserData()['index']),
+                    'name': connection.connection.sourcePort.getValue(),
+                };
+                let target = {
+                    'datatype': connection.port.getCssClass(),
+                    'service': connection.port.getUserData()['service'],
+                    'boxid': connection.port.getUserData()['boxid'],
+                    'orgid': connection.port.getUserData()['orgid'],
+                    'index': portNum,
+                    // 'name': connection.port.getValue(),
+                };
+                update_workflow({'state': 'change', 'source': source, 'target': target});
+            } else {
+                console.log("TODO: This shouldn't be connectable. Fix!")
+                // console.log('connection: ', connection.connection.id)
+                // let connection_figure = canvas.getFigure(connection.connection.id.toString())
+                // console.log('connection figure: ', connection_figure)
+                // canvas.remove(connection)
             }
-            console.log('connection: ', connection.connection.sourcePort.getUserData())
-            console.log('connection: ', connection.connection.sourcePort.getValue())
-            console.log('connection: ', connection.connection.sourcePort.getCssClass())
-            console.log('connection port: ', connection.port.getValue())
-            console.log('connection port: ', connection.port.getUserData())
-            console.log('connection port: ', connection.port.getCssClass())
-            console.log('port: ', port)
-            console.log('port: ', port.getValue())
-            console.log('port: ', port.getUserData())
-            console.log(port.getCoronaWidth())
- });
+            // console.log(port.getCoronaWidth())
+        });
         // console.log('onDragEnter: ', port.onDragEnter(function () {console.log('Enter')}))
         // port.attr({selectable: false})
         // port.setDraggable(false)
@@ -213,7 +222,7 @@ class Box {
         // port.setValue('TestValue')
         // port.setUserData('TestUserData')
         port.setValue(this._orgid)
-        port.setUserData(this._service)
+        port.setUserData({'service': this._service, 'boxid': this._boxid, 'orgid': this._orgid, 'index': portNum})
         return blankbox
     }
 }
@@ -292,9 +301,9 @@ class Connection {
             // onMouseDown: vfw_drag  // change the original drag behaviour
         })
         // 2. Bind connection to the canvas (click on start and end port):
-    /*    let connection = new draw2d.policy.connection.ClickConnectionCreatePolicy({
-            createConnection: connector_function
-        })*/
+        /*    let connection = new draw2d.policy.connection.ClickConnectionCreatePolicy({
+                createConnection: connector_function
+            })*/
         return connection
     }
 }
@@ -346,17 +355,19 @@ function process_drop_params(service, id) {
         for (let i of metadata.processOutputs) {
             if (i.identifier !== 'error') {
                 if ('keywords' in i) {
-                for (let j in i.keywords) {
-                    outputs.push(j)
+                    for (let j in i.keywords) {
+                        outputs.push(j)
+                    }
+                } else {
+                    outputs.push(i.dataType)
                 }
-            } else {
-                outputs.push(i.dataType)
-            }
             }
         }
     }
     box_param = {
         inputs: inputs,
+        input_ids: [],
+        input_values: [],
         name: metadata.title,
         orgid: metadata.identifier,
         outputs: outputs,
@@ -371,20 +382,55 @@ function process_drop_params(service, id) {
  * @param event
  */
 function update_workflow(event) {
+    let delete_element, index, chained_id;
     let workflow = get_sessionStorage_workflow()
+
     if (event.state === 'remove') {
+        delete_element = workflow[event.id];
+        if (delete_element.input_ids) {
+            for (let i in delete_element.input_ids) {
+                chained_id = delete_element.input_ids[i];
+                index = workflow[chained_id].output_ids.indexOf(event.id);
+                workflow[chained_id].output_ids[index] = '';
+                workflow[chained_id].output_values[index] = '';
+            }
+        }
+        if (delete_element.output_ids) {
+            for (let o in delete_element.output_ids) {
+                chained_id = delete_element.output_ids[o];
+                index = workflow[chained_id].input_ids.indexOf(event.id);
+                workflow[chained_id].input_ids[index] = '';
+                workflow[chained_id].input_values[index] = '';
+            }
+        }
         delete workflow[event.id]
-    // } else if (event.state == 'drop' && event.element._boxtype == 'tool') {
+        // } else if (event.state == 'drop' && event.element._boxtype == 'tool') {
     } else if (event.state === 'drop') {
         workflow[event.element.box.id] = {
             name: event.element._boxname,
             orgid: event.element._orgid,
             boxtype: event.element._boxtype,
             inputs: event.element._inputs,
+            input_values: event.params.input_values,
+            input_ids: event.params.input_ids,
             outputs: event.element._outputs,
             source: event.element._sessionstore,
             service: event.element._service
         }
+    } else if (event.state === 'change') {
+        if (!workflow[event.target.boxid]['input_values']) {
+            workflow[event.target.boxid]['input_values'] = []
+            workflow[event.target.boxid]['input_ids'] = []
+        }
+        if (!workflow[event.source.boxid]['output_values']) {
+            workflow[event.source.boxid]['output_values'] = []
+            workflow[event.source.boxid]['output_ids'] = []
+        }
+        workflow[event.target.boxid]['input_values'][event.target.index] = event.source.orgid;
+        workflow[event.target.boxid]['input_ids'][event.target.index] = event.source.boxid;
+        workflow[event.source.boxid]['output_values'][event.source.index] = event.target.orgid;
+        workflow[event.source.boxid]['output_ids'][event.source.index] = event.target.boxid;
+
     }
     sessionStorage.setItem('workflow', JSON.stringify(workflow))
     // workflow[box.id] = box
@@ -423,6 +469,8 @@ function drop_handler(ev, x, y, id, source, service) {
         // TODO: improve data object to avoid building this obj manually!
         box_param = {
             inputs: [],
+            // input_ids: [],
+            // input_values: [],
             name: metadata.name + ' - ' + metadata.dbID,
             orgid: metadata.orgID,
             outputs: [metadata.outputs],
@@ -430,6 +478,13 @@ function drop_handler(ev, x, y, id, source, service) {
         }
     } else if (source === 'toolbar') {
         box_param = process_drop_params(service, id)
+        try {
+            box_param['input_ids'] = ev.inId_list;
+            box_param['input_values'] = ev.value_list;
+        } catch {
+            box_param['input_ids'] = [];
+            box_param['input_values'] = [];
+        }
     } else if (source === 'workspace_results') {
         box_param = JSON.parse(sessionStorage.getItem("resultBtn"))[id]['dropBtn']
     }
@@ -442,10 +497,11 @@ function drop_handler(ev, x, y, id, source, service) {
     )
 
     canvas.add(box.box, x, y);
-    update_workflow({'state': 'drop', 'element': box});
+    update_workflow({'state': 'drop', 'element': box, 'params': box_param});
     // reduce_lap(x, y)
     return {'box': box.box, 'boxID': boxID};
 }
+
 
 /**
  * Check for a tools in sessionStorage. When tools or service does not exist this function creates it.

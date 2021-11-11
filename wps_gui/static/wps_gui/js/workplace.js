@@ -98,7 +98,7 @@ function get_wpsprocess(service, identifier) {
     }
 }
 
-function add_connection(tool_id, data_id) {
+function add_connection(sourcePort, targetPort) {
     // canvas.installEditPolicy(connection.connectionPolicy);
     // let box = new Box(
     //     box_param.name, box_param.orgid, box_param.type,
@@ -120,13 +120,11 @@ function add_connection(tool_id, data_id) {
 }
 
 /**
- * Collect data to drop element. (When Okay in Modal is pressed)
- * Check if any inputs or outputs are selected and drop resprective elements, too.
- *
- * @param {object} ev - object passed with drop event
- **/
-function drop_and_store(ev) {
-    /** Prepare and drop a tool button **/
+ * create a dict with random coordinates on the dropzone ('dropdiv').
+ * TODO: avoid overlap of boxes
+ * @returns {{x: number, y: number}}
+ */
+function get_drop_coords() {
     let dropzone = document.getElementById('dropdiv');
     let dropzone_coords = dropzone.getBoundingClientRect();
     let x_pad = 0;
@@ -138,20 +136,33 @@ function drop_and_store(ev) {
     if (dropzone_coords.width > 300) {y_pad = 200};
     x = Math.floor((Math.random() * (dropzone_coords.width-x_pad))-x_pad + dropzone_coords.left);
     y = Math.floor((Math.random() * (dropzone_coords.height-y_pad))+y_pad/2 - dropzone_coords.top);
+    return {'x': x, 'y': y}
+}
 
-    newbox = drop_handler(modalData, x, y, modalData.id, 'toolbar', modalData.serv)
+
+/**
+ * Collect data to drop element. (When Okay in Modal is pressed)
+ * Check if any inputs or outputs are selected and drop resprective elements, too.
+ *
+ * @param {object} ev - object passed with drop event
+ **/
+function drop_on_click(ev) {
+    /** Prepare and drop a tool button **/
+    let tool_id, data_id, newbox, toolbox, databox, metadata, dataport, toolport;
+    let coords = get_drop_coords();
+    let modalData = prep_modal_data();
+    newbox = drop_handler(modalData, coords['x'], coords['y'], modalData.id, 'toolbar', modalData.serv)
     tool_id = newbox.boxID;
     toolbox = newbox.box;
 
-    /** Check if tool is connected with other elements to drop **/
+    /** Check if tool is connected with other elements to drop and get ports **/
     let box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
         'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
         'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
-
     for (let i in modalData.type_list) {
         if (box_types.includes(modalData.type_list[i]) && modalData.inId_list[i]) {
             metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
-            newbox = drop_handler(metadata, x-40, y-40, 'sidebtn' + modalData.inId_list[i], 'workspace')
+            newbox = drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modalData.inId_list[i], 'workspace')
             tool_id = newbox.boxID;
             databox = newbox.box;
             dataport = databox.getOutputPort(0);
@@ -161,6 +172,31 @@ function drop_and_store(ev) {
         }
     }
 }
+
+/*
+/!** Check if there is a connection between boxes and drop the connection on the Dropzone
+ *
+ *!/
+function drop_connection(toolbox, databox) {
+    let tool_id, metadata, databox, dataport, toolport;
+    /!** Check if tool is connected with other elements to drop and get ports **!/
+    let box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
+        'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
+        'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
+
+    for (let i in modalData.type_list) {
+        if (box_types.includes(modalData.type_list[i]) && modalData.inId_list[i]) {
+            metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
+            newbox = drop_handler(metadata, x-40, y-40, 'sidebtn' + modalData.inId_list[i], 'workspace_data')
+            tool_id = newbox.boxID;
+            databox = newbox.box;
+            dataport = databox.getOutputPort(0);
+            // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
+            toolport = toolbox.getInputPort(parseInt(i));
+            // add_connection(dataport, toolport);
+        }
+    }
+}*/
 
 // TODO: avoid overlap!
 /*function reduce_lap(x, y) {
@@ -257,6 +293,10 @@ function check_pattern(checkElement) {
 }
 
 
+/**
+ * Collect data from modal neeeded to run a processes.
+ * @returns {{type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
+ */
 function prep_modal_data() {
      /** collect inputs **/
     var inKey = [];
@@ -619,7 +659,7 @@ function add_resultbtn_to_sessionstore(btnName, json) {
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
-        'class="w3-padding task is-result" data-sessionStore="resultBtn"' +
+        'class="w3-padding task is-result" data-sessionStore="resultBtn" ' +
         'data-id="' + json.source + json.dbID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
         'id="' + name + '">' +
         '<span class="w3-medium" title="' + title + '">' +
@@ -1037,13 +1077,14 @@ function set_textfield_opt(item, resultData, sessionStoreData) {
 }
 
 function load_workflow() {
-    console.log("load isn't implemented yet.")
+    alert("Load is not implemented yet.")
     console.log("load just a test workflow.")
-    let workflow
-    sessionStorage.setItem('workflow', JSON.stringify(workflow))
+    // let workflow
+    // sessionStorage.setItem('workflow', JSON.stringify(workflow))
 }
 
 function save_workflow() {
+    alert("Save is not implemented yet.")
     console.log("save isn't implemented yet: ",
         JSON.parse(document.getElementById('is_authenticated').value))
 }
