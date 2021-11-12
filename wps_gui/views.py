@@ -287,7 +287,8 @@ def handle_wps_output(execution, wps_process, inputs):
             # get data
             if output.data:
                 # if output.identifier == 'fig':
-                if output.dataType == 'string':
+                # if output.dataType == 'string':
+                if output.dataType in ['string', 'integer']:
                     single_output['data'] = output.data[0]
                 else:
                     single_output['data'] = eval(output.data[0])[0]
