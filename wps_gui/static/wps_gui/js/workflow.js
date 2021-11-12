@@ -390,17 +390,21 @@ function update_workflow(event) {
         if (delete_element.input_ids) {
             for (let i in delete_element.input_ids) {
                 chained_id = delete_element.input_ids[i];
-                index = workflow[chained_id].output_ids.indexOf(event.id);
-                workflow[chained_id].output_ids[index] = '';
-                workflow[chained_id].output_values[index] = '';
+                if (workflow[chained_id]) {
+                    index = workflow[chained_id].output_ids.indexOf(event.id);
+                    workflow[chained_id].output_ids[index] = '';
+                    workflow[chained_id].output_values[index] = '';
+                }
             }
         }
         if (delete_element.output_ids) {
             for (let o in delete_element.output_ids) {
                 chained_id = delete_element.output_ids[o];
-                index = workflow[chained_id].input_ids.indexOf(event.id);
-                workflow[chained_id].input_ids[index] = '';
-                workflow[chained_id].input_values[index] = '';
+                if (workflow[chained_id]) {
+                    index = workflow[chained_id].input_ids.indexOf(event.id);
+                    workflow[chained_id].input_ids[index] = '';
+                    workflow[chained_id].input_values[index] = '';
+                }
             }
         }
         delete workflow[event.id]

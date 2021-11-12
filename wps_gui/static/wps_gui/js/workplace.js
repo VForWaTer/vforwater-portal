@@ -129,9 +129,7 @@ function get_drop_coords() {
     let dropzone_coords = dropzone.getBoundingClientRect();
     let x_pad = 0;
     let y_pad = 0;
-    let x, y, tool_id, data_id, newbox, toolbox, databox, metadata, dataport, toolport;
-    let modalData = prep_modal_data();
-
+    let x, y
     if (dropzone_coords.height > 100) {x_pad = 300};
     if (dropzone_coords.width > 300) {y_pad = 200};
     x = Math.floor((Math.random() * (dropzone_coords.width-x_pad))-x_pad + dropzone_coords.left);
@@ -1093,6 +1091,11 @@ function run_workflow() {
     console.log("run isn't implemented yet.")
 }
 
+/**
+ * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
+ */
 function clear_workflow() {
-    console.log("clear isn't implemented yet.")
+    canvas.clear();
+    set_sessionStorage_workflow_name()
+    document.getElementById("workflow_name").value = gettext('my workflow')
 }
