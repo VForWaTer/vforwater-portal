@@ -1088,6 +1088,56 @@ function save_workflow() {
 }
 
 function run_workflow() {
+    let workflow = JSON.parse(sessionStorage.getItem('workflow'))
+    if (Object.keys(workflow).length <= 1) {
+        alert(gettext("Please Load or Create a workflow to run first."))
+        return;
+    }
+    let processList = [];
+    let processDict = {};
+    let processTree = {};
+    let endNode = [];
+
+    // get processes of workflow
+    Object.entries(workflow).map(function (i) {
+        if (i[1].source === 'toolbar') {
+            // processList.push(i[0])
+            processDict[i[0]] = {children: i[1].input_ids};
+            processDict[i[0]].parents = i[1].output_ids;
+            if (typeof i[1].output_ids === "undefined") {
+                endNode.push(i[0])
+            }
+        }
+    })
+    if (endNode.length > 1) {
+        alert(gettext("Your workflow is supposed to end in a single process."))
+        return;
+    }
+    /**
+     * create tree of processes
+     * @param {string} ID
+     * @param {dictionary} parent
+     * @param {dictionary} processDict
+     * @param {array} processList
+     */
+    function createTree(ID, parent, processDict, processList) {
+        if (!processList.includes(ID)) {
+            processList.push(ID);
+        } else {
+            // TODO: This results in an error anyways. Fix it!
+            alert(gettext("At least one process is used more than once. This could result in an infinite loop and is forbidden (yet)."))
+            console.warn('Please check box with id: ', ID)
+        }
+        let tree = {};
+        for (let i of processDict[ID].children) {
+            tree[i] = typeof processDict[i].children != "undefined" ? createTree(i, tree, processDict, processList) : {}
+        }
+        return tree;
+    }
+    processTree[endNode] = {};
+    processTree[endNode] = createTree(endNode, processTree[endNode], processDict, processList);
+    console.log('processTree: ', processTree)
+
     console.log("run isn't implemented yet.")
 }
 
