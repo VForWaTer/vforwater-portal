@@ -23,19 +23,16 @@
   <!-- Modal content -->
   <div class="w3-modal-content modal-body">
     <div class="modal-header" id="modal-header">
-      {#            <span class="close">&times;</span>#}
       <h3 id="mod_head"></h3>
     </div>
     <table>
       <tr>
         <td><p id="mod_dat_inf" class="modal-datainfo"></p></td>
         <td><p id="mod_prev" class="modal-preview"></p></td>
-        {#                <td><p id="mod_prev" class="modal-preview">{{ div | safe }}</p></td>#}
       </tr>
     </table>
     <div class="modal-footer" id="modal-footer">
-      <span-b class="modal-back">{% trans "Back" %}</span-b>
-      {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
+      <span-b class="modal-back" onclick="closeInfoModal()">{% trans "Back" %}</span-b>
       <h3></h3>
     </div>
   </div>
@@ -46,16 +43,6 @@
   var bokehPreviewScript;
   // Get the modal
   let modal = document.getElementById("infoModal");
-  // Get the <span> element that closes the modal
-  {#let span = document.getElementsByClassName("close")[0];#}
-  {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
-  let span_b = document.getElementsByClassName("modal-back")[0];
-  // When the user clicks on <span> (x), close the modal
-  {% comment %}  span.onclick = function () {
-        closeModal()
-    };{% endcomment %}
-  span_b.onclick = () => closeInfoModal();
-  {#span_c.onclick = function () {closeModal()};#}
 
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = (event) => {if (event.target == modal) closeInfoModal()};

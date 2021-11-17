@@ -1,9 +1,9 @@
-Bokeh==2.2.1
-django==2.2.24
-django_crontab==0.7.1
-django-cors-headers==3.2.6
+Bokeh>=2.2.1
+django==3.2.9
+django_crontab>=0.7.1
+django-cors-headers>=3.2.1
 django-filter
-docutils==0.16
+docutils>=0.16
 future
 jsonpickle
 lxml==4.6.3

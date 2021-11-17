@@ -2,13 +2,11 @@
 
 """
 import ast
-import copy
-import json
-import pickle
-import operator
-from datetime import time, datetime
+from datetime import time
 from math import radians, ceil, sqrt
 
+from django.utils.translation import gettext
+from bokeh.io import show
 from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
     DateSlider, DateRangeSlider, Whisker, BoxAnnotation
@@ -17,12 +15,12 @@ from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Oranges9, Spectral11
 
-from django.db import connections
-from django.http.response import JsonResponse
-from numpy import mean, subtract, add
-import numpy as np
+from numpy import mean
 
-from vfwheron.models import Entries, Timeseries
+from heron.settings import max_size_preview_plot
+from vfwheron.data_tools import __DB_load_directiondata, fill_data_gaps, __DB_load_data_avg, __DB_load_data, \
+    precision_to_minmax, __get_axis_limits
+from vfwheron.models import Entries
 
 import redis
 import pandas as pd
@@ -31,112 +29,81 @@ import time
 from wps_gui.models import WpsResults
 
 
-def __DB_load_label(ID):
-    label = Entries.objects.filter(id=ID)\
-        .values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
-    sup = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
-    superscript_label = label[0][2].replace("^", "").translate(sup)
-    return label[0][0] + ' (' + label[0][1] + ')' + ' [' + superscript_label + ']'
-
-
-def __DB_load_data(ID: str):
+def __DB_load_label(ID: int):
     """
+    Load informaton for a plot label from database
 
     :param ID:
-    :return:
+    :return: str
     """
-    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
-    if datatable == 'timeseries':
-        # request data with django ORM
-        djresult = Timeseries.objects.filter(entry_id=ID)\
-            .values_list('tstamp', 'value', 'precision')
-        result = list(zip(*djresult))
-        if result[2][1] is None:
-            axis = {'ymin': min(result[1]), 'ymax': max(result[1])}
-        else:
-            axis = {'ymin': min(map(operator.sub, result[1], result[2])),
-                    'ymax': max(map(operator.add, result[1], result[2]))}
+    label = Entries.objects.filter(id=ID)\
+        .values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
+    return format_label(label[0][0], label[0][1], label[0][2])
 
-        return {'data': result, 'axis': axis}
-    else:
-        print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
-def __DB_load_data_avg(ID: int, scale='day'):
+def format_label(name: str, symbol: str, unit_symbol: str):
     """
+    format label for plots from variable name, symbol and unit symbol
 
-    :param ID: Entry ID
-    :param scale:
-    :return:
+    :param name:
+    :param symbol:
+    :param unit_symbol:
+    :return:  str
     """
-    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
-    if datatable == 'timeseries':
-
-        cursor = connections['default'].cursor()
-        # noinspection SqlResolve
-        cursor.execute("SELECT date_trunc('{2}', tstamp) as date, "
-                       "avg(value), min(value), max(value), count(*), "
-                       "avg(precision) as prec_avg, min(precision) as prec_min, max(precision) as prec_max "
-                       "FROM {0} "
-                       "WHERE entry_id = {1} "
-                       "GROUP BY date_trunc('{2}', tstamp)"
-                       "ORDER BY date ASC;".format(datatable, ID, scale))
-        dbresult = cursor.fetchall()
-        cursor.close()
-        result = list(zip(*dbresult))
-        # y1 is for the main plot -> min and  max of the day of the day,
-        # y2 for the secondary plot with min and max in each group for each day
-        axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
-        return {'data': result, 'axis': axis}
-    else:
-        print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
+    sup = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+    superscript_label = unit_symbol.replace("^", "").translate(sup)
+    return "{} ({}) [{}]".format(name, symbol, superscript_label)
 
 
-def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
+def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: str = "") -> object:
     """
     Plot with full resolution, hence one line with errorbars, no band
 
-    :param db_data: dict - data from database
+    :param plot_data: dict - pandas dataframe to plot and some additional information
+    :param full_res: boolean - True if data is complete else only latest n values
     :param size: list - size of plot
     :param label: str - title for plot
     :return:
     """
-    plot_data = prepare_data(db_data)
-
-    has_precision = plot_data['has_precision']
     nan_in_data = plot_data['nan_in_data']
-    source = ColumnDataSource(plot_data['source'])
-    error_source = ColumnDataSource(plot_data['error_source'])
+    source = ColumnDataSource(plot_data['df'])
     missing_source = ColumnDataSource(plot_data['missing_data'])
-
+    if full_res:
+        title = ''
+    else:
+        title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
     # Plot average as main plot
     mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
+                      title=title,
+                      # sizing_mode='stretch_both',
                       plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
 
     # plot value line
-    mainplot.line(x='date', y='y', source=source, line_width=3)  #, legend_label="measured values")
+    mainplot.line(x='tstamp', y='value', source=source, line_width=3)  #, legend_label="measured values")
 
-    mainplot.add_tools(HoverTool(tooltips=[("Value", "@y"),
-                                           ("Time", "@date{%T %Z}"),
-                                           ("Date", "@date{%d %b %Y}")],
-                                 formatters={"@date": "datetime"}, mode="mouse"))
+    mainplot.add_tools(HoverTool(tooltips=[(gettext("Value"), "@value"),
+                                           (gettext("Time"), "@tstamp{%T %Z}"),
+                                           (gettext("Date"), "@tstamp{%d %b %Y}")],
+                                 formatters={"@tstamp": "datetime"}, mode="mouse"))
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
-        mainplot.line(x='defect_x', y='defect_y', line_width=3, line_color='red', line_cap='round',
-                      legend_label='Missing values', source=missing_source,
+        mainplot.line(x='tstamp', y='value', line_width=3, line_color='red', line_cap='round',
+                      legend_label=gettext('Missing values'), source=missing_source,
+                      # visible=False
                       )
         mainplot.legend.click_policy = "hide"
         mis_list = [*range(0, len(plot_data['missing_data']), 4)]
         for i in mis_list:
-            box = BoxAnnotation(left=plot_data['missing_data']['defect_x'][i+1],
-                                right=plot_data['missing_data']['defect_x'][i+2],
+            box = BoxAnnotation(left=plot_data['missing_data']['tstamp'][i+1],
+                                right=plot_data['missing_data']['tstamp'][i+2],
                                 fill_alpha=0.2, fill_color='red')
             mainplot.add_layout(box)
 
     # plot first average precision to have it in the background
-    if has_precision:
+    if plot_data['has_preci']:
         # add errorbars
         mainplot.add_layout(Whisker(source=error_source, base="date", upper="upper", lower="lower",
                                     line_width=0.5))
@@ -150,20 +117,20 @@ def get_bokeh_std_fullres(db_data: dict, size: list, label: str = "") -> object:
     return {'script': script, 'div': div}
 
 
-def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
+def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object:
     """
 
-    :param db_data: data result from DB_load_data_avg
+    :param plot_data: pandas dataframe to plot
     :param size:
     :param label:
     :return:
     """
-    plot_data = prepare_data(db_data)
+    # plot_data = fill_data_gaps(db_data)
 
     stepsize = plot_data['stepsize']
     has_precision = plot_data['has_precision']
     nan_in_data = plot_data['nan_in_data']
-    source = ColumnDataSource(plot_data['source'])
+    source = ColumnDataSource(plot_data['df'])
     error_source = ColumnDataSource(plot_data['error_source'])
     # missing_source = ColumnDataSource(plot_data['missing_data'])
 
@@ -192,7 +159,7 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
-        mainplot.line(x='defect_x', y='defect_y', source=source,
+        mainplot.line(x='tstamp', y='value', source=source,
                       line_width=2, line_color='white', line_cap='round')
 
     # plot first average precision to have it in the background
@@ -205,7 +172,7 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
                       legend_label="Average precision")
 
     # plot bars for the number of values in each group as secondary 'by'plot
-    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=db_data['axis']['y2max'])
+    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=plot_data['axis']['y2max'])
     bin_width = stepsize
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of available values per day', size[0])
     distriplot.x_range = mainplot.x_range
@@ -220,36 +187,34 @@ def get_bokeh_standard(db_data: object, size: list, label: str = "") -> object:
     return {'script': script, 'div': div}
 
 
-def direction_plot(db_data, ti):
+def direction_plot(dataframe: object, ti: str) -> object:
+    """
+
+    :param dataframe: pandas dataframe
+    :param ti: string defining 'week', 'month'...
+    :return:
+    """
     # use data in percent => transform db_data to percent
-    pct_data = []
-    for tc in range(0, len(db_data)):  # 4
-        all_direct = db_data[tc][1]
-        datalist = [db_data[tc][0], all_direct]
-        for single_bin in range(2, len(db_data[tc])):
-            datalist.append(db_data[tc][single_bin] * 100 / all_direct)
-        pct_data.append(tuple(datalist))
+    df = (dataframe.transpose().iloc[2:, 0:] / dataframe['sum']) * 100
+    df.columns = dataframe['tstamp']
 
-    db_datadict = {item[0]: item[2:] for item in pct_data}
-    df = pd.DataFrame(db_datadict)
-    db_datadictstr = {str(int(time.mktime(item[0].timetuple()) * 1000)): list(item[2:]) for item in pct_data}
+    db_datadictstr = {str(int(time.mktime(item.timetuple()) * 1000)): list(df[item]) for item in df.columns}
 
-    hist = [0] * 36
-    maxlist = [0] * 36
-    data_list = list(zip(*(pct_data)))
+    maxlist = df.max(1)
+    hist = df.mean(1)
 
-    for i in range(2, len(data_list)):
-        hist[i - 3] = mean(data_list[i])
-        maxlist[i - 3] = max(data_list[i])
-
+    # maxhist = sorted(maxlist)[-3]
     maxhist = mean(maxlist) * 0.8  # don't use real max of dataset, too many discordant values
     sumhist = sum(hist)
     start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     end = [-radians((i * 10) - 75) for i in list(range(0, 36))]
     pdstart = [-radians((i * 10) - 95) for i in list(range(0, 36))]
-    pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
+    pdend = start
+    # pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     labeltext = ("Selection of " + ti + "ly histograms")
     titletext = (ti + 'ly median and sum of all histograms').capitalize()
+
+    # need two different sources for callback in Bokeh
     pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
     jssource = ColumnDataSource(data=db_datadictstr)
 
@@ -342,36 +307,15 @@ def direction_plot(db_data, ti):
     mainplot.legend.location = "top_left"
     mainplot.legend.click_policy = "hide"
 
-    allcounts = [i[1] for i in db_data]
-    alldates = [i[0] for i in db_data]
-
     # plot bars for the number of values in each group as secondary 'by' plot
-    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(allcounts))
-    bin_width = db_data[0][0] - db_data[1][0]
-    source = ColumnDataSource({'date': alldates, 'count': allcounts})
+    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(dataframe['sum']))
+    bin_width = df.columns[0]-df.columns[1]
+
+    source = ColumnDataSource({'date': dataframe['tstamp'], 'count': dataframe['sum']})
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
 
     script, div = components(column(distriplot, mainplot, slider, rslider), wrap_script=False)
     return {'div': div, 'script': script}
-
-
-def __DB_load_directiondata(id, ti):
-    # TODO: Use django ORM instead of pure sql
-    cursor = connections['default'].cursor()
-    # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
-    sum_string = ""
-    for i in range(1, 36):
-        sum_string += "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = %i ) as b%i," % (i, i)
-
-    cursor.execute("SELECT date_trunc('%s', tstamp)::date as date, count(*), "
-                   "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = 0 "
-                   "or trunc(((value)+5)/10)::smallint = 36) as b0, %s "
-                   "from tbl_data where meta_id = %s "
-                   "group by date_trunc('%s', tstamp);" % (ti, sum_string[:-1], id, ti))
-
-    dbresult = cursor.fetchall()
-    cursor.close()
-    return dbresult
 
 
 def timeseries_plot(data, size):
@@ -453,7 +397,7 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     return p
 
 
-def check_cache(cache_obj: dict) -> tuple:
+def get_cache(cache_obj: dict) -> tuple:
     """
     Check if redis is used to cache images, and if image 'name' is cached.
     Return state of redis, if image in cache and image if it is in cache.
@@ -476,204 +420,108 @@ def check_cache(cache_obj: dict) -> tuple:
     return cache_obj, img
 
 
-def get_fullres_plot(id: str, size: list = [700, 500]) -> dict:
+def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 500]) -> dict:
     """
     Check if plot is stored with redis or build a new one with Bokeh.
     Bokeh builds an object with 'script' and 'div'. Redis stores this as string, which is fine, as
     the data is send to the website as string anyways.
 
-    :param id: Entry id in metacatalog
+    :param ID: Entry id in metacatalog
+    :param full_res: Boolean to set if plot should be of full dataset
+    :param date:
     :param size:
     :return: Bokeh image consisting of 'script' and 'div'
     """
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size))}
-    cache_obj, img = check_cache(cache_obj)
+                 'in_cache': False, 'name': "plot_{}".format('b' + str(ID) + str(size) + str(date))}
+    cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
-        label = __DB_load_label(id)
-        db_data = __DB_load_data(id)
-        img = get_bokeh_std_fullres(db_data, size, label)
-        if cache_obj['use_redis']:
-            cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
-    return img
-
-
-def get_preview(id: str, size=[700, 500]):
-    """
-    Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
-
-    :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
-    :param size: size of resulting plot [width, height]
-    :type size: list
-    :return: html ready to render
-    """
-    try:
-        wps_result = True if 'wps' in id[0:3] else False
-    except:
-        wps_result = False
-
-    imgname = "preview_{}".format('b' + str(id) + str(size))
-    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': imgname}
-    cache_obj, img = check_cache(cache_obj)
-
-    if not cache_obj['in_cache'] and not wps_result:
-        label = __DB_load_label(id)
+        label = __DB_load_label(ID)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            db_data = __DB_load_directiondata(id, ti)
+            db_data, ti = __DB_load_directiondata(ID, ti, date, full_res)
+            # plot_data = fill_data_gaps(db_data)
             img = direction_plot(db_data, ti)
         else:
-            db_data = __DB_load_data_avg(id)
-            img = get_bokeh_standard(db_data, size, label)
+        #             db_data = __DB_load_data_avg(id)
+        #             db_data = __get_axis_limits(db_data)
+        #             img = get_bokeh_standard(db_data, size, label)
+        # get data
+            db_data = __DB_load_data(ID, date, full_res)
+            if db_data['has_preci']:
+                db_data['df'] = precision_to_minmax(db_data['df'])
+            plot_data = fill_data_gaps(db_data)
+            # prepare plot
+            plot_data = __get_axis_limits(plot_data)
+            img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
 
         if cache_obj['use_redis']:
-            r = cache_obj['redis']
-            r.set(imgname, img)
-
-    if wps_result:
-        DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
-        try:
-            if 'pickle' in DBstring[1]:
-                df = pd.read_pickle(DBstring[2])
-                if 'ts-pickle' in DBstring[1]:
-                    img = timeseries_plot(df, size)
-                elif DBstring[1] == 'pickle':
-                    img = xyplot(df, size)
-            elif DBstring[1] == 'image':
-                try:
-                    file = open(DBstring[2], mode='r')
-                    htmlimg = file.read()
-                    file.close()
-                except FileNotFoundError:
-                    print('Error: Can not load your image')
-                    htmlimg = 'Error: Can not load your image'
-                img = {'html': htmlimg}
-            else:
-                print('Error: Con not plot. Unknown type')
-
-        except FileNotFoundError:
-            print('The data file %s was not found.' % (DBstring[2]))
+            cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
 
     return img
 
-
-def prepare_data(db_data: object):
-    """
-    Fill gaps in datasets and prepare for
-
-    :param db_data:
-    :return:
-    """
-    # use first five time steps to estimate resolution/step size of data
-    stepsize = []
-    steps = 0
-    error_source = {}
-    missing_data = {}
-
-    while steps < 5:
-        stepsize.append(db_data['data'][0][steps + 1] - db_data['data'][0][steps])
-        steps += 1
-
-    # check if data is continuous. If not write position of missing values in noDataPos
-    stepsize = min(stepsize)
-    datalength = len(db_data['data'][0])
-    noDataPos = []
-    for steps in range(1, datalength):
-        if db_data['data'][0][steps] - db_data['data'][0][steps - 1] > stepsize:
-            noDataPos.append(steps - 1)
-
-    # check if dataset has values for precision
-    has_precision = True
-    num_datacolumns = len(db_data['data'])
-    if num_datacolumns == 8:  # avg and error data
-        precision_data = [5, 6, 7]
-    elif num_datacolumns == 5:  # avg data
-        has_precision = False
-    elif num_datacolumns == 3:  # full data and error
-        precision_data = [2]
-    elif num_datacolumns == 2:  # full data without error
-        has_precision = False
-    else:
-        print('ERROR from "prepare_data()": Unknown data structure.')
-
-    nan_in_data = False
-
-    # To get a discontinuous line add 'nan' when a time step is missing.
-    if len(noDataPos) > 0:
-        nan_in_data = True
-        defect_x = []
-        defect_y = []
-        if num_datacolumns >= 5:  # if preview with average, min, max  values
-            for pos in noDataPos[::-1]:
-                db_data['data'][0] = db_data['data'][0][: pos + 1] + \
-                                     (db_data['data'][0][pos] + stepsize,
-                                      db_data['data'][0][pos + 1] - stepsize,) + \
-                                     db_data['data'][0][pos + 1:]
-                db_data['data'][1] = db_data['data'][1][: pos + 1] + (float('nan'), float('nan'),) + \
-                                     db_data['data'][1][pos + 1:]
-                bandbef = (db_data['data'][2][pos] + db_data['data'][3][pos]) / 2
-                bandaft = (db_data['data'][2][pos + 1] + db_data['data'][3][pos + 1]) / 2
-                db_data['data'][2] = db_data['data'][2][: pos + 1] + (bandbef, bandaft,) + db_data['data'][2][
-                                                                                           pos + 1:]
-                db_data['data'][3] = db_data['data'][3][: pos + 1] + (bandbef, bandaft,) + db_data['data'][3][
-                                                                                           pos + 1:]
-                db_data['data'][4] = db_data['data'][4][: pos + 1] + (0, 0,) + db_data['data'][4][pos + 1:]
-                # white_line = white_line[: pos + 1] + (bandbef, bandaft,) + white_line[pos + 1:]
-                defect_x.extend([db_data['data'][0][pos] - stepsize, db_data['data'][0][pos],
-                                 db_data['data'][0][pos + 3], db_data['data'][0][pos] + stepsize])
-                defect_y.extend([float('nan'), db_data['data'][1][pos],
-                                 db_data['data'][1][pos + 3], float('nan'), ])
-            source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1],
-                      'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
-                      'count': db_data['data'][4]})
-            missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
-        else:  # if full dataset, without average, min, max values
-            for pos in noDataPos[::-1]:
-                db_data['data'][0] = db_data['data'][0][: pos + 1] + \
-                                     (db_data['data'][0][pos] + stepsize,
-                                      db_data['data'][0][pos + 1] - stepsize,) + \
-                                     db_data['data'][0][pos + 1:]
-                db_data['data'][1] = db_data['data'][1][: pos + 1] + (float('nan'), float('nan'),) + \
-                                     db_data['data'][1][pos + 1:]
-                defect_x.extend([db_data['data'][0][pos] - stepsize, db_data['data'][0][pos],
-                                 db_data['data'][0][pos + 3], db_data['data'][0][pos] + stepsize])
-                defect_y.extend([float('nan'), db_data['data'][1][pos],
-                                 db_data['data'][1][pos + 3], float('nan'), ])
-            source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1]})
-            missing_data = pd.DataFrame({'defect_x': defect_x, 'defect_y': defect_y})
-
-    # no missing values but min, max, average values
-    elif len(db_data) > 2:
-        source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1],
-                               'ymin': db_data['data'][2], 'ymax': db_data['data'][3],
-                               'count': db_data['data'][4]})
-    # no missing values and no min, max, average values
-    elif len(db_data) <= 2:
-        source = pd.DataFrame({'date': db_data['data'][0], 'y': db_data['data'][1]})
-
-    # if precission values:
-    if has_precision:
-        for pos in noDataPos[::-1]:
-            for p_set in precision_data:
-                db_data['data'][p_set] = db_data['data'][p_set][: pos + 1] + (float('nan'), float('nan'),) + \
-                                         db_data['data'][p_set][pos + 1:]
-        if len(precision_data) > 1:
-            data = np.array(db_data['data'][1], dtype=np.float)
-            lower_error = tuple(subtract(data, np.array(db_data['data'][7], dtype=np.float)))
-            upper_error = tuple(add(data, np.array(db_data['data'][7], dtype=np.float)))
-            low_avg_error = tuple(subtract(data, np.array(db_data['data'][5], dtype=np.float)))
-            up_avg_error = tuple(add(data, np.array(db_data['data'][5], dtype=np.float)))
-            error_source = pd.DataFrame({'date': db_data['data'][0],
-                                         'upper': upper_error, 'lower': lower_error,
-                                         'upper_avg': up_avg_error, 'lower_avg': low_avg_error})
-        else:
-            data = np.array(db_data['data'][1], dtype=np.float)
-            lower_error = tuple(subtract(data, np.array(db_data['data'][2], dtype=np.float)))
-            upper_error = tuple(add(data, np.array(db_data['data'][2], dtype=np.float)))
-            error_source = pd.DataFrame({'date': db_data['data'][0],
-                                         'upper': upper_error, 'lower': lower_error})
-
-    return {'stepsize': stepsize, 'has_precision': has_precision, 'nan_in_data': nan_in_data,
-            'source': source, 'error_source': error_source, 'missing_data': missing_data}
+#
+# def get_preview(id: str, date: list, size=[700, 500]):
+#     """
+#     Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
+#
+#     :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
+#     :param size: size of resulting plot [width, height]
+#     :type date: list
+#     :type size: list
+#     :return: html ready to render
+#     """
+#     # id = 2657 # small test dataset
+#     try:
+#         wps_result = True if 'wps' in id[0:3] else False
+#     except:
+#         wps_result = False
+#
+#     imgname = "preview_{}".format('b' + str(id) + str(size) + str(date))
+#     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+#                  'in_cache': False, 'name': imgname}
+#     cache_obj, img = get_cache(cache_obj)
+#
+#     if not cache_obj['in_cache'] and not wps_result:
+#         label = __DB_load_label(id)
+#         if label.find('direction') != -1:
+#             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
+#             db_data = __DB_load_directiondata(id, ti)
+#             plot_data = fill_data_gaps(db_data)
+#             # img = get_bokeh_standard(db_data, label)
+#             img = direction_plot(plot_data, ti)
+#         else:
+#             db_data = __DB_load_data_avg(id)
+#             db_data = __get_axis_limits(db_data)
+#             img = get_bokeh_standard(db_data, size, label)
+#
+#         if cache_obj['use_redis']:
+#             r = cache_obj['redis']
+#             r.set(imgname, img)
+#
+#     if wps_result:
+#         DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
+#         try:
+#             if 'pickle' in DBstring[1]:
+#                 df = pd.read_pickle(DBstring[2])
+#                 if 'ts-pickle' in DBstring[1]:
+#                     img = timeseries_plot(df, size)
+#                 elif DBstring[1] == 'pickle':
+#                     img = xyplot(df, size)
+#             elif DBstring[1] == 'image':
+#                 try:
+#                     file = open(DBstring[2], mode='r')
+#                     htmlimg = file.read()
+#                     file.close()
+#                 except FileNotFoundError:
+#                     print('Error: Can not load your image')
+#                     htmlimg = 'Error: Can not load your image'
+#                 img = {'html': htmlimg}
+#             else:
+#                 print('Error: Con not plot. Unknown type')
+#
+#         except FileNotFoundError:
+#             print('The data file %s was not found.' % (DBstring[2]))
+#
+#     return img

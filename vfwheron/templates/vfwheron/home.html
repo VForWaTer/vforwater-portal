@@ -5,6 +5,7 @@
 
 {% extends "vfwheron/base.html" %}
 {% load static %}
+{% load i18n %}
 
 {% block sidebar %}
 	{% include 'vfwheron/base_sidebar.html' %}
@@ -13,8 +14,10 @@
 {% block content %}
    <!-- Tab links -->
 <div class="tab">
-  <button class="tablinks" onclick="toggleMapTable(event, 'Map')" id="defaultMapTab">Map</button>
-  <button class="tablinks" onclick="toggleMapTable(event, 'paginationTable'); filter_pagination()">Table</button>
+  <button class="tablinks" onclick="toggleMapTableFilter(event, 'Map')" id="defaultMapTab">{% trans "Map" %}
+  </button>
+  <button class="tablinks" onclick="toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Table" %}
+  </button>
 </div>
 
 <!-- Tab content -->

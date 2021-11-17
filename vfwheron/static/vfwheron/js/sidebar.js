@@ -142,6 +142,8 @@ function preload_datastore_button(workspaceData) {
             // run_wps(preload)
             $.ajax({
                 url: DEMO_VAR + "/workspace/dbload",
+                // dataType: 'json',
+                "timeout": 5000,
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
                 }, /** data sent with post request **/
@@ -197,13 +199,16 @@ function update_datastore_button(wpsDBInfo) {
         storageEntry['unit'], wpsDBInfo['id'].substring(3,))
     let title = `${storageEntry['name']} (${storageEntry['abbr']} in ${storageEntry['unit']})`;
     let button = document.getElementById('sidebtn' + wpsDBInfo['orgid'])
+    let parent = document.getElementById('sidebtn' + wpsDBInfo['orgid']).parentElement
 
     if (wpsDBInfo['id'].substring(0, 3) == 'wps') {
         storageEntry.source = wpsDBInfo['id'].substring(0, 3)
         storageEntry.dbID = wpsDBInfo['id'].substring(3,)
         storageEntry.inputs = wpsDBInfo['inputs']
     }
-    button.innerHTML = sidebar_btn_html(wpsDBInfo['id'].substring(3,),
+    button.remove();
+    // parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'].substring(3,),
+    parent.innerHTML += sidebar_btn_html(datasetKey,
         storageEntry, btnName, title)
     workspaceData[datasetKey] = storageEntry
 
@@ -241,6 +246,7 @@ function remove_single_data(removeData) {
 
     /** remove data from session: **/
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+
     delete workspaceData[removeData];
     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
     sessionStorageData = workspaceData
@@ -301,7 +307,7 @@ function getPosition(e) {
     var posx = 0;
     var posy = 0;
 
-    if (!e) var e = window.event;
+    if (!e) var e = window["event"];
 
     if (e.pageX || e.pageY) {
         posx = e.pageX;
@@ -539,7 +545,12 @@ function menuItemListener(link) {
     let service = {};
     let id = taskItemInContext.getAttribute("data-id");
     let btnName = taskItemInContext.getAttribute('btnname');
-
+    let store = taskItemInContext.getAttribute('data-sessionstore');
+    let item = JSON.parse(sessionStorage.getItem(store))[btnName];
+    if (!item) {
+        btnName = taskItemInContext.getAttribute('data-orgid');
+        item = JSON.parse(sessionStorage.getItem(store))[btnName];
+    }
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
     popup.classList.add(popActive);
@@ -654,31 +665,80 @@ function menuItemListener(link) {
             positionPopup(popup);
             break;
         case "Plot":
-            $.ajax({
-                url: DEMO_VAR + "/home/previewplot",
-                datatype: 'json',
-                data: {
-                    preview: id,
-                    'csrfmiddlewaretoken': csrf_token,
-                }, // data sent with post
-            })
-                .done(function (requestResult) {
+            console.log('item: ', item)
+            console.log('id: ', id)
+            let urlParams = new URLSearchParams(window.location.search);
+            let startdate, enddate;
+            let date = urlParams.getAll('date');
 
-                    if ('html' in requestResult) {
-                        document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
-                    } else {  // plot from bokeh
-                        sessionStorage['Bokeh'] = JSON.stringify(requestResult);
-                        place_bokeh("mod_result", requestResult)
-                    }
-                    let rModal = document.getElementById("resultModal");
-                    rModal.style.display = "block";
+            if ($.isEmptyObject(date)) {
+                startdate = 'None'
+                enddate = 'None'
+            } else {
+                startdate = date[0].toString();
+                enddate = date[1].toString();
+            }
+            if (item.type == 'figure') {
+                // document.getElementById("pop-content-side").innerHTML = item.outputs; // add plot
+                document.getElementById("mod_result").innerHTML = item.outputs; // add plot
+                let rModal = document.getElementById("resultModal");
+                rModal.style.display = "block";
+                popup.classList.remove(popActive);
+                modalToggleSize.style.display = "none";
+                // modalToggleSize.hidden = true;
+            }
+                // TODO: Add Names on lines in Plot needs modification in wps or another database entry
+                // let allBtns = JSON.parse(sessionStorage['resultBtn'])
+                // let inputs = allBtns[btnName].inputs
+                // let btnNames = []
+                // $.each(inputs, function (key, value) {
+                //     if (typeof value === "object"){
+                //         for (let singleValue of value){
+                //             $.each(allBtns, function(key, value) {
+                //                 if (String(value.wpsID) == singleValue.substr(5)) {
+                //                     btnNames.push(key)
+                //                 }
+                //             })
+                //         }
+                //     }
+            // })
+
+            else {
+                // get bokeh plot from django
+                $.ajax({
+                    url: DEMO_VAR + "/home/previewplot",
+                    datatype: 'json',
+                    data: {
+                        preview: id,
+                        'csrfmiddlewaretoken': csrf_token,
+                        startdate: startdate,
+                        enddate: enddate,
+                    }, // data sent with post
                 })
-                .fail(function (e) {
-                    console.error('Fehler: ', e)
-                })
-                .always(function () {
-                    popup.classList.remove(popActive);
-                })
+                    .done(function (requestResult) {
+                        // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
+                        // content.innerHTML = result.div;
+                        // let bokehResultScript;
+                        console.log('make a previewplot')
+                        if ('html' in requestResult) {
+                            document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
+                        } else {  // plot from bokeh
+                            // sessionStorage['Bokeh'] = 'true';
+                            bokehImage = requestResult;
+                            place_html_with_js("mod_result", requestResult)
+                        }
+                        // popClose.classList.remove('w3-hide');
+                        // positionPopup(popup);
+                        let rModal = document.getElementById("resultModal");
+                        rModal.style.display = "block";
+                    })
+                    .fail(function (e) {
+                        console.error('Fehler: ', e)
+                    })
+                    .always(function () {
+                        popup.classList.remove(popActive);
+                    })
+            }
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});

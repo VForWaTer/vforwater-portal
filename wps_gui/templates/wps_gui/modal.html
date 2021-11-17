@@ -12,7 +12,7 @@
   <!-- Modal content -->
   <div class="wps-modal-content" style="padding-left: 10px; padding-right: 10px; ">
     <div class="modal-header" id="modal-header" style="margin-left: -10px; margin-right: -10px;">
-      <span class="work_close">&times;</span>
+      <span class="fa fa-close fa-lg work_close modal-btn" title="{% trans "Close window" %}"></span>
       <h3 id="mod_head"></h3>
     </div>
     <p id="mod_abs" class="modal-abstract"></p>
@@ -21,11 +21,12 @@
     <hr>
     <h4>Output</h4>
     <div id="mod_out"></div>
-    <p align="right"><em>(*) = required </em></p>
+    <p align="right"><em>(*) = {% trans "required" %}</em></p>
     <div class="modal-footer" id="modal-footer" style="margin-left: -10px; margin-right: -10px;">
-      <span-c class="work_modal-cancel">Cancel</span-c>
-      <span-ok class="work_modal-ok">Ok</span-ok>
-      <span-r class="work_modal-run">Run</span-r>
+      <span-c class="work_modal-cancel modal-btn" title="{% trans "Close window" %}">Cancel</span-c>
+      <span-ok class="work_modal-ok modal-btn" title="{%  trans "Place tool in Dropzone." %}">Ok</span-ok>
+      <span-r class="work_modal-run modal-btn">Run</span-r>
+      <span-out class="work_modal-output" style="display: none">{%  trans "View result" %}</span-out>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
       <h3></h3>
     </div>
@@ -94,10 +95,10 @@
   wspan.onclick = () => closeModal();
   wspan_r.onclick = () => {
     {#modal.style.display = "none";#}
-    if (check_required(modal) && check_pattern(modal)) modal_run_process()
+    if (is_required(modal) && check_pattern(modal)) modal_run_process()
   };
-  wspan_ok.onclick = () => {
-    if (check_required(modal) && check_pattern(modal)) drop_and_save();
+  wspan_ok.onclick = (event) => {
+    if (is_required(modal) && check_pattern(modal)) drop_on_click(event);
     closeModal();
   };
   wspan_c.onclick = () => {
@@ -109,8 +110,9 @@
   };
 
   function closeModal() {
+    document.getElementsByClassName("work_modal-output")[0].style.display = "none";
     modal.style.display = "none";
-    color_modal("dodgerblue")
+    set_modalColor("dodgerblue")
   }
 
 

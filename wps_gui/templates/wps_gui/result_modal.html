@@ -18,14 +18,14 @@
 {#    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.1.min.js"></script>#}
 </head>
 <body>
-<div id="resultModal" class="w3-modal">
+<div id="resultModal" class="w3-modal" style="z-index: 10">
 
   <!-- Modal content -->
   <div id="resultModal-content" class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">
 {#  <div class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">#}
     <div class="result_modal-header" id="result_modal-header" style="margin-left: -10px; margin-right: -10px;">
-      <i class="fa fa-close fa-lg close" title="Close" style="cursor: pointer; position: relative; top: 7px;"></i>
-      <i class="fa fa-expand fa-lg togglefullscreen" title="Toggle fullscreen"
+      <i class="fa fa-close fa-lg close" title="{% trans "Close window" %}" style="cursor: pointer; position: relative; top: 7px;"></i>
+      <i class="fa fa-expand fa-lg togglefullscreen" title="{% trans "Toggle fullscreen" %}"
          style="cursor: pointer; position: relative; top: 8px; left: 4px;"></i>
       <h3 id="result_mod_head"></h3>
     </div>
@@ -39,7 +39,7 @@
 {#      </tr>#}
 {#    </table>#}
     <div class="result_modal-footer" id="result_modal-footer" style="margin-left: -10px; margin-right: -10px;">
-      <span-b class="result_modal-close">{% trans "Close" %}</span-b>
+      <span-b class="result_modal-close modal-btn">{% trans "Close" %}</span-b>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
       <h3></h3>
     </div>
@@ -69,10 +69,15 @@
 
   function close_result_Modal() {
     rModal.style.display = "none";
-    bokehResultScript.parentNode.removeChild(bokehResultScript);
     {#document.getElementById("resultModal-content").style.width = "initial";#}
     reset_Modal("resultModal-content", modalToggleSize)
-    sessionStorage.removeItem('Bokeh')
+    if (modalToggleSize.style.display === "none") {
+      modalToggleSize.style.display = "block";
+    }
+    if (bokehImage) {
+      bokehResultScript.parentNode.removeChild(bokehResultScript);
+      bokehImage = false;
+    }
   }
 
   function toggle_Modal_size() {
@@ -83,7 +88,8 @@
     } else {
       reset_Modal("resultModal-content", modalToggleSize)
     }
-    place_bokeh("mod_result", JSON.parse(sessionStorage['Bokeh']))
+    place_html_with_js("mod_result", bokehImage)
+    {#place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
   }
 
   function reset_Modal(modalID, toggleElement) {

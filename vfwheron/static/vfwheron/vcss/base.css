@@ -27,7 +27,6 @@ form.w3-hover-white {margin: 0px}
 a.w3-hover-blue{padding: 0px}
 @media screen and (min-width: 993px) {.w3-navbar {padding-left: 300px;}}
 @media screen and (max-width: 992px) {.w3-navbar {padding-left: 0px;}}
-#filterbox, #select_catchment {display: block;}
 /*.w3-dropdown-hover {.w3-navbar {overflow: visible }}*/
 .w3-dropdown-content {min-width: 200px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
 

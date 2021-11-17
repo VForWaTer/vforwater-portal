@@ -17,10 +17,10 @@
     <a href="{% url 'vfwheron:home' %}" class="w3-hover-blue"><i class="fa fa-home fa-fw"></i>{% trans "  Home" %}</a>
     <a href="{% url 'wps_gui:home' %}" class="w3-hover-blue"><i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}
     </a>
-    <a href="{% url 'heron_monitor:home' %}" class="w3-hover-blue"><i
-            class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>
-    <a href="{% url 'heron_visual:home' %}" class="w3-hover-blue"><i
-            class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a>
+    {% comment %}<a href="{% url 'heron_monitor:home' %}" class="w3-hover-blue"><i
+            class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>{% endcomment %}
+    {% comment %}<a href="{% url 'heron_visual:home' %}" class="w3-hover-blue"><i
+            class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a>{% endcomment %}
     <div class="w3-dropdown-hover w3-transparent">
       <a class="w3-hover-blue ">
         <i class="fa fa-external-link fa-fw"></i>{% trans "  Help" %}<i class="fa fa-caret-down fa-fw"></i>
@@ -28,7 +28,7 @@
           <a href="{% url 'vfwheron:help' %}" class="w3-hover-blue">
             <i class="fa fa-book fa-fw"></i>{% trans "  Portal Help" %}
           </a>
-          <a target="_blank" href="http://vforwater.de" style="text-decoration:none" class="w3-hover-blue">
+          <a target="_blank" href="https://vforwater.de" style="text-decoration:none" class="w3-hover-blue">
             <i class="fa fa-sitemap fa-fw"></i>{% trans "  Web Site" %}
           </a>
           <a target="_blank" href={{ VFW_SERVER|add:"/doc" }} style="text-decoration:none" class="w3-hover-blue">

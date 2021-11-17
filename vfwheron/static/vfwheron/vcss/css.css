@@ -65,24 +65,25 @@ iframe {
 }
 
 .modal-back:hover, .modal-back:focus,
-.result_modal-close:hover, .result_modal-close:focus,
-.work_modal-cancel:hover, .work_modal-cancel:focus,
-.work_modal-run:hover, .work_modal-run:focus,
-.work_modal-ok:hover, .work_modal-ok:focus{
+.work_modal-output:hover, .work_modal-output:focus,
+.modal-btn:hover, modal-btn:focus{
     color: #000;
     text-decoration: none;
     cursor: pointer;
 }
 
-.result_modal-close,
-.work_modal-cancel, .work_modal-run, .work_modal-ok{
-  color: white;
-  float: right;
-  font-size: 20px;
+.modal-btn, .work_modal-output{
+    color: white;
+    float: right;
+    font-size: 20px;
     padding-top:2px;
     padding-bottom: 2px;
     padding-left: 12px;
   /*font-weight: bold;*/
+}
+
+.work_modal-output {
+    float: left;
 }
 
 .modal-header {
@@ -213,17 +214,17 @@ button-footer {
 }
 
 
-.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
+/*.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
 .ndarray:hover, .raster:hover, .vraster:hover, ._2darray:hover, .idataframe:hover, .vdataframe:hover,
 .time-dataframe:hover, .vtime-dataframe:hover,
 .string:hover, .list:hover, .integer:hover, .positiveInteger:hover, .dateTime:hover,
 .boolean:hover, .float:hover, .plot:hover, .html:hover,
 .figure:hover, .image:hover {
-/*    height: 200%;
-    width: 200%;*/
-    transform: scale(2);
+!*    height: 200%;
+    width: 200%;*!
+    transform: scale(2, 2);
     vertical-align: text-bottom;
-}
+}*/
 
 .left-hemisphere {
     margin: 5px;
@@ -348,6 +349,9 @@ input:checked + .toggleslider:before {
 
 .pagination {
   display: inline-block;
+}
+.pagination div {
+  position: center;
 }
 .pagination a {
   float: left;

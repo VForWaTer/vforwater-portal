@@ -17,13 +17,13 @@
 {#  used to add styles for filter menu  #}
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/filter.css' %}">
 {#  used to style filter menu    #}
-    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/jquery-ui.min.css' %}">
+{#    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/jquery-ui.min.css' %}">#}
 {#    nouislider.css needed for slider:  #}
-    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/nouislider.css' %}">
+{#    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/nouislider.css' %}">#}
 {#    jquery-ui.min.js needed for accordion:  #}
-    <script src="{% static 'vfwheron/js/jquery-ui.min.js' %}"></script>
+{#    <script src="{% static 'vfwheron/js/jquery-ui.min.js' %}"></script>#}
 {#    nouislider.min.js needed for slider:  #}
-    <script src="{%  static 'vfwheron/js/nouislider.min.js' %}"></script>
+{#    <script src="{%  static 'vfwheron/js/nouislider.min.js' %}"></script>#}
 
 {#    TODO: Download the following files when you want to use : http://www.daterangepicker.com/#}
 {#    Alternative evtl: http://amsul.ca/pickadate.js/time/#}
@@ -48,17 +48,29 @@
             onclick="draw_polygon()" id="toggle_draw" title={% trans "Click&#32here&#32to&#32draw&#32the&#32area&#32you&#32want&#32to&#32filter." %}>{% trans "Draw SELECTION area" %}</h5>
     </div>{% endcomment %}
 <div class="tab">
-  <button class="filter-tablinks" onclick="toggleFilter(event, 'quickFilter')" id="defaultFilterTab">Quick</button>
-  <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()">Advanced</button>
+{% comment %}  <button class="filter-tablinks" onclick="toggleFilter(event, 'quickFilter')" id="defaultFilterTab"
+  title="{% trans "Quick update of results on each click event"%}">{% trans "Quick"%}</button>{% endcomment %}
+  <button class="filter-tablinks" onclick="toggleMapTableFilter(event, 'quickFilter', true)"
+  title="{% trans "Set attributes and click on search to update results"%}">{% trans "Quick" %}</button>
+  {% comment %}
+  <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()"
+  title="{% trans "Set attributes and click on search to update results"%}">{% trans "Advanced" %}</button>{% endcomment %}
+  <button class="filter-tablinks" onclick="drawOnMapMenu(event)"
+  title="{% trans "Click here to select from drawing"%}">{% trans "Draw" %}</button>
 </div>
 
+<div id="quickFilter" class="filter-tabcontent">
+  {% include 'vfwheron/quick_filter.html' %}
+{#  {% block advanced_filter %}#}
+{#  {% endblock %}#}
+</div>
 <div id="advancedFilter" class="filter-tabcontent">
 {#  {% include 'vfwheron/advanced_filter.html' %}#}
 {#  {% block advanced_filter %}#}
 {#  {% endblock %}#}
 </div>
 
-<div id="quickFilter" class="filter-tabcontent">
+{% comment %}<div id="quickFilter" class="filter-tabcontent">
     {#    new accordion#}
     <div class="container">
         <div class="panel-group" id="accordion">
@@ -74,7 +86,7 @@
                 onclick="reset_filter()" value={% trans "Reset&#32filter&#32menu" %} data-toggle="tooltip"
                 title={% trans "Remove&#32selection&#32from&#32filter&#32menu." %}></b>
         </a>
-  </div>
+  </div>{% endcomment %}
 </body>
 
 <script>
@@ -83,7 +95,7 @@
 var jsonMenu = "{{ Filter_Menu|escapejs }}";
 var unblockedIds = "{{ unblocked_ids }}";
 // Get the element with id="defaultMapTab" and click on it
-document.getElementById("defaultFilterTab").click();
+{#document.getElementById("defaultFilterTab").click();#}
 
 let test = "{{ test|escapejs }}"
 </script>

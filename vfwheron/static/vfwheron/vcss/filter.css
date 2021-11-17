@@ -180,39 +180,6 @@ When this is used on the map, you can remove the popup at the end of ol.css*/
 }
 
 
-/*from here definitions for the new menu*/
-/**** Accordion ****/
- /* Style the buttons that are used to open and close the accordion panel */
-.new_accord {
-    background-color: white;
-    color: #444;
-    cursor: pointer;
-    padding: 8px;
-    width: 100%;
-    text-align: left;
-    border: none;
-    outline: none;
-    transition: 0.2s;
-}
-
-/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-.active, .new_accord:hover {
-    background-color:  dodgerblue;
-    color: white;
-}
-
-/* Style the accordion panel. Note: hidden by default */
-.panel {
-    padding: 0 18px;
-    background-color: white;
-    overflow: hidden;
-    /*remove display for animated accordion:*/
-    /*display: none;*/
-    /*to use for animated accordion:*/
-    max-height: 0;
-    transition: max-height 0.2s ease-out;
-}
-
 /**** Range Slider ****/
 /* Style for range slider from https://refreshless.com/nouislider/examples/ */
     #input-select,
@@ -454,22 +421,6 @@ div.ui-rangeslider label {
    cursor: move;
   }
 
-#draw_polygon,#modify_polygon, #select_polygon, #remove_polygon{
-    width: 6px;
-    height: 6px;
-background:rgba(0, 60, 136, .55);
-border-radius: 4px;
-padding: 3px;
-    color: white;
-}
-.draw-hover:hover{
-background:rgba(0, 60, 136, .9)!important;
-}
-#filterbox{
-border-radius: 4px;
-padding: 2px;
-}
-
 .activeM {
     background-color: rgba(0, 60, 136, .9)!important;
 }
@@ -527,4 +478,42 @@ thead th, tbody th {
 .outerPaginationTable td:nth-child(5),
 .innerPaginationTable td:nth-child(5){
     width:15%;
+}
+
+
+ /* Style the button that is used to open and close the collapsible content */
+.collapsible {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 8px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .collapsible:hover {
+  background-color: #ccc;
+}
+
+/* Style the collapsible content. Note: hidden by default */
+.content {
+  padding: 0 8px;
+  display: none;
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+/* Add a + and - if collapsible is open or closed */
+.collapsible:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: white;
+  float: right;
+  margin-left: 5px;
+}
+.openElement:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
 }

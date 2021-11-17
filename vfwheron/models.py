@@ -10,21 +10,34 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
+from django.db.models import Q
+from django.http import QueryDict
+from django.utils.translation import gettext, gettext_lazy
 
 
 # TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
 #  explanation
 
+# TODO: Models are read at startup. To get translations later when the project is running
+#  make translations lazy.
+#  https://simpleisbetterthancomplex.com/tips/2016/10/17/django-tip-18-translations.html
+
+
+# class DjangoMigrations(models.Model):
+#     """
+#
+#     """
+#     app = models.CharField(max_length=255)
+#     name = models.CharField(max_length=255)
+#     applied = models.DateTimeField()
+#
+#     class Meta:
+#         managed = True
+#         db_table = 'django_migrations'
 
 ### New Database Schemata for vfw 2.0
 ### from metacatalog 2.0
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
 
 
 class DatasourceTypes(models.Model):
@@ -84,11 +97,6 @@ class Details(models.Model):
     description = models.TextField(blank=True, null=True)
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
 
-    db_alias_child_adv = {'value': 'details_text'}
-    menu_name_adv = 'Details'
-    path = 'details'
-    filter_type = {'value': 'text'}
-
     class Meta:
         managed = False
         db_table = 'details'
@@ -111,32 +119,27 @@ class Entries(models.Model):
     decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
 
     """
+    uuid = models.CharField(max_length=36)
     title = models.CharField(max_length=512)
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
-    location = models.PointField(srid=0)
-    geom = models.GeometryField(srid=0, blank=True, null=True)
+    location = models.PointField(srid=4326)
+    geom = models.GeometryField(srid=4326, blank=True, null=True)
     version = models.IntegerField()
     latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    is_partial = models.BooleanField()
     comment = models.TextField(blank=True, null=True)
+    citation = models.CharField(max_length=2048, blank=True, null=True)
+
     license = models.ForeignKey('Licenses', models.DO_NOTHING, blank=True, null=True)
     variable = models.ForeignKey('Variables', models.DO_NOTHING)
     datasource = models.ForeignKey(Datasources, models.DO_NOTHING, blank=True, null=True)
+
     embargo = models.BooleanField()
     embargo_end = models.DateTimeField(blank=True, null=True)
+
     publication = models.DateTimeField(blank=True, null=True)
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
-    is_partial = models.BooleanField()
-    uuid = models.CharField(max_length=36)
-    citation = models.CharField(max_length=2048, blank=True, null=True)
-
-    db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract'}
-    # db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract', 'location': 'Location'}
-    db_alias_child_adv = {'version': 'version'}
-    menu_name = 'Entries'
-    path = ''
-    filter_type = {'embargo': 'bool'}
-    # filter_type = {'embargo': 'bool', 'location': 'draw'}
 
     class Meta:
         managed = False
@@ -153,11 +156,6 @@ class EntrygroupTypes(models.Model):
     name = models.CharField(max_length=40)
     description = models.TextField()
 
-    db_alias_child = {'creation': 'creation/start', 'end': 'end of measurement', 'embargo': 'embargo'}
-    db_alias_child_adv = {'version': 'version'}
-    menu_name = 'Entries'
-    path = ''
-
     class Meta:
         managed = False
         db_table = 'entrygroup_types'
@@ -167,7 +165,7 @@ class EntrygroupTypes(models.Model):
 
 
 class Entrygroups(models.Model):
-    type = models.ForeignKey(EntrygroupTypes, models.DO_NOTHING)
+    type = models.ForeignKey('EntrygroupTypes', models.DO_NOTHING)
     title = models.CharField(max_length=40, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     uuid = models.CharField(max_length=36)
@@ -183,7 +181,7 @@ class Entrygroups(models.Model):
                                      self.id)
 
 
-class GenericGeometryData(models.Model):
+class Generic_Geometry_Data(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.IntegerField()
     geom = models.GeometryField(srid=0)
@@ -198,7 +196,7 @@ class GenericGeometryData(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class Generic1DData(models.Model):
+class Generic_1D_Data(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.DecimalField(max_digits=999, decimal_places=999)
     value = models.DecimalField(max_digits=999, decimal_places=999)
@@ -213,7 +211,7 @@ class Generic1DData(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class Generic2DData(models.Model):
+class Generic_2D_Data(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     index = models.DecimalField(max_digits=999, decimal_places=999)
     value1 = models.DecimalField(max_digits=999, decimal_places=999)
@@ -230,7 +228,7 @@ class Generic2DData(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class GeomTimeseries(models.Model):
+class Geom_Timeseries(models.Model):
     # entry = models.ForeignKey(Entries, models.DO_NOTHING, primary_key=True)  # This produces a django warning
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
@@ -278,12 +276,6 @@ class Licenses(models.Model):
     share_alike = models.BooleanField()
     commercial_use = models.BooleanField()
 
-    db_alias_child = {'commercial_use': 'Commercial use allowed'}  # menu text
-    db_alias_child_adv = {'commercial_use': 'Commercial use allowed'}
-    menu_name = 'Licenses'
-    path = 'license'
-    filter_type = {'commercial_use': 'bool'}
-
     class Meta:
         managed = False
         db_table = 'licenses'
@@ -321,7 +313,6 @@ class NmKeywordsEntries(models.Model):
     entry = models.ForeignKey(Entries, models.DO_NOTHING)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_keywords_entries'
         unique_together = (('keyword', 'entry'),)
@@ -337,7 +328,6 @@ class NmPersonsEntries(models.Model):
     order = models.IntegerField()
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_persons_entries'
         unique_together = (('person', 'entry'),)
@@ -371,10 +361,6 @@ class Persons(models.Model):
     organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
 
-    db_alias_child = {'last_name': 'Name'}  # menu text
-    db_alias_child_adv = {'last_name': 'Name'}
-    menu_name = 'Variables'
-    path = 'variable'
     full_name = '{} {}'.format(first_name, last_name)
 
     class Meta:
@@ -383,6 +369,12 @@ class Persons(models.Model):
 
     def __str__(self):
         return '{} <ID={}>'.format(self.full_name, self.id)
+
+    @staticmethod
+    def filter(column, selection):
+        filter_items = {'nmpersonsentries__person__' + column + '__in': selection}
+        print('filter_items: ', filter_items)
+        return filter_items
 
 
 class SpatialScales(models.Model):
@@ -408,8 +400,8 @@ class TemporalScales(models.Model):
         managed = False
         db_table = 'temporal_scales'
 
-    def __str__(self):
-        return '<ID={}> observation start/end={}/{}'.format(self.id, self.observation_start, self.observation_end)
+    # def __str__(self):
+    #     return '<ID={}> observation start/end={}/{}'.format(self.id, self.observation_start, self.observation_end)
 
 
 class Thesaurus(models.Model):
@@ -431,11 +423,10 @@ class Thesaurus(models.Model):
 class Timeseries(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
-    value = models.DecimalField(max_digits=999, decimal_places=999)
-    precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+    data = ArrayField(models.DecimalField(max_digits=999, decimal_places=999, blank=False, null=True), size=3)
+    precision = ArrayField(models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True), size=3)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries'
         unique_together = (('entry', 'tstamp'),)
@@ -444,7 +435,22 @@ class Timeseries(models.Model):
         return '<ID={}>'.format(self.id)
 
 
-class Timeseries2D(models.Model):
+class Timeseries_1D(models.Model):
+    entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
+    tstamp = models.DateTimeField()
+    value = models.DecimalField(max_digits=999, decimal_places=999)
+    precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'timeseries_1d'
+        unique_together = (('entry', 'tstamp'),)
+
+    def __str__(self):
+        return '<ID={}>'.format(self.id)
+
+
+class Timeseries_2D(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
     value1 = models.DecimalField(max_digits=999, decimal_places=999)
@@ -483,17 +489,18 @@ class Variables(models.Model):
     unit = models.ForeignKey(Units, models.DO_NOTHING)
     keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
 
-    db_alias_child = {'name': 'Name'}  # menu text
-    db_alias_child_adv = {'name': 'Name'}
-    menu_name = 'Variables'
-    path = 'variable'
-
     class Meta:
         managed = False
         db_table = 'variables'
 
     def __str__(self):
         return '{n} ({s}) [{u}]'.format(n=self.name, s=self.symbol, u=self.unit.symbol)
+        # return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
+
+    @staticmethod
+    def filter(column, selection):
+        filter_items = {'variable__' + column + '__in': selection}
+        return filter_items
 
 
 class BasicFilter:
@@ -514,19 +521,19 @@ class AdvancedFilter(BasicFilter):
     details = Details.objects.values_list('value', flat=True).distinct()
 
 
-class LocationFilter(models.Model):
-    """
-    Fake class to write location from Entries to a separate entry online in the menu.
-    """
-    location = models.PointField(srid=0)
-
-    db_alias_child = {'location': 'Location'}
-    db_alias_child_adv = {'bla': 'blala'}
-    menu_name = 'Point Filter'
-    path = ''
-    filter_type = {'location': 'draw'}
-
-    class Meta:
-        managed = False
-        db_table = 'entries'
-
+# class LocationFilter(models.Model):
+#     """
+#     Fake class to write location from Entries to a separate entry online in the menu.
+#     """
+#     location = models.PointField(srid=0)
+#
+#     db_alias_child = {'location': 'Location'}
+#     db_alias_child_adv = {'bla': 'blala'}
+#     menu_name = gettext("Filter from map")
+#     path = ''
+#     filter_type = {'location': 'draw'}
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'entries'
+#

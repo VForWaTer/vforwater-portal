@@ -20,23 +20,28 @@ from django.contrib import admin
 from django.urls import path
 from django.views.generic.base import RedirectView
 from vfwheron import views as vfw_views
+from django.views.i18n import JavaScriptCatalog
 
-
+# TODO: for JS translations see:
+#  https://docs.djangoproject.com/en/2.2/topics/i18n/translation/#note-on-performance
 urlpatterns = [
+    path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     url(r'^$', RedirectView.as_view(url='home/', permanent=False)),
-    url(r'^home/', include('vfwheron.urls')),
-    url(r'^admin/', admin.site.urls),
-    url(r'^workspace/', include('wps_gui.urls', namespace='wps_gui')),
-    url(r'^monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
-    url(r'^visual/', include('heron_visual.urls', namespace='heron_visual')),
-    url(r'^upload/', include('upload.urls', namespace='upload')),
-    url(r'^download/(?P<name>\w{4,5})$', vfw_views.DownloadView.as_view()),
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
-    url(r'^user/', include('author_manage.urls', namespace='author_manage')),
+    path('home/', include('vfwheron.urls')),
+    path('admin/', admin.site.urls),
+    path('legals', vfw_views.Legals.as_view(), name='legals'),
+    path('workspace/', include('wps_gui.urls', namespace='wps_gui')),
+    path('monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
+    path('visual/', include('heron_visual.urls', namespace='heron_visual')),
+    path('upload/', include('upload.urls', namespace='upload')),
+    path('download/<str:name>', vfw_views.DownloadView.as_view()),
+    path('admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
+    path('user/', include('author_manage.urls', namespace='author_manage')),
+    path('__debug__/', include(debug_toolbar.urls))  # only when debug toolbar is installed!
 ]
 
 handler404 = 'vfwheron.views.error_404_view'
 
 # This is just to test the upload in the development environment
-if settings.DEBUG and settings.DEBUG is not '':
+if settings.DEBUG and settings.DEBUG != '':
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

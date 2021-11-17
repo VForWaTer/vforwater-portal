@@ -38,34 +38,39 @@ function drop(ev) {
  * @param {string} identifier - identifier of a wps process
  **/
 function wpsprocess(service, identifier) {
-    let tools = JSON.parse(sessionStorage.getItem('tools'))
-    if (!tools) {
-        tools = {}
-    }
-    if (!tools[service]) {
-        tools[service] = {}
-    }
+    let tools = get_sessionStorage_tools(service)
     if (tools[service][identifier]) {
         build_modal(tools[service][identifier], service)
     } else {
-        $.ajax({
-            url: DEMO_VAR + "/workspace/processview",
-            //url: DEMO_VAR+"/wps_gui/"+service+"/process",
-            dataType: 'json',
-            data: {
-                processview: JSON.stringify({id: identifier, serv: service}),
-                'csrfmiddlewaretoken': csrf_token,
-            }, /** data sent with the post request **/
-        })
+        load_wpsprocess(service, identifier)
             .done(function (json) {
                 build_modal(json, service)
                 tools[service][identifier] = json
                 sessionStorage.setItem('tools', JSON.stringify(tools))
             })
-            .fail(function (e) {
-                console.error('Failed: ', e)
-            });
     }
+}
+
+/**
+ * Actual function to load metadata of a wps process.
+ *
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ **/
+function load_wpsprocess(service, identifier) {
+    return $.ajax({
+        url: DEMO_VAR + "/workspace/processview",
+        //url: DEMO_VAR+"/wps_gui/"+service+"/process",
+        dataType: 'json',
+        async: false,
+        data: {
+            processview: JSON.stringify({id: identifier, serv: service}),
+            'csrfmiddlewaretoken': csrf_token,
+        }, /** data sent with the post request **/
+    })
+        .fail(function (e) {
+            console.error('Failed: ', e)
+        });
 }
 
 /**
@@ -77,47 +82,101 @@ function wpsprocess(service, identifier) {
  * @return {obj} json - object of a wps process as saved in sessionStorage
  */
 function get_wpsprocess(service, identifier) {
-    let tools = JSON.parse(sessionStorage.getItem('tools'))
-    if (!tools) {
-        tools = {}
-    }
-    if (!tools[service]) {
-        tools[service] = {}
-    }
+    let tools = get_sessionStorage_tools(service)
     if (tools[service][identifier]) {
         return tools[service][identifier]
     } else {
-        $.ajax({
-            url: DEMO_VAR + "/workspace/processview",
-            //url: DEMO_VAR+"/wps_gui/"+service+"/process",
-            dataType: 'json',
-            data: {
-                processview: JSON.stringify({id: identifier, serv: service}),
-                'csrfmiddlewaretoken': csrf_token,
-            }, // data sent with the post request
-        })
+        load_wpsprocess(service, identifier)
             .done(function (json) {
                 tools[service][identifier] = json
                 sessionStorage.setItem('tools', JSON.stringify(tools))
                 return json
             })
-            .fail(function (e) {
-                console.error('Failed: ', e)
-            });
+        /* .fail(function (e) {
+             console.error('Failed: ', e)
+         });*/
     }
 }
 
-function drop_and_save() {
-    console.error('lets store it')
+function add_connection(sourcePort, targetPort) {
+    // canvas.installEditPolicy(connection.connectionPolicy);
+    // let box = new Box(
+    //     box_param.name, box_param.orgid, box_param.type,
+    //     box_param.inputs, box_param.outputs, source, service, boxID
+    // )
+    //
+    // canvas.add(box.box, x, y);
+    // console.log('toolbox getOutputPort(0): ', toolbox.getOutputPort(0))
+    // console.log('toolbox getOutputPort(): ', toolbox.getOutputPort())
+    console.log('canvas ports: ', canvas.getAllPorts())
+    let connection = new draw2d.Connection({
+        source: sourcePort,
+        target: targetPort
+    });
+    // let connection = createConnection(dataport, toolport);
+    // let connection = createConnection(start.getOutputPort(0),end.getInputPort(0));
+    canvas.add(connection);
+
 }
 
 /**
- * Check if an input is required and if it is required check if the input has a value.
+ * create a dict with random coordinates on the dropzone ('dropdiv').
+ * TODO: avoid overlap of boxes
+ * @returns {{x: number, y: number}}
+ */
+function get_drop_coords() {
+    let dropzone = document.getElementById('dropdiv');
+    let dropzone_coords = dropzone.getBoundingClientRect();
+    let x_pad = 0;
+    let y_pad = 0;
+    let x, y
+    if (dropzone_coords.height > 100) {x_pad = 300};
+    if (dropzone_coords.width > 300) {y_pad = 200};
+    x = Math.floor((Math.random() * (dropzone_coords.width-x_pad))-x_pad + dropzone_coords.left);
+    y = Math.floor((Math.random() * (dropzone_coords.height-y_pad))+y_pad/2 - dropzone_coords.top);
+    return {'x': x, 'y': y}
+}
+
+
+/**
+ * Collect data to drop element. (When Okay in Modal is pressed)
+ * Check if any inputs or outputs are selected and drop resprective elements, too.
+ *
+ * @param {object} ev - object passed with drop event
+ **/
+function drop_on_click(ev) {
+    /** Prepare and drop a tool button **/
+    let tool_id, data_id, newbox, toolbox, databox, metadata, dataport, toolport;
+    let coords = get_drop_coords();
+    let modalData = prep_modal_data();
+    newbox = drop_handler(modalData, coords['x'], coords['y'], modalData.id, 'toolbar', modalData.serv)
+    tool_id = newbox.boxID;
+    toolbox = newbox.box;
+
+    /** Check if tool is connected with other elements to drop and get ports **/
+    let box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
+        'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
+        'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
+    for (let i in modalData.type_list) {
+        if (box_types.includes(modalData.type_list[i]) && modalData.inId_list[i]) {
+            metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
+            newbox = drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modalData.inId_list[i], 'workspace')
+            tool_id = newbox.boxID;
+            databox = newbox.box;
+            dataport = databox.getOutputPort(0);
+            // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
+            toolport = toolbox.getInputPort(parseInt(i));
+            // add_connection(dataport, toolport);
+        }
+    }
+}
+
+/**
+ * Check if an input (an Element of a wps) is required and if it is required check if the input has a value.
  *
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
-function check_required(checkElement) {
-    /** check if an Element of a wps is required **/
+function is_required(checkElement) {
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -145,6 +204,7 @@ function check_required(checkElement) {
     }
     return passed
 }
+
 /**
  * Check if an input has a regex pattern and if input is correct.
  *
@@ -152,26 +212,28 @@ function check_required(checkElement) {
  */
 function check_pattern(checkElement) {
     /** check if an Element of a wps is required **/
-    console.log('TODO: Add pattern check where necessary.')
+    console.warn('TODO: Add pattern check where necessary.')
     return true
 }
 
-// TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
-//  when you have the drop objects
-// TODO: Improve code by using HTML Forms
-function modal_run_process() {
-    color_modal("dodgerblue");
 
-    /** collect inputs **/
+/**
+ * Collect data from modal neeeded to run a processes.
+ * @returns {{type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
+ */
+function prep_modal_data() {
+     /** collect inputs **/
     var inKey = [];
     var inValue = [];
     var inType = [];
+    var inId = [];
     let dDInput = 0;
     let inModal = document.getElementById('mod_in');
     let inputInputs = inModal.getElementsByTagName('input');
     let dropDInputs = inModal.getElementsByTagName('select');
     let valueList = [];
     let typeList = [];
+    let inIdList = [];
     let stored;
 
     /** first loop over each dropdown in input, then over values in dropdown **/
@@ -185,10 +247,12 @@ function modal_run_process() {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[j].value]
                 valueList.push(stored['source'] + stored['dbID'])
                 typeList.push(stored['type']);
+                inIdList.push(dDInput[j].value);
             }
             inValue.push(valueList);
             inKey.push(dropDInputs[i].name);
             inType.push(typeList);
+            inId.push(inIdList);
 
             /** else if one dropdown **/
         } else {
@@ -201,6 +265,7 @@ function modal_run_process() {
                 inType.push(stored['type']);
             }
             inKey.push(dropDInputs[i].name);
+            inId.push(dDInput[0].value);
         }
     }
     for (let i = 0; i < inputInputs.length; i++) {
@@ -209,20 +274,24 @@ function modal_run_process() {
                 inKey.push(inputInputs[i].name);
                 inValue.push(inputInputs[i].value);
                 inType.push('string');
+                inId.push('');
             }
         } else if (inputInputs[i].type == "checkbox") {
             inKey.push(inputInputs[i].name);
             if (inputInputs[i].checked == true) {
                 inValue.push(true);
                 inType.push('boolean');
+                inId.push('');
             } else {
                 inValue.push(false);
                 inType.push('boolean');
+                inId.push('');
             }
         } else {
             inKey.push(inputInputs[i].name);
             inValue.push(inputInputs[i].value);
             inType.push('');
+            inId.push('');
         }
     }
 
@@ -251,14 +320,21 @@ function modal_run_process() {
     } else {
         outputName = outputs[0].value;
     }
+    return {'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
+        'type_list': inType, 'outputName': outputName, 'inId_list': inId}
+}
+
+// TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
+//  when you have the drop objects
+// TODO: Improve code by using HTML Forms
+function modal_run_process() {
+    set_modalColor("dodgerblue");
+    let modal_input = prep_modal_data();
 
     $.ajax({
         url: DEMO_VAR + "/workspace/processrun",
         data: {
-            processrun: JSON.stringify({
-                id: identifier, serv: wpsservice,
-                key_list: inKey, value_list: inValue, type_list: inType
-            }),
+            processrun: JSON.stringify(modal_input),
             'csrfmiddlewaretoken': csrf_token,
         }, /** data sent with post request **/
     })
@@ -268,25 +344,25 @@ function modal_run_process() {
                 let groupName = ''
                 let i = 0;
                 let members = [];
+                let directshowdatatypes = ['figure', 'string', 'html']
 
-                json.wps = identifier;
+                json.wps = modal_input.id;
                 json.inputs = {};
-                $.each(inKey, function (key, value) {
-                    json.inputs[value] = inValue[i];
+                $.each(modal_input.inKey, function (key, value) {
+                    json.inputs[value] = modal_input.inValue[i];
                     i++;
                 });
-                color_modal("forestgreen");
+                set_modalColor("forestgreen");
 
                 if (Object.keys(json.result).length > 1) {
                     group = true;
-                    groupName = set_group_btn_name(outputName, 'resultBtn');
+                    groupName = set_group_btn_name(modal_input.outputName, 'resultBtn');
                     // document.getElementById("workspace_results").innerHTML
                     //     += build_resultgroup_button(groupName);
                 }
 
-                console.log('result: ', json)
                 for (let i in json.result) {
-                    let btnName = set_result_btn_name(outputName);
+                    let btnName = set_result_btn_name(modal_input.outputName);
                     json.result[i].dropBtn.name = btnName;
                     let btnData = {
                         dbID: json.result[i].wpsID,
@@ -301,6 +377,9 @@ function modal_run_process() {
                         group: groupName
                     }
                     add_resultbtn_to_sessionstore(btnName, btnData);
+                    if (directshowdatatypes.includes(btnData.type)) {
+                        add_resultbtn_to_modal(btnData)
+                    }
 
                     if (group === false) {
                         document.getElementById("workspace_results").innerHTML
@@ -316,14 +395,14 @@ function modal_run_process() {
                 }
             } else if (json.execution_status == "Exception") {
                 console.error('error in wps process')
-                color_modal("firebrick");
+                set_modalColor("firebrick");
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "error in wps process") {
-                color_modal("firebrick");
+                set_modalColor("firebrick");
                 console.error('Error in wps process: ', json.error)
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
-                color_modal("firebrick");
+                set_modalColor("firebrick");
                 /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
@@ -332,7 +411,7 @@ function modal_run_process() {
             }
         })
         .fail(function (json) {
-            color_modal("firebrick");
+            set_modalColor("firebrick");
             console.error('Error, No success: ', json)
         });
 }
@@ -359,9 +438,10 @@ function run_wps(input_dict) {
         })
         .fail(function (json) {
             console.error('Error, No success: ', json)
-            color_modal("firebrick");
+            set_modalColor("firebrick");
         })
 }
+
 
 /**
  * Check if result data in sessionStorage exists, if yes check if name already exists, if yes add numger to name.
@@ -409,14 +489,16 @@ function set_group_btn_name(name, storage) {
 
 /**
  * Set color of header and footer of wps tool modal.
+ * On change of color also remove 'view result' button.
  *
  * @param {string} color
  */
-function color_modal(color) {
+function set_modalColor(color) {
     let modalColor = document.getElementById("modal-header");
     modalColor.style.backgroundColor = color;
     modalColor = document.getElementById("modal-footer");
     modalColor.style.backgroundColor = color;
+    document.getElementsByClassName("work_modal-output")[0].style.display = "none";
 }
 
 /**
@@ -426,6 +508,30 @@ function modalObj(processId, processInput, processOutput) {
     this.processId = processId;
     this.processInput = processInput;
     this.processOutput = processOutput;
+}
+
+
+/**
+ * Show hidden button in modal to enable quick preview of results.
+ *
+ * @param {{outputs, inputs: (*|{}), dbID: *, name: (*|string), dropBtn, wps: string, source: string, type, status: *, group: string}} json
+ */
+function add_resultbtn_to_modal(json) {
+    let wspan_out = document.getElementsByClassName("work_modal-output")[0];
+    wspan_out.style.display = "block";
+    wspan_out.onclick = () => {
+        if (json.type == 'figure' || json.type == 'string') {
+            document.getElementById("mod_result").innerHTML = json.outputs; // add plot
+        }
+        let rModal = document.getElementById("resultModal");
+        rModal.style.display = "block";
+        popup.classList.remove(popActive);
+        modalToggleSize.style.display = "none";
+    };
+}
+
+function set_preview_content(json) {
+
 }
 
 /**
@@ -454,7 +560,7 @@ function add_resultbtn_to_sessionstore(btnName, json) {
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
-//TODO: Urgent!!! Is it necessary that a result knows which function it came from and what the input parameters were?
+//TODO: Is it necessary that a result knows which function it came from and what the input parameters were?
 /**
  * Build a button in the result store.
  * data-id is used to find results on server, id is used for the remove button
@@ -465,11 +571,13 @@ function add_resultbtn_to_sessionstore(btnName, json) {
  **/
 function build_resultstore_button(name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
-    return '<li draggable="true" ondragstart="dragstart_handler(event)" class="w3-padding task is-result" ' +
-        'data-id="wps' + json.dbID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="' + name + '"><span class="w3-medium" title="' + title + '">' +
-        '<div class="task__content">' + name + '</div><div class="task__actions"></div></span>' +
-        '<span class="' + json['type'] + '"></span>' +
+    return '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
+        'class="w3-padding task is-result" data-sessionStore="resultBtn" ' +
+        'data-id="' + json.source + json.dbID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
+        'id="' + name + '">' +
+        '<span class="w3-medium" title="' + title + '">' +
+        '<div class="task__content">' + name + '</div><div class="task__actions"></div>' +
+        '</span><span class="' + json['type'] + '"></span>' +
         '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
@@ -484,7 +592,7 @@ function build_resultstore_button(name, json) {
 function build_resultgroup_button(groupname, members) {
     let mhtml = ''
     let ghtml = '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
-        'class="w3-padding task is-result-group groupaccordion" ' +
+        'class="w3-padding task is-result-group groupaccordion" data-sessionStore="resultBtn"' +
         '" btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
         'id="' + groupname + '"><span class="w3-medium">' +
         '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +
@@ -613,7 +721,6 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
     let aptStoreData = {};
     let aptResultData = {};
     let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
-    console.log('acceptedDataTypes: ', acceptedDataTypes)
 
     for (let i in sessionStoreData) if (acceptedDataTypes.has(sessionStoreData[i].type)) {
         aptStoreData[i] = sessionStoreData[i];
@@ -857,3 +964,103 @@ function build_modal(wpsInfo, service) {
     // console.log('+++: ', JSON.stringify(modalObj))
 }
 
+/**
+ * Create DATALIST to add a dropdown to a text box
+ *
+ * @param {object} item
+ * @param {object} resultData
+ * @param {object} sessionStoreData
+ */
+function set_textfield_opt(item, resultData, sessionStoreData) {
+    let inDatalist = "";
+    let type = item.dataType;
+    inDatalist = document.createElement("DATALIST");
+    inDatalist.setAttribute("id", item.identifier + '_list');
+    let optElement = "";
+    Object.entries(resultData).forEach(function (dataset) {
+        if (dataset[1].type === type) {
+            optElement = document.createElement("OPTION");
+            optElement.setAttribute("value", dataset[1].outputs);
+            optElement.innerText = dataset[1].name;
+            inDatalist.appendChild(optElement);
+
+        }
+    })
+    return inDatalist
+}
+
+function load_workflow() {
+    alert("Load is not implemented yet.")
+    console.log("load just a test workflow.")
+    // let workflow
+    // sessionStorage.setItem('workflow', JSON.stringify(workflow))
+}
+
+function save_workflow() {
+    alert("Save is not implemented yet.")
+    console.log("save isn't implemented yet: ",
+        JSON.parse(document.getElementById('is_authenticated').value))
+}
+
+function run_workflow() {
+    let workflow = JSON.parse(sessionStorage.getItem('workflow'))
+    if (Object.keys(workflow).length <= 1) {
+        alert(gettext("Please Load or Create a workflow to run first."))
+        return;
+    }
+    let processList = [];
+    let processDict = {};
+    let processTree = {};
+    let endNode = [];
+
+    // get processes of workflow
+    Object.entries(workflow).map(function (i) {
+        if (i[1].source === 'toolbar') {
+            // processList.push(i[0])
+            processDict[i[0]] = {children: i[1].input_ids};
+            processDict[i[0]].parents = i[1].output_ids;
+            if (typeof i[1].output_ids === "undefined") {
+                endNode.push(i[0])
+            }
+        }
+    })
+    if (endNode.length > 1) {
+        alert(gettext("Your workflow is supposed to end in a single process."))
+        return;
+    }
+    /**
+     * create tree of processes
+     * @param {string} ID
+     * @param {dictionary} parent
+     * @param {dictionary} processDict
+     * @param {array} processList
+     */
+    function createTree(ID, parent, processDict, processList) {
+        if (!processList.includes(ID)) {
+            processList.push(ID);
+        } else {
+            // TODO: This results in an error anyways. Fix it!
+            alert(gettext("At least one process is used more than once. This could result in an infinite loop and is forbidden (yet)."))
+            console.warn('Please check box with id: ', ID)
+        }
+        let tree = {};
+        for (let i of processDict[ID].children) {
+            tree[i] = typeof processDict[i].children != "undefined" ? createTree(i, tree, processDict, processList) : {}
+        }
+        return tree;
+    }
+    processTree[endNode] = {};
+    processTree[endNode] = createTree(endNode, processTree[endNode], processDict, processList);
+    console.log('processTree: ', processTree)
+
+    console.log("run isn't implemented yet.")
+}
+
+/**
+ * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
+ */
+function clear_workflow() {
+    canvas.clear();
+    set_sessionStorage_workflow_name()
+    document.getElementById("workflow_name").value = gettext('my workflow')
+}

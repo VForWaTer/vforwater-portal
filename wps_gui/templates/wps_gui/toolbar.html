@@ -31,7 +31,6 @@
     //console.log('- invalues: ', invalues)
     console.group(id)
     invalues.forEach(function (val) {
-      console.log(val)
       if (val.includes('pattern')) {
         element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
                 'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';

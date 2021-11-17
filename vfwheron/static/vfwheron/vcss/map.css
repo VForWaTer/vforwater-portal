@@ -1,5 +1,5 @@
 div.map {
-    height: 78%;
+    height: 88%;
     width: 100%;
 }
 
@@ -48,4 +48,30 @@ div.map {
 
 .ol-attribution {
     font-size: x-small;
+}
+
+
+#drawfilter {
+border-radius: 4px;
+padding: 2px;
+    /*display: block;*/
+}
+
+#draw_polygon, #modify_polygon, #draw_square, #remove_polygon {
+    width: 6px;
+    height: 6px;
+    background:rgba(0, 60, 136, .55);
+    border-radius: 4px;
+    padding: 3px;
+    color: white;
+}
+.draw-hover:hover{
+background:rgba(0, 60, 136, .9)!important;
+}
+#draw_toggle, #closed_drawfilter {
+    border-radius: 4px;
+    padding: 3px;
+}
+.hover-white:hover{
+    background:white!important;
 }

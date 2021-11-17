@@ -1,5 +1,6 @@
 # from inspect import getmembers
 import ast
+import datetime
 import json
 import re
 import sys
@@ -9,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.http.response import Http404
 from django.shortcuts import render
+from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import timezone
 
@@ -205,11 +207,9 @@ def handle_wps_output(execution, wps_process, inputs):
     all_outputs = {'execution_status': execution.status}
     all_outputs['result'] = {}
     path = ''
-    loopcount = 0
 
     # iterate through list of outputs
     for output in execution.processOutputs:
-        loopcount += 1
 
         if output.identifier == 'error':
             error_dict = {}
@@ -232,7 +232,7 @@ def handle_wps_output(execution, wps_process, inputs):
                 keywords = json.loads(output.abstract)['keywords'][0]
                 single_output['type'] = keywords
                 if 'pickle' in keywords:
-                    path = output.data[0]
+                    path = eval(output.data[0])[0]  # get first value of string tuple
             except TypeError as e:
                 if output.dataType in basicdatatypes:
                     single_output['type'] = output.dataType
@@ -243,19 +243,24 @@ def handle_wps_output(execution, wps_process, inputs):
 
             # get data
             if output.data:
-                single_output['data'] = output.data[0]
+                # if output.identifier == 'fig':
+                # if output.dataType == 'string':
+                if output.dataType in ['string', 'integer']:
+                    single_output['data'] = output.data[0]
+                else:
+                    single_output['data'] = eval(output.data[0])[0]
 
             # TODO: Decide how to handle errors from WPS (show nothing, everything and user can check what is okay?)
-            if output.data and len(output.data[0]) < 300:  # random number, typical pathlength < 260 chars
+            if output.data and len(single_output['data']) < 300:  # random number, typical pathlength < 260 chars
                 db_output_data = output.data[0]
             elif path != '':
                 try:
                     file_name = path[:-4] + single_output['type'] + path[-4:]
                     text_file = open(file_name, "w")
-                    text_file.write(output.data[0])
+                    text_file.write(eval(output.data[0])[0])
                     text_file.close()
                     db_output_data = file_name
-                    single_output['data'] = output.data[0]
+                    single_output['data'] = eval(output.data[0])[0]
                 except Exception as e:
                     print('Warning: no file was created for long string')
                     print(e)
@@ -316,13 +321,14 @@ def db_load(request):
     """
     Function to preload data from database, convert it, and store a pickle of the data
     Example for input for wps dbloader:  [('entry_id', '12'), ('uuid', ''), ('start', '1990-10-31T09:06'),
-    ('end', '2020-11-21T09:07')]
+    ('end', datetime.datetime(2018, 12, 31, 0, 0))]
     :param request: dict
     :return:
     """
     wps_process = 'dbloader'
     request_input = json.loads(request.GET.get('dbload'))
     orgid = request_input.get('dataset')
+    result = {}
 
     # check if user has access to dataset
     accessible_data = get_accessible_data(request, orgid[2:])
@@ -360,10 +366,12 @@ def db_load(request):
                                                   creation=timezone.now())
             except Exception as e:
                 print('Exception while creating DB entry: ', e)
-            result = {'orgid': orgid, 'id': 'wps' + dbkey.id, 'type': dtype, 'inputs': inputs}
-    except Exception as e:
-        print('Exception in db_load: ', e)
-        raise Http404
+
+            result = {'orgid': orgid, 'id': 'wps' + str(dbkey.id), 'type': dtype, 'inputs': inputs, 'outputs': output}
+
+    # except Exception as e:
+    #     print('Exception in db_load: ', e)
+    #     raise Http404
 
     return JsonResponse(result)
 
@@ -394,25 +402,10 @@ def edit_input(inputs):
         elif key_value[1][0:3] == 'wps' and key_value[1][3:].isdecimal():
             wps_input.append((key_value[0],
                               ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path']))
-
-            # TODO: a lot of old stuff following here. Rethink what is still needed and update!
-
-        elif key_value[1] == 'sql-filter':
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[1] == 'name_time' and key_value[1].isdigit():
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[1] == 'name' and key_value[1].isdigit():
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[1] == 'number' and key_value[1].isdigit():
-            wps_input.append((key_value[0], "SELECT tstamp, value FROM tbl_data WHERE meta_id=" + key_value[1] + ";"))
-        elif key_value[0] == 'start' and key_value[1] == '':
-            print('You have to implement how to handle a start date in input data')
-            pass
-            # wps_input.append((key_value[0], '0, 0'))
-        elif key_value[0] == 'end' and key_value[1] == '':
-            print('You have to implement how to handle a end date in input data')
-            pass
-            # wps_input.append((key_value[0], '0, 0'))
+        elif key_value[0] == 'start' or key_value[0] == 'end':
+            if key_value[1] != 'None':
+                wps_input.append((key_value[0], datetime.datetime.strptime(key_value[1], '%Y-%m-%d')
+                                  .strftime("%Y-%m-%dT%H:%M:%S")))
         else:
             wps_input.append((key_value[0], key_value[1]))
     return wps_input

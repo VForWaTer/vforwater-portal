@@ -1,7 +1,12 @@
-let draw, modify, selectedFeatures, vector;
+let draw, drawSquare, modify, selectedFeatures, selectionEdgeCoords, selectionLayerSource;
+/**
+ * Global Element (source layer) to drawn on
+ */
+let selectionLayer;
 let activeMap = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
 let sessionStorageData = {};
+let bokehImage = false;
 
 let selectedIds = {
     mapIds: null,
@@ -41,10 +46,10 @@ let selectedIds = {
 
     /**
      * if selection changes update table (when HTML in table tab)
-     * @param {array} oldCombinedIds
+     * @param {array} oldIds
      */
     _updateFilterTable: function (oldIds) {
-        if (!activeMap && this.combinedIds != oldIds) {
+        if (!activeMap && this.combinedIds !== oldIds) {
             filter_pagination(1);
         }
     },
@@ -65,6 +70,9 @@ let selectedIds = {
     }
 };
 
+/**
+ * Class to store data used on different URLs. Every change should be stored in session storage.
+ */
 class storeData {
 
     constructor(definition) {
@@ -94,6 +102,11 @@ class storeData {
     }
 }
 
+/**
+ * wps tools datatypes and relationships to each other.
+ *
+ * @type {{validInput(string, string): boolean, accepts(list): set, HIERACHY: {idataframe: [string], timeseries: [string], array: string[], raster: [string], iarray: [string], html: [string], ndarray: string[], "time-dataframe": [string]}, bHIERACHY: {vtimeseries: string[], idataframe: [string], timeseries: [string], "vtime-dataframe": string[], vraster: string[], raster: [string], iarray: [string], varray: string[], vdataframe: string[], "2darray": [string], "time-dataframe": [string]}}}
+ */
 const DATATYPE = new class AbstractType {
     constructor() {
         this.HIERACHY = {
@@ -155,6 +168,14 @@ const DATATYPE = new class AbstractType {
 }
 
 
+/**
+ * Create a name for buttons according to the length of the name string
+ *
+ * @param {string} name
+ * @param {string} abbr
+ * @param {string} unit
+ * @param {string} dbID
+ */
 function createBtnName(name, abbr, unit, dbID) {
     let btnName;
     let vnLen = name.length;
@@ -170,14 +191,23 @@ function createBtnName(name, abbr, unit, dbID) {
     return btnName
 }
 
+/**
+ * Create HTML element for buttons to be placed on the sidebar
+ *
+ * @param {string} storeID
+ * @param {dict} btnData
+ * @param {string} btnName
+ * @param {string} title
+ */
 function sidebar_btn_html(storeID, btnData, btnName, title) {
     let drag_html = "";
     if (window.location.pathname == '/workspace/') {
         drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
     }
     let elementID = "sidebtn" + storeID;
-    return '<li ' + drag_html + ' class="w3-padding task" ' +
-        'data-id="' + storeID + '" btnName="' + btnName + '" onmouseover="" ' +
+    return '<li ' + drag_html + ' class="w3-padding task" data-sessionstore="dataBtn" ' +
+        'data-orgid="' + btnData['orgID'] + '"' +
+        'data-id="' + btnData['source'] + btnData['dbID'] + '" btnName="' + btnName + '" onmouseover="" ' +
         'style="cursor:pointer;" id="' + elementID + '">' +
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
@@ -187,21 +217,70 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
         '</a><br></li>';
 }
 
+//--- draw start -------------------------------------------------------------------------------------------------------
+/**
+ * Reset the draw menu, clear selections in memory and on map
+ */
 function resetDraw() {
+    get_quick_selection({'draw': []})
     selectedIds.map = null;
+    selectionLayerSource.clear();
     selectedFeatures.clear();
+
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
-    olmap.removeLayer(vector);
+    // removeInteractions()
+    // olmap.removeLayer(selectionLayer);
+
+    olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+        .forEach(layer => olmap.removeLayer(layer));
 }
 
-// Menu to draw polygon on map
-function drawPolygon(shortParent, shortChild) {
-    filterbox_open();
+function addInteraction(type) {
+    if (type == 'Polygon') {
+        draw = new ol.interaction.Draw({
+            source: selectionLayerSource,
+            type: type,
+            stopClick: true
+        });
+    } else if (type == 'Square') {
+        draw = new ol.interaction.Draw({
+            source: selectionLayerSource,
+            type: 'Circle',
+            geometryFunction: ol.interaction.Draw.createBox(),
+            stopClick: true
+        });
+    } else if (type == 'Modify') {
+        console.log(' ***** in Modify type bla...')
+        draw = new ol.interaction.Modify({
+            features: collection,
+            // the SHIFT key must be pressed to delete vertices, so that new
+            // vertices can be drawn at the same position of existing vertices
+            deleteCondition: function (event) {
+                return ol.events.condition.shiftKeyOnly(event) &&
+                    ol.events.condition.singleClick(event);
+            }
+        });
+    }
+    map.addInteraction(draw);
+}
 
+
+/**
+ * Menu to draw polygon on map
+ *
+ * @param test
+ */
+function drawOnMapMenu(test) {
+    drawfilter_open();
+    // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
+    // olmap.removeInteraction(selectCluster);
     let collection = new ol.Collection();
 
-    let source = new ol.source.Vector({
+    /**
+     * Element (layer) to be included on map
+     */
+    selectionLayerSource = new ol.source.Vector({
         wrapX: false,
         features: collection,
         useSpatialIndex: false,
@@ -209,12 +288,12 @@ function drawPolygon(shortParent, shortChild) {
     });
 
     // create source layer
-    vector = new ol.layer.Vector({
-        source: source,
+    selectionLayer = new ol.layer.Vector({
+        source: selectionLayerSource,
         style: new ol.style.Style({
-            fill: new ol.style.Fill({
-                color: 'rgba(255, 255, 255, 0.2)'
-            }),
+            // fill: new ol.style.Fill({
+            //     color: 'rgba(255, 255, 255, 0.2)'
+            // }),
             stroke: new ol.style.Stroke({
                 color: '#ff0040',
                 width: 1
@@ -225,19 +304,40 @@ function drawPolygon(shortParent, shortChild) {
     });
     olmap.addLayer(vector);
 
-    let select = new ol.interaction.Select(
-    );
-
-    olmap.addInteraction(select);
+    /**
+     * Create and add interactions
+     */
+    // let select = new ol.interaction.Select();
+    // olmap.addInteraction(select);
 
     draw = new ol.interaction.Draw({
-        source: source,
+        source: selectionLayerSource,
         type: 'Polygon',
+        stopClick: true,
+    });
+    // draw.setZIndex(-100);
+    drawSquare = new ol.interaction.Draw({
+        source: selectionLayerSource,
+        type: 'Circle',
+        geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
     });
 
+    const overlayStyle = new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
+    const select = new ol.interaction.Select({style: overlayStyle,});
+    olmap.addInteraction(select)
+
     modify = new ol.interaction.Modify({
-        features: collection,
+        // features: collection.getFeaturesCollection(),
+        features: select.getFeatures(),
+        style: overlayStyle,
+        insertVertexCondition: function () {
+            // prevent new vertices to be added to the polygons
+            return !select.getFeatures().getArray().every(function (feature) {
+                return feature.getGeometry().getType().match(/Polygon/);
+            });
+        },
+        // features: collection,
         // the SHIFT key must be pressed to delete vertices, so that new
         // vertices can be drawn at the same position of existing vertices
         deleteCondition: function (event) {
@@ -252,22 +352,14 @@ function drawPolygon(shortParent, shortChild) {
     let append_str = wfsLayerName + '.';
     let features = hiddenLayer.getSource().getFeatures();
 
-    /* Point features select/deselect as you move polygon.
-        Deactivate select interaction. */
+    /**
+     * Point features select/deselect as you move polygon.
+     Deactivate select interaction.
+     */
     modify.on('modifystart', function (event) {
         sketch = event.features;
         // select.setActive(false);
-        listener = event.features.getArray()[0].getGeometry().on('change', function (event) {
-            // clear features so they deselect when polygon moves away
-            selectedFeatures.clear();
-            polygon = event.target;
-
-            for (var i = 0; i < features.length; i++) {
-                if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) {
-                    selectedFeatures.push(features[i]);
-                }
-            }
-        });
+        listener = selectStartFun(event)
     }, this);
     /* Reactivate select function */
     modify.on('modifyend', function (event) {
@@ -276,17 +368,8 @@ function drawPolygon(shortParent, shortChild) {
         selectedFeatures.clear();
         selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
-
-        /* select features in polygon */
-        let fLen = features.length;
-        for (let i = 0; i < fLen; i++) {
-            if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) selectedFeatures.push(features[i]);
-        }
-        /* get id of selected features for menu */
-        selectedFeatures.getArray().forEach(function (val) {
-            selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))
-        });
-        mapSelectFuntion(shortParent, shortChild, selectedIds.map);
+        selectionEdgeCoords = polygon;
+        get_quick_selection({'draw': getEdgeCoords()});
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -296,78 +379,127 @@ function drawPolygon(shortParent, shortChild) {
         }, 300);
     }
 
-    let drwst = document.getElementById('draw_polygon');
-    drwst.addEventListener('click', function () {
-        olmap.removeInteraction(modify);
-        olmap.addInteraction(draw);
-        /* Deactivate select and delete any existing polygons.
-            Only one polygon drawn at a time. */
-    });
-    draw.on('drawstart', function (event) {
-        source.clear();
-        sketch = event.feature;
+    /**
+     * Get geometry of drawing, check which features are inside drawing and push result to selectedFeatures.
+     *
+     * @param event
+     * @returns {*}
+     */
+    function selectStartFun(event) {
+        let changes;
+        try {
+            changes = event.feature.getGeometry().on('change', function (event) {
+                // clear features so they deselect when polygon moves away
+                // selectedFeatures.clear();
+                // polygon = event.target;
+                selectionEdgeCoords = event.target;
 
-        listener = sketch.getGeometry().on('change', function (event) {
-            selectedFeatures.clear();
-            polygon = event.target;
-            let fLen = features.length;
-            for (let i = 0; i < fLen; i++) {
-                if (polygon.intersectsExtent(features[i].getGeometry().getExtent())) selectedFeatures.push(features[i]);
-            }
-        });
+            });
+        } catch (e) {
+            changes = {}
+        }
+        return changes
+    }
+
+    /**
+     * Transforms coordinates for django, writes them in a variable and resets the original coordinates.
+     *
+     * @returns Array
+     */
+    function getEdgeCoords() {
+        // return  ol.proj.transform(selectionEdgeCoords.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
+        let coords = selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()
+        selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
+        return coords
+    }
+
+    drawSquare.on('drawstart', function (event) {
+        selectionLayerSource.clear();
+        listener = selectStartFun(event)
     }, this);
-
-    draw.on('drawend', function () {
+    drawSquare.on('drawend', function () {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
-        selectedIds.map = [];
+        // selectedIds.map = [];
+
+        /*/!* get id of selected features for menu *!/
         selectedFeatures.getArray().forEach(function (val) {
             selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
         });
         if (selectedIds.map.length > 0) {
-            mapSelectFunction(shortParent, shortChild, selectedIds.map);
-        }
-        olmap.removeInteraction(draw);
+            mapSelectFunction(selectedIds.map);
+        }*/
+
+        // /* remove preloaded layers defined by the url */
+        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+            .forEach(layer => olmap.removeLayer(layer));
+
+        get_quick_selection({'draw': getEdgeCoords()});
+        removeInteractions();
+        toggle_draw(document.getElementById("draw_square"))
+    });
+
+    draw.on('drawstart', function (event) {
+        selectionLayerSource.clear();
+        listener = selectStartFun(event)
+    }, this);
+
+    draw.on('drawend', function () {
+        // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
+
+        /* get id of selected features for menu */
+        /*    selectedFeatures.getArray().forEach(function (val) {
+                selectedIds.map.push(parseInt(val.getId().replace(append_str, '')))  // PaulsLayer1 to int(1)
+            });*/
+
+        /* remove preloaded layers defined by the url */
+        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+            .forEach(layer => olmap.removeLayer(layer));
+
+        get_quick_selection({'draw': getEdgeCoords()});
+        removeInteractions();
         toggle_draw(document.getElementById("draw_polygon"))
 
+        /*let extent = draw.getGeometry().getExtent();
+        clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
+          selectedFeatures.push(feature);
+        });*/
+        // ol.observable.unByKey(listener);
     });
-
-
-    let modst = document.getElementById('modify_polygon');
-    modst.addEventListener('click', function () {
-        olmap.removeInteraction(draw);
-        olmap.addInteraction(modify);
-    });
-
-    let delst = document.getElementById('' +
-        'remove_polygon');
-    delst.addEventListener('click', function () {
-        source.clear();
-        select.setActive(false);
-        mapSelectFunction(shortParent, shortChild, []);
-        resetDraw();
-    });
-
-    let closst = document.getElementById('draw_close');
-    closst.addEventListener('click', function () {
-        olmap.removeInteraction(draw);
-        olmap.removeInteraction(modify);
-        filterbox_close()
-    });
-}
-
-//Toggle between showing and hiding filterbox
-function filterbox_open() {
-    let filterbox = document.getElementById("filterbox");
-    filterbox.style.display = "block";
-}
-
-function filterbox_close() {
-    let filterbox = document.getElementById("filterbox");
-    filterbox.style.display = "none";
 
 }
 
-// add toggle function for background of draw and modify button, and remove background by press on delete and close
+/**
+ * Remove interactions from draw menu options (draw, drawSquare and modify).
+ */
+function removeInteractions() {
+    olmap.removeInteraction(draw);
+    olmap.removeInteraction(modify);
+    olmap.removeInteraction(drawSquare);
+}
+
+/**
+ * Toggle between showing and hiding drawfilter
+ */
+function drawfilter_open() {
+    let drawfilter = document.getElementById("drawfilter");
+    let closed_drawfilter = document.getElementById("closed_drawfilter");
+    closed_drawfilter.style.display = "none";
+    drawfilter.style.display = "block";
+    // document.getElementById("toggle_draw").className = 'active'
+}
+
+function drawfilter_close() {
+    let drawfilter = document.getElementById("drawfilter");
+    let closed_drawfilter = document.getElementById("closed_drawfilter");
+    closed_drawfilter.style.display = "block";
+    drawfilter.style.display = "none";
+    // TODO: remove only if nothing selected
+    // document.getElementById("toggle_draw").classList.remove('active')
+}
+
+/**
+ * add toggle function for background of draw and modify button, and remove background by press on delete and close
+ */
 function toggle_draw(self) {
     let siblings = document.getElementsByClassName('draw-hover');
     let s;
@@ -382,6 +514,8 @@ function toggle_draw(self) {
         if (self.id !== siblings[sLen].id && self.id !== 'draw_close') self.classList.add('activeM')
     }
 }
+
+//--- draw end ---------------------------------------------------------------------------------------------------------
 
 //Search
 function search_close() {
@@ -430,24 +564,6 @@ function getCookie(name) {
 // TODO: not used in this file. So from where comes the used token? Which one is better?
 let csrf_token = getCookie('csrftoken');
 
-//build menu on sidebar
-$(document).ready(function (menuTitle) {
-    $('#accordion').accordion({
-        heightStyle: "content",
-        active: false,
-        collapsible: true,
-    });
-    $("h5.w3-hover-blue.nav").click(function () {
-        // var menuValue = $(this).attr("value");
-// open accordion
-        $('div #subaccordion').accordion({
-            heightStyle: "content",
-            active: false,
-            collapsible: true,
-        });
-    });
-}); // end ready
-
 /**
  * Load metadata and preview plot of dataset from server asynchronous.
  *
@@ -457,6 +573,17 @@ function moreInfoModal(id) {
     let tb = false, pb = false;
     let modLock = false;
     let pdata, tdata;
+    let urlParams = new URLSearchParams(window.location.search);
+    let startdate, enddate;
+    let date = urlParams.getAll('date');
+
+    if ($.isEmptyObject(date)) {
+        startdate = 'None'
+        enddate = 'None'
+    } else {
+        startdate = date[0].toString();
+        enddate = date[1].toString();
+    }
 
     let ajaxTable = function () {
         return $.ajax({
@@ -477,6 +604,9 @@ function moreInfoModal(id) {
             // datatype: 'html',
             data: {
                 preview: id,
+                // date: date.toString(),
+                startdate: startdate,
+                enddate: enddate,
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
         })
@@ -492,7 +622,16 @@ function moreInfoModal(id) {
         // loop over "properties" dict with metadata, build columns
         for (let j in properties) {
             // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-            metaText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
+            metaText += '<tr>' +
+                '<td><div style="max-width:120px;"><b>' + j + '</b></div></td>' +
+                '<td><div style="max-height:300px; max-width:320px; ' +
+                'overflow-x: hidden; overflow-y:auto;">' + properties[j] + '</div></td>' +
+                '</tr>';
+        }
+        if (properties.Embargo == 'No'){
+            metaText += '<tr><td colspan = "2">' + storeBtn(properties.id, "False") + '</td></tr>'
+        } else {
+            metaText += '<tr><td colspan = "2">' + storeBtn(properties.id, "True") + '</td></tr>'
         }
         document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
         showDataInfo(properties);
@@ -521,7 +660,7 @@ function moreInfoModal(id) {
         .done((data) => {
             tdata = data
             tb = true
-            if (pb == true && modLock == false) {
+            if (pb === true && modLock === false) {
                 modLock = true
                 fillModal(tdata, pdata)
             }
@@ -531,7 +670,7 @@ function moreInfoModal(id) {
         .done((data) => {
             pdata = data
             pb = true
-            if (tb == true && modLock == false) {
+            if (tb === true && modLock === false) {
                 modLock = true
                 fillModal(tdata, pdata)
             }
@@ -550,12 +689,25 @@ function moreInfoModal(id) {
  * @param {string} id - can be a single id or a list of ids
  */
 function workspace_dataset(id) {
+    let urlParams = new URLSearchParams(window.location.search);
+    let startdate, enddate;
+    let date = urlParams.getAll('date');
+
+    if ($.isEmptyObject(date)) {
+        startdate = 'None'
+        enddate = 'None'
+    } else {
+        startdate = date[0].toString();
+        enddate = date[1].toString();
+    }
     if (id !== 'null') {
         $.ajax({
             url: DEMO_VAR + "/home/workspace_data",
             datatype: 'json',
             data: {
                 workspaceData: id,
+                startDate: startdate,
+                endDate: enddate,
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
         })
@@ -568,8 +720,6 @@ function workspace_dataset(id) {
                 if (sessionStorage.getItem("dataBtn")) {
                     let stored = JSON.parse(sessionStorage.getItem("dataBtn"));
                     $.each(json['workspaceData'], function (key, value) {
-                        console.log('key: ', key)
-                        console.log('value: ', value)
                         if (!stored[key]) stored[key] = value;
                     });
                     sessionStorage.setItem("dataBtn", JSON.stringify(stored))
@@ -579,10 +729,9 @@ function workspace_dataset(id) {
                     sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
                     sessionStorageData = json['workspaceData']
 
-                    $.each(json['workspaceData2'], function (k, v) {
+                    $.each(json['workspaceData2'], function (k) {
                         let dataset = new storeData(json['workspaceData2'][k])
                         //dataset.save(json['workspaceData2'][k])
-                        console.log('dataset.data: ', dataset.data)
                         sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
                     });
                 }
@@ -618,41 +767,33 @@ function show_preview(id) {
         })
 }
 
-function toggleMapTable(evt, tabName) {
+
+/**
+ * Toggle function to switch between map and table view, and in the future between quick and advanced filter.
+ *
+ * @param {Event} evt
+ * @param {string} tabName
+ * @param {boolean} isFilter
+ */
+function toggleMapTableFilter(evt, tabName, isFilter = false) {
     // Declare all variables
     let i, tabcontent, tablinks;
-    activeMap = tabName === "Map";
+    let classNamePrefex = "";
+
+    if (isFilter) {
+        classNamePrefex = "filter-"
+    } else {
+        activeMap = tabName === "Map";
+    }
 
     // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
+    tabcontent = document.getElementsByClassName(classNamePrefex + "tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
         tabcontent[i].style.display = "none";
     }
 
     // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-
-    // Show the current tab, and add an "active" class to the button that opened the tab
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
-
-
-function toggleFilter(evt, tabName) {
-    // Declare all variables
-    let i, tabcontent, tablinks;
-
-    // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("filter-tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-
-    // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("filter-tablinks");
+    tablinks = document.getElementsByClassName(classNamePrefex + "tablinks");
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
@@ -664,15 +805,13 @@ function toggleFilter(evt, tabName) {
 
 
 function filter_pagination(page) {
-    console.log('page: ', page)
-    console.log('selectedIds.result: ', selectedIds.result)
     $.ajax({
         url: DEMO_VAR + "/home/entries_pagination",
         datatype: 'json',
         data: {
             page: page, datasets: JSON.stringify(selectedIds.result),
             'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
+        }, // data sent with post request
     })
         .done(function (json) {
             document.getElementById("paginationTable").innerHTML = json
@@ -681,6 +820,164 @@ function filter_pagination(page) {
         .fail(function (e) {
             console.error('Fehler: ', e)
         })
+}
+
+/** The following function is used when Quick is one of several filter menues.
+ * Not needed when Quick is the standard menu. */
+/*
+function quick_filter(selection) {
+    $.ajax({
+        url: "/home/quick_filter",
+        data: {
+            selection: selection,
+            'csrfmiddlewaretoken': csrf_token,
+        }, // data sent with the post request
+        type: "GET",
+        // datatype: 'json',
+        dataType: "text",
+    })
+        .done(function (json) {
+            document.getElementById("quickFilter").innerHTML = json
+            let script = document.getElementById("quickFilter").getElementsByTagName('script');
+            let runScriptFunc = new Function(script[0].innerText)
+            runScriptFunc()
+            // $.globalEval(script[0].innerText)
+
+        })
+        .fail(function (xhr, status, errorThrown) {
+            console.log("Fehler: " + errorThrown);
+            console.log("Status: " + status);
+            console.dir(xhr);
+        })
+}
+*/
+
+
+/**
+ * Build url from values from map, form object (send as selection) and from existing URL
+ *
+ * @param {string} selection
+ */
+function getFilterURL(selection) {
+
+    let nextURL;
+    let url = window.location
+    let urlParams = new URLSearchParams(url.search);
+
+    let urlPath = url.origin + url.pathname;
+    if (selection) {
+        let selectedKey = Object.keys(selection)[0]
+        let selectedValues = Object.values(selection)[0]
+
+        urlParams.delete(selectedKey);
+        if (Symbol.iterator in Object(selectedValues)) {
+            for (let value of selectedValues) {
+                urlParams.append(selectedKey, value);
+            }
+        } else {
+            return false
+        }
+    }
+    nextURL = urlParams.toString() === '' ? urlPath : urlPath + '?' + urlParams.toString();
+    window.history.pushState({additionalInformation: 'Updated the URL with JS'}, '', nextURL);
+    if (urlParams.toString() === "") {
+        urlParams = 'reset'
+    }
+    return '/home/quick_filter_args/' + urlParams.toString();
+
+}
+
+
+/**
+ * Get state of quickfilter from url. Executed on every click in the quick filter and when filtered on the map.
+ *
+ * @param {string} selection
+ */
+function get_quick_selection(selection) {
+    let url = getFilterURL(selection)
+    // url = '/home/quick_filter/2007/'
+    // url = '/home/quick_filter'
+    if (url !== false) {
+        $.ajax({
+            url: DEMO_VAR + url,
+            // data: {
+            //     selection: selection,
+            //     'csrfmiddlewaretoken': csrf_token,
+            // }, // data sent with the post request
+            type: "GET",
+            // datatype: 'json',
+            dataType: "text",
+        })
+            .done(function (result) {
+                let json = JSON.parse(result)
+
+                /** update total Value for available datasets: */
+                $("#quickfilter-form p:first").html(
+                    function (i, txt) {
+                        return txt.replace(/\d+/, json['total'].toString());
+                    }
+                )
+
+                updateMapSelection(json)
+            })
+    }
+}
+
+
+/**
+ * Update quickfilter onload() according to the given URL
+ */
+function update_quickfilter() {
+
+    let url = window.location
+    let urlParams = new URLSearchParams(url.search);
+    let urlKey, long_search_id, ajax_element;
+    let date = "";
+    let selector_string = "";
+
+    if (urlParams !== false) {
+        for (urlKey of urlParams) {
+            selector_string = "#id_" + urlKey[0]
+            ajax_element = $(selector_string);
+
+            if (ajax_element.prop('type') === 'checkbox') {
+                ajax_element.prop('checked', JSON.parse(urlKey[1].toLowerCase()));
+            } else if (ajax_element.prop('type') === 'select-multiple' ||
+                ajax_element.prop('type') === 'select') {
+                long_search_id = selector_string + " [value=\"" + urlKey[1] + "\"]"
+                $(long_search_id).attr("selected", "selected");
+            } else if (ajax_element.prop('name') === 'date') {
+                if (date === "") {
+                    date = (new Date(urlKey[1])).toLocaleDateString();
+                } else {
+                    ajax_element.prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);
+                }
+            } else if (urlKey[0] === 'draw') {
+                let coords_list = urlKey[1].split(',').map(Number)
+                let coords_len = coords_list.length;
+                let coords = []
+                for (let i = 0; i < coords_len; i += 2) {
+                    coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i + 1]]))
+                }
+
+                // TODO: Do not create a new layer, but reuse the layers in drawOnMapManu
+                //  to enable modification after refreshing website
+                let url_feature = new ol.Feature({geometry: new ol.geom.Polygon([coords]),});
+                selectionLayerSource = new ol.source.Vector({features: [url_feature],});
+                selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
+                selectionLayer.setStyle(new ol.style.Style({
+                    stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
+                }))
+                olmap.addLayer(selectionLayer)
+
+            } else {
+                console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
+            }
+        }
+    } else {
+        // TODO: This might be useful to reset the quick filter menu
+    }
+
 }
 
 
@@ -694,13 +991,29 @@ function advanced_filter_query(selection) {
         }, // data sent with the post request
     })
         .done(function (json) {
-            console.log('json: ', json)
+            // console.log('json: ', json)
             document.getElementById("advancedFilter").innerHTML = json
 
         })
         .fail(function (e) {
             console.error('Fehler: ', e)
         })
+}
+
+
+/**
+ * Takes the ID of a button element. Used to toggle show/hide of the element following to this button element.
+ * @param {string} element
+ */
+function collapsibleFun(element) {
+    let x = document.getElementById(element);
+    let content = x.nextElementSibling;
+    x.classList.toggle("openElement");
+    if (content.style.display === "block") {
+        content.style.display = "none";
+    } else {
+        content.style.display = "block";
+    }
 }
 
 
@@ -767,7 +1080,6 @@ class SidebarButtonResult extends SidebarButton {
      * @param {list} outputs - List of output types.
      * @param {string} name - Name of Dataset.
      * @param {string} unit - Unit of Dataset.
-     * @param {string} title - Title used in the popup for the dataset.
      */
     constructor(id, orgid, inputs, outputs, name, unit) {
         super(id, orgid, inputs, outputs);
@@ -817,7 +1129,12 @@ class SidebarButtonWPS extends SidebarButton {
     }
 }
 
-function place_bokeh(divID, data) {
+/**
+ *
+ * @param {string} divID
+ * @param {*} data
+ */
+function place_html_with_js(divID, data) {
     document.getElementById(divID).innerHTML = data.div; // add plot
     bokehResultScript = document.createElement('script');
     bokehResultScript.type = 'text/javascript';
@@ -833,16 +1150,16 @@ function place_bokeh(divID, data) {
  * @param {Object} ev Start of the drag event outside of the canvas.
  */
 function dragstart_handler(ev) {
-    ev.dataTransfer.setData("text/plain", JSON.stringify([
+    let path = event.path || (event.composedPath && event.composedPath());
+    ev.dataTransfer.setData("text/html", JSON.stringify([
         ev.target.id,
         // ev.target.getAttribute('data-process'),
-        ev.path[1].id,
+        path[1].id,
         ev.target.getAttribute('data-service')
     ]));
 }
 
 /**
- * @private
  * @listens event:DragEvent
  * @param {Object} ev The drag event on the Canvas.
  */
