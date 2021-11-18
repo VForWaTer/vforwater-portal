@@ -139,7 +139,7 @@ function get_drop_coords() {
 
 
 /**
- * Collect data to drop element. (When Okay in Modal is pressed)
+ * Collect data to drop element. (When 'Okay' in Modal is pressed)
  * Check if any inputs or outputs are selected and drop resprective elements, too.
  *
  * @param {object} ev - object passed with drop event
@@ -1088,7 +1088,7 @@ function save_workflow() {
 }
 
 function run_workflow() {
-    let workflow = JSON.parse(sessionStorage.getItem('workflow'))
+    let workflow = get_sessionStorage_workflow();
     if (Object.keys(workflow).length <= 1) {
         alert(gettext("Please Load or Create a workflow to run first."))
         return;

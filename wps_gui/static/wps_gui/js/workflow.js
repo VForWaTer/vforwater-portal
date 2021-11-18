@@ -577,17 +577,37 @@ function get_workflow_id_affix() {
 function draw_workflow() {
     let box = {};
     let coords = {};
+    let ports = {};
     let workflow = get_sessionStorage_workflow();
-    for (let i in workflow) {
-        if (i == 'name') {
-            document.getElementById("workflow_name").setAttribute('value', workflow[i])
+    Object.entries(workflow).map(function (i) {
+        if (i[0] == 'name') {
+            document.getElementById("workflow_name").setAttribute('value', i[1])
         } else {
             box = new Box(
-                workflow[i].name, workflow[i].orgid, workflow[i].boxtype, workflow[i].inputs,
-                workflow[i].outputs, workflow[i].source, workflow[i].service, i
+                i[1].name, i[1].orgid, i[1].boxtype, i[1].inputs,
+                i[1].outputs, i[1].source, i[1].service, i[0]
             )
             coords = get_drop_coords();
             canvas.add(box.box, coords['x'], coords['y']);
+
+            ports[i[0]] = {'inputPortNames': i[1].input_ids, 'inputPorts': box.box.getInputPorts(),
+                'outputPortNames': i[1].output_ids, 'outputPorts': box.box.getOutputPorts(),
+                'box': box.box};
+
         }
-    }
+    })
+
+    Object.entries(ports).map(function ([k,v]) {
+        if (typeof v.inputPortNames !== "undefined") {
+            v.inputPortNames.forEach(function (val, ind) {
+                add_connection(ports[val].box.getOutputPort(ports[val].outputPortNames.indexOf(k)),
+                    v.box.getInputPort(ind))
+                    // v.box.box.getInputPorts().data[ind])
+                // add_connection(ports[val].outputPorts.data[ports[val].outputPortNames.indexOf(k)],
+                //     v.inputPorts.data[ind])
+            }
+            )
+        }
+
+    })
 }
