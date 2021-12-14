@@ -1,12 +1,12 @@
 Bokeh>=2.2.1
-django==3.2.9
+django>=3.2.10
 django_crontab>=0.7.1
 django-cors-headers>=3.2.1
 django-filter
 docutils>=0.16
 future
 jsonpickle
-lxml==4.6.3
+lxml>=4.6.5
 markdown
 matplotlib
 numpy
