@@ -40,6 +40,10 @@ def home(request):
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
     # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
+    sessiondata = {}
+    if 'processdescriptions' not in request.session:
+        request.session['processdescriptions'] = {}
+
     try:
         wps_services = list_wps_service_engines()
         # service = 'PyWPS_vforwater'
@@ -47,52 +51,66 @@ def home(request):
         wps = get_wps_service_engine(service)
         loopCount = 0
         for process in wps.processes:
-            describedprocess = wps.describeprocess(process.identifier)
-            wps.processes[loopCount].processin = []
-            for i in describedprocess.dataInputs:
-                if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
-                    if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
-                        # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
-                        keywords = ast.literal_eval(i.abstract[:1+i.abstract.find("}", 10)])['keywords']
-                        wps.processes[loopCount].processin.append(keywords)
-                    else:
-                        wps.processes[loopCount].processin.append(i.dataType)
-                # if i.allowedValues == [] and isinstance(i.dataType, str):
-                #     wps.processes[loopCount].processin.append('string')
-                # elif i.allowedValues == [] and not isinstance(i.dataType, str):
-                #     wps.processes[loopCount].processin.append(i.dataType)
-                elif i.allowedValues[0] == '_keywords':
-                    if i.allowedValues[1] == 'pattern':
-                        patternList = i.allowedValues[1:]
-                        patternList.insert(0, i.dataType)
-                        wps.processes[loopCount].processin.append(patternList)
-                    else:
-                        wps.processes[loopCount].processin.append(i.allowedValues[1:])
+            if process.identifier in request.session['processdescriptions']:
+                # describedprocess = request.session['processdescriptions'][process.identifier]
+                sessiondata[process.identifier] = request.session['processdescriptions'][process.identifier]
+            else:
+                sessiondata[process.identifier] = {'title': process.title, 'abstract': process.abstract,
+                                                   'identifier': process.identifier,
+                                                   'processin': '', 'processout': ''}
+                describedprocess = wps.describeprocess(process.identifier)
 
-            wps.processes[loopCount].processout = []
-            for i in describedprocess.processOutputs:
-                if 'error' not in i.identifier:
-                    if i.abstract is not None:
-                        if 'keywords' in json.loads(i.abstract):
-                            wps.processes[loopCount].processout.append(json.loads(i.abstract)['keywords'])
-                    elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
-                        wps.processes[loopCount].processout.append(i.dataType)
-                    # elif isinstance(i.dataType, float):
-                    #     wps.processes[loopCount].processout.append('float')
-                    # elif i.metadata[0] == '_keywords':
-                    #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
-            loopCount += 1
+                wps.processes[loopCount].processin = []
+                for i in describedprocess.dataInputs:
+                    if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
+                        if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
+                            # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
+                            keywords = ast.literal_eval(i.abstract[:1 + i.abstract.find("}", 10)])['keywords']
+                            wps.processes[loopCount].processin.append(keywords)
+                        else:
+                            wps.processes[loopCount].processin.append(i.dataType)
+                    # if i.allowedValues == [] and isinstance(i.dataType, str):
+                    #     wps.processes[loopCount].processin.append('string')
+                    # elif i.allowedValues == [] and not isinstance(i.dataType, str):
+                    #     wps.processes[loopCount].processin.append(i.dataType)
+                    elif i.allowedValues[0] == '_keywords':
+                        if i.allowedValues[1] == 'pattern':
+                            patternList = i.allowedValues[1:]
+                            patternList.insert(0, i.dataType)
+                            wps.processes[loopCount].processin.append(patternList)
+                        else:
+                            wps.processes[loopCount].processin.append(i.allowedValues[1:])
+                sessiondata[process.identifier]['processin'] = wps.processes[loopCount].processin
+
+                wps.processes[loopCount].processout = []
+                for i in describedprocess.processOutputs:
+                    if 'error' not in i.identifier:
+                        if i.abstract is not None:
+                            if 'keywords' in json.loads(i.abstract):
+                                wps.processes[loopCount].processout.append(json.loads(i.abstract)['keywords'])
+                        elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
+                            wps.processes[loopCount].processout.append(i.dataType)
+                        # elif isinstance(i.dataType, float):
+                        #     wps.processes[loopCount].processout.append('float')
+                        # elif i.metadata[0] == '_keywords':
+                        #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
+                sessiondata[process.identifier]['processout'] = wps.processes[loopCount].processout
+                loopCount += 1
+
+                # store needed information in session store
+                request.session['processdescriptions'] = sessiondata
+                request.session.modified = True
     except:
         logger.error(sys.exc_info()[0])
         service = ''
-        wps = []
         wps_services = []
 
     context = {'wps_services': wps_services,
-               'wps': wps,
+               'sessiondata': sessiondata,
                'service': service,
                }
     return render(request, 'wps_gui/home.html', context)
+
 
 # def use_pandoc(bla):
 #     from subprocess import Popen, PIPE, STDOUT

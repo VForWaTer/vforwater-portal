@@ -100,13 +100,13 @@
     {% endif %}
     <table style="width:100%">
       <div class="list-group">
-        {% for process in wps.processes %}
-          {% if process.identifier != "dbloader" %}
+        {% for identifier, process in sessiondata.items %}
+          {% if identifier != "dbloader" %}
           <tr>
-            <div id="{{ process.identifier }}" class="process w3-card-2"
-                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}');"
+            <div id="{{ identifier }}" class="process w3-card-2"
+                 onclick="wpsprocess('{{ service }}', '{{ identifier }}');"
                  title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
-                 data-service="{{ service }}" data-process="{{ process.identifier }}"
+                 data-service="{{ service }}" data-process="{{ identifier }}"
                  style="cursor:pointer;">
               <button-header class="w3-container" style="font-size: smaller">
               </button-header>
@@ -122,7 +122,7 @@
               <button-footer class="w3-container" style="font-size: smaller">
                 {#                                    <p>No output envisaged</p>#}
               </button-footer>
-              <style onload="inoutIndicator('{{ process.identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
+              <style onload="inoutIndicator('{{ identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
 
             </div>
           </tr>
