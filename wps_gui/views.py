@@ -16,10 +16,11 @@ from django.utils import timezone
 from heron.settings import VFW_SERVER, HOST_NAME
 from vfwheron.models import Entries, Datatypes
 from vfwheron.views import get_accessible_data, get_dataset
-from wps_gui.models import WpsResults, WebProcessingService
+from wps_gui.models import WpsResults, WebProcessingService, WpsDescription
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 
 import logging
+
 logger = logging.getLogger(__name__)
 datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
              'raster', 'ndarray', 'vraster', '2darray', 'idataframe', 'vdataframe',
@@ -40,9 +41,19 @@ def home(request):
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
     # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
+    # TODO: IMPORTANT! Process description is only loaded once.
+    #  When changing a process, the databaseentry has to be changed, too.
     sessiondata = {}
-    if 'processdescriptions' not in request.session:
-        request.session['processdescriptions'] = {}
+    jsondata = {}
+    WpsQueryset = WpsDescription.objects
+
+    if WpsQueryset.exists():
+        for process in list(WpsQueryset.values('identifier', 'service', 'title', 'abstract', 'inputs', 'outputs')):
+            sessiondata[process['identifier']] = {'service': process['service'],
+                                                  'title': process['title'],
+                                                  'abstract': process['abstract'],
+                                                  'processin': process['inputs'],
+                                                  'processout': process['outputs']}
 
     try:
         wps_services = list_wps_service_engines()
@@ -51,10 +62,7 @@ def home(request):
         wps = get_wps_service_engine(service)
         loopCount = 0
         for process in wps.processes:
-            if process.identifier in request.session['processdescriptions']:
-                # describedprocess = request.session['processdescriptions'][process.identifier]
-                sessiondata[process.identifier] = request.session['processdescriptions'][process.identifier]
-            else:
+            if process.identifier not in sessiondata.keys():
                 sessiondata[process.identifier] = {'title': process.title, 'abstract': process.abstract,
                                                    'identifier': process.identifier,
                                                    'processin': '', 'processout': ''}
@@ -95,20 +103,29 @@ def home(request):
                         # elif i.metadata[0] == '_keywords':
                         #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
                 sessiondata[process.identifier]['processout'] = wps.processes[loopCount].processout
+
+                jsondata[process.identifier] = process_to_json(process)
+
                 loopCount += 1
 
-                # store needed information in session store
-                request.session['processdescriptions'] = sessiondata
-                request.session.modified = True
-    except:
+                WpsQueryset.create(service=service, title=sessiondata[process.identifier]['title'],
+                                   identifier=process.identifier,
+                                   abstract=sessiondata[process.identifier]['abstract'],
+                                   inputs=sessiondata[process.identifier]['processin'],
+                                   outputs=sessiondata[process.identifier]['processout'])
+    except Exception as e:
         logger.error(sys.exc_info()[0])
         service = ''
         wps_services = []
+        print('in except: ', e)
 
     context = {'wps_services': wps_services,
                'sessiondata': sessiondata,
                'service': service,
+               'tools': jsondata
+               # 'tools': json.dumps(jsondata)
                }
+
     return render(request, 'wps_gui/home.html', context)
 
 

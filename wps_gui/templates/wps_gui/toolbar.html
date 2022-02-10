@@ -18,7 +18,16 @@
 {#let MAP_SERVER = "{{ MAP_SERVER }}";#}
 {#let DEMO_VAR = "{{ DEMO_VAR }}"#}
 {#</script>#}
+<body>
 <script>
+  {% autoescape off %}
+    let data =  {{ tools }}
+  {% endautoescape %}
+  console.log('A')
+  console.log('tools: ', data)
+  console.log('B')
+  sessionStorage.setItem("tools",  JSON.stringify({'{{ service }}': data}))
+  {#sessionStorage.setItem("tools", JSON.stringify({{ identifier }}))#}
   /**
    * Build Type indicators for buttons in Toolbox
    * Don't draw a marker, this is done with css. Set only respective class here.
@@ -32,18 +41,18 @@
     invalues.forEach(function (val) {
       if (val.includes('pattern')) {
         element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
-                'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
+          'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
       } else if (Array.isArray(val) && val.length > 1) {
         let newHeader = "";
         val.forEach(function (inVal) {
           newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-                  'class="' + inVal + ' "title="Input: ' + val + '"></span>';
+            'class="' + inVal + ' "title="Input: ' + val + '"></span>';
         });
         element.getElementsByTagName("button-header")[0].innerHTML +=
-                '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
+          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
       } else {
         element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val + '" ' +
-                'style="display: inline-block;" title="Input: ' + val + '"></span>';
+          'style="display: inline-block;" title="Input: ' + val + '"></span>';
       }
     });
     //console.log('outvalues: ', outvalues)
@@ -52,21 +61,19 @@
         let newFooter = "";
         val.forEach(function (outVal) {
           newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-                  'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
+            'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
         });
         element.getElementsByTagName("button-footer")[0].innerHTML +=
-                '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
+          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
       } else {
         element.getElementsByTagName("button-footer")[0].innerHTML +=
-                '<span style="align-self: flex-end;" <span class="' + val + '" ' +
-                'title="Ouput: ' + val + '"></span></div>';
+          '<span style="align-self: flex-end;" <span class="' + val + '" ' +
+          'title="Ouput: ' + val + '"></span></div>';
         {% comment %} display: inline-block for dots on the right side{% endcomment %}
       }
     })
   }
 </script>
-<body>
-<!-- TODO: check if still in use. If not delete that parm -->
 <!--   Sidenav/menu -->
 <!--   Show Data selected in Home in Data Store and start database loader -->
 <nav class="w3-sidenav w3-collapse w3-white w3-animate-right" style="z-index:0;width:300px;right:0"

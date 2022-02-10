@@ -35,3 +35,19 @@ class WpsResults(models.Model):
     def __str__(self):
         return '%s %s' % (self.wps, self.inputs)
         managed = True
+
+
+class WpsDescription(models.Model):
+    """
+    Store information about wps process to reduce time to open workspace
+    """
+    service = models.CharField(max_length=30, default='')
+    title = models.CharField(max_length=120, unique=True, default='')
+    identifier = models.CharField(max_length=120, unique=True, default='')
+    abstract = models.CharField(max_length=8192, default='')
+    inputs = models.CharField(max_length=2048, default='')
+    outputs = models.CharField(max_length=2048, default='')
+
+    def __str__(self):
+        return 'service: %s, title: %s' % (self.service, self.title)
+        managed = True
