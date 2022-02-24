@@ -1,15 +1,22 @@
 # from inspect import getmembers
 import ast
 import datetime
+import hashlib
+import itertools
 import json
+import numbers
 import re
 import sys
+import time
+
 import jsonpickle
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, JsonResponse
 from django.http.response import Http404
 from django.shortcuts import render
+from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import timezone
 
@@ -30,6 +37,8 @@ datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle'
              ]
 basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number']
+
+
 # datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
 #              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
 
@@ -45,87 +54,139 @@ def home(request):
     #  When changing a process, the databaseentry has to be changed, too.
     sessiondata = {}
     jsondata = {}
+    wps_data = {}
     WpsQueryset = WpsDescription.objects
-
-    if WpsQueryset.exists():
-        for process in list(WpsQueryset.values('identifier', 'service', 'title', 'abstract', 'inputs', 'outputs')):
-            sessiondata[process['identifier']] = {'service': process['service'],
-                                                  'title': process['title'],
-                                                  'abstract': process['abstract'],
-                                                  'processin': process['inputs'],
-                                                  'processout': process['outputs']}
-
+    h = hashlib.new('sha256')
     try:
         wps_services = list_wps_service_engines()
         # service = 'PyWPS_vforwater'
         service = WebProcessingService.objects.values_list('name', flat=True)[0]
         wps = get_wps_service_engine(service)
-        loopCount = 0
+    except Exception as e:
+        print('Exception in wps_gui.views.home: ', e)
+
+    if WpsQueryset.exists():
+        for process in list(WpsQueryset.values('identifier', 'service', 'title', 'abstract', 'inputs', 'outputs',
+                                               'verbose', 'storeSupported', 'statusSupported', 'metadata',
+                                               'dataInputs', 'processOutputs')):
+            # WpsQueryset.filter(identifier=process['identifier']).delete()
+            wps_data[process['identifier']] = {'service': process['service'],
+                                               'title': process['title'],
+                                               'abstract': process['abstract'],
+                                               'processin': process['inputs'],
+                                               'processout': process['outputs']}
+            jsondata[process['identifier']] = {'service': process['service'], 'verbose': process['verbose'],
+                                               'storeSupported': process['storeSupported'],
+                                               'statusSupported': process['statusSupported'],
+                                               'title': process['title'], 'abstract': process['abstract'],
+                                               'metadata': process['metadata'],
+                                               'dataInputs': process['dataInputs'],
+                                               'processOutputs': process['processOutputs']}
+
+    try:
+        # loopCount = 0
         for process in wps.processes:
-            if process.identifier not in sessiondata.keys():
-                sessiondata[process.identifier] = {'title': process.title, 'abstract': process.abstract,
-                                                   'identifier': process.identifier,
-                                                   'processin': '', 'processout': ''}
+            # if process.identifier not in sessiondata.keys():
+            if process.identifier not in jsondata.keys():
+                print('process.identifier: ', process.identifier, flush=True)
+                print('process.title: ', process.title, flush=True)
+                wps_data[process.identifier] = {}
+                print('wps_data[process.identifier]: ', wps_data[process.identifier], flush=True)
+                wps_data[process.identifier] = {'title': process.title, 'abstract': process.abstract,
+                                                'identifier': process.identifier,
+                                                'processin': '', 'processout': ''}
                 describedprocess = wps.describeprocess(process.identifier)
-
-                wps.processes[loopCount].processin = []
-                for i in describedprocess.dataInputs:
-                    if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
-                        if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
-                            # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
-                            keywords = ast.literal_eval(i.abstract[:1 + i.abstract.find("}", 10)])['keywords']
-                            wps.processes[loopCount].processin.append(keywords)
-                        else:
-                            wps.processes[loopCount].processin.append(i.dataType)
-                    # if i.allowedValues == [] and isinstance(i.dataType, str):
-                    #     wps.processes[loopCount].processin.append('string')
-                    # elif i.allowedValues == [] and not isinstance(i.dataType, str):
-                    #     wps.processes[loopCount].processin.append(i.dataType)
-                    elif i.allowedValues[0] == '_keywords':
-                        if i.allowedValues[1] == 'pattern':
-                            patternList = i.allowedValues[1:]
-                            patternList.insert(0, i.dataType)
-                            wps.processes[loopCount].processin.append(patternList)
-                        else:
-                            wps.processes[loopCount].processin.append(i.allowedValues[1:])
-                sessiondata[process.identifier]['processin'] = wps.processes[loopCount].processin
-
-                wps.processes[loopCount].processout = []
-                for i in describedprocess.processOutputs:
-                    if 'error' not in i.identifier:
-                        if i.abstract is not None:
-                            if 'keywords' in json.loads(i.abstract):
-                                wps.processes[loopCount].processout.append(json.loads(i.abstract)['keywords'])
-                        elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
-                            wps.processes[loopCount].processout.append(i.dataType)
-                        # elif isinstance(i.dataType, float):
-                        #     wps.processes[loopCount].processout.append('float')
-                        # elif i.metadata[0] == '_keywords':
-                        #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
-                sessiondata[process.identifier]['processout'] = wps.processes[loopCount].processout
-
+                wps_data = get_process_metadata(wps_data,
+                                                                    describedprocess,
+                                                                    process.identifier)
+                # wps.processes[loopCount].processin = []
+                # for i in describedprocess.processsin:
+                #     if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
+                #         if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
+                #             # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
+                #             keywords = ast.literal_eval(i.abstract[:1 + i.abstract.find("}", 10)])['keywords']
+                #             wps.processes[loopCount].processin.append(keywords)
+                #         else:
+                #             wps.processes[loopCount].processin.append(i.dataType)
+                #     # if i.allowedValues == [] and isinstance(i.dataType, str):
+                #     #     wps.processes[loopCount].processin.append('string')
+                #     # elif i.allowedValues == [] and not isinstance(i.dataType, str):
+                #     #     wps.processes[loopCount].processin.append(i.dataType)
+                #     elif i.allowedValues[0] == '_keywords':
+                #         if i.allowedValues[1] == 'pattern':
+                #             patternList = i.allowedValues[1:]
+                #             patternList.insert(0, i.dataType)
+                #             wps.processes[loopCount].processin.append(patternList)
+                #         else:
+                #             wps.processes[loopCount].processin.append(i.allowedValues[1:])
+                # sessiondata[process.identifier]['processin'] = wps.processes[loopCount].processin
+                #
+                # wps.processes[loopCount].processout = []
+                # for i in describedprocess.processOutputs:
+                #     if 'error' not in i.identifier:
+                #         if i.abstract is not None:
+                #             if 'keywords' in json.loads(i.abstract):
+                #                 wps.processes[loopCount].processout.append(json.loads(i.abstract)['keywords'])
+                #         elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
+                #             wps.processes[loopCount].processout.append(i.dataType)
+                #         # elif isinstance(i.dataType, float):
+                #         #     wps.processes[loopCount].processout.append('float')
+                #         # elif i.metadata[0] == '_keywords':
+                #         #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
+                # sessiondata[process.identifier]['processout'] = wps.processes[loopCount].processout
                 jsondata[process.identifier] = process_to_json(process)
+                print('1', flush=True)
+                # loopCount += 1
+                # hash([json.dumps(wps_data[process['identifier']]),
+                #       json.dumps(jsondata[process['identifier']])])
+                h.update(b"\"str([wps_data[process['identifier']], jsondata[process['identifier']]])\"")
+                print('2', flush=True)
+                print('jsondata[process.identifier]: ', jsondata[process.identifier], flush=True)
+                print("wps_data[process.identifier]['title']: ", wps_data[process.identifier]['title'])
+                # print("wps_data[process.identifier].title: ", wps_data[process.identifier].title)
 
-                loopCount += 1
-
-                WpsQueryset.create(service=service, title=sessiondata[process.identifier]['title'],
+                WpsQueryset.create(service=service, title=wps_data[process.identifier]['title'],
                                    identifier=process.identifier,
-                                   abstract=sessiondata[process.identifier]['abstract'],
-                                   inputs=sessiondata[process.identifier]['processin'],
-                                   outputs=sessiondata[process.identifier]['processout'])
+                                   abstract=wps_data[process.identifier]['abstract'],
+                                   inputs=wps_data[process.identifier]['processin'],
+                                   outputs=wps_data[process.identifier]['processout'],
+                                   verbose=jsondata[process.identifier]['verbose'],
+                                   statusSupported=jsondata[process.identifier]['statusSupported'],
+                                   storeSupported=jsondata[process.identifier]['storeSupported'],
+                                   metadata=jsondata[process.identifier]['metadata'],
+                                   dataInputs=jsondata[process.identifier]['dataInputs'],
+                                   processOutputs=jsondata[process.identifier]['processOutputs'],
+                                   hash=h.hexdigest()
+                                   )
+                print('3', flush=True)
     except Exception as e:
         logger.error(sys.exc_info()[0])
         service = ''
         wps_services = []
         print('in except: ', e)
 
+    if 'dbloader' in wps_data:
+        del wps_data['dbloader']
+        # del jsondata['dbloader']
+    if 'datareader' in wps_data:
+        del wps_data['datareader']
+        # del jsondata['datareader']
+
+    # for i in sessiondata:
+    #     print('i: ', i)
+    #     jsondata[i] = process_to_json(sessiondata[i])
+
+    if 'workflow' in wps_data:
+        del wps_data['workflow']
+
     context = {'wps_services': wps_services,
-               'sessiondata': sessiondata,
+               'sessiondata': wps_data,
                'service': service,
                'tools': jsondata
                # 'tools': json.dumps(jsondata)
                }
 
+    # print('jsondata: ', context['tools'])
     return render(request, 'wps_gui/home.html', context)
 
 
@@ -180,73 +241,92 @@ def create_wpsdb_entry(wps_process: str, invalue: list, outputs):
     :param invalue: list of tuples of input identifier of wps and respective value (e.g. a path)
     """
     db_result = WpsResults.objects.create(open=False, wps=wps_process, inputs=dict(invalue), outputs=outputs,
-                                          creation=timezone.now())#, access=timezone.now())
+                                          creation=timezone.now())  # , access=timezone.now())
     return db_result.id
 
 
 class ProcessView(TemplateView):
 
     def get(self, request):
-
         selected_process = json.loads(request.GET.get('processview'))
 
         wps = get_wps_service_engine(selected_process['serv'])
         wps_process = wps.describeprocess(selected_process['id'])
 
-        # TODO: use of jsonpickle only to simplify readability of wps_process.
-        #  Shouldn't be necessary to use jsonpickle for that. Please improve!
-        # simply serialize wps to json
-        whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
+        wps_description = process_to_json(wps_process)
 
-        # convert to dict to remove unwanted keys and empty values
-        whole_wpsprocess = json.loads(whole_wpsprocess_json)
-        whole_wpsprocess.pop('_root', None)
-        wps_description = {}
-        for a in whole_wpsprocess:
-            if isinstance(whole_wpsprocess[a], list):
-                list_values = []
-                for b in whole_wpsprocess[a]:
-                    if isinstance(b, dict):
-                        innerdict = {}
-                        for k, v in b.items():
-                            # TODO: ugly hack because keywords are still not implemented in pywps. Use
-                            #  allow_values with first value '_keywords' instead
-                            if k == 'allowedValues' and v != [] and v[0] == '_keywords':
-                                innerdict['keywords'] = v[1:]
-                            elif k == 'abstract' and v is not None:  # and not v == [] and v[0] == '_keywords':
-                                try:
-                                    for abst in json.loads(v):
-                                        if abst == 'keywords':
-                                            innerdict[abst] = json.loads(v)[abst]
-                                        else:
-                                            innerdict['abstract'] = v
-                                except ValueError:
-                                    innerdict['abstract'] = v
-                            elif v is not None and v != []:
-                                if isinstance(v, str) and re.search("(?<=/#)\w+", v):
-                                    match = re.search("(?<=/#)\w+", v)
-                                    innerdict[k] = match.group(0)
-                                else:
-                                    innerdict[k] = v
-                        list_values.append(innerdict)
-                    elif not b is None and b != []:
-                        list_values.append(b)
-                wps_description[a] = list_values
-            elif not whole_wpsprocess[a] is None and whole_wpsprocess[a] != []:
-                # from docutils.writers.html4css1 import Writer, HTMLTranslator
-                # from docutils import core
-                # class HTMLFragmentTranslator(HTMLTranslator):
-                #     def __init__(self, document):
-                #         HTMLTranslator.__init__(self, document)
-                #         self.head_prefix = ['', '', '', '', '']
-                #         self.body_prefix = []
-                #         self.body_suffix = []
-                #         self.stylesheet = []
-                #     def astext(self):
-                #         return ''.join(self.body)
-                # html_fragment_writer = Writer()
-                # html_fragment_writer.translator_class = HTMLFragmentTranslator
-                # print("reST_to_html(v): ", core.publish_string(whole_wpsprocess[a], writer=html_fragment_writer))
+        return JsonResponse(wps_description)
+
+
+def process_to_json(wps_process):
+    # TODO: use of jsonpickle only to simplify readability of wps_process.
+    #  Shouldn't be necessary to use jsonpickle for that. Please improve!
+    # simply serialize wps to json
+    whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
+
+    # convert to dict to remove unwanted keys and empty values
+    whole_wpsprocess = json.loads(whole_wpsprocess_json)
+    whole_wpsprocess.pop('_root', None)
+    wps_description = {}
+    for a in whole_wpsprocess:
+        print('___a: ', a)
+        if isinstance(whole_wpsprocess[a], list):
+            list_values = []
+            for b in whole_wpsprocess[a]:
+                if isinstance(b, dict):
+                    innerdict = {}
+                    for k, v in b.items():
+                        # TODO: ugly hack because keywords are still not implemented in pywps. Use
+                        #  allow_values with first value '_keywords' instead
+                        if k == 'allowedValues' and v != [] and v[0] == '_keywords':
+                            innerdict['keywords'] = v[1:]
+                        elif k == 'version':
+                            print('********* Version is now implemented in pywps: ', k, v)
+                        elif k == 'processVersion':
+                            print('********* processVersion is now implemented in pywps: ', k, v)
+                        elif k == 'abstract' and v is not None:  # and not v == [] and v[0] == '_keywords':
+                            try:
+                                for abst in json.loads(v):
+                                    if abst == 'keywords':
+                                        innerdict[abst] = json.loads(v)[abst]
+                                    else:
+                                        innerdict['abstract'] = v
+                            except ValueError:
+                                innerdict['abstract'] = v
+                        elif v is not None and v != []:
+                            if isinstance(v, str) and re.search("(?<=/#)\w+", v):
+                                match = re.search("(?<=/#)\w+", v)
+                                innerdict[k] = match.group(0)
+                            else:
+                                innerdict[k] = v
+
+                    # TODO: The following 'if' can be removed when there is a 'required' flag to use in pywps/owslib
+                    if 'minOccurs' in innerdict and innerdict['minOccurs'] > 0 \
+                        and innerdict['dataType'] != 'boolean':
+                        innerdict['required'] = True
+
+                    list_values.append(innerdict)
+                elif b is not None and b != []:
+                    list_values.append(b)
+
+                # print('__list_values[0]: ', list_values[0])
+                # print('list_values[]["minOccours"]: ', list_values[0]['minOccours'])
+            wps_description[a] = list_values
+        elif not whole_wpsprocess[a] is None and whole_wpsprocess[a] != []:
+            # from docutils.writers.html4css1 import Writer, HTMLTranslator
+            # from docutils import core
+            # class HTMLFragmentTranslator(HTMLTranslator):
+            #     def __init__(self, document):
+            #         HTMLTranslator.__init__(self, document)
+            #         self.head_prefix = ['', '', '', '', '']
+            #         self.body_prefix = []
+            #         self.body_suffix = []
+            #         self.stylesheet = []
+            #     def astext(self):
+            #         return ''.join(self.body)
+            # html_fragment_writer = Writer()
+            # html_fragment_writer.translator_class = HTMLFragmentTranslator
+            # print("reST_to_html(v): ", core.publish_string(whole_wpsprocess[a], writer=html_fragment_writer))
 
                 # import simplicity
                 # print('rst_to_json: ', simplicity.rst_to_json(whole_wpsprocess[a]))
@@ -266,7 +346,14 @@ class ProcessView(TemplateView):
 
                 wps_description[a] = whole_wpsprocess[a]
 
-        return JsonResponse(wps_description)
+    # print('wps_description: ', wps_description)
+    # for i in wps_description:
+    #     print('i: ', i)
+    #     print('wps_description[i]: ', wps_description[i])
+    #
+    # for j in wps_description['dataInputs']:
+    #     print('j: ', j)
+    return wps_description
 
 
 def handle_wps_output(execution, wps_process, inputs):
@@ -352,10 +439,10 @@ def handle_wps_output(execution, wps_process, inputs):
 
                 single_output['wpsID'] = wpsid
                 single_output['dropBtn'] = {'orgid': wpsid,
-                                         'type': 'data',
-                                         'name': '',
-                                         'inputs': [],
-                                         'outputs': [single_output['type']]}
+                                            'type': 'data',
+                                            'name': '',
+                                            'inputs': [],
+                                            'outputs': [single_output['type']]}
             else:
                 print('*** no output to write to db ***')
                 single_output['error'] = 'no output to write to db'
@@ -381,7 +468,7 @@ def process_run(request):
     if True:
         request_input = json.loads(request.GET.get('processrun'))
         inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""),
-                          request_input.get("type_list", "")))
+                          request_input.get("in_type_list", "")))
         inputs = edit_input(inputs)
         wps = get_wps_service_engine(request_input.get("serv", ""))
         wps_process = request_input.get("id", "")
@@ -459,9 +546,14 @@ def edit_input(inputs):
     def filepath(fid):
         pass
 
+    print('I')
     wps_input = []
     for key_value in inputs:
-        if isinstance(key_value[1], list):
+        print('X, key_value: ', key_value)
+        print('X, key_value[1]: ', key_value[1])
+        if key_value[1] is None and not (key_value[0] == 'start' or key_value[0] == 'end'):
+            wps_input.append((key_value[0], key_value[2]))
+        elif isinstance(key_value[1], list):
             for value, type_value in zip(key_value[1], key_value[2]):
                 if type_value in datatypes:
                     # new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[2])
@@ -473,7 +565,7 @@ def edit_input(inputs):
                     else:
                         wps_input.append((key_value[0],
                                           ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[0]))
-        elif isinstance(key_value[1], bool):
+        elif isinstance(key_value[1], bool) or isinstance(key_value[1], numbers.Number):
             wps_input.append((key_value[0], str(key_value[1])))
         elif key_value[1][0:2] == 'db' and key_value[1][2:].isdecimal():
             wps_input.append((key_value[0], key_value[1][2:]))
@@ -521,7 +613,7 @@ def load_data_local(inputs):
 #
 #         value_list = request.POST.getlist('input')
 #
-#         for input in wps_process.dataInputs:
+#         for input in wps_process.processsin:
 #             key_list.append(input.identifier)
 #
 #         inputs = list(zip(key_list, value_list))
@@ -568,6 +660,7 @@ def development(request):
     """
     return HttpResponse("We apologize for the inconvenience.\\ At the moment this site is under heavy development.")
 
+
 # TODO:
 def clean_wpsresult():
     """
@@ -575,3 +668,203 @@ def clean_wpsresult():
     :return:
     """
     return ""
+
+
+def workflow_run(request):
+    if True:
+        request_input = json.loads(request.GET.get('processrun'))
+        workflow = request_input['workflow']
+        chain = request_input['chain']
+        service = ""
+        processes = {}
+        inputs = []
+        print('workflow: ', workflow)
+        print('chain: ', chain)
+        for i in chain:
+            print('i: ', i)
+            if workflow[i]['serv'] != service:
+                print('A')
+                service = workflow[i]['serv']
+                print('B')
+                print('B: ', service)
+                wps_service_engine = \
+                    WebProcessingService.objects.filter(name=service).values_list('endpoint', flat=True)[0]
+                print('C')
+                print('C: ', wps_service_engine)
+            print('workflow[i]: ', workflow[i])
+            print('workflow[i].get("key_list", ""): ', workflow[i].get("key_list", ""))
+            print('workflow[i].get("key_list", ""): ', len(workflow[i].get("key_list", "")))
+            print('workflow[i].get("value_list", ""): ', workflow[i].get("value_list", ""))
+            print('workflow[i].get("in_type_list", ""): ', workflow[i].get("in_type_list", ""))
+            print("'wps_process': workflow[i]['id']: ", workflow[i]['id'])
+            bla = itertools.zip_longest(workflow[i].get("key_list", ""),
+                                        workflow[i].get("value_list", ""),
+                                        workflow[i].get("in_box_list", ""),
+                                        workflow[i].get("in_type_list", ""))
+            print("zip: ", bla)
+            print("list zip: ", list(bla))
+            processes[i] = {'inputs': edit_input(
+                list(itertools.zip_longest(workflow[i].get("key_list", ""),
+                                           workflow[i].get("value_list", ""),
+                                           workflow[i].get("in_box_list", ""),
+                                           workflow[i].get("in_type_list", ""))
+                     )),
+                'server': wps_service_engine,
+                # 'server': workflow[i]['serv'],
+                'wps_process': workflow[i]['id'],
+            }
+            # inputs[i]['inputs'] = edit_input(inputs[i]['inputs'])
+        # inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""),
+        #                   request_input.get("in_type_list", "")))
+        # inputs = edit_input(inputs)
+        print('C3: ', processes)
+        wps = get_wps_service_engine('PyWPS_vforwater')
+        print('D')
+        inputs = [('processlist', json.dumps(processes)), ('chain', json.dumps(chain))]
+        print('inputs: ', inputs)
+        execution = wps.execute('workflow', inputs)
+        print('execution: ', execution)
+        print('execution: ', execution.status)
+
+        all_outputs = handle_wps_output(execution, 'workflow', inputs)
+        print('all_outputs: ', all_outputs)
+    else:
+        all_outputs = {'execution_status': 'auth_error'}
+        print('user is not authenticated. ', all_outputs)
+
+    return JsonResponse(all_outputs)
+
+
+def update_tools(request, updateinterval=5):
+    print('A')
+
+    updatedwps = []
+    wps_data = {}
+    jsondata = {}
+    wps_hash = {}
+    tools_for_uptdate = []
+    h = hashlib.new('sha256')
+    WpsQueryset = WpsDescription.objects
+
+    wps_services = list_wps_service_engines()
+    # service = 'PyWPS_vforwater'
+    service = WebProcessingService.objects.values_list('name', flat=True)[0]
+    wps = get_wps_service_engine(service)
+
+    print('B')
+    updateDates = list(WpsQueryset.values('lastUpdateDateCheck', 'identifier'))
+    for process in updateDates:
+        print('process: ', process)
+        wps_data = {}
+        timediff = timezone.now() - process['lastUpdateDateCheck']
+        if timediff.total_seconds()/60 > updateinterval:
+            tools_for_uptdate.append(process['identifier'])
+        else:
+            return {}
+
+    db_data = list(WpsQueryset.filter(identifier__in=tools_for_uptdate)
+                   .values('service', 'title', 'abstract', 'inputs', 'hash',
+                           'outputs', 'verbose', 'identifier', 'statusSupported',
+                           'storeSupported', 'metadata', 'dataInputs', 'processOutputs'))
+
+    for process in db_data:
+        print('++++ process type: ', type(process))
+        wps_data[process['identifier']] = {'service': process['service'],
+                                           'title': process['title'],
+                                           'abstract': process['abstract'],
+                                           'processin': process['inputs'],
+                                           'processout': process['outputs']}
+        describedprocess = wps.describeprocess(process['identifier'])
+        wps_data = get_process_metadata(wps_data,
+                                        describedprocess,
+                                        process['identifier'])
+        jsondata[process['identifier']] = process_to_json(describedprocess)
+
+        h.update(b"\"str([wps_data[process['identifier']], jsondata[process['identifier']]])\"")
+        wps_hash[process['identifier']] = h.hexdigest()
+        if process['hash'] != wps_hash[process['identifier']]:
+
+            print("*process['identifier']: ", process['identifier'])
+            print('h: ', h.hexdigest())
+            print('__-__ db hash: ', process['hash'])
+            print('title       :    ', process['title'] == wps_data[process['identifier']]['title'])
+            print('abstract    :    ', process['abstract'] == wps_data[process['identifier']]['abstract'])
+            # print('identifier  :    ', process['identifier'] == wps_data[process['identifier']]['identifier'])
+            print('wps processin  : ', wps_data[process['identifier']]['processin'], type(wps_data[process['identifier']]['processin']))
+            # print('process inputs : ', process['inputs'], type(process['inputs']))
+            print('process processin : ', process['inputs'] == wps_data[process['identifier']]['processin'], type(process['inputs']), type(wps_data[process['identifier']]['processin']))
+            print('wps processin     :  ', wps_data[process['identifier']]['processout'], type(wps_data[process['identifier']]['processout']))
+            # print('process outputs:  ', process['outputs'], type(process['outputs']))
+            print('processout  :    ', process['outputs'] == wps_data[process['identifier']]['processout'], type(process['outputs']), type(wps_data[process['identifier']]['processout']))
+            # print('processout  :    ', process['processout'] == wps_data[process['identifier']]['processout'])
+            print('verbose    :     ', process['verbose'] == jsondata[process['identifier']]['verbose'])
+            print('statusSupported: ', process['statusSupported'] == jsondata[process['identifier']]['statusSupported'])
+            print('storeSupported : ', process['storeSupported'] == jsondata[process['identifier']]['storeSupported'])
+            print('metadata    :    ', process['metadata'] == jsondata[process['identifier']]['metadata'], type(process['metadata']), type(jsondata[process['identifier']]['metadata']))
+            print('dataInputs   :   ', process['dataInputs'] == jsondata[process['identifier']]['dataInputs'], type(process['dataInputs']), type(jsondata[process['identifier']]['dataInputs']))
+            print('processOutputs : ', process['processOutputs'] == jsondata[process['identifier']]['processOutputs'], type(process['processOutputs']), type(jsondata[process['identifier']]['processOutputs']))
+            try:
+                WpsQueryset.filter(identifier=process['identifier']) \
+                    .update(service=service, title=wps_data[process['identifier']]['title'],
+                            abstract=wps_data[process['identifier']]['abstract'],
+                            inputs=wps_data[process['identifier']]['processin'],
+                            outputs=wps_data[process['identifier']]['processout'],
+                            verbose=jsondata[process['identifier']]['verbose'],
+                            statusSupported=jsondata[process['identifier']]['statusSupported'],
+                            storeSupported=jsondata[process['identifier']]['storeSupported'],
+                            metadata=jsondata[process['identifier']]['metadata'],
+                            dataInputs=jsondata[process['identifier']]['dataInputs'],
+                            processOutputs=jsondata[process['identifier']]['processOutputs'],
+                            hash=wps_hash[process['identifier']]
+                            )
+                print('*** updated ***')
+            except Exception as e:
+                print('Error while trying to update WpsDescrition: ', e)
+
+            updatedwps.append(process['identifier'])
+            print('***** different hashes *****')
+            print('__________________________________________')
+        # print("wps_hash[process['identifier']]: ", wps_hash[process['identifier']])
+
+    print('updatedwps: ', updatedwps)
+    return updatedwps
+
+
+def get_process_metadata(sessiondata, describedprocess, identifier):
+    sessiondata[identifier]['processin'] = []
+    sessiondata[identifier]['processout'] = []
+
+    for i in describedprocess.dataInputs:
+        if i.allowedValues == [] or not i.allowedValues[0] == '_keywords':
+            if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
+                # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
+                keywords = ast.literal_eval(i.abstract[:1 + i.abstract.find("}", 10)])['keywords']
+                sessiondata[identifier]['processin'].append(keywords)
+            else:
+                sessiondata[identifier]['processin'].append(i.dataType)
+
+        # if i.allowedValues == [] and isinstance(i.dataType, str):
+        #     wps.processes[loopCount].processin.append('string')
+        # elif i.allowedValues == [] and not isinstance(i.dataType, str):
+        #     wps.processes[loopCount].processin.append(i.dataType)
+        elif i.allowedValues[0] == '_keywords':
+            if i.allowedValues[1] == 'pattern':
+                patternList = i.allowedValues[1:]
+                patternList.insert(0, i.dataType)
+                sessiondata[identifier]['processin'].append(patternList)
+            else:
+                sessiondata[identifier]['processin'].append(i.allowedValues[1:])
+
+    for i in describedprocess.processOutputs:
+        if 'error' not in i.identifier:
+            if i.abstract is not None:
+                if 'keywords' in json.loads(i.abstract):
+                    sessiondata[identifier]['processout'].append(json.loads(i.abstract)['keywords'])
+            elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
+                sessiondata[identifier]['processout'].append(i.dataType)
+            # elif isinstance(i.dataType, float):
+            #     wps.processes[loopCount].processout.append('float')
+            # elif i.metadata[0] == '_keywords':
+            #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
+
+    return sessiondata

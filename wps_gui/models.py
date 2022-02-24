@@ -34,6 +34,8 @@ class WpsResults(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.wps, self.inputs)
+
+    class Meta:
         managed = True
 
 
@@ -45,9 +47,23 @@ class WpsDescription(models.Model):
     title = models.CharField(max_length=120, unique=True, default='')
     identifier = models.CharField(max_length=120, unique=True, default='')
     abstract = models.CharField(max_length=8192, default='')
-    inputs = models.CharField(max_length=2048, default='')
-    outputs = models.CharField(max_length=2048, default='')
+    inputs = models.CharField(max_length=1024, default='')  # short description
+    outputs = models.CharField(max_length=1024, default='')  # short description
+
+    # extended schema for tools
+    verbose = models.BooleanField()
+    statusSupported = models.BooleanField()
+    storeSupported = models.BooleanField()
+    metadata = models.CharField(max_length=2048)
+    dataInputs = models.CharField(max_length=4096)  # complete description
+    processOutputs = models.CharField(max_length=2048)  # complete description
+
+    # lastUpdateDateCheck = models.DateTimeField(default=datetime.now, blank=True)
+    # hash = models.CharField(max_length=256, default='')
+    version = models.CharField(max_length=8, default='')
 
     def __str__(self):
         return 'service: %s, title: %s' % (self.service, self.title)
+
+    class Meta:
         managed = True
