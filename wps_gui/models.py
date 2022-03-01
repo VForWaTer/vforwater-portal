@@ -1,5 +1,7 @@
-from django.db import models
+from datetime import datetime
 
+from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 class WebProcessingService(models.Model):
@@ -47,18 +49,18 @@ class WpsDescription(models.Model):
     title = models.CharField(max_length=120, unique=True, default='')
     identifier = models.CharField(max_length=120, unique=True, default='')
     abstract = models.CharField(max_length=8192, default='')
-    inputs = models.CharField(max_length=1024, default='')  # short description
-    outputs = models.CharField(max_length=1024, default='')  # short description
+    inputs = models.CharField(max_length=2048, default='')  # short description
+    outputs = models.CharField(max_length=2048, default='')  # short description
 
     # extended schema for tools
     verbose = models.BooleanField()
-    statusSupported = models.BooleanField()
-    storeSupported = models.BooleanField()
+    statusSupported = models.BooleanField(blank=True, default=False)
+    storeSupported = models.BooleanField(blank=True, default=False)
     metadata = models.CharField(max_length=2048)
     dataInputs = models.CharField(max_length=4096)  # complete description
     processOutputs = models.CharField(max_length=2048)  # complete description
 
-    # lastUpdateDateCheck = models.DateTimeField(default=datetime.now, blank=True)
+    lastUpdateDateCheck = models.DateTimeField(default=timezone.now, blank=True)
     # hash = models.CharField(max_length=256, default='')
     version = models.CharField(max_length=8, default='')
 
