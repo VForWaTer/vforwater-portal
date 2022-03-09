@@ -62,7 +62,7 @@ class WpsDescription(models.Model):
 
     lastUpdateDateCheck = models.DateTimeField(default=timezone.now, blank=True)
     # hash = models.CharField(max_length=256, default='')
-    version = models.CharField(max_length=8, default='')
+    version = models.CharField(max_length=8, default='', blank=True, null=True)
 
     def __str__(self):
         return 'service: %s, title: %s' % (self.service, self.title)

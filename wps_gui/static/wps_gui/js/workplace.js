@@ -1,3 +1,7 @@
+const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
+        'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
+        'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
+
 function allowDrop(ev) {
     ev.preventDefault();
 }
@@ -146,7 +150,7 @@ function get_drop_coords() {
  **/
 function drop_on_click(ev) {
     /** Prepare and drop a tool button **/
-    let tool_id, data_id, newbox, toolbox, databox, metadata, dataport, toolport;
+    let data_id, tool_id, box_id, newbox, toolbox, databox, metadata, dataport, toolport, params, workflow;
     let coords = get_drop_coords();
     let modalData = prep_modal_data();
     newbox = drop_handler(modalData, coords['x'], coords['y'], modalData.id, 'toolbar', modalData.serv)
@@ -154,14 +158,20 @@ function drop_on_click(ev) {
     toolbox = newbox.box;
 
     /** Check if tool is connected with other elements to drop and get ports **/
-    let box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
-        'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
-        'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
-    for (let i in modalData.type_list) {
-        if (box_types.includes(modalData.type_list[i]) && modalData.inId_list[i]) {
+    for (let i in modalData.in_type_list) {
+        if (box_types.includes(modalData.in_type_list[i]) && modalData.inId_list[i]) {
             metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
             newbox = drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modalData.inId_list[i], 'workspace')
-            tool_id = newbox.boxID;
+            // console.log("'sidebtn' + modalData.inId_list[i]: ", 'sidebtn' + modalData.inId_list[i])
+            // console.log('tool_id: ', tool_id)
+            box_id = newbox.boxID;
+
+            // TODO: The following should be part of another function
+            workflow = get_sessionStorage_workflow()
+            workflow[box_id].output_boxes = [tool_id];
+            workflow[tool_id].input_boxes[i] = box_id;
+            sessionStorage.setItem('workflow', JSON.stringify(workflow))
+
             databox = newbox.box;
             dataport = databox.getOutputPort(0);
             // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
@@ -292,8 +302,8 @@ function check_pattern(checkElement) {
 
 
 /**
- * Collect data from modal neeeded to run a processes.
- * @returns {{type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
+ * Collect data from modal neeeded to run a process.
+ * @returns {{in_type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
  */
 function prep_modal_data() {
      /** collect inputs **/
@@ -395,7 +405,7 @@ function prep_modal_data() {
         outputName = outputs[0].value;
     }
     return {'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
-        'type_list': inType, 'outputName': outputName, 'inId_list': inId}
+        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId}
 }
 
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
@@ -925,7 +935,8 @@ function build_modal(wpsInfo, service) {
             titleText = " " + item.title + ": "
         } else if (item.defaultValue) {
             titleText = " " + item.title + ": "
-        } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
+        } else if (item.required === true) {
+        // } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
             titleText = " " + item.title + " (*) : ";
             inElement.required = true;
             // }
@@ -1089,6 +1100,71 @@ function save_workflow() {
 
 function run_workflow() {
     let workflow = get_sessionStorage_workflow();
+    // let workflow = globalWorkflow.session_storage();
+    let processTree = create_process_tree(workflow);
+    let processChain = createReverseProcessOrder(processTree).reverse();
+    let preppedWorkflow = prep_wps_workflow(workflow, processChain);
+    console.log('preppedWorkflow: ', preppedWorkflow)
+
+    $.ajax({
+        url: DEMO_VAR + "/workspace/workflowrun",
+        data: {
+            processrun: JSON.stringify({'workflow': preppedWorkflow, 'chain': processChain}),
+            'csrfmiddlewaretoken': csrf_token,
+        }, /** data sent with post request **/
+    })
+        .done(function(result){
+            console.log('result: ', result)
+        })
+    console.log("run isn't implemented yet.")
+}
+
+function prep_wps_workflow(workflow, processChain) {
+    let preppedWorkflow = {};
+    let outputName;
+
+    for (let i of processChain) {
+        outputName = workflow[i].output_ids === [] ? workflow[i].name + "_" : workflow[i].name;
+        preppedWorkflow[i] = {
+            id: workflow[i].orgid,
+            inId_list: workflow[i].input_ids,
+            in_type_list: workflow[i].inputs,
+            key_list: workflow[i].input_keys,
+            in_box_list: workflow[i].input_boxes,
+            output_Name: outputName,
+            serv: workflow[i].service,
+            value_list: workflow[i].input_values,
+        }
+    }
+/*    let goal = {
+        id: "flowdurationcurve"
+        inId_list: (3) ['db494', '', '']
+        in_type_list: (3) ['timeseries', 'boolean', 'boolean']
+        key_list: (3) ['ts-pickle', 'non-exceeding', 'log']
+        outputName: "flowdurationcurve_"
+        serv: "PyWPS_vforwater"
+        value_list: (3) ['wps1047', false, true]
+    }*/
+    return preppedWorkflow;
+}
+
+
+/**
+ * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
+ */
+function clear_workflow() {
+    canvas.clear();
+    // globalWorkflow.set_name();
+    set_sessionStorage_workflow_name()
+    document.getElementById("workflow_name").value = gettext('my workflow')
+}
+
+
+/**
+ * Check in- and output of connected boxes and build the workflow as a tree.
+ * @param {{}} workflow
+ */
+function create_process_tree(workflow) {
     if (Object.keys(workflow).length <= 1) {
         alert(gettext("Please Load or Create a workflow to run first."))
         return;
@@ -1097,14 +1173,21 @@ function run_workflow() {
     let processDict = {};
     let processTree = {};
     let endNode = [];
+    let orderedProcesses = [];
+    let boxIndex = 0;
 
     // get processes of workflow
-    Object.entries(workflow).map(function (i) {
+    Object.entries(workflow).forEach(function (i) {
         if (i[1].source === 'toolbar') {
-            // processList.push(i[0])
-            processDict[i[0]] = {children: i[1].input_ids};
-            processDict[i[0]].parents = i[1].output_ids;
-            if (typeof i[1].output_ids === "undefined") {
+            processList.push(i[0])
+            // if (workflow[i[1].input_boxes].source === 'toolbar') {}
+            // while (i[1].input_boxes.length > boxIndex) {
+            //
+            //     boxIndex += 1;
+            // }
+            processDict[i[0]] = {children: i[1].input_boxes};
+            processDict[i[0]].parents = i[1].output_boxes;
+            if (i[1].output_boxes.length == 0) {
                 endNode.push(i[0])
             }
         }
@@ -1116,11 +1199,10 @@ function run_workflow() {
     /**
      * create tree of processes
      * @param {string} ID
-     * @param {dictionary} parent
      * @param {dictionary} processDict
      * @param {array} processList
      */
-    function createTree(ID, parent, processDict, processList) {
+    function createTree(ID, processDict, processList, allProcesses) {
         if (!processList.includes(ID)) {
             processList.push(ID);
         } else {
@@ -1130,22 +1212,26 @@ function run_workflow() {
         }
         let tree = {};
         for (let i of processDict[ID].children) {
-            tree[i] = typeof processDict[i].children != "undefined" ? createTree(i, tree, processDict, processList) : {}
+            tree[i] = allProcesses.includes(i) && typeof processDict[i].children != "undefined" ? createTree(i, processDict, processList, allProcesses) : {};
         }
         return tree;
     }
     processTree[endNode] = {};
-    processTree[endNode] = createTree(endNode, processTree[endNode], processDict, processList);
-    console.log('processTree: ', processTree)
-
-    console.log("run isn't implemented yet.")
+    processTree[endNode] = createTree(endNode[0], processDict, [], processList);
+    return processTree;
 }
 
 /**
- * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
+ * Create a list of processes from a process tree in the reverse order they are supposed to run.
+ * TODO: update for parallel function call
+ * @param {dict} processDict
+ * @param {number} depth
+ * @param {dict} innerProcesses
  */
-function clear_workflow() {
-    canvas.clear();
-    set_sessionStorage_workflow_name()
-    document.getElementById("workflow_name").value = gettext('my workflow')
+function createReverseProcessOrder(processTree, depth = 0, innerProcesses = []) {
+    for (let [boxName, deeperElements] of Object.entries(processTree)) {
+        innerProcesses.push(boxName);
+        innerProcesses.concat(createReverseProcessOrder(deeperElements, depth += 1, innerProcesses))
+    }
+return innerProcesses;
 }

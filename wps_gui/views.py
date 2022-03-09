@@ -72,14 +72,15 @@ def home(request):
                                                'abstract': process['abstract'],
                                                'processin': process['inputs'],
                                                'processout': process['outputs']}
-            jsondata[process['identifier']] = {'service': process['service'], 'verbose': process['verbose'],
-                                               'storeSupported': process['storeSupported'],
-                                               'statusSupported': process['statusSupported'],
+            jsondata[process['identifier']] = {'service': process['service'],
+                                               'verbose': json.dumps(process['verbose']),
+                                               'storeSupported': json.dumps(process['storeSupported']),
+                                               'statusSupported': json.dumps(process['statusSupported']),
                                                'title': process['title'], 'abstract': process['abstract'],
                                                'metadata': process['metadata'],
-                                               'dataInputs': process['dataInputs'],
-                                               'processOutputs': process['processOutputs'],
-                                               'version': process['version']}
+                                               'dataInputs': json.dumps(process['dataInputs']),
+                                               'processOutputs': json.dumps(process['processOutputs']),
+                                               'version': json.dumps(process['version'])}
 
     try:
         for process in wps.processes:
@@ -105,8 +106,8 @@ def home(request):
                                    statusSupported=describedprocess_json['statusSupported'],
                                    storeSupported=describedprocess_json['storeSupported'],
                                    metadata=jsondata[process.identifier]['metadata'],
-                                   dataInputs=jsondata[process.identifier]['dataInputs'],
-                                   processOutputs=jsondata[process.identifier]['processOutputs'],
+                                   dataInputs=describedprocess_json['dataInputs'],
+                                   processOutputs=describedprocess_json['processOutputs'],
                                    version=jsondata[process.identifier]['processVersion']
                                    )
     except Exception as e:
@@ -225,9 +226,9 @@ def process_to_json(wps_process):
                         if k == 'allowedValues' and v != [] and v[0] == '_keywords':
                             innerdict['keywords'] = v[1:]
                         elif k == 'version':
-                            print('********* Version is now implemented in pywps: ', k, v)
+                            innerdict['version'] = v
                         elif k == 'processVersion':
-                            print('********* processVersion is now implemented in pywps: ', k, v)
+                            innerdict['processVersion'] = v
                         elif k == 'abstract' and v is not None:  # and not v == [] and v[0] == '_keywords':
                             try:
                                 for abst in json.loads(v):
@@ -526,6 +527,10 @@ def edit_input(inputs):
             wps_input.append((key_value[0], key_value[1]))
     return wps_input
 
+
+# def date_to_datetime(date_string):
+#
+# return datetime_string
 
 def load_data_local(inputs):
 
