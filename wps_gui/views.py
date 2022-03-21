@@ -313,9 +313,15 @@ def handle_wps_output(execution, wps_process, inputs):
     :return:
     """
     # order output for database
-    all_outputs = {'execution_status': execution.status}
-    all_outputs['result'] = {}
+    all_outputs = {'execution_status': execution.status, 'version': execution.version, 'verbose': execution.verbose,
+                   'timeout': execution.timeout, 'percentCompleted': execution.percentCompleted,
+                   'errors': execution.percentCompleted, 'creationTime: ': execution.creationTime,
+                   # 'process': execution.process,
+                   'result': {}}
     path = ''
+
+    if execution.errors != []:
+        return all_outputs
 
     # iterate through list of outputs
     for output in execution.processOutputs:
@@ -344,10 +350,11 @@ def handle_wps_output(execution, wps_process, inputs):
                 if 'pickle' in keywords:
                     path = eval(output.data[0])[0]  # get first value of string tuple
             except TypeError as e:
-                if output.dataType in basicdatatypes:
-                    single_output['type'] = output.dataType
-                else:
-                    print('No keywords or type (TypeError: {})'.format(e))
+                if output.dataType not in basicdatatypes:
+                    matchObj = re.search("[^:]+$", output.dataType)
+                    output.dataType = matchObj.group()
+                    print('No keywords or type (TypeError: {}). Using "{}" as DataType.'.format(e, output.dataType))
+                single_output['type'] = output.dataType
             except KeyError as e:
                 print('this is a key error: ', e)
 
