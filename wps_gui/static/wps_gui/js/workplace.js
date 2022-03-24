@@ -41,18 +41,10 @@ function drop(ev) {
  * @param {string} service - wps service as stored in database
  * @param {string} identifier - identifier of a wps process
  **/
-function wpsprocess(service, identifier) {
-    let tools = get_sessionStorage_tools(service)
-    if (tools[service][identifier]) {
-        build_modal(tools[service][identifier], service)
-    } else {
-        load_wpsprocess(service, identifier)
-            .done(function (json) {
-                build_modal(json, service)
-                tools[service][identifier] = json
-                sessionStorage.setItem('tools', JSON.stringify(tools))
-            })
-    }
+function open_wpsprocess_modal(service, identifier, boxId) {
+    let modal_values = get_sessionStorage_workflow();
+    let json = get_wpsprocess(service, identifier);
+    build_modal(json, service, modal_values[boxId])
 }
 
 /**
@@ -192,8 +184,8 @@ function drop_connection(toolbox, databox) {
         'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
         'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
 
-    for (let i in modalData.type_list) {
-        if (box_types.includes(modalData.type_list[i]) && modalData.inId_list[i]) {
+    for (let i in modalData.in_type_list) {
+        if (box_types.includes(modalData.in_type_list[i]) && modalData.inId_list[i]) {
             metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
             newbox = drop_handler(metadata, x-40, y-40, 'sidebtn' + modalData.inId_list[i], 'workspace_data')
             tool_id = newbox.boxID;
@@ -451,6 +443,8 @@ function modal_run_process() {
                     let btnData = {
                         dbID: json.result[i].wpsID,
                         inputs: json.inputs,
+                        input_keys: modal_input.key_list,
+                        input_values: modal_input.value_list,
                         name: btnName,
                         type: json.result[i].type,
                         outputs: json.result[i].data,
@@ -463,6 +457,7 @@ function modal_run_process() {
                     add_resultbtn_to_sessionstore(btnName, btnData);
                     if (directshowdatatypes.includes(btnData.type)) {
                         add_resultbtn_to_modal(btnData)
+                        view_result(btnData)
                     }
 
                     if (group === false) {
@@ -499,6 +494,23 @@ function modal_run_process() {
             console.error('Error, No success: ', json)
         });
 }
+
+/**
+ * View result directly on top of tool window
+ * @param json
+ */
+function view_result(json) {
+    console.log('json: ', json)
+    console.log('json.outputs: ', json.outputs)
+    if (json.type == 'figure' || json.type == 'string') {
+        document.getElementById("mod_result").innerHTML = json.outputs; // add plot
+    }
+    let rModal = document.getElementById("resultModal");
+    rModal.style.display = "block";
+    popup.classList.remove(popActive);
+    modalToggleSize.style.display = "none";
+}
+
 
 // Not used yet
 function run_wps(input_dict) {
@@ -614,15 +626,7 @@ function modalObj(processId, processInput, processOutput) {
 function add_resultbtn_to_modal(json) {
     let wspan_out = document.getElementsByClassName("work_modal-output")[0];
     wspan_out.style.display = "block";
-    wspan_out.onclick = () => {
-        if (json.type == 'figure' || json.type == 'string') {
-            document.getElementById("mod_result").innerHTML = json.outputs; // add plot
-        }
-        let rModal = document.getElementById("resultModal");
-        rModal.style.display = "block";
-        popup.classList.remove(popActive);
-        modalToggleSize.style.display = "none";
-    };
+    wspan_out.onclick = () => {view_result(json)};
 }
 
 function set_preview_content(json) {
@@ -891,7 +895,10 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
  * @param {object} wpsInfo - Complete description from the process
  * @param {string} service - which wps server
  */
-function build_modal(wpsInfo, service) {
+function build_modal(wpsInfo, service, values = []) {
+    console.log('________________')
+    console.log('values: ', values)
+    console.log('wpsInfo: ', wpsInfo)
     // let availableInputs = get_available_inputs();
     // let wpsInfo = get_wpsprocess(service, identifier);
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
@@ -978,7 +985,8 @@ function build_modal(wpsInfo, service) {
             inElement.name = item.identifier;
             inElement.setAttribute("list", item.identifier + '_list');
 
-            if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
+            // if (item.required === true) inElement.required = true;
+            // if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
             switch (item.dataType) {
                 case 'string':
                     inElement.type = "text";
@@ -1028,6 +1036,7 @@ function build_modal(wpsInfo, service) {
                 default:
                     console.error(' new dataType: ', item.dataType)
             }
+            // TODO: is this here the third time I set required = True? Test if necessary
             if (item.minOccurs > 0) {
                 inElement.required = true
             } //else {inElement.required = false}

@@ -81,6 +81,13 @@ elif [ $1 == "deleteMigrations" ]
           rm -rf "$(dirname $i)/migrations"
 
         done
+elif [ $1 == "restoreMigrations" ]
+  then
+      for i in $(find -type d -name 'migrations_copy')
+        do
+          cp -rv $i "$(dirname $i)/migrations"
+
+        done
 else
     echo "Error: Parameter '"$1"' is not allowed. Allowed are 'copy', 'deleteCopy', 'switchMigrations' and 'undoCopy'."
 

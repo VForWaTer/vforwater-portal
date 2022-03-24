@@ -20,14 +20,12 @@
 {#</script>#}
 <body>
 <script>
-  {% autoescape off %}
-    var tools =  {{ tools }}
-  {% endautoescape %}
-  console.log('A')
-  console.log('tools: ', data)
-  console.log('B')
-  sessionStorage.setItem("tools",  JSON.stringify({'{{ service }}': data}))
-  {#sessionStorage.setItem("tools", JSON.stringify({{ identifier }}))#}
+{#  {% autoescape off %}#}
+{#    var tools =  {{ tools }}#}
+{#  {% endautoescape %}#}
+  {#sessionStorage.setItem("tools",  JSON.stringify({'{{ service }}': tools}))#}
+{#  sessionStorage.setItem("tools",  JSON.stringify(tools))#}
+
   /**
    * Build Type indicators for buttons in Toolbox
    * Don't draw a marker, this is done with css. Set only respective class here.
@@ -111,7 +109,7 @@
           {% if identifier != "dbloader" %}
           <tr>
             <div id="{{ identifier }}" class="process w3-card-2"
-                 onclick="wpsprocess('{{ service }}', '{{ identifier }}');"
+                 onclick="open_wpsprocess_modal('{{ service }}', '{{ identifier }}');"
                  title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
                  data-service="{{ service }}" data-process="{{ identifier }}"
                  style="cursor:pointer;">
