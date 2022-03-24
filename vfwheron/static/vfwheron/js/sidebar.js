@@ -626,18 +626,24 @@ function showDataInfo(properties) {
  * @param {list} btnName list of dataInputs of a wps process
  * @param {dict} btnValues names of input fields as keys with values
  */
-function setModalValues(btnName, btnValues) {
+function setModalValues(btnName, btnKeys, btnValues) {
     // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
     //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
     // }
-    for (let i of btnName) {
-        if (document.getElementById(i.identifier).type == "checkbox") {
-            document.getElementById(i.identifier).checked = btnValues[i.identifier]
-        }
-        // else {
-        document.getElementById(i.identifier).value = btnValues[i.identifier]
+    let btnDict = {}
+    for (let i=0; i < btnValues.length; i++) {
+        // if (typeof btnValues[i] === 'string') {
+        //     btnDict[btnKeys[i]] = btnValues[i];
+        // } else {
+        //     btnDict[btnKeys[i]] = btnValues[i];
         // }
+        if (document.getElementById(btnName[i].identifier).type == "checkbox") {
+            document.getElementById(btnName[i].identifier).checked = btnValues[i];
+        } else {
+            document.getElementById(btnName[i].identifier).value = btnValues[i];
+        }
     }
+
     /** first loop over each dropdown in input, then over values in dropdown **/
     // for (let i = 0; i < dropDInputs.length; i++) {
     //
@@ -776,11 +782,13 @@ function menuItemListener(link) {
             /** Re-open the tool */
             wpsToOpen = result[btnName].wps;
             service = document.getElementById(wpsToOpen).getAttribute("data-service");
-            wpsprocess(service, wpsToOpen);
+            console.log(' - service: ', service)
+            open_wpsprocess_modal(service, wpsToOpen);
             /** Fill the tool with selection made to receive this result button */
             setModalValues(
                 JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
-                JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
+                // JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
+                item.input_keys, item.input_values
             )
             popup.classList.remove(popActive);
             break;
@@ -793,19 +801,38 @@ function menuItemListener(link) {
             break;
         case "ViewResult":
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
-            for (let j in result) {
-                if (result[j]) {
-                    if (!(result[j] instanceof Object)) {
-                        popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
-                    } else {
-                        let len_k = result[j].length;
-                        for (let k in result[j]) {
-                            let name_j = len_k > 1 ? j + ' ' + k + 1 : j;
-                            popUpText += '<tr><td><b>' + name_j + '</b></td><td>' + result[j][k] + '</td></tr>';
-                        }
-                    }
+            if (!(result[btnName] instanceof Object)) {
+                popUpText += '<tr><td><b>' + btnName + '</b></td><td>' + result[btnName] + '</td></tr>';
+            } else {
+                popUpText += '<tr><td><b>' + 'result name' + '</b></td><td>' + result[btnName]['name'] + '</td></tr>';
+                for (let j in result[btnName]['input_values']) {
+                    popUpText += '<tr><td><b>' + 'input' + '</b></td><td>' + result[btnName]['input_values'][j] + '</td></tr>';
                 }
+                popUpText += '<tr><td><b>' + 'output' + '</b></td><td>' + result[btnName]['outputs'] + '</td></tr>';
+                popUpText += '<tr><td><b>' + 'output type' + '</b></td><td>' + result[btnName]['type'] + '</td></tr>';
+                // let len_k = result[btnName].length;
+                // for (let k in result[btnName]) {
+                //     console.log('k: ', k)
+                //     let name_j = len_k > 1 ? btnName + ' ' + k + 1 : btnName;
+                //     popUpText += '<tr><td><b>' + name_j + '</b></td><td>' + result[btnName][k] + '</td></tr>';
+                // }
             }
+            // use the following for grouped buttons (maybe?)
+            // for (let j in result) {
+            //     console.log('j: ', j)
+            //     if (result[j]) {
+            //         console.log('result[j]: ', result[j])
+            //         if (!(result[j] instanceof Object)) {
+            //             popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
+            //         } else {
+            //             let len_k = result[j].length;
+            //             for (let k in result[j]) {
+            //                 let name_j = len_k > 1 ? j + ' ' + k + 1 : j;
+            //                 popUpText += '<tr><td><b>' + name_j + '</b></td><td>' + result[j][k] + '</td></tr>';
+            //             }
+            //         }
+            //     }
+            // }
             content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
             popClose.classList.remove('w3-hide');

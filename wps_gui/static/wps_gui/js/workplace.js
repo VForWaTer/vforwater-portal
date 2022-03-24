@@ -406,6 +406,11 @@ function prep_modal_data() {
 function modal_run_process() {
     set_modalColor("dodgerblue");
     let modal_input = prep_modal_data();
+    let directshowdatatypes = ['figure', 'string', 'html', 'integer', 'float']
+    let group = false;
+    let groupName = ''
+    let i = 0;
+    let members = [];
 
     $.ajax({
         url: DEMO_VAR + "/workspace/processrun",
@@ -416,12 +421,6 @@ function modal_run_process() {
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
             if (json.execution_status == "ProcessSucceeded") {
-                let group = false;
-                let groupName = ''
-                let i = 0;
-                let members = [];
-                let directshowdatatypes = ['figure', 'string', 'html']
-
                 json.wps = modal_input.id;
                 json.inputs = {};
                 $.each(modal_input.inKey, function (key, value) {
@@ -500,9 +499,7 @@ function modal_run_process() {
  * @param json
  */
 function view_result(json) {
-    console.log('json: ', json)
-    console.log('json.outputs: ', json.outputs)
-    if (json.type == 'figure' || json.type == 'string') {
+    if (json.type == 'figure' || json.type == 'string' || json.type == 'integer') {
         document.getElementById("mod_result").innerHTML = json.outputs; // add plot
     }
     let rModal = document.getElementById("resultModal");
@@ -735,9 +732,11 @@ function remove_all_results() {
     sessionStorage.removeItem("resultBtn");
 
     /** remove group buttons from portal **/
-    groupSet.forEach(function (i) {
-        document.getElementById(i).remove();
-    })
+    if (groupSet[0] !== undefined) {
+        groupSet.forEach(function (i) {
+            document.getElementById(i).remove();
+        })
+    }
 }
 
 /**

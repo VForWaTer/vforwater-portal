@@ -38,5 +38,17 @@ msgstr "Heranzoomen"
 msgid "Zoom out"
 msgstr "Wegzoomen"
 
+#: static/wpsgui/js/workplace.js:210
+msgid "Please Load or Create a workflow to run first."
+msgstr "Bitte zuerst eine Prozesskette erstellen."
+
+#: static/wpsgui/js/workplace.js:1113
+msgid "Your workflow is supposed to end in a single process."
+msgstr "Eine Prozesskette muss in einem einzelnen Prozess enden."
+
+#: static/wpsgui/js/workplace.js:1123
+msgid "At least one process is used more than once. This could result in an infinite loop and is forbidden (yet)."
+msgstr "Mindestens ein Prozess wurde mehr als einmal genutzt. Dies könnte in einer unendlichen Schleife resultieren und ist (bisher) nicht erlaubt."
+
 #~ msgid "Preview"
 #~ msgstr "Vorschau"
