@@ -670,7 +670,7 @@ function build_resultstore_button(name, json) {
     return '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result" data-sessionStore="resultBtn" ' +
         'data-id="' + json.source + json.dbID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="' + name + '">' +
+        'data-btnName="' + name + '" id="' + name + '">' +
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div>' +
         '</span><span class="' + json['type'] + '"></span>' +
@@ -690,7 +690,7 @@ function build_resultgroup_button(groupname, members) {
     let ghtml = '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result-group groupaccordion" data-sessionStore="resultBtn"' +
         '" btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="' + groupname + '"><span class="w3-medium">' +
+        'data-btnName="' + groupname + '" id="' + groupname + '"><span class="w3-medium">' +
         '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +
         '<span class=""></span>' +
         '<a href="javascript:void(0)" onclick="remove_group_result(\'' + groupname + '\')" class="w3-hover-white">' +
@@ -820,6 +820,8 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
     let aptResultData = {};
     let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
 
+    htmlSelect.id = item.identifier;
+
     for (let i in sessionStoreData) if (acceptedDataTypes.has(sessionStoreData[i].type)) {
         aptStoreData[i] = sessionStoreData[i];
     }
@@ -895,9 +897,6 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
  * @param {string} service - which wps server
  */
 function build_modal(wpsInfo, service, values = []) {
-    console.log('________________')
-    console.log('values: ', values)
-    console.log('wpsInfo: ', wpsInfo)
     // let availableInputs = get_available_inputs();
     // let wpsInfo = get_wpsprocess(service, identifier);
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
@@ -931,7 +930,7 @@ function build_modal(wpsInfo, service, values = []) {
     let outElementIdList = [];
     let countDropDowns = 0;
 
-    wpsInfo.dataInputs.forEach(function (item) {
+    wpsInfo.dataInputs.forEach(function (item, index) {
         newNode = document.createElement("p");
 
         /** Set title of Input and set the 'required' flag if necessary **/
@@ -1204,6 +1203,7 @@ function create_process_tree(workflow) {
         alert(gettext("Your workflow is supposed to end in a single process."))
         return;
     }
+
     /**
      * create tree of processes
      * @param {string} ID

@@ -217,7 +217,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
     return '<li ' + drag_html + ' class="w3-padding task" data-sessionstore="dataBtn" ' +
         'data-orgid="' + btnData['orgID'] + '"' +
         'data-id="' + btnData['source'] + btnData['dbID'] + '" btnName="' + btnName + '" onmouseover="" ' +
-        'style="cursor:pointer;" id="' + elementID + '">' +
+        'data-btnName="' + btnName + '" style="cursor:pointer;" id="' + elementID + '">' +
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
         '</span><span class="data ' + btnData['type'] + '"></span>' +

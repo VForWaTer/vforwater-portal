@@ -382,8 +382,7 @@ function remove_all_datasets() {
 // H E L P E R    F U N C T I O N S
 
 /**
- * Function to check if we clicked inside an element with a particular class
- * name.
+ * Function to check if we clicked inside an element with a particular class name.
  *
  * @param {Object} e The event
  * @param {String} className The class name to check against
@@ -436,8 +435,8 @@ function getPosition(e) {
 /**
  * Global Variables for popup.
  */
-var contextMenuClassName = "context-menu";
-var contextMenuItemClassName = "context-menu__item";
+// var contextMenuClassName = "context-menu";
+// var contextMenuItemClassName = "context-menu__item";
 var contextMenuLinkClassName = "context-menu__link";
 var contextMenuActive = "context-menu--active";
 var contextResultActive = "context-result--active";
@@ -487,10 +486,16 @@ function contextListener() {
     document.addEventListener("contextmenu", function (e) {
         taskItemInContext = clickInsideElement(e, taskItemClassName);
         let chooseContext;
-        if (taskItemInContext) {
-            if (taskItemInContext.classList.contains('is-result')) chooseContext = 'is-result';
+        let btndata;
+        if (taskItemInContext && !taskItemInContext.classList.contains("groupaccordion")) {
+            if (taskItemInContext.classList.contains('is-result')) {
+                chooseContext = 'is-result';
+                btndata = JSON.parse(sessionStorage.getItem("resultBtn"))[taskItemInContext.dataset.btnname]
+            } else {
+                btndata = JSON.parse(sessionStorage.getItem("dataBtn"))[taskItemInContext.dataset.orgid]
+            }
             e.preventDefault();
-            toggleMenuOn(chooseContext);
+            toggleMenuOn(chooseContext, taskItemInContext.dataset, btndata);
             positionMenu(e);
         } else {
             taskItemInContext = null;
@@ -534,16 +539,34 @@ function resizeListener() {
 }
 
 /**
+ * Toggle in the contextmenu the option to show a plot.
+ *
+ * @param {Element} menunode
+ * @param {Element} btndata
+ */
+function togglePlotContext(menunode, btndata) {
+    let plotables = ["figure", "timeseries"]
+
+    if (plotables.includes(btndata.type)) {
+        menunode.querySelector(".context-menu-plot").parentNode.style.display = "block";
+    } else {
+        menunode.querySelector(".context-menu-plot").parentNode.style.display = "none";
+    }
+}
+
+/**
  * Turns the custom context menu on.
  */
-function toggleMenuOn(chooseContext) {
+function toggleMenuOn(chooseContext, data, btndata) {
     toggleMenuOff(chooseContext);
     if (menuState !== 1) {
         menuState = 1;
         if (chooseContext == "is-result") {
             resultMenu.classList.add(contextResultActive);
+            togglePlotContext(resultMenu, btndata)
         } else {
             menu.classList.add(contextMenuActive);
+            togglePlotContext(menu, btndata)
         }
     }
 }
