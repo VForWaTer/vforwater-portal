@@ -646,8 +646,8 @@ function showDataInfo(properties) {
 /**
  * Fill a process modal with values from a result.
  *
- * @param {list} btnName list of dataInputs of a wps process
- * @param {dict} btnValues names of input fields as keys with values
+ * @param {list} btnKeys names of input fields
+ * @param {list} btnValues values for the input fields
  */
 function setModalValues(btnKeys, btnValues) {
     // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
@@ -658,7 +658,9 @@ function setModalValues(btnKeys, btnValues) {
     // let resultstore = JSON.parse(sessionStorage['resultBtn']);
 
     // loop values of result to insert them in the respective field
-    for (let i=0; i < btnValues.length; i++) {
+    let looplength;
+    if (btnValues) {looplength = btnValues.length}
+    for (let i=0; i < looplength; i++) {
 
         htmlElement = document.getElementById(btnKeys[i]);
         // if (typeof btnValues[i] === 'string') {
