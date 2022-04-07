@@ -25,7 +25,7 @@
     <p align="right"><em>(*) = {% trans "required" %}</em></p>
     <div class="modal-footer" id="modal-footer" style="margin-left: -10px; margin-right: -10px;">
       <span-c class="work_modal-cancel modal-btn" title="{% trans "Close window" %}">Cancel</span-c>
-      <span-ok class="work_modal-ok modal-btn" title="{%  trans "Place tool in Dropzone." %}">Drop</span-ok>
+      <span-drop class="work_modal-drop modal-btn" title="{%  trans "Place tool in Dropzone. If tool already exists only change values." %}">Drop</span-drop>
       <span-r class="work_modal-run modal-btn">Run</span-r>
       <span-out class="work_modal-output" style="display: none">{%  trans "View result" %}</span-out>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
@@ -90,7 +90,7 @@
   // Get the <span> element that closes the modal
   let wspan = document.getElementsByClassName("work_close")[0];
   let wspan_c = document.getElementsByClassName("work_modal-cancel")[0];
-  let wspan_ok = document.getElementsByClassName("work_modal-ok")[0];
+  let wspan_drop = document.getElementsByClassName("work_modal-drop")[0];
   let wspan_r = document.getElementsByClassName("work_modal-run")[0];
   // When the user clicks on <span> (x), close the modal
   wspan.onclick = () => closeModal();
@@ -98,7 +98,7 @@
     {#modal.style.display = "none";#}
     if (is_required(modal) && check_pattern(modal)) modal_run_process()
   };
-  wspan_ok.onclick = (event) => {
+  wspan_drop.onclick = (event) => {
     // TODO: check if modal is opened from an existing box. If yes update sessionStorage and don't drop a new box.
     let modal_value = document.getElementById("workflowID").value;
     let tool_id;
@@ -107,6 +107,7 @@
 
       console.log('modal_value: ', modal_value)
       {#console.log('tool_id.length: ', tool_id.length)#}
+      /** check if the workspace box exists already in the sessionstorage */
       if (modal_value == "") {
         console.log('E')
         drop_on_click(event);

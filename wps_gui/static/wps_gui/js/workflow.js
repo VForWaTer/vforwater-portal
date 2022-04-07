@@ -441,31 +441,14 @@ function update_workflow(event) {
 }
 
 /**
- * Used when an element is dropped in the dropzone. Collects parameters to build box.
- * @listens event:DragEvent
- * @param {Object} ev Start of the drag event outside of the canvas, set by dragstart_handler
- * @param {integer} x
- * @param {integer} y
- * @param {integer} id
- * @param {string} source which sesseionstore
+ * Add values to input_ids and input_values of box parameters used in SessionStorage and to create box.
+ * @param {Object} ev
+ * @param {string} id
+ * @param {string} source
  * @param {string} service
- * @return {dict} {box, boxID} - box object and global ID of box dropped on workarea
  */
-function drop_handler(ev, x, y, id, source, service) {
-    let box_param = ''
-    let receivedData;
-
-    try {
-        ev.preventDefault();  // needed for Firefox
-        receivedData = JSON.parse(ev.dataTransfer.getData("text/html"))
-        x = ev.layerX;
-        y = ev.layerY;
-        id = receivedData[0]  // process name
-        source = receivedData[1]
-        service = receivedData[2]
-    } catch {
-        console.log('catch ev: ', ev)
-    }
+function prepare_box_params(ev, id, source, service= "") {
+    let box_param = '';
     if (source === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
         service = 'dataBtn'
@@ -492,6 +475,38 @@ function drop_handler(ev, x, y, id, source, service) {
     } else if (source === 'workspace_results') {
         box_param = JSON.parse(sessionStorage.getItem("resultBtn"))[id]['dropBtn']
     }
+    return {'params': box_param, 'service': service};
+}
+
+/**
+ * Used when an element is dropped in the dropzone. Collects parameters to build box.
+ * @listens event:DragEvent
+ * @param {Object} ev Start of the drag event outside of the canvas, set by dragstart_handler
+ * @param {integer} x
+ * @param {integer} y
+ * @param {integer} id
+ * @param {string} source which sesseionstore
+ * @param {string} service
+ * @return {dict} {box, boxID} - box object and global ID of box dropped on workarea
+ */
+function drop_handler(ev, x, y, id, source, service) {
+    let box_param = '';
+    let receivedData, prepared_params;
+
+    try {
+        ev.preventDefault();  // needed for Firefox
+        receivedData = JSON.parse(ev.dataTransfer.getData("text/html"))
+        x = ev.layerX;
+        y = ev.layerY;
+        id = receivedData[0]  // process name
+        source = receivedData[1]
+        service = receivedData[2]
+    } catch {
+        console.log('0 catch ev: ', ev)
+    }
+    prepared_params = prepare_box_params(ev, id, source, service);
+    box_param = prepared_params.params;
+    service = prepared_params.service;
 
     let boxID = box_param.orgid + get_workflow_id_affix()
     // console.log('box_param.name: ', box_param.name)

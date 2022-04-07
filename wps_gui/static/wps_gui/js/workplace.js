@@ -40,11 +40,18 @@ function drop(ev) {
  *
  * @param {string} service - wps service as stored in database
  * @param {string} identifier - identifier of a wps process
+ * @param {string, list} inputs - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
  **/
-function open_wpsprocess_modal(service, identifier, boxId) {
+function open_wpsprocess_modal(service, identifier, inputs) {
     let modal_values = get_sessionStorage_workflow();
     let json = get_wpsprocess(service, identifier);
-    build_modal(json, service, modal_values[boxId])
+    build_modal(json, service)
+    /** Fill the tool with selection made to receive this result button */
+    if (typeof inputs === 'string') {
+        setModalValues(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+    } else if (Array.isArray(inputs)) {
+        setModalValues(inputs[0], inputs[1])
+    }
 }
 
 /**
@@ -896,16 +903,21 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
  * @param {object} wpsInfo - Complete description from the process
  * @param {string} service - which wps server
  */
-function build_modal(wpsInfo, service, values = []) {
+function build_modal(wpsInfo, service, values=[], boxId=[]) {
     // let availableInputs = get_available_inputs();
     // let wpsInfo = get_wpsprocess(service, identifier);
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
     let element = document.getElementById("mod_head");
     let newElement = "";
 
-    if (!sessionStoreData) {
-        sessionStoreData = {}
+    if (!sessionStoreData) sessionStoreData = {}
+    if (!resultData) resultData = {}
+    if (!workflowData) {
+        workflowData = {}
+    } else {
+        workflowData = workflowData[boxId]
     }
     if (!resultData) {
         resultData = {}

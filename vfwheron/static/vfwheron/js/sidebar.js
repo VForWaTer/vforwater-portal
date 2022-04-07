@@ -649,19 +649,18 @@ function showDataInfo(properties) {
  * @param {list} btnName list of dataInputs of a wps process
  * @param {dict} btnValues names of input fields as keys with values
  */
-function setModalValues(btnName, btnKeys, btnValues) {
+function setModalValues(btnKeys, btnValues) {
     // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
     //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
     // }
     let htmlElement = {};
-    let btnDict = {};
     let datastore = JSON.parse(sessionStorage['dataBtn']);
-    let resultstore = JSON.parse(sessionStorage['resultBtn']);
+    // let resultstore = JSON.parse(sessionStorage['resultBtn']);
 
     // loop values of result to insert them in the respective field
     for (let i=0; i < btnValues.length; i++) {
 
-        htmlElement = document.getElementById(btnName[i].identifier);
+        htmlElement = document.getElementById(btnKeys[i]);
         // if (typeof btnValues[i] === 'string') {
         //     btnDict[btnKeys[i]] = btnValues[i];
         // } else {
@@ -828,14 +827,13 @@ function menuItemListener(link) {
             /** Re-open the tool */
             wpsToOpen = result[btnName].wps;
             service = document.getElementById(wpsToOpen).getAttribute("data-service");
-            console.log(' - service: ', service)
-            open_wpsprocess_modal(service, wpsToOpen);
+            open_wpsprocess_modal(service, wpsToOpen, [item.input_keys, item.input_values]);
             /** Fill the tool with selection made to receive this result button */
-            setModalValues(
+            /*setModalValues(
                 JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
                 // JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
                 item.input_keys, item.input_values
-            )
+            )*/
             popup.classList.remove(popActive);
             break;
         case "DownloadDMD":
@@ -907,20 +905,20 @@ function menuItemListener(link) {
                 modalToggleSize.style.display = "none";
                 // modalToggleSize.hidden = true;
             }
-            // TODO: Add Names on lines in Plot needs modification in wps or another database entry
-            // let allBtns = JSON.parse(sessionStorage['resultBtn'])
-            // let inputs = allBtns[btnName].inputs
-            // let btnNames = []
-            // $.each(inputs, function (key, value) {
-            //     if (typeof value === "object"){
-            //         for (let singleValue of value){
-            //             $.each(allBtns, function(key, value) {
-            //                 if (String(value.wpsID) == singleValue.substr(5)) {
-            //                     btnNames.push(key)
-            //                 }
-            //             })
-            //         }
-            //     }
+                // TODO: Add Names on lines in Plot needs modification in wps or another database entry
+                // let allBtns = JSON.parse(sessionStorage['resultBtn'])
+                // let inputs = allBtns[btnName].inputs
+                // let btnNames = []
+                // $.each(inputs, function (key, value) {
+                //     if (typeof value === "object"){
+                //         for (let singleValue of value){
+                //             $.each(allBtns, function(key, value) {
+                //                 if (String(value.wpsID) == singleValue.substr(5)) {
+                //                     btnNames.push(key)
+                //                 }
+                //             })
+                //         }
+                //     }
             // })
 
             else {
