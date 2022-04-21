@@ -428,25 +428,19 @@ class DevLoginView(TemplateView):
 
 
 class Legals(TemplateView):
-    """
-
-    """
 
     def get(self, request):
-        """
-
-        :param request:
-        :type request:
-        :return:
-        :rtype:
-        """
-
         return render(request, 'vfwheron/legals.html')
+
+
+class PrivacyPolicy(TemplateView):
+
+    def get(self, request):
+        return render(request, 'vfwheron/privacypolicy.html')
 
 
 class HelpView(TemplateView):
     """
-
     """
 
     #     template_name = 'vfwheron/help.html'

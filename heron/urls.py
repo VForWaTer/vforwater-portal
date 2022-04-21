@@ -30,6 +30,7 @@ urlpatterns = [
     path('home/', include('vfwheron.urls')),
     path('admin/', admin.site.urls),
     path('legals', vfw_views.Legals.as_view(), name='legals'),
+    path('privacypolicy', vfw_views.PrivacyPolicy.as_view(), name='privacy_policy'),
     path('workspace/', include('wps_gui.urls', namespace='wps_gui')),
     path('monitor/', include('heron_monitor.urls', namespace='heron_monitor')),
     path('visual/', include('heron_visual.urls', namespace='heron_visual')),
