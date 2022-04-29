@@ -101,6 +101,11 @@ function get_wpsprocess(service, identifier) {
     }
 }
 
+/**
+ * On reload of the website, reset the previous connections between boxes
+ * @param {object} sourcePort - also outputPort
+ * @param {object} targetPort - also inputPort
+ */
 function add_connection(sourcePort, targetPort) {
     // canvas.installEditPolicy(connection.connectionPolicy);
     // let box = new Box(
@@ -109,14 +114,21 @@ function add_connection(sourcePort, targetPort) {
     // )
     //
     // canvas.add(box.box, x, y);
-    // console.log('toolbox getOutputPort(0): ', toolbox.getOutputPort(0))
-    // console.log('toolbox getOutputPort(): ', toolbox.getOutputPort())
-    console.log('canvas ports: ', canvas.getAllPorts())
-    let connection = new draw2d.Connection({
-        source: sourcePort,
-        target: targetPort
-    });
-    // let connection = createConnection(dataport, toolport);
+    console.log('** A')
+   /*   let connection = new draw2d.Connection({
+          source: sourcePort,
+          target: targetPort
+      });*/
+    let newConnection = new Connection()
+    connection = newConnection.connectionPolicy
+    // let connection = new draw2d.Connection();
+    // let connection = createConnection();
+    // connection.setSource(f1.getOutputPort(0));
+    // connection.setTarget(f2.getHybridPort(0));
+    console.log('*** B')
+    connection.setSource(sourcePort);
+    connection.setTarget(targetPort);
+    // let connection = createConnection(sourcePort, targetPort);
     // let connection = createConnection(start.getOutputPort(0),end.getInputPort(0));
     canvas.add(connection);
 
@@ -178,6 +190,7 @@ function drop_on_click(ev) {
             // add_connection(dataport, toolport);
         }
     }
+    draw2dsessionStore.setdata();
 }
 
 /*
@@ -919,10 +932,7 @@ function build_modal(wpsInfo, service, values=[], boxId=[]) {
     } else {
         workflowData = workflowData[boxId]
     }
-    if (!resultData) {
-        resultData = {}
-    }
-
+    console.log('workflowData: ', workflowData)
     element.innerHTML = wpsInfo.title;
     element.dataset.service = service;
     element.dataset.process = wpsInfo.identifier;
@@ -1176,6 +1186,7 @@ function clear_workflow() {
     // globalWorkflow.set_name();
     set_sessionStorage_workflow_name()
     document.getElementById("workflow_name").value = gettext('my workflow')
+    draw2dsessionStore.setdata()
 }
 
 
@@ -1240,6 +1251,7 @@ function create_process_tree(workflow) {
     processTree[endNode] = createTree(endNode[0], processDict, [], processList);
     return processTree;
 }
+
 
 /**
  * Create a list of processes from a process tree in the reverse order they are supposed to run.

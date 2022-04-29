@@ -658,9 +658,9 @@ function setModalValues(btnKeys, btnValues) {
     // let resultstore = JSON.parse(sessionStorage['resultBtn']);
 
     // loop values of result to insert them in the respective field
-    let looplength;
-    if (btnValues) {looplength = btnValues.length}
-    for (let i=0; i < looplength; i++) {
+    let loopLength = 0;
+    if (btnValues) {loopLength = btnValues.length}
+    for (let i=0; i < loopLength; i++) {
 
         htmlElement = document.getElementById(btnKeys[i]);
         // if (typeof btnValues[i] === 'string') {

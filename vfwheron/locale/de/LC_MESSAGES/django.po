@@ -332,6 +332,10 @@ msgstr "  Hilfe"
 msgid "  Legals"
 msgstr "  Impressum"
 
+#: templates/vfwheron/sidemenu.html:28
+msgid "  Privacy Policy"
+msgstr "  Datenschutzerklärung"
+
 #: templates/vfwheron/sidemenu.html:37
 msgid "  Documentation"
 msgstr "  Dokumentation"
@@ -442,6 +446,9 @@ msgstr "Abbrechen"
 
 msgid "Place tool in Dropzone."
 msgstr "Prozess im Ablagebereich platzieren."
+
+msgid "Place tool in Dropzone. If tool already exists only change values."
+msgstr "Prozess im Ablagebereich platzieren. Falls der Prozess bereits platziert ist werden nur die Werte aktualisiert."
 
 #~ msgid " View as table"
 #~ msgstr " Ergebnistabelle"

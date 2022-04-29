@@ -41,7 +41,7 @@ class Box {
      * @return {draw2d.shape} A box with ports to be placed on a draw2d.canvas.
      */
     get box() {
-        return this._createBox();
+        return this.#createBox();
     }
 
     /**
@@ -49,9 +49,9 @@ class Box {
      * @private
      * @return {draw2d.shape} A box with ports to be placed on a draw2d.canvas.
      */
-    _createBox() {
+    #createBox() {
         // create a blank box with name and class TODO: and ID
-        let box = this._blankBox()
+        let box = this.#blankBox()
 
         // add ports to the box
         let relOutPort_y;
@@ -64,7 +64,7 @@ class Box {
             } else {
                 relOutPort_y = 97
             }
-            this._createOutPort(box, this._outputs[i], 100 - (parseInt(i) + 1) * outPortDist, relOutPort_y, i)
+            this.#createOutPort(box, this._outputs[i], 100 - (parseInt(i) + 1) * outPortDist, relOutPort_y, i)
         }
         for (let i in this._inputs) {
             if (this._connectable_types.includes(this._inputs[i])) {
@@ -72,7 +72,7 @@ class Box {
             } else {
                 relInPort_y = 3
             }
-            this._createInPort(box, this._inputs[i], (parseInt(i) + 1) * inPortDist, relInPort_y, i)
+            this.#createInPort(box, this._inputs[i], (parseInt(i) + 1) * inPortDist, relInPort_y, i)
         }
         return box
     }
@@ -82,7 +82,7 @@ class Box {
      * @private
      * @return {draw2d.shape} A blank box without any ports to be extended or placed on a draw2d.canvas.
      */
-    _blankBox() {
+    #blankBox() {
         let boxHeight = 30;
         let boxTexty = 3;
         let boxType = this._boxtype;
@@ -95,7 +95,7 @@ class Box {
             boxTexty = 12;
         }
 
-        let box = new draw2d.shape.basic.Rectangle({
+        let box = new VfwBox({
             // id: boxId,
             minWidth: 100,
             width: this._boxwidth * 1.1,
@@ -106,7 +106,7 @@ class Box {
             stroke: 0,
             cssClass: 'box-' + this._boxtype,
         })
-        box.attr({id: this._boxid})
+        box.setId(this._boxid);
         let label = new draw2d.shape.basic.Label({
             text: this._boxname,
             stroke: 0,
@@ -115,11 +115,21 @@ class Box {
             y: boxTexty
         })
         if (boxType === 'tool') {
-            box.on('click', function () {
-                wpsprocess(service, name);
+            box.on('click', function (ev) {
+                open_wpsprocess_modal(service, name, box.getId());
+                document.getElementById("workflowID").value = JSON.stringify({'id': box.getId(), 'service': service});
+                // setModalValues(
+                //     JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
+                //     item.input_keys, item.input_values
+                // )
             })
-            label.on('click', function () {
-                wpsprocess(service, name);
+            label.on('click', function (ev) {
+                open_wpsprocess_modal(service, name, box.getId());
+                document.getElementById("workflowID").value = JSON.stringify({'id': box.getId(), 'service': service});
+                // setModalValues(
+                //     JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
+                //     item.input_keys, item.input_values
+                // )
             })
         }
         box.on('removed', function (ev) {
@@ -143,7 +153,7 @@ class Box {
      * @param {Number} relPorty Relative position of y in percent; 0,0 is upper left.
      * @return {draw2d.shape} The input Objected with an port added.
      */
-    _createOutPort(blankbox, porttype, relPortx, relPorty, portNum) {
+    #createOutPort(blankbox, porttype, relPortx, relPorty, portNum) {
         // let port = new draw2d.OutputPort();
         let port = blankbox.createPort(
             'output',
@@ -171,7 +181,7 @@ class Box {
      * @param {Number} relPorty relative position of y in percent; 0,0 is upper left
      * @return {draw2d.shape} The input Objected with an port added.
      */
-    _createInPort(blankbox, porttype, relPortx, relPorty, portNum) {
+    #createInPort(blankbox, porttype, relPortx, relPorty, portNum) {
         let port;
         port = blankbox.createPort(
             'input',
@@ -202,7 +212,7 @@ class Box {
                     'service': connection.port.getUserData()['service'],
                     'boxid': connection.port.getUserData()['boxid'],
                     'orgid': connection.port.getUserData()['orgid'],
-                    'index': portNum,
+                    'index': parseInt(portNum),
                     // 'name': connection.port.getValue(),
                 };
                 update_workflow({'state': 'change', 'source': source, 'target': target});
@@ -215,7 +225,6 @@ class Box {
             }
             // console.log(port.getCoronaWidth())
         });
-        // console.log('onDragEnter: ', port.onDragEnter(function () {console.log('Enter')}))
         // port.attr({selectable: false})
         // port.setDraggable(false)
         port.setConnectionDirection(0)
@@ -238,7 +247,7 @@ class Connection {
      * @return {draw2d.policy.connection.ConnectionCreatePolicy} Defines the style of the connection used on a draw2d.canvas.
      */
     get connectionPolicy() {
-        return this._createConnection();
+        return this.#createConnection();
     }
 
     /**
@@ -247,11 +256,14 @@ class Connection {
      * @private
      * @return {draw2d.policy.connection.ConnectionCreatePolicy} The actual connection used on a draw2d.canvas.
      */
-    _createConnection() {
+    #createConnection() {
         let connector_function = function () {
             // To options to connect ports. A) spline, B) rubber band
             // A) Define a spline to connect ports
             let SplineCon = new draw2d.Connection();
+            SplineCon.on("added", function (connection, obj) {
+                draw2dsessionStore.setdata()
+            })
             SplineCon.setRouter(new draw2d.layout.connection.SplineConnectionRouter());
             // Add Arrow to spline end
             let arrow = new draw2d.decoration.connection.ArrowDecorator(17, 12);
@@ -308,6 +320,139 @@ class Connection {
     }
 }
 
+/*class Workflow {
+
+    constructor(name = 'my workflow', workflow = {}) {
+        this._name = name;
+        this._workflow = workflow;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    set session_storage(workflow) {
+        sessionStorage.setItem('workflow', JSON.stringify(workflow))
+        this._workflow = workflow;
+    }
+
+    /!**
+     * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
+     * @return {obj} json - object of a Workflow
+     *!/
+    get session_storage() {
+        let workflow = JSON.parse(sessionStorage.getItem('workflow'))
+        if (!workflow) {
+            workflow = {'name': this._name};
+            this.session_storage(workflow);
+        }
+        return workflow;
+    }
+
+    set_name(name = 'my workflow') { //set_sessionStorage_workflow_name(name = 'my workflow') {
+        this._name = name;
+        let workflow = this.session_storage()
+        workflow['name'] = name;
+        this.session_storage(workflow)
+    }
+
+
+}*/
+ /**
+     * @method
+     * Constructor for a draw2d.shape.basic.Rectangle, but extended with a serializer for the label and ports position.
+  * Used from writer.marshal.
+     *
+     * @returns {Object}
+     */
+VfwBox = draw2d.shape.basic.Rectangle.extend({
+    NAME: "VfwBox",
+    /**
+     * @method
+     * Return an objects with all important attributes for XML or JSON serialization
+     *
+     * @returns {Object}
+     */
+    getPersistentAttributes : function() {
+        var memento = this._super();
+
+        // add all decorations to the memento
+        memento.labels = [];
+        this.children.each(function(i,e){
+            var labelJSON = e.figure.getPersistentAttributes();
+            labelJSON.locator=e.locator.NAME;
+            memento.labels.push(labelJSON);
+        });
+
+        this.inputPorts.data.forEach(function(e,i) {
+            memento.ports[i].locatorAttr["x"] = e.locator.x;
+            memento.ports[i].locatorAttr["y"] = e.locator.y;
+        })
+        var inputportlen = this.inputPorts.data.length;
+        this.outputPorts.data.forEach(function(e,i) {
+            memento.ports[inputportlen+i].locatorAttr["x"] = e.locator.x;
+            memento.ports[inputportlen+i].locatorAttr["y"] = e.locator.y;
+        })
+
+        return memento;
+    },
+
+    /**
+     * @method
+     * Read all attributes from the serialized properties and transfer them into the shape.
+     *
+     * @param {Object} memento
+     * @returns
+     */
+    setPersistentAttributes : function(memento) {
+        this._super(memento);
+
+        // remove all decorations created in the constructor of this element
+        this.resetChildren();
+
+        // and add all children of the JSON document.
+        $.each(memento.labels, $.proxy(function(i,json){
+            // create the figure stored in the JSON
+            var figure =  eval("new "+json.type+"()");
+
+            // apply all attributes
+            figure.attr(json);
+
+            // instantiate the locator
+            var locator =  eval("new "+json.locator+"()");
+
+            // add the new figure as child to this figure
+            this.add(figure, locator);
+        },this));
+    }
+});
+
+var draw2dsessionStore = {
+
+    setdata: function(){
+        let writer = new draw2d.io.json.Writer();
+
+        writer.marshal(canvas, function (json) {
+            // convert the json object into string representation
+            console.log('json writer: ', json)
+            let jsonTxt = JSON.stringify(json, null, 2);
+            sessionStorage.setItem("draw2ddata", jsonTxt)
+
+        });
+    },
+
+    getworkflow: function() {
+        let jsonDocument = sessionStorage.getItem("draw2ddata")
+        if (jsonDocument) {
+            console.log('read jsonDocument: ', JSON.parse(jsonDocument))
+            let reader = new draw2d.io.json.Reader();
+            // console.log('read: ', jsonDocument)
+            reader.unmarshal(canvas, JSON.parse(jsonDocument));
+        }
+    },
+
+}
+
 // define drag and drop interaction from outside to canvas to the draw2d canvas
 function onclick_handler(ev) {
 }
@@ -319,7 +464,7 @@ function vfw_drag() {
 let canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
-let connection = new Connection()
+let connection = new Connection();
 canvas.installEditPolicy(connection.connectionPolicy);
 
 /**
@@ -330,16 +475,21 @@ canvas.installEditPolicy(connection.connectionPolicy);
  */
 function process_drop_params(service, id) {
     // TODO: improve data object to avoid building this obj manually!
-    let box_param = ''
-    let inputs = []
-    let outputs = []
+    let box_param = '';
+    let inputs = [];
+    let input_key_list = [];
+    let output_key_list = [];
+    let outputs = [];
     get_sessionStorage_tools(service)
     let metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
     if (!metadata) {
-        get_wpsprocess(service, id);
-        metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
+        $.when(get_wpsprocess(service, id)).done(function() {
+            metadata = JSON.parse(sessionStorage.getItem("workflow"))[id]
+        })
+        // get_wpsprocess(service, id);
+        // metadata = JSON.parse(sessionStorage.getItem("workflow"))[id]
     }
-    if (metadata.dataInputs) {
+    if (metadata.hasOwnProperty('dataInputs')) {
         for (let i of metadata.dataInputs) {
             if ('keywords' in i) {
 
@@ -349,9 +499,10 @@ function process_drop_params(service, id) {
             } else {
                 inputs.push(i.dataType)
             }
+            input_key_list.push(i.identifier)
         }
     }
-    if (metadata.processOutputs) {
+    if (metadata.hasOwnProperty('processOutputs')) {
         for (let i of metadata.processOutputs) {
             if (i.identifier !== 'error') {
                 if ('keywords' in i) {
@@ -362,6 +513,7 @@ function process_drop_params(service, id) {
                     outputs.push(i.dataType)
                 }
             }
+            output_key_list.push(i.identifier)
         }
     }
     box_param = {
@@ -369,6 +521,7 @@ function process_drop_params(service, id) {
         input_ids: [],
         input_values: [],
         name: metadata.title,
+        input_key_list: input_key_list,
         orgid: metadata.identifier,
         outputs: outputs,
         type: 'tool'
@@ -383,8 +536,8 @@ function process_drop_params(service, id) {
  */
 function update_workflow(event) {
     let delete_element, index, chained_id;
-    let workflow = get_sessionStorage_workflow()
-
+    // let workflow = globalWorkflow.session_storage();
+    let workflow = get_sessionStorage_workflow();
     if (event.state === 'remove') {
         delete_element = workflow[event.id];
         if (delete_element.input_ids) {
@@ -416,28 +569,62 @@ function update_workflow(event) {
             boxtype: event.element._boxtype,
             inputs: event.element._inputs,
             input_values: event.params.input_values,
+            input_keys: event.params.input_key_list,
             input_ids: event.params.input_ids,
+            input_boxes: [],
             outputs: event.element._outputs,
+            output_values: event.params.output_values,
+            output_keys: event.params.output_key_list,
+            output_ids: event.params.output_ids,
+            output_boxes: [],
             source: event.element._sessionstore,
             service: event.element._service
         }
     } else if (event.state === 'change') {
-        if (!workflow[event.target.boxid]['input_values']) {
+        if (event.hasOwnProperty('target') && !workflow[event.target.boxid]['input_values']) {
             workflow[event.target.boxid]['input_values'] = []
-            workflow[event.target.boxid]['input_ids'] = []
+            workflow[event.target.boxid]['input_ids'] = array_insert(workflow[event.target.boxid]['input_ids'],
+                event.source.index, event.source.boxid)
         }
-        if (!workflow[event.source.boxid]['output_values']) {
+        if (event.hasOwnProperty('source') && !workflow[event.source.boxid]['output_values']) {
             workflow[event.source.boxid]['output_values'] = []
-            workflow[event.source.boxid]['output_ids'] = []
+            workflow[event.source.boxid]['output_ids'] = array_insert(workflow[event.source.boxid]['output_ids'],
+                event.target.index, event.target.boxid)
+        } else if (event.hasOwnProperty('source')) {
+            // workflow[event.target.boxid]['input_values'][event.target.index] = event.source.value;
+            // workflow[event.target.boxid]['input_ids'][event.target.index] = event.source.orgid;
+            // workflow[event.target.boxid]['input_boxes'][event.target.index] = event.source.boxid;
+            // workflow[event.source.boxid]['output_values'][event.source.index] = event.target.value;
+            // workflow[event.source.boxid]['output_boxes'][event.source.index] = event.target.boxid;
+            // workflow[event.source.boxid]['output_ids'][event.source.index] = event.target.orgid;
+            // if (workflow[event.target.boxid]['input_boxes'] != null &&
+            //     workflow[event.target.boxid]['input_boxes'] != undefined &&
+            //     workflow[event.target.boxid]['input_boxes'] != "") {
+            //     workflow[event.target.boxid]['input_values'][event.target.index] = event.source.boxid;
+            // }
         }
-        workflow[event.target.boxid]['input_values'][event.target.index] = event.source.orgid;
-        workflow[event.target.boxid]['input_ids'][event.target.index] = event.source.boxid;
-        workflow[event.source.boxid]['output_values'][event.source.index] = event.target.orgid;
-        workflow[event.source.boxid]['output_ids'][event.source.index] = event.target.boxid;
-
     }
     sessionStorage.setItem('workflow', JSON.stringify(workflow))
+    draw2dsessionStore.setdata()
     // workflow[box.id] = box
+}
+
+/**
+ * General function to insert a string in an array of strings.
+ *
+ * @param {array} arr - array of string
+ * @param {integer} index - position to change an item
+ * @param {string} newItem - the new item for index position
+ */
+function array_insert(arr, index, newItem) {
+    if (!arr) {
+        arr = [...Array(index)].map(i => '')
+        // arr.splice(index, 0, newItem);
+    } else if (arr.length < (index-1)) {
+        arr = arr.concat([...Array(index-arr.length-1)].map(i => ''));
+    }
+    arr.splice(index, 1, newItem)
+    return arr;
 }
 
 /**
@@ -452,7 +639,6 @@ function prepare_box_params(ev, id, source, service= "") {
     if (source === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
         service = 'dataBtn'
-        console.log('metadata: ', metadata)
         // TODO: improve data object to avoid building this obj manually!
         box_param = {
             inputs: [],
@@ -491,7 +677,7 @@ function prepare_box_params(ev, id, source, service= "") {
  */
 function drop_handler(ev, x, y, id, source, service) {
     let box_param = '';
-    let receivedData, prepared_params;
+    let receivedData, prepared_params, newBox;
 
     try {
         ev.preventDefault();  // needed for Firefox
@@ -509,16 +695,16 @@ function drop_handler(ev, x, y, id, source, service) {
     service = prepared_params.service;
 
     let boxID = box_param.orgid + get_workflow_id_affix()
-    // console.log('box_param.name: ', box_param.name)
     let box = new Box(
         box_param.name, box_param.orgid, box_param.type,
         box_param.inputs, box_param.outputs, source, service, boxID
     )
+    newBox = box.box;
+    canvas.add(newBox, x, y);
 
-    canvas.add(box.box, x, y);
     update_workflow({'state': 'drop', 'element': box, 'params': box_param});
     // reduce_lap(x, y)
-    return {'box': box.box, 'boxID': boxID};
+    return {'box': newBox, 'boxID': boxID};
 }
 
 
@@ -590,37 +776,85 @@ function get_workflow_id_affix() {
  * Collect information from session Storage and draw workflow boxes as given there.
  */
 function draw_workflow() {
+    draw2dsessionStore.getworkflow()
+}
+function draw_workflow_old() {
     let box = {};
+    let newBox;
     let coords = {};
-    let ports = {};
-    let workflow = get_sessionStorage_workflow();
-    Object.entries(workflow).map(function (i) {
-        if (i[0] == 'name') {
-            document.getElementById("workflow_name").setAttribute('value', i[1])
+    let ports = {};  // key: boxname, values: ports
+    let portpairs = {};
+    let inputport, outputport;
+    let source, target;
+    let sourceName;
+    let workflow = get_sessionStorage_workflow()
+    // let workflow = globalWorkflow.session_storage();
+
+    // get connection/port pairs
+    Object.entries(workflow).map(function (boxDescription) {
+        console.log('workflow keys: ', Object.keys(workflow))
+        if (boxDescription[1].input_ids) {
+
+        }
+    })
+    let testportin, testportout
+    Object.entries(workflow).map(function (boxDescription) {
+        if (boxDescription[0] == 'name') {
+            document.getElementById("workflow_name").setAttribute('value', boxDescription[1])
         } else {
             box = new Box(
-                i[1].name, i[1].orgid, i[1].boxtype, i[1].inputs,
-                i[1].outputs, i[1].source, i[1].service, i[0]
+                boxDescription[1].name, boxDescription[1].orgid, boxDescription[1].boxtype, boxDescription[1].inputs,
+                boxDescription[1].outputs, boxDescription[1].source, boxDescription[1].service, boxDescription[0]
             )
+            newBox = box.box;
             coords = get_drop_coords();
-            canvas.add(box.box, coords['x'], coords['y']);
+            canvas.add(newBox, coords['x'], coords['y']);
 
-            ports[i[0]] = {'inputPortNames': i[1].input_ids, 'inputPorts': box.box.getInputPorts(),
-                'outputPortNames': i[1].output_ids, 'outputPorts': box.box.getOutputPorts(),
-                'box': box.box};
+            ports[boxDescription[0]] = {
+                'inputPortNames': boxDescription[1].input_ids, 'inputPort': newBox.getInputPort(0), 'inputPorts': newBox.getInputPorts(),
+                // 'inputPortNames': boxDescription[1].input_ids, 'inputPorts': box.box.getInputPorts(),
+                'inputPortsSource': boxDescription[1].input_boxes,
+                'outputPortNames': boxDescription[1].output_ids, 'outputPort': newBox.getOutputPort(0), 'outputPorts': newBox.getOutputPorts(),
+                // 'outputPortNames': boxDescription[1].output_ids, 'outputPorts': box.box.getOutputPorts(),
+                'outputPortsTarget': boxDescription[1].output_boxes,
+                'box': newBox};
+
+            if (boxDescription[1].input_ids) {
+                boxDescription[1].input_ids.forEach(function(val, ind, arr) {
+                    console.log('val: ', val)
+                    console.log('ind: ', ind)
+                    console.log('arr: ', arr)
+
+                });
+
+        }
 
         }
     })
 
-    Object.entries(ports).map(function ([k,v]) {
-        if (typeof v.inputPortNames !== "undefined") {
-            v.inputPortNames.forEach(function (val, ind) {
-                add_connection(ports[val].box.getOutputPort(ports[val].outputPortNames.indexOf(k)),
-                    v.box.getInputPort(ind))
-                    // v.box.box.getInputPorts().data[ind])
-                // add_connection(ports[val].outputPorts.data[ports[val].outputPortNames.indexOf(k)],
-                //     v.inputPorts.data[ind])
-            }
+    Object.entries(ports).map(function ([elementName, element]) {  // loop port objects
+        if (typeof element.inputPortNames !== "undefined") {  // if port has input connections
+            element.inputPortNames.forEach(function (val, ind) {  // loop input connections
+                if (val !== '') {  // if input actually has a connection => find corresponding output, get them, draw
+                    target = element.inputPort
+                    sourceName = element.inputPortNames[ind]
+                    // element is the inputport == target
+                    // ==> need output port. 1. get output element
+
+                    // 2. Get Output Portname:
+                    if (elementName == ports[sourceName].outputPortNames[0]) {
+                        source = ports[sourceName].outputPort
+                        add_connection(source, target)
+                    }
+
+                    // here is element.inputPorts.data[ind] (== ports.inputPortNames[ind] ?)
+                    //     add_connection(ports[val].box.getOutputPort(ports[val].outputPortNames.indexOf(k)),
+                    //         v.box.getInputPort(ind))
+                    //     v.box.box.getInputPorts().data[ind])
+                    // add_connection(ports[val].outputPorts.data[ports[val].outputPortNames.indexOf(k)],
+                    //     v.inputPorts.data[ind])
+                }
+                }
             )
         }
 

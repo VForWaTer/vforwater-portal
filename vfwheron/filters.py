@@ -1,3 +1,7 @@
+"""
+The filter doesn't have to care about users, as all metadata is supposed to be accessible to all users.
+"""
+
 import django_filters
 
 from vfwheron.models import NmPersonsEntries
