@@ -62,7 +62,7 @@ function show_data() {
     /** Initiate creation of data Button in data and result store.
      * When called from outside of 'Home' check if data is
      * already pickled. If not pickle it. **/
-    // (TODO: Should be monitored if a lot of data gets pickled but never used!)
+        // (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
         build_datastore_button(workspaceData);
@@ -146,6 +146,7 @@ function preload_datastore_button(workspaceData) {
             $.ajax({
                 url: DEMO_VAR + "/workspace/dbload",
                 // dataType: 'json',
+                "timeout": 5000,
                 data: {
                     dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
                 }, /** data sent with post request **/
@@ -234,7 +235,7 @@ function update_datastore_button(wpsDBInfo) {
     }
     button.remove();
     // parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'].substring(3,),
-    parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'],
+    parent.innerHTML += sidebar_btn_html(datasetKey,
         storageEntry, btnName, title)
     workspaceData[datasetKey] = storageEntry
     /*$.each(wpsDBInfo, function (keyID, value) {
@@ -381,8 +382,7 @@ function remove_all_datasets() {
 // H E L P E R    F U N C T I O N S
 
 /**
- * Function to check if we clicked inside an element with a particular class
- * name.
+ * Function to check if we clicked inside an element with a particular class name.
  *
  * @param {Object} e The event
  * @param {String} className The class name to check against
@@ -412,7 +412,7 @@ function getPosition(e) {
     var posx = 0;
     var posy = 0;
 
-    if (!e) var e = window.event;
+    if (!e) var e = window["event"];
 
     if (e.pageX || e.pageY) {
         posx = e.pageX;
@@ -435,8 +435,8 @@ function getPosition(e) {
 /**
  * Global Variables for popup.
  */
-var contextMenuClassName = "context-menu";
-var contextMenuItemClassName = "context-menu__item";
+// var contextMenuClassName = "context-menu";
+// var contextMenuItemClassName = "context-menu__item";
 var contextMenuLinkClassName = "context-menu__link";
 var contextMenuActive = "context-menu--active";
 var contextResultActive = "context-result--active";
@@ -486,10 +486,16 @@ function contextListener() {
     document.addEventListener("contextmenu", function (e) {
         taskItemInContext = clickInsideElement(e, taskItemClassName);
         let chooseContext;
-        if (taskItemInContext) {
-            if (taskItemInContext.classList.contains('is-result')) chooseContext = 'is-result';
+        let btndata;
+        if (taskItemInContext && !taskItemInContext.classList.contains("groupaccordion")) {
+            if (taskItemInContext.classList.contains('is-result')) {
+                chooseContext = 'is-result';
+                btndata = JSON.parse(sessionStorage.getItem("resultBtn"))[taskItemInContext.dataset.btnname]
+            } else {
+                btndata = JSON.parse(sessionStorage.getItem("dataBtn"))[taskItemInContext.dataset.orgid]
+            }
             e.preventDefault();
-            toggleMenuOn(chooseContext);
+            toggleMenuOn(chooseContext, taskItemInContext.dataset, btndata);
             positionMenu(e);
         } else {
             taskItemInContext = null;
@@ -533,16 +539,34 @@ function resizeListener() {
 }
 
 /**
+ * Toggle in the contextmenu the option to show a plot.
+ *
+ * @param {Element} menunode
+ * @param {Element} btndata
+ */
+function togglePlotContext(menunode, btndata) {
+    let plotables = ["figure", "timeseries"]
+
+    if (plotables.includes(btndata.type)) {
+        menunode.querySelector(".context-menu-plot").parentNode.style.display = "block";
+    } else {
+        menunode.querySelector(".context-menu-plot").parentNode.style.display = "none";
+    }
+}
+
+/**
  * Turns the custom context menu on.
  */
-function toggleMenuOn(chooseContext) {
+function toggleMenuOn(chooseContext, data, btndata) {
     toggleMenuOff(chooseContext);
     if (menuState !== 1) {
         menuState = 1;
         if (chooseContext == "is-result") {
             resultMenu.classList.add(contextResultActive);
+            togglePlotContext(resultMenu, btndata)
         } else {
             menu.classList.add(contextMenuActive);
+            togglePlotContext(menu, btndata)
         }
     }
 }
@@ -622,21 +646,51 @@ function showDataInfo(properties) {
 /**
  * Fill a process modal with values from a result.
  *
- * @param {list} btnName list of dataInputs of a wps process
- * @param {dict} btnValues names of input fields as keys with values
+ * @param {list} btnKeys names of input fields
+ * @param {list} btnValues values for the input fields
  */
-function setModalValues(btnName, btnValues) {
+function setModalValues(btnKeys, btnValues) {
     // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
     //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
     // }
-    for (let i of btnName) {
-        if (document.getElementById(i.identifier).type == "checkbox") {
-            document.getElementById(i.identifier).checked = btnValues[i.identifier]
-        }
-        // else {
-        document.getElementById(i.identifier).value = btnValues[i.identifier]
+    let htmlElement = {};
+    let datastore = JSON.parse(sessionStorage['dataBtn']);
+    // let resultstore = JSON.parse(sessionStorage['resultBtn']);
+
+    // loop values of result to insert them in the respective field
+    let loopLength = 0;
+    if (btnValues) {loopLength = btnValues.length}
+    for (let i=0; i < loopLength; i++) {
+
+        htmlElement = document.getElementById(btnKeys[i]);
+        // if (typeof btnValues[i] === 'string') {
+        //     btnDict[btnKeys[i]] = btnValues[i];
+        // } else {
+        //     btnDict[btnKeys[i]] = btnValues[i];
         // }
+        if (htmlElement.type == "checkbox") {
+            htmlElement.checked = btnValues[i];
+        } else if (htmlElement.type == "select-one") {
+            let datastore_selection;
+            // name/id stored in result is not given in modal, so loop datastore for the right name/id
+            for (let j in datastore) {
+                if ((datastore[j].source + datastore[j].dbID) == btnValues[i]) {
+                    datastore_selection = j;
+                    break;
+                }
+            }
+            // if right name(id is found loop html element to find this element to pre-select it
+            for (const [key, value] of Object.entries(htmlElement.options)) {
+                if (htmlElement.options[key].value == datastore_selection) {
+                    htmlElement.options[key].selected = 'true';
+                    break;
+                }
+            }
+        } else {
+            htmlElement.value = btnValues[i];
+        }
     }
+
     /** first loop over each dropdown in input, then over values in dropdown **/
     // for (let i = 0; i < dropDInputs.length; i++) {
     //
@@ -665,7 +719,12 @@ function menuItemListener(link) {
     let service = {};
     let id = taskItemInContext.getAttribute("data-id");
     let btnName = taskItemInContext.getAttribute('btnname');
-
+    let store = taskItemInContext.getAttribute('data-sessionstore');
+    let item = JSON.parse(sessionStorage.getItem(store))[btnName];
+    if (!item) {
+        btnName = taskItemInContext.getAttribute('data-orgid');
+        item = JSON.parse(sessionStorage.getItem(store))[btnName];
+    }
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     content.innerHTML = '<div id="loader" class="loader"></div>';
     /*content.innerHTML = '<div id="loader"  class="fading-dot-loader">\n' +
@@ -770,12 +829,13 @@ function menuItemListener(link) {
             /** Re-open the tool */
             wpsToOpen = result[btnName].wps;
             service = document.getElementById(wpsToOpen).getAttribute("data-service");
-            wpsprocess(service, wpsToOpen);
+            open_wpsprocess_modal(service, wpsToOpen, [item.input_keys, item.input_values]);
             /** Fill the tool with selection made to receive this result button */
-            setModalValues(
+            /*setModalValues(
                 JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
-                JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
-            )
+                // JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
+                item.input_keys, item.input_values
+            )*/
             popup.classList.remove(popActive);
             break;
         case "DownloadDMD":
@@ -787,71 +847,118 @@ function menuItemListener(link) {
             break;
         case "ViewResult":
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
-            for (let j in result) {
-                if (result[j]) {
-                    if (!(result[j] instanceof Object)) {
-                        popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
-                    } else {
-                        let len_k = result[j].length;
-                        for (let k in result[j]) {
-                            let name_j = len_k > 1 ? j + ' ' + k + 1 : j;
-                            popUpText += '<tr><td><b>' + name_j + '</b></td><td>' + result[j][k] + '</td></tr>';
-                        }
-                    }
+            if (!(result[btnName] instanceof Object)) {
+                popUpText += '<tr><td><b>' + btnName + '</b></td><td>' + result[btnName] + '</td></tr>';
+            } else {
+                popUpText += '<tr><td><b>' + 'result name' + '</b></td><td>' + result[btnName]['name'] + '</td></tr>';
+                for (let j in result[btnName]['input_values']) {
+                    popUpText += '<tr><td><b>' + 'input' + '</b></td><td>' + result[btnName]['input_values'][j] + '</td></tr>';
                 }
+                popUpText += '<tr><td><b>' + 'output' + '</b></td><td>' + result[btnName]['outputs'] + '</td></tr>';
+                popUpText += '<tr><td><b>' + 'output type' + '</b></td><td>' + result[btnName]['type'] + '</td></tr>';
+                // let len_k = result[btnName].length;
+                // for (let k in result[btnName]) {
+                //     console.log('k: ', k)
+                //     let name_j = len_k > 1 ? btnName + ' ' + k + 1 : btnName;
+                //     popUpText += '<tr><td><b>' + name_j + '</b></td><td>' + result[btnName][k] + '</td></tr>';
+                // }
             }
+            // use the following for grouped buttons (maybe?)
+            // for (let j in result) {
+            //     console.log('j: ', j)
+            //     if (result[j]) {
+            //         console.log('result[j]: ', result[j])
+            //         if (!(result[j] instanceof Object)) {
+            //             popUpText += '<tr><td><b>' + j + '</b></td><td>' + result[j] + '</td></tr>';
+            //         } else {
+            //             let len_k = result[j].length;
+            //             for (let k in result[j]) {
+            //                 let name_j = len_k > 1 ? j + ' ' + k + 1 : j;
+            //                 popUpText += '<tr><td><b>' + name_j + '</b></td><td>' + result[j][k] + '</td></tr>';
+            //             }
+            //         }
+            //     }
+            // }
             content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
             popClose.classList.remove('w3-hide');
             positionPopup(popup);
             break;
         case "Plot":
-            // TODO: Add Names on lines in Plot needs modification in wps or another database entry
-            // let allBtns = JSON.parse(sessionStorage['resultBtn'])
-            // let inputs = allBtns[btnName].inputs
-            // let btnNames = []
-            // $.each(inputs, function (key, value) {
-            //     if (typeof value === "object"){
-            //         for (let singleValue of value){
-            //             $.each(allBtns, function(key, value) {
-            //                 if (String(value.wpsID) == singleValue.substr(5)) {
-            //                     btnNames.push(key)
-            //                 }
-            //             })
-            //         }
-            //     }
+            console.log('item: ', item)
+            console.log('id: ', id)
+            let urlParams = new URLSearchParams(window.location.search);
+            let startdate, enddate;
+            let date = urlParams.getAll('date');
+
+            if ($.isEmptyObject(date)) {
+                startdate = 'None'
+                enddate = 'None'
+            } else {
+                startdate = date[0].toString();
+                enddate = date[1].toString();
+            }
+            if (item.type == 'figure') {
+                // document.getElementById("pop-content-side").innerHTML = item.outputs; // add plot
+                document.getElementById("mod_result").innerHTML = item.outputs; // add plot
+                let rModal = document.getElementById("resultModal");
+                rModal.style.display = "block";
+                popup.classList.remove(popActive);
+                modalToggleSize.style.display = "none";
+                // modalToggleSize.hidden = true;
+            }
+                // TODO: Add Names on lines in Plot needs modification in wps or another database entry
+                // let allBtns = JSON.parse(sessionStorage['resultBtn'])
+                // let inputs = allBtns[btnName].inputs
+                // let btnNames = []
+                // $.each(inputs, function (key, value) {
+                //     if (typeof value === "object"){
+                //         for (let singleValue of value){
+                //             $.each(allBtns, function(key, value) {
+                //                 if (String(value.wpsID) == singleValue.substr(5)) {
+                //                     btnNames.push(key)
+                //                 }
+                //             })
+                //         }
+                //     }
             // })
 
-            // get bokeh plot from django
-            $.ajax({
-                url: DEMO_VAR + "/home/previewplot",
-                datatype: 'json',
-                data: {
-                    preview: id,
-                    'csrfmiddlewaretoken': csrf_token,
-                }, // data sent with post
-            })
-                .done(function (requestResult) {
-                    // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
-                    // content.innerHTML = result.div;
-                    // let bokehResultScript;
-                    if ('html' in requestResult) {
-                        document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
-                    } else {  // plot from bokeh
-                        sessionStorage['Bokeh'] = JSON.stringify(requestResult);
-                        place_bokeh("mod_result", requestResult)
-                    }
-                    // popClose.classList.remove('w3-hide');
-                    // positionPopup(popup);
-                    let rModal = document.getElementById("resultModal");
-                    rModal.style.display = "block";
+            else {
+                // get bokeh plot from django
+                $.ajax({
+                    url: DEMO_VAR + "/home/previewplot",
+                    datatype: 'json',
+                    data: {
+                        preview: id,
+                        'csrfmiddlewaretoken': csrf_token,
+                        startdate: startdate,
+                        enddate: enddate,
+                    }, // data sent with post
                 })
-                .fail(function (e) {
-                    console.error('Fehler: ', e)
-                })
-                .always(function () {
-                    popup.classList.remove(popActive);
-                })
+                    .done(function (requestResult) {
+                        // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
+                        // content.innerHTML = result.div;
+                        // let bokehResultScript;
+                        console.log('make a previewplot')
+                        if ('html' in requestResult) {
+                            document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
+                        } else {  // plot from bokeh
+                            // sessionStorage['Bokeh'] = 'true';
+                            bokehImage = requestResult;
+                            place_html_with_js("mod_result", requestResult)
+                        }
+                        // popClose.classList.remove('w3-hide');
+                        // positionPopup(popup);
+                        let rModal = document.getElementById("resultModal");
+                        rModal.style.display = "block";
+                    })
+                    .fail(function (e) {
+                        console.error('Fehler: ', e)
+                    })
+                    .always(function () {
+                        popup.classList.remove(popActive);
+                    })
+            }
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});

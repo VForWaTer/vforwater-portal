@@ -9,7 +9,7 @@ from heron.settings import max_size_preview_plot
 from vfwheron.models import Entries, Timeseries, Timeseries_1D
 
 
-def get_timescale(df):
+def __get_timescale(df, ID=None):
     """
     Get a dataframe with a timestamp ('tstmp'), iterate over the first 11 values (or less for shorter datasets)
     and return the smallest time difference.
@@ -17,28 +17,45 @@ def get_timescale(df):
     :param df: pandas dataframe
     :return: pandas timedelta
     """
-    stepsize = []
-    steps = 1
-    checklength = 11
 
-    if df.shape[0] <= checklength + 1:
-        checklength = df.shape[0] - 1
+    def __timescale_from_data(df):
+        stepsize = []
+        steps = 1
+        checklength = 11
 
-    while steps < checklength:
-        stepsize.append(df['tstamp'][steps + 1] - df['tstamp'][steps])
-        steps += 1
-    return min(stepsize)
+        if df.shape[0] <= checklength + 1:
+            checklength = df.shape[0] - 1
+
+        if 'tstamp' in df:
+            relcol = df['tstamp']
+        elif df.index.name == 'tstamp':
+            relcol = df.index
+
+        while steps < checklength:
+            stepsize.append(relcol[steps + 1] - relcol[steps])
+            steps += 1
+        return min(stepsize)
+
+    if ID:
+        timescale = Entries.objects.filter(id=ID).values_list('datasource__temporal_scale__resolution')[0][0]
+        if timescale:
+            return pd.to_timedelta(timescale)
+        else:
+            return __timescale_from_data(df)
+    else:
+        return __timescale_from_data(df)
 
 
 # TODO: In Python > 3.7 use Literal
 # def is_data_short(ID: int, source: Literal['db', 'wps']):
-def is_data_short(ID: int, source: str):
+def is_data_short(ID: int, source: str, date: list):
     """
     Get ID of a dataset, check the length of the dataset and return boolean if dataset is short (<= 50 000 values) or
     too long to plot completly.
 
     :param ID: integer
     :param source: string
+    :param date: list
     :return: boolean
     """
     if source == 'db':
@@ -46,9 +63,14 @@ def is_data_short(ID: int, source: str):
         # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
 
     query_path = {'{0}'.format(datapath): ID}
+
+    if date and date[0]:
+        query_path[datapath + '__tstamp__gte'] = date[0]
+        query_path[datapath + '__tstamp__lte'] = date[1]
+
     # TODO: Think about using the following queryset instead of creating it serveral times per plot
-    datalength = Entries.objects.filter(timeseries_1d=ID).count()
-    # datalength = Entries.objects.filter(**query_path).count()
+    datalength = Entries.objects.filter(**query_path).count()
+
     if datalength == 0:  # if not qs.exists():
         raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(ID))
 
@@ -59,42 +81,98 @@ def is_data_short(ID: int, source: str):
     return full
 
 
-def __DB_load_data(ID: int, full_res: bool):
+def __unify_dataframe(df):
+    """
+    Check format of dataframe. When one value in data column it's the same as timeseries-1d, so just convert array to
+    number and rename 'data' column to 'value'.
+
+    :param df:
+    :return: df
+    """
+    if len(df['data'][0]) == 1:
+        df['value'] = df['data'].str.get(0)
+        df.drop(columns=['data'], inplace=True)
+
+    return df
+
+
+def __DB_load_data(ID: int, date: list, full_res: bool):
     """
     Load data from database and return a dict with data, pandas df and axis. When full resolution == False limit length
     of result according to settings.max_size_preview_plot
 
     :param ID: integer
+    :param date: list
     :param full_res: boolean
     :return: dict - {df, axis, scale, has_preci}
     """
-    # datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
-    datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
-    if datapath == 'timeseries_1d':
-        # request data with django ORM
-        qs = Timeseries_1D.objects.filter(entry_id=ID).values('tstamp', 'value', 'precision')
+    lookup_arguments = {'entry_id': ID}
+    if date and date[0]:
+        lookup_arguments['tstamp__gte'] = date[0]
+        lookup_arguments['tstamp__lte'] = date[1]
 
+    # datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+    datatable = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
+
+    if datatable == 'timeseries_1d':
+        # request data with django ORM
+        qs = Timeseries_1D.objects.filter(**lookup_arguments).values('tstamp', 'value', 'precision')
+
+        df = __reduce_dataset(qs, full_res)
+        timescale = __get_timescale(df, ID)
+        precision = __has_precision(df)
+
+        return {'df': df, 'scale': timescale, 'has_preci': precision}
+
+    if datatable == 'timeseries':
+
+        qs = Timeseries.objects.filter(**lookup_arguments).values('tstamp', 'data', 'precision')
+        df = __reduce_dataset(qs, full_res)
+        df = __unify_dataframe(df)
+        timescale = __get_timescale(df, ID)
+
+        precision = __has_precision(df)
+
+        return {'df': df, 'scale': timescale, 'has_preci': precision}
+
+    else:
+        print('*** CANNOT LOAD YOUR \'{0}\' DATA. PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***'.format(datatable))
+
+
+def __has_precision(df):
+    """
+    Check if dataset has any precision values.
+
+    :param df: pandas dataframe
+    :return: bool
+    """
+    precision = False
+    if 'precision' in df.columns:
+        if not df['precision'].isnull().values.any():
+            precision = True
+    return precision
+
+
+def __reduce_dataset(qs: object, full_res: bool):
+    """
+    Reduce length of dataset to length given in 'settings.max_size_preview_plot' to speed up loading time of preview.
+
+    :param qs: data as django queryset or pandas dataframe
+    :param full_res: bool
+    :return: pandas dataframe
+    """
+    if isinstance(qs, pd.DataFrame):
+        if full_res:
+            df = qs
+        else:
+            df = qs.tail(max_size_preview_plot)
+    else:
         if full_res:
             df = pd.DataFrame(list(qs))
         else:
             qs_length = qs.count()
-            df = pd.DataFrame(list(qs[qs_length-max_size_preview_plot:qs_length]))
-
-        timescale = Entries.objects.filter(id=ID).values_list('datasource__temporal_scale__resolution')[0][0]
-        if timescale:
-            timescale = pd.to_timedelta(timescale)
-        else:
-            timescale = get_timescale(df)
-
-        if 'precision' in df.columns:
-            if df['precision'].isnull().values.any():
-                precision = False
-            else:
-                precision = True
-
-        return {'df': df, 'scale': timescale, 'has_preci': precision}
-    else:
-        print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
+            df = pd.DataFrame(list(qs[qs_length - max_size_preview_plot:qs_length]))
+    return df
 
 
 def __get_axis_limits(plot_data):
@@ -120,6 +198,7 @@ def __get_axis_limits(plot_data):
 
     plot_data['axis'] = axis
     return plot_data
+
 
 def __DB_load_data_avg(ID: int, scale='day'):
     """
@@ -152,7 +231,7 @@ def __DB_load_data_avg(ID: int, scale='day'):
         if timescale:
             timescale = pd.to_timedelta(timescale)
         else:
-            timescale = get_timescale(df)
+            timescale = __get_timescale(df)
 
         precision = False if df['precavg'].isnull().values.any() else True
 
@@ -161,23 +240,56 @@ def __DB_load_data_avg(ID: int, scale='day'):
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
-def __DB_load_directiondata(id, ti):
+def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
+    """
+    Load data for rose plot from database.
+    :param ID:
+    :param ti:
+    :param date:
+    :param full_res:
+    :return:
+    """
     # TODO: Use django ORM instead of pure sql
+    # TODO: if iwg is interested in it: Check number of time intervals.
+    #  If this number is lower then 100 a smaller interval is used.
+    datestring = ' '
+    if date:
+        datestring = "AND tstamp >= '{0}'::timestamp AND tstamp < '{1}'::timestamp ".format(date[0], date[1])
+
+    datatable = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
     cursor = connections['default'].cursor()
+
+    # adjust number of time frames according to the selected time frame
+    date_opt = ['year', 'month', 'week', 'day']
+    cursor.execute("SELECT date_trunc('{0}', tstamp)::date as date "
+                   "FROM {2} "
+                   "WHERE entry_id = {1} {3}"
+                   "GROUP BY date_trunc('{0}', tstamp);".format(ti, ID, datatable, datestring))
+    data_length = len(cursor.fetchall())
+    if data_length < 100 and date_opt.index(ti) < len(date_opt):
+        ti = date_opt[date_opt.index(ti) + 1]
+    elif data_length > 1500 and date_opt.index(ti) > 0:
+        ti = date_opt[date_opt.index(ti) - 1]
+
     # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
+    # TODO: check if this assumption above for the direction in now (that it is implemented with pandas) is still valid
     sum_string = ""
     for i in range(1, 36):
-        sum_string += "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = %i ) as b%i," % (i, i)
+        sum_string += "count(*) FILTER (WHERE trunc(((data[1])+5)/10)::double precision = %i ) as b%i," % (i, i)
 
-    cursor.execute("SELECT date_trunc('%s', tstamp)::date as date, count(*), "
-                   "count(*) FILTER (WHERE trunc(((value)+5)/10)::smallint = 0 "
-                   "or trunc(((value)+5)/10)::smallint = 36) as b0, %s "
-                   "from tbl_data where meta_id = %s "
-                   "group by date_trunc('%s', tstamp);" % (ti, sum_string[:-1], id, ti))
+    cursor.execute("SELECT date_trunc('{0}', tstamp)::date as date, count(*), "
+                   "count(*) FILTER (WHERE trunc(((data[1])+5)/10)::double precision = 0 "
+                   "or trunc(((data[1])+5)/10)::double precision = 36) as b0, {1} "
+                   "FROM {3} "
+                   "WHERE entry_id = {2} {4}"
+                   "GROUP BY date_trunc('{0}', tstamp);".format(ti, sum_string[:-1], ID, datatable, datestring))
 
     dbresult = cursor.fetchall()
     cursor.close()
-    return dbresult
+
+    index = ['tstamp', 'sum'] + list(map(str, range(0, 36)))
+
+    return pd.DataFrame(dbresult, columns=index), ti
 
 
 def fill_data_gaps(db_data: object):
@@ -241,9 +353,9 @@ def fill_data_gaps(db_data: object):
                 # set correct tstamp to new rows
                 empty_rows['tstamp'] = df['tstamp'][pos] + scale, df['tstamp'][pos + 1] - scale
                 # insert new rows with float index positions
-                df.loc[pos+0.3] = empty_rows.loc[1]
+                df.loc[pos + 0.3] = empty_rows.loc[1]
                 # df.loc[pos+0.3] = df['tstamp'][pos] + scale, float('nan'), float('nan')
-                df.loc[pos+0.6] = empty_rows.loc[2]
+                df.loc[pos + 0.6] = empty_rows.loc[2]
                 # df.loc[pos+0.6] = df['tstamp'][pos + 1] - scale, float('nan'), float('nan')
                 defect_x.extend([df['tstamp'][pos] - scale, df['tstamp'][pos],
                                  df['tstamp'][pos + 1], df['tstamp'][pos + 1] + scale])
@@ -252,6 +364,7 @@ def fill_data_gaps(db_data: object):
             # reset the index to integer
             df = df.sort_index().reset_index(drop=True)
             missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
+
     return {'df': df, 'scale': scale, 'nan_in_data': nan_in_data,
             'missing_data': missing_data, 'has_preci': db_data['has_preci']}
 
@@ -268,7 +381,7 @@ def __get_scaling(df):
     testlength = df.shape[0] if df.shape[0] <= 10 else 10
 
     for row in range(1, testlength):
-        scalelist.append(df['tstamp'][row] - df['tstamp'][row-1])
+        scalelist.append(df['tstamp'][row] - df['tstamp'][row - 1])
     return min(scalelist)
 
 
@@ -330,3 +443,33 @@ def precision_to_minmax(df):
         print('WARNING: there is a unknown dataset to convert precision in precision to minmax.')
 
     return df
+
+
+class DataTypes:
+    NUMPY_TYPES = ['array', '2darray', 'ndarray']
+    SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
+    DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
+    SPECIALS = ['raster']
+
+    def read_data(self, filepath: str, datatype: str):
+        if datatype in self.NUMPY_TYPES:
+            data = np.load(filepath + '.npz')
+        elif datatype in self.SERIES_TYPES:
+            data = pd.read_pickle(filepath + '.pkl')
+        elif datatype in self.DF_TYPES:
+            kwargs = dict()
+            if 'time' in datatype:
+                kwargs['parse_dates'] = [0]
+            data = pd.read_csv(self.filepath + '.csv', index_col=[0], **kwargs)
+
+            # if array-like, use only the first column
+            # if datatype in self.SERIES_TYPES:
+            #     data = data.iloc[:, 1].copy()
+
+        elif datatype == 'raster':
+            raise NotImplementedError('Raster files are not yet supported.')
+
+        else:
+            raise AttributeError("The datatype '%s' is not supported" % datatype)
+
+        return data

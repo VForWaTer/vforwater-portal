@@ -24,6 +24,12 @@ DATA_DIR = '/home/vfwtools/pywps'
 
 # For now, place all data files in VFW_DIR and not into source directory.
 HOME_DIR = Path.home()
+# try:
+#     HOME_DIR = Path.home()
+# except AttributeError:
+#     import os
+#     HOME_DIR = Path(str(os.path.expanduser('~')))
+
 VFW_DIR = Path(HOME_DIR) / '.vforwater'
 if not Path(VFW_DIR).exists():
     Path(VFW_DIR).mkdir()
@@ -201,6 +207,7 @@ DATABASES = {
             'USER': 'postgres',
             'PORT': '5434',
             'HOST': 'localhost',
+            'TEST': {'MIRROR': 'default',},
              }
 #     'default': {
 # #        'ENGINE': 'django.db.backends.sqlite3',

@@ -5,6 +5,8 @@ import ast
 from datetime import time
 from math import radians, ceil, sqrt
 
+from django.utils.translation import gettext
+from bokeh.io import show
 from bokeh.layouts import column
 from bokeh.models import Band, DatetimeTickFormatter, HoverTool, Range1d, CustomJS, ColumnDataSource, \
     DateSlider, DateRangeSlider, Whisker, BoxAnnotation
@@ -69,7 +71,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     if full_res:
         title = ''
     else:
-        title = "Showing only latest {0} datapoints.".format(str(max_size_preview_plot))
+        title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
     # Plot average as main plot
     mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
@@ -82,15 +84,15 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     # plot value line
     mainplot.line(x='tstamp', y='value', source=source, line_width=3)  #, legend_label="measured values")
 
-    mainplot.add_tools(HoverTool(tooltips=[("Value", "@value"),
-                                           ("Time", "@tstamp{%T %Z}"),
-                                           ("Date", "@tstamp{%d %b %Y}")],
+    mainplot.add_tools(HoverTool(tooltips=[(gettext("Value"), "@value"),
+                                           (gettext("Time"), "@tstamp{%T %Z}"),
+                                           (gettext("Date"), "@tstamp{%d %b %Y}")],
                                  formatters={"@tstamp": "datetime"}, mode="mouse"))
 
     # plot white line to hide small band for no data areas
     if nan_in_data:
         mainplot.line(x='tstamp', y='value', line_width=3, line_color='red', line_cap='round',
-                      legend_label='Missing values', source=missing_source,
+                      legend_label=gettext('Missing values'), source=missing_source,
                       # visible=False
                       )
         # mainplot.BoxAnnotation(top=80, fill_alpha=0.1, fill_color='red')
@@ -114,7 +116,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
         #               legend_label="Precision")
 
     # Style plot
-    mainplot.title.text_font_size = "14pt"
+    # mainplot.title.text_font_size = "14pt"  # TODO: Not working in Bokeh 2.4.0. Try again in later version
     mainplot.xaxis.axis_label_text_font_size = "14pt"
     mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
     mainplot.yaxis.axis_label_text_font_size = "14pt"
@@ -197,37 +199,35 @@ def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object
     return {'script': script, 'div': div}
 
 
-def direction_plot(db_data, ti):
+def direction_plot(dataframe: object, ti: str) -> object:
+    """
+
+    :param dataframe: pandas dataframe
+    :param ti: string defining 'week', 'month'...
+    :return:
+    """
     # use data in percent => transform db_data to percent
-    pct_data = []
-    for tc in range(0, len(db_data)):  # 4
-        all_direct = db_data[tc][1]
-        datalist = [db_data[tc][0], all_direct]
-        for single_bin in range(2, len(db_data[tc])):
-            datalist.append(db_data[tc][single_bin] * 100 / all_direct)
-        pct_data.append(tuple(datalist))
+    df = (dataframe.transpose().iloc[2:, 0:] / dataframe['sum']) * 100
+    df.columns = dataframe['tstamp']
 
-    db_datadict = {item[0]: item[2:] for item in pct_data}
-    df = pd.DataFrame(db_datadict)
-    db_datadictstr = {str(int(time.mktime(item[0].timetuple()) * 1000)): list(item[2:]) for item in pct_data}
+    db_datadictstr = {str(int(time.mktime(item.timetuple()) * 1000)): list(df[item]) for item in df.columns}
 
-    hist = [0] * 36
-    maxlist = [0] * 36
-    data_list = list(zip(*(pct_data)))
-
-    for i in range(2, len(data_list)):
-        hist[i - 3] = mean(data_list[i])
-        maxlist[i - 3] = max(data_list[i])
+    maxlist = df.max(1)
+    hist = df.mean(1)
 
     # maxhist = sorted(maxlist)[-3]
     maxhist = mean(maxlist) * 0.8  # don't use real max of dataset, too many discordant values
     sumhist = sum(hist)
+    # start = list(map(lambda i: -radians((i * 10) - 85), range(0, 36)))
     start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     end = [-radians((i * 10) - 75) for i in list(range(0, 36))]
     pdstart = [-radians((i * 10) - 95) for i in list(range(0, 36))]
-    pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
+    pdend = start
+    # pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
     labeltext = ("Selection of " + ti + "ly histograms")
     titletext = (ti + 'ly median and sum of all histograms').capitalize()
+
+    # need two different sources for callback in Bokeh
     pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
     jssource = ColumnDataSource(data=db_datadictstr)
 
@@ -320,13 +320,11 @@ def direction_plot(db_data, ti):
     mainplot.legend.location = "top_left"
     mainplot.legend.click_policy = "hide"
 
-    allcounts = [i[1] for i in db_data]
-    alldates = [i[0] for i in db_data]
-
     # plot bars for the number of values in each group as secondary 'by' plot
-    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(allcounts))
-    bin_width = db_data[0][0] - db_data[1][0]
-    source = ColumnDataSource({'date': alldates, 'count': allcounts})
+    mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(dataframe['sum']))
+    bin_width = df.columns[0]-df.columns[1]
+
+    source = ColumnDataSource({'date': dataframe['tstamp'], 'count': dataframe['sum']})
     distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
 
     script, div = components(column(distriplot, mainplot, slider, rslider), wrap_script=False)
@@ -436,95 +434,108 @@ def get_cache(cache_obj: dict) -> tuple:
     return cache_obj, img
 
 
-def get_plot(id: str, full_res: bool, size: list = [700, 500]) -> dict:
+def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 500]) -> dict:
     """
     Check if plot is stored with redis or build a new one with Bokeh.
     Bokeh builds an object with 'script' and 'div'. Redis stores this as string, which is fine, as
     the data is send to the website as string anyways.
 
-    :param id: Entry id in metacatalog
+    :param ID: Entry id in metacatalog
     :param full_res: Boolean to set if plot should be of full dataset
+    :param date:
     :param size:
     :return: Bokeh image consisting of 'script' and 'div'
     """
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': "plot_{}".format('b' + str(id) + str(size))}
+                 'in_cache': False, 'name': "plot_{}".format('b' + str(ID) + str(size) + str(date))}
     cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
-        # get data
-        db_data = __DB_load_data(id, full_res)
-        if db_data['has_preci']:
-            db_data['df'] = precision_to_minmax(db_data['df'])
-        plot_data = fill_data_gaps(db_data)
-        # prepare plot
-        plot_data = __get_axis_limits(plot_data)
-        label = __DB_load_label(id)
-        img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
-        if cache_obj['use_redis']:
-            cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
-    return img
-
-
-def get_preview(id: str, size=[700, 500]):
-    """
-    Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
-
-    :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
-    :param size: size of resulting plot [width, height]
-    :type size: list
-    :return: html ready to render
-    """
-    # id = 2657 # small test dataset
-    try:
-        wps_result = True if 'wps' in id[0:3] else False
-    except:
-        wps_result = False
-
-    imgname = "preview_{}".format('b' + str(id) + str(size))
-    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': imgname}
-    cache_obj, img = get_cache(cache_obj)
-
-    if not cache_obj['in_cache'] and not wps_result:
-        label = __DB_load_label(id)
+        label = __DB_load_label(ID)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            db_data = __DB_load_directiondata(id, ti)
-            plot_data = fill_data_gaps(db_data)
-            # img = get_bokeh_standard(db_data, label)
-            img = direction_plot(plot_data, ti)
+            db_data, ti = __DB_load_directiondata(ID, ti, date, full_res)
+            # plot_data = fill_data_gaps(db_data)
+            img = direction_plot(db_data, ti)
         else:
-            db_data = __DB_load_data_avg(id)
-            db_data = __get_axis_limits(db_data)
-            img = get_bokeh_standard(db_data, size, label)
+        #             db_data = __DB_load_data_avg(id)
+        #             db_data = __get_axis_limits(db_data)
+        #             img = get_bokeh_standard(db_data, size, label)
+        # get data
+            db_data = __DB_load_data(ID, date, full_res)
+            if db_data['has_preci']:
+                db_data['df'] = precision_to_minmax(db_data['df'])
+            plot_data = fill_data_gaps(db_data)
+            # prepare plot
+            plot_data = __get_axis_limits(plot_data)
+            img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
 
         if cache_obj['use_redis']:
-            r = cache_obj['redis']
-            r.set(imgname, img)
-
-    if wps_result:
-        DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
-        try:
-            if 'pickle' in DBstring[1]:
-                df = pd.read_pickle(DBstring[2])
-                if 'ts-pickle' in DBstring[1]:
-                    img = timeseries_plot(df, size)
-                elif DBstring[1] == 'pickle':
-                    img = xyplot(df, size)
-            elif DBstring[1] == 'image':
-                try:
-                    file = open(DBstring[2], mode='r')
-                    htmlimg = file.read()
-                    file.close()
-                except FileNotFoundError:
-                    print('Error: Can not load your image')
-                    htmlimg = 'Error: Can not load your image'
-                img = {'html': htmlimg}
-            else:
-                print('Error: Con not plot. Unknown type')
-
-        except FileNotFoundError:
-            print('The data file %s was not found.' % (DBstring[2]))
+            cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))
 
     return img
+
+#
+# def get_preview(id: str, date: list, size=[700, 500]):
+#     """
+#     Check which is the source for the dataset and if a preview image is already cached. Return html of a plot.
+#
+#     :param id: id of a dataset. Integers or dbXX for DB as source, wpsXX for wps result.
+#     :param size: size of resulting plot [width, height]
+#     :type date: list
+#     :type size: list
+#     :return: html ready to render
+#     """
+#     # id = 2657 # small test dataset
+#     try:
+#         wps_result = True if 'wps' in id[0:3] else False
+#     except:
+#         wps_result = False
+#
+#     imgname = "preview_{}".format('b' + str(id) + str(size) + str(date))
+#     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+#                  'in_cache': False, 'name': imgname}
+#     cache_obj, img = get_cache(cache_obj)
+#
+#     if not cache_obj['in_cache'] and not wps_result:
+#         label = __DB_load_label(id)
+#         if label.find('direction') != -1:
+#             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
+#             db_data = __DB_load_directiondata(id, ti)
+#             plot_data = fill_data_gaps(db_data)
+#             # img = get_bokeh_standard(db_data, label)
+#             img = direction_plot(plot_data, ti)
+#         else:
+#             db_data = __DB_load_data_avg(id)
+#             db_data = __get_axis_limits(db_data)
+#             img = get_bokeh_standard(db_data, size, label)
+#
+#         if cache_obj['use_redis']:
+#             r = cache_obj['redis']
+#             r.set(imgname, img)
+#
+#     if wps_result:
+#         DBstring = ast.literal_eval(WpsResults.objects.get(id=id[3:]).outputs)
+#         try:
+#             if 'pickle' in DBstring[1]:
+#                 df = pd.read_pickle(DBstring[2])
+#                 if 'ts-pickle' in DBstring[1]:
+#                     img = timeseries_plot(df, size)
+#                 elif DBstring[1] == 'pickle':
+#                     img = xyplot(df, size)
+#             elif DBstring[1] == 'image':
+#                 try:
+#                     file = open(DBstring[2], mode='r')
+#                     htmlimg = file.read()
+#                     file.close()
+#                 except FileNotFoundError:
+#                     print('Error: Can not load your image')
+#                     htmlimg = 'Error: Can not load your image'
+#                 img = {'html': htmlimg}
+#             else:
+#                 print('Error: Con not plot. Unknown type')
+#
+#         except FileNotFoundError:
+#             print('The data file %s was not found.' % (DBstring[2]))
+#
+#     return img

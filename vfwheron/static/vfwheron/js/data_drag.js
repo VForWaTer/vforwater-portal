@@ -21,9 +21,9 @@ $(function() {
 		    $("#wpstool").on('dragover',function() {
 		    	console.log("drag over");
 		    })
-		    
-		    
-		    
+
+
+
 		    $('#wpstool').load(function()
 		    {
 		        var total = 0;
@@ -49,15 +49,15 @@ $(function() {
 		            total +=1;
 		            console.log("Total Events Fired = "+total);
 		            total = 0;
-		            
-		            
+
+
 		            //var iframe = document.getElementById("wpstool");
 		            //var elmnt = this.contentWindow.document.getElementsByTagName("input")[1];
 		            //elmnt.value = dragged.id;
-		            
+
 		        });
 		    });
-		    
-		    
+
+
 
 		});

@@ -18,9 +18,13 @@
 {#{% block advanced_filter %}#}
 <form method="get" name="advancedfilterform" id="advancedfilter-form">
     <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
-        {{ advFilter.form.as_p }}
-
-
+{#        {{ advFilter.form }}#}
+{#        {{ advFilter.form.as_p }}#}
+{% for obj in advFilter.form %}
+   {{ obj.name }}: {{ obj }} <br />
+{#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
+{% endfor %}
+  {{ advFilter.embargo }}
       <button class="btn btn-primary" type="submit">Search</button>
 
 {#      <a onclick="filter_pagination({{ i }})">bla{{ i }}</a>#}

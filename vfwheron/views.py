@@ -1,12 +1,16 @@
 import ast
 import csv
+import datetime
 import json
 import sys
 
 import pandas as pd
 import requests
+from django.contrib.gis.db.models.aggregates import Extent
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
+from django.utils.timezone import make_aware
 from pyzip import PyZip
 
 import matplotlib as mpl
@@ -14,46 +18,44 @@ import urllib
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, QueryDict
 from django.http.response import JsonResponse, HttpResponse, Http404, FileResponse
 from django.shortcuts import redirect, render
-from django.utils import translation
+from django.utils import translation, timezone
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
 from future.builtins import isinstance
 
+import vfwheron
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfwheron.previewplot import get_plot, get_bokeh_std_fullres, format_label
+from vfwheron.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label
 from wps_gui.models import WpsResults
-from .data_tools import get_timescale, fill_data_gaps, precision_to_minmax, is_data_short
-from .filters import VariableFilter
-from .forms import AdvancedFilterForm
+from .data_tools import __get_timescale, fill_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
+    __get_axis_limits, __reduce_dataset
+from .forms import QuickFilterForm
 
 mpl.use('Agg')
 
+from django.contrib.gis.geos import Polygon
 from .query_functions import get_bbox_from_data
-# from .filter import FilterMethods, Menu, build_id_list, Table
-from .filter import FilterMethods, Menu, build_id_list, Table
+from .filter import QuickFilter
 from .filters import NMPersonsFilter
-from .models import Entries, Timeseries, Timeseries_2D, Generic_1D_Data, Generic_2D_Data, Generic_Geometry_Data, \
-    Geom_Timeseries, NmPersonsEntries
+from .models import Entries
 
 import logging
 from pathlib import Path
 # for debugging:
 from time import time
-from django.db import connections
 
 # Create your views here.
 """
 
 """
 logger = logging.getLogger(__name__)
-
 
 # class WorkflowView(TemplateView):
 #     """
@@ -88,9 +90,11 @@ class HomeView(TemplateView):
     template_name = 'vfwheron/home.html'
 
     # Before you make migrations
-    Menu = Menu().get_menu()
-    JSON_Menu = json.dumps(Menu['client'])
-    data_layer = 'metacatalogdev'  # 'default_layer_prod'
+    QuickFilter.items(requests)
+    # data_layer = 'metacatalogdev'  # 'default_layer_prod'
+    data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
+    data_layer = 'playnew'
+    # data_layer = 'play'
 
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
@@ -151,8 +155,11 @@ class HomeView(TemplateView):
 
         self.data_ext = get_bbox_from_data()
 
-        return {'dataExt': self.data_ext, 'Filter_Menu': self.JSON_Menu, 'data_layer': self.data_layer,
-                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids}
+        context = quick_filter_defaults(self)
+
+        return {'dataExt': self.data_ext, 'data_layer': self.data_layer,
+                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids,
+                **context}
 
 
 class TestView(View):
@@ -421,25 +428,19 @@ class DevLoginView(TemplateView):
 
 
 class Legals(TemplateView):
-    """
-
-    """
 
     def get(self, request):
-        """
-
-        :param request:
-        :type request:
-        :return:
-        :rtype:
-        """
-
         return render(request, 'vfwheron/legals.html')
+
+
+class PrivacyPolicy(TemplateView):
+
+    def get(self, request):
+        return render(request, 'vfwheron/privacypolicy.html')
 
 
 class HelpView(TemplateView):
     """
-
     """
 
     #     template_name = 'vfwheron/help.html'
@@ -552,16 +553,21 @@ def previewplot(request):
     :return:
     """
     webID = request.GET.get('preview')
+    full_res = False
+    if request.GET.get('startdate') != 'None':
+        date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
+                make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
+    else:
+        date = None
 
     if webID[0:2] == 'db':
         try:
             accessible_data = get_accessible_data(request, webID[2:])
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
-            full_res = is_data_short(accessible_data[0], 'db')
+            full_res = is_data_short(accessible_data[0], 'db', date)
             # plot with bokeh
-            # if accessible_data[0] == 19:
-            return JsonResponse(get_plot(id=accessible_data[0], full_res=full_res))
+            return JsonResponse(get_plot_from_db_id(ID=accessible_data[0], full_res=full_res, date=date))
             # else:
             # return JsonResponse(get_preview(accessible_data[0]))
 
@@ -587,39 +593,60 @@ def previewplot(request):
             print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
 
     elif webID[0:3] == 'wps':
-        dataset = WpsResults.objects.filter(id=webID[3::])
+        dataset = WpsResults.objects.filter(id=webID[3:])
         typelist = ast.literal_eval(dataset.values('outputs')[0]['outputs'])
         path = DATA_DIR + typelist['path'][1::]
         with open(path + ".json") as json_file:
-            metadata = json.load(json_file)
+            metadata = json.loads(json.load(json_file))
         json_file.close()
         label = format_label(metadata['meta']['variable']['name'],
                              metadata['meta']['variable']['symbol'],
                              metadata['meta']['variable']['unit']['symbol'])
 
         if typelist['type'] == 'timeseries':
-            df = pd.read_csv(path + ".csv")
-            df['tstamp'] = pd.to_datetime(df['tstamp'])
-            df.rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
+            dataReader = DataTypes()
+            df = dataReader.read_data(filepath=path, datatype=typelist['type'])
+            # df = pd.read_csv(path + ".csv")
+            # df['tstamp'] = pd.to_datetime(df['tstamp'])
+            if len(df.index) > 50000:
+                df = __reduce_dataset(df, full_res)
+
+            if metadata['meta']['variable']['name'] in df.columns:
+                df.rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
+            elif metadata['meta']['variable']['name'].replace(" ", "_") in df.columns:
+                df.rename(columns={metadata['meta']['variable']['name'].replace(" ", "_"): "value"}, inplace=True)
+            else:
+                print('Error: Unknown name of column name in your dataset. '
+                      'Should be ', metadata['meta']['variable']['name'])
+
+            if not 'tstamp' in df:
+                # df['tstamp'] = df.index.values
+                df = df.reset_index()
+
             if 'scale' in metadata:
                 # TODO: scale should be in metadata. Add and get it here
                 scale = metadata['scale']
             else:
-                scale = get_timescale(df)
+                scale = __get_timescale(df)
 
             # prepare dataset for plot
-            del df['entry_id']
+            if 'entry_id' in df:
+                del df['entry_id']
+
             plot_data = {'df': df, 'scale': scale}
             # timescale = pd.to_timedelta(timescale)
             # plotdata = {'data': result, 'df': df, 'axis': axis, 'scale': timescale}
-            if 'precision' in plot_data['df'].columns:
+            if 'precision' in plot_data['df'].columns and not df['precision'].isnull().all():
                 plot_data['df'] = precision_to_minmax(plot_data['df'])
                 plot_data['has_preci'] = True
             else:
                 plot_data['has_preci'] = False
 
             plot_data = fill_data_gaps(plot_data)
-            return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=True, size=[700, 500], label=label))
+            plot_data = __get_axis_limits(plot_data)
+            # print('11 wps: ', plot_data)
+            # return JsonResponse(get_plot(ID=plot_data))
+            return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=full_res, size=[700, 500], label=label))
 
         if 'figure' in typelist:
             return JsonResponse('Warning: Not implemented yet.')
@@ -630,77 +657,62 @@ def previewplot(request):
         raise Http404
 
 
-def short_datainfo(request):
+def short_info_pagination(request):
     """
     Requested from map.js popupContent
     :param request:
     :return:
     """
     try:
-        ids = json.loads(request.GET.get('short_info'))
-        field = ['title', 'variable__name', 'embargo']
-        field_name = {'title': 'Titel', 'variable__name': 'Variablenname', 'embargo': 'Embargo'}
-        preview = defaultdict(list)
+        datasets = json.loads(request.GET.get('datasets'))
+        page = request.GET.get('page', 1)
 
-        for k in ids:
-            row_name = Entries.objects.filter(id=str(k)).values(*field)
-            counter = 0
-            for i in row_name[0]:
-                if counter == 1:
-                    preview['id'].append(k)
-                counter += 1
-                preview[translation.gettext(field_name[i])].append(str(row_name[0][i]).title())
+        field = ['title', 'id', 'variable__name', 'embargo', 'embargo_end']
+        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'embargo': 'Embargo',
+                      'has_access': 'has_access', 'embargo_end': 'embargo_end'}
 
-        return JsonResponse(preview)
+        if datasets:
+            entries_list = Entries.objects.values(*field).filter(pk__in=datasets)\
+                .order_by('variable__name', 'title', 'id')
+            accessible_data = get_accessible_data(request, datasets)
+            error_ids = accessible_data['blocked']
+            accessible_ids = accessible_data['open']
+        else:
+            entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
 
-    except TypeError:
-        raise Http404
-        # return JsonResponse({'Error': 'Something about your data is missing. Tell admin to check views.py'})
+        naive_today = timezone.make_naive(timezone.now())
+        paginator = Paginator(entries_list, 5)
 
+        try:
+            orgpage = paginator.page(page)
+        except PageNotAnInteger:
+            orgpage = paginator.page(1)
+        except EmptyPage:
+            orgpage = paginator.page(paginator.num_pages)
 
-def filter_selection(request):
-    """
-    get selection as json Object from js getCountFromServer() and send int(as json) with amount of items back
-    :param request:
-    :return:
-    """
-    try:
-        return JsonResponse(FilterMethods.selection_counts(HomeView.Menu['server'],
-                                                           json.loads(request.GET.get('filter_selection'))))
+        # TODO: That is to blame for having nothing in web site
+        newdict = defaultdict(list)
+        for d in orgpage:
+            for key, val in d.items():
+                if key != 'embargo_end':
+                    newdict[translation.gettext(field_name[key])].append(val)
+                else:
+                    if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
+                        newdict['has_access'].append({'access': True, 'ssid': d['id']})
+                    else:
+                        newdict['has_access'].append({'access': False, 'ssid': d['id']})
 
-    except TypeError:
-        raise Http404
+        entries = dict(newdict.items())
 
-
-def filter_map_selection(request):
-    try:
-        m_ids = None
-        entry_ids = build_id_list(HomeView.Menu['server'], json.loads(request.GET.get('filter_map_selection')))
-        dataExt = get_bbox_from_data(entry_ids['all_filters'])
-        print('request.user: ', request.user)
-        id_layer = 'ID_layer' + str(request.user)
-        if get_layer(id_layer, HomeView.store, HomeView.workspace):
-            delete_layer(id_layer, HomeView.store, HomeView.workspace)
-        create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(entry_ids['all_filters'])[1:-1])
-        m_ids = entry_ids['all_filters']
-        # TODO: Instead of recreating the layer on each click, add a hash to the name and build only none
-        # existing layers
-        # ID_layer = 'ID_layer' + str(hashlib.md5(str(entry_ids['all_filters'])[1:-1].encode())) # + user
-        # if not get_ID_layer(ID_layer):
-        #     create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
-        #             else:
-        # # TODO: don't do that in production! That's just for development to make sure geoserver is updatet after
-        #  restart of django
-        #                 delete_ID_layer(ID_layer)
-        #                 create_ID_layer(ID_layer, str(entry_ids['all_filters'])[1:-1])
-        return JsonResponse({'ID_layer': id_layer, 'dataExt': dataExt, 'IDs': m_ids})
+        return render(request, 'vfwheron/mapmodal_entrieslist.html', {'entries_page': entries,
+                                                                      'data_sets': datasets,
+                                                                      'org_page': orgpage})
 
     except TypeError:
         raise Http404
-
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
-# TODO: Handle this with an http request!
+# TODO: Handle this with an http request (response, not request?)!
 def show_info(request):
     """
     On request collect metadata for preview on map and selection in the sidebar.
@@ -716,35 +728,24 @@ def show_info(request):
         :type ids: str
         :return: dict
         """
-        # get field names from models:
-        field = []
-        field_name = {}
-        for i in Menu().menu_list:
-            for j in i.db_alias_child.items():
-                fieldpath = j[0] if i.path == '' else i.path + '__' + j[0]
-                field.append(fieldpath)
-                field_name[fieldpath] = j[1]
         # build dict of lists for preview:
-        preview = defaultdict(list)
-        preview['id'].append(ids)
-        imgtag = Entries.objects.filter(id=str(ids)).values(*field)
+        db_info = Entries.objects.filter(id=int(ids))\
+            .values('uuid', 'variable__name', 'license__commercial_use', 'embargo', 'embargo_end', 'abstract',
+                    'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end')
+        # table = {}
+        # table['id'] = ids
+        # table[translation.gettext('Name')] = translation.gettext(db_info[0]['variable__name'])
+        table = {'id': ids,
+                 translation.gettext('Name'): translation.gettext(db_info[0]['variable__name'])}
+        table[translation.gettext('Commercial use allowed')] = translation.gettext('Yes') \
+            if db_info[0]['license__commercial_use'] else translation.gettext('No')
+        table[translation.gettext('Embargo')] = translation.gettext('Yes') \
+            if db_info[0]['embargo'] == 'True' and timezone.now() < db_info[0]['embargo_end'].astimezone() \
+            else translation.gettext('No')
+        table[translation.gettext('Abstract')] = translation.gettext(db_info[0]['abstract']) \
+            if db_info[0]['abstract'] else '-'
 
-        for i in imgtag[0]:
-            # preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
-            if imgtag[0][i] is not None:
-                preview[translation.gettext(field_name[i])].append(str(imgtag[0][i]))
-            else:
-                preview[translation.gettext(field_name[i])].append('-')
-
-        # remove rows only containing no value:
-        # comparelist = ['-'] * len(ids)
-        # deleteable = []
-        # for i in preview:
-        #     if preview[i] == comparelist:
-        #         deleteable.append(i)
-        # for i in deleteable:
-        #     del preview[i]
-        return JsonResponse(preview)
+        return JsonResponse(table)
 
     webID = request.GET.get('show_info')
     if webID[0:3] == 'wps':
@@ -771,12 +772,12 @@ def workspace_data(request):
     :return:
     """
 
-    def build_selection(requested_id, min_time=0, max_time=0):
+    def build_selection(requested_id, startdate='', enddate=''):
         """
         function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
         :param requested_id:
-        :param min_time:
-        :param max_time:
+        :param startdate: string
+        :param enddate: string
         :return:
         """
         dataset_dict = {}
@@ -808,8 +809,8 @@ def workspace_data(request):
                                                              'source': 'db',
                                                              'dbID': dataset['id'],
                                                              'orgID': 'db' + str(dataset['id']),
-                                                             'start': '',
-                                                             'end': '',
+                                                             'start': startdate,
+                                                             'end': enddate,
                                                              'inputs': [],
                                                              'outputs': dataset['datasource__datatype__name']
                                                              }
@@ -819,10 +820,9 @@ def workspace_data(request):
         return {'data': dataset_dict, 'error': error_dict}
 
     try:
-        min_time = request.GET.get('minTime')
-        max_time = request.GET.get('maxTime')
         # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
-        result = build_selection(json.loads(request.GET.get('workspaceData')), min_time, max_time)
+        result = build_selection(json.loads(request.GET.get('workspaceData')),
+                                 request.GET.get('startDate'), request.GET.get('endDate'))
         return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
     except TypeError:
@@ -831,18 +831,26 @@ def workspace_data(request):
 
 def entries_pagination(request):
     """
+    Return result in several pages (5 datasets per page) instead of hundreds of results on one page.
 
     :param request: list of integers
     :type request: object
     :return:
     """
+    accessible_ids = []
     datasets = json.loads(request.GET.get('datasets', 1))
+    field = {'id', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
+             'variable__unit__symbol', 'variable__keyword__value',
+             'datasource__datatype__name', 'datasource__temporal_scale__resolution',
+             'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',
+             'datasource__spatial_scale__extent', 'license__short_title', 'license__title'}
     if datasets:
-        # entries_list = NmPersonsEntries.objects.all().order_by('entry__title').filter(entry_id=datasets).distinct()
-        entries_list = Entries.objects.all().order_by('title').filter(
-            pk__in=json.loads(request.GET.get('datasets', 1)))
+        entries_list = Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
+        accessible_data = get_accessible_data(request, datasets)
+        error_ids = accessible_data['blocked']
+        accessible_ids = accessible_data['open']
     else:
-        entries_list = Entries.objects.all().order_by('title')
+        entries_list = Entries.objects.values(*field).order_by('title')
     try:
         owndata = request.session['datasets']
     except KeyError:
@@ -858,25 +866,90 @@ def entries_pagination(request):
         entriespage = paginator.page(paginator.num_pages)
 
     return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage,
-                                                         'ownData': owndata})
+                                                         'ownData': owndata,
+                                                         'accessible_ids': accessible_ids})
 
 
 def advanced_filter(request):
-    print('request: ', request.GET)
-    selection = NmPersonsEntries.objects.all().distinct('entry_id')
-    # print('selection: ', selection)
-    # for i in selection:
-    #     print('i: ', i)
-    # print('selection: ', len(selection))
-    filter = NMPersonsFilter(request.GET, queryset=selection)
-    # print('selection: ', selection)
-    selection = filter.qs
-    for i in selection:
-        print('i: ', i.entry_id)
-    # print('selection 2: ', selection)
+    # selection = NmPersonsEntries.objects.all().distinct('entry_id')
+    selection = Entries.objects.all().distinct('entry_id')
+    advfilter = NMPersonsFilter(request.GET, queryset=selection)
+    selection = advfilter.qs
 
-    context = {'advFilter': filter, 'selection': selection}
+    context = {'advFilter': advfilter, 'selection': selection}
     return render(request, 'vfwheron/advanced_filter.html', context)
+
+
+def quick_filter_defaults(request):
+    total = Entries.objects.exclude(Q(embargo=True) & Q(embargo_end__gte=timezone.now())).count()
+
+    quickfilter = QuickFilterForm()
+    more = QuickFilterForm.More()
+    selection = []
+    return {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
+
+
+class QuickFilter(View):
+
+    @staticmethod
+    def get(request):
+        context = quick_filter_defaults(request)
+        return render(request, 'vfwheron/quick_filter.html', context)
+
+
+class QuickFilterResults(View):
+
+    @staticmethod
+    def get(request, selection):
+
+        simple_queries = {'variables': 'variable__name__in',
+                          'institution': 'nmpersonsentries__person__organisation_name__in',
+                          'project': 'nmentrygroups__group__type__name__in'}
+
+        filter_dict = {}
+        fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+
+        for i in QueryDict(selection):
+            if i in simple_queries:
+                filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
+            elif i == 'date':
+                filter_dict['datasource__temporal_scale__observation_end__gte'] = \
+                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[0], "%Y-%m-%d"))
+                filter_dict['datasource__temporal_scale__observation_start__lte'] = \
+                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[1], "%Y-%m-%d"))
+            # elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
+            #     fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+            elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
+                # TODO: figure out how to avoid the following useless query
+                #  (this exists because in exclude query is always some input needed)
+                fair_query = Q(embargo=True) & Q(embargo=False)
+            elif i == 'draw':
+                values = QueryDict(selection).getlist(i)[0]
+                it = iter([float(item) for item in values.split(',')])
+                poly = Polygon(tuple(zip(it, it)), srid=4326)
+                filter_dict['location__intersects'] = poly
+
+        query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
+        total_results = query.count()
+
+        # From here collect data to update map:
+        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT
+        if query:
+            data_ext = list(query.aggregate(Extent('location'))['location__extent'])
+
+        IDs = list(query.values_list('id', flat=True))
+        id_layer = 'ID_layer' + str(request.user)
+        if get_layer(id_layer, HomeView.store, HomeView.workspace):
+            delete_layer(id_layer, HomeView.store, HomeView.workspace)
+
+        if IDs:
+            create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
+        else:
+            # TODO: Selection with no result has to be handled properly
+            pass
+
+        return JsonResponse({'selection': selection, 'total': total_results,
+                             'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
 
 
 def error_404_view(request, exception):
@@ -907,3 +980,24 @@ class DownloadView(View):
             # raise Http404
         else:
             error_404_view(request, 'not available')
+
+ # Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map
+# # def Eddytestdata(request):
+# #     print('________________________- here: ', request)
+# #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.asc', 'rb'))
+# #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.tif', 'rb'))
+# def Eddytestdata(request):
+#     #     # url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
+#     #     #       'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
+#     #     #                                                         srid, bbox, srid)
+#     #     url = '{0}/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330' \
+#     #           '&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832' \
+#     #           '&format=application/openlayers'.format(LOCAL_GEOSERVER)
+#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
+#     # url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011930&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
+#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011630&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
+#
+#     request_url = urllib.request.Request(url)
+#     response = urllib.request.urlopen(request_url)
+#     print('response: ', response)
+#     return HttpResponse(response.read().decode('utf-8'))

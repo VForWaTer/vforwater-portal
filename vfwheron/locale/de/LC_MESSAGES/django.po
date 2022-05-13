@@ -98,10 +98,13 @@ msgstr "Betrieben von"
 msgid "  Close Menu"
 msgstr "  Menü schließen"
 
+msgid "Close window"
+msgstr "Fenster schließen"
+
 #: templates/vfwheron/base_sidebar.html:34
 #: templates/vfwheron/wps_sidebar.html:33
-msgid "Area&#32to&#32make&#32the&#32datasets&#32you&#32have&#32selected&#32available&#32for&#32further&#32use."
-msgstr "Bereich&#32um&#32die&#32ausgewählten&#32Datensätze&#32zur&#32weiteren&#32Bearbeitung&#32verfügbar&#32zu&#32machen."
+msgid "Area to make the datasets you have selected available for further use."
+msgstr "Bereich um die ausgewählten Datensätze zur weiteren Bearbeitung verfügbar zu machen."
 
 #: templates/vfwheron/base_sidebar.html:34
 #: templates/vfwheron/wps_sidebar.html:33
@@ -110,13 +113,13 @@ msgstr "Datenablage"
 
 #: templates/vfwheron/base_sidebar.html:39
 #: templates/vfwheron/wps_sidebar.html:38
-msgid "Remove&#32all&#32datasets"
-msgstr "Alle&#32Datensätze&#32entfernen"
+msgid "Remove all datasets"
+msgstr "Alle Datensätze entfernen"
 
 #: templates/vfwheron/base_sidebar.html:40
 #: templates/vfwheron/wps_sidebar.html:39
-msgid "Remove&#32all&#32datasets&#32from&#32data&#32store"
-msgstr "Alle&#32ausgewählten&#32Datensätze&#32aus&#32der&#32Datenablage&#32entfernen"
+msgid "Remove all datasets from data store"
+msgstr "Alle ausgewählten Datensätze aus der Datenablage entfernen"
 
 #: templates/vfwheron/base_sidebar.html:50
 #: templates/vfwheron/wps_sidebar.html:61
@@ -163,6 +166,67 @@ msgstr "Tabelle"
 #: templates/vfwheron/info_modal.html:37
 msgid "Back"
 msgstr "zurück"
+
+#: templates/vfwheron/info_modal.html:37
+msgid "Showing only latest {0} datapoints."
+msgstr "Nur die letzten {0} Datenpunkte werden angezeigt."
+
+#: static/vfwheron/js/map.js:496
+msgid "Last"
+msgstr "Ende"
+
+#: static/vfwheron/js/map.js:496
+msgid "Missing values"
+msgstr "Fehlende Werte"
+
+#: static/vfwheron/js/map.js:496
+msgid "Next"
+msgstr "Nächster"
+
+#: static/vfwheron/js/map.js:496
+msgid "Previous"
+msgstr "Vorausgehend"
+
+#: static/vfwheron/js/map.js:496
+msgid "Time"
+msgstr "Zeit"
+
+#: static/vfwheron/js/map.js:496
+msgid "Date"
+msgstr "Datum"
+
+#: st
+#: static/vfwheron/js/map.js:496
+msgid "Value"
+msgstr "Wert"
+
+#: static/vfwheron/js/map.js:496
+msgid "First"
+msgstr "Anfang"
+
+#: static/vfwheron/js/map.js:496
+msgid "More"
+msgstr "Mehr"
+
+#: static/vfwheron/js/map.js:496
+msgid "Show more information about the dataset."
+msgstr "Zeige mehr Informationen über den Datensatz an."
+
+#: static/vfwheron/js/map.js:502remove
+msgid "Pass to datastore"
+msgstr "In die Datenablage"
+
+#: static/vfwheron/js/map.js:503
+msgid "Put dataset to session datastore."
+msgstr "Schiebt den Datensatz in die Datenablage zur Linken."
+
+#: static/vfwheron/js/map.js:507
+msgid "Send request"
+msgstr "Anfrage senden"
+
+#: static/vfwheron/js/map.js:508
+msgid "Send an access request to the data owner."
+msgstr "Den Besitzer der Daten nach Zugriff fragen."
 
 #: templates/vfwheron/map.html:37
 msgid "Click&#32on&#32map&#32to&#32draw&#32a&#32square.&#32Doubleclick&#32to&#32stop&#32drawing."
@@ -232,6 +296,34 @@ msgstr "Filtermenü&#32zurücksetzen"
 msgid "Remove&#32selection&#32from&#32filter&#32menu."
 msgstr "Markierungen&#32aus&#32dem&#32Filtermenü&#32entfernen."
 
+#: templates/vfwheron/quick_filter.html:21
+msgid "Available datasets"
+msgstr "Verfügbare Datensätze"
+
+#: templates/vfwheron/quick_filter.html:37
+msgid "more..."
+msgstr "mehr..."
+
+#: templates/vfwheron/quick_filter.html:37
+msgid "river water level"
+msgstr "Pegelstand"
+
+#: templates/vfwheron/quick_filter.html:37
+msgid "CO2 concentration"
+msgstr "CO2 Konzentration"
+
+#: templates/vfwheron/quick_filter.html:37
+msgid "air temperature"
+msgstr "Lufttemperatur"
+
+#: templates/vfwheron/quick_filter.html:37
+msgid "wind direction"
+msgstr "Windrichtung"
+
+#: templates/vfwheron/quick_filter.html:37
+msgid "air pressure"
+msgstr "Luftdruck"
+
 #: templates/vfwheron/sidemenu.html:28
 msgid "  Help"
 msgstr "  Hilfe"
@@ -239,6 +331,10 @@ msgstr "  Hilfe"
 #: templates/vfwheron/sidemenu.html:28
 msgid "  Legals"
 msgstr "  Impressum"
+
+#: templates/vfwheron/sidemenu.html:28
+msgid "  Privacy Policy"
+msgstr "  Datenschutzerklärung"
 
 #: templates/vfwheron/sidemenu.html:37
 msgid "  Documentation"
@@ -251,6 +347,22 @@ msgstr " Daten & Metadaten herunterladen"
 #: views.py:485
 msgid "help"
 msgstr "Hilfe"
+
+#: views.py:485
+msgid "Commercial use allowed"
+msgstr "Kommerzielle Nutzung erlaubt "
+
+#: views.py:661
+msgid "Abstract"
+msgstr "Kurzbeschreibung"
+
+#: views.py:661
+msgid "Variable name"
+msgstr "Variablenname"
+
+#: views.py:661
+msgid "Title"
+msgstr "Titel"
 
 #: templates/vfwheron/legals.html
 msgid "This page is still under construction."
@@ -314,17 +426,29 @@ msgstr "Datenschutz und IT-Sicherheit"
 #~ msgid "Result store"
 #~ msgstr "Ergebnisablage"
 
-#~ msgid "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available."
-#~ msgstr "Bereich&#32um&#32die&#Ergebnisse&#32zur&#32weiteren&#32Prozessierung&#32oder&#32zur&#32Ansicht&#32bereit&#32zu&#32stellen."
+msgid "Area to make your results ready for further processing or visualisation available."
+msgstr "Bereich um die Ergebnisse zur weiteren Prozessierung oder zur Ansicht bereit zu stellen."
 
-#~ msgid "Remove&#32all&#32results"
-#~ msgstr "Alle&#32Ergebnisse&#32entfernen"
+msgid "Remove all results"
+msgstr "Alle Ergebnisse entfernen"
 
 #~ msgid "Remove&#32all&#32results&#32from&#32result&#32store"
 #~ msgstr "Alle&#32Ergebnisse&#32aus&#32der&#32Ergebnisablage&#32entfernen"
 
-#~ msgid " View result"
-#~ msgstr " Ergebnis anzeigen"
+msgid "View result"
+msgstr "Ergebnis anzeigen"
+
+msgid "required"
+msgstr "Notwendig"
+
+msgid "cancel"
+msgstr "Abbrechen"
+
+msgid "Place tool in Dropzone."
+msgstr "Prozess im Ablagebereich platzieren."
+
+msgid "Place tool in Dropzone. If tool already exists only change values."
+msgstr "Prozess im Ablagebereich platzieren. Falls der Prozess bereits platziert ist werden nur die Werte aktualisiert."
 
 #~ msgid " View as table"
 #~ msgstr " Ergebnistabelle"
@@ -341,37 +465,41 @@ msgstr "Datenschutz und IT-Sicherheit"
 #~ msgid " Remove result"
 #~ msgstr " Ergebnis entfernen"
 
-#~ msgid "Load workflow"
-#~ msgstr "Prozesskette laden"
+msgid "Load workflow"
+msgstr "Prozesskette laden"
 
-#~ msgid "Click to load a saved workflow"
-#~ msgstr "Hier klicken um eine gespeicherte Prozesskette zu laden"
+msgid "Click to load a saved workflow"
+msgstr "Hier klicken um eine gespeicherte Prozesskette zu laden"
 
-#~ msgid "Save workflow"
-#~ msgstr "Prozesskette speichern"
+msgid "Save workflow"
+msgstr "Prozesskette speichern"
 
-#~ msgid "Click to save current workflow"
-#~ msgstr "Hier klicken um die aktuelle Prozesskette zu speichern"
+msgid "Click to save current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu speichern"
 
-#~ msgid "Clear workflow"
-#~ msgstr "Löschen"
+msgid "Clear workflow"
+msgstr "Löschen"
 
-#~ msgid "Click to clear current workflow"
-#~ msgstr "Hier klicken um die aktuelle Prozesskette zu entfernen"
+msgid "Name of current workflow"
+msgstr "Name der aktuellen Prozesskette"
 
-#~ msgid "Run workflow"
-#~ msgstr "Start"
+msgid "Name of current workflow with a max length of 50 characters. Allowed are characters, numbers, space, underscore and dash."
+msgstr "Name der aktuellen Prozesskette mit einer maximalen Länge von 50 Zeichen. Erlaubt sind Buchstaben, Zahlen, Leerzeichen, Unterstrich und Minus"
 
-#~ msgid "Click to run current workflow"
-#~ msgstr "Hier klicken um die aktuelle Prozesskette zu starten"
+msgid "Click to clear current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu entfernen"
 
-#~ msgid "Drag & Drop your Data and Tools here"
-#~ msgstr ""
-#~ "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu "
-#~ "erstellen"
+msgid "Run workflow"
+msgstr "Start"
 
-#~ msgid "Dropzone"
-#~ msgstr "Ablagebereich"
+msgid "Click to run current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu starten"
+
+msgid "Drag & Drop your Data and Tools here"
+msgstr "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu erstellen"
+
+msgid "Dropzone"
+msgstr "Ablagebereich"
 
 #~ msgid "Advanced"
 #~ msgstr "Erweitert"

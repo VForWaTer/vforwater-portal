@@ -10,6 +10,9 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
+from django.db.models import Q
+from django.http import QueryDict
 from django.utils.translation import gettext, gettext_lazy
 
 
@@ -43,7 +46,6 @@ class DatasourceTypes(models.Model):
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'datasource_types'
 
@@ -63,7 +65,6 @@ class Datasources(models.Model):
     spatial_scale = models.ForeignKey('SpatialScales', models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'datasources'
 
@@ -97,13 +98,7 @@ class Details(models.Model):
     description = models.TextField(blank=True, null=True)
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
 
-    db_alias_child_adv = {'value': 'details_text'}
-    menu_name_adv = 'Details'
-    path = 'details'
-    filter_type = {'value': 'text'}
-
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'details'
         unique_together = (('entry', 'stem'),)
@@ -125,35 +120,29 @@ class Entries(models.Model):
     decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
 
     """
+    uuid = models.CharField(max_length=36)
     title = models.CharField(max_length=512)
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
-    location = models.PointField(srid=0)
-    geom = models.GeometryField(srid=0, blank=True, null=True)
+    location = models.PointField(srid=4326)
+    geom = models.GeometryField(srid=4326, blank=True, null=True)
     version = models.IntegerField()
     latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    is_partial = models.BooleanField()
     comment = models.TextField(blank=True, null=True)
+    citation = models.CharField(max_length=2048, blank=True, null=True)
+
     license = models.ForeignKey('Licenses', models.DO_NOTHING, blank=True, null=True)
     variable = models.ForeignKey('Variables', models.DO_NOTHING)
     datasource = models.ForeignKey(Datasources, models.DO_NOTHING, blank=True, null=True)
+
     embargo = models.BooleanField()
     embargo_end = models.DateTimeField(blank=True, null=True)
+
     publication = models.DateTimeField(blank=True, null=True)
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
-    is_partial = models.BooleanField()
-    uuid = models.CharField(max_length=36)
-    citation = models.CharField(max_length=2048, blank=True, null=True)
-
-    db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract'}
-    # db_alias_child = {'embargo': 'Embargo', 'abstract': 'Abstract', 'location': 'Location'}
-    db_alias_child_adv = {'version': 'version'}
-    menu_name = 'Entries'
-    path = ''
-    filter_type = {'embargo': 'bool'}
-    # filter_type = {'embargo': 'bool', 'location': 'draw'}
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'entries'
 
@@ -168,13 +157,7 @@ class EntrygroupTypes(models.Model):
     name = models.CharField(max_length=40)
     description = models.TextField()
 
-    db_alias_child = {'creation': 'creation/start', 'end': 'end of measurement', 'embargo': 'embargo'}
-    db_alias_child_adv = {'version': 'version'}
-    menu_name = 'Entries'
-    path = ''
-
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'entrygroup_types'
 
@@ -183,7 +166,7 @@ class EntrygroupTypes(models.Model):
 
 
 class Entrygroups(models.Model):
-    type = models.ForeignKey(EntrygroupTypes, models.DO_NOTHING)
+    type = models.ForeignKey('EntrygroupTypes', models.DO_NOTHING)
     title = models.CharField(max_length=40, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     uuid = models.CharField(max_length=36)
@@ -191,7 +174,6 @@ class Entrygroups(models.Model):
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'entrygroups'
 
@@ -207,7 +189,6 @@ class Generic_Geometry_Data(models.Model):
     srid = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'geneic_geometry_data'
         unique_together = (('entry', 'index'),)
@@ -223,7 +204,6 @@ class Generic_1D_Data(models.Model):
     precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'generic_1d_data'
         unique_together = (('entry', 'index'),)
@@ -241,7 +221,6 @@ class Generic_2D_Data(models.Model):
     precision2 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'generic_2d_data'
         unique_together = (('entry', 'index'),)
@@ -258,7 +237,6 @@ class Geom_Timeseries(models.Model):
     srid = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'geom_timeseries'
         unique_together = (('entry', 'tstamp'),)
@@ -278,7 +256,6 @@ class Keywords(models.Model):
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'keywords'
 
@@ -320,14 +297,7 @@ class Licenses(models.Model):
     share_alike = models.BooleanField()
     commercial_use = models.BooleanField()
 
-    db_alias_child = {'commercial_use': 'Commercial use allowed'}  # menu text
-    db_alias_child_adv = {'commercial_use': 'Commercial use allowed'}
-    menu_name = 'Licenses'
-    path = 'license'
-    filter_type = {'commercial_use': 'bool'}
-
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'licenses'
 
@@ -355,7 +325,6 @@ class NmEntrygroups(models.Model):
     group = models.ForeignKey(Entrygroups, models.DO_NOTHING)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_entrygroups'
         unique_together = (('entry', 'group'),)
@@ -366,7 +335,6 @@ class NmKeywordsEntries(models.Model):
     entry = models.ForeignKey(Entries, models.DO_NOTHING)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_keywords_entries'
         unique_together = (('keyword', 'entry'),)
@@ -382,7 +350,6 @@ class NmPersonsEntries(models.Model):
     order = models.IntegerField()
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'nm_persons_entries'
         unique_together = (('person', 'entry'),)
@@ -397,7 +364,6 @@ class PersonRoles(models.Model):
     description = models.TextField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'person_roles'
 
@@ -417,19 +383,20 @@ class Persons(models.Model):
     organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
 
-    db_alias_child = {'last_name': 'Name'}  # menu text
-    db_alias_child_adv = {'last_name': 'Name'}
-    menu_name = 'Variables'
-    path = 'variable'
     full_name = '{} {}'.format(first_name, last_name)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'persons'
 
     def __str__(self):
         return '{} <ID={}>'.format(self.full_name, self.id)
+
+    @staticmethod
+    def filter(column, selection):
+        filter_items = {'nmpersonsentries__person__' + column + '__in': selection}
+        print('filter_items: ', filter_items)
+        return filter_items
 
 
 class SpatialScales(models.Model):
@@ -455,8 +422,8 @@ class TemporalScales(models.Model):
         managed = False
         db_table = 'temporal_scales'
 
-    def __str__(self):
-        return '<ID={}> observation start/end={}/{}'.format(self.id, self.observation_start, self.observation_end)
+    # def __str__(self):
+    #     return '<ID={}> observation start/end={}/{}'.format(self.id, self.observation_start, self.observation_end)
 
 
 class Thesaurus(models.Model):
@@ -478,11 +445,10 @@ class Thesaurus(models.Model):
 class Timeseries(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
     tstamp = models.DateTimeField()
-    data = models.DecimalField(max_digits=999, decimal_places=999)
-    precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
+    data = ArrayField(models.DecimalField(max_digits=999, decimal_places=999, blank=False, null=True), size=3)
+    precision = ArrayField(models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True), size=3)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries'
         unique_together = (('entry', 'tstamp'),)
@@ -498,7 +464,6 @@ class Timeseries_1D(models.Model):
     precision = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries_1d'
         unique_together = (('entry', 'tstamp'),)
@@ -516,7 +481,6 @@ class Timeseries_2D(models.Model):
     precision2 = models.DecimalField(max_digits=999, decimal_places=999, blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'timeseries_2d'
         unique_together = (('entry', 'tstamp'),)
@@ -531,7 +495,6 @@ class Units(models.Model):
     si = models.TextField(blank=True, null=True)
 
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'units'
 
@@ -548,21 +511,18 @@ class Variables(models.Model):
     unit = models.ForeignKey(Units, models.DO_NOTHING)
     keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
 
-    db_alias_child = {'name': 'Name'}  # menu text
-    db_alias_child_adv = {'name': 'Name'}
-    menu_name = 'Variables'
-    path = 'variable'
-
-    # print('\033[31m' + 'path: \033[0m', path)
-
     class Meta:
-        # app_label = 'mcdev'
         managed = False
         db_table = 'variables'
 
     def __str__(self):
         return '{n} ({s}) [{u}]'.format(n=self.name, s=self.symbol, u=self.unit.symbol)
         # return '{} [{}] <ID={}>'.format(self.name, self.unit.symbol, self.id)
+
+    @staticmethod
+    def filter(column, selection):
+        filter_items = {'variable__' + column + '__in': selection}
+        return filter_items
 
 
 class BasicFilter:

@@ -2,10 +2,8 @@
 """
 
 """
-import re
 
 from django.contrib.gis.db.models.aggregates import Extent
-from django.db import connections
 import logging
 
 from vfwheron.models import Entries
