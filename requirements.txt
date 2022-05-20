@@ -17,4 +17,4 @@ psycopg2-binary
 pyzip
 redis
 requests
-#watts_rsp
+mozilla-django-oidc
