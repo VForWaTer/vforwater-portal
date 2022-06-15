@@ -40,7 +40,7 @@
   <script src="{% static 'vfwheron/js/ol-ext.js' %}" type="text/javascript"></script>
 </head>
 {#TODO: value has to be updated through js before reading to make sure its up-to-date #}
-<param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
+{#<param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->#}
 <param id="is_authenticated" value="false">
 {#Cookie window 2/2#}
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
@@ -56,6 +56,18 @@
     },
     "position": "bottom-right"
   });
+  const vfw = {
+    array: {},
+    draw2d: {},
+    ol: {},
+    session: {},
+    sidebar: {},
+    util: {},
+    workspace: {
+      modal: {},
+      workflow: {},
+    },
+  }
 </script>
 
 <body class="w3-light-grey">

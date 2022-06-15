@@ -109,7 +109,7 @@
           {% if identifier != "dbloader" %}
           <tr>
             <div id="{{ identifier }}" class="process w3-card-2"
-                 onclick="open_wpsprocess_modal('{{ service }}', '{{ identifier }}');"
+                 onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');"
                  title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
                  data-service="{{ service }}" data-process="{{ identifier }}"
                  style="cursor:pointer;">

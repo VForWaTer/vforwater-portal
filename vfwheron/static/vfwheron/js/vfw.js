@@ -221,7 +221,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
         '</span><span class="data ' + btnData['type'] + '"></span>' +
-        '<a onclick="remove_single_data(\'' + storeID + '\')" ' +
+        '<a onclick="vfw.sidebar.remove_single_data(\'' + storeID + '\')" ' +
         'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +
         '</a><br></li>';
 }
@@ -761,7 +761,7 @@ function workspace_dataset(id) {
                     });
                 }
                 // build buttons
-                build_datastore_button(json['workspaceData']);
+                vfw.sidebar.build_datastore_button(json['workspaceData']);
             }) // function in sidebar.js
     }
 }
@@ -769,7 +769,7 @@ function workspace_dataset(id) {
 /**
  * Send ID to server to build preview and add preview image to html
  * @param {int} id - Id of dataset
- * TODO: Check if used at all
+ * TODO: Check if used at all => NO! DELETE!
  */
 function show_preview(id) {
     document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";

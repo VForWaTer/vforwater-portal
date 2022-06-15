@@ -11,7 +11,7 @@
 
 <body>
 <!-- TODO: check if still in use. If not delete that parm -->
-<param id="workdata" value ="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->
+{#<param id="workdata" value ="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->#}
 <!--   Sidenav/menu -->
   <nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br>
     <div class="w3-container w3-row">
@@ -37,7 +37,7 @@
     <ul class="w3-ul w3-card-4 w3-white" id="workspace">
         <b class="w3-btn-group">
             <input class="w3-btn w3-blue w3-right" type="submit"
-                onclick="remove_all_datasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
+                onclick="vfw.sidebar.remove_all_datasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
                 title="{% trans "Remove all datasets from data store" %}">
             </b>
     </ul>

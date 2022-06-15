@@ -43,7 +43,7 @@ function Sidemenu_open() {
 }
 
 /** Close the sidemenu with the close button **/
-function Sidemenu_close() {
+vfw.sidebar.Sidemenu_close = function () {
     var mySidemenu = document.getElementById("mySidemenu");
 
     var overlaymenu = document.getElementById("mySidemenuOverlay");
@@ -58,17 +58,17 @@ function Sidemenu_close() {
  * it is stored as a string, so the following function transforms this string back to a dictionary
  */
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
-function show_data() {
+vfw.sidebar.show_data = function () {
     /** Initiate creation of data Button in data and result store.
      * When called from outside of 'Home' check if data is
      * already pickled. If not pickle it. **/
         // (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
-        build_datastore_button(workspaceData);
+        vfw.sidebar.build_datastore_button(workspaceData);
         if (window.location.pathname !== '/home/') {
             // check if datasets are pickled and update buttons
-            preload_datastore_button(workspaceData);
+            vfw.sidebar.preload_datastore_button(workspaceData);
         }
     }
     if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
@@ -80,7 +80,7 @@ function show_data() {
             let mhtml = "";
             $.each(resultData, function (btnName, value) {
                 if (!value.group) {
-                    html += build_resultstore_button(btnName, value);
+                    html += vfw.workspace.build_resultstore_button(btnName, value);
                 } else {
                     if (!(value.group in groups)) {
                         groups[value.group] = [];
@@ -92,16 +92,16 @@ function show_data() {
                 mhtml = "";
                 ghtml = "";
                 members.forEach(function (singlemember) {
-                    return mhtml += build_resultstore_button(singlemember[0], singlemember[1]);
+                    return mhtml += vfw.workspace.build_resultstore_button(singlemember[0], singlemember[1]);
                 })
-                html += build_resultgroup_button(groupname, members)
+                html += vfw.workspace.build_resultgroup_button(groupname, members)
                 // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
                 // html += ghtml
             })
             // ghtml += build_resultgroup_button(value.group)
             document.getElementById("workspace_results").innerHTML += html;
 
-            add_groupaccordion_toggle()
+            vfw.sidebar.add_groupaccordion_toggle()
         }
     }
 }
@@ -109,7 +109,7 @@ function show_data() {
 /**
  * add accordion function to group button
  */
-function add_groupaccordion_toggle() {
+vfw.sidebar.add_groupaccordion_toggle = function () {
     let acc = document.getElementsByClassName("groupaccordion");
     for (let i of acc) {
         i.addEventListener("click", function () {
@@ -129,7 +129,7 @@ function add_groupaccordion_toggle() {
  *
  * @param workspaceData
  */
-function preload_datastore_button(workspaceData) {
+vfw.sidebar.preload_datastore_button = function (workspaceData) {
     /** USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY **/
     for (let dataset in workspaceData) {
         let preload = {};
@@ -155,7 +155,7 @@ function preload_datastore_button(workspaceData) {
                     if (wpsDBInfo.Error) {
                         console.warn(wpsDBInfo.Error)
                     } else {
-                        update_datastore_button(wpsDBInfo);
+                        vfw.session.update_datastore_button(wpsDBInfo);
                     }
                 },)
                 .fail(function (wpsDBInfo) {
@@ -180,7 +180,7 @@ function preload_datastore_button(workspaceData) {
                     }
                     else {
                         console.log('back: ', wpsDBInfo)
-                        update_datastore_button(wpsDBInfo);
+                        vfw.session.update_datastore_button(wpsDBInfo);
                     }
                 })
                 .catch(function (wpsDBInfo) {
@@ -208,7 +208,7 @@ function preload_datastore_button(workspaceData) {
     //             dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
     //         }, // data sent with post request
     //         success: function (wpsDBInfo) {
-    //             update_datastore_button(wpsDBInfo, 'pickle');
+    //             vfw.session.update_datastore_button(wpsDBInfo, 'pickle');
     //         },
     //         error: function (wpsDBInfo) {
     //             console.log('Error in preload of data. ', wpsDBInfo)
@@ -217,7 +217,7 @@ function preload_datastore_button(workspaceData) {
     // }
 }
 
-function update_datastore_button(wpsDBInfo) {
+vfw.session.update_datastore_button = function (wpsDBInfo) {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     // let workspaceData = sessionStorageData
     let datasetKey = wpsDBInfo['orgid']
@@ -256,7 +256,7 @@ function update_datastore_button(wpsDBInfo) {
  * build buttons in workspace and store selection in clients sessionStorage
  * @param {object} json
  */
-function build_datastore_button(json) {
+vfw.sidebar.build_datastore_button = function (json) {
     // if (json['workspaceData'] !== undefined) {
     //     $.each(json['workspaceData'], function (key, value) {
     let html = "";
@@ -270,7 +270,7 @@ function build_datastore_button(json) {
             document.getElementById("workspace").innerHTML += '<li draggable="true" class="w3-padding" ' +
                 'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
                 '<span class="w3-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
-                'onclick="remove_single_data('+key+')"; class="w3-hover-white w3-right">' +
+                'onclick="vfw.sidebar.remove_single_data('+key+')"; class="w3-hover-white w3-right">' +
                 '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
                 '<div id="w3popup" class="w3popup"><span class="popuptext" id="pop' + key + '"></span></div>' +
         '<li class="task" data-id="1"><div class="task__content">Build An App</div><div class="task__actions">' +
@@ -281,7 +281,7 @@ function build_datastore_button(json) {
     // }
 }
 
-// TODO: create html of build_resultstore_button and build_datastore_button in one function
+// TODO: create html of vfw.workspace.build_resultstore_button and vfw.sidebar.build_datastore_button in one function
 // /**
 //  * Build html for store buttons.
 //  * data-id is used to find results on server
@@ -318,7 +318,7 @@ function build_datastore_button(json) {
 //         '</span>' +
 //         '<span class="' + json['type'] + '"></span>' +
 //         '<a href="javascript:void(0)" ' +
-//             'onclick="remove_single_result(\'' + name + '\')" ' +
+//             'onclick="vfw.session.remove_single_result(\'' + name + '\')" ' +
 //             'class="w3-hover-white">' +
 //             '<i class="fa fa-remove fa-fw"></i>' +
 //         '</a><br></li>';
@@ -337,7 +337,7 @@ function build_datastore_button(json) {
 //         '</span>' +
 //         '<span class="data ' + value['type'] + '"></span>' +
 //         '<a href="javascript:void(0)" ' +
-//             'onclick="remove_single_data(' + key + ')" ' +
+//             'onclick="vfw.sidebar.remove_single_data(' + key + ')" ' +
 //             'class="w3-hover-white w3-right">' +
 //             '<i class="fa fa-remove fa-fw"></i>' +
 //         '</a><br></li>';
@@ -345,7 +345,7 @@ function build_datastore_button(json) {
 
 
 /** Remove data / elements from workspace **/
-function remove_single_data(removeData) {
+vfw.sidebar.remove_single_data = function (removeData) {
     /** remove data from portal: **/
     document.getElementById("sidebtn" + removeData).remove();
     // removeData.remove();  // could be used when the element where send directly
@@ -358,12 +358,12 @@ function remove_single_data(removeData) {
     sessionStorageData = workspaceData
 }
 
-function remove_all_datasets() {
+vfw.sidebar.remove_all_datasets = function () {
     /** remove button from portal **/
     let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (key, value) {
         if ("name" in value) {
-            remove_single_data(key);
+            vfw.sidebar.remove_single_data(key);
             // document.getElementById("id" + key).remove()
         }
     });
@@ -388,7 +388,7 @@ function remove_all_datasets() {
  * @param {String} className The class name to check against
  * @return {Boolean}
  */
-function clickInsideElement(e, className) {
+vfw.sidebar.clickInsideElement = function (e, className) {
     var el = e.srcElement || e.target;
 
     if (el.classList.contains(className)) {
@@ -408,7 +408,8 @@ function clickInsideElement(e, className) {
  * @param {Object} e The event passed in
  * @return {Object} Returns the x and y position
  */
-function getPosition(e) {
+// TODO: THIS!!!!
+vfw.util.getPosition = function (e) {
     var posx = 0;
     var posy = 0;
 
@@ -484,7 +485,9 @@ function init() {
  */
 function contextListener() {
     document.addEventListener("contextmenu", function (e) {
-        taskItemInContext = clickInsideElement(e, taskItemClassName);
+        taskItemInContext = vfw.sidebar.clickInsideElement(e, taskItemClassName);
+        // console.log('taskItemInContext.dataset.sessionstore: ', taskItemInContext.dataset.sessionstore)
+
         let chooseContext;
         let btndata;
         if (taskItemInContext && !taskItemInContext.classList.contains("groupaccordion")) {
@@ -509,7 +512,7 @@ function contextListener() {
  */
 function clickListener() {
     document.addEventListener("click", function (e) {
-        let clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
+        let clickeElIsLink = vfw.sidebar.clickInsideElement(e, contextMenuLinkClassName);
         if (clickeElIsLink) {
             e.preventDefault();
             menuItemListener(clickeElIsLink);
@@ -829,7 +832,7 @@ function menuItemListener(link) {
             /** Re-open the tool */
             wpsToOpen = result[btnName].wps;
             service = document.getElementById(wpsToOpen).getAttribute("data-service");
-            open_wpsprocess_modal(service, wpsToOpen, [item.input_keys, item.input_values]);
+            vfw.workspace.modal.open_wpsprocess(service, wpsToOpen, [item.input_keys, item.input_values]);
             /** Fill the tool with selection made to receive this result button */
             /*setModalValues(
                 JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
@@ -842,7 +845,7 @@ function menuItemListener(link) {
             console.error('Not implemented yet')
             break;
         case "Remove":
-            remove_single_data(id);
+            vfw.sidebar.remove_single_data(id);
             popup.classList.remove(popActive);
             break;
         case "ViewResult":
@@ -966,7 +969,7 @@ function menuItemListener(link) {
             popup.classList.remove(popActive);
             break;
         case "RemoveR":
-            remove_single_result(id);
+            vfw.session.remove_single_result(id);
             popup.classList.remove(popActive);
             break;
         default:
