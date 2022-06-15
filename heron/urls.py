@@ -38,6 +38,7 @@ urlpatterns = [
     path('download/<str:name>', vfw_views.DownloadView.as_view()),
     path('admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     path('user/', include('author_manage.urls', namespace='author_manage')),
+    path('oidc/', include('mozilla_django_oidc.urls')),
 ]
 
 handler404 = 'vfwheron.views.error_404_view'
