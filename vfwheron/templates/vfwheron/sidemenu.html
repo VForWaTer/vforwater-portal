@@ -81,11 +81,14 @@
 
       <!-- is_authenticated -->
     {% else %}
-      <a class="w3-hide-small w3-right w3-hover-white">
+        <a class="w3-hide-small w3-right w3-hover-white">
+          <a class="w3-btn-simple " href="{% url 'oidc_authentication_init' %}"><i class="fa fa-user fa-fw"></i>  {% trans "  Login" %}<a/>
+        <!--
         <form class="w3-hover-white " action="{% url 'vfwheron:watts_login' %}" method="post"> {% csrf_token %}
           <i class="fa fa-user fa-fw"></i>
           <input class="w3-btn-simple " type="submit" name="login" value='{% trans "  Login" %}'/>
         </form>
+        -->
       </a>
     {% endif %}
   </div>
