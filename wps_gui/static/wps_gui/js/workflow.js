@@ -321,51 +321,13 @@ class Connection {
     }
 }
 
-/*class Workflow {
-
-    constructor(name = 'my workflow', workflow = {}) {
-        this._name = name;
-        this._workflow = workflow;
-    }
-
-    get name() {
-        return this._name;
-    }
-
-    set session_storage(workflow) {
-        sessionStorage.setItem('workflow', JSON.stringify(workflow))
-        this._workflow = workflow;
-    }
-
-    /!**
-     * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
-     * @return {obj} json - object of a Workflow
-     *!/
-    get session_storage() {
-        let workflow = JSON.parse(sessionStorage.getItem('workflow'))
-        if (!workflow) {
-            workflow = {'name': this._name};
-            this.session_storage(workflow);
-        }
-        return workflow;
-    }
-
-    set_name(name = 'my workflow') { //vfw.session.set_workflow_name(name = 'my workflow') {
-        this._name = name;
-        let workflow = this.session_storage()
-        workflow['name'] = name;
-        this.session_storage(workflow)
-    }
-
-
-}*/
- /**
-     * @method
-     * Constructor for a draw2d.shape.basic.Rectangle, but extended with a serializer for the label and ports position.
-  * Used from writer.marshal.
-     *
-     * @returns {Object}
-     */
+/**
+ * @method
+ * Constructor for a draw2d.shape.basic.Rectangle, but extended with a serializer for the label and ports position.
+ * Used from writer.marshal.
+ *
+ * @returns {Object}
+ */
 vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
     NAME: "vfw.draw2d.Rectangle",
     /**
@@ -374,25 +336,25 @@ vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
      *
      * @returns {Object}
      */
-    getPersistentAttributes : function() {
+    getPersistentAttributes: function () {
         var memento = this._super();
 
         // add all decorations to the memento
         memento.labels = [];
-        this.children.each(function(i,e){
+        this.children.each(function (i, e) {
             var labelJSON = e.figure.getPersistentAttributes();
-            labelJSON.locator=e.locator.NAME;
+            labelJSON.locator = e.locator.NAME;
             memento.labels.push(labelJSON);
         });
 
-        this.inputPorts.data.forEach(function(e,i) {
+        this.inputPorts.data.forEach(function (e, i) {
             memento.ports[i].locatorAttr["x"] = e.locator.x;
             memento.ports[i].locatorAttr["y"] = e.locator.y;
         })
         var inputportlen = this.inputPorts.data.length;
-        this.outputPorts.data.forEach(function(e,i) {
-            memento.ports[inputportlen+i].locatorAttr["x"] = e.locator.x;
-            memento.ports[inputportlen+i].locatorAttr["y"] = e.locator.y;
+        this.outputPorts.data.forEach(function (e, i) {
+            memento.ports[inputportlen + i].locatorAttr["x"] = e.locator.x;
+            memento.ports[inputportlen + i].locatorAttr["y"] = e.locator.y;
         })
 
         return memento;
@@ -405,26 +367,26 @@ vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
      * @param {Object} memento
      * @returns
      */
-    setPersistentAttributes : function(memento) {
+    setPersistentAttributes: function (memento) {
         this._super(memento);
 
         // remove all decorations created in the constructor of this element
         this.resetChildren();
 
         // and add all children of the JSON document.
-        $.each(memento.labels, $.proxy(function(i,json){
+        $.each(memento.labels, $.proxy(function (i, json) {
             // create the figure stored in the JSON
-            var figure =  eval("new "+json.type+"()");
+            var figure = eval("new " + json.type + "()");
 
             // apply all attributes
             figure.attr(json);
 
             // instantiate the locator
-            var locator =  eval("new "+json.locator+"()");
+            var locator = eval("new " + json.locator + "()");
 
             // add the new figure as child to this figure
             this.add(figure, locator);
-        },this));
+        }, this));
     }
 });
 
@@ -617,8 +579,8 @@ vfw.array.insert = function (arr, index, newItem) {
     if (!arr) {
         arr = [...Array(index)].map(i => '')
         // arr.splice(index, 0, newItem);
-    } else if (arr.length < (index-1)) {
-        arr = arr.concat([...Array(index-arr.length-1)].map(i => ''));
+    } else if (arr.length < (index - 1)) {
+        arr = arr.concat([...Array(index - arr.length - 1)].map(i => ''));
     }
     arr.splice(index, 1, newItem)
     return arr;
@@ -631,7 +593,7 @@ vfw.array.insert = function (arr, index, newItem) {
  * @param {string} source
  * @param {string} service
  */
-vfw.draw2d.box_params = function(ev, id, source, service= "") {
+vfw.draw2d.box_params = function (ev, id, source, service = "") {
     let box_param = '';
     if (source === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
@@ -772,88 +734,12 @@ vfw.workspace.workflow.get_workflow_id_affix = function () {
 /**
  * Collect information from session Storage and draw workflow boxes as given there.
  */
-function draw_workflow() {
-    draw2dsessionStore.getworkflow()
+vfw.workspace.workflow.draw_workflow = function () {
+    let jsonDocument = vfw.session.draw2d.getworkflow()
+    if (jsonDocument) {
+        console.log('read jsonDocument: ', JSON.parse(jsonDocument))
+        let reader = new draw2d.io.json.Reader();
+        // console.log('read: ', jsonDocument)
+        reader.unmarshal(canvas, JSON.parse(jsonDocument));
+    }
 }
-function draw_workflow_old() {
-    let box = {};
-    let newBox;
-    let coords = {};
-    let ports = {};  // key: boxname, values: ports
-    let portpairs = {};
-    let inputport, outputport;
-    let source, target;
-    let sourceName;
-    let workflow = vfw.session.get_workflow()
-    // let workflow = globalWorkflow.session_storage();
-
-    // get connection/port pairs
-    Object.entries(workflow).map(function (boxDescription) {
-        console.log('workflow keys: ', Object.keys(workflow))
-        if (boxDescription[1].input_ids) {
-
-        }
-    })
-    let testportin, testportout
-    Object.entries(workflow).map(function (boxDescription) {
-        if (boxDescription[0] == 'name') {
-            document.getElementById("workflow_name").setAttribute('value', boxDescription[1])
-        } else {
-            box = new Box(
-                boxDescription[1].name, boxDescription[1].orgid, boxDescription[1].boxtype, boxDescription[1].inputs,
-                boxDescription[1].outputs, boxDescription[1].source, boxDescription[1].service, boxDescription[0]
-            )
-            newBox = box.box;
-            coords = vfw.workspace.get_drop_coords();
-            canvas.add(newBox, coords['x'], coords['y']);
-
-            ports[boxDescription[0]] = {
-                'inputPortNames': boxDescription[1].input_ids, 'inputPort': newBox.getInputPort(0), 'inputPorts': newBox.getInputPorts(),
-                // 'inputPortNames': boxDescription[1].input_ids, 'inputPorts': box.box.getInputPorts(),
-                'inputPortsSource': boxDescription[1].input_boxes,
-                'outputPortNames': boxDescription[1].output_ids, 'outputPort': newBox.getOutputPort(0), 'outputPorts': newBox.getOutputPorts(),
-                // 'outputPortNames': boxDescription[1].output_ids, 'outputPorts': box.box.getOutputPorts(),
-                'outputPortsTarget': boxDescription[1].output_boxes,
-                'box': newBox};
-
-            if (boxDescription[1].input_ids) {
-                boxDescription[1].input_ids.forEach(function(val, ind, arr) {
-                    console.log('val: ', val)
-                    console.log('ind: ', ind)
-                    console.log('arr: ', arr)
-
-                });
-
-        }
-
-        }
-    })
-
-    Object.entries(ports).map(function ([elementName, element]) {  // loop port objects
-        if (typeof element.inputPortNames !== "undefined") {  // if port has input connections
-            element.inputPortNames.forEach(function (val, ind) {  // loop input connections
-                if (val !== '') {  // if input actually has a connection => find corresponding output, get them, draw
-                    target = element.inputPort
-                    sourceName = element.inputPortNames[ind]
-                    // element is the inputport == target
-                    // ==> need output port. 1. get output element
-
-                    // 2. Get Output Portname:
-                    if (elementName == ports[sourceName].outputPortNames[0]) {
-                        source = ports[sourceName].outputPort
-                        add_connection(source, target)
-                    }
-
-                    // here is element.inputPorts.data[ind] (== ports.inputPortNames[ind] ?)
-                    //     add_connection(ports[val].box.getOutputPort(ports[val].outputPortNames.indexOf(k)),
-                    //         v.box.getInputPort(ind))
-                    //     v.box.box.getInputPorts().data[ind])
-                    // add_connection(ports[val].outputPorts.data[ports[val].outputPortNames.indexOf(k)],
-                    //     v.inputPorts.data[ind])
-                }
-                }
-            )
-        }
-
-    })
-}*/

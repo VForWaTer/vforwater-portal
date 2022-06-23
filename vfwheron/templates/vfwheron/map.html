@@ -24,8 +24,8 @@
 
 {#TODO: Don't like "show_data()" in map.html, but 2 onload in app don't work. Any better solution?#}
 {#<body onload="vfw.sidebar.show_data()">#}
-<body onload="create_map(); vfw.sidebar.show_data(); get_quick_selection(); update_quickfilter()">
-	<!-- <body class="w3-light-grey" onload="create_map()">  -->
+<body onload="vfw.map.create_map(); vfw.sidebar.show_data(); get_quick_selection(); update_quickfilter()">
+	<!-- <body class="w3-light-grey" onload="vfw.map.create_map()">  -->
 	<div id="map" class="map"></div>
 
     <!--TODO: Was ist besser um Werte an js zu übergeben? <param> oder <script>? param muss direkt abgerufen werden, script ist für alle zugänglich)-->
@@ -139,5 +139,5 @@ if (!isStorageSupported(window, "localStorage")) {
   {#let map = new olMap()#}
   {#let wfsPointSource;#}
   {#map.map#}
-  create_map()
+  vfw.map.create_map()
 </script>{% endcomment %}

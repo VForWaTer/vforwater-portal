@@ -1,22 +1,24 @@
-let zoomToExt;
-let wfsLayerName;
+//let zoomToExt;
+// let wfsLayerName;
+vfw.map.vars.wfsLayerName = '';
 let olmap, hit_cL, clusterLayer, hiddenLayer;
-let selectCluster;
-let wfsPointSource;
-
+//let selectCluster;
+//let wfsPointSource;
+vfw.map.vars.wfsPointSource = {};
+vfw.map.vars.zoomToExt = {};
 // console.log('get1: ', selectedIds.quickMenu)
 // console.log('set: ', selectedIds.quickMenu=toarray(1))
 // console.log('get2: ', selectedIds.quickMenu)
 // let dcz = new ol.interaction.DoubleClickZoom();
 
 /** build style for cluster **/
-let styleCache = {};
+vfw.map.vars.styleCache = {};
 
-function clusterStyle(feature) {
+vfw.map.clusterStyle = function (feature) {
     let size = feature.get('features').length;
-    let style = styleCache[size];
+    let style = vfw.map.vars.styleCache[size];
     if (!style) {
-        style = styleCache[size] = new ol.style.Style({
+        style = vfw.map.vars.styleCache[size] = new ol.style.Style({
             image: new ol.style.Circle({
                 radius: Math.round(8 + 1.3 * Math.log(size)),
                 stroke: new ol.style.Stroke({
@@ -44,7 +46,10 @@ function clusterStyle(feature) {
  * @param {array} ids
  * @param {int} page
  */
-function buildMapModal(ids, page) {
+vfw.map.buildMapModal = function (ids, page) {
+    //document.getElementById('mod_dat_inf').innerHTML = "";
+    //document.getElementById("mapModal").innerHTML = "";
+    //document.getElementById("loader-popup").classList.add("loader");
     $.ajax({
         url: DEMO_VAR + "/home/short_info_pagination",
         dataType: 'html',
@@ -59,12 +64,12 @@ function buildMapModal(ids, page) {
         })
         .fail(function (bug) {
             console.error('Bug! TODO: Remove this Layer!: ', bug)
-            closeMapModal();
+            vfw.map.closeMapModal();
         })
 }
 
 /** Fetch V-FOR-WaTer base layer **/
-function create_map() {
+vfw.map.create_map = function () {
     const GEO_SERVER = DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({
         attributions: [gettext("Map data from") + ' <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
@@ -74,9 +79,9 @@ function create_map() {
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
         'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
 
-    wfsLayerName = document.getElementById('data_layer').value;
-    if (wfsLayerName.search("Error") !== -1) {
-        console.error(wfsLayerName)
+    vfw.map.vars.wfsLayerName = document.getElementById('data_layer').value;
+    if (vfw.map.vars.wfsLayerName.search("Error") !== -1) {
+        console.error(vfw.map.vars.wfsLayerName)
     }
     /** build the background map **/
     let mapLayer = new ol.layer.Tile({
@@ -111,10 +116,10 @@ function create_map() {
     mapView.animate({duration: 5000}, {easing: 'elastic'});
 
     /** get data points from server **/
-    wfsPointSource = new ol.source.Vector({
+    vfw.map.vars.wfsPointSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
         loader: function (extent) {
-            fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
+            fetch(GEO_SERVER + '/wfs/' + vfw.map.vars.wfsLayerName + '/' + extent.join(',') + '/3857',
                 // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
                 // credentials: 'same-origin'}
             )
@@ -126,12 +131,12 @@ function create_map() {
                     }
                 })
                 .then(function (response) {
-                    wfsPointSource.addFeatures(wfsPointSource.getFormat().readFeatures(response));
+                    vfw.map.vars.wfsPointSource.addFeatures(vfw.map.vars.wfsPointSource.getFormat().readFeatures(response));
                 })
                 .catch(function (error) {
                     console.warn('No result for selected area. Unable to build vector layer.');
-                    // console.log('Error in building vector wfsPointSource: ', error);
-                    wfsPointSource.removeLoadedExtent(extent);
+                    // console.log('Error in building vector vfw.map.vars.wfsPointSource: ', error);
+                    vfw.map.vars.wfsPointSource.removeLoadedExtent(extent);
                 })
         },
         strategy: ol.loadingstrategy.bbox
@@ -146,15 +151,15 @@ function create_map() {
         className: 'cluster-layer',
         source: new ol.source.Cluster({
             distance: 30,
-            source: wfsPointSource
+            source: vfw.map.vars.wfsPointSource
         }),
         animationDuration: 0,
         /** Cluster style  **/
-        style: clusterStyle
+        style: vfw.map.clusterStyle
     });
     hiddenLayer = new ol.layer.VectorImage({
         className: 'hidden-layer',
-        source: wfsPointSource,
+        source: vfw.map.vars.wfsPointSource,
     });
 
     /* /!** Style for selection/single circles around cluster  **!/
@@ -217,7 +222,7 @@ function create_map() {
     */
 
     /** functionality for zoom to extent button **/
-    zoomToExt = new ol.control.ZoomToExtent({ // zoom button
+    vfw.map.vars.zoomToExt = new ol.control.ZoomToExtent({ // zoom button
         label: 'Z',
         tipLabel: gettext('Zoom to your available data'),
         // extent: testExt,  // eddy footprint testextent
@@ -265,7 +270,7 @@ function create_map() {
             }),
             new ol.control.ScaleLine(),
             new cApp.drawControls,
-            zoomToExt,
+            vfw.map.vars.zoomToExt,
         ],
         view: mapView//dataview
     });
@@ -280,11 +285,12 @@ function create_map() {
             content.innerHTML = '';
             try {
                 content.innerHTML = '<div id="loader" class="loader"></div>';
-                wfsLen = wfsLayerName.length;
+                console.log('now u shall see a loader: ', content)
+                wfsLen = vfw.map.vars.wfsLayerName.length;
                 clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
                 ids = clickedFeatures.map(i => parseInt(i.getId().substr(wfsLen + 1, 8)));
                 cleanedids = ids.filter(value => {return !Number.isNaN(value);});
-                buildMapModal(cleanedids, 1);
+                vfw.map.buildMapModal(cleanedids, 1);
                 mapmodal.style.display = "block";
             } catch (err) {
                 content.innerHTML = '<div id="loader">Failed to load your selection</div>';
@@ -375,27 +381,26 @@ function create_map() {
 
 }
 
-// function storeBtn(listIndex) {
 /**
  * Create a html button to request a dataset or pass it to the data store, depending on embargo.
  * @param {int} ssid
  * @param {string} embargo "True" or "False"
  */
-function storeBtn(ssid, embargo) {
-    if (embargo === "False" || UNBLOCKED_IDS.includes(ssid)) {
+vfw.map.storeBtn = function (ssid, embargo) {
+    if (embargo === "False" || vfw.map.UNBLOCKED_IDS.includes(ssid)) {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
             'onclick=\"workspace_dataset(\'' + ssid + '\')\" ' +
             'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
     } else {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
-            'onclick=\"requestDataset(\'' + ssid + '\')\" ' +
+            'onclick=\"vfw.map.requestDataset(\'' + ssid + '\')\" ' +
             'value="' + gettext("Send request") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Send an access request to the data owner.") + '"></b></a>'
     }
 }
 
 
-function requestDataset(dataId) {
+vfw.map.requestDataset = function (dataId) {
     console.warn('Noch nicht implementiert.')
 }

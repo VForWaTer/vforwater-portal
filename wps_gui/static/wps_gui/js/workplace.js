@@ -2,34 +2,35 @@ const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
     'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
     'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
 
-function allowDrop(ev) {
-    ev.preventDefault();
-}
+// function allowDrop(ev) {
+//     ev.preventDefault();
+// }
 
-function drag(ev) {
-    ev.dataTransfer.setData("text/html", ev.target.id);
-}
+// function drag(ev) {
+//     ev.dataTransfer.setData("text/html", ev.target.id);
+// }
 
-function drop(ev) {
-    ev.preventDefault();
-    let droplet = ev.dataTransfer.getData("text/html");
-
-    // let droplet = document.createElement('canvas');
-    // let dropletCopy = document.createElement('canvas');
-    let dropletCopy = document.getElementById(droplet).cloneNode(true);
-    // build new id for new element:
-    if (sessionStorage.getItem("dz_count")) {
-        sessionStorage.setItem("dz_count", JSON.parse(sessionStorage.getItem("dz_count")) + 1)
-    } else {
-        sessionStorage.setItem("dz_count", 1)
-    }
-    dropletCopy.id = "dz" + sessionStorage.getItem("dz_count");
-    dropletCopy.classList.add('tool-btn');
-    dropletCopy.style.left = ev.offsetX + "px";
-    dropletCopy.style.top = ev.offsetY + "px";
-    // ev.dataTransfer.setDragImage(dropletCopy, ev.offsetX + "px", ev.offsetY + "px")
-    ev.target.appendChild(dropletCopy);
-}
+// function drop(ev) {
+//     console.log('_______ I dropped something')
+//     ev.preventDefault();
+//     let droplet = ev.dataTransfer.getData("text/html");
+//
+//     // let droplet = document.createElement('canvas');
+//     // let dropletCopy = document.createElement('canvas');
+//     let dropletCopy = document.getElementById(droplet).cloneNode(true);
+//     // build new id for new element:
+//     if (sessionStorage.getItem("dz_count")) {
+//         sessionStorage.setItem("dz_count", JSON.parse(sessionStorage.getItem("dz_count")) + 1)
+//     } else {
+//         sessionStorage.setItem("dz_count", 1)
+//     }
+//     dropletCopy.id = "dz" + sessionStorage.getItem("dz_count");
+//     dropletCopy.classList.add('tool-btn');
+//     dropletCopy.style.left = ev.offsetX + "px";
+//     dropletCopy.style.top = ev.offsetY + "px";
+//     // ev.dataTransfer.setDragImage(dropletCopy, ev.offsetX + "px", ev.offsetY + "px")
+//     ev.target.appendChild(dropletCopy);
+// }
 
 // TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
 //  if process_id == btn_id place btn in dropzone (on save)
@@ -48,9 +49,36 @@ vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs) {
     vfw.workspace.modal.build_modal(json, service)
     /** Fill the tool with selection made to receive this result button */
     if (typeof inputs === 'string') {
-        setModalValues(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+        vfw.workspace.modal.setProcessValues(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
     } else if (Array.isArray(inputs)) {
-        setModalValues(inputs[0], inputs[1])
+        vfw.workspace.modal.setProcessValues(inputs[0], inputs[1])
+    }
+}
+
+/**
+ * Modal to change data of a port.
+ *
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ * @param {string} boxidentifier - identifier of the box in session storage
+ * @param {string} index - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
+ * @param {string} inputtype - type of data
+ * @param {string} porttype - distinguish 'input' or 'output' port
+ **/
+vfw.workspace.modal.open_port = function (service, identifier, boxidentifier, index, inputtype, porttype) {
+
+    console.log('service: ', service)
+    console.log('boxidentifier: ', boxidentifier)
+    let modal_values = vfw.session.get_workflow();
+    console.log('modal values. ', modal_values)
+    let json = vfw.session.get_wpsprocess(service, boxidentifier);
+    console.log('json: ', json)
+    // vfw.workspace.modal.build_modal(json, service)
+    /** Fill the tool with selection made to receive this result button */
+    if (typeof inputs === 'string') {
+        vfw.workspace.modal.setPortValue(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+    } else if (Array.isArray(inputs)) {
+        vfw.workspace.modal.setPortValue(inputs[0], inputs[1])
     }
 }
 
@@ -498,7 +526,7 @@ function run_wps(input_dict) {
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
     // '2020-10-31T14:10'
-    // fetch(GEO_SERVER + '/wfs/' + wfsLayerName + '/' + extent.join(',') + '/3857',
+    // fetch(GEO_SERVER + '/wfs/' + vfw.map.vars.wfsLayerName + '/' + extent.join(',') + '/3857',
     //             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
     //             // credentials: 'same-origin'}
     //             )

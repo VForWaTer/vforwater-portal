@@ -451,7 +451,8 @@ var clickCoordsY;
 
 var menu = document.querySelector("#context-menu");
 var resultMenu = document.querySelector("#context-result");
-let popup = document.querySelector("#loader-popup");
+//popup = document.querySelector("#loader-popup");
+ let popup = document.querySelector("#loader-popup");
 let content = document.querySelector('#pop-content-side');
 let popText = document.querySelector('#popupText');
 let popClose = document.querySelector('#pop-closer');
@@ -646,13 +647,17 @@ function showDataInfo(properties) {
     positionPopup(popup);
 }
 
+vfw.workspace.modal.setPortValue = function (btnKeys, btnValues) {
+    console.log('btnKeys: ', btnKeys )
+    console.log('btnValues: ', btnValues )
+}
 /**
  * Fill a process modal with values from a result.
  *
  * @param {list} btnKeys names of input fields
  * @param {list} btnValues values for the input fields
  */
-function setModalValues(btnKeys, btnValues) {
+vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {
     // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
     //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
     // }
@@ -834,7 +839,7 @@ function menuItemListener(link) {
             service = document.getElementById(wpsToOpen).getAttribute("data-service");
             vfw.workspace.modal.open_wpsprocess(service, wpsToOpen, [item.input_keys, item.input_values]);
             /** Fill the tool with selection made to receive this result button */
-            /*setModalValues(
+            /*vfw.workspace.modal.setProcessValues(
                 JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
                 // JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
                 item.input_keys, item.input_values

@@ -15,23 +15,6 @@
     <script type="text/javascript"> Bokeh.set_log_level("info"); </script>{% endcomment %}
 {#  used to add styles for filter menu  #}
     <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/filter.css' %}">
-{#  used to style filter menu    #}
-{#    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/jquery-ui.min.css' %}">#}
-{#    jquery-ui.min.js needed for accordion:  #}
-{#    <script src="{% static 'vfwheron/js/jquery-ui.min.js' %}"></script>#}
-{#    nouislider.min.js needed for slider:  #}
-
-{#    TODO: Download the following files when you want to use : http://www.daterangepicker.com/#}
-{#    Alternative evtl: http://amsul.ca/pickadate.js/time/#}
-<!-- Include Date Range Picker -->
-{#<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>#}
-{#<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />#}
-{#<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>#}
-{#<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />#}
-{#TODO: next three lines needed for range sliders. Can the other jquery removed?#}
-{#    <link rel="stylesheet" type="text/css" href="{% static 'vfwheron/vcss/jquery.mobile-1.4.5.min.css' %}">#}
-{#    <script src="{% static 'vfwheron/js/jquery-1.11.3.min.js' %}"></script>#}
-{#    <script src="{% static 'vfwheron/jquery.mobile-1.4.5.min.js' %}"></script>#}
 </head>
 
 <body>
@@ -66,29 +49,12 @@
 {#  {% endblock %}#}
 </div>
 
-{% comment %}<div id="quickFilter" class="filter-tabcontent">
-    {#    new accordion#}
-    <div class="container">
-        <div class="panel-group" id="accordion">
-        </div>
-    </div>
-        <a><b>
-            <input class="w3-btn-block w3-blue w3-btn:hover" type="submit"
-                onclick="workspace_dataset(JSON.stringify(selectedIds.result))" value={% trans "Pass&#32datasets&#32to&#32data&#32store" %} data-toggle="tooltip"
-                title={% trans "Pass&#32all&#32selected&#32datasets&#32to&#32session&#32data&#32store." %}></b>
-        </a>
-        <a><b>
-            <input class="w3-btn-block w3-blue w3-btn:hover" type="submit"
-                onclick="reset_filter()" value={% trans "Reset&#32filter&#32menu" %} data-toggle="tooltip"
-                title={% trans "Remove&#32selection&#32from&#32filter&#32menu." %}></b>
-        </a>
-  </div>{% endcomment %}
 </body>
 
 <script>
 {#TODO: Do I need this, or can I just use the csrftoken in vfw.js?#}
  csrf_token = '{{ csrf_token }}';
-var jsonMenu = "{{ Filter_Menu|escapejs }}";
+//var jsonMenu = "{{ Filter_Menu|escapejs }}";
 var unblockedIds = "{{ unblocked_ids }}";
 // Get the element with id="defaultMapTab" and click on it
 {#document.getElementById("defaultFilterTab").click();#}

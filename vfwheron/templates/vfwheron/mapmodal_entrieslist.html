@@ -25,7 +25,7 @@
                   {% endif %}
                   <td>
                     <a><b><input id="show_data_preview{{ value.ssid }}" class="w3-btn-block" type="submit"
-                                 onclick="moreInfoModal('db{{ value.ssid }}')" data-toggle="tooltip"
+                                 onclick="vfw.html.moreInfoModal('db{{ value.ssid }}')" data-toggle="tooltip"
                                  value="{% trans "More" %}"
                                  title="{% trans "Show more information about the dataset." %}">
                     </b></a>
@@ -37,7 +37,7 @@
                                  title="{% trans "Send an access request to the data owner." %}"
                       {% else %}
                                  class="w3-btn-block w3-btn-block:hover request-button"
-                                 onclick="requestDataset('{{ value.ssid }}')"
+                                 onclick="vfw.map.requestDataset('{{ value.ssid }}')"
                                  value="{% trans "Send request" %}" data-toggle="tooltip"
                                  title="{% trans "Put dataset to session datastore." %}"
                       {% endif %}
@@ -63,8 +63,8 @@
     {% if org_page.has_other_pages %}
       <ul class="pagination">
         {% if org_page.has_previous %}
-          <a title="{% trans "First" %}" onclick="buildMapModal({{ data_sets }}, 1)">&#9474;&#8882;</a>
-          <a title="{% trans "Previous" %}" onclick="buildMapModal({{ data_sets }}, {{ org_page.previous_page_number }})">&#8882;</a>
+          <a title="{% trans "First" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, 1)">&#9474;&#8882;</a>
+          <a title="{% trans "Previous" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, {{ org_page.previous_page_number }})">&#8882;</a>
         {% else %}
           <a class="disabled"><span>&#9474;&#8882;</span></a>
           <a class="disabled"><span>&#8882;</span></a>
@@ -74,13 +74,13 @@
             {% if org_page.number == i %}
               <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
             {% else %}
-              <a onclick="buildMapModal({{ data_sets }}, {{ i }})">{{ i }}</a>
+              <a onclick="vfw.map.buildMapModal({{ data_sets }}, {{ i }})">{{ i }}</a>
             {% endif %}
           {% endif %}
         {% endfor %}
         {% if org_page.has_next %}
-          <a title="{% trans "Next" %}" onclick="buildMapModal({{ data_sets }}, {{ org_page.next_page_number }})">&#8883;</a>
-          <a title="{% trans "Last" %}" onclick="buildMapModal({{ data_sets }}, {{ org_page.paginator.num_pages }})">&#8883;&#9474;</a>
+          <a title="{% trans "Next" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, {{ org_page.next_page_number }})">&#8883;</a>
+          <a title="{% trans "Last" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, {{ org_page.paginator.num_pages }})">&#8883;&#9474;</a>
         {% else %}
           <a class="disabled"><span>&#8883;</span></a>
           <a class="disabled"><span>&#8883;&#9474;</span></a>

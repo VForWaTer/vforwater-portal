@@ -3,29 +3,7 @@
 // First child: C1
 // Second child: C2
 // First Item: I1...
-
-let parent;
-let SELECTION = {};
-let UNBLOCKED_IDS = JSON.parse(unblockedIds)
-// let selectedIds = {
-//     map: null,
-//     filter: null,
-//     set map(idList) {
-//         this.map = idList;
-//     },
-//     get map() {
-//         return this.map
-//     },
-//     set filter(idList) {
-//         this.filter = idList;
-//     },
-//     get filter() {
-//         return this.filter
-//     },
-//     updateFilterTable: function () {
-//         return this.selected
-//     }
-// };
+vfw.map.UNBLOCKED_IDS = JSON.parse(unblockedIds)
 
 
 /* Drop Down Menu Button Function to toggle what is shown in it*/
@@ -80,9 +58,9 @@ function reset_filter(){
 }
 
 /** update objects on map according to filter results */
-function updateMapSelection(json) {
-    zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
-    wfsLayerName = json['ID_layer'];
+vfw.map.updateMapSelection = function (json) {
+    vfw.map.vars.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
+    vfw.map.vars.wfsLayerName = json['ID_layer'];
     selectedIds.quickMenu = json['IDs'];
-    wfsPointSource.refresh();
+    vfw.map.vars.wfsPointSource.refresh();
 }

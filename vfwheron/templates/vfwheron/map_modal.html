@@ -22,7 +22,7 @@
       {% include 'vfwheron/mapmodal_entrieslist.html' %}
     </div>
     <div class="modal-footer" id="modal-map-footer">
-      <span-b class="modal-back" onclick="closeMapModal()">{% trans "Close" %}</span-b>
+      <span-b class="modal-back" onclick="vfw.map.closeMapModal()">{% trans "Close" %}</span-b>
       <h3></h3>
     </div>
   </div>
@@ -33,9 +33,9 @@
   let mapmodal = document.getElementById("mapModal");
 
   // When the user clicks anywhere outside of the modal, close it
-  window.onclick = event => {if (event.target == mapmodal) closeMapModal()};
+  window.onclick = event => {if (event.target == mapmodal) vfw.map.closeMapModal()};
 
-  function closeMapModal() {
+  vfw.map.closeMapModal = function () {
     document.getElementById('infomodal_paginationTable').style.display = "none";
     mapmodal.style.display = "none";
   }
