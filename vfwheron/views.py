@@ -740,7 +740,7 @@ def show_info(request):
         table[translation.gettext('Commercial use allowed')] = translation.gettext('Yes') \
             if db_info[0]['license__commercial_use'] else translation.gettext('No')
         table[translation.gettext('Embargo')] = translation.gettext('Yes') \
-            if db_info[0]['embargo'] == 'True' and timezone.now() < db_info[0]['embargo_end'].astimezone() \
+            if db_info[0]['embargo'] is True and timezone.now() < db_info[0]['embargo_end'].astimezone() \
             else translation.gettext('No')
         table[translation.gettext('Abstract')] = translation.gettext(db_info[0]['abstract']) \
             if db_info[0]['abstract'] else '-'
