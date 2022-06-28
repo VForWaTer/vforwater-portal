@@ -21,6 +21,8 @@
 
                 {% if entry == 'has_access' %}
                   {% if forloop.first %}
+                    {% comment %}
+                    in the first loop add a empty column for the buttons {% endcomment %}
                     <td></td>
                   {% endif %}
                   <td>
@@ -45,6 +47,8 @@
                   </td>
                 {% else %}
                   {% if forloop.first %}
+                    {% comment %}
+                    in the first loop add row names {% endcomment %}
                     <td><b>{{ entry }}</b></td>
                   {% endif %}
                   <td>{{ value }}</td>
@@ -59,33 +63,37 @@
     </tbody>
   </table>
   <div style="text-align:center;">
+
     {#Pagination:#}
-    {% if org_page.has_other_pages %}
+    {% if current_page.has_other_pages %}
       <ul class="pagination">
-        {% if org_page.has_previous %}
+        {% if current_page.has_previous %}
           <a title="{% trans "First" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, 1)">&#9474;&#8882;</a>
-          <a title="{% trans "Previous" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, {{ org_page.previous_page_number }})">&#8882;</a>
+          <a title="{% trans "Previous" %}"
+             onclick="vfw.map.buildMapModal({{ data_sets }}, {{ current_page.previous_page_number }})">&#8882;</a>
         {% else %}
           <a class="disabled"><span>&#9474;&#8882;</span></a>
           <a class="disabled"><span>&#8882;</span></a>
         {% endif %}
-        {% for i in org_page.paginator.page_range %}
-          {% if org_page.paginator.num_pages < 11 or i > org_page.number|add:"-5" and i < org_page.number|add:"5" %}
-            {% if org_page.number == i %}
+        {% for i in current_page.paginator.page_range %}
+          {% if current_page.paginator.num_pages < 11 or i > current_page.number|add:"-5" and i < current_page.number|add:"5" %}
+            {% if current_page.number == i %}
               <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
             {% else %}
               <a onclick="vfw.map.buildMapModal({{ data_sets }}, {{ i }})">{{ i }}</a>
             {% endif %}
           {% endif %}
         {% endfor %}
-        {% if org_page.has_next %}
-          <a title="{% trans "Next" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, {{ org_page.next_page_number }})">&#8883;</a>
-          <a title="{% trans "Last" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, {{ org_page.paginator.num_pages }})">&#8883;&#9474;</a>
+        {% if current_page.has_next %}
+          <a title="{% trans "Next" %}"
+             onclick="vfw.map.buildMapModal({{ data_sets }}, {{ current_page.next_page_number }})">&#8883;</a>
+          <a title="{% trans "Last" %}"
+             onclick="vfw.map.buildMapModal({{ data_sets }}, {{ current_page.paginator.num_pages }})">&#8883;&#9474;</a>
         {% else %}
           <a class="disabled"><span>&#8883;</span></a>
           <a class="disabled"><span>&#8883;&#9474;</span></a>
         {% endif %}
-        <a class="disabled"><span>({{ org_page.number }}/{{ org_page.paginator.num_pages }})</span></a>
+        <a class="disabled"><span>({{ current_page.number }}/{{ current_page.paginator.num_pages }})</span></a>
       </ul>
     {% endif %}
   </div>
