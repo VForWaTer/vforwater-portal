@@ -735,13 +735,12 @@ def show_info(request):
         # table = {}
         # table['id'] = ids
         # table[translation.gettext('Name')] = translation.gettext(db_info[0]['variable__name'])
-        table = {'id': ids,
-                 translation.gettext('Name'): translation.gettext(db_info[0]['variable__name'])}
-        table[translation.gettext('Commercial use allowed')] = translation.gettext('Yes') \
-            if db_info[0]['license__commercial_use'] else translation.gettext('No')
-        table[translation.gettext('Embargo')] = translation.gettext('Yes') \
-            if db_info[0]['embargo'] is True and timezone.now() < db_info[0]['embargo_end'].astimezone() \
-            else translation.gettext('No')
+        table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0]['variable__name'])}
+
+        table[translation.gettext('Commercial use allowed')] = \
+            human_readable_bool(db_info[0]['license__commercial_use'])
+        table[translation.gettext('Embargo')] = human_readable_bool(
+            check_embargo_expiry(db_info[0]['embargo'], db_info[0]['embargo_end']))
         table[translation.gettext('Abstract')] = translation.gettext(db_info[0]['abstract']) \
             if db_info[0]['abstract'] else '-'
 
@@ -763,6 +762,36 @@ def show_info(request):
 
         except TypeError:
             raise Http404
+
+
+def check_embargo_expiry(embargo, embargo_end):
+    """
+    Send the information if there is an embargo and end date to check if embargo is still valid.
+    Careful: Uses a naive local timezone.
+    :param embargo: boolean
+    :type embargo: boolean
+    :param embargo_end: date
+    :type embargo_end: datetime
+    :return: boolean
+    """
+    access = False
+    if embargo is True and timezone.now() < embargo_end.astimezone():
+        access = True
+
+    return access
+
+
+def human_readable_bool(bool_val):
+    """
+    Translate the boolean value to yes or no in the language of the user
+    :param bool_val: bool
+    :return: string
+    """
+    yesno = translation.gettext('No')
+    if bool_val:
+        yesno = translation.gettext('Yes')
+
+    return yesno
 
 
 def workspace_data(request):
