@@ -195,8 +195,11 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     elif isinstance(requested_ids, str):
         requested_ids = [int(requested_ids)]
     # first get datasets without embargo / open for for everyone
-    accessible_data = list(Entries.objects.
-                           values_list('id', flat=True).filter(pk__in=requested_ids, embargo=False))
+    accessible_data = list(Entries.objects.values_list('id', flat=True).
+                           filter(Q(pk__in=requested_ids, embargo=False) |
+                                  Q(pk__in=requested_ids, embargo=True,
+                                    embargo_end__lt=timezone.make_naive(timezone.now()))))
+
     # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
     if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
         accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
