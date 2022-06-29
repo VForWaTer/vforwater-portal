@@ -569,6 +569,8 @@ def previewplot(request):
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
             full_res = is_data_short(accessible_data[0], 'db', date)
+            if type(full_res) is dict and 'error' in full_res:
+                return JsonResponse(full_res)
             # plot with bokeh
             return JsonResponse(get_plot_from_db_id(ID=accessible_data[0], full_res=full_res, date=date))
             # else:

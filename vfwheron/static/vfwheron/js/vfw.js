@@ -620,7 +620,7 @@ vfw.html.moreInfoModal = function (id) {
                 result = data;
             })
             .fail(function (e) {
-                console.error('Failed to load talbe: ', e)
+                console.error('Failed to load table: ', e)
             });
         return result
     }
@@ -640,7 +640,12 @@ vfw.html.moreInfoModal = function (id) {
             }, // data sent with the post request
         })
             .done(function (data) {
-                result = data;
+                if ('error' in data) {
+                    console.warn(data.error)
+                    pdata = false
+                } else {
+                    result = data;
+                }
             })
             .fail(function (e) {
                 pdata = false
