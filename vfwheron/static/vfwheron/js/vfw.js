@@ -593,9 +593,7 @@ let csrf_token = getCookie('csrftoken');
  * @param {string} id of dataset as string.
  */
 vfw.html.moreInfoModal = function (id) {
-    let tb = false, pb = false;
-    let modLock = false;
-    let pdata, tdata;
+    let pdata;
     let urlParams = new URLSearchParams(window.location.search);
     let startdate, enddate;
     let date = urlParams.getAll('date');
@@ -608,8 +606,9 @@ vfw.html.moreInfoModal = function (id) {
         enddate = date[1].toString();
     }
 
-    let ajaxTable = function () {
-        return $.ajax({
+    let ajaxTable = async function () {
+        let result;
+        await $.ajax({
             url: DEMO_VAR + "/home/show_info",
             dataType: 'json',
             data: {
@@ -617,11 +616,18 @@ vfw.html.moreInfoModal = function (id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
         })
+            .done(function (data) {
+                result = data;
+            })
+            .fail(function (e) {
+                console.error('Failed to load talbe: ', e)
+            });
+        return result
     }
     // load preview image parallel to metadata
-    let ajaxPlot = function () {
-        // id = 'bla'
-        return $.ajax({
+    let ajaxPlot = async function () {
+        let result;
+        await $.ajax({
             url: DEMO_VAR + "/home/previewplot",
             datatype: 'image/png;base64',
             // datatype: 'html',
@@ -633,10 +639,14 @@ vfw.html.moreInfoModal = function (id) {
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with the post request
         })
-        /*.fail(e => {
-            $.when(ajaxTable()).then(function (plotVar) {plotToModal(plotVar[0])});
-            console.warn('fehler: ', e)
-        })*/
+            .done(function (data) {
+                result = data;
+            })
+            .fail(function (e) {
+                pdata = false
+                // console.error('Failed to load plot: ', e)
+            });
+        return result
     }
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
@@ -647,17 +657,17 @@ vfw.html.moreInfoModal = function (id) {
         let metaText = '<table>';
         // loop over "properties" dict with metadata, build columns
         for (let j in properties) {
-            // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
-            metaText += '<tr>' +
-                '<td><div style="max-width:120px;"><b>' + j + '</b></div></td>' +
-                '<td><div style="max-height:300px; max-width:320px; ' +
-                'overflow-x: hidden; overflow-y:auto;">' + properties[j] + '</div></td>' +
-                '</tr>';
-        }
-        if (properties.Embargo == 'No'){
-            metaText += '<tr><td colspan = "2">' + vfw.map.storeBtn(properties.id, "False") + '</td></tr>'
-        } else {
-            metaText += '<tr><td colspan = "2">' + vfw.map.storeBtn(properties.id, "True") + '</td></tr>'
+            if (j !== 'has_embargo') {
+                // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
+                metaText += '<tr>' +
+                    '<td><div style="max-width:120px;"><b>' + j + '</b></div></td>' +
+                    '<td><div style="max-height:300px; max-width:320px; ' +
+                    'overflow-x: hidden; overflow-y:auto;">' + properties[j] + '</div></td>' +
+                    '</tr>';
+            } else {
+                metaText += '<tr>' +
+                    '<td colspan = "2">' + vfw.map.storeBtn(properties.id, properties.has_embargo) + '</td></tr>'
+            }
         }
         document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
         showDataInfo(properties);
@@ -672,39 +682,13 @@ vfw.html.moreInfoModal = function (id) {
         document.head.appendChild(bokehPreviewScript);
     }
 
-    function fillModal(td, pd) {
+    $.when(ajaxTable(), ajaxPlot()).done(function (td, pd) {
         tableToModal(td)
         if (pdata !== false) {
             plotToModal(pd)
         }
         document.getElementById("mod_prev").classList.remove("loader")
-    }
-
-    // Following .done calls are made to ensure that table is first and plot is second created in the modal
-    // TODO: better errorhandling, especially for ajaxTable
-    ajaxTable()
-        .done((data) => {
-            tdata = data
-            tb = true
-            if (pb === true && modLock === false) {
-                modLock = true
-                fillModal(tdata, pdata)
-            }
-        })
-    // .always(document.getElementById("mod_prev").classList.remove("loader"))
-    ajaxPlot()
-        .done((data) => {
-            pdata = data
-            pb = true
-            if (tb === true && modLock === false) {
-                modLock = true
-                fillModal(tdata, pdata)
-            }
-        })
-        .fail(() => {
-            pb = true;
-            pdata = false
-        })
+    })
     // .always(document.getElementById("mod_prev").classList.remove("loader"))
 
     let modal = document.getElementById("infoModal");
