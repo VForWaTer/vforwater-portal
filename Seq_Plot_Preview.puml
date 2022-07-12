@@ -1,0 +1,63 @@
+@startuml
+title Plot a preview of the data
+
+hide footbox
+participant previewplot.py order 20
+participant data_tools.py order 30
+
+== click on 'More' in datapreview ==
+' actor user #lightblue
+[-> vfw.js ++: moreInfoModal
+' checkSiblings checks what is clicked
+group ajax
+vfw.js -> vfw.js ++: ajaxPlot
+vfw.js -> views.py ++: **ajax**\n previewplot
+opt if source is 'db'
+    views.py -> views.py: get_accessible_data
+
+    views.py -> data_tools.py ++: is_data_short
+    return
+    views.py -> previewplot.py ++: get_plot_from_db_id
+    opt if data is not 'in_cache'
+        previewplot.py -> previewplot.py: __DB_load_label
+        opt
+        else if 'direction' is in label
+            previewplot.py -> data_tools.py ++: __DB_load_directiondata
+            return
+            previewplot.py -> previewplot.py: direction_plot
+        else else
+            previewplot.py -> data_tools.py ++: __DB_load_data
+            opt if 'timeseries_1d'
+            data_tools.py -> data_tools.py: __reduce_dataset
+            data_tools.py -> data_tools.py: __get_timescale
+            data_tools.py -> data_tools.py: __has_precision
+            else else if 'timeseries'
+            data_tools.py -> data_tools.py: __reduce_dataset
+            data_tools.py -> data_tools.py: __unify_dataframe
+            data_tools.py -> data_tools.py: __get_timescale
+            data_tools.py -> data_tools.py: __has_precision
+            end
+            return
+            opt if 'has_preci'
+                previewplot.py -> data_tools.py ++: precision_to_minmax
+                return
+            end
+                previewplot.py -> data_tools.py ++: find_data_gaps
+                data_tools.py -> data_tools.py: __get_gap_position
+                return
+                previewplot.py -> data_tools.py ++: __get_axis_limits
+                return
+                previewplot.py -> previewplot.py: get_bokeh_std_fullres
+    end
+end
+    return
+else if source is 'wps'
+    views.py -> previewplot.py ++: format_label
+return
+end
+[<- vfw.js
+
+
+
+@enduml
+-----------------------------------------------------------------------

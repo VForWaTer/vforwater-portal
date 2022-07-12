@@ -125,12 +125,16 @@ vfw.session.get_wpsprocess = function (service, identifier) {
     if (tools[service][identifier]) {
         tool_data = tools[service][identifier]
     } else {
+        console.log('this might take a while')
+        vfw.html.popup.classList.add(popActive);
+        positionPopup(vfw.html.popup);
         $.when(vfw.session.load_wpsprocess(service, identifier))
             .done(
                 function (json) {
                     tools[service][identifier] = json
                     sessionStorage.setItem('tools', JSON.stringify(tools))
                     tool_data = json;
+                    vfw.html.popup.classList.remove(popActive);
                 })
         /* .fail(function (e) {
              console.error('Failed: ', e)
@@ -515,7 +519,7 @@ vfw.workspace.view_result = function (json) {
     }
     let rModal = document.getElementById("resultModal");
     rModal.style.display = "block";
-    popup.classList.remove(popActive);
+    vfw.html.popup.classList.remove(popActive);
     modalToggleSize.style.display = "none";
 }
 

@@ -97,7 +97,7 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-        'vfwheron': {
+        'vfw_home': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -135,7 +135,7 @@ LOGGING = {
 # Application definition
 
 INSTALLED_APPS = [
-    'vfwheron.apps.VfwheronConfig',
+    'vfw_home.apps.vfw_homeConfig',
     # 'dashboard.apps.DashboardConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -145,8 +145,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'wps_gui',
-    'heron_monitor',
-    'heron_visual',
+    'process_monitor',
+    'visual_app',
     'upload',
     # Three apps for wps_workflow
     # 'wps_workflow.apps.wps_workflowConfig',
@@ -196,7 +196,7 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # TODO: Delete Router. Not necessary anymore now when only one database is used
 DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
 # DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# DATABASE_APPS_MAPPING = {'vfw_home': 'vforwater'}
 
 DATABASES = {
     'default': {
@@ -275,13 +275,13 @@ MEDIA_ROOT = Path(BASE_DIR) / 'media'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default URLs for user authentication
-LOGIN_URL = 'vfwheron:login'
-LOGIN_REDIRECT_URL = 'vfwheron:home'
-LOGOUT_REDIRECT_URL = 'vfwheron:home'
+LOGIN_URL = 'vfw_home:login'
+LOGIN_REDIRECT_URL = 'vfw_home:home'
+LOGOUT_REDIRECT_URL = 'vfw_home:home'
 LOGIN_SUCCESS_VIEW = VFW_SERVER + '/home/rsp/login/success'
 LOGIN_FAILURE_VIEW = VFW_SERVER + '/home/failedlogin'
-#LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron'
-#LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
+#LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfw_home'
+#LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfw_home'
 
 
 ##EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -18,9 +18,9 @@ from bokeh.palettes import Oranges9, Spectral11
 from numpy import mean
 
 from heron.settings import max_size_preview_plot
-from vfwheron.data_tools import __DB_load_directiondata, fill_data_gaps, __DB_load_data_avg, __DB_load_data, \
+from vfw_home.data_tools import __DB_load_directiondata, find_data_gaps, __DB_load_data_avg, __DB_load_data, \
     precision_to_minmax, __get_axis_limits
-from vfwheron.models import Entries
+from vfw_home.models import Entries
 
 import redis
 import pandas as pd
@@ -133,7 +133,7 @@ def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object
     :param label:
     :return:
     """
-    # plot_data = fill_data_gaps(db_data)
+    # plot_data = find_data_gaps(db_data)
 
     stepsize = plot_data['stepsize']
     has_precision = plot_data['has_precision']
@@ -521,7 +521,7 @@ def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 
 #         if label.find('direction') != -1:
 #             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
 #             db_data = __DB_load_directiondata(id, ti)
-#             plot_data = fill_data_gaps(db_data)
+#             plot_data = find_data_gaps(db_data)
 #             # img = get_bokeh_standard(db_data, label)
 #             img = direction_plot(plot_data, ti)
 #         else:

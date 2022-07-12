@@ -539,15 +539,15 @@ vfw.workspace.workflow.update = function (event) {
         // if (event.hasOwnProperty('target') && !workflow[event.target.boxid]['input_values']) {
         if (event.hasOwnProperty('target')) {
             workflow[event.target.boxid]['input_values'] = []
-            let newinsert = vfw.array.insert(workflow[event.target.boxid]['input_ids'],
+            let newinsert = vfw.var.array.insert(workflow[event.target.boxid]['input_ids'],
                 event.target.index, event.source.boxid)
-            workflow[event.target.boxid]['input_ids'] = vfw.array.insert(workflow[event.target.boxid]['input_ids'],
+            workflow[event.target.boxid]['input_ids'] = vfw.var.array.insert(workflow[event.target.boxid]['input_ids'],
                 event.target.index, event.source.boxid)
         }
         // if (event.hasOwnProperty('source') && !workflow[event.source.boxid]['output_values']) {
         if (event.hasOwnProperty('source')) {
             workflow[event.source.boxid]['output_values'] = []
-            workflow[event.source.boxid]['output_ids'] = vfw.array.insert(workflow[event.source.boxid]['output_ids'],
+            workflow[event.source.boxid]['output_ids'] = vfw.var.array.insert(workflow[event.source.boxid]['output_ids'],
                 event.source.index, event.target.boxid)
         } else if (event.hasOwnProperty('source')) {
             // workflow[event.target.boxid]['input_values'][event.target.index] = event.source.value;
@@ -575,7 +575,7 @@ vfw.workspace.workflow.update = function (event) {
  * @param {integer} index - position to change an item
  * @param {string} newItem - the new item for index position
  */
-vfw.array.insert = function (arr, index, newItem) {
+vfw.var.array.insert = function (arr, index, newItem) {
     if (!arr) {
         arr = [...Array(index)].map(i => '')
         // arr.splice(index, 0, newItem);

@@ -46,33 +46,33 @@ COPY public.auth_group (id, name) FROM stdin;
 --
 
 COPY public.django_content_type (id, app_label, model) FROM stdin;
-1	vfwheron	datasources
-2	vfwheron	datasourcetypes
-3	vfwheron	datatypes
-4	vfwheron	details
-5	vfwheron	entries
-6	vfwheron	entrygroups
-7	vfwheron	entrygrouptypes
-8	vfwheron	keywords
-9	vfwheron	licenses
-10	vfwheron	locationfilter
-11	vfwheron	logs
-12	vfwheron	personroles
-13	vfwheron	persons
-14	vfwheron	spatialscales
-15	vfwheron	temporalscales
-16	vfwheron	thesaurus
-17	vfwheron	units
-18	vfwheron	variables
-19	vfwheron	generic1ddata
-20	vfwheron	generic2ddata
-21	vfwheron	genericgeometrydata
-22	vfwheron	geomtimeseries
-23	vfwheron	nmentrygroups
-24	vfwheron	nmkeywordsentries
-25	vfwheron	nmpersonsentries
-26	vfwheron	timeseries
-27	vfwheron	timeseries2d
+1	vfw_home	datasources
+2	vfw_home	datasourcetypes
+3	vfw_home	datatypes
+4	vfw_home	details
+5	vfw_home	entries
+6	vfw_home	entrygroups
+7	vfw_home	entrygrouptypes
+8	vfw_home	keywords
+9	vfw_home	licenses
+10	vfw_home	locationfilter
+11	vfw_home	logs
+12	vfw_home	personroles
+13	vfw_home	persons
+14	vfw_home	spatialscales
+15	vfw_home	temporalscales
+16	vfw_home	thesaurus
+17	vfw_home	units
+18	vfw_home	variables
+19	vfw_home	generic1ddata
+20	vfw_home	generic2ddata
+21	vfw_home	genericgeometrydata
+22	vfw_home	geomtimeseries
+23	vfw_home	nmentrygroups
+24	vfw_home	nmkeywordsentries
+25	vfw_home	nmpersonsentries
+26	vfw_home	timeseries
+27	vfw_home	timeseries2d
 28	admin	logentry
 29	auth	permission
 30	auth	group
@@ -3980,7 +3980,7 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 14	auth	0009_alter_user_last_name_max_length	2020-10-06 13:46:35.739152+02
 15	auth	0010_alter_group_name_max_length	2020-10-06 13:46:35.764807+02
 16	auth	0011_update_proxy_permissions	2020-10-06 13:46:35.795112+02
-17	vfwheron	0001_initial	2020-10-06 13:46:35.892931+02
+17	vfw_home	0001_initial	2020-10-06 13:46:35.892931+02
 18	author_manage	0001_initial	2020-10-06 13:46:36.200397+02
 19	sessions	0001_initial	2020-10-06 13:46:36.993004+02
 20	wps_gui	0001_initial	2020-10-06 13:57:37.292586+02

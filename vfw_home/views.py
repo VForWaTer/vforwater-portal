@@ -27,12 +27,12 @@ from django.views.generic import TemplateView
 from django.contrib import messages
 from future.builtins import isinstance
 
-import vfwheron
+import vfw_home
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
-from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfwheron.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label
+from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
+from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label
 from wps_gui.models import WpsResults
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
     __get_axis_limits, __reduce_dataset
@@ -43,7 +43,7 @@ mpl.use('Agg')
 
 from django.contrib.gis.geos import Polygon
 from .query_functions import get_bbox_from_data
-from .filter import QuickFilter
+# from .filter import QuickFilter
 from .filters import NMPersonsFilter
 from .models import Entries, NmEntrygroups
 
@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 #     Template View for plain workflow HTML Template.
 #     Template so far does only contain iframe in content Block, that embedds wps_workflow app
 #     """
-#     template_name = "vfwheron/workflow.html"
+#     template_name = "vfw_home/workflow.html"
 
 
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
@@ -88,10 +88,10 @@ class HomeView(TemplateView):
     """
     Template View to bring the necessary variables for the startup to the template
     """
-    template_name = 'vfwheron/home.html'
+    template_name = 'vfw_home/home.html'
 
     # Before you make migrations
-    QuickFilter.items(requests)
+    # QuickFilter.items(requests)
     # data_layer = 'metacatalogdev'  # 'default_layer_prod'
     data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
     data_layer = 'playnew'
@@ -367,9 +367,9 @@ class LoginView(View):
         """
         if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
             logger.debug('Redirect to home/rsp/login/init...')
-            return redirect('vfwheron:watts_rsp:login_init')
+            return redirect('vfw_home:watts_rsp:login_init')
         elif settings.DEBUG:  # default django login
-            return redirect('vfwheron:login')
+            return redirect('vfw_home:login')
         else:
             raise Http404
 
@@ -421,7 +421,7 @@ class LogoutView(View):
         :rtype:
         """
         self.logout(request)
-        return redirect('vfwheron:home')
+        return redirect('vfw_home:home')
 
 
 class DevLoginView(TemplateView):
@@ -434,20 +434,20 @@ class DevLoginView(TemplateView):
 class Legals(TemplateView):
 
     def get(self, request):
-        return render(request, 'vfwheron/legals.html')
+        return render(request, 'vfw_home/legals.html')
 
 
 class PrivacyPolicy(TemplateView):
 
     def get(self, request):
-        return render(request, 'vfwheron/privacypolicy.html')
+        return render(request, 'vfw_home/privacypolicy.html')
 
 
 class HelpView(TemplateView):
     """
     """
 
-    #     template_name = 'vfwheron/help.html'
+    #     template_name = 'vfw_home/help.html'
     def get(self, request):
         """
 
@@ -513,7 +513,7 @@ class FailedLoginView(View):
         for i in request:
             print('request: ', i)
         messages.warning(request, 'Login failed.')
-        return redirect('vfwheron:home')
+        return redirect('vfw_home:home')
 
 
 class GeoserverView(View):
@@ -600,7 +600,7 @@ def previewplot(request):
                 # TODO: Redirect to login
                 raise Http404
                 # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-                # return redirect('vfwheron:login')
+                # return redirect('vfw_home:login')
         except EmptyResultSet as e:
             print('EmptyResultSet Error in previewplot: ', e)
         except FieldError as e:
@@ -706,7 +706,6 @@ def short_info_pagination(request):
         except EmptyPage:
             current_page = paginator.page(paginator.num_pages)
 
-        # TODO: That is to blame for having nothing in web site
         newdict = defaultdict(list)
         for d in current_page:
             for key, val in d.items():
@@ -896,7 +895,7 @@ def entries_pagination(request):
     except EmptyPage:
         entriespage = paginator.page(paginator.num_pages)
 
-    return render(request, 'vfwheron/entrieslist.html', {'entries': entriespage,
+    return render(request, 'vfw_home/entrieslist.html', {'entries': entriespage,
                                                          'ownData': owndata,
                                                          'accessible_ids': accessible_ids})
 
@@ -908,7 +907,7 @@ def advanced_filter(request):
     selection = advfilter.qs
 
     context = {'advFilter': advfilter, 'selection': selection}
-    return render(request, 'vfwheron/advanced_filter.html', context)
+    return render(request, 'vfw_home/advanced_filter.html', context)
 
 
 def quick_filter_defaults(request):
@@ -925,7 +924,7 @@ class QuickFilter(View):
     @staticmethod
     def get(request):
         context = quick_filter_defaults(request)
-        return render(request, 'vfwheron/quick_filter.html', context)
+        return render(request, 'vfw_home/quick_filter.html', context)
 
 
 class QuickFilterResults(View):
@@ -985,8 +984,8 @@ class QuickFilterResults(View):
 
 def error_404_view(request, exception):
     # data = {"name": "Some Error"}
-    # return render(request,'vfwheron/404.html', data)
-    return render(request, 'vfwheron/404.html')
+    # return render(request,'vfw_home/404.html', data)
+    return render(request, 'vfw_home/404.html')
 
 
 class DownloadView(View):
@@ -1012,7 +1011,7 @@ class DownloadView(View):
         else:
             error_404_view(request, 'not available')
 
- # Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map
+# Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map
 # # def Eddytestdata(request):
 # #     print('________________________- here: ', request)
 # #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.asc', 'rb'))

@@ -12,7 +12,7 @@ from django.conf import settings
 import os
 from django.utils.decorators import method_decorator
 
-from vfwheron.models import Details
+from vfw_home.models import Details
 from .filters import PersonsFilter, DetailsFilter
 from .forms import AddNewResourceForm
 from django.template.context_processors import csrf

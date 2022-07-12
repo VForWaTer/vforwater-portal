@@ -6,7 +6,7 @@ from django.forms import DateField
 #
 import datetime
 
-from vfwheron.models import Entries, NmPersonsEntries, Persons
+from vfw_home.models import Entries, NmPersonsEntries, Persons
 
 
 class MultiUploadFileForm(forms.Form):
@@ -47,7 +47,7 @@ class PersonsForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'organisation_name', 'affiliation', 'attribution')
 
 
-from vfwheron.models import *
+from vfw_home.models import *
 
 # class MetadataForm(forms.Form):
 #     name = forms.CharField(max_length=30,

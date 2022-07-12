@@ -40,7 +40,7 @@ vforwater-portal-deploy-prod:
         - sudo systemctl start vfwportal
     environment:
         name: production
-        url: https://portal.vforwater.de/vfwheron/
+        url: https://portal.vforwater.de/vfw_home/
     only:
         - production
 
@@ -68,6 +68,6 @@ vforwater-portal-deploy-demo:
         - sudo systemctl start vfwportal-demo
     environment:
         name: development
-        url: https://portal.vforwater.de/demo/vfwheron/
+        url: https://portal.vforwater.de/demo/vfw_home/
     only:
         - demo

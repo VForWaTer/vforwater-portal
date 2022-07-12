@@ -6,7 +6,7 @@ from django.core.exceptions import EmptyResultSet, FieldError
 from django.db import connections
 
 from heron.settings import max_size_preview_plot
-from vfwheron.models import Entries, Timeseries, Timeseries_1D
+from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups
 
 
 def __get_timescale(df, ID=None):
