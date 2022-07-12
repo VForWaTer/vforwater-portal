@@ -34,9 +34,10 @@ from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 from vfwheron.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
 from vfwheron.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label
 from wps_gui.models import WpsResults
-from .data_tools import __get_timescale, fill_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
+from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
     __get_axis_limits, __reduce_dataset
 from .forms import QuickFilterForm
+from .utilities import human_readable_bool, has_pending_embargo
 
 mpl.use('Agg')
 
@@ -44,7 +45,7 @@ from django.contrib.gis.geos import Polygon
 from .query_functions import get_bbox_from_data
 from .filter import QuickFilter
 from .filters import NMPersonsFilter
-from .models import Entries
+from .models import Entries, NmEntrygroups
 
 import logging
 from pathlib import Path
@@ -194,11 +195,11 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
         requested_ids = [requested_ids]
     elif isinstance(requested_ids, str):
         requested_ids = [int(requested_ids)]
-    # first get datasets without embargo / open for for everyone
-    accessible_data = list(Entries.objects.values_list('id', flat=True).
-                           filter(Q(pk__in=requested_ids, embargo=False) |
-                                  Q(pk__in=requested_ids, embargo=True,
-                                    embargo_end__lt=timezone.make_naive(timezone.now()))))
+    # first get datasets that are open for for everyone and without embargo or expired embargo
+    accessible_data = list(Entries.objects.values_list('id', flat=True)
+                           .filter(pk__in=requested_ids)
+                           .filter(Q(embargo=False) |
+                                   Q(embargo=True, embargo_end__lt=timezone.now())))
 
     # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
     if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
@@ -568,7 +569,17 @@ def previewplot(request):
             accessible_data = get_accessible_data(request, webID[2:])
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
+
+            # ID = 1013
+            # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+
+            # accessible_data = [1014]  # 1014: wind direction, 1013: 3D direction
+            if len(accessible_data) < 1:
+                return JsonResponse({'warning': translation.gettext(
+                    'No plot available. <br/>First access to this dataset is needed.')})
+
             full_res = is_data_short(accessible_data[0], 'db', date)
+
             if type(full_res) is dict and 'error' in full_res:
                 return JsonResponse(full_res)
             # plot with bokeh
@@ -647,9 +658,8 @@ def previewplot(request):
             else:
                 plot_data['has_preci'] = False
 
-            plot_data = fill_data_gaps(plot_data)
+            plot_data = find_data_gaps(plot_data)
             plot_data = __get_axis_limits(plot_data)
-            # print('11 wps: ', plot_data)
             # return JsonResponse(get_plot(ID=plot_data))
             return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=full_res, size=[700, 500], label=label))
 
@@ -664,20 +674,22 @@ def previewplot(request):
 
 def short_info_pagination(request):
     """
-    Requested from map.js popupContent
+    Requested from map.js buildMapModal, show only little metadata and give access to more details
     :param request:
     :return:
     """
     try:
         datasets = json.loads(request.GET.get('datasets'))
         page = request.GET.get('page', 1)
+        if type(datasets) is str:
+            datasets = [int(datasets)]
 
         field = ['title', 'id', 'variable__name', 'embargo', 'embargo_end']
         field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'embargo': 'Embargo',
                       'has_access': 'has_access', 'embargo_end': 'embargo_end'}
 
         if datasets:
-            entries_list = Entries.objects.values(*field).filter(pk__in=datasets)\
+            entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
                 .order_by('variable__name', 'title', 'id')
             accessible_data = get_accessible_data(request, datasets)
             error_ids = accessible_data['blocked']
@@ -685,36 +697,37 @@ def short_info_pagination(request):
         else:
             entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
 
-        naive_today = timezone.make_naive(timezone.now())
+        # build pagination for entries
         paginator = Paginator(entries_list, 5)
-
         try:
-            orgpage = paginator.page(page)
+            current_page = paginator.page(page)
         except PageNotAnInteger:
-            orgpage = paginator.page(1)
+            current_page = paginator.page(1)
         except EmptyPage:
-            orgpage = paginator.page(paginator.num_pages)
+            current_page = paginator.page(paginator.num_pages)
 
         # TODO: That is to blame for having nothing in web site
         newdict = defaultdict(list)
-        for d in orgpage:
+        for d in current_page:
             for key, val in d.items():
                 if key != 'embargo_end':
                     newdict[translation.gettext(field_name[key])].append(val)
                 else:
-                    if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
+                    # if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
+                    if not has_pending_embargo(d['embargo'], val) or d['id'] in accessible_ids:
                         newdict['has_access'].append({'access': True, 'ssid': d['id']})
                     else:
                         newdict['has_access'].append({'access': False, 'ssid': d['id']})
 
         entries = dict(newdict.items())
 
-        return render(request, 'vfwheron/mapmodal_entrieslist.html', {'entries_page': entries,
+        return render(request, 'vfw_home/mapmodal_entrieslist.html', {'entries_page': entries,
                                                                       'data_sets': datasets,
-                                                                      'org_page': orgpage})
+                                                                      'current_page': current_page})
 
     except TypeError:
         raise Http404
+
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
 # TODO: Handle this with an http request (response, not request?)!
@@ -728,26 +741,37 @@ def show_info(request):
 
     def collectData(ids):
         """
+        Called when clicked on more to see metadata of single dataset
 
         :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
         :type ids: str
         :return: dict
         """
         # build dict of lists for preview:
-        db_info = Entries.objects.filter(id=int(ids))\
-            .values('uuid', 'variable__name', 'license__commercial_use', 'embargo', 'embargo_end', 'abstract',
-                    'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end')
-        # table = {}
-        # table['id'] = ids
-        # table[translation.gettext('Name')] = translation.gettext(db_info[0]['variable__name'])
-        table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0]['variable__name'])}
+        db_info = NmEntrygroups.objects.filter(entry_id=int(ids)) \
+            .values('entry__uuid', 'entry__variable__name', 'entry__abstract',
+                    'entry__license__commercial_use',
+                    'entry__embargo', 'entry__embargo_end',
+                    'entry__datasource__temporal_scale__observation_start',
+                    'entry__datasource__temporal_scale__observation_end',
+                    'group__title', 'group_id')
+
+        group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
+            .values_list('entry_id', flat=True)
+
+        table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0]['entry__variable__name'])}
 
         table[translation.gettext('Commercial use allowed')] = \
-            human_readable_bool(db_info[0]['license__commercial_use'])
+            human_readable_bool(db_info[0]['entry__license__commercial_use'])
         table[translation.gettext('Embargo')] = human_readable_bool(
-            check_embargo_expiry(db_info[0]['embargo'], db_info[0]['embargo_end']))
-        table[translation.gettext('Abstract')] = translation.gettext(db_info[0]['abstract']) \
-            if db_info[0]['abstract'] else '-'
+            has_pending_embargo(db_info[0]['entry__embargo'], db_info[0]['entry__embargo_end']))
+        table[translation.gettext('Abstract')] = translation.gettext(db_info[0]['entry__abstract']) \
+            if db_info[0]['entry__abstract'] else '-'
+        table['has_embargo'] = str(has_pending_embargo(db_info[0]['entry__embargo'], db_info[0]['entry__embargo_end']))
+
+        table[translation.gettext('Group')] = translation.gettext(db_info[0]['group__title']) \
+            if db_info[0]['group__title'] else '-'
+        table['group_entry_ids'] = list(group_entry_ids)
 
         return JsonResponse(table)
 
@@ -769,38 +793,9 @@ def show_info(request):
             raise Http404
 
 
-def check_embargo_expiry(embargo, embargo_end):
-    """
-    Send the information if there is an embargo and end date to check if embargo is still valid.
-    Careful: Uses a naive local timezone.
-    :param embargo: boolean
-    :type embargo: boolean
-    :param embargo_end: date
-    :type embargo_end: datetime
-    :return: boolean
-    """
-    access = False
-    if embargo is True and timezone.now() < embargo_end.astimezone():
-        access = True
-
-    return access
-
-
-def human_readable_bool(bool_val):
-    """
-    Translate the boolean value to yes or no in the language of the user
-    :param bool_val: bool
-    :return: string
-    """
-    yesno = translation.gettext('No')
-    if bool_val:
-        yesno = translation.gettext('Yes')
-
-    return yesno
-
-
 def workspace_data(request):
     """
+    Preload selected data when changing web page to workspace
 
     :param request:
     :return:
@@ -828,26 +823,28 @@ def workspace_data(request):
         error_ids = accessible_data['blocked']
         accessible_ids = accessible_data['open']
 
-        result_dataset = Entries.objects. \
-            values('id', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
-                   'datasource__datatype__name').filter(pk__in=accessible_ids)
+        result_dataset = NmEntrygroups.objects. \
+            values('entry__id', 'entry__variable__name', 'entry__variable__symbol', 'entry__variable__unit__symbol',
+                   'entry__datasource__datatype__name', 'group__title', 'group_id').filter(pk__in=accessible_ids)
 
         if len(error_ids) > 0:
             error_dict = {'message': 'no access', 'id': error_ids}
 
         for dataset in result_dataset:
-            dataset_dict.update({'db' + str(dataset['id']): {'name': dataset['variable__name'],
-                                                             'abbr': dataset['variable__symbol'],
-                                                             'unit': dataset['variable__unit__symbol'],
-                                                             'type': dataset['datasource__datatype__name'],
-                                                             'source': 'db',
-                                                             'dbID': dataset['id'],
-                                                             'orgID': 'db' + str(dataset['id']),
-                                                             'start': startdate,
-                                                             'end': enddate,
-                                                             'inputs': [],
-                                                             'outputs': dataset['datasource__datatype__name']
-                                                             }
+            dataset_dict.update({'db' + str(dataset['entry__id']): {'name': dataset['entry__variable__name'],
+                                                                    'abbr': dataset['entry__variable__symbol'],
+                                                                    'unit': dataset['entry__variable__unit__symbol'],
+                                                                    'type': dataset['entry__datasource__datatype__name'],
+                                                                    'source': 'db',
+                                                                    'dbID': dataset['entry__id'],
+                                                                    'orgID': 'db' + str(dataset['entry__id']),
+                                                                    'start': startdate,
+                                                                    'end': enddate,
+                                                                    'inputs': [],
+                                                                    'outputs': dataset['entry__datasource__datatype__name'],
+                                                                    'group': dataset['group__title'],
+                                                                    'groupID': dataset['group_id']
+                                                                    }
                                  })
 
         # TODO: Need timestamp in name to see if different selection
@@ -869,7 +866,7 @@ def entries_pagination(request):
 
     :param request: list of integers
     :type request: object
-    :return:
+    :return: dict with 'entries, ownData, accessible_ids' to render entrieslist.html
     """
     accessible_ids = []
     datasets = json.loads(request.GET.get('datasets', 1))

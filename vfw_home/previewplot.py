@@ -201,6 +201,7 @@ def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object
 
 def direction_plot(dataframe: object, ti: str) -> object:
     """
+    Interactive rose plot for timeseries data with slider to select timeframe to be drawn.
 
     :param dataframe: pandas dataframe
     :param ti: string defining 'week', 'month'...
@@ -332,6 +333,13 @@ def direction_plot(dataframe: object, ti: str) -> object:
 
 
 def timeseries_plot(data, size):
+    """
+    Base Bokeh plot for simple timeseries plot
+
+    :param data:
+    :param size:
+    :return:
+    """
     mainplot = xyplot_base_figure(data, size, y_label='value', x_label="Time", x_type="datetime",
                                   type='line', title='Daily average, min and max values')
     script, div = components(mainplot, wrap_script=False)
@@ -339,6 +347,13 @@ def timeseries_plot(data, size):
 
 
 def xyplot(data, size):
+    """
+    Base Bokeh plot for simple xy plot
+
+    :param data:
+    :param size:
+    :return:
+    """
     x_label = data.columns[0]
     y_label = data.columns[1]
 
@@ -465,10 +480,14 @@ def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 
             db_data = __DB_load_data(ID, date, full_res)
             if db_data['has_preci']:
                 db_data['df'] = precision_to_minmax(db_data['df'])
-            plot_data = fill_data_gaps(db_data)
+
+            plot_data = find_data_gaps(db_data)
             # prepare plot
             plot_data = __get_axis_limits(plot_data)
-            img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
+            if plot_data['data_format'] == '3D':
+                img = get_bokeh_3D_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
+            else:
+                img = get_bokeh_std_fullres(plot_data=plot_data, full_res=full_res, size=size, label=label)
 
         if cache_obj['use_redis']:
             cache_obj['redis'].set("plot_{}".format(cache_obj['name']), str(img))

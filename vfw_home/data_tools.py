@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from django.core.exceptions import EmptyResultSet
+from django.core.exceptions import EmptyResultSet, FieldError
 from django.db import connections
 
 from heron.settings import max_size_preview_plot
@@ -62,6 +62,8 @@ def is_data_short(ID: int, source: str, date: list):
         datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
         # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
 
+    if datapath is None:
+        return {'error': 'Dataset has no datasource__path.'}
     query_path = {'{0}'.format(datapath): ID}
 
     if date and date[0]:
@@ -72,6 +74,7 @@ def is_data_short(ID: int, source: str, date: list):
     datalength = Entries.objects.filter(**query_path).count()
 
     if datalength == 0:  # if not qs.exists():
+        print('Problems with query_path: ', query_path)
         raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(ID))
 
     if datalength <= max_size_preview_plot:
@@ -81,19 +84,31 @@ def is_data_short(ID: int, source: str, date: list):
     return full
 
 
-def __unify_dataframe(df):
+def __unify_dataframe(data):
     """
     Check format of dataframe. When one value in data column it's the same as timeseries-1d, so just convert array to
     number and rename 'data' column to 'value'.
 
-    :param df:
-    :return: df
+    :param dict (df, bool(reduced)):
+    :return: dict (df, bool(reduced), str(data_format))
     """
-    if len(df['data'][0]) == 1:
-        df['value'] = df['data'].str.get(0)
-        df.drop(columns=['data'], inplace=True)
+    data['data_format'] = '1D'
+    data['df'].rename(columns={'data': 'value'}, inplace=True, errors="raise")
+    # if len(data['df']['data'][0]) == 1:
+    #     pass
+    # df['value'] = df['data'].str.get(0)
+    # df.drop(columns=['data'], inplace=True)
+    if len(data['df']['value'][0]) == 3:
+        new_df = pd.DataFrame.from_dict(dict(zip(data['df']['value'].index, data['df']['value'].values))).transpose()
+        data['df']['y1'] = new_df[0]
+        data['df']['y2'] = new_df[1]
+        data['df']['y3'] = new_df[2]
+        data['data_format'] = '3D'
+    elif len(data['df']['value'][0]) != 1 or len(data['df']['value'][0]) != 3:
+        print('Dataset is length is other then expected. Cannot plot timeseries data length ',
+              len(data['df']['value'][0]))
 
-    return df
+    return data
 
 
 def __DB_load_data(ID: int, date: list, full_res: bool):
@@ -104,7 +119,7 @@ def __DB_load_data(ID: int, date: list, full_res: bool):
     :param ID: integer
     :param date: list
     :param full_res: boolean
-    :return: dict - {df, axis, scale, has_preci}
+    :return: dict - {df, axis, scale, has_preci, dataformat}
     """
     lookup_arguments = {'entry_id': ID}
     if date and date[0]:
@@ -118,22 +133,31 @@ def __DB_load_data(ID: int, date: list, full_res: bool):
         # request data with django ORM
         qs = Timeseries_1D.objects.filter(**lookup_arguments).values('tstamp', 'value', 'precision')
 
-        df = __reduce_dataset(qs, full_res)
-        timescale = __get_timescale(df, ID)
-        precision = __has_precision(df)
+        data = __reduce_dataset(qs, full_res)
+        timescale = __get_timescale(data['df'], ID)
+        precision = __has_precision(data['df'])
+        return {'df': data['df'], 'scale': timescale, 'has_preci': precision, 'data_format': datatable}
 
-        return {'df': df, 'scale': timescale, 'has_preci': precision}
+    elif datatable == 'timeseries':
 
-    if datatable == 'timeseries':
+        try:
+            qs = Timeseries.objects.filter(**lookup_arguments).values('tstamp', 'value', 'precision')
+        except FieldError as e:
+            # TODO: check which database entries use 'data' and which 'value', adapt plot functions accordingly
+            qs = Timeseries.objects.filter(**lookup_arguments).values('tstamp', 'data', 'precision')
+            #
+            print('\033[31mWarning! Unusual field in "timeseries" for ID:\033[0m', ID,
+                  '\033[31mUsed "data" instead of "value". Python message: \033[0m', e)
 
-        qs = Timeseries.objects.filter(**lookup_arguments).values('tstamp', 'data', 'precision')
-        df = __reduce_dataset(qs, full_res)
-        df = __unify_dataframe(df)
-        timescale = __get_timescale(df, ID)
+        data = __reduce_dataset(qs, full_res)
 
-        precision = __has_precision(df)
+        data = __unify_dataframe(data)
 
-        return {'df': df, 'scale': timescale, 'has_preci': precision}
+        timescale = __get_timescale(data['df'], ID)
+
+        precision = __has_precision(data['df'])
+
+        return {'df': data['df'], 'scale': timescale, 'has_preci': precision, 'data_format': data['data_format']}
 
     else:
         print('*** CANNOT LOAD YOUR \'{0}\' DATA. PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***'.format(datatable))
@@ -159,20 +183,23 @@ def __reduce_dataset(qs: object, full_res: bool):
 
     :param qs: data as django queryset or pandas dataframe
     :param full_res: bool
-    :return: pandas dataframe
+    :return: dict (pandas dataframe, bool(reduced))
     """
+    reduced = False
     if isinstance(qs, pd.DataFrame):
         if full_res:
             df = qs
         else:
             df = qs.tail(max_size_preview_plot)
+            reduced = True
     else:
         if full_res:
             df = pd.DataFrame(list(qs))
         else:
             qs_length = qs.count()
             df = pd.DataFrame(list(qs[qs_length - max_size_preview_plot:qs_length]))
-    return df
+            reduced = True
+    return {'df': df, 'reduced': reduced}
 
 
 def __get_axis_limits(plot_data):
@@ -194,7 +221,14 @@ def __get_axis_limits(plot_data):
                 'y2min': df['precmin'].min, 'y2max': df['precmax'].max}
         # axis = {'y1min': min(result[2]), 'y1max': max(result[3]), 'y2min': min(result[4]), 'y2max': max(result[4])}
     else:
-        axis = {'ymin': df['value'].min(), 'ymax': df['value'].max()}
+        if '3D' in plot_data['data_format']:
+            axis = {'y1min': df['y1'].min(), 'y1max': df['y1'].max(),
+                    'y2min': df['y2'].min(), 'y2max': df['y2'].max(),
+                    'y3min': df['y3'].min(), 'y3max': df['y3'].max()}
+        elif 'value' in df.columns:
+            axis = {'ymin': df['value'].min(), 'ymax': df['value'].max()}
+        elif 'data' in df.columns:
+            axis = {'ymin': df['data'].min(), 'ymax': df['data'].max()}
 
     plot_data['axis'] = axis
     return plot_data
@@ -242,7 +276,8 @@ def __DB_load_data_avg(ID: int, scale='day'):
 
 def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
     """
-    Load data for rose plot from database.
+    Load data for rose plot in ten degree bins from database.
+
     :param ID:
     :param ti:
     :param date:
@@ -292,7 +327,7 @@ def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
     return pd.DataFrame(dbresult, columns=index), ti
 
 
-def fill_data_gaps(db_data: object):
+def find_data_gaps(db_data: object):
     """
     Fill gaps in datasets and prepare for plot
 
@@ -359,13 +394,17 @@ def fill_data_gaps(db_data: object):
                 # df.loc[pos+0.6] = df['tstamp'][pos + 1] - scale, float('nan'), float('nan')
                 defect_x.extend([df['tstamp'][pos] - scale, df['tstamp'][pos],
                                  df['tstamp'][pos + 1], df['tstamp'][pos + 1] + scale])
-                defect_y.extend([float('nan'), df['value'][pos], df['value'][pos + 1], float('nan'), ])
-
+                if db_data['data_format'] == '3D':
+                    defect_y.extend([float('nan'), float('nan'), float('nan'), float('nan'), ])
+                elif 'value' in df.columns:
+                    defect_y.extend([float('nan'), df['value'][pos], df['value'][pos + 1], float('nan'), ])
+                elif 'data' in df.columns:
+                    defect_y.extend([float('nan'), df['data'][pos], df['data'][pos + 1], float('nan'), ])
             # reset the index to integer
             df = df.sort_index().reset_index(drop=True)
             missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
 
-    return {'df': df, 'scale': scale, 'nan_in_data': nan_in_data,
+    return {'df': df, 'scale': scale, 'nan_in_data': nan_in_data, 'data_format': db_data['data_format'],
             'missing_data': missing_data, 'has_preci': db_data['has_preci']}
 
 
@@ -394,7 +433,7 @@ def __get_gap_position(df, scale, index):
     :param index: string - name of the column of the dataframe that is to be checked for gaps
     :return: list - row(s) before the gap(s)
     """
-    beforeGap = []
+    val_beforeGap = []
     # use datetime as index and request the list of datetimes your looking for
     starttime = df[index][0]
     endtime = df.iloc[-1][index]
@@ -403,7 +442,11 @@ def __get_gap_position(df, scale, index):
     # fill the empty frame without gaps with the data from original frame
     combined_dataframes = pd.merge(perfect_frame, df, how="outer", on="tstamp")
     # get rows without values
-    empty_list = combined_dataframes.loc[combined_dataframes['value'].isna()].index.values
+    try:
+        empty_list = combined_dataframes.loc[combined_dataframes['value'].isna()].index.values
+    except Exception as e:
+        print('in get gab position: ', e)
+        empty_list = combined_dataframes.loc[combined_dataframes['data'].isna()].index.values
 
     # use two shifted lists for comparison to find the first value of a gap
     shifted_list = np.append(0, empty_list)
@@ -417,10 +460,10 @@ def __get_gap_position(df, scale, index):
 
     # make a list of the indices (from the original dataframe) of the position before the gaps
     for i in gaps_date_list:
-        beforeGapRow = df.loc[df[index] == i]
-        beforeGap.append(beforeGapRow.index[0])
+        val_beforeGapRow = df.loc[df[index] == i]
+        val_beforeGap.append(val_beforeGapRow.index[0])
 
-    return beforeGap
+    return val_beforeGap
 
 
 def precision_to_minmax(df):
@@ -452,6 +495,13 @@ class DataTypes:
     SPECIALS = ['raster']
 
     def read_data(self, filepath: str, datatype: str):
+        """
+        Read data from disk. Format of the data on disk is defined by its datatype and automaticly selected..
+
+        :param filepath:
+        :param datatype:
+        :return:
+        """
         if datatype in self.NUMPY_TYPES:
             data = np.load(filepath + '.npz')
         elif datatype in self.SERIES_TYPES:
