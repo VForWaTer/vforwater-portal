@@ -617,7 +617,10 @@ vfw.html.moreInfoModal = function (id) {
             }, // data sent with post request
         })
             .done(function (data) {
-                result = data;
+                result = data['table'];
+                if (data['warning'] !== '') {
+                    console.warn(data['warning']);
+                }
             })
             .fail(function (e) {
                 console.error('Failed to load table: ', e)
@@ -668,7 +671,7 @@ vfw.html.moreInfoModal = function (id) {
         let metaText = '<table>';
         // loop over "properties" dict with metadata, build columns
         for (let j in properties) {
-            if (j !== 'has_embargo') {
+            if (j !== 'has_embargo' && j !== 'group_entry_ids') {
                 // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
                 metaText += '<tr>' +
                     '<td><div style="max-width:120px;"><b>' + j + '</b></div></td>' +

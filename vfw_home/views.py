@@ -740,39 +740,54 @@ def show_info(request):
 
     def collectData(ids):
         """
-        Called when clicked on more to see metadata of single dataset
+        Called when clicked on more to see metadata of single dataset.
+        TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
 
         :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
         :type ids: str
         :return: dict
         """
         # build dict of lists for preview:
-        db_info = NmEntrygroups.objects.filter(entry_id=int(ids)) \
-            .values('entry__uuid', 'entry__variable__name', 'entry__abstract',
-                    'entry__license__commercial_use',
-                    'entry__embargo', 'entry__embargo_end',
-                    'entry__datasource__temporal_scale__observation_start',
-                    'entry__datasource__temporal_scale__observation_end',
-                    'group__title', 'group_id')
+        prefix = 'entry__'
+        nm_prefix = ''  # nmentrygroups__
+        warning = ''
 
+        def get_queryvalues(prefix, nm_prefix):
+            return [prefix + 'uuid', prefix + 'variable__name', prefix + 'abstract',
+                    prefix + 'license__commercial_use',
+                    prefix + 'embargo', prefix + 'embargo_end',
+                    prefix + 'datasource__temporal_scale__observation_start',
+                    prefix + 'datasource__temporal_scale__observation_end',
+                    nm_prefix + 'group__title', nm_prefix + 'group_id']
+
+        db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
         group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
             .values_list('entry_id', flat=True)
 
-        table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0]['entry__variable__name'])}
+        if db_info.exists():
+            warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
+            prefix = ''
+            nm_prefix = 'nmentrygroups__'
+            db_info = Entries.objects.filter(id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+            group_entry_ids = Entries.objects.filter(nmentrygroups__group_id=db_info[0][nm_prefix + 'group_id']) \
+                .values_list('id', flat=True)
+
+        table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0][prefix + 'variable__name'])}
 
         table[translation.gettext('Commercial use allowed')] = \
-            human_readable_bool(db_info[0]['entry__license__commercial_use'])
+            human_readable_bool(db_info[0][prefix + 'license__commercial_use'])
         table[translation.gettext('Embargo')] = human_readable_bool(
-            has_pending_embargo(db_info[0]['entry__embargo'], db_info[0]['entry__embargo_end']))
-        table[translation.gettext('Abstract')] = translation.gettext(db_info[0]['entry__abstract']) \
-            if db_info[0]['entry__abstract'] else '-'
-        table['has_embargo'] = str(has_pending_embargo(db_info[0]['entry__embargo'], db_info[0]['entry__embargo_end']))
+            has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
+        table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
+            if db_info[0][prefix + 'abstract'] else '-'
+        table['has_embargo'] = str(has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
 
-        table[translation.gettext('Group')] = translation.gettext(db_info[0]['group__title']) \
-            if db_info[0]['group__title'] else '-'
+        table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
+            if db_info[0][nm_prefix + 'group__title'] else '-'
         table['group_entry_ids'] = list(group_entry_ids)
 
-        return JsonResponse(table)
+        return JsonResponse({'table': table, 'warning': warning})
+
 
     webID = request.GET.get('show_info')
     if webID[0:3] == 'wps':

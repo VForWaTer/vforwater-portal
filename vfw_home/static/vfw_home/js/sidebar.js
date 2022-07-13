@@ -759,7 +759,10 @@ function menuItemListener(link) {
                 }, // data sent with the post request
             })
                 .done(function (properties) {
-                    showDataInfo(properties);
+                    showDataInfo(properties['table']);
+                    if (properties['warning'] !== '') {
+                        console.warn(properties['warning']);
+                    }
                 })
             break;
         // case "Plot":
