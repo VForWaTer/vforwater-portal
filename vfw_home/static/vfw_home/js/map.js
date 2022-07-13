@@ -427,7 +427,7 @@ vfw.map.storeGroupBtn = function (ssids, embargo) {
             'title="' + gettext("Select all ") + ssids.length + gettext(" datasets of one group.") + '"></b></a>'
     } else if (ssids.length > 1) {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
-            'onclick=\"vfw.sidebar.requestDataset(' + JSON.stringify(ssids) + '); closeInfoModal()\" ' +
+            'onclick=\"vfw.map.requestDataset(' + JSON.stringify(ssids) + '); closeInfoModal()\" ' +
             'value="' + gettext("Send group request") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Send access request(s) to the data owner(s).") + '"></b></a>'
     } else {

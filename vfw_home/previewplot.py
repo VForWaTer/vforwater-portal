@@ -116,7 +116,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
         #               legend_label="Precision")
 
     # Style plot
-    # mainplot.title.text_font_size = "14pt"  # TODO: Not working in Bokeh 2.4.0. Try again in later version
+    mainplot.title.text_font_size = "14pt"
     mainplot.xaxis.axis_label_text_font_size = "14pt"
     mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
     mainplot.yaxis.axis_label_text_font_size = "14pt"

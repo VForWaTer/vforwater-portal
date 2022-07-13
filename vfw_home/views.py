@@ -764,7 +764,7 @@ def show_info(request):
         group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
             .values_list('entry_id', flat=True)
 
-        if db_info.exists():
+        if not db_info.exists():
             warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
             prefix = ''
             nm_prefix = 'nmentrygroups__'
