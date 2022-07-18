@@ -210,6 +210,13 @@ function createBtnName(name, abbr, unit, dbID) {
  */
 function sidebar_btn_html(storeID, btnData, btnName, title) {
     let drag_html = "";
+
+    let noData = "";
+    if (btnData['type'] == null) {
+        noData = "noDataBtn";
+        title = "Internal error. No data available for this metadata record.";
+    }
+
     if (window.location.pathname == '/workspace/') {
         drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
     }
@@ -219,7 +226,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
         'data-id="' + btnData['source'] + btnData['dbID'] + '" btnName="' + btnName + '" onmouseover="" ' +
         'data-btnName="' + btnName + '" style="cursor:pointer;" id="' + elementID + '">' +
         '<span class="w3-medium" title="' + title + '">' +
-        '<div class="task__content">' + btnName + '</div><div class="task__actions"></div>' +
+        '<div class="task__content ' + noData + '">' + btnName + '</div><div class="task__actions"></div>' +
         '</span><span class="data ' + btnData['type'] + '"></span>' +
         '<a onclick="vfw.sidebar.remove_single_data(\'' + storeID + '\')" ' +
         'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +

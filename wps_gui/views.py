@@ -503,8 +503,6 @@ def db_load(request):
     wps_process = "dbloader"
     request_input = json.loads(request.GET.get("dbload"))
     orgid = request_input.get("dataset")
-    keys = request_input.get("key_list", "")
-    values = request_input.get("value_list", "")
     result = {}
 
     # check if user has access to dataset
@@ -517,13 +515,8 @@ def db_load(request):
             {"Error": "You have to adjust function for list of datasets."}
         )
 
-    # check if metadata has even data. Shouldn't be necessary to test.
-    if 'db' in values[0]:
-        if not entry_has_data(values[0][2:]):
-            return JsonResponse({"Error": "Metadata has no actual data."})
-
     # format inputs for wps server
-    inputs = edit_input(list(zip(keys, values)))
+    inputs = edit_input(list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""))))
 
     try:
         preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)
@@ -567,6 +560,8 @@ def db_load(request):
                 "inputs": inputs,
                 "outputs": output,
             }
+        elif execution.status == 'Exception':
+            print('WPS error while trying to preload dataset ', inputs)
 
     # except Exception as e:
     #     print('Exception in db_load: ', e)

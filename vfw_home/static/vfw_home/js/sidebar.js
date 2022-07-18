@@ -132,6 +132,12 @@ vfw.sidebar.add_groupaccordion_toggle = function () {
 vfw.sidebar.preload_datastore_button = function (workspaceData) {
     /** USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY **/
     for (let dataset in workspaceData) {
+
+        // ensoure datasets without type will not be loaded (because there usually have no actual data)
+        if (!workspaceData[dataset]['type']) {
+            continue
+        }
+
         let preload = {};
         if (workspaceData[dataset]['source'] === 'db') {
             // TODO: Think about using uuid instead of entry_id
