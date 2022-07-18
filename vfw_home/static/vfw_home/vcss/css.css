@@ -221,6 +221,9 @@ button-footer {
     border-radius: 50%;
 }
 
+.noDataBtn {
+    text-decoration: line-through;
+}
 
 /*.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
 .ndarray:hover, .raster:hover, .vraster:hover, ._2darray:hover, .idataframe:hover, .vdataframe:hover,
