@@ -2,6 +2,9 @@ from django.utils import translation, timezone
 
 
 # TODO: added embargo end in def get_accessible_data query. Check if the following function is still needed.
+from vfw_home.models import Entries
+
+
 def has_pending_embargo(embargo, embargo_end):
     """
     Send the information if there is an embargo and end date to check if embargo is still valid.
@@ -50,3 +53,16 @@ def verbose_expiry_info(embargo, embargo_end):
         has_embargo = translation.gettext('Expired')
 
     return has_embargo
+
+
+def entry_has_data(entry: int) -> bool:
+    """
+    Check if Entries object has a datasource and consequently actual data.
+    :param entry: entry id as integer
+    :return: boolean
+    """
+    data = Entries.objects.values('datasource').filter(id=entry)
+    if data[0]['datasource'] is not None:
+        return True
+    else:
+        return False
