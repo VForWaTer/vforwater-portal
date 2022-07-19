@@ -770,6 +770,10 @@ function menuItemListener(link) {
                         console.warn(properties['warning']);
                     }
                 })
+                .fail(function (failed) {
+                    console.error('Failed to load any metadata for dataset ', id)
+                    vfw.html.popup.classList.remove(popActive);
+                })
             break;
         // case "Plot":
         //     $.ajax({
