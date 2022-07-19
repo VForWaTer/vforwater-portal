@@ -1,9 +1,19 @@
+import json
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 from django.utils import translation, timezone
 
-
-# TODO: added embargo end in def get_accessible_data query. Check if the following function is still needed.
+from heron.settings import DATA_DIR
 from vfw_home.models import Entries
 
+NUMPY_TYPES = ['array', '2darray', 'ndarray']
+SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
+DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
+SPECIALS = ['raster']
+
+# TODO: added embargo end in def get_accessible_data query. Check if the following function is still needed.
 
 def has_pending_embargo(embargo, embargo_end):
     """
@@ -66,3 +76,54 @@ def entry_has_data(entry: int) -> bool:
         return True
     else:
         return False
+
+
+def read_data(uuid: str, datatype: str) -> object:
+    """
+    Read wps result from disk. When for datatype is only an empty string given the result is only the meta data.
+    TODO: DATA_DIR is set in settings yet. Implement something userspecific.
+
+    :param uuid:
+    :param datatype:
+    :return:
+    """
+
+    filepath = DATA_DIR
+    if uuid[0:2] == './':
+        # filepath = ''
+        uuid = uuid[2:]
+
+    def load_meta(uuid: str, filepath):
+        with open(Path(filepath) / (uuid + '.json'), 'r') as f:
+            return json.load(f)
+
+    def load_data(uuid: str, datatype: str, filepath):
+
+        if datatype in NUMPY_TYPES:
+            data = np.load(Path(filepath) / (uuid + '.npz'))
+
+        elif datatype in SERIES_TYPES:
+            data = pd.read_pickle(Path(filepath) / (uuid + '.pkl'))
+
+        elif datatype in DF_TYPES:
+            kwargs = dict()
+            if 'time' in datatype:
+                kwargs['parse_dates'] = [0]
+            data = pd.read_csv(Path(filepath) / (uuid + '.csv'), index_col=[0], **kwargs)
+
+            # if array-like, use only the first column
+            if datatype in SERIES_TYPES:
+                data = data.iloc[:, 1].copy()
+
+        elif datatype == 'raster':
+            raise NotImplementedError('Raster files are not yet supported.')
+
+        else:
+            raise AttributeError("The datatype '%s' is not supported" % datatype)
+
+        return data
+
+    if datatype:
+        return load_data(uuid, datatype, filepath), load_meta(uuid, filepath)
+    else:
+        return load_meta(uuid, filepath)

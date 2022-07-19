@@ -37,7 +37,7 @@ from wps_gui.models import WpsResults
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
     __get_axis_limits, __reduce_dataset
 from .forms import QuickFilterForm
-from .utilities import human_readable_bool, has_pending_embargo
+from .utilities import human_readable_bool, has_pending_embargo, read_data
 
 mpl.use('Agg')
 
@@ -790,9 +790,28 @@ def show_info(request):
 
 
     webID = request.GET.get('show_info')
-    if webID[0:3] == 'wps':
-        print('you have to implement something to show wps results!')
-        raise Http404
+    if webID[0:3] == 'wps':#
+        wpsData = WpsResults.objects.get(pk=webID[3:]) # .values('inputs', 'outputs', 'open')
+        result_path = json.loads(wpsData.outputs)['path']
+        loaded_data = json.loads(read_data(result_path, ''))
+
+        table = {'id': loaded_data['meta']['id'],
+                 translation.gettext('Name'): translation.gettext(loaded_data['meta']['variable']['name']),
+                 translation.gettext('Commercial use allowed'):
+                     human_readable_bool(loaded_data['meta']['license']['commercial_use']),
+                 translation.gettext('Embargo'): human_readable_bool(
+                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end'])),
+                 'has_embargo': str(
+                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end']))}
+
+        # table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
+        #     if db_info[0][prefix + 'abstract'] else '-'
+        #
+        # table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
+        #     if db_info[0][nm_prefix + 'group__title'] else '-'
+        # table['group_entry_ids'] = list(group_entry_ids)
+        return JsonResponse({'table': table, 'warning': ''})
+
     else:
         if webID[0:2] == 'db':
             ids = webID[2:]
