@@ -616,7 +616,7 @@ vfw.html.moreInfoModal = function (id) {
     let ajaxTable = async function () {
         let result;
         await $.ajax({
-            url: DEMO_VAR + "/home/show_info",
+            url: vfw.var.DEMO_VAR + "/home/show_info",
             dataType: 'json',
             data: {
                 show_info: id,
@@ -638,7 +638,7 @@ vfw.html.moreInfoModal = function (id) {
     let ajaxPlot = async function () {
         let result;
         await $.ajax({
-            url: DEMO_VAR + "/home/previewplot",
+            url: vfw.var.DEMO_VAR + "/home/previewplot",
             datatype: 'image/png;base64',
             // datatype: 'html',
             data: {
@@ -752,7 +752,7 @@ vfw.sidebar.workspace_dataset = function (id) {
 
     if (id !== 'null') {
         $.ajax({
-            url: DEMO_VAR + "/home/workspace_data",
+            url: vfw.var.DEMO_VAR + "/home/workspace_data",
             datatype: 'json',
             data: {
                 workspaceData: id,
@@ -797,7 +797,7 @@ vfw.sidebar.workspace_dataset = function (id) {
 function show_preview(id) {
     document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
     $.ajax({
-        url: DEMO_VAR + "/home/previewplot",
+        url: vfw.var.DEMO_VAR + "/home/previewplot",
         datatype: 'image/png;base64',
         data: {
             preview: id,
@@ -855,7 +855,7 @@ function toggleMapTableFilter(evt, tabName, isFilter = false) {
 
 function filter_pagination(page) {
     $.ajax({
-        url: DEMO_VAR + "/home/entries_pagination",
+        url: vfw.var.DEMO_VAR + "/home/entries_pagination",
         datatype: 'json',
         data: {
             page: page, datasets: JSON.stringify(vfw.var.obj.selectedIds.result),
@@ -949,7 +949,7 @@ function get_quick_selection(selection) {
     // url = '/home/quick_filter'
     if (url !== false) {
         $.ajax({
-            url: DEMO_VAR + url,
+            url: vfw.var.DEMO_VAR + url,
             // data: {
             //     selection: selection,
             //     'csrfmiddlewaretoken': csrf_token,
@@ -1033,7 +1033,7 @@ function update_quickfilter() {
 
 function advanced_filter_query(selection) {
     $.ajax({
-        url: DEMO_VAR + "/home/advanced_filter",
+        url: vfw.var.DEMO_VAR + "/home/advanced_filter",
         datatype: 'json',
         data: {
             selection: selection,

@@ -27,7 +27,7 @@ function dDMFilterFunction(dropDownName, inputName) {
 // TODO: When you decide to remove the wms map, use showAllPointsOnMap
 function showAllPointsOnMap(){
    $.ajax({
-       url: DEMO_VAR + "/home/menu",
+       url: vfw.var.DEMO_VAR + "/home/menu",
        dataType: 'json',
        data: {
            all_datasets: 'True',

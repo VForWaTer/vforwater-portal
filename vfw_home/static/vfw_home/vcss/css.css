@@ -212,6 +212,10 @@ button-footer {
 /* html*/
 /*  - plot*/
 
+.noDataBtn {
+    text-decoration: line-through red double;
+}
+
 .array, .iarray, .varray, .timeseries, .vtimeseries,
 .ndarray, .raster, .vraster, ._2darray, .idataframe, .vdataframe,
 .time-dataframe, .vtime-dataframe {

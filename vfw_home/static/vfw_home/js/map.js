@@ -6,9 +6,9 @@ let olmap, hit_cL, clusterLayer, hiddenLayer;
 //let wfsPointSource;
 vfw.map.vars.wfsPointSource = {};
 vfw.map.vars.zoomToExt = {};
-// console.log('get1: ', selectedIds.quickMenu)
-// console.log('set: ', selectedIds.quickMenu=toarray(1))
-// console.log('get2: ', selectedIds.quickMenu)
+// console.log('get1: ', vfw.var.obj.selectedIds.quickMenu)
+// console.log('set: ', vfw.var.obj.selectedIds.quickMenu=toarray(1))
+// console.log('get2: ', vfw.var.obj.selectedIds.quickMenu)
 // let dcz = new ol.interaction.DoubleClickZoom();
 
 /** build style for cluster **/
@@ -51,7 +51,7 @@ vfw.map.buildMapModal = function (ids, page) {
     //document.getElementById("mapModal").innerHTML = "";
     //document.getElementById("loader-popup").classList.add("loader");
     $.ajax({
-        url: DEMO_VAR + "/home/short_info_pagination",
+        url: vfw.var.DEMO_VAR + "/home/short_info_pagination",
         dataType: 'html',
         data: {
             datasets: JSON.stringify(ids), page: page,
@@ -70,11 +70,11 @@ vfw.map.buildMapModal = function (ids, page) {
 
 /** Fetch V-FOR-WaTer base layer **/
 vfw.map.create_map = function () {
-    const GEO_SERVER = DEMO_VAR + "/home/geoserver";
+    const GEO_SERVER = vfw.var.DEMO_VAR + "/home/geoserver";
     let mapSource = new ol.source.XYZ({
         attributions: [gettext("Map data from") + ' <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
         'SRTM | ' + gettext("Map style from") + ' <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
-        url: MAP_SERVER + "/osm/{z}/{x}/{y}.png"
+        url: vfw.var.MAP_SERVER + "/osm/{z}/{x}/{y}.png"
     });
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
         'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)

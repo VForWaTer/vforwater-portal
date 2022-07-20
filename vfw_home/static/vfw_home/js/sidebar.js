@@ -150,7 +150,7 @@ vfw.sidebar.preload_datastore_button = function (workspaceData) {
             };
             // run_wps(preload)
             $.ajax({
-                url: DEMO_VAR + "/workspace/dbload",
+                url: vfw.var.DEMO_VAR + "/workspace/dbload",
                 // dataType: 'json',
                 "timeout": 5000,
                 data: {
@@ -775,25 +775,9 @@ function menuItemListener(link) {
                     vfw.html.popup.classList.remove(popActive);
                 })
             break;
-        // case "Plot":
-        //     $.ajax({
-        //         url: DEMO_VAR + "/home/menu",
-        //         datatype: 'json',
-        //         data: {
-        //             preview: id,
-        //             'csrfmiddlewaretoken': csrf_token,
-        //         }, // data sent with post
-        //         success: function (result) {
-        //             console.log('plot result: ', result)
-        //             content.innerHTML = '<div class="mod-header">' + result['get'] + '</div>';
-        //             popClose.classList.remove('w3-hide');
-        //             positionPopup(popup);
-        //         }
-        //     });
-        //     break;
         case "Downloadcsv":
             $.ajax({
-                url: DEMO_VAR + "/home/datasetdownload",
+                url: vfw.var.DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     csv: id,
@@ -809,7 +793,7 @@ function menuItemListener(link) {
             break;
         case "Downloadshp":
             $.ajax({
-                url: DEMO_VAR + "/home/datasetdownload",
+                url: vfw.var.DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 method: 'GET',
                 xhrFields: {
@@ -830,7 +814,7 @@ function menuItemListener(link) {
             break;
         case "Downloadxml":
             $.ajax({
-                url: DEMO_VAR + "/home/datasetdownload",
+                url: vfw.var.DEMO_VAR + "/home/datasetdownload",
                 datatype: 'json',
                 data: {
                     xml: id,
@@ -948,7 +932,7 @@ function menuItemListener(link) {
             else {
                 // get bokeh plot from django
                 $.ajax({
-                    url: DEMO_VAR + "/home/previewplot",
+                    url: vfw.var.DEMO_VAR + "/home/previewplot",
                     datatype: 'json',
                     data: {
                         preview: id,

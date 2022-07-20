@@ -92,7 +92,7 @@ vfw.session.load_wpsprocess = function (service, identifier) {
     let processdata = {};
     $.when(
         $.ajax({
-            url: DEMO_VAR + "/workspace/processview",
+            url: vfw.var.DEMO_VAR + "/workspace/processview",
             //url: DEMO_VAR+"/wps_gui/"+service+"/process",
             dataType: 'json',
             async: false,
@@ -428,7 +428,7 @@ vfw.workspace.modal.run_process = function () {
     let members = [];
 
     $.ajax({
-        url: DEMO_VAR + "/workspace/processrun",
+        url: vfw.var.DEMO_VAR + "/workspace/processrun",
         data: {
             processrun: JSON.stringify(modal_input),
             'csrfmiddlewaretoken': csrf_token,
@@ -542,7 +542,7 @@ function run_wps(input_dict) {
     //                 wfsPointSource.removeLoadedExtent(extent);
     //             })
     $.ajax({
-        url: DEMO_VAR + "/workspace/processrun",
+        url: vfw.var.DEMO_VAR + "/workspace/processrun",
         data: {
             processrun: JSON.stringify({
                 id: identifier, serv: wpsservice,
@@ -1176,7 +1176,7 @@ vfw.workspace.workflow.run = function () {
     console.log('errors:', errors)
 
     $.ajax({
-        url: DEMO_VAR + "/workspace/workflowrun",
+        url: vfw.var.DEMO_VAR + "/workspace/workflowrun",
         data: {
             processrun: JSON.stringify({'workflow': preppedWorkflow, 'chain': processChain}),
             'csrfmiddlewaretoken': csrf_token,
