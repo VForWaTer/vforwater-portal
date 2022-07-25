@@ -33,6 +33,7 @@ urlpatterns = [
     path('privacypolicy', vfw_views.PrivacyPolicy.as_view(), name='privacy_policy'),
     path('workspace/', include('wps_gui.urls', namespace='wps_gui')),
     path('monitor/', include('process_monitor.urls', namespace='process_monitor')),
+    path('vfw_status/', include('vfw_status.urls', namespace='vfw_status')),
     path('visual/', include('visual_app.urls', namespace='visual_app')),
     path('upload/', include('upload.urls', namespace='upload')),
     path('download/<str:name>', vfw_views.DownloadView.as_view()),
