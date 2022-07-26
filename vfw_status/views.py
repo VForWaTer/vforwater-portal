@@ -1,3 +1,5 @@
+import django
+import redis
 import requests
 from django.shortcuts import render
 
