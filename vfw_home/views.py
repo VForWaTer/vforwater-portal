@@ -738,7 +738,7 @@ def show_info(request):
     :return:
     """
 
-    def collectData(ids):
+    def collect_data(ids):
         """
         Called when clicked on more to see metadata of single dataset.
         TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
@@ -761,8 +761,6 @@ def show_info(request):
                     nm_prefix + 'group__title', nm_prefix + 'group_id']
 
         db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
-        group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
-            .values_list('entry_id', flat=True)
 
         if not db_info.exists():
             warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
@@ -771,6 +769,9 @@ def show_info(request):
             db_info = Entries.objects.filter(id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
             group_entry_ids = Entries.objects.filter(nmentrygroups__group_id=db_info[0][nm_prefix + 'group_id']) \
                 .values_list('id', flat=True)
+        else:
+            group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
+                .values_list('entry_id', flat=True)
 
         table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0][prefix + 'variable__name'])}
 
@@ -820,7 +821,7 @@ def show_info(request):
 
         try:
             # print('json.loads(webID): ', json.loads(ids))
-            return collectData(ids)
+            return collect_data(ids)
 
         except TypeError:
             raise Http404
