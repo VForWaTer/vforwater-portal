@@ -59,8 +59,9 @@ def activate_wps(wps, endpoint, name):
     except URLError as e:
         wps_log.debug(e)
         return None
-    except:
-        raise
+    except Exception as e:
+        # print('Impossible to activate wps. Unexpected error: ', e)
+        return None
 
     return wps
 
