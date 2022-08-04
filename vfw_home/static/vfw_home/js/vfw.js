@@ -267,6 +267,7 @@ function addInteraction(type) {
             stopClick: true
         });
     } else if (type == 'Modify') {
+        console.log(' ***** in Modify type bla...')
         draw = new ol.interaction.Modify({
             features: collection,
             // the SHIFT key must be pressed to delete vertices, so that new
@@ -357,6 +358,7 @@ function drawOnMapMenu(test) {
         // the SHIFT key must be pressed to delete vertices, so that new
         // vertices can be drawn at the same position of existing vertices
         deleteCondition: function (event) {
+            // console.log('--- deleteCondition of modify ---')
             return ol.events.condition.shiftKeyOnly(event) &&
                 ol.events.condition.singleClick(event);
         }
@@ -594,6 +596,7 @@ function getCookie(name) {
 // TODO: not used in this file. So from where comes the used token? Which one is better?
 let csrf_token = getCookie('csrftoken');
 
+
 /**
  * Load metadata and preview plot of dataset from server asynchronous.
  *
@@ -658,6 +661,7 @@ vfw.html.moreInfoModal = function (id) {
                 }
             })
             .fail(function (e) {
+                console.warn('Unable to plot. Inform Admin.')
                 pdata = false
                 // console.error('Failed to load plot: ', e)
             });
@@ -665,6 +669,8 @@ vfw.html.moreInfoModal = function (id) {
     }
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
+    console.log('document.getElementById("infomodal"): ', document.getElementById("infoModal"))
+    console.log('document.getElementById("infomodal").classList: ', document.getElementById("infoModal").classList)
     document.getElementById("mod_prev").classList.add("loader");
 
     // The following is used to make sure to add first the table then the plot.
@@ -721,9 +727,11 @@ vfw.html.moreInfoModal = function (id) {
         if (pdata !== false) {
             plotToModal(pd)
         }
-        document.getElementById("mod_prev").classList.remove("loader")
     })
-    // .always(document.getElementById("mod_prev").classList.remove("loader"))
+        .fail(function(e) {
+            document.getElementById('mod_dat_inf').innerHTML = '<p>Error in dataset. Please try again later.</p>';
+        })
+    .always(document.getElementById("mod_prev").classList.remove("loader"))
 
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
