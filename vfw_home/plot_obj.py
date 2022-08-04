@@ -1,10 +1,18 @@
+import time
+
 from bokeh.embed import components
 from bokeh.layouts import column
-from bokeh.models import HoverTool, DatetimeTickFormatter, ColumnDataSource, BoxAnnotation, Whisker
+from bokeh.models import HoverTool, DatetimeTickFormatter, ColumnDataSource, BoxAnnotation, Whisker, DateRangeSlider, \
+    DateSlider, CustomJS, Range1d
+from bokeh.palettes import Oranges9
 from bokeh.plotting import figure
+from bokeh.transform import linear_cmap
 from django.utils.translation import gettext
+from numpy import mean
+from math import radians, ceil, sqrt
 
 from heron.settings import max_size_preview_plot
+from vfw_home.previewplot import distribution_plot
 
 
 class PlotObject:
@@ -38,6 +46,10 @@ class PlotObject:
 
         if self.dataObj.label.find('direction') != -1:
             print('we need a direction plot ____________________')
+            self.__get_direction_plot__()
+
+        elif self.dataObj.data_table_name == ['u', 'v', 'w']:
+            print('we need a 3d plot ___________________')
         elif self.dataObj.label.find('windspeed') != -1:
             print('we need a wind SPEED!! plot _________________')
         elif self.dataObj.data_format == '3D':
@@ -57,10 +69,10 @@ class PlotObject:
 
             if self.dataObj.has_precision:
                 self.__show_precision__()
+            self.__create_plot__()
         else:
             print('we need a standard plot!_______________')
 
-        self.__create_plot__()
         self.get_plot = {'script': self.script, 'div': self.div}
 
     def __set_mainplot__(self):
@@ -100,7 +112,8 @@ class PlotObject:
                                                     (gettext("Time"), "@tstamp{%T %Z}"),
                                                     (gettext("Date"), "@tstamp{%d %b %Y}")],
                                           formatters={"@tstamp": "datetime"}, mode="mouse"))
-        self.mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"], years=["%d %b %Y"])
+        self.mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"],
+                                                              years=["%d %b %Y"])
 
     def __style_plot__(self):
         self.mainplot.title.text_font_size = "14pt"
@@ -111,3 +124,125 @@ class PlotObject:
     def __create_plot__(self):
         self.script, self.div = components(column(self.mainplot, sizing_mode="scale_both"), wrap_script=False)
 
+    def __get_direction_plot__(self):
+        # use data in percent => transform db_data to percent
+        df = (self.dataObj.dataframe.transpose().iloc[2:, 0:] / self.dataObj.dataframe['sum']) * 100
+        df.columns = self.dataObj.dataframe['tstamp']
+        db_datadictstr = {str(int(time.mktime(item.timetuple()) * 1000)): list(df[item]) for item in df.columns}
+
+        maxlist = df.max(1)
+        hist = df.mean(1)
+
+        # maxhist = sorted(maxlist)[-3]
+        maxhist = mean(maxlist) * 0.8  # don't use real max of dataset, too many discordant values
+        sumhist = sum(hist)
+        # start = list(map(lambda i: -radians((i * 10) - 85), range(0, 36)))
+        start = [-radians((i * 10) - 85) for i in list(range(0, 36))]
+        end = [-radians((i * 10) - 75) for i in list(range(0, 36))]
+        pdstart = [-radians((i * 10) - 95) for i in list(range(0, 36))]
+        pdend = start
+        # pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
+        labeltext = ("Selection of " + self.dataObj.timestep_label + "ly histograms")
+        titletext = (self.dataObj.timestep_label + 'ly median and sum of all histograms').capitalize()
+
+        # need two different sources for callback in Bokeh
+        pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
+        jssource = ColumnDataSource(data=db_datadictstr)
+
+        mainplot = figure(title=titletext, plot_width=400, plot_height=400,
+                          x_axis_type=None, y_axis_type=None, tools="save",
+                          min_border=0, outline_line_color=None)
+        mainplot.title.text_font_size = "14pt"
+        # simple rose plot
+        mainplot.wedge(radius=hist, start_angle=start, end_angle=end, x=0, y=0, direction='clock', line_color='blue',
+                       fill_color='lightblue', alpha=0.5, legend_label='Whole dataset')
+        # plot connected to slider
+        mainplot.wedge(radius='radius', start_angle='start', end_angle='end', source=pdsource, x=0, y=0, alpha=0.5,
+                       direction='clock', line_color='darkred', fill_color='lightsalmon', legend_label=labeltext)
+
+        # create slider
+        day = 1000 * 3600 * 24
+        stepsize = day
+        if self.dataObj.timestep_label == 'week':
+            stepsize = day
+        elif self.dataObj.timestep_label == 'month':
+            stepsize = 7 * day
+        elif self.dataObj.timestep_label == 'year':
+            stepsize = 30 * day
+
+        slider = DateSlider(start=min(df.columns), end=max(df.columns), value=min(df.columns), step=stepsize,
+                            title="date within histogram")
+        callback = CustomJS(
+            args=dict(source=pdsource, data=jssource, slid=slider), code="""
+                const S = slid.value;
+                let radius = source.data.radius;
+                const radii = Object.keys(data.data)
+                let slidestop = radii.reduce(function(prev, curr) {
+                (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev)
+                 return (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev);
+                });
+                source.data.radius = data.data[slidestop]
+                source.change.emit();
+            """)
+        slider.js_on_change('value', callback)
+
+        # create range slider
+        rslider = DateRangeSlider(start=min(df.columns), end=max(df.columns), value=(min(df.columns), max(df.columns)),
+                                  step=stepsize, title="Data within date range from ")
+        rcallback = CustomJS(
+            args=dict(source=pdsource, data=jssource, rslid=rslider), code="""
+                const smin = rslid.value[0]
+                const smax = rslid.value[1]
+                let radius = source.data.radius;
+                const radii = Object.keys(data.data)
+                let lstop = radii.reduce(function(prev, curr) {
+                 return (Math.abs(curr - smin) < Math.abs(prev - smin) ? curr : prev);
+                });
+                let rstop = radii.reduceRight(function(prev, curr) {
+                 return (Math.abs(curr - smax) < Math.abs(prev - smax) ? curr : prev);
+                });
+                let keylist = [];
+                for (let k in data.data) keylist.push(k);
+                let fromkey = keylist.indexOf(lstop);
+                let tokey = keylist.indexOf(rstop);
+                let rangekeys = keylist.slice(fromkey, tokey)
+                var dataavg = Array(36).fill(0)
+                var count = 0;
+                for (let k of rangekeys) {
+                    dataavg = dataavg.map(function (num, idx) {return num + data.data[k][idx];});
+                    count += 1
+                }
+                dataavg = dataavg.map(function (num, idx) {return num/count;});
+                source.data.radius = dataavg;
+                source.change.emit();
+            """)
+        rslider.js_on_change('value', rcallback)
+
+        # create grid
+        rund_perc = ceil(maxhist / sumhist * 100)
+        labels = list(range(0, rund_perc, 2))
+        labels.append(rund_perc)
+        rad_pos = [i * sumhist / 100 for i in labels]
+        out_rim = rad_pos[-1]
+        label_pos = [sqrt(((i - 1) ** 2) / 2) for i in rad_pos]
+        mainplot.text(label_pos[1:], label_pos[1:], [str(r) + ' %' for r in labels[1:]],
+                      text_font_size="10pt", text_align="left", text_baseline="top")
+        for rad in rad_pos:
+            mainplot.circle(x=0, y=0, radius=rad, fill_color=None, line_color='grey', line_width=0.5, line_alpha=0.8)
+        diagonal = sqrt((out_rim ** 2) / 2)
+        mainplot.multi_line(xs=[[diagonal, -diagonal], [-diagonal, diagonal], [-out_rim, out_rim], [0, 0]],
+                            ys=[[diagonal, -diagonal], [diagonal, -diagonal], [0, 0], [-out_rim, out_rim]],
+                            line_color="grey", line_width=0.5, line_alpha=0.8)
+        mainplot.x_range = Range1d(-out_rim * 1.1, out_rim * 1.1)
+        mainplot.y_range = Range1d(-out_rim * 1.1, out_rim * 1.1)
+        mainplot.legend.location = "top_left"
+        mainplot.legend.click_policy = "hide"
+
+        # plot bars for the number of values in each group as secondary 'by' plot
+        mapper = linear_cmap(field_name='count', palette=Oranges9, low=0, high=max(self.dataObj.dataframe['sum']))
+        bin_width = df.columns[0] - df.columns[1]
+
+        source = ColumnDataSource({'date': self.dataObj.dataframe['tstamp'], 'count': self.dataObj.dataframe['sum']})
+        distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
+
+        self.script, self.div = components(column(distriplot, mainplot, slider, rslider), wrap_script=False)
