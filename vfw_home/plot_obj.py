@@ -43,11 +43,11 @@ class PlotObject:
             self.title = ''
         else:
             self.title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
-
         if self.dataObj.label.find('direction') != -1:
-            print('we need a direction plot ____________________')
             self.__get_direction_plot__()
-
+        elif self.dataObj.data_table_name == ['evapotranspiration']:
+            # 1D plot
+            self.__create_standard_timeseries__()
         elif self.dataObj.data_table_name == ['u', 'v', 'w']:
             print('we need a 3d plot ___________________')
         elif self.dataObj.label.find('windspeed') != -1:
@@ -55,25 +55,34 @@ class PlotObject:
         elif self.dataObj.data_format == '3D':
             print('we need a 3D plot ________________-')
         elif self.dataObj.data_table_name.find('timeseries') != -1:
-            self.x_axis_type = "datetime"  # use "mercator" for geodata!
-            self.x_axis_label = "Time"
-            self.x_col = 'tstamp'
-            self.y_col = 'value'
+            self.__create_standard_timeseries__()
 
-            self.__set_mainplot__()
-            self.__add_data__()
-            self.__add_timeseries_specifics__()
-            self.__style_plot__()
-            if self.dataObj.has_nan:
-                self.__show_nan__()
-
-            if self.dataObj.has_precision:
-                self.__show_precision__()
-            self.__create_plot__()
         else:
             print('we need a standard plot!_______________')
 
+
         self.get_plot = {'script': self.script, 'div': self.div}
+
+    def __create_standard_timeseries__(self):
+        self.x_axis_type = "datetime"  # use "mercator" for geodata!
+        self.x_axis_label = "Time"
+        self.x_col = 'tstamp'
+
+        if 'value' in self.dataObj.dataframe.columns:
+            self.y_col = 'value'
+        elif 'data' in self.dataObj.dataframe.columns:
+            self.y_col = 'data'
+
+        self.__set_mainplot__()
+        self.__add_data__()
+        self.__add_timeseries_specifics__()
+        self.__style_plot__()
+        if self.dataObj.has_nan:
+            self.__show_nan__()
+
+        if self.dataObj.has_precision:
+            self.__show_precision__()
+        self.__create_plot__()
 
     def __set_mainplot__(self):
         self.mainplot = figure(x_axis_label=self.x_axis_label, x_axis_type=self.x_axis_type,
