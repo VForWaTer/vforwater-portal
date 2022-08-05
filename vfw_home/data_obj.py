@@ -112,6 +112,10 @@ class DataObject:
         else:
             df = pd.DataFrame(list(self.__data_qs__))
             self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
+            if isinstance(self.dataframe['data'][0], list) and len(self.dataframe['data'][0]) == 1:
+                self.dataframe['data'] = [i[0] for i in self.dataframe['data']]
+            elif len(self.dataframe['data'][0]) > 1:
+                print('ERROR: Expect only one column for timeseries_1d')
 
         if self.multiple_lines:
             for (i, n) in enumerate(self.data_names):
