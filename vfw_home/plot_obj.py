@@ -37,6 +37,7 @@ class PlotObject:
         self.xs = []
         self.ys = []
         self.colormap = None
+        self.linecolor = 'blue'
 
         self.__set_values__()
 
@@ -79,15 +80,19 @@ class PlotObject:
         self.__set_mainplot__()
 
         if self.dataObj.multiple_lines:
+            # self.__prepare_multiline_data__()
+            self.__set_colormap__()
+
             if 'value' in self.dataObj.dataframe.columns:
                 self.y_col = 'value'
             elif 'data' in self.dataObj.dataframe.columns:
                 self.y_col = 'data'
-            # for col_name in self.dataObj.data_names:
-            #     print('col_name: ', col_name)
-            #     self.y_col = col_name
-            self.__prepare_multiline_data__()
-            self.__add_multiline__()
+
+            for i, col_name in enumerate(self.dataObj.data_names):
+                self.linecolor = self.colormap[i]
+                self.y_col = col_name
+                self.__add_line__()
+            # self.__add_multiline__()
         else:
             if 'value' in self.dataObj.dataframe.columns:
                 self.y_col = 'value'
@@ -103,6 +108,7 @@ class PlotObject:
 
             self.__add_line__()
 
+        self.mainplot.legend.click_policy = "hide"
         self.__datetime_xaxis__()
         self.__style_plot__()
         self.__create_plot__()
@@ -118,16 +124,17 @@ class PlotObject:
 
     def __add_line__(self):
         # plot value line
-        self.mainplot.line(x=self.x_col, y=self.y_col, source=self.source,
-                           line_width=3)  # , legend_label="measured values")
+        # self.mainplot.line(x=self.x_col, y=self.y_col, source=self.source,
+        self.mainplot.line(x=self.dataObj.dataframe[self.x_col],
+                           y=self.dataObj.dataframe[self.y_col],
+                           line_width=3, line_color=self.linecolor,
+                           legend_label=self.y_col.replace('_', ' '))
 
     def __add_multiline__(self):
         # plot value line
-        # self.mainplot.multi_line(xs=self.x_col, ys=self.y_col, source=self.source,
-        self.mainplot.multi_line(xs=self.xs, ys=self.ys, line_width=3, line_color=self.colormap)  # , legend_label="measured values")
+        self.mainplot.multi_line(xs=self.xs, ys=self.ys, line_width=3, line_color=self.colormap)
 
     def __prepare_multiline_data__(self):
-        self.__set_colormap__()
 
         for i in self.dataObj.data_names:
             self.ys.append(self.dataObj.dataframe[i])
@@ -138,7 +145,6 @@ class PlotObject:
                            legend_label=gettext('Missing values'), source=ColumnDataSource(self.dataObj.missing_data),
                            # visible=False
                            )
-        self.mainplot.legend.click_policy = "hide"
         mis_list = [*range(0, len(self.dataObj.missing_data), 4)]
         for i in mis_list:
             box = BoxAnnotation(left=self.dataObj.missing_data[self.x_col][i + 1],
