@@ -30,6 +30,7 @@ class DataObject:
         self.length = None
         self.metadata = {}
         self.missing_data = None
+        self.multiple_lines = False
         self.range_dict = {"x_min": None, "x_max": None, "y_min": None, "y_max": None}
         self.source = None
         self.timescale = None
@@ -80,15 +81,21 @@ class DataObject:
         qs = self.__general_data_qs__
         if not self.full:
             qs = self.__general_data_qs__[:max_size_preview_plot]
+
         if self.data_table_name == 'timeseries_1d':
             self.data_columns = ['tstamp', 'value', 'precision']
+            self.value_column = 'value'
             self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
             self.__data_qs__ = qs.values(*self.__qs_cols__)  # .explain(verbose=True)
-        if self.data_table_name == 'timeseries':
+        elif self.data_table_name == 'timeseries':
             self.data_columns = ['tstamp', 'data', 'precision']
-            self.data_format = '3D'
+            self.value_column = 'data'
+            # self.data_format = '3D'
             self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
             self.__data_qs__ = qs.values(*self.__qs_cols__)
+            if len(self.data_names) > 1:
+                self.multiple_lines = True
+
         else:
             print('\033[31mYou try to access a new table. Handle it!\033[0m ')
 
@@ -103,9 +110,12 @@ class DataObject:
         elif self.label.find('windspeed') != -1:
             print('its SPEED!! _________________')
         else:
-            print('else: ')
             df = pd.DataFrame(list(self.__data_qs__))
             self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
+
+        if self.multiple_lines:
+            for (i, n) in enumerate(self.data_names):
+                self.dataframe[n] = [x[i] for x in self.dataframe[self.value_column]]
 
     def __timescale_from_data__(self):
         steplist = []
@@ -230,6 +240,7 @@ class DataObject:
         self.__value_before_gap__ = val_beforeGap
 
     def __fill_data_gaps__(self):
+        # TODO: update this function for variable columns
         """
         Fill gaps in datasets and prepare for plot
         """

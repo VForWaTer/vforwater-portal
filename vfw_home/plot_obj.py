@@ -4,7 +4,7 @@ from bokeh.embed import components
 from bokeh.layouts import column
 from bokeh.models import HoverTool, DatetimeTickFormatter, ColumnDataSource, BoxAnnotation, Whisker, DateRangeSlider, \
     DateSlider, CustomJS, Range1d
-from bokeh.palettes import Oranges9
+from bokeh.palettes import Oranges9, viridis
 from bokeh.plotting import figure
 from bokeh.transform import linear_cmap
 from django.utils.translation import gettext
@@ -34,6 +34,9 @@ class PlotObject:
         self.script = None
         self.div = None
         self.get_plot = None
+        self.xs = []
+        self.ys = []
+        self.colormap = None
 
         self.__set_values__()
 
@@ -43,23 +46,29 @@ class PlotObject:
             self.title = ''
         else:
             self.title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
-        if self.dataObj.label.find('direction') != -1:
+
+        if self.dataObj.label.lower().find('direction') != -1:
+            print('its a direction plot ___________________')
             self.__get_direction_plot__()
+        elif self.dataObj.label.lower().find('eddy covariance') != -1:
+            print('its an eddy covariance plot ___________________')
         elif self.dataObj.data_table_name == ['evapotranspiration']:
-            # 1D plot
+            # 1D timeseries plot
+            print('its an evapotranspiration (1d timeseries) plot ___________________')
             self.__create_standard_timeseries__()
         elif self.dataObj.data_table_name == ['u', 'v', 'w']:
             print('we need a 3d plot ___________________')
-        elif self.dataObj.label.find('windspeed') != -1:
+        elif self.dataObj.label.lower().find('windspeed') != -1:
             print('we need a wind SPEED!! plot _________________')
         elif self.dataObj.data_format == '3D':
             print('we need a 3D plot ________________-')
-        elif self.dataObj.data_table_name.find('timeseries') != -1:
+        elif self.dataObj.data_table_name.lower().find('timeseries') != -1:
+            print('its a 1d timeseries plot ___________________')
+
             self.__create_standard_timeseries__()
 
         else:
             print('we need a standard plot!_______________')
-
 
         self.get_plot = {'script': self.script, 'div': self.div}
 
@@ -67,21 +76,35 @@ class PlotObject:
         self.x_axis_type = "datetime"  # use "mercator" for geodata!
         self.x_axis_label = "Time"
         self.x_col = 'tstamp'
-
-        if 'value' in self.dataObj.dataframe.columns:
-            self.y_col = 'value'
-        elif 'data' in self.dataObj.dataframe.columns:
-            self.y_col = 'data'
-
         self.__set_mainplot__()
-        self.__add_data__()
-        self.__add_timeseries_specifics__()
-        self.__style_plot__()
-        if self.dataObj.has_nan:
-            self.__show_nan__()
 
-        if self.dataObj.has_precision:
-            self.__show_precision__()
+        if self.dataObj.multiple_lines:
+            if 'value' in self.dataObj.dataframe.columns:
+                self.y_col = 'value'
+            elif 'data' in self.dataObj.dataframe.columns:
+                self.y_col = 'data'
+            # for col_name in self.dataObj.data_names:
+            #     print('col_name: ', col_name)
+            #     self.y_col = col_name
+            self.__prepare_multiline_data__()
+            self.__add_multiline__()
+        else:
+            if 'value' in self.dataObj.dataframe.columns:
+                self.y_col = 'value'
+            elif 'data' in self.dataObj.dataframe.columns:
+                self.y_col = 'data'
+
+            self.__datetime_hovertool__()
+            if self.dataObj.has_nan:
+                self.__show_nan__()
+
+            if self.dataObj.has_precision:
+                self.__show_precision__()
+
+            self.__add_line__()
+
+        self.__datetime_xaxis__()
+        self.__style_plot__()
         self.__create_plot__()
 
     def __set_mainplot__(self):
@@ -93,10 +116,22 @@ class PlotObject:
                                toolbar_location="above", tools="pan,wheel_zoom,box_zoom,reset, save",
                                active_drag="box_zoom")
 
-    def __add_data__(self):
+    def __add_line__(self):
         # plot value line
         self.mainplot.line(x=self.x_col, y=self.y_col, source=self.source,
                            line_width=3)  # , legend_label="measured values")
+
+    def __add_multiline__(self):
+        # plot value line
+        # self.mainplot.multi_line(xs=self.x_col, ys=self.y_col, source=self.source,
+        self.mainplot.multi_line(xs=self.xs, ys=self.ys, line_width=3, line_color=self.colormap)  # , legend_label="measured values")
+
+    def __prepare_multiline_data__(self):
+        self.__set_colormap__()
+
+        for i in self.dataObj.data_names:
+            self.ys.append(self.dataObj.dataframe[i])
+            self.xs.append(self.dataObj.dataframe[self.x_col])
 
     def __show_nan__(self):
         self.mainplot.line(x=self.x_col, y=self.y_col, line_width=3, line_color='red', line_cap='round',
@@ -115,12 +150,14 @@ class PlotObject:
         self.mainplot.add_layout(Whisker(source=self.source, base="tstamp", upper="upper", lower="lower",
                                          line_width=0.5))
 
-    def __add_timeseries_specifics__(self):
-
-        self.mainplot.add_tools(HoverTool(tooltips=[(gettext("Value"), "@value"),
+    def __datetime_hovertool__(self):
+        value = '@'+self.y_col
+        self.mainplot.add_tools(HoverTool(tooltips=[(gettext("Value"), value),
                                                     (gettext("Time"), "@tstamp{%T %Z}"),
                                                     (gettext("Date"), "@tstamp{%d %b %Y}")],
                                           formatters={"@tstamp": "datetime"}, mode="mouse"))
+
+    def __datetime_xaxis__(self):
         self.mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"],
                                                               years=["%d %b %Y"])
 
@@ -255,3 +292,7 @@ class PlotObject:
         distriplot = distribution_plot(source, mapper, bin_width, 'Number of values per cluster', 400)
 
         self.script, self.div = components(column(distriplot, mainplot, slider, rslider), wrap_script=False)
+
+    def __set_colormap__(self):
+        # self.colormap = brewer['Viridis'][len(self.dataObj.data_names)]
+        self.colormap = viridis(len(self.dataObj.data_names))
