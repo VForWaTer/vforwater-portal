@@ -63,6 +63,7 @@ class Datasources(models.Model):
     datatype = models.ForeignKey('Datatypes', models.DO_NOTHING)
     temporal_scale = models.ForeignKey('TemporalScales', models.DO_NOTHING, blank=True, null=True)
     spatial_scale = models.ForeignKey('SpatialScales', models.DO_NOTHING, blank=True, null=True)
+    data_names = models.TextField(null=True)
 
     class Meta:
         managed = False
@@ -190,7 +191,7 @@ class Generic_Geometry_Data(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'geneic_geometry_data'
+        db_table = 'generic_geometry_data'
         unique_together = (('entry', 'index'),)
 
     def __str__(self):
