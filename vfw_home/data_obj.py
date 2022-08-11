@@ -237,9 +237,7 @@ class DataObject:
         gaps_date_list = combined_dataframes.loc[perfectframe_gaps.tolist()][index].tolist()
 
         # make a list of the indices (from the original dataframe) of the position before the gaps
-        for i in gaps_date_list:
-            val_beforeGapRow = self.dataframe.loc[self.dataframe[index] == i]
-            val_beforeGap.append(val_beforeGapRow.index[0])
+        val_beforeGap = self.dataframe.loc[self.dataframe[index].isin(gaps_date_list)].index.values.tolist()
 
         self.__value_before_gap__ = val_beforeGap
 
