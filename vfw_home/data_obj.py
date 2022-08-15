@@ -237,14 +237,13 @@ class DataObject:
         gaps_date_list = combined_dataframes.loc[perfectframe_gaps.tolist()][index].tolist()
 
         # make a list of the indices (from the original dataframe) of the position before the gaps
-        val_beforeGap = self.dataframe.loc[self.dataframe[index].isin(gaps_date_list)].index.values.tolist()
-
-        self.__value_before_gap__ = val_beforeGap
+        self.__value_before_gap__ = self.dataframe.loc[self.dataframe[index].isin(gaps_date_list)].index.values.tolist()
 
     def __fill_data_gaps__(self):
         # TODO: update this function for variable columns
         """
-        Fill gaps in datasets and prepare for plot
+        Fill gaps in datasets with nan and
+        prepare another dataframe to plot linear interpolated areas with missing data.
         """
         self.has_nan = True
         defect_x = []
@@ -284,30 +283,40 @@ class DataObject:
                                    'count': self.dataframe[col][4]})
             self.missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
         else:  # if full dataset, without average, min, max values
-            # copy random rows which happen to be the first two
-            empty_rows = self.dataframe.loc[1:2].copy()
+            # copy rows before and after a gap
+            row_before = self.dataframe.loc[self.dataframe.index.isin(self.__value_before_gap__)].copy()
+            row_after = self.dataframe.loc[self.dataframe.index.isin(np.array(self.__value_before_gap__) + 1)].copy()
+
+            defectrow1 = pd.DataFrame(row_before['tstamp'] - self.timescale)
+            defectrow1['value'] = pd.NA
+            defectrow2 = pd.DataFrame(row_before['tstamp'])
+            defectrow3 = pd.DataFrame(row_after['tstamp'])
+            if self.data_format == '3D':
+                defectrow2['value'] = pd.NA
+                defectrow3['value'] = pd.NA
+            else:
+                defectrow2['value'] = row_before[col]
+                defectrow3['value'] = row_after[col]
+            defectrow4 = pd.DataFrame(row_after['tstamp'] + self.timescale)
+            defectrow4['value'] = pd.NA
+
+            defect = pd.concat([defectrow1, defectrow2, defectrow3, defectrow4])
+            # reindex rows before and after a gap
+            defect.sort_values(by='tstamp', inplace=True)
+
+            defect_x = defect.tstamp.tolist()
+            defect_y = defect.value.tolist()
+
+            # Now use rows before and after to add NaNs to dataframe
+            row_before.index = row_before.index + 0.3
+            row_after.index = row_before.index + 0.3
+            # add datetime for the first and the last gap position
+            row_before['tstamp'] = row_before['tstamp'] + self.timescale
+            row_after['tstamp'] = row_after['tstamp'] - self.timescale
+            # combine new rows in one dataframe
+            new_df_rows = pd.concat([row_before, row_after])
             # set all columns except tstamp to nan
-            empty_rows.loc[:, empty_rows.columns != 'tstamp'] = float('nan')
-            for pos in self.__value_before_gap__[::-1]:
-                # set correct tstamp to new rows
-                empty_rows['tstamp'] = self.dataframe['tstamp'][pos] + self.timescale, self.dataframe['tstamp'][
-                    pos + 1] - self.timescale
-                # insert new rows with float index positions
-                self.dataframe.loc[pos + 0.3] = empty_rows.loc[1]
-                # df.loc[pos+0.3] = df['tstamp'][pos] + scale, float('nan'), float('nan')
-                self.dataframe.loc[pos + 0.6] = empty_rows.loc[2]
-                # df.loc[pos+0.6] = df['tstamp'][pos + 1] - scale, float('nan'), float('nan')
-                defect_x.extend([self.dataframe['tstamp'][pos] - self.timescale, self.dataframe['tstamp'][pos],
-                                 self.dataframe['tstamp'][pos + 1],
-                                 self.dataframe['tstamp'][pos + 1] + self.timescale])
-                if self.data_format == '3D':
-                    defect_y.extend([float('nan'), float('nan'), float('nan'), float('nan'), ])
-                elif 'value' in self.dataframe.columns:
-                    defect_y.extend(
-                        [float('nan'), self.dataframe['value'][pos], self.dataframe['value'][pos + 1], float('nan'), ])
-                elif 'data' in self.dataframe.columns:
-                    defect_y.extend(
-                        [float('nan'), self.dataframe['data'][pos], self.dataframe['data'][pos + 1], float('nan'), ])
-            # reset the index to integer
-            self.dataframe = self.dataframe.sort_index().reset_index(drop=True)
+            new_df_rows.iloc[:, range(1, len(self.dataframe.columns))] = pd.NA
+            # add new rows to dataframe and reset the index to integer
+            self.dataframe = pd.concat([self.dataframe, new_df_rows]).sort_index().reset_index(drop=True)
             self.missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
