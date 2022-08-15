@@ -48,12 +48,16 @@ class DataObject:
             self.ID = self.webID[2:]
             self.source = 'db'
             self.__qs_entry__ = Entries.objects.filter(id=self.ID)
-            self.data_table_name = self.__qs_entry__.values_list('datasource__path', flat=True)[0]
-            self.data_names = self.__qs_entry__.values_list('datasource__data_names', flat=True)[0]
-            self.__set_general_data_qs__()
-            self.length = self.db_data_length()
             label = self.__qs_entry__.values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
             self.label = self.format_label(label[0][0], label[0][1], label[0][2])
+
+            self.data_table_name = self.__qs_entry__.values_list('datasource__path', flat=True)[0]
+            self.data_names = self.__qs_entry__.values_list('datasource__data_names', flat=True)[0]
+            if not self.data_names:
+                print('WARNING: Dataset with ID ' + self.ID + ' has no data name in datasource table!')
+                self.data_names = [label[0][0]]
+            self.__set_general_data_qs__()
+            self.length = self.db_data_length()
             self.__set_data_qs__()
             self.__get_db_data__()
             self.__set_precision__()
@@ -211,7 +215,6 @@ class DataObject:
         between two rows is greater than the given scale.
         """
         index = 'tstamp'
-        val_beforeGap = []
         # use datetime as index and request the list of datetimes your looking for
         starttime = self.dataframe[index][0]
         endtime = self.dataframe.iloc[-1][index]
@@ -295,8 +298,8 @@ class DataObject:
                 defectrow2['value'] = pd.NA
                 defectrow3['value'] = pd.NA
             else:
-                defectrow2['value'] = row_before[col]
-                defectrow3['value'] = row_after[col]
+                defectrow2['value'] = row_before[self.value_column]
+                defectrow3['value'] = row_after[self.value_column]
             defectrow4 = pd.DataFrame(row_after['tstamp'] + self.timescale)
             defectrow4['value'] = pd.NA
 
