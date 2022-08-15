@@ -23,6 +23,7 @@ class PlotObject:
     def __init__(self, data=None, plot_size=[700, 500]):
         self.dataObj = data
         self.source = ColumnDataSource(self.dataObj.dataframe)
+        self.y_col = data.value_column
         self.plot_size = plot_size
 
         self.dbinput = None
@@ -82,23 +83,12 @@ class PlotObject:
         if self.dataObj.multiple_lines:
             # self.__prepare_multiline_data__()
             self.__set_colormap__()
-
-            if 'value' in self.dataObj.dataframe.columns:
-                self.y_col = 'value'
-            elif 'data' in self.dataObj.dataframe.columns:
-                self.y_col = 'data'
-
             for i, col_name in enumerate(self.dataObj.data_names):
                 self.linecolor = self.colormap[i]
                 self.y_col = col_name
-                self.__add_line__()
+                self.__add_multiple_lines__()
             # self.__add_multiline__()
         else:
-            if 'value' in self.dataObj.dataframe.columns:
-                self.y_col = 'value'
-            elif 'data' in self.dataObj.dataframe.columns:
-                self.y_col = 'data'
-
             self.__datetime_hovertool__()
             if self.dataObj.has_nan:
                 self.__show_nan__()
@@ -124,7 +114,11 @@ class PlotObject:
 
     def __add_line__(self):
         # plot value line
-        # self.mainplot.line(x=self.x_col, y=self.y_col, source=self.source,
+        self.mainplot.line(x=self.x_col, y=self.y_col, source=self.source,
+                           line_width=3, line_color=self.linecolor,
+                           legend_label=self.y_col.replace('_', ' '))
+    def __add_multiple_lines__(self):
+        # plot value line
         self.mainplot.line(x=self.dataObj.dataframe[self.x_col],
                            y=self.dataObj.dataframe[self.y_col],
                            line_width=3, line_color=self.linecolor,
