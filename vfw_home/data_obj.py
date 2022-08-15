@@ -116,9 +116,11 @@ class DataObject:
         else:
             df = pd.DataFrame(list(self.__data_qs__))
             self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
-            if isinstance(self.dataframe['data'][0], list) and len(self.dataframe['data'][0]) == 1:
-                self.dataframe['data'] = [i[0] for i in self.dataframe['data']]
-            elif len(self.dataframe['data'][0]) > 1:
+            if isinstance(self.dataframe[self.value_column][0], list) \
+                and len(self.dataframe[self.value_column][0]) == 1:
+                self.dataframe[self.value_column] = [i[0] for i in self.dataframe[self.value_column]]
+            elif isinstance(self.dataframe[self.value_column][0], list) \
+                and len(self.dataframe[self.value_column][0]) > 1:
                 print('ERROR: Expect only one column for timeseries_1d')
 
         if self.multiple_lines:
@@ -218,16 +220,19 @@ class DataObject:
         # use datetime as index and request the list of datetimes your looking for
         starttime = self.dataframe[index][0]
         endtime = self.dataframe.iloc[-1][index]
+        # check if dataset has already NaNs
+        if len(self.dataframe[self.dataframe[self.value_column].isna()]) > 0:
+            # TODO: original NaNs are removed und dataset reindexed to add NaNs the way its done with other datasets.
+            #  Improve Code not to delete and add again, but set only __value_before_gap
+            self.dataframe.dropna(subset=[self.value_column], inplace=True)
+            self.dataframe.reset_index(drop=True, inplace=True)
         # create a perfect DataFrame without gaps
         perfect_frame = pd.DataFrame(pd.date_range(start=starttime,
                                                    end=endtime, freq=self.timescale), columns=['tstamp'])
-        # fill the empty frame without gaps with the data from original frame
+        # fill the empty (perfect) frame without gaps with the data from original frame
         combined_dataframes = pd.merge(perfect_frame, self.dataframe, how="outer", on="tstamp")
         # get rows without values
-        try:
-            empty_list = combined_dataframes.loc[combined_dataframes['value'].isna()].index.values
-        except Exception as e:
-            empty_list = combined_dataframes.loc[combined_dataframes['data'].isna()].index.values
+        empty_list = combined_dataframes.loc[combined_dataframes[self.value_column].isna()].index.values
 
         # use two shifted lists for comparison to find the first value of a gap
         shifted_list = np.append(0, empty_list)
@@ -251,11 +256,8 @@ class DataObject:
         self.has_nan = True
         defect_x = []
         defect_y = []
-        col = ''
-        if 'data' in self.data_columns:
-            col = 'data'
-        elif 'value' in self.data_columns:
-            col = 'value'
+        col = self.value_column
+
         # if 'precision' in df.columns and df['precision'].sum() > 0:  # if preview with average, min, max  values
         if 'avg' in self.dataframe.columns:  # if dataset with average, min, max  values
             for pos in self.__value_before_gap__[::-1]:
@@ -284,7 +286,7 @@ class DataObject:
             source = pd.DataFrame({'date': self.dataframe[col][0], 'y': self.dataframe[col][1],
                                    'ymin': self.dataframe[col][2], 'ymax': self.dataframe[col][3],
                                    'count': self.dataframe[col][4]})
-            self.missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
+            self.missing_data = pd.DataFrame({'tstamp': defect_x, self.value_column: defect_y})
         else:  # if full dataset, without average, min, max values
             # copy rows before and after a gap
             row_before = self.dataframe.loc[self.dataframe.index.isin(self.__value_before_gap__)].copy()
@@ -322,4 +324,4 @@ class DataObject:
             new_df_rows.iloc[:, range(1, len(self.dataframe.columns))] = pd.NA
             # add new rows to dataframe and reset the index to integer
             self.dataframe = pd.concat([self.dataframe, new_df_rows]).sort_index().reset_index(drop=True)
-            self.missing_data = pd.DataFrame({'tstamp': defect_x, 'value': defect_y})
+            self.missing_data = pd.DataFrame({'tstamp': defect_x, self.value_column: defect_y})
