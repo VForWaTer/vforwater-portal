@@ -4,7 +4,7 @@ from django.core.exceptions import EmptyResultSet
 
 from heron.settings import max_size_preview_plot
 from vfw_home.data_tools import DB_load_directiondata
-from vfw_home.models import Entries
+from vfw_home.models import Entries, NmEntrygroups
 
 
 class DataObject:
@@ -16,12 +16,15 @@ class DataObject:
         self.__interest_in_gaps__ = True
         self.__qs_cols__ = None
         self.__qs_entry__ = None
+        self.__qs_group__ = None
         self.__value_before_gap__ = None
         self.data_columns = None
         self.data_format = None
         self.data_table_name = None
         self.dataframe = None
         self.date = date
+        self.db_cols_timeseries = ['tstamp', 'data', 'precision']
+        self.db_cols_timeseries_1d = ['tstamp', 'value', 'precision']
         self.full = True
         self.has_nan = False
         self.has_precision = False
@@ -56,7 +59,7 @@ class DataObject:
             if not self.data_names:
                 print('WARNING: Dataset with ID ' + self.ID + ' has no data name in datasource table!')
                 self.data_names = [label[0][0]]
-            self.__set_general_data_qs__()
+            self.__general_data_qs__ = self.__set_general_data_qs__(self.data_table_name, self.date, self.ID)
             self.length = self.db_data_length()
             self.__set_data_qs__()
             self.__get_db_data__()
@@ -87,12 +90,12 @@ class DataObject:
             qs = self.__general_data_qs__[:max_size_preview_plot]
 
         if self.data_table_name == 'timeseries_1d':
-            self.data_columns = ['tstamp', 'value', 'precision']
+            self.data_columns = self.db_cols_timeseries_1d
             self.value_column = 'value'
             self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
             self.__data_qs__ = qs.values(*self.__qs_cols__)  # .explain(verbose=True)
         elif self.data_table_name == 'timeseries':
-            self.data_columns = ['tstamp', 'data', 'precision']
+            self.data_columns = self.db_cols_timeseries
             self.value_column = 'data'
             # self.data_format = '3D'
             self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
@@ -113,6 +116,9 @@ class DataObject:
             self.__interest_in_gaps__ = False
         elif self.label.find('windspeed') != -1:
             print('its SPEED!! _________________')
+        elif self.label.find('Eddy Covariance') != -1:
+            print('YES! ITS EDDY!')
+            self.__get_eddy_data__()
         else:
             df = pd.DataFrame(list(self.__data_qs__))
             self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
@@ -122,10 +128,62 @@ class DataObject:
             elif isinstance(self.dataframe[self.value_column][0], list) \
                 and len(self.dataframe[self.value_column][0]) > 1:
                 print('ERROR: Expect only one column for timeseries_1d')
+            print('*** nothing to fix ')
 
         if self.multiple_lines:
-            for (i, n) in enumerate(self.data_names):
-                self.dataframe[n] = [x[i] for x in self.dataframe[self.value_column]]
+            self.dataframe = self.__mulitvalcol_to_mulitcolval__(self.dataframe, self.data_names, self.value_column)
+
+    def __get_eddy_data__(self):
+        df = pd.DataFrame(list(self.__data_qs__))
+        self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
+
+        # additional data is needed for footprint. Get group qs:
+        group_id = NmEntrygroups.objects.filter(entry_id=self.ID).values_list('group_id', flat=True)[0]
+        self.__qs_group__ = NmEntrygroups.objects.filter(group_id=group_id) \
+            .values('entry__datasource__data_names', 'entry_id', 'entry__datasource__path')
+
+        # get additional metadata:
+        # TODO: Check how often the database is accessed (should be no more than twice to get all metadata)
+        # timeseries_1d_cols = ['tstamp', 'data', 'precision']
+        additional_datasets = {
+            't_air': ['air temperature', self.db_cols_timeseries, 'data'],
+            'a': ['absolute humidity', self.db_cols_timeseries, 'data'],
+            'p': ['air pressure', self.db_cols_timeseries, 'data'],
+        }
+        for i in additional_datasets.values():
+            new_df, col_names = self.__get_extra_columns__(*i)
+            self.dataframe[col_names] = new_df[col_names]
+
+    def __get_extra_columns__(self, var_name, db_cols, data_col):
+        air_tmp_metadat = self.__qs_group__.filter(entry__variable__name=var_name)[0]
+        air_tmp_path = air_tmp_metadat['entry__datasource__path']
+        air_tmp_cols_split = air_tmp_metadat['entry__datasource__data_names']
+
+        # get additional data:
+        air_tmp_data_qs = self.__set_general_data_qs__(air_tmp_path, self.date, air_tmp_metadat['entry_id'])
+        if not self.full:
+            air_tmp_data_qs = air_tmp_data_qs[:max_size_preview_plot]
+
+        air_tmp_cols = [air_tmp_path + '__' + i for i in db_cols]
+        air_tmp_data_qs = air_tmp_data_qs.values(*air_tmp_cols)
+
+        air_tmp_df = pd.DataFrame(list(air_tmp_data_qs))
+        air_tmp_df = air_tmp_df.rename(columns=dict(zip(air_tmp_cols, db_cols)), errors="raise")
+        air_tmp_df = self.__mulitvalcol_to_mulitcolval__(air_tmp_df, air_tmp_cols_split, data_col)
+        return air_tmp_df, air_tmp_cols_split
+
+    @staticmethod
+    def __mulitvalcol_to_mulitcolval__(df, new_col_names, source_col):
+        """
+
+        :param df: pandas df
+        :param new_col_names: list of names for the new columns
+        :param source_col: source column name
+        :return:
+        """
+        for (i, n) in enumerate(new_col_names):
+            df[n] = [x[i] for x in df[source_col]]
+        return df
 
     def __timescale_from_data__(self):
         steplist = []
@@ -153,21 +211,22 @@ class DataObject:
         else:
             self.__timescale_from_data__()
 
-    def __set_general_data_qs__(self):
+    @staticmethod
+    def __set_general_data_qs__(data_table_name, date, ID):
         """
         Django QuerySet to access data (with respect to data_table_name and date).
         Use qs_data to get value or values_list of interest.
 
         """
-        if self.data_table_name is None:
+        if data_table_name is None:
             raise LookupError({'error': 'Dataset has no datasource__path.'})
 
-        query_path = {'{0}'.format(self.data_table_name): self.ID}
-        if self.date and self.date[0]:
-            query_path[self.data_table_name + '__tstamp__gte'] = self.date[0]
-            query_path[self.data_table_name + '__tstamp__lte'] = self.date[1]
+        query_path = {'{0}'.format(data_table_name): ID}
+        if date and date[0]:
+            query_path[data_table_name + '__tstamp__gte'] = date[0]
+            query_path[data_table_name + '__tstamp__lte'] = date[1]
 
-        self.__general_data_qs__ = Entries.objects.filter(**query_path)
+        return Entries.objects.filter(**query_path)
 
     def db_data_length(self):
         """
@@ -195,21 +254,22 @@ class DataObject:
         """
         TODO: shouldn't I use min/max of sums?
         """
-        if self.has_precision and 'value' in self.dataframe.columns:
-            self.range_dict['y_max'] = self.dataframe['value'] + self.dataframe['precision']
-            self.range_dict['y_min'] = self.dataframe['value'] - self.dataframe['precision']
-        elif self.has_precision and 'avg' in self.dataframe.columns:
+        if self.has_precision and 'avg' in self.dataframe.columns:
             self.range_dict['y_max'] = self.dataframe['avg'] + self.dataframe['precmax']
             # self.range_dict['y_min'] = self.dataframe['acg'] - self.dataframe['precmax']
             self.range_dict['y_min'] = self.dataframe['avg'] - self.dataframe['precmax']
             self.range_dict['y_max_avg'] = self.dataframe['avg'] + self.dataframe['precavg']
             # self.range_dict['y_min_avg'] = self.dataframe['acg'] - self.dataframe['precavg']
             self.range_dict['y_min_avg'] = self.dataframe['avg'] - self.dataframe['precavg']
-        elif 'value' in self.dataframe.columns:
-            self.range_dict['y_max'] = max(self.dataframe['value'])
-            self.range_dict['y_min'] = min(self.dataframe['value'])
+        elif self.has_precision:
+            self.range_dict['y_max'] = self.dataframe[self.value_column] + self.dataframe['precision']
+            self.range_dict['y_min'] = self.dataframe[self.value_column] - self.dataframe['precision']
+            # elif 'value' in self.dataframe.columns:
         else:
-            print('WARNING: there is a unknown dataset to convert precision in precision to minmax.')
+            self.range_dict['y_max'] = max(self.dataframe[self.value_column])
+            self.range_dict['y_min'] = min(self.dataframe[self.value_column])
+        # else:
+        #     print('WARNING: there is a unknown dataset to convert precision in precision to minmax.')
 
     def __get_gap_pos__(self):
         """
