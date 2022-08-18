@@ -1,12 +1,15 @@
 import time
 
+import numpy as np
+import pandas as pd
 from bokeh.embed import components
 from bokeh.layouts import column
 from bokeh.models import HoverTool, DatetimeTickFormatter, ColumnDataSource, BoxAnnotation, Whisker, DateRangeSlider, \
-    DateSlider, CustomJS, Range1d
-from bokeh.palettes import Oranges9, viridis
+    DateSlider, CustomJS, Range1d, LogColorMapper, ColorBar, TableColumn, DateFormatter, DataTable
+from bokeh.palettes import Oranges9, viridis, Viridis, all_palettes
 from bokeh.plotting import figure
 from bokeh.transform import linear_cmap
+from bridget.eddy import footprint
 from django.utils.translation import gettext
 from numpy import mean
 from math import radians, ceil, sqrt
@@ -54,6 +57,7 @@ class PlotObject:
             self.__get_direction_plot__()
         elif self.dataObj.label.lower().find('eddy covariance') != -1:
             print('its an eddy covariance plot ___________________')
+            self.__create_eddy_footprint__
         elif self.dataObj.data_table_name == ['evapotranspiration']:
             # 1D timeseries plot
             print('its an evapotranspiration (1d timeseries) plot ___________________')
@@ -190,7 +194,6 @@ class PlotObject:
         # pdend = [-radians((i * 10) - 85) for i in list(range(0, 36))]
         labeltext = ("Selection of " + self.dataObj.timestep_label + "ly histograms")
         titletext = (self.dataObj.timestep_label + 'ly median and sum of all histograms').capitalize()
-
         # need two different sources for callback in Bokeh
         pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
         jssource = ColumnDataSource(data=db_datadictstr)
@@ -296,3 +299,112 @@ class PlotObject:
     def __set_colormap__(self):
         # self.colormap = brewer['Viridis'][len(self.dataObj.data_names)]
         self.colormap = viridis(len(self.dataObj.data_names))
+
+    @property
+    def __create_eddy_footprint__(self):
+
+        # TODO: There is 'sonic_temperature', 'fast_response_temperature_probe' and 'reference_temperature'.
+        #  Which one to use for t_air? Or should the already existing Var(Ts) or Var(Tp) be used?
+        df_db = self.dataObj.dataframe[['tstamp', 'air_pressure', 'Var(Ts)[deg C]', 'Var(a)[g/m3]', 'Var(u)[m/s]',
+                                        "Cov(u'w')[m2/s2]", "Cov(v'w')[m2/s2]", "Cov(w'Ts')[(m*deg C)/s]",
+                                        'Var(v)[m/s]', 'wind_direction']]
+        # remove rows when there is a nan value (which cannot be plotted as footprint)
+        df_db = df_db.dropna()
+        grid = 500
+        tstamp = 50
+
+        def get_footprint(tstamp):
+            try:
+                return footprint(dt_index=df_db.tstamp.dt.strftime('%m.%d.%Y %H:%M'),
+                                 t_air=df_db['Var(Ts)[deg C]'], a=df_db['Var(a)[g/m3]'],
+                                 p=df_db['air_pressure'], u=df_db['Var(u)[m/s]'],
+                                 cov_uw=df_db["Cov(u'w')[m2/s2]"],
+                                 cov_vw=df_db["Cov(v'w')[m2/s2]"],
+                                 cov_wt=df_db["Cov(w'Ts')[(m*deg C)/s]"],
+                                 var_v=df_db['Var(v)[m/s]'],
+                                 direction=df_db['wind_direction'], tstamp=tstamp, grid=grid)
+            except Exception as e:
+                print('Error in eddy footprint Function: ', e)
+                pass
+
+        # # result = [get_footprint()]
+        # index = df_db.index
+        # print('type index: ', type(index))
+        # print('len: ', len(df_db))
+        #
+        all_fp = all_fp_norm = all_FP_east = all_FP_north = np.empty(len(df_db), dtype=object)
+        for i, row in enumerate(df_db.itertuples()):
+            single_fp, single_FP_east, single_FP_north, single_fp_norm = get_footprint(row.Index)
+            all_fp[i] = single_fp
+            all_fp_norm[i] = single_fp_norm
+            all_FP_east[i] = all_FP_east
+            all_FP_north[i] = all_FP_north
+
+        # source = ColumnDataSource(data=dict(fp=all_fp, FP_east=all_FP_east, FP_north=all_FP_north, fp_norm=all_fp_norm))
+
+        fp, FP_east, FP_north, fp_norm = get_footprint(tstamp)
+
+        # result = [f(row[0], ..., row[n]) for row in zip(df['col1'], ..., df['coln'])]
+        # source = ColumnDataSource({'date': self.dataObj.dataframe['tstamp'], 'count': self.dataObj.dataframe['sum']})
+        # pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
+
+        self.mainplot = figure(title="Eddy footprint preview",
+                               x_range=(FP_east.min(), FP_east.max()), y_range=(FP_north.min(), FP_north.max()))
+        fp[fp == 0] = np.nan
+        legend_text = df_db.tstamp[tstamp].strftime('%m.%d.%Y\n%H:%M')
+
+        # add a color bar
+        color_mapper = LogColorMapper(palette="Viridis256", low=np.nanmin(fp), high=np.nanmax(fp),
+                                      nan_color='whitesmoke')
+        color_bar = ColorBar(color_mapper=color_mapper, label_standoff=12, major_label_text_font_size='16px')
+        self.mainplot.add_layout(color_bar, 'right')
+
+        # create image of footprint
+        try:
+            self.mainplot.image(image=[fp],
+                                x=[FP_east.min()], y=[FP_north.min()],
+                                dw=[np.abs(FP_east.max())+FP_east.max()], dh=[np.abs(FP_north.max())+FP_north.max()],
+                                color_mapper=color_mapper, legend_label=legend_text
+                                )
+        except Exception as e:
+            print('Error while trying to create an image for eddy data: ', e)
+
+        # slider = Slider(start=min(df.columns), end=max(df.columns), value=min(df.columns), step=stepsize,
+        #                    title="date within histogram")
+        # callback = CustomJS(
+        #     args=dict(source=pdsource, data=jssource, slid=slider), code="""
+        #                 const S = slid.value;
+        #                 let radius = source.data.radius;
+        #                 const radii = Object.keys(data.data)
+        #                 let slidestop = radii.reduce(function(prev, curr) {
+        #                 (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev)
+        #                  return (Math.abs(curr - S) < Math.abs(prev - S) ? curr : prev);
+        #                 });
+        #                 source.data.radius = data.data[slidestop]
+        #                 source.change.emit();
+        #             """)
+        # slider.js_on_change('value', callback)
+
+        # add input data as table / NOT WORKING YET
+        # source = ColumnDataSource(df_db)
+        # columns = [
+        #     TableColumn(field="tstamp", title="Date", formatter=DateFormatter()),
+        # #    TableColumn(field="downloads", title="Downloads"),
+        # ]
+        # data_table = DataTable(source=source, columns=columns, width=400, height=280)
+        # self.mainplot.add_layout(data_table, 'left')
+
+        self.__style_eddy_plot__()
+        self.__create_plot__()
+        # self.script, self.div = components(column(self.mainplot, data_table), wrap_script=False)
+
+    def __style_eddy_plot__(self):
+        self.mainplot.legend.click_policy = "hide"
+        self.mainplot.grid.grid_line_width = 0.5
+
+        self.mainplot.add_tools(HoverTool(tooltips=[(gettext("fp"), "@image"),
+                                                    (gettext("FP east"), "$x"),
+                                                    (gettext("FP north"), "$y")],
+                                          mode="mouse"))
+
+

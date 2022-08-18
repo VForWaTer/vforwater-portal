@@ -17,6 +17,7 @@ class DataObject:
         self.__qs_cols__ = None
         self.__qs_entry__ = None
         self.__qs_group__ = None
+        self.__row_limit__ = max_size_preview_plot
         self.__value_before_gap__ = None
         self.data_columns = None
         self.data_format = None
@@ -87,7 +88,7 @@ class DataObject:
         """
         qs = self.__general_data_qs__
         if not self.full:
-            qs = self.__general_data_qs__[:max_size_preview_plot]
+            qs = self.__general_data_qs__[:self.__row_limit__]
 
         if self.data_table_name == 'timeseries_1d':
             self.data_columns = self.db_cols_timeseries_1d
@@ -117,7 +118,8 @@ class DataObject:
         elif self.label.find('windspeed') != -1:
             print('its SPEED!! _________________')
         elif self.label.find('Eddy Covariance') != -1:
-            print('YES! ITS EDDY!')
+            self.__row_limit__ = 1000
+            self.__set_data_qs__()
             self.__get_eddy_data__()
         else:
             df = pd.DataFrame(list(self.__data_qs__))
@@ -143,18 +145,25 @@ class DataObject:
             .values('entry__datasource__data_names', 'entry_id', 'entry__datasource__path')
 
         # get additional metadata:
-        # TODO: Check how often the database is accessed (should be no more than twice to get all metadata)
-        # timeseries_1d_cols = ['tstamp', 'data', 'precision']
+        # TODO: Check how often the database is accessed.
         additional_datasets = {
-            't_air': ['air temperature', self.db_cols_timeseries, 'data'],
-            'a': ['absolute humidity', self.db_cols_timeseries, 'data'],
+            # 't_air': ['air temperature', self.db_cols_timeseries, 'data'],
+            # 'a': ['absolute humidity', self.db_cols_timeseries, 'data'],
             'p': ['air pressure', self.db_cols_timeseries, 'data'],
+            'direction': ['wind direction', self.db_cols_timeseries, 'data'],
         }
         for i in additional_datasets.values():
             new_df, col_names = self.__get_extra_columns__(*i)
             self.dataframe[col_names] = new_df[col_names]
 
     def __get_extra_columns__(self, var_name, db_cols, data_col):
+        """
+
+        :param var_name: variable name of the dataset in the database
+        :param db_cols:  name of the columns in the respective data table (e.g. in timeseries)
+        :param data_col: name of the column containing the actual values
+        :return:
+        """
         air_tmp_metadat = self.__qs_group__.filter(entry__variable__name=var_name)[0]
         air_tmp_path = air_tmp_metadat['entry__datasource__path']
         air_tmp_cols_split = air_tmp_metadat['entry__datasource__data_names']
@@ -162,7 +171,7 @@ class DataObject:
         # get additional data:
         air_tmp_data_qs = self.__set_general_data_qs__(air_tmp_path, self.date, air_tmp_metadat['entry_id'])
         if not self.full:
-            air_tmp_data_qs = air_tmp_data_qs[:max_size_preview_plot]
+            air_tmp_data_qs = air_tmp_data_qs[:self.__row_limit__]
 
         air_tmp_cols = [air_tmp_path + '__' + i for i in db_cols]
         air_tmp_data_qs = air_tmp_data_qs.values(*air_tmp_cols)
@@ -231,14 +240,14 @@ class DataObject:
     def db_data_length(self):
         """
         Get length of Dataset stored in the database.
-        If size is greater than allowd in settings.max_size_preview_plot the "full" flag is set to False
+        If size is greater than allowed in settings.max_size_preview_plot the "full" flag is set to False
         """
         self.length = self.__general_data_qs__.count()
         if self.length == 0:  # if not qs.exists():
             print('Problems with query_path: ', self.__general_data_qs__)
             raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(self.ID))
 
-        if self.length > max_size_preview_plot:
+        if self.length > self.__row_limit__:
             self.full = False
 
     @staticmethod
