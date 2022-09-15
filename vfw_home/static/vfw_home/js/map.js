@@ -1,14 +1,16 @@
 //let zoomToExt;
 // let wfsLayerName;
 vfw.map.vars.wfsLayerName = '';
-let olmap, hit_cL, clusterLayer, hiddenLayer;
+vfw.map.vars.hiddenLayer = {};
+vfw.map.vars.hit_cL = {};
+
+let olmap;
+// TODO: Check if clusterlayer has to be global!
+vfw.map.vars.clusterLayer = {};
 //let selectCluster;
 //let wfsPointSource;
 vfw.map.vars.wfsPointSource = {};
 vfw.map.vars.zoomToExt = {};
-// console.log('get1: ', vfw.var.obj.selectedIds.quickMenu)
-// console.log('set: ', vfw.var.obj.selectedIds.quickMenu=toarray(1))
-// console.log('get2: ', vfw.var.obj.selectedIds.quickMenu)
 // let dcz = new ol.interaction.DoubleClickZoom();
 
 /** build style for cluster **/
@@ -68,14 +70,55 @@ vfw.map.buildMapModal = function (ids, page) {
         })
 }
 
+
+/** get data points from server **/
+vfw.map.vars.wfsPointSource = new ol.source.Vector({
+    format: new ol.format.GeoJSON(),
+    loader: function (extent) {
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
+            + extent.join(',') + '/3857',
+            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+            // credentials: 'same-origin'}
+        )
+            .then(function (response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return Promise.reject(response);
+                }
+            })
+            .then(function (response) {
+                console.log('draw wfs points')
+                vfw.map.vars.wfsPointSource.addFeatures(vfw.map.vars.wfsPointSource.getFormat().readFeatures(response));
+            })
+            .catch(function (error) {
+                console.warn('No result for selected area. Unable to build vector layer.');
+                // console.log('Error in building vector vfw.map.vars.wfsPointSource: ', error);
+                vfw.map.vars.wfsPointSource.removeLoadedExtent(extent);
+            })
+    },
+    strategy: ol.loadingstrategy.bbox
+});
+
+vfw.map.vfwSource = new ol.source.XYZ({
+    attributions: [gettext("Map data from") + ' <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
+    'SRTM | ' + gettext("Map style from") + ' <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
+    url: vfw.var.MAP_SERVER + "/osm/{z}/{x}/{y}.png"
+});
+
+vfw.map.osmSource = new ol.source.XYZ({
+    attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
+    'SRTM | Map style from <a href="https://opentopomap.org/">OpenTopoMap</a> ' +
+    '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
+    url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+});
+// vfw.map.osmSource = new ol.source.OSM({
+//     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
+// });
+
 /** Fetch V-FOR-WaTer base layer **/
 vfw.map.create_map = function () {
-    const GEO_SERVER = vfw.var.DEMO_VAR + "/home/geoserver";
-    let mapSource = new ol.source.XYZ({
-        attributions: [gettext("Map data from") + ' <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
-        'SRTM | ' + gettext("Map style from") + ' <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
-        url: vfw.var.MAP_SERVER + "/osm/{z}/{x}/{y}.png"
-    });
+
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
         'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
 
@@ -86,25 +129,11 @@ vfw.map.create_map = function () {
     /** build the background map **/
     let mapLayer = new ol.layer.Tile({
         preload: Infinity,
-        source: mapSource
+        source: vfw.map.vfwSource,
     });
     /** get OSM/OTM in case local map is not loading: **/
     mapLayer.getSource().on('tileloaderror', function () {
-        // let source = new ol.source.OSM({
-        //     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
-        let source = new ol.source.XYZ({
-            attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
-            'SRTM | Map style from <a href="https://opentopomap.org/">OpenTopoMap</a> ' +
-            '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
-            url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
-        });
-        // let source = new ol.source.XYZ({
-        //     attributions: [' Kartendaten: © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>' +
-        //     '-Mitwirkende, SRTM | Kartendarstellung: © <a href="http://opentopomap.org/">OpenTopoMap</a> ' +
-        //     '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
-        //     url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
-        // })
-        mapLayer.setSource(source)
+        mapLayer.setSource(vfw.map.osmSource)
     });
 
     let mapView = new ol.View({
@@ -115,38 +144,12 @@ vfw.map.create_map = function () {
     });
     mapView.animate({duration: 5000}, {easing: 'elastic'});
 
-    /** get data points from server **/
-    vfw.map.vars.wfsPointSource = new ol.source.Vector({
-        format: new ol.format.GeoJSON(),
-        loader: function (extent) {
-            fetch(GEO_SERVER + '/wfs/' + vfw.map.vars.wfsLayerName + '/' + extent.join(',') + '/3857',
-                // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
-                // credentials: 'same-origin'}
-            )
-                .then(function (response) {
-                    if (response.ok) {
-                        return response.text();
-                    } else {
-                        return Promise.reject(response);
-                    }
-                })
-                .then(function (response) {
-                    vfw.map.vars.wfsPointSource.addFeatures(vfw.map.vars.wfsPointSource.getFormat().readFeatures(response));
-                })
-                .catch(function (error) {
-                    console.warn('No result for selected area. Unable to build vector layer.');
-                    // console.log('Error in building vector vfw.map.vars.wfsPointSource: ', error);
-                    vfw.map.vars.wfsPointSource.removeLoadedExtent(extent);
-                })
-        },
-        strategy: ol.loadingstrategy.bbox
-    });
 
     // TODO: Bei Gelegenheit mal sentinel Daten einführen
     //     url = https://sgx.geodatenzentrum.de/wms_sentinel2_de?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2019
 
     /** Make (animated) cluster layer from data points **/
-    clusterLayer = new ol.layer.AnimatedCluster({
+    vfw.map.vars.clusterLayer = new ol.layer.AnimatedCluster({
         name: 'Cluster',
         className: 'cluster-layer',
         source: new ol.source.Cluster({
@@ -157,7 +160,7 @@ vfw.map.create_map = function () {
         /** Cluster style  **/
         style: vfw.map.clusterStyle
     });
-    hiddenLayer = new ol.layer.VectorImage({
+    vfw.map.vars.hiddenLayer = new ol.layer.VectorImage({
         className: 'hidden-layer',
         source: vfw.map.vars.wfsPointSource,
     });
@@ -250,7 +253,7 @@ vfw.map.create_map = function () {
     olmap = new ol.Map({
         // renderer: 'canvas',
         target: map_tar,
-        layers: [mapLayer, clusterLayer],
+        layers: [mapLayer, vfw.map.vars.clusterLayer],
         // layers: [mapLayer, testPointLayer, testlayer, clusterLayer],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
 
@@ -281,7 +284,7 @@ vfw.map.create_map = function () {
     /** check what is clicked **/
     function checkMode(evt) {
         let clickedFeatures, ids, cleanedids, wfsLen;
-        if (hit_cL) {
+        if (vfw.map.vars.hit_cL) {
             content.innerHTML = '';
             try {
                 content.innerHTML = '<div id="loader" class="loader">bla</div>';
@@ -353,18 +356,18 @@ vfw.map.create_map = function () {
             return;
         }
         // let pixel = olmap.getEventPixel(evt.originalEvent);
-        hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {
+        vfw.map.vars.hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {
                 return feature;
             },
             {
                 layerFilter: function (layer) {
                     // console.log('+++++ layer: ', layer === clusterLayer)
                     // return layer === vector
-                    return layer === clusterLayer
+                    return layer === vfw.map.vars.clusterLayer
                 }
             }
         );
-        olmap.getTargetElement().style.cursor = hit_cL ? 'pointer' : '';
+        olmap.getTargetElement().style.cursor = vfw.map.vars.hit_cL ? 'pointer' : '';
     });
 
     // On selected => get feature in cluster and show info
