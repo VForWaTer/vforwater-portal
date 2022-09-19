@@ -1,0 +1,60 @@
+@startuml
+'https://plantuml.com/component-diagram
+skinparam componentStyle rectangle
+
+package "vfw_home" {
+  [home.html] ..> [base_sidebar.html]
+  [base.html] ..> [help.html]
+  [select_data.html] ..> [quick_filter.html]
+  [select_data.html] ..> [advanced_filter.html]
+  [base.html] ..> [home.html]
+  [base.html] ..> [sidemenu.html]
+  [home.html] ..> [map.html]
+  [home.html] ..> [info_modal.html]
+  [home.html] ..> [map_modal.html]
+  [home.html] ..> [entrieslist.html]
+  [base.html] ..> [privacypolicy.html]
+  [help.html] ..> [legals.html]
+  [help.html] ..> [static_sidebar.html]
+  [base_sidebar.html] ..> [select_data.html]
+  [static_sidebar.html] ..> [logo.html]
+}
+package "visual_app" {
+  [base.html] ..> [visual_app/home.html]
+}
+package "upload" {
+  [base.html] ..> [upload/home.html]
+}
+package "wps_gui" {
+  [base_sidebar.html] ..> [wps_gui/result_modal.html]
+
+  [base.html] ..> [wps_gui/home.html]
+  [base.html] ..> [service.html]
+  [service.html] ..> [wps_gui/sidebar.html]
+  [wps_gui/sidebar.html]
+  [wps_gui/home.html] ..> [wps_gui/sidebar.html]
+  [wps_gui/home.html] ..> [toolbar.html]
+  [wps_gui/home.html] ..> [workplace.html]
+  [select_data.html] <.. [wps_gui/sidebar.html]
+  [wps_gui/result_modal.html] <.. [wps_gui/sidebar.html]
+  [workplace.html] ..> [wps_gui/modal.html]
+  [process.html]
+  [select_process.html]
+}
+
+package "author_manage" {
+  [base.html] ..> [author_manage/base.html]
+  [author_manage/home.html] ..> [author_manage/base.html]
+  [author_manage/base.html] ..> [profile.html]
+  [author_manage/base.html] ..> [resource-overview.html]
+  [profile.html] ..> [edit-permissions.html]
+  [profile.html] ..> [my-resources.html]
+  [add-new-resource.html] ..> [upload_persons.html]
+  [profile.html] ..> [add-new-resource.html]
+}
+package "process_monitor" {
+  [base.html] ..> [process_monitor/base.html]
+  [process_monitor/base.html] ..> [process_monitor/home.html]
+  [process_monitor/home.html] ..> [static_sidebar.html]
+}
+@enduml
