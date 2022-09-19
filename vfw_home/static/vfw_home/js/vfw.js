@@ -382,7 +382,7 @@ function drawOnMapMenu(test) {
     vfw.var.obj.selectedIds.map = null;
     let sketch, listener, polygon;
     let append_str = vfw.map.vars.wfsLayerName + '.';
-    let features = hiddenLayer.getSource().getFeatures();
+    let features = vfw.map.layer.hidden.getSource().getFeatures();
 
     /**
      * Point features select/deselect as you move polygon.
@@ -727,11 +727,13 @@ vfw.html.moreInfoModal = function (id) {
         if (pdata !== false) {
             plotToModal(pd)
         }
+        document.getElementById("mod_prev").classList.remove("loader")
     })
         .fail(function(e) {
             document.getElementById('mod_dat_inf').innerHTML = '<p>Error in dataset. Please try again later.</p>';
+            document.getElementById("mod_prev").classList.remove("loader")
         })
-    .always(document.getElementById("mod_prev").classList.remove("loader"))
+    // .always(document.getElementById("mod_prev").classList.remove("loader"))
 
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
@@ -882,6 +884,7 @@ function filter_pagination(page) {
 
 /** The following function is used when Quick is one of several filter menues.
  * Not needed when Quick is the standard menu. */
+
 /*
 function quick_filter(selection) {
     $.ajax({

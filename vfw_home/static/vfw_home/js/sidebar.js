@@ -599,7 +599,8 @@ function toggleMenuOff(chooseContext) {
  * @param {Object} e The event
  */
 function positionMenu(e) {
-    clickCoords = getPosition(e);
+    console.log('e: ', e)
+    clickCoords = vfw.util.getPosition(e);
     clickCoordsX = clickCoords.x;
     clickCoordsY = clickCoords.y;
 
@@ -674,8 +675,10 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {
 
     // loop values of result to insert them in the respective field
     let loopLength = 0;
-    if (btnValues) {loopLength = btnValues.length}
-    for (let i=0; i < loopLength; i++) {
+    if (btnValues) {
+        loopLength = btnValues.length
+    }
+    for (let i = 0; i < loopLength; i++) {
 
         htmlElement = document.getElementById(btnKeys[i]);
         // if (typeof btnValues[i] === 'string') {
@@ -757,7 +760,7 @@ function menuItemListener(link) {
 
         case "View":
             $.ajax({
-                url: DEMO_VAR + "/home/show_info",
+                url: vfw.var.DEMO_VAR + "/home/show_info",
                 dataType: 'json',
                 data: {
                     show_info: id,

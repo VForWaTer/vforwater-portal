@@ -54,13 +54,13 @@ function reset_filter(){
     olmap.removeLayer(selectionLayer);
     drawfilter_close();
     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
-    // clusterLayer.changed()
+    // vfw.map.layer.cluster.changed()
 }
 
 /** update objects on map according to filter results */
 vfw.map.updateMapSelection = function (json) {
-    vfw.map.vars.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
+    vfw.map.control.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
     vfw.map.vars.wfsLayerName = json['ID_layer'];
     vfw.var.obj.selectedIds.quickMenu = json['IDs'];
-    vfw.map.vars.wfsPointSource.refresh();
+    vfw.map.source.wfsPointSource.refresh();
 }

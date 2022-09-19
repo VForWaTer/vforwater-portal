@@ -14,9 +14,10 @@
 {% block content %}
    <!-- Tab links -->
 <div class="tab">
-  <button class="tablinks" onclick="toggleMapTableFilter(event, 'Map')" id="defaultMapTab">{% trans "Map" %}
+  <button class="tablinks" id="defaultMapTab" onclick="toggleMapTableFilter(event, 'Map')">{% trans "Map" %}
   </button>
-  <button class="tablinks" onclick="toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Table" %}
+  <button class="tablinks" id="tableTab"
+          onclick="toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Table" %}
   </button>
 </div>
 
