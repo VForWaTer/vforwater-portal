@@ -904,6 +904,8 @@ def entries_pagination(request):
         accessible_data = get_accessible_data(request, datasets)
         # error_ids = accessible_data['blocked']
         accessible_ids = accessible_data['open']
+    elif len(datasets) == 0:
+        entries_list = []
     else:
         entries_list = Entries.objects.values(*field).order_by('title')
     try:

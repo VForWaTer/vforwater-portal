@@ -654,7 +654,7 @@ vfw.html.moreInfoModal = function (id) {
         })
             .done(function (data) {
                 if ('error' in data) {
-                    console.warn(data.error)
+                    console.warn('Error while preparing data: ', data.error)
                     pdata = false
                 } else {
                     result = data;
@@ -737,7 +737,6 @@ vfw.html.moreInfoModal = function (id) {
             document.getElementById("mod_prev").classList.remove("loader")
         })
     // .always(document.getElementById("mod_prev").classList.remove("loader"))
-
     let modal = document.getElementById("infoModal");
     modal.style.display = "block";
 }
@@ -867,11 +866,13 @@ function toggleMapTableFilter(evt, tabName, isFilter = false) {
 
 
 function filter_pagination(page) {
+    let data = JSON.stringify(vfw.var.obj.selectedIds.result);
+    if (data.length == 0) {data = 'None'}
     $.ajax({
         url: vfw.var.DEMO_VAR + "/home/entries_pagination",
         datatype: 'json',
         data: {
-            page: page, datasets: JSON.stringify(vfw.var.obj.selectedIds.result),
+            page: page, datasets: data,
             // TODO: send filter options from URL instead of IDs
             'csrfmiddlewaretoken': csrf_token,
         }, // data sent with post request
