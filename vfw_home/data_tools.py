@@ -4,9 +4,39 @@ import numpy as np
 import pandas as pd
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.db import connections
+from django.db.models import Q
+from django.utils import timezone
 
 from heron.settings import max_size_preview_plot
-from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups
+from vfw_home.models import Entries, Timeseries, Timeseries_1D
+
+
+def get_accessible_data(request: object, requested_ids: list) -> (list, list):
+    """
+    Use request object to check if user has read access to a list of data (entries_id). Output is a list with
+    accessible data and a second list with inaccessible data.
+
+    :param request:
+    :param requested_ids:
+    :return: accessible_ids, error_ids
+    """
+    if isinstance(requested_ids, int):
+        requested_ids = [requested_ids]
+    elif isinstance(requested_ids, str):
+        requested_ids = [int(requested_ids)]
+    # first get datasets that are open for for everyone and without embargo or expired embargo
+    accessible_data = list(Entries.objects.values_list('id', flat=True)
+                           .filter(pk__in=requested_ids)
+                           .filter(Q(embargo=False) |
+                                   Q(embargo=True, embargo_end__lt=timezone.now())))
+
+    # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
+    if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
+        accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
+        accessible_data.extend(accessible_embargo_datasets)
+    # check if there is still data not accessible and create error for these
+    error_list = list(set(requested_ids) - set(accessible_data))
+    return {'open': accessible_data, 'blocked': error_list}
 
 
 def __get_timescale(df, ID=None):
@@ -60,7 +90,6 @@ def is_data_short(ID: int, source: str, date: list):
     """
     if source == 'db':
         datapath = Entries.objects.filter(id=ID).values_list('datasource__path', flat=True)[0]
-        # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
 
     if datapath is None:
         return {'error': 'Dataset has no datasource__path.'}
@@ -93,7 +122,11 @@ def __unify_dataframe(data):
     :return: dict (df, bool(reduced), str(data_format))
     """
     data['data_format'] = '1D'
-    data['df'].rename(columns={'data': 'value'}, inplace=True, errors="raise")
+    if 'data' in data['df'].columns and not 'value' in data['df'].columns:
+        data['df'].rename(columns={'data': 'value'}, inplace=True, errors="raise")
+    elif 'data' in data['df'].columns and 'value' in data['df'].columns:
+        print('Error while renaming dataset. Cannot rename to already existing column.')
+
     # if len(data['df']['data'][0]) == 1:
     #     pass
     # df['value'] = df['data'].str.get(0)
@@ -111,7 +144,7 @@ def __unify_dataframe(data):
     return data
 
 
-def __DB_load_data(ID: int, date: list, full_res: bool):
+def DB_load_data(ID: int, date: list, full_res: bool):
     """
     Load data from database and return a dict with data, pandas df and axis. When full resolution == False limit length
     of result according to settings.max_size_preview_plot
@@ -190,7 +223,7 @@ def __reduce_dataset(qs: object, full_res: bool):
         if full_res:
             df = qs
         else:
-            df = qs.tail(max_size_preview_plot)
+            df = (qs.tail(max_size_preview_plot)).copy()
             reduced = True
     else:
         if full_res:
@@ -234,7 +267,7 @@ def __get_axis_limits(plot_data):
     return plot_data
 
 
-def __DB_load_data_avg(ID: int, scale='day'):
+def DB_load_data_avg(ID: int, scale='day'):
     """
 
     :param ID: Entry ID
@@ -274,7 +307,7 @@ def __DB_load_data_avg(ID: int, scale='day'):
         print('*** PLEASE IMPLEMENT OTHER DATATYPES, TOO! ***')
 
 
-def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
+def DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
     """
     Load data for rose plot in ten degree bins from database.
 
@@ -306,7 +339,7 @@ def __DB_load_directiondata(ID: int, ti: str, date: list, full_res: bool):
     elif data_length > 1500 and date_opt.index(ti) > 0:
         ti = date_opt[date_opt.index(ti) - 1]
 
-    # create 36 groups with group 1 from 355-5 degree and 36 from 345-355 degree
+    # create 36 groups with group 1 from 355-5 degree and group 36 from 345-355 degree
     # TODO: check if this assumption above for the direction in now (that it is implemented with pandas) is still valid
     sum_string = ""
     for i in range(1, 36):
@@ -523,3 +556,19 @@ class DataTypes:
             raise AttributeError("The datatype '%s' is not supported" % datatype)
 
         return data
+
+
+class Button:
+
+    def __init__(self, dbID, inputs, name, type, outputs, wps, source, status, dropBtn, group):
+        self.group = group
+        self.dropBtn = dropBtn
+        self.status = status
+        self.wps = wps
+        self.outputs = outputs
+        self.type = type
+        self.name = name
+        self.dbID = dbID
+        self.inputs = inputs
+        if self.wps:
+            self.source = "wps"

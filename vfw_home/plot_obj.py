@@ -329,10 +329,33 @@ class PlotObject:
 
         # # result = [get_footprint()]
         # index = df_db.index
-        # print('type index: ', type(index))
-        # print('len: ', len(df_db))
-        #
-        all_fp = all_fp_norm = all_FP_east = all_FP_north = np.empty(len(df_db), dtype=object)
+        all_fp = np.empty(len(df_db), dtype=object)
+        all_fp_norm = np.empty(len(df_db), dtype=object)
+        i_list = np.empty(len(df_db))
+        all_FP_north = all_FP_east = False
+        import time
+        t1 = time.time()
+        loop_len = range(df_db.shape[0])
+
+        # loop v1 is etwas langsamer 7.625 vs 7,619
+        for i in loop_len:
+            single_fp, FP_east, FP_north, single_fp_norm = get_footprint(i)
+            single_fp[single_fp == 0] = np.nan
+            all_fp[i] = single_fp
+            all_fp_norm[i] = single_fp_norm
+            # if isinstance(all_FP_north, bool):
+            #     all_FP_east = single_FP_east
+            #     all_FP_north = single_FP_north
+            #     x_min = all_FP_east.min()
+            #     x_max = all_FP_east.max()
+            #     y_min = all_FP_north.min()
+            #     y_max = all_FP_north.max()
+        t2 = time.time()
+        all_fp = np.empty(len(df_db), dtype=object)
+        all_fp_norm = np.empty(len(df_db), dtype=object)
+        i_list = np.empty(len(df_db))
+        all_FP_north = all_FP_east = False
+        t3 = time.time()
         for i, row in enumerate(df_db.itertuples()):
             single_fp, single_FP_east, single_FP_north, single_fp_norm = get_footprint(row.Index)
             all_fp[i] = single_fp

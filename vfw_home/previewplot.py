@@ -18,7 +18,7 @@ from bokeh.palettes import Oranges9, Spectral11
 from numpy import mean
 
 from heron.settings import max_size_preview_plot
-from vfw_home.data_tools import __DB_load_directiondata, find_data_gaps, __DB_load_data_avg, __DB_load_data, \
+from vfw_home.data_tools import DB_load_directiondata, find_data_gaps, DB_load_data, \
     precision_to_minmax, __get_axis_limits
 from vfw_home.models import Entries
 
@@ -55,6 +55,27 @@ def format_label(name: str, symbol: str, unit_symbol: str):
     return "{} ({}) [{}]".format(name, symbol, superscript_label)
 
 
+def get_bokeh_3D_fullres(plot_data: object, full_res: bool, size: list, label: str = "") -> object:
+    nan_in_data = plot_data['nan_in_data']
+    source = ColumnDataSource(plot_data['df'])
+    missing_source = ColumnDataSource(plot_data['missing_data'])
+    if full_res:
+        title = ''
+    else:
+        title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
+        # Plot average as main plot
+        mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
+                          y_axis_label=label,
+                          title=title,
+                          # sizing_mode='stretch_both',
+                          plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
+                          tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
+
+    script, div = components(column(mainplot, sizing_mode="scale_both"), wrap_script=False)
+    # show(mainplot)
+
+    return {'script': script, 'div': div}
+
 def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: str = "") -> object:
     """
     Plot with full resolution, hence one line with errorbars, no band
@@ -80,7 +101,6 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
                       plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
-
     # plot value line
     mainplot.line(x='tstamp', y='value', source=source, line_width=3)  #, legend_label="measured values")
 
@@ -122,6 +142,8 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     mainplot.yaxis.axis_label_text_font_size = "14pt"
     # mainplot.legend.click_policy = "mute"
     script, div = components(column(mainplot, sizing_mode="scale_both"), wrap_script=False)
+    # show(mainplot)
+
     return {'script': script, 'div': div}
 
 
@@ -469,15 +491,19 @@ def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 
         label = __DB_load_label(ID)
         if label.find('direction') != -1:
             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            db_data, ti = __DB_load_directiondata(ID, ti, date, full_res)
-            # plot_data = fill_data_gaps(db_data)
+            # if full_res is False:
+            db_data, ti = DB_load_directiondata(ID, ti, date, full_res)
             img = direction_plot(db_data, ti)
+            # else:
+            #     db_data = DB_load_data(ID, date, False)
+            #     plot_data = find_data_gaps(db_data)
+            #     print('plot_data: ', plot_data)
+
+        elif label.find('windspeed') != -1:
+            print('its windSPEED!! Noting implemented yet...')
         else:
-        #             db_data = __DB_load_data_avg(id)
-        #             db_data = __get_axis_limits(db_data)
-        #             img = get_bokeh_standard(db_data, size, label)
-        # get data
-            db_data = __DB_load_data(ID, date, full_res)
+            # get data
+            db_data = DB_load_data(ID, date, full_res)
             if db_data['has_preci']:
                 db_data['df'] = precision_to_minmax(db_data['df'])
 
@@ -520,12 +546,12 @@ def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 
 #         label = __DB_load_label(id)
 #         if label.find('direction') != -1:
 #             ti = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-#             db_data = __DB_load_directiondata(id, ti)
+#             db_data = DB_load_directiondata(id, ti)
 #             plot_data = find_data_gaps(db_data)
 #             # img = get_bokeh_standard(db_data, label)
 #             img = direction_plot(plot_data, ti)
 #         else:
-#             db_data = __DB_load_data_avg(id)
+#             db_data = DB_load_data_avg(id)
 #             db_data = __get_axis_limits(db_data)
 #             img = get_bokeh_standard(db_data, size, label)
 #

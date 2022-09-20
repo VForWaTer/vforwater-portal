@@ -5,6 +5,7 @@ import json
 import sys
 
 import pandas as pd
+import redis
 import requests
 from django.contrib.gis.db.models.aggregates import Extent
 from django.core.exceptions import EmptyResultSet, FieldError
@@ -32,12 +33,15 @@ from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
 from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label
+from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
-    __get_axis_limits, __reduce_dataset
+    __get_axis_limits, __reduce_dataset, get_accessible_data
 from .forms import QuickFilterForm
-from .utilities import human_readable_bool, has_pending_embargo, read_data
+from .data_obj import DataObject
+from .plot_obj import PlotObject
+from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
+    get_paginatorpage
 
 mpl.use('Agg')
 
@@ -49,6 +53,7 @@ from .models import Entries, NmEntrygroups
 
 import logging
 from pathlib import Path
+
 # for debugging:
 from time import time
 
@@ -57,6 +62,7 @@ from time import time
 
 """
 logger = logging.getLogger(__name__)
+
 
 # class WorkflowView(TemplateView):
 #     """
@@ -69,20 +75,6 @@ logger = logging.getLogger(__name__)
 # from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
-def expressive_layer_name(user: object) -> str:
-    """
-    Build an expressive name for the layer o the geoserver
-    :param user:
-    :return: String of user id + username + "_layer"
-    """
-    namestring = str(user.id) + "_"
-    if user.first_name and user.last_name:
-        namestring += (user.first_name + "_" + user.last_name)
-    else:
-        namestring += user.username.translate({ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`=+"})
-
-    return namestring + "_layer"
-
 
 class HomeView(TemplateView):
     """
@@ -94,7 +86,7 @@ class HomeView(TemplateView):
     # QuickFilter.items(requests)
     # data_layer = 'metacatalogdev'  # 'default_layer_prod'
     data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
-    data_layer = 'playnew'
+    data_layer = 'devel'
     # data_layer = 'play'
 
     # if not dataExt:
@@ -180,59 +172,6 @@ class Echo:
         Write the value by returning it, instead of storing in a buffer.
         """
         return value
-
-
-def get_accessible_data(request: object, requested_ids: list) -> (list, list):
-    """
-    Use request object to check if user has read access to a list of data (entries_id). Output is a list with
-    accessible data and a second list with inaccessible data.
-
-    :param request:
-    :param requested_ids:
-    :return: accessible_ids, error_ids
-    """
-    if isinstance(requested_ids, int):
-        requested_ids = [requested_ids]
-    elif isinstance(requested_ids, str):
-        requested_ids = [int(requested_ids)]
-    # first get datasets that are open for for everyone and without embargo or expired embargo
-    accessible_data = list(Entries.objects.values_list('id', flat=True)
-                           .filter(pk__in=requested_ids)
-                           .filter(Q(embargo=False) |
-                                   Q(embargo=True, embargo_end__lt=timezone.now())))
-
-    # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
-    if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
-        accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
-        accessible_data.extend(accessible_embargo_datasets)
-    # check if there is still data not accessible and create error for these
-    error_list = list(set(requested_ids) - set(accessible_data))
-    return {'open': accessible_data, 'blocked': error_list}
-
-
-def get_dataset(s_id: int) -> object:
-    """
-
-    :param s_id: ID in metacatalob
-    :return:
-    """
-    entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
-
-    # build string of values for django query
-    type_values = {'generic_1d_data': ['index', 'value', 'precision'],
-                   'generic_2d_data': ['index', 'value1', 'value2', 'precision1', 'precision2'],
-                   'generic_geometry_data': ['index', 'geom', 'srid'],
-                   'geom_timeseries': ['tstamp', 'geom', 'srid'],
-                   'timeseries_1d': ['tstamp', 'value', 'precision'],
-                   'timeseries_2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
-    db_values = type_values[entry_type]
-
-    query_values = []
-    for value in db_values:
-        query_values.append('{}__{}'.format(entry_type, value))
-
-    query_filter = {entry_type: s_id}
-    return Entries.objects.filter(**query_filter).values_list(*query_values)
 
 
 class DatasetDownloadView(TemplateView):
@@ -547,6 +486,7 @@ class GeoserverView(View):
                                                                 srid, bbox, srid)
         request_url = urllib.request.Request(url)
         response = urllib.request.urlopen(request_url)
+
         return HttpResponse(response.read().decode('utf-8'))
 
 
@@ -558,11 +498,59 @@ def previewplot(request):
     """
     webID = request.GET.get('preview')
     full_res = False
+    plot_size = [700, 500]
     if request.GET.get('startdate') != 'None':
         date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
                 make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
     else:
         date = None
+
+    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+                 'in_cache': False, 'name': "plot_{}".format('b' + str(webID) + str(plot_size) + str(date))}
+    cache_obj, img = get_cache(cache_obj)
+
+    if not cache_obj['in_cache']:
+        try:
+            bla = Entries.objects.filter(pk=webID[2:]).values_list('datasource__data_names',
+                                                                   'datasource__path',
+                                                                   'datasource__datatype__parent',
+                                                                   'datasource__datatype__name',
+                                                                   'datasource__datatype__title',
+                                                                   'datasource__datatype__description',
+                                                                   'datasource__temporal_scale__resolution',
+                                                                   'datasource__temporal_scale__observation_start',
+                                                                   'datasource__temporal_scale__support',
+                                                                   )
+
+            dataset = DataObject(webID, date)
+
+        except TypeError as e:
+            print('\033[33mType error in Data Object:\033[0m ', e)
+            raise Http404
+        except IndexError as e:
+            print('\033[33mindex error in Data Object:\033[0m ', e)
+            if request.user.is_authenticated:
+                # TODO: Rethink how to handle unallowed requests
+                raise Http404
+            else:
+                # TODO: Redirect to login
+                raise Http404
+                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+                # return redirect('vfw_home:login')
+        except EmptyResultSet as e:
+            print('\033[33mEmptyResultSet Error in Data Object:\033[0m ', e)
+            return JsonResponse({'error': e})
+        except LookupError as e:
+            print('\033[33mLookupError in Data Object:\033[0m ', e)
+            return JsonResponse({'error': e})
+        except FieldError as e:
+            print('\033[33mField Error in Data Object:\033[0m ', e)
+        except Exception as e:
+            print('\033[31mAn unhandled error in Data Object func:\033[0m ', e)
+
+        plot = PlotObject(dataset, plot_size)
+        img = plot.get_plot
+    return JsonResponse(img)
 
     if webID[0:2] == 'db':
         try:
@@ -625,34 +613,37 @@ def previewplot(request):
             # df = pd.read_csv(path + ".csv")
             # df['tstamp'] = pd.to_datetime(df['tstamp'])
             if len(df.index) > 50000:
-                df = __reduce_dataset(df, full_res)
+                data = __reduce_dataset(df, full_res)
 
-            if metadata['meta']['variable']['name'] in df.columns:
-                df.rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
-            elif metadata['meta']['variable']['name'].replace(" ", "_") in df.columns:
-                df.rename(columns={metadata['meta']['variable']['name'].replace(" ", "_"): "value"}, inplace=True)
+            if metadata['meta']['variable']['name'] in data['df'].columns:
+                data['df'].rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
+            elif metadata['meta']['variable']['name'].replace(" ", "_") in data['df'].columns:
+                data['df'].rename(columns={metadata['meta']['variable']['name'].replace(" ", "_"): "value"}, inplace=True)
             else:
                 print('Error: Unknown name of column name in your dataset. '
                       'Should be ', metadata['meta']['variable']['name'])
 
-            if not 'tstamp' in df:
+            # data = __unify_dataframe(data)
+
+            if not 'tstamp' in data['df'].columns:
+                print('no tstamp')
                 # df['tstamp'] = df.index.values
-                df = df.reset_index()
+                data['df'] = data['df'].reset_index()
 
             if 'scale' in metadata:
                 # TODO: scale should be in metadata. Add and get it here
                 scale = metadata['scale']
             else:
-                scale = __get_timescale(df)
+                scale = __get_timescale(data['df'])
 
             # prepare dataset for plot
-            if 'entry_id' in df:
-                del df['entry_id']
+            if 'entry_id' in data['df']:
+                del data['df']['entry_id']
 
-            plot_data = {'df': df, 'scale': scale}
+            plot_data = {'df': data['df'], 'scale': scale}
             # timescale = pd.to_timedelta(timescale)
             # plotdata = {'data': result, 'df': df, 'axis': axis, 'scale': timescale}
-            if 'precision' in plot_data['df'].columns and not df['precision'].isnull().all():
+            if 'precision' in plot_data['df'].columns and not data['df']['precision'].isnull().all():
                 plot_data['df'] = precision_to_minmax(plot_data['df'])
                 plot_data['has_preci'] = True
             else:
@@ -679,8 +670,8 @@ def short_info_pagination(request):
     :return:
     """
     try:
+        naive_today = timezone.make_naive(timezone.now())
         datasets = json.loads(request.GET.get('datasets'))
-        page = request.GET.get('page', 1)
         if type(datasets) is str:
             datasets = [int(datasets)]
 
@@ -692,19 +683,13 @@ def short_info_pagination(request):
             entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
                 .order_by('variable__name', 'title', 'id')
             accessible_data = get_accessible_data(request, datasets)
-            error_ids = accessible_data['blocked']
+            # error_ids = accessible_data['blocked']
             accessible_ids = accessible_data['open']
         else:
             entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
 
         # build pagination for entries
-        paginator = Paginator(entries_list, 5)
-        try:
-            current_page = paginator.page(page)
-        except PageNotAnInteger:
-            current_page = paginator.page(1)
-        except EmptyPage:
-            current_page = paginator.page(paginator.num_pages)
+        current_page = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
 
         newdict = defaultdict(list)
         for d in current_page:
@@ -725,7 +710,11 @@ def short_info_pagination(request):
                                                                       'current_page': current_page})
 
     except TypeError:
+        print('Short info Pagination failed.')
         raise Http404
+
+    except Exception as e:
+        print('Exception while getting short info pagination: ', e)
 
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
@@ -791,8 +780,8 @@ def show_info(request):
 
 
     webID = request.GET.get('show_info')
-    if webID[0:3] == 'wps':#
-        wpsData = WpsResults.objects.get(pk=webID[3:]) # .values('inputs', 'outputs', 'open')
+    if webID[0:3] == 'wps':
+        wpsData = WpsResults.objects.get(pk=webID[3:])  # .values('inputs', 'outputs', 'open')
         result_path = json.loads(wpsData.outputs)['path']
         loaded_data = json.loads(read_data(result_path, ''))
 
@@ -888,6 +877,7 @@ def workspace_data(request):
         # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
         result = build_selection(json.loads(request.GET.get('workspaceData')),
                                  request.GET.get('startDate'), request.GET.get('endDate'))
+        print('result: ', result)
         return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
     except TypeError:
@@ -912,7 +902,7 @@ def entries_pagination(request):
     if datasets:
         entries_list = Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
         accessible_data = get_accessible_data(request, datasets)
-        error_ids = accessible_data['blocked']
+        # error_ids = accessible_data['blocked']
         accessible_ids = accessible_data['open']
     else:
         entries_list = Entries.objects.values(*field).order_by('title')
@@ -921,14 +911,7 @@ def entries_pagination(request):
     except KeyError:
         owndata = None
 
-    page = request.GET.get('page', 1)
-    paginator = Paginator(entries_list, 5)
-    try:
-        entriespage = paginator.page(page)
-    except PageNotAnInteger:
-        entriespage = paginator.page(1)
-    except EmptyPage:
-        entriespage = paginator.page(paginator.num_pages)
+    entriespage = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
 
     return render(request, 'vfw_home/entrieslist.html', {'entries': entriespage,
                                                          'ownData': owndata,

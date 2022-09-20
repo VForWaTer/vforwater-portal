@@ -118,7 +118,7 @@ class DataObject:
         elif self.label.find('windspeed') != -1:
             print('its SPEED!! _________________')
         elif self.label.find('Eddy Covariance') != -1:
-            self.__row_limit__ = 1000
+            self.__row_limit__ = 10
             self.__set_data_qs__()
             self.__get_eddy_data__()
         else:

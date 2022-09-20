@@ -62,7 +62,9 @@
               <th></th>
             </tr>
             <tr>
-              <td></td>
+{#              TODO: checkbox has no function yet, use it to group datasets for selection and preview #}
+{#              TODO: (how to group) over pagination? #}
+              <td><input type="checkbox" id="vehicle1" name="vehicle1" value="Bike"></td>
               <td title="{% trans "Abstract" %}"><div style="max-height:100px; overflow-y:auto;"> {{ entry.abstract|default_if_none:"--" }} </div></td>
 {#              <td title="Abstract"> {{ entry.abstract }} </td>#}
               <td title="{% trans "Datatype" %}"> {{ entry.datasource__datatype__name|capfirst|default_if_none:"--" }} </td>
@@ -70,7 +72,11 @@
               <td title="{% trans "Spatial Scale" %}"> {{ entry.datasource__spatial_scale__extent|default_if_none:"--" }} </td>
             </tr>
             <tr>
-              <td></td>
+              <td><a><b><input id="show_data_preview{{ entry.id }}" class="w3-btn-block" type="submit"
+                                 onclick="vfw.html.moreInfoModal('db{{ entry.id }}')" data-toggle="tooltip"
+                                 value="{% trans "More" %}"
+                                 title="{% trans "Show more information about the dataset." %}">
+                    </b></a></td>
               <td title="{% trans "Variable" %}"> {{ entry.variable__name|capfirst }} ({{ entry.variable__symbol}}) [{{ entry.variable__unit__symbol}}]</td>
               <td title="{% trans "Keywords" %}"> {{ entry.variable__keyword__value|default_if_none:"--"|lower|capfirst }} </td>
               <td title="{% trans "From" %}"> {{ entry.datasource__temporal_scale__observation_start|default_if_none:"--" }} </td>
@@ -78,7 +84,19 @@
               {%  else %} "{% trans "License"  %}" {% endif %}> {{ entry.license__title }} </td>
             </tr>
             <tr>
-              <td></td>
+              <td><a><b><input type="submit"
+                      {% if not entry.embargo %}
+                                 class="w3-btn-block w3-btn-block:hover store-button"
+                                 onclick="vfw.sidebar.workspace_dataset('db{{ entry.id }}')"
+                                 value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
+                                 title="{% trans "Put dataset to session datastore." %}"
+                      {% else %}
+                                 class="w3-btn-block w3-btn-block:hover request-button"
+                                 onclick="vfw.map.requestDataset('db{{ entry.id }}')"
+                                 value="{% trans "Send request" %}" data-toggle="tooltip"
+                                 title="{% trans "Send an access request to the data owner." %}"
+                      {% endif %}
+                    ></b></a></td>
               <td title="{% trans "Citation" %}"> {{ entry.citation|default_if_none:"--" }} </td>
               <td title="{% trans "Version" %}" style="text-align: center;"> v{{ entry.version|default_if_none:"--" }} </td>
               <td title="{% trans "To" %}"> {{ entry.datasource__temporal_scale__observation_end|default_if_none:"--" }} </td>

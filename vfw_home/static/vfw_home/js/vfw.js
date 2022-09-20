@@ -722,13 +722,16 @@ vfw.html.moreInfoModal = function (id) {
         }
     }
 
-    $.when(ajaxTable(), ajaxPlot()).done(function (td, pd) {
-        tableToModal(td)
-        if (pdata !== false) {
-            plotToModal(pd)
-        }
-        document.getElementById("mod_prev").classList.remove("loader")
-    })
+    $.when(ajaxTable(), ajaxPlot())
+        .done(function (td, pd) {
+            tableToModal(td)
+            if (pdata !== false) {
+                console.log('B')
+                plotToModal(pd)
+            }
+            document.getElementById("mod_prev").classList.remove("loader")
+            console.log('document.getElementById("mod_prev"): ', document.getElementById("mod_prev"))
+        })
         .fail(function(e) {
             document.getElementById('mod_dat_inf').innerHTML = '<p>Error in dataset. Please try again later.</p>';
             document.getElementById("mod_prev").classList.remove("loader")

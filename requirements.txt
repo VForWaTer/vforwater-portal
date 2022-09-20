@@ -1,5 +1,5 @@
 Bokeh>=2.4.3
-django==3.2.14
+django==3.2.15
 django_crontab>=0.7.1
 django-cors-headers>=3.2.1
 django-filter
@@ -18,3 +18,4 @@ pyzip
 redis
 requests
 mozilla-django-oidc
+bridget

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from django.core.paginator import PageNotAnInteger, EmptyPage
 from django.utils import translation, timezone
 
 from heron.settings import DATA_DIR
@@ -76,6 +77,64 @@ def entry_has_data(entry: int) -> bool:
         return True
     else:
         return False
+
+
+def expressive_layer_name(user: object) -> str:
+    """
+    Build an expressive name for the layer o the geoserver
+    :param user:
+    :return: String of user id + username + "_layer"
+    """
+    namestring = str(user.id) + "_"
+    if user.first_name and user.last_name:
+        namestring += (user.first_name + "_" + user.last_name)
+    else:
+        namestring += user.username.translate({ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`=+"})
+
+    return namestring + "_layer"
+
+
+def get_dataset(s_id: int) -> object:
+    """
+
+    :param s_id: ID in metacatalob
+    :return:
+    """
+    entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+
+    # build string of values for django query
+    type_values = {'generic_1d_data': ['index', 'value', 'precision'],
+                   'generic_2d_data': ['index', 'value1', 'value2', 'precision1', 'precision2'],
+                   'generic_geometry_data': ['index', 'geom', 'srid'],
+                   'geom_timeseries': ['tstamp', 'geom', 'srid'],
+                   'timeseries_1d': ['tstamp', 'value', 'precision'],
+                   'timeseries_2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
+    db_values = type_values[entry_type]
+
+    query_values = []
+    for value in db_values:
+        query_values.append('{}__{}'.format(entry_type, value))
+
+    query_filter = {entry_type: s_id}
+    return Entries.objects.filter(**query_filter).values_list(*query_values)
+
+
+def get_paginatorpage(page, paginator):
+    """
+    Make sure the current page of a paginator exists
+
+    :param page:
+    :param paginator:
+    :return:
+    """
+    try:
+        entriespage = paginator.page(page)
+    except PageNotAnInteger:
+        entriespage = paginator.page(1)
+    except EmptyPage:
+        entriespage = paginator.page(paginator.num_pages)
+
+    return entriespage
 
 
 def read_data(uuid: str, datatype: str) -> object:
