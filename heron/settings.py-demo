@@ -38,7 +38,7 @@ if not Path(VFW_DIR).exists():
 DEMO_VAR = '/demo'
 
 # Set where the server is running on
-HOST_NAME = "portal.vforwater.de"
+HOST_NAME = "portal-devel.vforwater.de"
 VFW_SERVER = 'https://' + HOST_NAME + DEMO_VAR
 MAP_SERVER = "https://portal.vforwater.de"
 LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'

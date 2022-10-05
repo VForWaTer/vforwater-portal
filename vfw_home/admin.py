@@ -16,7 +16,7 @@ class EntriesAdminForm(ModelForm):
 
 class EntriesAdmin(admin.OSMGeoAdmin):
     form = EntriesAdminForm
-    list_display = ['id', 'title', 'abstract']
+    list_display = ['id', 'title', 'location', 'geom']
 
 
     def variable_fname(self, obj):
