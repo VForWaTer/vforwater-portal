@@ -192,6 +192,10 @@
             <i class="fa fa-user fa-fw"></i>
             {% if user.first_name %}
               {{ user.first_name | capfirst }}
+	    {% elif user.last_name %}
+              {{ user.last_name | capfirst }}
+            {% elif user.email %}
+              {{ user.email }}  
             {% else %}
               {{ user.username | capfirst }}
             {% endif %}

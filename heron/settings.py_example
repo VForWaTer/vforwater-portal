@@ -79,19 +79,40 @@ LOGGING = {
             'formatter': 'verbose'
         },
     },
+
     'loggers': {
         'heron': {
-            'handlers': ['file'],
+            'handlers': ['file','console'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'vfw_home': {
-            'handlers': ['file'],
+            'handlers': ['file','console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'watts_rsp': {
-            'handlers': ['file'],
+        'mozilla_django_oidc': {
+            'handlers': ['file','console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'author_manage': {
+            'handlers': ['file','console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django': {
+            'handlers': ['file','console'],
+            'propagate': True,
+            'level': 'WARN',
+        },
+        'django.db.backends': {
+            'handlers': ['file','console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'wps_gui': {
+            'handlers': ['file','console'],
             'level': 'DEBUG',
             'propagate': True,
         }
@@ -236,29 +257,12 @@ LOGOUT_REDIRECT_URL = 'vfw_home:home'
 LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfw_home/rsp/login/success'
 LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfw_home'
 
-
-# Figure out if we're on our development server...
-import socket
-
-ON_VFW_SERVER = socket.gethostname() == HOST_NAME
-
-# ...if we are, enable Watts.
-if ON_VFW_SERVER:
-    INSTALLED_APPS.append('watts_rsp')
-
-    # Authentication configuration
-    AUTHENTICATION_BACKENDS = (
-        'watts_rsp.auth.WattsBackend',
-        'django.contrib.auth.backends.ModelBackend',
-    )
-
-    # WaTTS settings
-    WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
-    WATTS_SERVICE_NAME = 'rsp'
-    WATTS_ISSUER_ID = 'vforwater'
-    ##WATTS_PROVIDER_ID = 'iam'
-    WATTS_PROVIDER_ID = 'eudat'
-
+# Authentication configuration
+AUTHENTICATION_BACKENDS = (
+    'author_manage.auth.CustomOIDCAuthenticationBackend',
+    #'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Settings from workflowPSE, here for wps_workflow app
 import logging.handlers
@@ -288,3 +292,19 @@ wps_log.addHandler(filehandler)
 # END OF settings from workflow app
 
 max_size_preview_plot = 50000
+
+OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
+OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
+OIDC_OP_AUTHORIZATION_ENDPOINT = ""
+OIDC_OP_TOKEN_ENDPOINT = ""
+OIDC_OP_USER_ENDPOINT = ""
+OIDC_RP_SIGN_ALGO = ''
+OIDC_OP_JWKS_ENDPOINT = ""
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+OIDC_RP_SCOPES = 'openid email profile'
+SESSION_COOKIE_AGE=3600
+OIDC_TOKEN_USE_BASIC_AUTH=False
+OIDC_VERIFY_SSL=True
+OIDC_STORE_ACCESS_TOKEN=False
+OIDC_STORE_ID_TOKEN=False
+OIDC_VERIFY_KID=False
