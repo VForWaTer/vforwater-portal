@@ -1,0 +1,97 @@
+{% load i18n l10n %}
+<div id="pointmap_div"><p>
+  <div id="pointmap" class="pointmap"></div>
+  </p>
+   <table>
+     <tr>
+       <th></th>
+       <th style="padding-left: 30px"> Latitude </th>
+       <th style="padding-left: 30px"> Longitutde </th>
+       <th style="padding-left: 30px"> SRID </th>
+     </tr>
+     <tr>
+       <td>Map showing </td>
+       <td style="padding-left: 30px" id="lattext"> {{ default_lat }} </td>
+       <td style="padding-left: 30px" id="lontext"> {{ default_lon }} </td>
+       <td style="padding-left: 30px"> EPSG:{{ default_srid }}</td>
+     </tr>
+   </table>
+  </p>
+  <form oninput="{{ name }}.value = Lat.value, Lon.value">
+    <label for="Lat">Latitude: </label>
+    <input name="Lat" type="text" title="decimal degree, e.g. 49.00"
+           pattern="^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$" id="Lat">
+    <label for="Lon"> Longitude: </label>
+    <input name="Lon" type="text" title="decimal degree, e.g. -123.000"
+           pattern="^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$" id="Lon">
+    <input type="text" name="{{ name }}" id="{{ name }}element" hidden>
+    EPSG:{{ default_srid }}
+  </form>
+  <!-- <button type="button" onclick="alert("Lets transform!")"
+  Title="Click here if your coordinates are based on another SRID.">Transform Coordinates</button> -->
+  <br><br>
+</div>
+<script>
+  const LatPattern = /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/
+  const LonPattern = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/
+  const lattext = document.getElementById("lattext");
+  const lontext = document.getElementById("lontext");
+  const Lat = document.getElementById("Lat");
+  const Lon = document.getElementById("Lon");
+  const LatLon = document.getElementById("{{ name }}element");
+
+  // map elements
+  const point = new ol.geom.Point(
+    ol.proj.fromLonLat([{{ default_lon }}, {{ default_lat }}], 'EPSG:{{ default_srid }}'))
+  const mapView = new ol.View({
+    center: [{{ default_lon }}, {{ default_lat }}],
+    zoom: {{ default_zoom }},
+    projection: "EPSG:{{ default_srid }}"
+  });
+  const map = new ol.Map({
+    layers: [
+      new ol.layer.Tile({
+        source: new ol.source.OSM(),
+        maxZoom: 9,
+      }),
+      new ol.layer.Vector({
+        source: new ol.source.Vector({features: [new ol.Feature({geometry: point})]}),
+        style: new ol.style.Style({
+          image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({color: "red",}),
+            stroke: new ol.style.Stroke({color: "darkred", width: 2,}),
+          }),
+        }),
+      })
+    ],
+    target: "pointmap",
+    view: mapView,
+  });
+
+  // update map and text
+  Lat.oninput = function () {
+    let latval = Lat.value.replace(",", ".")
+    let LatNum = LatPattern.test(latval) ? parseFloat(latval) : {{ default_lat }}
+    update_coords(LatNum, Lon.value)
+  };
+  Lon.oninput = function () {
+    let lonval = Lon.value.replace(",", ".")
+    let LonNum = LonPattern.test(lonval) ? parseFloat(lonval) : {{ default_lon }}
+    update_coords(Lat.value, LonNum)
+  };
+
+  function update_coords(Lat, Lon) {
+    LatLon.value = Lat + ", " + Lon
+    point.setCoordinates([Lon, Lat])
+    mapView.setCenter([Lon, Lat])
+    lattext.innerText = Lat
+    lontext.innerText = Lon
+  }
+
+</script>
+<style> .pointmap {
+  width: {{ map_width }}px;
+  height: {{ map_height }}px;
+}
+</style>'

@@ -372,23 +372,30 @@ class PlotObject:
         # pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
 
         self.mainplot = figure(title="Eddy footprint preview",
-                               x_range=(FP_east.min(), FP_east.max()), y_range=(FP_north.min(), FP_north.max()))
-        fp[fp == 0] = np.nan
+                               x_range=(x_min, x_max), y_range=(y_min, y_max))
+        # fp[fp == 0] = np.nan
         legend_text = df_db.tstamp[tstamp].strftime('%m.%d.%Y\n%H:%M')
 
+        all_fp_min = min(map(np.nanmin, all_fp))
+        all_fp_max = max(map(np.nanmax, all_fp))
+
         # add a color bar
-        color_mapper = LogColorMapper(palette="Viridis256", low=np.nanmin(fp), high=np.nanmax(fp),
+        color_mapper = LogColorMapper(palette="Viridis256", low=all_fp_min, high=all_fp_max,
                                       nan_color='whitesmoke')
         color_bar = ColorBar(color_mapper=color_mapper, label_standoff=12, major_label_text_font_size='16px')
         self.mainplot.add_layout(color_bar, 'right')
 
         # create image of footprint
         try:
-            self.mainplot.image(image=[fp],
+            self.mainplot.image(image='fp', x='x', y='y', dw='dw', dh='dh', source=jssource,
+                                color_mapper=color_mapper, legend_label=legend_text
+                                )
+            self.mainplot.image(image=[single_fp],
                                 x=[FP_east.min()], y=[FP_north.min()],
                                 dw=[np.abs(FP_east.max())+FP_east.max()], dh=[np.abs(FP_north.max())+FP_north.max()],
                                 color_mapper=color_mapper, legend_label=legend_text
                                 )
+
         except Exception as e:
             print('Error while trying to create an image for eddy data: ', e)
 

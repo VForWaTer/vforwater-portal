@@ -7,6 +7,8 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
+from uuid import uuid4
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
@@ -121,15 +123,15 @@ class Entries(models.Model):
     decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
 
     """
-    uuid = models.CharField(max_length=36)
-    title = models.CharField(max_length=512)
+    uuid = models.CharField(max_length=36, default=lambda: str(uuid4()))
+    title = models.CharField(max_length=512, blank=False)
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
     location = models.PointField(srid=4326)
     geom = models.GeometryField(srid=4326, blank=True, null=True)
-    version = models.IntegerField()
+    version = models.IntegerField(default=1)
     latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
-    is_partial = models.BooleanField()
+    is_partial = models.BooleanField(default=False)
     comment = models.TextField(blank=True, null=True)
     citation = models.CharField(max_length=2048, blank=True, null=True)
 
@@ -137,7 +139,7 @@ class Entries(models.Model):
     variable = models.ForeignKey('Variables', models.DO_NOTHING)
     datasource = models.ForeignKey(Datasources, models.DO_NOTHING, blank=True, null=True)
 
-    embargo = models.BooleanField()
+    embargo = models.BooleanField(default=False)
     embargo_end = models.DateTimeField(blank=True, null=True)
 
     publication = models.DateTimeField(blank=True, null=True)

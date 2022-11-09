@@ -85,7 +85,7 @@
             </tr>
             <tr>
               <td><a><b><input type="submit"
-                      {% if not entry.embargo %}
+                      {% if entry.id in accessible_ids %}
                                  class="w3-btn-block w3-btn-block:hover store-button"
                                  onclick="vfw.sidebar.workspace_dataset('db{{ entry.id }}')"
                                  value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
@@ -106,8 +106,8 @@
         </td>
       </tr>
     {% empty %}
-      <h1>Loading your data.</h1>
-{#      <h1>Sorry, nothing to show for your Selection.</h1>#}
+{#      <h1>Loading your data.</h1>#}
+      <h1>Nothing to show for your Selection.</h1>
     {% endfor %}
     </tbody>
   </table>

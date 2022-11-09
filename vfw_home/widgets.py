@@ -142,3 +142,150 @@ class DateTimeRangeSlider(forms.DateTimeInput):
         </script>
         """
         return mark_safe(s + html)
+
+
+class SearchableSelect(forms.Select):
+    """
+    Create a Searchable select box with several columns and an optional columns heading.
+    Keywords are (Title is) searched too
+    First value of values_list is the ID.
+    """
+    def __init__(self, item_attrs=[], *args, **kwargs):
+        super(SearchableSelect, self).__init__(*args, **kwargs)
+        self.item_attrs = item_attrs
+
+    def render(self, name, value, attrs=None, **kwargs):
+
+        self.elem_id = attrs['id']
+
+        required = 'required' if attrs['required'] else ''
+        heading = self.item_attrs['heading'] if 'heading' in self.item_attrs else []
+        title = self.item_attrs['data-forsearch'][0] if 'data_foresearch' in self.item_attrs else ''
+
+        select_head = """
+        <input list={id_str} name={name} id="input{id_str}">
+        <datalist {required} id={id_str}>
+        <option value="" title={title}>{heading}
+        </option>""".format(required=required, id_str=self.elem_id, title=title,
+                            heading='&emsp;|&emsp;'.join(heading), name=name)
+
+        all_options = ""
+        for sc_idx, self_choices in enumerate(self.choices):  # loop table rows
+
+            if sc_idx > 0:
+
+                sc_list = self_choices[1][1:-1].split(', ')
+                sc_list = [item.replace('None', "'-'") for item in sc_list]
+                sc_list = [item.replace("'", "") for item in sc_list]
+
+                if 'data-forsearch' in self.item_attrs:
+                    option = "<option value={value} title='{title}'>{option}</option>" \
+                        .format(value=sc_list[0], title=sc_list[-1], option='&emsp;|&emsp;'.join(sc_list[1:-1]))
+                else:
+                    option = "<option value={value} data-search=''>{option}</option>"\
+                        .format(value=sc_list[0], option='&emsp;|&emsp;'.join(sc_list[1:]))
+
+                all_options += option
+
+        html = select_head + all_options + """</datalist>"""
+
+        return mark_safe(html)
+
+
+class TableSelect(forms.Select):
+    """
+    Create a select box with several columns and an optional columns heading. First value of values_list is the ID.
+    """
+    def __init__(self, item_attrs=[], *args, **kwargs):
+        super(TableSelect, self).__init__(*args, **kwargs)
+        self.item_attrs = item_attrs
+
+    def render(self, name, value, attrs=None, **kwargs):
+
+        self.elem_id = attrs['id']
+
+        required = 'required' if attrs['required'] else ''
+        heading = self.item_attrs['heading'] if 'heading' in self.item_attrs else []
+        title = self.item_attrs['data-forsearch'][0] if 'data_foresearch' in self.item_attrs else ''
+
+        select_head = """<select name="Variable" {required} id=id_{id_str}><option value="" title={title}>{heading}
+        </option>""".format(required=required, id_str=self.elem_id, title=title,
+                            heading='&emsp;|&emsp;'.join(heading))
+
+        all_options = ""
+        for sc_idx, self_choices in enumerate(self.choices):  # loop table rows
+
+            if sc_idx > 0:
+
+                sc_list = self_choices[1][1:-1].split(', ')
+                sc_list = [item.replace('None', "'-'") for item in sc_list]
+                sc_list = [item.replace("'", "") for item in sc_list]
+
+                if 'data-forsearch' in self.item_attrs:
+                    option = "<option value={value} title='{title}'>{option}</option>" \
+                        .format(value=sc_list[0], title=sc_list[-1], option='&emsp;|&emsp;'.join(sc_list[1:-1]))
+                else:
+                    option = "<option value={0} data-search=''>{1}</option>"\
+                        .format(sc_list[0], '&emsp;|&emsp;'.join(sc_list[1:]))
+
+                all_options += option
+
+        html = select_head + all_options + """</select>"""
+
+        return mark_safe(html)
+
+
+class TableSelect_plus(TableSelect):
+
+    def __init__(self, *args, **kwargs):
+        super(TableSelect_plus, self).__init__(*args, **kwargs)
+
+    def render(self, name, value, attrs=None, **kwargs):
+        tableselect = super(TableSelect_plus, self).render(name, value, attrs)
+
+        plus = """
+        <button type="button" class="collapsible" id="add"{name} onclick="collapsibleFun('quickfiltermore')">
+          {% trans "new" %} """ + name + """"</button>
+            <div class="content">
+              <p>
+                {% for obj in more %}
+                  <div>{{ obj.name }}: {{ obj }} </div></br>
+                {% endfor %}
+              </p>
+            </div>"""
+
+        html = tableselect
+
+        return html
+
+
+class CustomOSMWidget(forms.OpenLayersWidget):
+    """
+    An OpenLayers/OpenStreetMap-based widget.
+    """
+    default_lon = 8.4327681  # Coordinates of KIT SCC Campus North, Karlsruhe, Germany
+    default_lat = 49.0959129
+    default_zoom = 7
+    default_srid = 4326
+
+    def __init__(self, attrs=None):
+        super().__init__()
+        for key in ('default_lon', 'default_lat', 'default_zoom'):
+            self.attrs[key] = getattr(self, key)
+        if attrs:
+            self.attrs.update(attrs)
+    def render(self, name, value, attrs=None, renderer=None):
+
+        s = super(CustomOSMWidget, self).render(name, value, attrs)
+        self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
+        html = loader.get_template('vfw_home/map_widget.html').render(context={'name': name,
+                                                                               'default_lon': self.default_lon,
+                                                                               'default_lat': self.default_lat,
+                                                                               'default_zoom': self.default_zoom,
+                                                                               'default_srid': self.default_srid,
+                                                                               'map_width': self.attrs['map_width'],
+                                                                               'map_height': self.attrs['map_height'],
+                                                                               })
+
+        return html
+

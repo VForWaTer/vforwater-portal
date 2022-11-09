@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from author_manage.views import MyResourcesView
-from vfw_home.fields import RangeSliderField, SliderField, DateTimeRangeSliderField, DateRangeSliderField
+from vfw_home.fields import DateRangeSliderField
 from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
 
 
