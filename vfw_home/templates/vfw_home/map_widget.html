@@ -73,12 +73,12 @@
   Lat.oninput = function () {
     let latval = Lat.value.replace(",", ".")
     let LatNum = LatPattern.test(latval) ? parseFloat(latval) : {{ default_lat }}
-    update_coords(LatNum, Lon.value)
+    update_coords(LatNum, Lon.value.replace(",", "."))
   };
   Lon.oninput = function () {
     let lonval = Lon.value.replace(",", ".")
     let LonNum = LonPattern.test(lonval) ? parseFloat(lonval) : {{ default_lon }}
-    update_coords(Lat.value, LonNum)
+    update_coords(Lat.value.replace(",", "."), LonNum)
   };
 
   function update_coords(Lat, Lon) {
