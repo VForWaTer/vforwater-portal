@@ -17,7 +17,7 @@
      </tr>
    </table>
   </p>
-  <form oninput="{{ name }}.value = Lat.value, Lon.value">
+  <form oninput="{{ name }}.value = Lat.value, Lon.value, {{ default_srid }}">
     <label for="Lat">Latitude: </label>
     <input name="Lat" type="text" title="decimal degree, e.g. 49.00"
            pattern="^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$" id="Lat">
@@ -82,7 +82,7 @@
   };
 
   function update_coords(Lat, Lon) {
-    LatLon.value = Lat + ", " + Lon
+    LatLon.value = Lat + ", " + Lon + ", " + {{ default_srid }}
     point.setCoordinates([Lon, Lat])
     mapView.setCenter([Lon, Lat])
     lattext.innerText = Lat
