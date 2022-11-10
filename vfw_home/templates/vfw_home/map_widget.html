@@ -32,8 +32,10 @@
   <br><br>
 </div>
 <script>
-  const LatPattern = /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$/
-  const LonPattern = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$/
+  // ol.proj.useGeographic();  // should allow to use 4326 for map, but isn't working that way
+
+  const LatPattern = /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{0,6})?))$/
+  const LonPattern = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{0,6})?))$/
   const lattext = document.getElementById("lattext");
   const lontext = document.getElementById("lontext");
   const Lat = document.getElementById("Lat");
@@ -41,12 +43,12 @@
   const LatLon = document.getElementById("{{ name }}element");
 
   // map elements
-  const point = new ol.geom.Point(
-    ol.proj.fromLonLat([{{ default_lon }}, {{ default_lat }}], 'EPSG:{{ default_srid }}'))
+  const coords = ol.proj.transform([{{ default_lon }}, {{ default_lat }}], 'EPSG:{{ default_srid }}', 'EPSG:3857')
+  const point = new ol.geom.Point(coords)
   const mapView = new ol.View({
-    center: [{{ default_lon }}, {{ default_lat }}],
+    center: coords,
     zoom: {{ default_zoom }},
-    projection: "EPSG:{{ default_srid }}"
+    projection: "EPSG:3857"
   });
   const map = new ol.Map({
     layers: [
@@ -82,9 +84,10 @@
   };
 
   function update_coords(Lat, Lon) {
+    let coords = ol.proj.transform([Lon, Lat], 'EPSG:{{ default_srid }}', 'EPSG:3857')
     LatLon.value = Lat + ", " + Lon + ", " + {{ default_srid }}
-    point.setCoordinates([Lon, Lat])
-    mapView.setCenter([Lon, Lat])
+    point.setCoordinates(coords)
+    mapView.setCenter(coords)
     lattext.innerText = Lat
     lontext.innerText = Lon
   }
