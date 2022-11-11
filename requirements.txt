@@ -19,3 +19,4 @@ redis
 requests
 mozilla-django-oidc
 bridget
+python-decouple

@@ -23,6 +23,21 @@ from vfw_home.data_tools import DB_load_directiondata, find_data_gaps, DB_load_d
 from vfw_home.models import Entries
 
 import redis
+try:
+    from heron.settings import REDIS_HOST
+except:
+    REDIS_HOST = 'localhost'
+try:
+    from heron.settings import REDIS_PORT
+except:
+    REDIS_PORT = 6379
+try:
+    from heron.settings import REDIS_DB
+except:
+    REDIS_DB = 0
+
+    
+
 import pandas as pd
 import time
 
@@ -483,7 +498,7 @@ def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 
     :param size:
     :return: Bokeh image consisting of 'script' and 'div'
     """
-    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(host=REDISHOST, port=REDIS_PORT, db=REDIS_DB),
                  'in_cache': False, 'name': "plot_{}".format('b' + str(ID) + str(size) + str(date))}
     cache_obj, img = get_cache(cache_obj)
 

@@ -1,10 +1,24 @@
 import django
-import redis
 import requests
 from django.shortcuts import render
 
 from heron.settings import LOCAL_GEOSERVER, SECRET_GEOSERVER, MAP_SERVER, DEBUG
 from wps_gui.models import WebProcessingService
+
+import redis
+try:
+    from heron.settings import REDIS_HOST
+except:
+    REDIS_HOST = 'localhost'
+try:
+    from heron.settings import REDIS_PORT
+except:
+    REDIS_PORT = 6379
+try:
+    from heron.settings import REDIS_DB
+except:
+    REDIS_DB = 0
+
 
 
 def home(request):
@@ -12,7 +26,7 @@ def home(request):
     Dummy page for Self Monitor tool.
     """
     services = {}
-    rs = redis.Redis("localhost")
+    rs = redis.Redis(host=REDISHOST, port=REDIS_PORT, db=REDIS_DB)
 
     def get_status(url, secret):
         checked_service = {'runs': False}
@@ -42,14 +56,14 @@ def home(request):
     except redis.ConnectionError as e:
         connected = False
         print('Can not connect to Redis: ', e)
-    services['Redis connection'] = {'runs': connected, 'url': 'redis.Redis("localhost").client_list()'}
+    services['Redis connection'] = {'runs': connected, 'url': 'redis.Redis(host={}, port={}, db={}).client_list()'.format(REDIS_HOST, REDIS_PORT, REDIS_DB)}
     try:
         rs.ping()
         connected = True
     except Exception as e:
         connected = False
         print('Can not ping Redis: ', e)
-    services['Redis running'] = {'runs': connected, 'url': 'redis.Redis("localhost").ping()'}
+    services['Redis running'] = {'runs': connected, 'url': 'redis.Redis(host={}, port={}, db={}).ping()'.format(REDIS_HOST, REDIS_PORT, REDIS_DB)}
 
     # url tests
     services['GeoServer'] = get_status("{}/rest/about/status.json".format(LOCAL_GEOSERVER), SECRET_GEOSERVER)
