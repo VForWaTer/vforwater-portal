@@ -73,23 +73,25 @@
 
   // update map and text
   Lat.oninput = function () {
-    let latval = Lat.value.replace(",", ".")
-    let LatNum = LatPattern.test(latval) ? parseFloat(latval) : {{ default_lat }}
-    update_coords(LatNum, Lon.value.replace(",", "."))
+    let latval = this.value.replace(",", ".");
+    let LatNum = LatPattern.test(latval) ? parseFloat(latval) : {{ default_lat }};
+    let LonNum = Math.abs(Lon.value) > 0 ? Lon.value.replace(",", ".") : 0;
+    update_coords(LatNum, LonNum);
   };
   Lon.oninput = function () {
-    let lonval = Lon.value.replace(",", ".")
-    let LonNum = LonPattern.test(lonval) ? parseFloat(lonval) : {{ default_lon }}
-    update_coords(Lat.value.replace(",", "."), LonNum)
+    let lonval = this.value.replace(",", ".");
+    let LonNum = LonPattern.test(lonval) ? parseFloat(lonval) : {{ default_lon }};
+    let LatNum = Math.abs(Lat.value) > 0 ? Lat.value.replace(",", ".") : 0;
+    update_coords(LatNum, LonNum);
   };
 
-  function update_coords(Lat, Lon) {
-    let coords = ol.proj.transform([Lon, Lat], 'EPSG:{{ default_srid }}', 'EPSG:3857')
-    LatLon.value = Lat + ", " + Lon + ", " + {{ default_srid }}
-    point.setCoordinates(coords)
-    mapView.setCenter(coords)
-    lattext.innerText = Lat
-    lontext.innerText = Lon
+  function update_coords(uLat, uLon) {
+    let coords = ol.proj.transform([parseFloat(uLon), parseFloat(uLat)], 'EPSG:{{ default_srid }}', 'EPSG:3857');
+    LatLon.value = uLat + ", " + uLon + ", " + {{ default_srid }};
+    point.setCoordinates(coords);
+    mapView.setCenter(coords);
+    lattext.innerText = uLat;
+    lontext.innerText = uLon;
   }
 
 </script>
