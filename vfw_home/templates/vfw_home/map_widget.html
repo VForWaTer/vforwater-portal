@@ -74,13 +74,13 @@
   // update map and text
   Lat.oninput = function () {
     let latval = this.value.replace(",", ".");
-    let LatNum = LatPattern.test(latval) ? parseFloat(latval) : {{ default_lat }};
+    let LatNum = LatPattern.test(latval) ? parseFloat(latval) : 0;
     let LonNum = Math.abs(Lon.value) > 0 ? Lon.value.replace(",", ".") : 0;
     update_coords(LatNum, LonNum);
   };
   Lon.oninput = function () {
     let lonval = this.value.replace(",", ".");
-    let LonNum = LonPattern.test(lonval) ? parseFloat(lonval) : {{ default_lon }};
+    let LonNum = LonPattern.test(lonval) ? parseFloat(lonval) : 0;
     let LatNum = Math.abs(Lat.value) > 0 ? Lat.value.replace(",", ".") : 0;
     update_coords(LatNum, LonNum);
   };
