@@ -1,7 +1,14 @@
-from django import forms
-from django.template import Template, Context
-from django.utils.safestring import mark_safe
+import json
 import re
+
+from django.contrib.gis import forms
+from django.contrib.gis.geos import GEOSGeometry
+from django.shortcuts import render
+from django.template import Template, Context, loader
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
+
+from vfw_home.models import Entries
 
 
 class Slider(forms.HiddenInput):
@@ -278,6 +285,7 @@ class CustomOSMWidget(forms.OpenLayersWidget):
 
         s = super(CustomOSMWidget, self).render(name, value, attrs)
         self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
+
         html = loader.get_template('vfw_home/map_widget.html').render(context={'name': name,
                                                                                'default_lon': self.default_lon,
                                                                                'default_lat': self.default_lat,
@@ -287,5 +295,28 @@ class CustomOSMWidget(forms.OpenLayersWidget):
                                                                                'map_height': self.attrs['map_height'],
                                                                                })
 
+        print('test')
         return html
 
+
+class AutocompleteCharWidget(forms.ChoiceField, forms.TextInput):
+
+    def __init__(self, *args, **kwargs):
+        super(AutocompleteCharWidget, self).__init__(*args, **kwargs)
+
+    def render(self, name, value, attrs=None, **kwargs):
+        print('+++++++++++++ autocomplete')
+        print('attrs: ', attrs)
+        print('self: ', self.attrs)
+        print('name: ', name)
+        print('value: ', value)
+
+        s = super(AutocompleteCharWidget, self).render(name, value, attrs)
+        self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
+        print('self.elem_id: ', self.elem_id)
+
+        html = loader.get_template('vfw_home/autocomplete_widget.html')\
+            .render(context={'name': name,
+                             'choices': self.choices,
+                             })
+        return html
