@@ -867,7 +867,7 @@ function toggleMapTableFilter(evt, tabName, isFilter = false) {
 
 function filter_pagination(page) {
     let data = JSON.stringify(vfw.var.obj.selectedIds.result);
-    if (data.length == 0) {data = 'None'}
+    if (Array.isArray(data) && !data.length) {data = 'None'}
     $.ajax({
         url: vfw.var.DEMO_VAR + "/home/entries_pagination",
         datatype: 'json',
@@ -1070,7 +1070,7 @@ function advanced_filter_query(selection) {
  * Takes the ID of a button element. Used to toggle show/hide of the element following to this button element.
  * @param {string} element
  */
-function collapsibleFun(element) {
+vfw.util.collapsibleFun = function (element) {
     let x = document.getElementById(element);
     let content = x.nextElementSibling;
     x.classList.toggle("openElement");

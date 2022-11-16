@@ -11,7 +11,7 @@
       <div>{{ obj.name }}: {{ obj }} </div></br>
       {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
     {% endfor %}
-    <button type="button" class="collapsible" id="quickfiltermore" onclick="collapsibleFun('quickfiltermore')">
+    <button type="button" class="collapsible" id="quickfiltermore" onclick="vfw.util.collapsibleFun('quickfiltermore')">
       {% trans "more..." %}</button>
     <div class="content">
       <p>

@@ -33,7 +33,6 @@
 </div>
 <script>
   // ol.proj.useGeographic();  // should allow to use 4326 for map, but isn't working that way
-
   const LatPattern = /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{0,6})?))$/
   const LonPattern = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{0,6})?))$/
   const lattext = document.getElementById("lattext");
@@ -93,10 +92,9 @@
     lattext.innerText = uLat;
     lontext.innerText = uLon;
   }
-
 </script>
 <style> .pointmap {
   width: {{ map_width }}px;
   height: {{ map_height }}px;
 }
-</style>'
+</style>

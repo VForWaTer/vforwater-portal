@@ -215,8 +215,8 @@ class TableSelect(forms.Select):
         heading = self.item_attrs['heading'] if 'heading' in self.item_attrs else []
         title = self.item_attrs['data-forsearch'][0] if 'data_foresearch' in self.item_attrs else ''
 
-        select_head = """<select name="Variable" {required} id=id_{id_str}><option value="" title={title}>{heading}
-        </option>""".format(required=required, id_str=self.elem_id, title=title,
+        select_head = """<select name="{name}" {required} id=id_{id_str}><option value="" title={title}>{heading}
+        </option>""".format(required=required, id_str=self.elem_id, title=title, name=name,
                             heading='&emsp;|&emsp;'.join(heading))
 
         all_options = ""
@@ -231,6 +231,10 @@ class TableSelect(forms.Select):
                 if 'data-forsearch' in self.item_attrs:
                     option = "<option value={value} title='{title}'>{option}</option>" \
                         .format(value=sc_list[0], title=sc_list[-1], option='&emsp;|&emsp;'.join(sc_list[1:-1]))
+                elif 'title-col' in self.item_attrs:
+                    option = "<option value={value} title='{title}'>{option}</option>" \
+                        .format(value=sc_list[0], title=','.join(sc_list[self.item_attrs['title-col']:]),
+                                option='&emsp;|&emsp;'.join(sc_list[1:self.item_attrs['title-col']]))
                 else:
                     option = "<option value={0} data-search=''>{1}</option>"\
                         .format(sc_list[0], '&emsp;|&emsp;'.join(sc_list[1:]))
@@ -251,7 +255,7 @@ class TableSelect_plus(TableSelect):
         tableselect = super(TableSelect_plus, self).render(name, value, attrs)
 
         plus = """
-        <button type="button" class="collapsible" id="add"{name} onclick="collapsibleFun('quickfiltermore')">
+        <button type="button" class="collapsible" id="add"{name} onclick="vfw.util.collapsibleFun('quickfiltermore')">
           {% trans "new" %} """ + name + """"</button>
             <div class="content">
               <p>

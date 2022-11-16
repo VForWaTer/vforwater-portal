@@ -76,12 +76,11 @@ class DateTimeRangeSliderField(forms.DateTimeField):
 class CustomOSMField(forms.Field):
 
     default_error_messages = {
-        'invalid': ugettext_lazy('Enter latitude,longitude'),
+        'invalid': ugettext_lazy('Enter Latitude and Longitude'),
     }
     re_point = re.compile(r'^\s*(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(?:(\d{4,5})?)$')
     lat_pattern = re.compile(r'^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$')
     lon_pattern = re.compile(r'^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')
-    # srid_pattern = re.compile(r'^-?\d{4,5}$')
 
     def __int__(self, separator=",", *args, **kwargs):
 
@@ -108,8 +107,7 @@ class CustomOSMField(forms.Field):
             value = Point(float(m.group(1)), float(m.group(2)), srid=int(m.group(3)))
             return value
         except (ValueError, TypeError):
-            raise ValidationError(self.error_messages['invalid'],
-                                  code='invalid')
+            raise ValidationError(self.error_messages['invalid'], code='invalid')
 
     def validate(self, value):
         """Check if value consists only of valid emails."""
@@ -118,3 +116,42 @@ class CustomOSMField(forms.Field):
         # for email in value:
         #     self.to_python(self, value)
         #     validate_email(email)
+
+
+class AutocompleteCharField(forms.Field):
+
+    default_error_messages = {
+        'invalid': ugettext_lazy('Enter Latitude and Longitude'),
+    }
+
+    def __int__(self, *args, **kwargs):
+        print('\033[91m','ACField init','\033[0m')
+
+        self.attrs = kwargs.pop('attrs', '')
+        # kwargs['widget'] = CustomMap(self.attrs)
+        kwargs['widget'] = AutocompleteCharField(self.attrs)
+        kwargs['max_length'] = 105
+        super(AutocompleteCharField, self).__init__(*args, **kwargs)
+
+    def to_python(self, value):
+        # TODO: there are still bugs in the template. Shouldn't show anything in URL
+        """Normalize data to a list of strings."""
+        # Return an empty list if no input was given.
+        print('\033[20m','to python value 1: ' '\033[0m')
+        print('\033[20m','to python value 1: ', value)
+        value = super(AutocompleteCharField, self).to_python(value)
+        print('to python value 2: ', value, '\033[0m')
+        if value in self.empty_values:
+            return None
+        try:
+
+            if not True:
+                raise ValueError()
+            # value = Point(float(m.group(1)), float(m.group(2)), srid=int(m.group(3)))
+            return value
+        except (ValueError, TypeError):
+            raise ValidationError(self.error_messages['invalid'], code='invalid')
+
+    def validate(self, value):
+        """Check if value consists only of valid emails."""
+        super().validate(value)
