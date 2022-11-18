@@ -48,6 +48,8 @@
     let seconds = 0;
     let hemisphere = 1;
     let LonNum, LatNum;
+    let defaultLat = true;
+    let defaultLon = true;
 
     // map elements
     const coords = ol.proj.transform([{{ default_lon }}, {{ default_lat }}], 'EPSG:{{ default_srid }}', 'EPSG:3857')
@@ -80,6 +82,7 @@
 
     // update map and text
     Lat.oninput = function () {
+      defaultLat = false;
       let latval = this.value.replace(",", ".").replace("s", "S");
       if (LatPattern.test(latval)) {
         LatNum = parseFloat(latval);
@@ -88,10 +91,12 @@
       } else {
         LatNum = 0;
       }
-      let LonNum = Math.abs(parseFloat(Lon.value)) > 0 ? Lon.value.replace(",", ".") : 0;
+      let LonNum;
+      LonNum = Math.abs(parseFloat(lontext.innerText)) > 0 && !defaultLon ? parseFloat(lontext.innerText) : 0;
       update_coords(LatNum, LonNum);
     };
     Lon.oninput = function () {
+      defaultLon = false;
       let lonval = this.value.replace(",", ".").replace("w", "W");
       if (LonPattern.test(lonval)) {
         LonNum = parseFloat(lonval);
@@ -100,7 +105,8 @@
       } else {
         LonNum = 0;
       }
-      let LatNum = Math.abs(parseFloat(Lat.value)) > 0 ? Lat.value.replace(",", ".") : 0;
+      let LatNum;
+      LatNum = Math.abs(parseFloat(lattext.innerText)) > 0 && !defaultLat ? parseFloat(lattext.innerText) : 0;
       update_coords(LatNum, LonNum);
     };
 
@@ -118,7 +124,7 @@
       minutes = typeof matches[9] == 'undefined' ? 0 : parseInt(matches[9]);
       seconds = typeof matches[11] == 'undefined' ? 0 : parseFloat(matches[11]);
       hemisphere = matches[14] == 'S' || matches[14] == 'W' ? -1 : 1;
-      return hemisphere * parseInt(matches[7])+((minutes + (seconds/60))/60);
+      return hemisphere * (parseInt(matches[7])+((minutes + (seconds/60))/60));
     }
 
   }
