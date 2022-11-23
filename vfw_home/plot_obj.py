@@ -4,8 +4,9 @@ import numpy as np
 import pandas as pd
 from bokeh.embed import components
 from bokeh.layouts import column
-from bokeh.models import HoverTool, DatetimeTickFormatter, ColumnDataSource, BoxAnnotation, Whisker, DateRangeSlider, \
-    DateSlider, CustomJS, Range1d, LogColorMapper, ColorBar, TableColumn, DateFormatter, DataTable
+from bokeh.models import HoverTool, DatetimeTickFormatter, ColumnDataSource, BoxAnnotation, Whisker, \
+    CustomJS, Range1d, LogColorMapper, ColorBar, TableColumn, DateFormatter, DataTable, PolyAnnotation, DateSlider, \
+    DateRangeSlider
 from bokeh.palettes import Oranges9, viridis, Viridis, all_palettes
 from bokeh.plotting import figure
 from bokeh.transform import linear_cmap
@@ -53,24 +54,16 @@ class PlotObject:
                 self.title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
 
             if self.dataObj.label.lower().find('direction') != -1:
-                print('its a direction plot ___________________')
                 self.__get_direction_plot__()
             elif self.dataObj.label.lower().find('eddy covariance') != -1:
-                print('its an eddy covariance plot ___________________')
                 self.__create_eddy_footprint__
             elif self.dataObj.data_table_name == ['evapotranspiration']:
                 # 1D timeseries plot
-                print('its an evapotranspiration (1d timeseries) plot ___________________')
                 self.__create_standard_timeseries__()
             elif self.dataObj.data_table_name == ['u', 'v', 'w']:
-                print('we need a 3d plot ___________________')
             elif self.dataObj.label.lower().find('windspeed') != -1:
-                print('we need a wind SPEED!! plot _________________')
             elif self.dataObj.data_format == '3D':
-                print('self.dataObj.data_format: ', self.dataObj.data_format)
-                print('we need a 3D plot ________________-')
             elif self.dataObj.data_table_name.lower().find('timeseries') != -1:
-                print('its a 1d timeseries plot ___________________')
 
                 self.__create_standard_timeseries__()
 
@@ -215,14 +208,14 @@ class PlotObject:
                        direction='clock', line_color='darkred', fill_color='lightsalmon', legend_label=labeltext)
 
         # create slider
-        day = 1000 * 3600 * 24
+        day = 1 #  1000 * 3600 * 24 #  Bokeh 3 uses stepsize in days
         stepsize = day
         if self.dataObj.timestep_label == 'week':
-            stepsize = day
+            stepsize = day * 7
         elif self.dataObj.timestep_label == 'month':
-            stepsize = 7 * day
-        elif self.dataObj.timestep_label == 'year':
             stepsize = 30 * day
+        elif self.dataObj.timestep_label == 'year':
+            stepsize = 365 * day
 
         slider = DateSlider(start=min(df.columns), end=max(df.columns), value=min(df.columns), step=stepsize,
                             title="date within histogram")
