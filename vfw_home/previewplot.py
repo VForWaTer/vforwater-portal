@@ -83,7 +83,7 @@ def get_bokeh_3D_fullres(plot_data: object, full_res: bool, size: list, label: s
                           y_axis_label=label,
                           title=title,
                           # sizing_mode='stretch_both',
-                          plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
+                          width=size[0], height=int(size[1] * 0.9), toolbar_location="above",
                           tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
 
     script, div = components(column(mainplot, sizing_mode="scale_both"), wrap_script=False)
@@ -113,7 +113,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
                       y_axis_label=label,
                       title=title,
                       # sizing_mode='stretch_both',
-                      plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
+                      width=size[0], height=int(size[1] * 0.9), toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
     # plot value line
@@ -183,7 +183,7 @@ def get_bokeh_standard(plot_data: object, size: list, label: str = "") -> object
     mainplot = figure(title='Daily average, min and max values', x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,
                       # sizing_mode='stretch_both',
-                      plot_width=size[0], plot_height=int(size[1] * 0.9), toolbar_location="above",
+                      width=size[0], height=int(size[1] * 0.9), toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
 
@@ -269,7 +269,7 @@ def direction_plot(dataframe: object, ti: str) -> object:
     pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
     jssource = ColumnDataSource(data=db_datadictstr)
 
-    mainplot = figure(title=titletext, plot_width=400, plot_height=400,
+    mainplot = figure(title=titletext, width=400, height=400,
                       x_axis_type=None, y_axis_type=None, tools="save",
                       min_border=0, outline_line_color=None)
     mainplot.title.text_font_size = "14pt"
@@ -416,7 +416,7 @@ def xyplot_base_figure(data, size, y_label='value', x_label="x axis", x_type="li
     """
     mainplot = figure(title=title, x_axis_label=x_label, x_axis_type=x_type,
                       y_axis_label=y_label,
-                      plot_width=size[0], plot_height=size[1], toolbar_location="above",
+                      width=size[0], height=size[1], toolbar_location="above",
                       tools="pan,wheel_zoom,box_zoom,reset, save", active_drag="box_zoom")
     # plot.toolbar.autohide = True
     # plot line
@@ -450,8 +450,8 @@ def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_
     :return: bokeh figure object
     """
     p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
-               # plot_width=plot_width,
-               plot_height=50, toolbar_location="above", background_fill_color="black",
+               # width=plot_width,
+               height=50, toolbar_location="above", background_fill_color="black",
                tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom", sizing_mode='stretch_width')
     p.vbar(x='date', source=source, width=bin_width, bottom=0, top=1, color=mapper)
     p.xaxis.visible = False

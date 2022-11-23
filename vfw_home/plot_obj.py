@@ -112,7 +112,7 @@ class PlotObject:
                                y_axis_label=self.dataObj.label,
                                title=self.title,
                                # sizing_mode='stretch_both',
-                               plot_width=self.plot_size[0], plot_height=int(self.plot_size[1] * 0.9),
+                               width=self.plot_size[0], height=int(self.plot_size[1] * 0.9),
                                toolbar_location="above", tools="pan,wheel_zoom,box_zoom,reset, save",
                                active_drag="box_zoom")
 
@@ -162,8 +162,8 @@ class PlotObject:
                                           formatters={"@tstamp": "datetime"}, mode="mouse"))
 
     def __datetime_xaxis__(self):
-        self.mainplot.xaxis.formatter = DatetimeTickFormatter(days=["%d %b %Y"], months=["%d %b %Y"],
-                                                              years=["%d %b %Y"])
+        self.mainplot.xaxis.formatter = DatetimeTickFormatter(days="%d %b %Y", months="%d %b %Y",
+                                                              years="%d %b %Y")
 
     def __style_plot__(self):
         self.mainplot.title.text_font_size = "14pt"
@@ -198,7 +198,7 @@ class PlotObject:
         pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
         jssource = ColumnDataSource(data=db_datadictstr)
 
-        mainplot = figure(title=titletext, plot_width=400, plot_height=400,
+        mainplot = figure(title=titletext, width=400, height=400,
                           x_axis_type=None, y_axis_type=None, tools="save",
                           min_border=0, outline_line_color=None)
         mainplot.title.text_font_size = "14pt"

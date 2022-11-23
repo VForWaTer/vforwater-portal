@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from decimal import Decimal
 from django.core.exceptions import EmptyResultSet
 
 from heron.settings import max_size_preview_plot
@@ -134,6 +135,10 @@ class DataObject:
 
         if self.multiple_lines:
             self.dataframe = self.__mulitvalcol_to_mulitcolval__(self.dataframe, self.data_names, self.value_column)
+
+        for i in self.dataframe.select_dtypes(include=['object']).columns:
+            if isinstance(self.dataframe[i][0], (Decimal,)):
+                self.dataframe[i] = self.dataframe[i].astype(float)
 
     def __get_eddy_data__(self):
         df = pd.DataFrame(list(self.__data_qs__))
