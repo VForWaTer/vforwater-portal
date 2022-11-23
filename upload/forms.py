@@ -6,7 +6,6 @@ from django.forms import TextInput
 # https://docs.djangoproject.com/en/1.11/topics/http/file-uploads/
 #
 from django.utils import translation
-from easy_select2 import select2_modelform, Select2
 
 from vfw_home.fields import CustomOSMField, AutocompleteCharField
 from vfw_home.widgets import TableSelect, CustomOSMWidget, AutocompleteCharWidget
