@@ -46,35 +46,39 @@ class PlotObject:
         self.__set_values__()
 
     def __set_values__(self):
+        try:
+            if self.dataObj.full:
+                self.title = ''
+            else:
+                self.title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
 
-        if self.dataObj.full:
-            self.title = ''
-        else:
-            self.title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
+            if self.dataObj.label.lower().find('direction') != -1:
+                print('its a direction plot ___________________')
+                self.__get_direction_plot__()
+            elif self.dataObj.label.lower().find('eddy covariance') != -1:
+                print('its an eddy covariance plot ___________________')
+                self.__create_eddy_footprint__
+            elif self.dataObj.data_table_name == ['evapotranspiration']:
+                # 1D timeseries plot
+                print('its an evapotranspiration (1d timeseries) plot ___________________')
+                self.__create_standard_timeseries__()
+            elif self.dataObj.data_table_name == ['u', 'v', 'w']:
+                print('we need a 3d plot ___________________')
+            elif self.dataObj.label.lower().find('windspeed') != -1:
+                print('we need a wind SPEED!! plot _________________')
+            elif self.dataObj.data_format == '3D':
+                print('self.dataObj.data_format: ', self.dataObj.data_format)
+                print('we need a 3D plot ________________-')
+            elif self.dataObj.data_table_name.lower().find('timeseries') != -1:
+                print('its a 1d timeseries plot ___________________')
 
-        if self.dataObj.label.lower().find('direction') != -1:
-            print('its a direction plot ___________________')
-            self.__get_direction_plot__()
-        elif self.dataObj.label.lower().find('eddy covariance') != -1:
-            print('its an eddy covariance plot ___________________')
-            self.__create_eddy_footprint__
-        elif self.dataObj.data_table_name == ['evapotranspiration']:
-            # 1D timeseries plot
-            print('its an evapotranspiration (1d timeseries) plot ___________________')
-            self.__create_standard_timeseries__()
-        elif self.dataObj.data_table_name == ['u', 'v', 'w']:
-            print('we need a 3d plot ___________________')
-        elif self.dataObj.label.lower().find('windspeed') != -1:
-            print('we need a wind SPEED!! plot _________________')
-        elif self.dataObj.data_format == '3D':
-            print('we need a 3D plot ________________-')
-        elif self.dataObj.data_table_name.lower().find('timeseries') != -1:
-            print('its a 1d timeseries plot ___________________')
+                self.__create_standard_timeseries__()
 
-            self.__create_standard_timeseries__()
+            else:
+                print('we need a standard plot!_______________')
 
-        else:
-            print('we need a standard plot!_______________')
+        except Exception as e:
+            print('Unable to create Plot: ', e)
 
         self.get_plot = {'script': self.script, 'div': self.div}
 
@@ -145,9 +149,9 @@ class PlotObject:
                            )
         mis_list = [*range(0, len(self.dataObj.missing_data), 4)]
         for i in mis_list:
-            box = BoxAnnotation(left=self.dataObj.missing_data[self.x_col][i + 1],
-                                right=self.dataObj.missing_data[self.x_col][i + 2],
-                                fill_alpha=0.2, fill_color='red')
+            box = BoxAnnotation(left=self.dataObj.missing_data[self.x_col][i + 1].timestamp()*1000,
+                                right=self.dataObj.missing_data[self.x_col][i + 2].timestamp()*1000,
+                                fill_alpha=0.1, fill_color='red')
             self.mainplot.add_layout(box)
 
     def __show_precision__(self):
@@ -172,6 +176,7 @@ class PlotObject:
         # self.mainplot.BoxAnnotation(top=80, fill_alpha=0.1, fill_color='red')
 
     def __create_plot__(self):
+        # show(self.mainplot)  # test if plot is working at all
         self.script, self.div = components(column(self.mainplot, sizing_mode="scale_both"), wrap_script=False)
 
     def __get_direction_plot__(self):

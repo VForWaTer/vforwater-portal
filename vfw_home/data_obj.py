@@ -131,7 +131,6 @@ class DataObject:
             elif isinstance(self.dataframe[self.value_column][0], list) \
                 and len(self.dataframe[self.value_column][0]) > 1:
                 print('ERROR: Expect only one column for timeseries_1d')
-            print('*** nothing to fix ')
 
         if self.multiple_lines:
             self.dataframe = self.__mulitvalcol_to_mulitcolval__(self.dataframe, self.data_names, self.value_column)
