@@ -59,10 +59,15 @@ class PlotObject:
                 self.__create_eddy_footprint__
             elif self.dataObj.data_table_name == ['evapotranspiration']:
                 # 1D timeseries plot
+                print('its an evapotranspiration (1d timeseries) plot ___________________')
                 self.__create_standard_timeseries__()
             elif self.dataObj.data_table_name == ['u', 'v', 'w']:
+                print('we need a 3d plot ___________________')
             elif self.dataObj.label.lower().find('windspeed') != -1:
+                print('we need a wind SPEED!! plot _________________')
             elif self.dataObj.data_format == '3D':
+                print('self.dataObj.data_format: ', self.dataObj.data_format)
+                print('we need a 3D plot ________________-')
             elif self.dataObj.data_table_name.lower().find('timeseries') != -1:
 
                 self.__create_standard_timeseries__()
