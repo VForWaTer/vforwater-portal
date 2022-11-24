@@ -309,13 +309,13 @@ class DataObject:
 
         # use two shifted lists for comparison to find the first value of a gap
         shifted_list = np.append(0, empty_list)
-        empty_list = np.append(empty_list, 0)
-        diff_list = np.subtract(empty_list, shifted_list)
+        empty_list = np.append(empty_list, 0)  # all indices without a value in a perfect timeseries
+        diff_list = np.subtract(empty_list, shifted_list)  # value at index position of first row of gap is greater 1
 
         # get indices of the perfect dataframe (without gaps)
-        perfectframe_gaps = empty_list[diff_list > 1] - 1
+        perfectframe_gaps = empty_list[diff_list > 1] - 1  # index of last value before gap
         # get list of dates just before the gap
-        gaps_date_list = combined_dataframes.loc[perfectframe_gaps.tolist()][index].tolist()
+        gaps_date_list = combined_dataframes.loc[perfectframe_gaps.tolist()][index].tolist()  # dates at last values before gap
 
         # make a list of the indices (from the original dataframe) of the position before the gaps
         self.__value_before_gap__ = self.dataframe.loc[self.dataframe[index].isin(gaps_date_list)].index.values.tolist()
@@ -375,12 +375,20 @@ class DataObject:
             else:
                 defectrow2['value'] = row_before[self.value_column]
                 defectrow3['value'] = row_after[self.value_column]
+
             defectrow4 = pd.DataFrame(row_after['tstamp'] + self.timescale)
             defectrow4['value'] = pd.NA
 
+            # add column just to bring 'no data' in the right order
+            defectrow1['orderCol'] = list(range(0, gap_length * 4, 4))
+            defectrow2['orderCol'] = list(range(1, gap_length * 4, 4))
+            defectrow3['orderCol'] = list(range(2, gap_length * 4, 4))
+            defectrow4['orderCol'] = list(range(3, gap_length * 4, 4))
+
             defect = pd.concat([defectrow1, defectrow2, defectrow3, defectrow4])
             # reindex rows before and after a gap
-            defect.sort_values(by='tstamp', inplace=True)
+            defect.sort_values(by='orderCol', inplace=True)
+            defect.drop(columns=['orderCol'])
 
             defect_x = defect.tstamp.tolist()
             defect_y = defect.value.tolist()
