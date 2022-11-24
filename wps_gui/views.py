@@ -15,8 +15,8 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 
 from heron.settings import VFW_SERVER, HOST_NAME
-from vfwheron.models import Entries, Datatypes
-from vfwheron.views import get_accessible_data, get_dataset
+from vfw_home.models import Entries, Datatypes
+from vfw_home.views import get_accessible_data, get_dataset
 from wps_gui.models import WpsResults, WebProcessingService
 from wps_gui.utilities import get_wps_service_engine, list_wps_service_engines, abstract_is_link
 

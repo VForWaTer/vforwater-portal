@@ -82,7 +82,7 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-        'vfwheron': {
+        'vfw_home': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -99,7 +99,7 @@ LOGGING = {
 # Application definition
 
 INSTALLED_APPS = [
-    'vfwheron.apps.VfwheronConfig',
+    'vfw_home.apps.vfw_homeConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -109,8 +109,8 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     # 'heron_wps',
     'wps_gui',
-    'heron_monitor',
-    'heron_visual',
+    'vfw_status',
+    'visual_app',
     'upload',
     'author_manage.apps.authorManageConfig',
 ]
@@ -157,7 +157,7 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 # http://diegobz.net/2011/02/10/django-database-router-using-settings/
 
 # DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# DATABASE_APPS_MAPPING = {'vfw_home': 'vforwater'}
 
 DATABASES = {
     'default': {
@@ -222,11 +222,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default URLs for user authentication
-LOGIN_URL = 'vfwheron:login'
-LOGIN_REDIRECT_URL = 'vfwheron:home'
-LOGOUT_REDIRECT_URL = 'vfwheron:home'
-LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
+LOGIN_URL = 'vfw_home:login'
+LOGIN_REDIRECT_URL = 'vfw_home:home'
+LOGOUT_REDIRECT_URL = 'vfw_home:home'
+LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfw_home/rsp/login/success'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfw_home'
 
 
 # Figure out if we're on our development server...
