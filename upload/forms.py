@@ -1,6 +1,7 @@
 from django.contrib.gis import forms
 from django.db.models import DateTimeField, CharField, FloatField
 from django.db.models.functions import Cast, TruncSecond
+from django.forms import TextInput
 # To upload the file to a model check the django documentation
 # https://docs.djangoproject.com/en/1.11/topics/http/file-uploads/
 #

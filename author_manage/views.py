@@ -23,7 +23,6 @@ from django.utils.html import strip_tags
 from django.core.exceptions import PermissionDenied, ValidationError
 from _csv import reader, Error
 import mimetypes
-# from test.support import resource
 from django.db.models import Q
 from django.views.decorators.cache import never_cache
 from django.shortcuts import get_object_or_404
@@ -64,7 +63,6 @@ class HomeView(generic.View):
         return render(request, 'author_manage/home.html', {'is_admin': is_admin})
 
 
-# @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
 class ProfileView(generic.ListView):
     """
@@ -94,7 +92,6 @@ class ProfileView(generic.ListView):
         if self.model.exists():
             if current_user.is_staff and DeletionRequest.objects.all().exists():
                 self.model = get_sorted_requests(self.model, DeletionRequest.objects.all().order_by('-creationDate'))
-                # self.model = list(chain(self.model,DeletionRequest.objects.all()))
         else:
             if current_user.is_staff and DeletionRequest.objects.all().exists():
                 self.model = DeletionRequest.objects.all().order_by('-creationDate')
@@ -144,8 +141,6 @@ class MyResourcesView(generic.ListView):
         reader_set = Resource.objects.filter(readers=self.request.user)
         deletion_set = Resource.objects.filter(deletionrequest__sender=self.request.user)
         access_set = Resource.objects.filter(accessrequest__sender=self.request.user)
-        # What about:
-        # users = User.objects.all().select_related('profile')
         current_user = owner_set | maintainer_set | reader_set | deletion_set | access_set
         return current_user.all()
 
@@ -1171,9 +1166,6 @@ class AddNewResourceView(generic.View):
         form = AddNewResourceForm(request.POST, request.FILES)
         if form.is_valid():
             instance = form.save(commit=False)
-            # instance.save()
-            # instance.owners.add(request.user.id)
-            # instance.readers.add(request.user.id)
             logger.info("User %s created the '%s' Resource \n" % (request.user.username, instance.link))
 
         else:
@@ -1189,7 +1181,6 @@ class AddNewResourceView(generic.View):
         args['form'] = form
         args['is_admin'] = self.request.user.is_staff
         args['user'] = self.request.user
-        # return render_to_response('author_manage/add-new-resource.html', args) # not working in django > 3
         return render(None, 'author_manage/add-new-resource.html', args)
 
 
@@ -1258,12 +1249,10 @@ def upload_persons(request):
     :param request:
     :return:
     """
-    print('persons upload request: ', request.GET)
     selection = NmPersonsEntries.objects.all().distinct('entry_id')
     myFilter = PersonsFilter(request.GET, queryset=selection)
 
     selection = myFilter.qs
-    print('selection: ', selection)
     context = {'myFilter': myFilter, 'selection': selection}
     return render(request, 'author_manage/upload_persons.html', context)
 
@@ -1275,11 +1264,9 @@ def upload_details(request):
     :param request:
     :return:
     """
-    print('details upload request: ', request.GET)
     selection = Details.objects.all().distinct('entry_id')
     myFilter = DetailsFilter(request.GET, queryset=selection)
 
     selection = myFilter.qs
-    print('selection: ', selection)
     context = {'myFilter': myFilter, 'selection': selection}
     return render(request, 'author_manage/upload_details.html', context)
