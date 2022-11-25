@@ -54,7 +54,7 @@
       <h2>Input</h2>
 	  <form role="form" action="" method="post">{% csrf_token %}
       <div class="list-group">
-        {% for input in process.dataInputs %}
+        {% for input in process.processsin %}
           <a class="list-group-item input">
             <h6 class="list-group-item-heading identifier"><b>{{ input.identifier }}</b> ({{ input.dataType }}): {{ input.title }}</h6>
 

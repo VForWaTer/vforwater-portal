@@ -14,6 +14,7 @@
     <div class="modal-header" id="modal-header" style="margin-left: -10px; margin-right: -10px;">
       <span class="fa fa-close fa-lg work_close modal-btn" title="{% trans "Close window" %}"></span>
       <h3 id="mod_head"></h3>
+      <param id="workflowID" value="">
     </div>
     <p id="mod_abs" class="modal-abstract"></p>
     <h4>Input</h4>
@@ -24,7 +25,7 @@
     <p align="right"><em>(*) = {% trans "required" %}</em></p>
     <div class="modal-footer" id="modal-footer" style="margin-left: -10px; margin-right: -10px;">
       <span-c class="work_modal-cancel modal-btn" title="{% trans "Close window" %}">Cancel</span-c>
-      <span-ok class="work_modal-ok modal-btn" title="{%  trans "Place tool in Dropzone." %}">Ok</span-ok>
+      <span-drop class="work_modal-drop modal-btn" title="{%  trans "Place tool in Dropzone. If tool already exists only change values." %}">Drop</span-drop>
       <span-r class="work_modal-run modal-btn">Run</span-r>
       <span-out class="work_modal-output" style="display: none">{%  trans "View result" %}</span-out>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
@@ -89,17 +90,97 @@
   // Get the <span> element that closes the modal
   let wspan = document.getElementsByClassName("work_close")[0];
   let wspan_c = document.getElementsByClassName("work_modal-cancel")[0];
-  let wspan_ok = document.getElementsByClassName("work_modal-ok")[0];
+  let wspan_drop = document.getElementsByClassName("work_modal-drop")[0];
   let wspan_r = document.getElementsByClassName("work_modal-run")[0];
   // When the user clicks on <span> (x), close the modal
   wspan.onclick = () => closeModal();
   wspan_r.onclick = () => {
     {#modal.style.display = "none";#}
-    if (is_required(modal) && check_pattern(modal)) modal_run_process()
+    if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) vfw.workspace.modal.run_process()
   };
-  wspan_ok.onclick = (event) => {
-    if (is_required(modal) && check_pattern(modal)) drop_on_click(event);
-    closeModal();
+  wspan_drop.onclick = (event) => {
+    // TODO: check if modal is opened from an existing box. If yes update sessionStorage and don't drop a new box.
+    let modal_value = document.getElementById("workflowID").value;
+    let tool_id;
+    let service;
+    if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) {
+
+      {#console.log('tool_id.length: ', tool_id.length)#}
+      /** check if the workspace box exists already in the sessionstorage */
+      if (modal_value == "") {
+        vfw.workspace.drop_on_click(event);
+        closeModal();
+      } else {
+        let modal_data = vfw.workspace.modal.prep_data()
+        modal_value = JSON.parse(modal_value)
+        tool_id = modal_value['id'];
+        service = modal_value['service'];
+        let toolbox = canvas.getFigure(tool_id)
+        event.state = 'change';
+        event.id = tool_id;
+        toolbox.state = 'change';
+        {#let box_param = vfw.draw2d.box_params(ev, tool_id, 'toolbar', service)#}
+        {#let box_param = vfw.draw2d.box_params(event, tool_id, 'toolbar', service)#}
+        {#box_param.state = 'change';#}
+        {#console.log('box_param: ', box_param)#}
+        let metadata, newbox, coords;
+        let change_values = {};
+        let workflow = vfw.session.get_workflow();
+        let active_tool = workflow[tool_id];
+        /** Compare tool in workflow with modal and change only changed values.
+         * Then check if tool (one if the changes) is connected with other elements to drop and get ports **/
+        for (let i in modal_data.in_type_list) {
+            if (box_types.includes(modal_data.in_type_list[i]) && modal_data.inId_list[i]) {
+              if (modal_data.inId_list[i] != active_tool.input_ids[i]) {
+                metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modal_data.inId_list[i]]
+                coords = vfw.workspace.get_drop_coords();
+                newbox = vfw.workspace.drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
+                change_values = {
+                  'target': {
+                    'index': i,
+                    'boxid': tool_id,
+                    'orgid': modal_data.id,
+                    'value': modal_data.value_list[i],
+                  },
+                  'source': {
+                    'index': i,
+                    {#'boxid': newbox.boxID,#}
+                    'boxid': newbox.boxID,
+                    'orgid': modal_data.inId_list[i],
+                    'value': modal_data.id,
+                  }
+                }
+                event.target.index = i;
+              }
+                {#tool_id = newbox.boxID;#}
+                {#databox = newbox.box;#}
+                {#dataport = databox.getOutputPort(0);#}
+                // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
+                {#toolport = toolbox.getInputPort(parseInt(i));#}
+               else if (active_tool.input_values[i] != modal_data.value_list[i]) {
+
+                change_values = {
+                'target': {
+                  'index': i,
+                  'boxid': tool_id,
+                  'orgid': modal_data.id,
+                  'value': modal_data.id,
+                },
+                'source': {
+                  'index': i,
+                  {#'boxid': newbox.boxID,#}
+                  'boxid': modal_data.inId_list[i],
+                  'orgid': modal_data.id,
+                  'value': modal_data.value_list[i],
+                }
+              }
+              }
+          }
+        change_values['state'] = 'change';
+          vfw.workspace.workflow.update(change_values)
+        }
+      }
+    }
   };
   wspan_c.onclick = () => {
     closeModal()
@@ -112,7 +193,8 @@
   function closeModal() {
     document.getElementsByClassName("work_modal-output")[0].style.display = "none";
     modal.style.display = "none";
-    set_modalColor("dodgerblue")
+    vfw.workspace.modal.set_Color("dodgerblue");
+    document.getElementById("workflowID").value = "";
   }
 
 

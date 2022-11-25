@@ -18,7 +18,14 @@
 {#let MAP_SERVER = "{{ MAP_SERVER }}";#}
 {#let DEMO_VAR = "{{ DEMO_VAR }}"#}
 {#</script>#}
+<body>
 <script>
+{#  {% autoescape off %}#}
+{#    var tools =  {{ tools }}#}
+{#  {% endautoescape %}#}
+  {#sessionStorage.setItem("tools",  JSON.stringify({'{{ service }}': tools}))#}
+{#  sessionStorage.setItem("tools",  JSON.stringify(tools))#}
+
   /**
    * Build Type indicators for buttons in Toolbox
    * Don't draw a marker, this is done with css. Set only respective class here.
@@ -28,47 +35,41 @@
    */
   function inoutIndicator(id, invalues, outvalues) {
     let element = document.getElementById(id);
-    //console.log('- invalues: ', invalues)
-    console.group(id)
     invalues.forEach(function (val) {
       if (val.includes('pattern')) {
         element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
-                'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
+          'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
       } else if (Array.isArray(val) && val.length > 1) {
         let newHeader = "";
         val.forEach(function (inVal) {
           newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-                  'class="' + inVal + ' "title="Input: ' + val + '"></span>';
+            'class="' + inVal + ' "title="Input: ' + val + '"></span>';
         });
         element.getElementsByTagName("button-header")[0].innerHTML +=
-                '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
+          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
       } else {
         element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val + '" ' +
-                'style="display: inline-block;" title="Input: ' + val + '"></span>';
+          'style="display: inline-block;" title="Input: ' + val + '"></span>';
       }
     });
-    console.groupEnd()
-    //console.log('outvalues: ', outvalues)
     outvalues.forEach(function (val) {
       if (Array.isArray(val) && val.length > 1) {
         let newFooter = "";
         val.forEach(function (outVal) {
           newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-                  'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
+            'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
         });
         element.getElementsByTagName("button-footer")[0].innerHTML +=
-                '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
+          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
       } else {
         element.getElementsByTagName("button-footer")[0].innerHTML +=
-                '<span style="align-self: flex-end;" <span class="' + val + '" ' +
-                'title="Ouput: ' + val + '"></span></div>';
+          '<span style="align-self: flex-end;" <span class="' + val + '" ' +
+          'title="Ouput: ' + val + '"></span></div>';
         {% comment %} display: inline-block for dots on the right side{% endcomment %}
       }
     })
   }
 </script>
-<body>
-<!-- TODO: check if still in use. If not delete that parm -->
 <!--   Sidenav/menu -->
 <!--   Show Data selected in Home in Data Store and start database loader -->
 <nav class="w3-sidenav w3-collapse w3-white w3-animate-right" style="z-index:0;width:300px;right:0"
@@ -102,13 +103,13 @@
     {% endif %}
     <table style="width:100%">
       <div class="list-group">
-        {% for process in wps.processes %}
-          {% if process.identifier != "dbloader" %}
+        {% for identifier, process in sessiondata.items %}
+          {% if identifier != "dbloader" %}
           <tr>
-            <div id="{{ process.identifier }}" class="process w3-card-2"
-                 onclick="wpsprocess('{{ service }}', '{{ process.identifier }}');"
+            <div id="{{ identifier }}" class="process w3-card-2"
+                 onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');"
                  title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
-                 data-service="{{ service }}" data-process="{{ process.identifier }}"
+                 data-service="{{ service }}" data-process="{{ identifier }}"
                  style="cursor:pointer;">
               <button-header class="w3-container" style="font-size: smaller">
               </button-header>
@@ -124,7 +125,7 @@
               <button-footer class="w3-container" style="font-size: smaller">
                 {#                                    <p>No output envisaged</p>#}
               </button-footer>
-              <style onload="inoutIndicator('{{ process.identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
+              <style onload="inoutIndicator('{{ identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
 
             </div>
           </tr>
@@ -142,6 +143,23 @@
 {#  Overlay effect when opening sidenav on small screens#}
 <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
+
+<script>
+  $.ajax({
+    url: vfw.var.DEMO_VAR + "/workspace/updatetools",
+    data: {
+      'csrfmiddlewaretoken': csrf_token,
+    },
+  })
+    .then(function(result){
+      if (result['wps'].length > 0) {
+        console.log('Got a database update. Please refresh page for new data for tool ', result)
+      }
+    })
+  .fail(function(result) {
+    console.warn('No WPS accessible: ')
+  })
+</script>
 </body>
 
 

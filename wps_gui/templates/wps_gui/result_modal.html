@@ -10,11 +10,11 @@
 
 <head>
   <meta charset="UTF-8">
-{#     <script src="{% static 'visual_app/js/bokeh-2.2.1.min.js' %}" type="text/javascript"></script>#}
-    {#   <script src="{% static 'visual_app/js/bokeh-widgets-2.2.1.min.js' %}" type="text/javascript"></script>#}
+{#  <script src="{% static 'visual_app/js/bokeh-2.4.3.min.js' %}" type="text/javascript"></script>#}
+{#    <script src="{% static 'visual_app/js/bokeh-widgets-2.4.3.min.js' %}" type="text/javascript"></script>#}
   {#  <script src="{% static 'visual_app/js/bokeh-tables-2.2.1.min.js' %}" type="text/javascript"></script>#}
- <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.2.1.min.js"></script>
-<script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.2.1.min.js"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.0.2.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.2.min.js" crossorigin="anonymous"></script>
 {#    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.1.min.js"></script>#}
 </head>
 <body>
@@ -57,9 +57,6 @@
   let rspan_b = document.getElementsByClassName("result_modal-close")[0];
   {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
   let modalToggleSize = document.getElementsByClassName("togglefullscreen")[0];
-  {% comment %}  span.onclick = function () {
-        closeModal()
-    };{% endcomment %}
   span.onclick = () => close_result_Modal();
   rspan_b.onclick = () => close_result_Modal();
   modalToggleSize.onclick = () => toggle_Modal_size();
@@ -74,9 +71,9 @@
     if (modalToggleSize.style.display === "none") {
       modalToggleSize.style.display = "block";
     }
-    if (bokehImage) {
+    if (vfw.var.obj.bokehImage) {
       bokehResultScript.parentNode.removeChild(bokehResultScript);
-      bokehImage = false;
+      vfw.var.obj.bokehImage = false;
     }
   }
 
@@ -88,7 +85,7 @@
     } else {
       reset_Modal("resultModal-content", modalToggleSize)
     }
-    place_html_with_js("mod_result", bokehImage)
+    place_html_with_js("mod_result", vfw.var.obj.bokehImage)
     {#place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
   }
 

@@ -11,31 +11,25 @@
 </head>
 <body>
 <div id="workflowbuilder">
-  <b class="w3-btn-group">
-    <input class="w3-btn w3-blue w3-left" type="submit" onclick="load_workflow()"
-           value="{% trans "Load workflow" %}" data-toggle="tooltip"
+  <b class="w3-btn-group w3-hide-medium w3-hide-small">
+    <input class="w3-btn w3-blue w3-left" type="submit" onclick="vfw.workspace.workflow.load()"
+           value="{% trans "Load" %}" data-toggle="tooltip"
            title="{% trans "Click to load a saved workflow" %}">
-    <input class="w3-btn w3-blue w3-left" type="submit" onclick="save_workflow()"
-           value="{% trans "Save workflow" %}" data-toggle="tooltip"
+    <input class="w3-btn w3-blue w3-left" type="submit" onclick="vfw.workspace.workflow.save()"
+           value="{% trans "Save" %}" data-toggle="tooltip"
            title="{% trans "Click to save current workflow" %}">
     <input class="w3-center" id="workflow_name" rows="1" maxlength="50"
            title="{% trans "Name of current workflow with a max length of 50 characters. Allowed are characters, numbers, space, underscore and dash." %}"
            style="resize: none; height: 34px;"
            value="{% trans "my workflow" %}" pattern="[A-Za-z0-9\s_-]{1,50}">
-    <input class="w3-btn w3-green w3-right" type="submit" onclick="run_workflow()"
-           value="{% trans "Run workflow" %}" data-toggle="tooltip"
+    <input class="w3-btn w3-green w3-right" type="submit" onclick="vfw.workspace.workflow.run()"
+           value="{% trans "Run" %}" data-toggle="tooltip"
            title="{% trans "Click to run current workflow" %}">
-    <input class="w3-btn w3-red w3-right" type="submit" onclick="clear_workflow()"
-           value="{% trans "Clear workflow" %}" data-toggle="tooltip"
+    <input class="w3-btn w3-red w3-right" type="submit" onclick="vfw.workspace.workflow.clear_workflow()"
+           value="{% trans "Clear" %}" data-toggle="tooltip"
            title="{% trans "Click to clear current workflow" %}">
   </b>
-  {% comment %}<div id="dropdiv" title="Drag & Drop your Data and Tools here">Dropzone
-        <canvas id="dropzone" style="background: white; border:1px solid #d3d3d3; "
-                title="Drag & Drop your Data and Tools here">
-            Your browser does not support the HTML5 canvas tag.
-        </canvas>
-</div>{% endcomment %}
-  <div id="dropdiv" ondragover="dragover_handler(event)" ondrop="drop_handler(event)">
+  <div id="dropdiv" ondragover="dragover_handler(event)" ondrop="vfw.workspace.drop_handler(event)">
     <div title="{% trans "Drag & Drop your Data and Tools here" %}" style="padding: 10px">
       {% trans "Dropzone" %}</div>
   </div>
@@ -49,34 +43,24 @@
 </body>
 </html>
 
-{#<script src="https://unpkg.com/gojs/release/go-debug.js"></script>#}
 <script src="{% static 'wps_gui/js/draw2d.js' %}" type="text/javascript"></script>
 <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>
 <script src="{% static 'wps_gui/js/workflow.js' %}" type="text/javascript"></script>
-<script src="{% static 'wps_gui/js/clickConnect.js' %}" type="text/javascript"></script>
-<script src="{% static 'wps_gui/js/dragConnect.js' %}" type="text/javascript"></script>
-{#<script src="{% static 'wps_gui/js/workplace_editor.js' %}" type="text/javascript"></script>#}
-  {#    <script src="{% static 'visual_app/js/bokeh-2.2.1.min.js' %}" type="text/javascript"></script>#}
-  {#    <script src="{% static 'visual_app/js/bokeh-tables-2.2.1.min.js' %}" type="text/javascript"></script>#}
-  {#    <script src="{% static 'visual_app/js/bokeh-widgets-2.2.1.min.js' %}" type="text/javascript"></script>#}
-<script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.2.1.min.js"></script>
-<script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.2.1.min.js"></script>
-<script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.1.min.js"></script>
+<script>
+  {# handle workflow name #}
+  document.getElementById("workflow_name").addEventListener("keyup", function (event) {
 
-  let re = new RegExp(this.pattern);
-  let name = this.value;
-  {#re = /^[A-Za-z0-9_-]{1,50}$/#}
-  this.value = re.exec(name)
+    let re = new RegExp(this.pattern);
+    let name = this.value;
+    {#re = /^[A-Za-z0-9_-]{1,50}$/#}
+    this.value = re.exec(name)
 
-  if (event.keyCode === 13) {
-   event.preventDefault();
-   {#console.log('you pressed enter and got: ', event.path[0].value);#}
-   set_sessionStorage_workflow_name(this.value)
-  {% comment %}} else if (re.test(name)) {
-    console.log('new key: ', event.key)
-    console.log('this: ', this){% endcomment %}
-  }
-});
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      {# globalWorkflow.set_name(this.value);#}
+      vfw.session.set_workflow_name(this.value)
+    }
+  });
 </script>
 {#<SCRIPT src="./lib/jquery.autoresize.js"></SCRIPT>#}
 {#<SCRIPT src="./lib/jquery-touch_punch.js"></SCRIPT>#}

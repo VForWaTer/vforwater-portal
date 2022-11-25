@@ -15,7 +15,7 @@ views.py -> home.html--: render wps services
 
 home.html -> sidebar.html: call sidebar
 activate sidebar.html
-sidebar.html -> sidebar.js ++: show_data()
+sidebar.html -> sidebar.js ++: vfw.sidebar.show_data()
 sidebar.js -> sidebar.html : create datastore
 sidebar.js -> sidebar.js ++: preload_data()
 opt data in datastore
@@ -86,12 +86,12 @@ views.py -> home.html--: render wps services
 
 home.html -> sidebar.html: call sidebar
 activate sidebar.html
-sidebar.html -> sidebar.js ++: show_data()
+sidebar.html -> sidebar.js ++: vfw.sidebar.show_data()
 opt if sessionStorage(dataBtn)
     sessionStorage -> sidebar.js: get "dataBtn"
-    sidebar.js -> sidebar.html ++: build_datastore_button()
+    sidebar.js -> sidebar.html ++: vfw.sidebar.build_datastore_button()
     opt data in datastore without link to DB
-        sidebar.js -> sidebar.js ++: preload_datastore_button()
+        sidebar.js -> sidebar.js ++: vfw.sidebar.preload_datastore_button()
         rnote over views.py: ProcessView
         activate views.py
         sidebar.js -> views.py: <<ajax>> request 'dbload'
@@ -106,7 +106,7 @@ opt if sessionStorage(dataBtn)
         deactivate views.py
         views.py -> sidebar.js: link to data
             sidebar.js -> sessionStorage: update "dataBtn"
-            sidebar.js -> sidebar.html: update_datastore_button
+            sidebar.js -> sidebar.html: vfw.session.update_datastore_button
             deactivate sidebar.html
             deactivate sidebar.js
     end
@@ -114,7 +114,7 @@ deactivate views.py
 end
 opt if Element(workspace_results)
     sessionStorage -> sidebar.js: get result data
-    sidebar.js -> sidebar.html: build_resultstore_button()
+    sidebar.js -> sidebar.html: vfw.workspace.build_resultstore_button()
 end
 'sidebar.js -> sidebar.html : create datastore
 
@@ -152,7 +152,7 @@ workplace.js -> views.py ++: <<ajax>> request 'processrun'
 views.py -> views.py: wps.execute
 return JsonResponse(result)
 opt success
-    workplace.js -> workplace.js ++: set_result_btn_name()
+    workplace.js -> workplace.js ++: vfw.sidebar.set_result_btn_name()
     sessionStorage -> workplace.js: get resultBtnList
     alt if resultBtnList name exists in sessionStorage
         workplace.js -> workplace.js: Number result
@@ -169,6 +169,6 @@ deactivate workplace.js
 deactivate workplace.js
 end
 deactivate workplace.js
-workplace.js -> sidebar.html: build_resultstore_button()
+workplace.js -> sidebar.html: vfw.workspace.build_resultstore_button()
 deactivate workplace.js
 @enduml

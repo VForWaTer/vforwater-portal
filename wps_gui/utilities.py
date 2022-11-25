@@ -59,8 +59,9 @@ def activate_wps(wps, endpoint, name):
     except URLError as e:
         wps_log.debug(e)
         return None
-    except:
-        raise
+    except Exception as e:
+        # print('Impossible to activate wps. Unexpected error: ', e)
+        return None
 
     return wps
 
@@ -188,8 +189,7 @@ def get_wps_service_engine(name, app_class=None):
 def find_wps_service_engines():
 
     try:
-        # wps_address = 'http://localhost:5000/wps'
-        wps_address = VFW_SERVER + '/wps'
+        wps_address = 'http://localhost:5000/wps'
 
         wps_service = WebProcessingService(wps_address,
                                            verbose=False,

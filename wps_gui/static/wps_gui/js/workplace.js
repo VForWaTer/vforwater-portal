@@ -1,31 +1,6 @@
-function allowDrop(ev) {
-    ev.preventDefault();
-}
-
-function drag(ev) {
-    ev.dataTransfer.setData("text/html", ev.target.id);
-}
-
-function drop(ev) {
-    ev.preventDefault();
-    let droplet = ev.dataTransfer.getData("text/html");
-
-    // let droplet = document.createElement('canvas');
-    // let dropletCopy = document.createElement('canvas');
-    let dropletCopy = document.getElementById(droplet).cloneNode(true);
-    // build new id for new element:
-    if (sessionStorage.getItem("dz_count")) {
-        sessionStorage.setItem("dz_count", JSON.parse(sessionStorage.getItem("dz_count")) + 1)
-    } else {
-        sessionStorage.setItem("dz_count", 1)
-    }
-    dropletCopy.id = "dz" + sessionStorage.getItem("dz_count");
-    dropletCopy.classList.add('tool-btn');
-    dropletCopy.style.left = ev.offsetX + "px";
-    dropletCopy.style.top = ev.offsetY + "px";
-    // ev.dataTransfer.setDragImage(dropletCopy, ev.offsetX + "px", ev.offsetY + "px")
-    ev.target.appendChild(dropletCopy);
-}
+const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
+    'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
+    'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
 
 // TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
 //  if process_id == btn_id place btn in dropzone (on save)
@@ -36,18 +11,39 @@ function drop(ev) {
  *
  * @param {string} service - wps service as stored in database
  * @param {string} identifier - identifier of a wps process
+ * @param {string, list} inputs - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
  **/
-function wpsprocess(service, identifier) {
-    let tools = get_sessionStorage_tools(service)
-    if (tools[service][identifier]) {
-        build_modal(tools[service][identifier], service)
-    } else {
-        load_wpsprocess(service, identifier)
-            .done(function (json) {
-                build_modal(json, service)
-                tools[service][identifier] = json
-                sessionStorage.setItem('tools', JSON.stringify(tools))
-            })
+vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs) {
+    let modal_values = vfw.session.get_workflow();
+    let json = vfw.session.get_wpsprocess(service, identifier);
+    vfw.workspace.modal.build_modal(json, service)
+    /** Fill the tool with selection made to receive this result button */
+    if (typeof inputs === 'string') {
+        vfw.workspace.modal.setProcessValues(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+    } else if (Array.isArray(inputs)) {
+        vfw.workspace.modal.setProcessValues(inputs[0], inputs[1])
+    }
+}
+
+/**
+ * Modal to change data of a port.
+ *
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ * @param {string} boxidentifier - identifier of the box in session storage
+ * @param {string} index - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
+ * @param {string} inputtype - type of data
+ * @param {string} porttype - distinguish 'input' or 'output' port
+ **/
+vfw.workspace.modal.open_port = function (service, identifier, boxidentifier, index, inputtype, porttype) {
+
+    let modal_values = vfw.session.get_workflow();
+    let json = vfw.session.get_wpsprocess(service, boxidentifier);
+    /** Fill the tool with selection made to receive this result button */
+    if (typeof inputs === 'string') {
+        vfw.workspace.modal.setPortValue(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+    } else if (Array.isArray(inputs)) {
+        vfw.workspace.modal.setPortValue(inputs[0], inputs[1])
     }
 }
 
@@ -57,20 +53,26 @@ function wpsprocess(service, identifier) {
  * @param {string} service - wps service as stored in database
  * @param {string} identifier - identifier of a wps process
  **/
-function load_wpsprocess(service, identifier) {
-    return $.ajax({
-        url: DEMO_VAR + "/workspace/processview",
-        //url: DEMO_VAR+"/wps_gui/"+service+"/process",
-        dataType: 'json',
-        async: false,
-        data: {
-            processview: JSON.stringify({id: identifier, serv: service}),
-            'csrfmiddlewaretoken': csrf_token,
-        }, /** data sent with the post request **/
-    })
+vfw.session.load_wpsprocess = function (service, identifier) {
+    let processdata = {};
+    $.when(
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/workspace/processview",
+            dataType: 'json',
+            async: false,
+            data: {
+                processview: JSON.stringify({id: identifier, serv: service}),
+                'csrfmiddlewaretoken': csrf_token,
+            }, /** data sent with the post request **/
+        })
+    )
+        .done(function (json) {
+            processdata = json
+        })
         .fail(function (e) {
             console.error('Failed: ', e)
         });
+    return processdata
 }
 
 /**
@@ -81,42 +83,24 @@ function load_wpsprocess(service, identifier) {
  * @param {string} identifier - identifier of a wps process
  * @return {obj} json - object of a wps process as saved in sessionStorage
  */
-function get_wpsprocess(service, identifier) {
-    let tools = get_sessionStorage_tools(service)
+vfw.session.get_wpsprocess = function (service, identifier) {
+    let tools = vfw.session.get_tools(service)
+    let tool_data = {};
     if (tools[service][identifier]) {
-        return tools[service][identifier]
+        tool_data = tools[service][identifier]
     } else {
-        load_wpsprocess(service, identifier)
-            .done(function (json) {
-                tools[service][identifier] = json
-                sessionStorage.setItem('tools', JSON.stringify(tools))
-                return json
-            })
-        /* .fail(function (e) {
-             console.error('Failed: ', e)
-         });*/
+        vfw.html.popup.classList.add(popActive);
+        positionPopup(vfw.html.popup);
+        $.when(vfw.session.load_wpsprocess(service, identifier))
+            .done(
+                function (json) {
+                    tools[service][identifier] = json
+                    sessionStorage.setItem('tools', JSON.stringify(tools))
+                    tool_data = json;
+                    vfw.html.popup.classList.remove(popActive);
+                })
     }
-}
-
-function add_connection(sourcePort, targetPort) {
-    // canvas.installEditPolicy(connection.connectionPolicy);
-    // let box = new Box(
-    //     box_param.name, box_param.orgid, box_param.type,
-    //     box_param.inputs, box_param.outputs, source, service, boxID
-    // )
-    //
-    // canvas.add(box.box, x, y);
-    // console.log('toolbox getOutputPort(0): ', toolbox.getOutputPort(0))
-    // console.log('toolbox getOutputPort(): ', toolbox.getOutputPort())
-    console.log('canvas ports: ', canvas.getAllPorts())
-    let connection = new draw2d.Connection({
-        source: sourcePort,
-        target: targetPort
-    });
-    // let connection = createConnection(dataport, toolport);
-    // let connection = createConnection(start.getOutputPort(0),end.getInputPort(0));
-    canvas.add(connection);
-
+    return tool_data
 }
 
 /**
@@ -124,51 +108,60 @@ function add_connection(sourcePort, targetPort) {
  * TODO: avoid overlap of boxes
  * @returns {{x: number, y: number}}
  */
-function get_drop_coords() {
+vfw.workspace.get_drop_coords = function () {
     let dropzone = document.getElementById('dropdiv');
     let dropzone_coords = dropzone.getBoundingClientRect();
     let x_pad = 0;
     let y_pad = 0;
     let x, y
-    if (dropzone_coords.height > 100) {x_pad = 300};
-    if (dropzone_coords.width > 300) {y_pad = 200};
-    x = Math.floor((Math.random() * (dropzone_coords.width-x_pad))-x_pad + dropzone_coords.left);
-    y = Math.floor((Math.random() * (dropzone_coords.height-y_pad))+y_pad/2 - dropzone_coords.top);
+    if (dropzone_coords.height > 100) {
+        x_pad = 300
+    };
+    if (dropzone_coords.width > 300) {
+        y_pad = 200
+    };
+    x = Math.floor((Math.random() * (dropzone_coords.width - x_pad)) - x_pad + dropzone_coords.left);
+    y = Math.floor((Math.random() * (dropzone_coords.height - y_pad)) + y_pad / 2 - dropzone_coords.top);
     return {'x': x, 'y': y}
 }
 
 
 /**
- * Collect data to drop element. (When Okay in Modal is pressed)
+ * Collect data to drop element. (When 'Okay' in Modal is pressed)
  * Check if any inputs or outputs are selected and drop resprective elements, too.
  *
  * @param {object} ev - object passed with drop event
  **/
-function drop_on_click(ev) {
+vfw.workspace.drop_on_click = function (ev) {
     /** Prepare and drop a tool button **/
-    let tool_id, data_id, newbox, toolbox, databox, metadata, dataport, toolport;
-    let coords = get_drop_coords();
-    let modalData = prep_modal_data();
-    newbox = drop_handler(modalData, coords['x'], coords['y'], modalData.id, 'toolbar', modalData.serv)
+    let data_id, tool_id, box_id, newbox, toolbox, databox, metadata, dataport, toolport, params, workflow;
+    let coords = vfw.workspace.get_drop_coords();
+    let modalData = vfw.workspace.modal.prep_data();
+    newbox = vfw.workspace.drop_handler(modalData, coords['x'], coords['y'], modalData.id, 'toolbar', modalData.serv)
     tool_id = newbox.boxID;
     toolbox = newbox.box;
 
     /** Check if tool is connected with other elements to drop and get ports **/
-    let box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
-        'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
-        'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
-    for (let i in modalData.type_list) {
-        if (box_types.includes(modalData.type_list[i]) && modalData.inId_list[i]) {
+    for (let i in modalData.in_type_list) {
+        if (box_types.includes(modalData.in_type_list[i]) && modalData.inId_list[i]) {
+            console.log('droped on click: ', i)
             metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
-            newbox = drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modalData.inId_list[i], 'workspace')
-            tool_id = newbox.boxID;
+            newbox = vfw.workspace.drop_handler(metadata, coords['x'] - 40, coords['y'] - 40, 'sidebtn' + modalData.inId_list[i], 'workspace')
+            box_id = newbox.boxID;
+
+            // TODO: The following should be part of another function
+            workflow = vfw.session.get_workflow()
+            workflow[box_id].output_ids = [tool_id];
+            workflow[tool_id].input_ids[i] = box_id;
+            sessionStorage.setItem('workflow', JSON.stringify(workflow))
+
             databox = newbox.box;
             dataport = databox.getOutputPort(0);
             // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
             toolport = toolbox.getInputPort(parseInt(i));
-            // add_connection(dataport, toolport);
         }
     }
+    vfw.session.draw2d.setdata();
 }
 
 /**
@@ -176,7 +169,7 @@ function drop_on_click(ev) {
  *
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
-function is_required(checkElement) {
+vfw.workspace.is_required = function (checkElement) {
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -202,7 +195,7 @@ function is_required(checkElement) {
             }
         }
     }
-    return passed
+    return passed;
 }
 
 /**
@@ -210,7 +203,7 @@ function is_required(checkElement) {
  *
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
-function check_pattern(checkElement) {
+vfw.workspace.check_pattern = function (checkElement) {
     /** check if an Element of a wps is required **/
     console.warn('TODO: Add pattern check where necessary.')
     return true
@@ -218,11 +211,11 @@ function check_pattern(checkElement) {
 
 
 /**
- * Collect data from modal neeeded to run a processes.
- * @returns {{type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
+ * Collect data from modal neeeded to run a process.
+ * @returns {{in_type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
  */
-function prep_modal_data() {
-     /** collect inputs **/
+vfw.workspace.modal.prep_data = function () {
+    /** collect inputs **/
     var inKey = [];
     var inValue = [];
     var inType = [];
@@ -320,19 +313,26 @@ function prep_modal_data() {
     } else {
         outputName = outputs[0].value;
     }
-    return {'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
-        'type_list': inType, 'outputName': outputName, 'inId_list': inId}
+    return {
+        'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
+        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId
+    }
 }
 
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
 // TODO: Improve code by using HTML Forms
-function modal_run_process() {
-    set_modalColor("dodgerblue");
-    let modal_input = prep_modal_data();
+vfw.workspace.modal.run_process = function () {
+    vfw.workspace.modal.set_Color("dodgerblue");
+    let modal_input = vfw.workspace.modal.prep_data();
+    let directshowdatatypes = ['figure', 'string', 'html', 'integer', 'float']
+    let group = false;
+    let groupName = ''
+    let i = 0;
+    let members = [];
 
     $.ajax({
-        url: DEMO_VAR + "/workspace/processrun",
+        url: vfw.var.DEMO_VAR + "/workspace/processrun",
         data: {
             processrun: JSON.stringify(modal_input),
             'csrfmiddlewaretoken': csrf_token,
@@ -340,33 +340,27 @@ function modal_run_process() {
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
             if (json.execution_status == "ProcessSucceeded") {
-                let group = false;
-                let groupName = ''
-                let i = 0;
-                let members = [];
-                let directshowdatatypes = ['figure', 'string', 'html']
-
                 json.wps = modal_input.id;
                 json.inputs = {};
                 $.each(modal_input.inKey, function (key, value) {
                     json.inputs[value] = modal_input.inValue[i];
                     i++;
                 });
-                set_modalColor("forestgreen");
+                vfw.workspace.modal.set_Color("forestgreen");
 
                 if (Object.keys(json.result).length > 1) {
                     group = true;
-                    groupName = set_group_btn_name(modal_input.outputName, 'resultBtn');
-                    // document.getElementById("workspace_results").innerHTML
-                    //     += build_resultgroup_button(groupName);
+                    groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
                 }
 
                 for (let i in json.result) {
-                    let btnName = set_result_btn_name(modal_input.outputName);
+                    let btnName = vfw.sidebar.set_result_btn_name(modal_input.outputName);
                     json.result[i].dropBtn.name = btnName;
                     let btnData = {
                         dbID: json.result[i].wpsID,
                         inputs: json.inputs,
+                        input_keys: modal_input.key_list,
+                        input_values: modal_input.value_list,
                         name: btnName,
                         type: json.result[i].type,
                         outputs: json.result[i].data,
@@ -376,33 +370,32 @@ function modal_run_process() {
                         dropBtn: json.result[i].dropBtn,
                         group: groupName
                     }
-                    add_resultbtn_to_sessionstore(btnName, btnData);
+                    vfw.session.add_resultbtn(btnName, btnData);
                     if (directshowdatatypes.includes(btnData.type)) {
-                        add_resultbtn_to_modal(btnData)
+                        vfw.workspace.modal.add_resultbtn(btnData)
+                        vfw.workspace.view_result(btnData)
                     }
 
                     if (group === false) {
                         document.getElementById("workspace_results").innerHTML
-                            += build_resultstore_button(btnName, btnData);
+                            += vfw.workspace.build_resultstore_button(btnName, btnData);
                     } else {
                         members.push([btnName, btnData])
                     }
                 }
                 if (group === true) {
                     document.getElementById("workspace_results").innerHTML
-                        += build_resultgroup_button(groupName, members);
-                    add_groupaccordion_toggle()
+                        += vfw.workspace.build_resultgroup_button(groupName, members);
+                    vfw.sidebar.add_groupaccordion_toggle()
                 }
             } else if (json.execution_status == "Exception") {
                 console.error('error in wps process')
-                set_modalColor("firebrick");
-                // alert('Error: Failed to execute your request.');
+                vfw.workspace.modal.set_Color("firebrick");
             } else if (json.execution_status == "error in wps process") {
-                set_modalColor("firebrick");
+                vfw.workspace.modal.set_Color("firebrick");
                 console.error('Error in wps process: ', json.error)
-                // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
-                set_modalColor("firebrick");
+                vfw.workspace.modal.set_Color("firebrick");
                 /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
@@ -411,10 +404,25 @@ function modal_run_process() {
             }
         })
         .fail(function (json) {
-            set_modalColor("firebrick");
+            vfw.workspace.modal.set_Color("firebrick");
             console.error('Error, No success: ', json)
         });
 }
+
+/**
+ * View result directly on top of tool window
+ * @param json
+ */
+vfw.workspace.view_result = function (json) {
+    if (json.type == 'figure' || json.type == 'string' || json.type == 'integer') {
+        document.getElementById("mod_result").innerHTML = json.outputs; // add plot
+    }
+    let rModal = document.getElementById("resultModal");
+    rModal.style.display = "block";
+    vfw.html.popup.classList.remove(popActive);
+    modalToggleSize.style.display = "none";
+}
+
 
 // Not used yet
 function run_wps(input_dict) {
@@ -423,13 +431,12 @@ function run_wps(input_dict) {
     let identifier = modhead.dataset.process;
 
     $.ajax({
-        url: DEMO_VAR + "/workspace/processrun",
+        url: vfw.var.DEMO_VAR + "/workspace/processrun",
         data: {
             processrun: JSON.stringify({
                 id: identifier, serv: wpsservice,
                 key_list: input_dict.keys(), value_list: input_dict.values()
             }),
-            // processrun: JSON.stringify(input_dict),
             'csrfmiddlewaretoken': csrf_token,
         }, /** data sent with the post request **/
     })
@@ -438,7 +445,7 @@ function run_wps(input_dict) {
         })
         .fail(function (json) {
             console.error('Error, No success: ', json)
-            set_modalColor("firebrick");
+            vfw.workspace.modal.set_Color("firebrick");
         })
 }
 
@@ -448,7 +455,7 @@ function run_wps(input_dict) {
  *
  * @param {string} name
  */
-function set_result_btn_name(name) {
+vfw.sidebar.set_result_btn_name = function (name) {
     var newName = name;
     if (sessionStorage.getItem("resultBtn")) {
         let result_btns = JSON.parse(sessionStorage.getItem("resultBtn"));
@@ -469,7 +476,7 @@ function set_result_btn_name(name) {
  * @param {string} name
  * @param {string} storage
  */
-function set_group_btn_name(name, storage) {
+vfw.sidebar.set_group_btn_name = function (name, storage) {
     let groupSet = new Set();
     let groupName = name + "__group";
     /** check if Storage exists. If yes get it **/
@@ -493,7 +500,7 @@ function set_group_btn_name(name, storage) {
  *
  * @param {string} color
  */
-function set_modalColor(color) {
+vfw.workspace.modal.set_Color = function (color) {
     let modalColor = document.getElementById("modal-header");
     modalColor.style.backgroundColor = color;
     modalColor = document.getElementById("modal-footer");
@@ -504,7 +511,7 @@ function set_modalColor(color) {
 /**
  *  A Object with names and values from the input object / not used yet
  *  */
-function modalObj(processId, processInput, processOutput) {
+vfw.workspace.modalObj = function (processId, processInput, processOutput) {
     this.processId = processId;
     this.processInput = processInput;
     this.processOutput = processOutput;
@@ -516,17 +523,11 @@ function modalObj(processId, processInput, processOutput) {
  *
  * @param {{outputs, inputs: (*|{}), dbID: *, name: (*|string), dropBtn, wps: string, source: string, type, status: *, group: string}} json
  */
-function add_resultbtn_to_modal(json) {
+vfw.workspace.modal.add_resultbtn = function (json) {
     let wspan_out = document.getElementsByClassName("work_modal-output")[0];
     wspan_out.style.display = "block";
     wspan_out.onclick = () => {
-        if (json.type == 'figure' || json.type == 'string') {
-            document.getElementById("mod_result").innerHTML = json.outputs; // add plot
-        }
-        let rModal = document.getElementById("resultModal");
-        rModal.style.display = "block";
-        popup.classList.remove(popActive);
-        modalToggleSize.style.display = "none";
+        vfw.workspace.view_result(json)
     };
 }
 
@@ -540,7 +541,7 @@ function set_preview_content(json) {
  * @param {string} btnName - name for button
  * @param {object} json - content stored for button
  */
-function add_resultbtn_to_sessionstore(btnName, json) {
+vfw.session.add_resultbtn = function (btnName, json) {
     let result_btns = {};
     if (sessionStorage.getItem("resultBtn")) {
         result_btns = JSON.parse(sessionStorage.getItem("resultBtn"));
@@ -549,14 +550,6 @@ function add_resultbtn_to_sessionstore(btnName, json) {
         }
     }
     result_btns[btnName] = json
-    /*{
-        type: json.type,
-        wps: json.wps,
-        inputs: json.inputs,
-        wpsID: json.wpsID,
-        status: json.execution_status,
-        dropBtn: json.dropBtn
-    };*/
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
@@ -569,16 +562,16 @@ function add_resultbtn_to_sessionstore(btnName, json) {
  * @param  {obj} json - Object holding all necessary info about result
  * @return {string} - HTML Code for the button
  **/
-function build_resultstore_button(name, json) {
+vfw.workspace.build_resultstore_button = function (name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result" data-sessionStore="resultBtn" ' +
         'data-id="' + json.source + json.dbID + '" btnName="' + name + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="' + name + '">' +
+        'data-btnName="' + name + '" id="' + name + '">' +
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div>' +
         '</span><span class="' + json['type'] + '"></span>' +
-        '<a href="javascript:void(0)" onclick="remove_single_result(\'' + name + '\')" class="w3-hover-white">' +
+        '<a href="javascript:void(0)" onclick="vfw.session.remove_single_result(\'' + name + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
@@ -589,63 +582,65 @@ function build_resultstore_button(name, json) {
  * @param  {string} name name for the group button
  * @return {string} HTML Code for the group button
  **/
-function build_resultgroup_button(groupname, members) {
+vfw.workspace.build_resultgroup_button = function (groupname, members) {
     let mhtml = ''
     let ghtml = '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result-group groupaccordion" data-sessionStore="resultBtn"' +
         '" btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
-        'id="' + groupname + '"><span class="w3-medium">' +
+        'data-btnName="' + groupname + '" id="' + groupname + '"><span class="w3-medium">' +
         '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +
         '<span class=""></span>' +
-        '<a href="javascript:void(0)" onclick="remove_group_result(\'' + groupname + '\')" class="w3-hover-white">' +
+        '<a href="javascript:void(0)" onclick="vfw.session.remove_group_result(\'' + groupname + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 
     members.forEach(function (singlemember) {
-        mhtml += build_resultstore_button(singlemember[0], singlemember[1]);
+        mhtml += vfw.workspace.build_resultstore_button(singlemember[0], singlemember[1]);
     })
     ghtml += '<div class="grouppanel">' + mhtml + '</div>'
     return ghtml
 }
 
-function remove_single_result(removeData) {
+vfw.session.remove_single_result = function (removeData) {
     document.getElementById(removeData).remove();
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
     delete workspaceData[removeData];
     sessionStorage.setItem("resultBtn", JSON.stringify(workspaceData))
 }
 
-function remove_group_result(removeData) {
+vfw.session.remove_group_result = function (removeData) {
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
     $.each(workspaceData, function (i) {
         if (workspaceData[i].group === removeData) {
-            remove_single_result(i)
+            vfw.session.remove_single_result(i)
         }
     })
     document.getElementById(removeData).remove();
 }
 
-function remove_all_results() {
+vfw.session.remove_all_results = function () {
     let groupSet = new Set();
     /** remove button from portal **/
     $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key, value) {
         groupSet.add(value.group)
-        remove_single_result(key);
+        vfw.session.remove_single_result(key);
     });
 
     /** remove result data from session **/
     sessionStorage.removeItem("resultBtn");
 
     /** remove group buttons from portal **/
-    groupSet.forEach(function (i) {
-        document.getElementById(i).remove();
-    })
+    if (groupSet[0] !== undefined) {
+        groupSet.forEach(function (i) {
+            document.getElementById(i).remove();
+        })
+    }
 }
 
 /**
  * @param {json} item - input information loaded from Session Storage
  * @param {string} newNode - The new HTML Element where the checkbox will be added
  */
-function build_modal_regexText(item, newNode) {
+vfw.workspace.modal.build_regexText = function (item, newNode) {
     inElement = document.createElement("INPUT");
     inElement.id = item.identifier;
     inElement.name = item.identifier;
@@ -665,12 +660,10 @@ function build_modal_regexText(item, newNode) {
  * @param {string} newNode - The new HTML Element where the checkbox will be added
  * @param {string} option - String with predefined value from wps process
  */
-function build_modal_radio(item, newNode, option) {
-    // let radioNode = document.createElement("p");
+vfw.workspace.modal.build_radio = function (item, newNode, option) {
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("INPUT");
     inElement.type = "radio";
-    // inElement.setAttribute("type", "radio");
     inElement.value = option;
     inElement.id = item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
@@ -688,12 +681,10 @@ function build_modal_radio(item, newNode, option) {
  * @param {HTMLElement} newNode - The new HTML Element where the checkbox will be added
  * @param {string} option - String with predefined value from wps process
  */
-function build_modal_checkbox(item, newNode, option) {
-    // let radioNode = document.createElement("p");
+vfw.workspace.modal.build_checkbox = function (item, newNode, option) {
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("input");
     inElement.type = "radio";
-    // inElement.setAttribute("type", "radio");
     inElement.value = option;
     inElement.id = item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
@@ -713,7 +704,7 @@ function build_modal_checkbox(item, newNode, option) {
  * @param {HTMLParagraphElement} newNode
  * @param {number} countDropDowns
  */
-function build_modal_dropdown(item, newNode, countDropDowns) {
+vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     let htmlSelect = document.createElement("SELECT");
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
@@ -722,14 +713,13 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
     let aptResultData = {};
     let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
 
+    htmlSelect.id = item.identifier;
+
     for (let i in sessionStoreData) if (acceptedDataTypes.has(sessionStoreData[i].type)) {
         aptStoreData[i] = sessionStoreData[i];
     }
     for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
-    // for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
-    // for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
     boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length;
-    // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???
     if (item.minOccurs > 1) htmlSelect.required = true;
 
     /** check if input data is available; only build dropdown if there is data to select from **/
@@ -746,13 +736,13 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
         if (storeData !== null) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Data store";
-            optionGroup = build_dropdown_opt(item, optionGroup, aptStoreData);
+            optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptStoreData);
             htmlSelect.appendChild(optionGroup);
         }
         if (resultData !== null) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Result store";
-            optionGroup = build_dropdown_opt(item, optionGroup, aptResultData);
+            optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptResultData);
             htmlSelect.appendChild(optionGroup);
         }
         if (item.maxOccurs > 1 || item.minOccurs > 1) {
@@ -771,8 +761,7 @@ function build_modal_dropdown(item, newNode, countDropDowns) {
  * @param {HTMLElement} optionGroup - HTML group Element. Different groups to seperate Data and Results in dropdown
  * @param {Object} sidebarData - The relevant elements from the sessionStorage
  */
-function build_dropdown_opt(item, optionGroup, sidebarData) {
-    // let opt = document.createElement("OPTION");
+vfw.workspace.modal.build_dropdown_opt = function (item, optionGroup, sidebarData) {
     let opt;
     Object.keys(sidebarData).forEach(function (singleData) {
         opt = document.createElement("OPTION");
@@ -783,7 +772,6 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
             opt.innerText = `${singleData}`;
         }
         opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
-        // opt.setAttribute('data-datatype', sidebarData[singleData].type);
         if (item.keywords.length == 1) opt.selected = true;
         optionGroup.appendChild(opt);
     })
@@ -796,29 +784,26 @@ function build_dropdown_opt(item, optionGroup, sidebarData) {
  * @param {object} wpsInfo - Complete description from the process
  * @param {string} service - which wps server
  */
-function build_modal(wpsInfo, service) {
-    // let availableInputs = get_available_inputs();
-    // let wpsInfo = get_wpsprocess(service, identifier);
+vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId = []) {
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
     let element = document.getElementById("mod_head");
     let newElement = "";
 
-    if (!sessionStoreData) {
-        sessionStoreData = {}
+    if (!sessionStoreData) sessionStoreData = {}
+    if (!resultData) resultData = {}
+    if (!workflowData) {
+        workflowData = {}
+    } else {
+        workflowData = workflowData[boxId]
     }
-    if (!resultData) {
-        resultData = {}
-    }
-
     element.innerHTML = wpsInfo.title;
     element.dataset.service = service;
     element.dataset.process = wpsInfo.identifier;
     element = document.getElementById("mod_abs");
     if (wpsInfo.abstract) {
         newElement = wpsInfo.abstract;
-        // } else {
-        //     newElement = ""
     }
     element.innerHTML = newElement;
 
@@ -830,25 +815,22 @@ function build_modal(wpsInfo, service) {
     let outElementIdList = [];
     let countDropDowns = 0;
 
-    wpsInfo.dataInputs.forEach(function (item) {
+    wpsInfo.dataInputs.forEach(function (item, index) {
         newNode = document.createElement("p");
 
         /** Set title of Input and set the 'required' flag if necessary **/
         let titleText = "";
-        // if ('minOccurs' in item) {  // outer if seems to be unused
         if (item.minOccurs == 0) {
             titleText = " " + item.title + ": "
         } else if (item.defaultValue) {
             titleText = " " + item.title + ": "
-        } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
+        } else if (item.required === true) {
             titleText = " " + item.title + " (*) : ";
             inElement.required = true;
-            // }
         } else {
             titleText = " " + item.title + ": "
         }
 
-        // if (item.minOccurs === 1) inElement.required = true;
         nodeText = document.createTextNode(titleText);
         newNode.appendChild(nodeText);
         if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
@@ -856,24 +838,22 @@ function build_modal(wpsInfo, service) {
                 if (item.maxOccurs === 1) {
                     // nodeText = "";
                     item.allowedValues.forEach(function (option) {
-                        build_modal_radio(item, newNode, option)
+                        vfw.workspace.modal.build_radio(item, newNode, option)
                     });
                 }
             }
         } else if ('supportedValues' in item && Array.isArray(item.supportedValues) && item.supportedValues.length > 1) {
             if ('maxOccurs' in item) {
                 if (item.maxOccurs === 1) {
-                    // nodeText = "";
                     item.supportedValues.forEach(function (option) {
-                        build_modal_radio(item, newNode, option)
+                        vfw.workspace.modal.build_radio(item, newNode, option)
                     });
-                    // inElement.setAttribute("type", "radio")
                 }
             }
         } else if ('keywords' in item && item.keywords.includes('pattern')) {
-            build_modal_regexText(item, newNode)
+            vfw.workspace.modal.build_regexText(item, newNode)
         } else if ('keywords' in item) {
-            countDropDowns = build_modal_dropdown(item, newNode, countDropDowns)
+            countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
 
             /** Set input element according to dataType */
         } else {
@@ -882,16 +862,13 @@ function build_modal(wpsInfo, service) {
             inElement.name = item.identifier;
             inElement.setAttribute("list", item.identifier + '_list');
 
-            if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
             switch (item.dataType) {
                 case 'string':
                     inElement.type = "text";
-                    //inElement.className = "input"
-                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
+                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) {
                         inElement.value = item.defaultValue;
                     }
-                    // if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'boolean':
                     inElement.type = "checkbox";
@@ -899,24 +876,24 @@ function build_modal(wpsInfo, service) {
                     break;
                 case 'dateTime':
                     inElement.type = "datetime-local";
-                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
+                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'float':
                     inElement.type = "number";
                     inElement.step = "0.000001";
-                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
+                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'integer':
                     inElement.type = "number";
-                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
+                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'positiveInteger':
                     inElement.type = "number";
                     inElement.min = "0";
-                    inElement.appendChild(set_textfield_opt(item, resultData, sessionStoreData))
+                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 case 'ComplexData':
@@ -932,6 +909,7 @@ function build_modal(wpsInfo, service) {
                 default:
                     console.error(' new dataType: ', item.dataType)
             }
+            // TODO: is this here the third time I set required = True? Test if necessary
             if (item.minOccurs > 0) {
                 inElement.required = true
             } //else {inElement.required = false}
@@ -955,13 +933,10 @@ function build_modal(wpsInfo, service) {
     newNode.appendChild(outElement);
     if (typeof (newNode) === 'object') element.appendChild(newNode);
     let modal = document.getElementById("workModal");
-    // modal.setAttribute("name", invoke_btn_id);
     modal.setAttribute("name", wpsInfo.identifier);
     modal.style.display = "block";
-    let currentModal = new modalObj(wpsInfo.identifier, outElementIdList);
+    let currentModal = new vfw.workspace.modalObj(wpsInfo.identifier, outElementIdList);
     // TODO: get right name for sessionstorage
-    // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
-    // console.log('+++: ', JSON.stringify(modalObj))
 }
 
 /**
@@ -971,13 +946,13 @@ function build_modal(wpsInfo, service) {
  * @param {object} resultData
  * @param {object} sessionStoreData
  */
-function set_textfield_opt(item, resultData, sessionStoreData) {
+vfw.workspace.modal.set_textfield_opt = function (item, resultData, sessionStoreData) {
     let inDatalist = "";
     let type = item.dataType;
     inDatalist = document.createElement("DATALIST");
     inDatalist.setAttribute("id", item.identifier + '_list');
     let optElement = "";
-    Object.entries(resultData).forEach(function (dataset) {
+    Object.entries(resultData).forEach((dataset) => {
         if (dataset[1].type === type) {
             optElement = document.createElement("OPTION");
             optElement.setAttribute("value", dataset[1].outputs);
@@ -986,24 +961,112 @@ function set_textfield_opt(item, resultData, sessionStoreData) {
 
         }
     })
-    return inDatalist
+    return inDatalist;
 }
 
-function load_workflow() {
+vfw.workspace.workflow.load = function () {
     alert("Load is not implemented yet.")
-    console.log("load just a test workflow.")
-    // let workflow
-    // sessionStorage.setItem('workflow', JSON.stringify(workflow))
 }
 
-function save_workflow() {
+vfw.workspace.workflow.save = function () {
     alert("Save is not implemented yet.")
     console.log("save isn't implemented yet: ",
         JSON.parse(document.getElementById('is_authenticated').value))
 }
 
-function run_workflow() {
-    let workflow = JSON.parse(sessionStorage.getItem('workflow'))
+
+/**
+ * check if all required values of a tool have a value or id assigned to.
+ *
+ * @param {string} server - name of wps server
+ * @param {string} tool - id/name of tool on wps server
+ * @param {object} inputs - data for the tool to process
+ */
+vfw.workspace.workflow.check_inputs = function (server, tool, inputs) {
+    let has_inIds, has_inVals;
+    let result = {'error': false, 'error_index': []}
+    let testtool = JSON.parse(sessionStorage.getItem('tools'))[server][tool]
+    testtool.dataInputs.forEach((testinput, i) => {
+        if (testinput.required) {
+            has_inIds = inputs[1].inId_list && inputs[1].inId_list[i];
+            has_inVals = inputs[1].value_list && inputs[1].value_list[i];
+            if (!has_inIds && !has_inVals) {
+                result.error = true;
+                result.error_index.push({[inputs[0]]: i});
+            }
+        }
+    })
+    return result;
+}
+
+
+vfw.workspace.workflow.run = function () {
+    let errors = [];
+    let box_result;
+    let workflow = vfw.session.get_workflow();
+    let processTree = vfw.workspace.workflow.create_processTree(workflow);
+    let processChain = vfw.workspace.workflow.create_ReverseProcessOrder(processTree).reverse();
+    let preppedWorkflow = vfw.workspace.workflow.prep_wps_workflow(workflow, processChain);
+    Object.entries(preppedWorkflow).map((box) => {
+        box_result = vfw.workspace.workflow.check_inputs(box[1].serv, box[1].id, box);
+        if (box_result.error) {
+            errors.push(box_result)
+        }
+    })
+
+    $.ajax({
+        url: vfw.var.DEMO_VAR + "/workspace/workflowrun",
+        data: {
+            processrun: JSON.stringify({'workflow': preppedWorkflow, 'chain': processChain}),
+            'csrfmiddlewaretoken': csrf_token,
+        }, /** data sent with post request **/
+    })
+        .done(function (result) {
+            console.log('result: ', result)
+        })
+    console.log("run isn't implemented yet.")
+}
+
+vfw.workspace.workflow.prep_wps_workflow = function (workflow, processChain) {
+    let preppedWorkflow = {};
+    let outputName;
+
+    for (let i of processChain) {
+        console.log('i: ', i)
+        outputName = workflow[i].output_ids === [] ? workflow[i].name + "_" : workflow[i].name;
+        preppedWorkflow[i] = {
+            id: workflow[i].orgid,
+            inId_list: workflow[i].input_ids,
+            in_type_list: workflow[i].inputs,
+            key_list: workflow[i].input_keys,
+            in_box_list: workflow[i].input_boxes,
+            output_Name: outputName,
+            serv: workflow[i].service,
+            value_list: workflow[i].input_values,
+        }
+    }
+
+    return preppedWorkflow;
+}
+
+
+/**
+ * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
+ */
+vfw.workspace.workflow.clear_workflow = function () {
+    canvas.clear();
+    vfw.session.set_workflow_name()
+    document.getElementById("workflow_name").value = gettext('my workflow')
+    sessionStorage.setItem('workflow', JSON.stringify({'name': "my workflow"}))
+    vfw.session.draw2d.setdata()
+}
+
+
+/**
+ * Check in- and output of connected boxes and build the workflow as a tree.
+ * @param {{}} workflow
+ */
+vfw.workspace.workflow.create_processTree = function (workflow) {
     if (Object.keys(workflow).length <= 1) {
         alert(gettext("Please Load or Create a workflow to run first."))
         return;
@@ -1014,13 +1077,14 @@ function run_workflow() {
     let endNode = [];
 
     // get processes of workflow
-    Object.entries(workflow).map(function (i) {
-        if (i[1].source === 'toolbar') {
-            // processList.push(i[0])
-            processDict[i[0]] = {children: i[1].input_ids};
-            processDict[i[0]].parents = i[1].output_ids;
-            if (typeof i[1].output_ids === "undefined") {
-                endNode.push(i[0])
+    Object.entries(workflow).forEach(function (box, i) {
+        if (box[1].source === 'toolbar') {
+            console.log('box: ', i, box)
+            processList.push(box[0])
+            processDict[box[0]] = {children: box[1].input_ids};
+            processDict[box[0]].parents = box[1].output_ids;
+            if (!box[1].output_ids && box[1].output_boxes.length == 0) {
+                endNode.push(box[0])
             }
         }
     })
@@ -1028,14 +1092,14 @@ function run_workflow() {
         alert(gettext("Your workflow is supposed to end in a single process."))
         return;
     }
+
     /**
-     * create tree of processes
-     * @param {string} ID
-     * @param {dictionary} parent
-     * @param {dictionary} processDict
-     * @param {array} processList
+     * create tree of processes. Send ID of the last process in the chain
+     * @param {string} ID - endnote
+     * @param {dictionary} processDict - dict of all process
+     * @param {array} processList - list of all processes
      */
-    function createTree(ID, parent, processDict, processList) {
+    function _createTree(ID, processDict, processList, allProcesses) {
         if (!processList.includes(ID)) {
             processList.push(ID);
         } else {
@@ -1045,22 +1109,33 @@ function run_workflow() {
         }
         let tree = {};
         for (let i of processDict[ID].children) {
-            tree[i] = typeof processDict[i].children != "undefined" ? createTree(i, tree, processDict, processList) : {}
+            console.log('+ i: ', i)
+            tree[i] = allProcesses.includes(i) && typeof processDict[i].children != "undefined" ? _createTree(i, processDict, processList, allProcesses) : {};
         }
         return tree;
     }
-    processTree[endNode] = {};
-    processTree[endNode] = createTree(endNode, processTree[endNode], processDict, processList);
-    console.log('processTree: ', processTree)
 
-    console.log("run isn't implemented yet.")
+    processTree[endNode] = {};
+    processTree[endNode] = _createTree(endNode[0], processDict, [], processList);
+    return processTree;
 }
 
+
 /**
- * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
+ * Create a list of processes from a process tree in the reverse order they are supposed to run.
+ * TODO: update for parallel function call
+ * @param {dict} processDict
+ * @param {number} depth
+ * @param {dict} innerProcesses
  */
-function clear_workflow() {
-    canvas.clear();
-    set_sessionStorage_workflow_name()
-    document.getElementById("workflow_name").value = gettext('my workflow')
+vfw.workspace.workflow.create_ReverseProcessOrder = function (processTree, depth = 0, innerProcesses = []) {
+    for (let [boxName, deeperElements] of Object.entries(processTree)) {
+        if (boxName) {
+            innerProcesses.push(boxName);
+            innerProcesses.concat(
+                vfw.workspace.workflow.create_ReverseProcessOrder(deeperElements, depth += 1, innerProcesses)
+            )
+        }
+    }
+    return innerProcesses;
 }

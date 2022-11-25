@@ -1,5 +1,7 @@
-from django.db import models
+from datetime import datetime
 
+from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 class WebProcessingService(models.Model):
@@ -34,4 +36,35 @@ class WpsResults(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.wps, self.inputs)
+
+    class Meta:
+        managed = True
+
+
+class WpsDescription(models.Model):
+    """
+    Store information about wps process to reduce time to open workspace
+    """
+    service = models.CharField(max_length=30, default='')
+    title = models.CharField(max_length=120, unique=True, default='')
+    identifier = models.CharField(max_length=120, unique=True, default='')
+    abstract = models.CharField(max_length=8192, default='')
+    inputs = models.CharField(max_length=2048, default='')  # short description
+    outputs = models.CharField(max_length=2048, default='')  # short description
+
+    # extended schema for tools
+    verbose = models.BooleanField()
+    statusSupported = models.BooleanField(blank=True, default=False)
+    storeSupported = models.BooleanField(blank=True, default=False)
+    metadata = models.CharField(max_length=2048)
+    dataInputs = models.CharField(max_length=4096)  # complete description
+    processOutputs = models.CharField(max_length=2048)  # complete description
+
+    lastUpdateDateCheck = models.DateTimeField(default=timezone.now, blank=True)
+    version = models.CharField(max_length=8, default='', blank=True, null=True)
+
+    def __str__(self):
+        return 'service: %s, title: %s' % (self.service, self.title)
+
+    class Meta:
         managed = True

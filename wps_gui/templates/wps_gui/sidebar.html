@@ -12,14 +12,14 @@
 </head>
 
 <script>
-    let SERVER = "{{ VFW_SERVER }}";
-    let MAP_SERVER = "{{ MAP_SERVER }}";
-    let DEMO_VAR = "{{ DEMO_VAR }}"
+    {#const SERVER = "{{ VFW_SERVER }}";#}
+    {#const MAP_SERVER = "{{ MAP_SERVER }}";#}
+    {#const DEMO_VAR = "{{ DEMO_VAR }}"#}
 </script>
 
-<body onload="show_data(), draw_workflow()">
+<body onload="vfw.sidebar.show_data(), vfw.workspace.workflow.draw_workflow()">
 <!-- TODO: check if still in use. If not delete that parm -->
-<param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js; cannot find any
+{#<param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js; cannot find any#}
   usage => can it be deleited? -->
 <!--   Sidenav/menu -->
 <nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav">
@@ -48,7 +48,7 @@
     <ul class="w3-ul w3-card-4 w3-white" id="workspace">
         <b class="w3-btn-group">
             <input class="w3-btn w3-blue w3-right" type="submit"
-                   onclick="remove_all_datasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
+                   onclick="vfw.sidebar.remove_all_datasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
                    title="{% trans "Remove all datasets from data store" %}">
         </b>
     </ul>
@@ -61,7 +61,7 @@
     <ul class="w3-ul w3-card-4 w3-white" id="workspace_results">
         <b class="w3-btn-group">
             <input class="w3-btn w3-blue w3-right" type="submit"
-                   onclick="remove_all_results()" value="{% trans "Remove all results" %}" data-toggle="tooltip"
+                   onclick="vfw.session.remove_all_results()" value="{% trans "Remove all results" %}" data-toggle="tooltip"
                    title="{% trans "Remove all results from result store" %}">
         </b>
     </ul>
@@ -74,16 +74,6 @@
             </div>
 {#            <a href="#" id="popup-closer" class="ol-popup-closer"></a>#}
     </div>{% endcomment %}
-{% comment %}<nav id="poptext" class="popuptext">
-    <ul class="context-menu__items">
-        <li class="context-menu__item">
-            <a href="#" class="w3-medium" onclick="show_data(key)">Show metadata</a>
-        </li>
-        <li class="context-menu__item">
-            <a href="#" class="w3-medium" onclick="show_data(key)">Show preview</a>
-        </li>
-    </ul>
-</nav>{% endcomment %}
 {#context menu in sidebar.js#}
 
 <nav id="context-menu" class="context-menu">
@@ -93,7 +83,8 @@
                     class="fa fa-eye"></i>{% trans " View metadata" %}</a>
         </li>
         <li class="context-menu__item">
-            <a href="#" class="context-menu__link" data-action="Plot"><i class="fa fa-area-chart"></i>{% trans " Plot data" %}
+            <a href="#" class="context-menu__link context-menu-plot" data-action="Plot">
+              <i class="fa fa-area-chart"></i>{% trans " Plot data" %}
             </a>
         </li>
         <li class="context-menu__item">
@@ -109,9 +100,6 @@
                     class="fa fa-download"></i>{% trans " Download metadata" %} (.xml)</a>
         </li>
         {#        TODO: Find data format to download data and metadata as well - maybe extent shp#}
-        {% comment %}      <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="DownloadDMD"><i class="fa fa-download"></i>{% trans " Download data & metadata" %}</a>
-      </li>{% endcomment %}
         <li class="context-menu__item">
             <a href="#" class="context-menu__link" data-action="Remove"><i
                     class="fa fa-eraser"></i>{% trans " Remove dataset" %}</a>
@@ -130,7 +118,7 @@
                     class="fa fa-table"></i>{% trans " View as table" %}</a>
         </li>
         <li class="context-menu__item">
-            <a href="#" class="context-menu__link" data-action="Plot"><i
+            <a href="#" class="context-menu__link context-menu-plot" data-action="Plot"><i
                     class="fa fa-area-chart"></i>{% trans " Plot result" %}</a>
         </li>
         <li class="context-menu__item">

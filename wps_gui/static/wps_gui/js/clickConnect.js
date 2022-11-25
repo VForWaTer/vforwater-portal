@@ -48,20 +48,19 @@
  */
 draw2d.policy.connection.ClickConnectionCreatePolicy = draw2d.policy.connection.ConnectionCreatePolicy.extend({
 
-    NAME : "draw2d.policy.connection.ClickConnectionCreatePolicy",
+    NAME: "draw2d.policy.connection.ClickConnectionCreatePolicy",
 
     /**
      * @constructor
      *
      * Creates a new connection create policy instance
      */
-    init: function(attr, setter, getter)
-    {
-        this._super( attr, setter, getter);
+    init: function (attr, setter, getter) {
+        this._super(attr, setter, getter);
 
         this.port1 = null;
         this.beeline = null;
-        this.pulse= null;
+        this.pulse = null;
         this.tempConnection = null;
 
         this.vertices = [];
