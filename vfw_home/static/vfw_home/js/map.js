@@ -97,19 +97,54 @@ vfw.map.source.vfwSource = new ol.source.XYZ({
     'SRTM | ' + gettext("Map style from") + ' <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
     url: vfw.var.MAP_SERVER + "/osm/{z}/{x}/{y}.png"
 });
-
+// Create a OpenStreetMap layer
 vfw.map.source.osmSource = new ol.source.XYZ({
-    attributions: ['Map data from <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
-    'SRTM | Map style from <a href="https://opentopomap.org/">OpenTopoMap</a> ' +
-    '<a href="https://creativecommons.org/licenses/by-sa/3.0/">(CC-BY-SA)</a> '],
-    url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+    maxZoom: 19,
+    attributions: ['&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'],
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 });
 // vfw.map.source.osmSource = new ol.source.OSM({
 //     attributions: ['Map © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'],
 // });
 
+// Create a satellite imagery layer
+vfw.map.source.opentopoSource = new ol.source.XYZ({
+    attributions: ['Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+    '<a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> ' +
+    '(<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'],
+    maxZoom: 17,
+    url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png'
+});
+vfw.map.layer.openTopo = new ol.layer.Tile({
+    name: 'OpenTopoMap',
+    preload: Infinity,
+    baseLayer: true,
+    visible: false,
+    source: vfw.map.source.opentopoSource,
+});
+// vfw.map.layer.waterColor = new ol.layer.Tile({
+//     title: "Watercolor",
+//     baseLayer: true,
+//     visible: false,
+//     source: new ol.source.Stamen({
+//         layer: 'watercolor'
+//     })
+// });
+vfw.map.layer.osm = new ol.layer.Tile({
+    title: "OSM",
+    baseLayer: true,
+    visible: false,
+    source: new ol.source.OSM(),
+});
+
 /** Fetch V-FOR-WaTer base layer **/
 vfw.map.create_map = function () {
+
+    // let basemapControl = {
+    //     "Open Street map": vfw.map.source.osmSource,
+    //     "VFW map": vfw.map.source.vfwSource,
+    //     "Open Topo map": vfw.map.source.opentopoSource
+    // };
 
     let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
         'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
@@ -123,12 +158,15 @@ vfw.map.create_map = function () {
     }
     /** build the background map **/
     vfw.map.layer.map = new ol.layer.Tile({
+        name: 'DefaultMap',
         preload: Infinity,
+        baseLayer: true,
+        visible: true,
         source: vfw.map.source.vfwSource,
     });
     /** get OSM/OTM in case local map is not loading: **/
     vfw.map.layer.map.getSource().on('tileloaderror', function () {
-        vfw.map.layer.map.setSource(vfw.map.source.osmSource)
+        vfw.map.layer.map.setSource(vfw.map.source.opentopoSource)
     });
 
     let mapView = new ol.View({
@@ -145,7 +183,7 @@ vfw.map.create_map = function () {
 
     /** Make (animated) cluster layer from data points **/
     vfw.map.layer.cluster = new ol.layer.AnimatedCluster({
-        name: 'Cluster',
+        name: 'DataClusters',
         className: 'cluster-layer',
         source: new ol.source.Cluster({
             distance: 30,
@@ -248,7 +286,11 @@ vfw.map.create_map = function () {
     olmap = new ol.Map({
         // renderer: 'canvas',
         target: map_tar,
-        layers: [vfw.map.layer.map, vfw.map.layer.cluster],
+        layers: [
+            // vfw.map.layer.waterColor,
+            vfw.map.layer.osm, vfw.map.layer.openTopo,
+            vfw.map.layer.map, vfw.map.layer.cluster
+        ],
         // layers: [mapLayer, testPointLayer, testlayer, clusterLayer],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
         // interactions: ol.interaction.defaults().extend([featureselect, featuremodify]),
@@ -270,6 +312,8 @@ vfw.map.create_map = function () {
             new ol.control.ScaleLine(),
             new cApp.drawControls,
             vfw.map.control.zoomToExt,
+            new ol.control.LayerPopup(),
+            // new ol.control.LayerSwitcher(),
         ],
         view: mapView//dataview
     });
