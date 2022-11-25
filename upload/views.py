@@ -1,51 +1,36 @@
-from django.shortcuts import render
-from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from upload.forms import UploadForm, EntriesForm, PersonsForm
+from upload.forms import UploadForm
 from upload.models import UploadedFile
 
-# def home(request):
-#     """
-#     Dummy page for Heron Upload tool.
-#     """
-#     return render(request, 'upload/home.html')
-#
-# def home(request):
-#     if request.method == 'POST':
-#         form = MetadataForm(request.POST)
-#         if form.is_valid():
-#             pass  # does nothing, just trigger the validation
-#     else:
-#         form = MetadataForm()
-#     return render(request, 'home.html', {'form': form})
 
 
-class HomeView(TemplateView):
-    template_name = 'upload/home.html'
+def upload_defaults(request):
+
+    generalInfo = UploadForm.GeneralInfo
+    geoInfo = UploadForm.GeoInfo
+    DataInfo = UploadForm.DataspecificInfo
+    selection = []
+    return {'generalInfo': generalInfo, 'geoInfo': geoInfo, 'selection': selection, 'DataInfo': DataInfo}
+
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name: str = 'upload/home.html'
 
     def get(self, request):
-        form = EntriesForm()
-        print('get! ')
-        return render(self.request, 'upload/home.html', {'form': form})
-        # data_list = UploadedFile.objects.all()
-        # return render(request, 'home.html', {'form': form})
+        form = UploadForm()
+        context = upload_defaults(request)
+        visible_fields = form.visible_fields()
+
+        return render(self.request, self.template_name, {'context': context})
 
     def post(self, request):
-        print('post')
-        form = EntriesForm(request.POST)
+        form = UploadForm(request.POST)
+        context = upload_defaults(request)
         if form.is_valid():
             pass  # does nothing, just trigger the validation
-        return render(self.request, 'upload/home.html', {'form': form})
-        # form = UploadForm(self.request.POST, self.request.FILES)
-        # if form.is_valid():
-        #     file = form.save()
-        #     data = {'is_valid': True, 'name': file.file.name, 'url': file.file.url}
-        # else:
-        #     data = {'is_valid': False}
-        # return JsonResponse(data)
+        return render(self.request, self.template_name, {'context': context})
 
 
 def clear_database(request):
@@ -57,7 +42,6 @@ def clear_database(request):
 
 def delete_data(request, pk):
     data = get_object_or_404(UploadedFile, pk=pk)
-    print('in delete / data: ', data)
     if request.method == 'POST':
         form = UploadForm(request.POST, instance=data)
     else:
@@ -69,7 +53,3 @@ def delete_data(request, pk):
         file.delete()
     return redirect(request.POST.get('next'))
 
- # class DataUploadView(View):
- #     def get(self, request):
- #         data_list = UploadedFile.objects.all()
- #         return render(self.request, 'base_app/workspace.html', {'data': data_list})
