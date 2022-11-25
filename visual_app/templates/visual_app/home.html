@@ -1,0 +1,17 @@
+<meta charset="UTF-8">
+
+{% extends "vfw_home/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{#{% block sidebar %}#}
+{#	{% include 'visual_app/sidebar.html' %}#}
+{#{% endblock sidebar %}#}
+
+{% block title %}- Heron Visualisation{% endblock %}
+
+
+{% block content %}
+	{% include 'visual_app/visualplace.html' %}
+{% endblock %}

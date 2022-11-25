@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% load static %}
+
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.0.2.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.2.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.0.2.min.js" crossorigin="anonymous"></script>
+
+  {{ script | safe }}
+
+</head>
+<body>
+
+{{ div | safe }}
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <h1>{%  trans "Visualisation" %}</h1>
+      <p>{%  trans "This page is still under construction." %}</p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+
+    <h4>{%  trans "No visualization is available yet." %}</h4>
+
+  </div>
+</div>
+</body>
+
+
+</html>
+
+
