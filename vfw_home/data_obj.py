@@ -330,6 +330,7 @@ class DataObject:
         defect_x = []
         defect_y = []
         col = self.value_column
+        gap_length = len(self.__value_before_gap__)
 
         # if 'precision' in df.columns and df['precision'].sum() > 0:  # if preview with average, min, max  values
         if 'avg' in self.dataframe.columns:  # if dataset with average, min, max  values
