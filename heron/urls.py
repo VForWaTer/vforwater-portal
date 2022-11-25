@@ -30,6 +30,7 @@ urlpatterns = [
     path('home/', include('vfw_home.urls')),
     path('admin/', admin.site.urls),
     path('legals', vfw_views.Legals.as_view(), name='legals'),
+    path('privacypolicy', vfw_views.PrivacyPolicy.as_view(), name='privacy_policy'),
     path('workspace/', include('wps_gui.urls', namespace='wps_gui')),
     path('monitor/', include('vfw_status.urls', namespace='vfw_status')),
     path('visual/', include('visual_app.urls', namespace='visual_app')),
@@ -37,7 +38,7 @@ urlpatterns = [
     path('download/<str:name>', vfw_views.DownloadView.as_view()),
     path('admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     path('user/', include('author_manage.urls', namespace='author_manage')),
-    path('__debug__/', include(debug_toolbar.urls))  # only when debug toolbar is installed!
+    path('oidc/', include('mozilla_django_oidc.urls')),
 ]
 
 handler404 = 'vfw_home.views.error_404_view'

@@ -10,22 +10,44 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
+import logging
 import os
+from pathlib import Path
 
+GLOBAL_TIC = {}
+logger = logging.getLogger(__name__)
+max_size_preview_plot = 50000
+
+# TODO: change paths to pathlib, the new standard since django 3.1
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from django.utils.translation import ugettext
 
+# Set the GDAL Version used by django:
+GDAL_LIBRARY_PATH = r'/opt/gdal-2.2.3/.libs/libgdal.so.20'
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 ##PATH_INFO = '/'
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+LANGUAGE_COOKIE_HTTPONLY = True
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# TODO: path should not be set to wps results, but wps results should be an URL
+DATA_DIR = '/home'
 
 # For now, place all data files in VFW_DIR and not into source directory.
-HOME_DIR = os.path.expanduser('~')
-VFW_DIR = os.path.join(HOME_DIR, 'vforwater-example')
-if not os.path.exists(VFW_DIR):
-    os.makedirs(VFW_DIR)
+HOME_DIR = Path.home()
+try:
+    HOME_DIR = Path.home()
+except AttributeError:
+    import os
+    HOME_DIR = Path(str(os.path.expanduser('~')))
+
+VFW_DIR = Path(HOME_DIR) / '.vforwater'
+if not Path(VFW_DIR).exists():
+    Path(VFW_DIR).mkdir()
 
 # Set where the server is running on
 HOST_NAME = "myportal.mydomain.de"
@@ -36,6 +58,9 @@ LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
 # Variable to set the demo path in static files
 DEMO_VAR = ''
 
+# Set session behavior when browser is closed:
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -43,8 +68,9 @@ DEMO_VAR = ''
 # Generate secret on initial run. ("random" should be replaced with "secrets" for python >=3.6)
 import random, string
 
-secretFile = os.path.join(VFW_DIR, 'secret.txt')
-if not os.path.isfile(secretFile):
+secretFile = Path(VFW_DIR) / 'secret.txt'
+
+if not Path(secretFile).is_file():
     SECRET_KEY = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
     with open(secretFile, 'w+') as f:
         f.write(SECRET_KEY)
@@ -56,8 +82,7 @@ SECRET_GEOSERVER = "'admin', 'geoserver'"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Logging
 LOGGING = {
@@ -72,23 +97,43 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(VFW_DIR, 'debug.log'),
+            'filename': Path(VFW_DIR) / 'debug.log',
             'formatter': 'verbose'
         },
     },
     'loggers': {
         'heron': {
-            'handlers': ['file'],
+            'handlers': ['file','console'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'vfw_home': {
-            'handlers': ['file'],
+            'handlers': ['file','console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'watts_rsp': {
-            'handlers': ['file'],
+        'mozilla_django_oidc': {
+            'handlers': ['file','console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'author_manage': {
+            'handlers': ['file','console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django': {
+            'handlers': ['file','console'],
+            'propagate': True,
+            'level': 'WARN',
+        },
+        'django.db.backends': {
+            'handlers': ['file','console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'wps_gui': {
+            'handlers': ['file','console'],
             'level': 'DEBUG',
             'propagate': True,
         }
@@ -107,12 +152,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    # 'heron_wps',
     'wps_gui',
     'vfw_status',
     'visual_app',
     'upload',
     'author_manage.apps.authorManageConfig',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -121,8 +166,9 @@ MIDDLEWARE = [
 # For automatic translations see:
 # https://docs.djangoproject.com/en/1.11/topics/i18n/translation/#how-django-discovers-language-preference
 # Also see: https://djangobook.com/internationalization-template-code/ or https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Home_page
-    # 'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -167,6 +213,7 @@ DATABASES = {
         'PORT': '5432',
         'USER': 'testuser',
         'PASSWORD': 'test',
+        'TEST': {'MIRROR': 'default',},
     }
 
 }
@@ -219,37 +266,28 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = Path(BASE_DIR) / 'media'
 
 # Default URLs for user authentication
 LOGIN_URL = 'vfw_home:login'
 LOGIN_REDIRECT_URL = 'vfw_home:home'
 LOGOUT_REDIRECT_URL = 'vfw_home:home'
-LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfw_home/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfw_home'
+LOGIN_SUCCESS_VIEW = VFW_SERVER + '/home/rsp/login/success'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/home/failedlogin'
 
+# Authentication configuration
+AUTHENTICATION_BACKENDS = (
+    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+    # 'watts_rsp.auth.WattsBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
-# Figure out if we're on our development server...
-import socket
-
-ON_VFW_SERVER = socket.gethostname() == HOST_NAME
-
-# ...if we are, enable Watts.
-if ON_VFW_SERVER:
-    INSTALLED_APPS.append('watts_rsp')
-
-    # Authentication configuration
-    AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
-    )
-
-
-# Settings from workflowPSE, here for wps_workflow app
+# Settings for logging in wps_gui app
 import logging.handlers
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d;%(funcName)s()] - %(message)s')  #
 filehandler = logging.handlers.RotatingFileHandler(
-    BASE_DIR + '/wps.log', mode='a', maxBytes=128 * 1024, backupCount=1, encoding=None, delay=0)
+    str(BASE_DIR) + '/wps.log', mode='a', maxBytes=128 * 1024, backupCount=1, encoding=None, delay=0)
 filehandler.setFormatter(formatter)
 wps_log = logging.getLogger('wps')
 
