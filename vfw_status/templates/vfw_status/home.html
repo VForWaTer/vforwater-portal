@@ -1,0 +1,59 @@
+<meta charset="UTF-8">
+{% extends "vfw_home/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+
+{% block content %}
+
+  <script>
+
+
+  </script>
+<style type="text/css">
+  th, td {
+    padding: 0 10px;
+  }
+</style>
+
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+      <h1>{% trans "Status of V-FOR-WaTer services" %}</h1>
+      <p>{% trans "Get Information which services up and are running." %}</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+      <table style="text-align:left">
+        <thead>
+        <tr>
+          <th>Service</th>
+          <th>Is running</th>
+          <th>Status Code</th>
+          <th>Test URL/function call</th>
+        </tr>
+        </thead>
+        <body>
+        {% for service, values in services.items %}
+          <tr>
+            <td>{{ service }}</td>
+            {% if values.runs is False %}
+              <td style="color:red"><strong>{{ values.runs }}</strong></td>
+              <td><strong>{{ values.code }}</strong></td>
+              <td>{{ values.url }}</td>
+            {% else %}
+              <td style="color:forestgreen">{{ values.runs }}</td>
+              <td>{{ values.code }}</td>
+              <td>{{ values.url }}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </body>
+      </table>
+    </div>
+  </div>
+
+{% endblock %}
