@@ -1,0 +1,667 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-05-17 15:27+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: models.py:585
+msgid "Filter from map"
+msgstr "Kartenfilter"
+
+#: templates/registration/login.html:16
+msgid "Your login failed! Please try again."
+msgstr "Einloggen ist fehlgeschlagen. Bitte nochmal versuchen."
+
+#: templates/registration/login.html:18
+msgid "Welcome, you are logged in as "
+msgstr "Willkommen, Sie sind eingeloggt als "
+
+#: templates/registration/login.html:20
+msgid "Welcome, please log in."
+msgstr "Willkommen! Bitte einloggen."
+
+#: templates/vfw_home/base.html:58
+msgid ""
+"Virtual research environment for water and terrestrial environmental research"
+msgstr ""
+"Virtuelle Forschungsumgebung für die Wasser- und terrestrische "
+"Umweltforschung"
+
+#: templates/vfw_home/base.html:74 templates/vfw_home/sidemenu.html:17
+msgid "  Home"
+msgstr ""
+
+#: templates/vfw_home/base.html:77 templates/vfw_home/sidemenu.html:18
+msgid "  Workspace"
+msgstr "  Arbeitsplatz"
+
+#: templates/vfw_home/base.html:90 templates/vfw_home/help.html:15
+msgid "Help"
+msgstr "Hilfe"
+
+#: templates/vfw_home/base.html:95 templates/vfw_home/sidemenu.html:31
+msgid "  Portal Help"
+msgstr " Hilfe"
+
+#: templates/vfw_home/base.html:98 templates/vfw_home/sidemenu.html:34
+msgid "  Web Site"
+msgstr "  Webseite"
+
+#: templates/vfw_home/base.html:106 templates/vfw_home/sidemenu.html:41
+msgid "  Source Code"
+msgstr "  Quellcode"
+
+#: templates/vfw_home/base.html:141
+msgid "Upload Data"
+msgstr "Daten hochladen"
+
+#: templates/vfw_home/base.html:142 templates/vfw_home/sidemenu.html:59
+msgid "Profile"
+msgstr "Profil"
+
+#: templates/vfw_home/base.html:145
+msgid "My Resources"
+msgstr "Meine Ressourcen"
+
+#: templates/vfw_home/base.html:146
+msgid "  Logout"
+msgstr "  Ausloggen"
+
+#: templates/vfw_home/base.html:148
+msgid "  Logout like login"
+msgstr "  Ausloggen wie Einloggen"
+
+#: templates/vfw_home/base.html:198 templates/vfw_home/sidemenu.html:89
+msgid "  Login"
+msgstr "  Einloggen"
+
+#: templates/vfw_home/base.html:257
+msgid "Powered by"
+msgstr "Betrieben von"
+
+#: templates/vfw_home/base_sidebar.html:22 templates/vfw_home/sidemenu.html:14
+#: templates/vfw_home/wps_sidebar.html:26
+msgid "  Close Menu"
+msgstr "  Menü schließen"
+
+msgid "Close window"
+msgstr "Fenster schließen"
+
+#: templates/vfw_home/base_sidebar.html:34
+#: templates/vfw_home/wps_sidebar.html:33
+msgid "Area to make the datasets you have selected available for further use."
+msgstr "Bereich um die ausgewählten Datensätze zur weiteren Bearbeitung verfügbar zu machen."
+
+#: templates/vfw_home/base_sidebar.html:34
+#: templates/vfw_home/wps_sidebar.html:33
+msgid "Data store"
+msgstr "Datenablage"
+
+#: templates/vfw_home/base_sidebar.html:39
+#: templates/vfw_home/wps_sidebar.html:38
+msgid "Remove all datasets"
+msgstr "Alle Datensätze entfernen"
+
+#: templates/vfw_home/base_sidebar.html:40
+#: templates/vfw_home/wps_sidebar.html:39
+msgid "Remove all datasets from data store"
+msgstr "Alle ausgewählten Datensätze aus der Datenablage entfernen"
+
+#: templates/vfw_home/base_sidebar.html:50
+#: templates/vfw_home/wps_sidebar.html:61
+msgid " View metadata"
+msgstr " Metadaten anzeigen"
+
+#: templates/vfw_home/base_sidebar.html:53
+#: templates/vfw_home/wps_sidebar.html:64
+msgid " Plot data"
+msgstr " Datensatz darstellen"
+
+#: templates/vfw_home/base_sidebar.html:56
+#: templates/vfw_home/base_sidebar.html:59
+#: templates/vfw_home/wps_sidebar.html:67
+msgid " Download data"
+msgstr " Datensatz herunterladen "
+
+#: templates/vfw_home/base_sidebar.html:62
+#: templates/vfw_home/wps_sidebar.html:70
+msgid " Download metadata"
+msgstr " Metadaten herunterladen"
+
+#: templates/vfw_home/base_sidebar.html:70
+#: templates/vfw_home/wps_sidebar.html:76
+msgid " Remove dataset"
+msgstr " Datensatz entfernen"
+
+#: templates/vfw_home/base_sidebar.html:82
+msgid " Please wait. Preparing data..."
+msgstr " Bitte warten. Ihre Daten werden zusammengestellt..."
+
+#: templates/vfw_home/help.html:16
+msgid "Welcome! This site is still under construction"
+msgstr "Willkommen! Diese Seite befindet sich noch im Aufbau."
+
+#: templates/vfw_home/home.html:17
+msgid "Map"
+msgstr "Karte"
+
+#: templates/vfw_home/home.html:19
+msgid "Table"
+msgstr "Tabelle"
+
+#: templates/vfw_home/info_modal.html:37
+msgid "Back"
+msgstr "zurück"
+
+#: templates/vfw_home/info_modal.html:37
+msgid "Showing only latest {0} datapoints."
+msgstr "Nur die letzten {0} Datenpunkte werden angezeigt."
+
+#: static/vfw_home/js/map.js:496
+msgid "Last"
+msgstr "Ende"
+
+#: static/vfw_home/js/map.js:496
+msgid "Missing values"
+msgstr "Fehlende Werte"
+
+#: static/vfw_home/js/map.js:496
+msgid "Next"
+msgstr "Nächster"
+
+#: static/vfw_home/js/map.js:496
+msgid "Previous"
+msgstr "Vorausgehend"
+
+#: static/vfw_home/js/map.js:496
+msgid "Time"
+msgstr "Zeit"
+
+#: static/vfw_home/js/map.js:496
+msgid "Date"
+msgstr "Datum"
+
+#: st
+#: static/vfw_home/js/map.js:496
+msgid "Value"
+msgstr "Wert"
+
+#: static/vfw_home/js/map.js:496
+msgid "First"
+msgstr "Anfang"
+
+#: static/vfw_home/js/map.js:496
+msgid "More"
+msgstr "Mehr"
+
+#: static/vfw_home/js/map.js:496
+msgid "Show more information about the dataset."
+msgstr "Zeige mehr Informationen über den Datensatz an."
+
+#: static/vfw_home/js/map.js:502remove
+msgid "Pass to datastore"
+msgstr "In die Datenablage"
+
+#: static/vfw_home/js/map.js:503
+msgid "Put dataset to session datastore."
+msgstr "Schiebt den Datensatz in die Datenablage zur Linken."
+
+#: static/vfw_home/js/map.js:507
+msgid "Send request"
+msgstr "Anfrage senden"
+
+#: static/vfw_home/js/map.js:508
+msgid "Send an access request to the data owner."
+msgstr "Den Besitzer der Daten nach Zugriff fragen."
+
+#: templates/vfw_home/map.html:37
+msgid "Click&#32on&#32map&#32to&#32draw&#32a&#32square.&#32Doubleclick&#32to&#32stop&#32drawing."
+msgstr "Auf&#32die&#32Karte&#32klicken&#32um&#32mit&#32dem&#32Zeichnen&#32zu&#32beginnen."
+
+#: templates/vfw_home/map.html:38
+msgid "Click&#32on&#32map&#32to&#32draw&#32a&#32polygon.&#32Doubleclick&#32to&#32stop&#32drawing."
+msgstr "Auf&#32die&#32Karte&#32klicken&#32um&#32mit&#32dem&#32Zeichnen&#32zu&#32beginnen."
+
+#: templates/vfw_home/map.html:39
+msgid "Edit&#32drawing"
+msgstr "Zeichnung&#32editieren"
+
+#: templates/vfw_home/map.html:40
+msgid "Remove&#32drawing"
+msgstr "Zeichnung&#32löschen"
+
+#: templates/vfw_home/map.html:41
+msgid "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom."
+msgstr "Zeichenauswahl&#32beenden&#32und&#32wiederherstellen&#32der&#32Zoomfunktionalität&#32beim&#32Doppelklick."
+
+#: templates/vfw_home/map.html:41
+msgid "Close&#32drawing&#32panel&#32and&#32reactivate&#32doubleclick&#32zoom."
+msgstr "Zeichenauswahl&#32schließen&#32und&#32wiederherstellen&#32der&#32Zoomfunktionalität&#32beim&#32Doppelklick."
+
+#: templates/vfw_home/map.html:41
+msgid "Open&#32drawing&#32panel&#32and&#32deactivate&#32doubleclick&#32zoom."
+msgstr "Zeichenauswahl&#32öffnen&#32und&#32deaktivieren&#32der&#32Zoomfunktionalität&#32beim&#32Doppelklick."
+
+#: templates/vfw_home/select_data.html:42
+msgid "Please&#32choose&#32here&#32the&#32data&#32shown&#32on&#32the&#32map."
+msgstr "Wählen&#32Sie&#32hier&#32bitte&#32welche&#32Daten&#32auf&#32der&#32Karte&#32gezeigt&#32werden&#32sollen."
+
+#: templates/vfw_home/select_data.html:42
+msgid "Filter menu"
+msgstr "Filtermenü"
+
+#: templates/vfw_home/select_data.html:52
+msgid "Quick update of results on each click event"
+msgstr "Schnelles Anpassen der Ergebnisse bei jedem Klick"
+
+#: templates/vfw_home/select_data.html:52
+msgid "Quick"
+msgstr "Schnell"
+
+#: templates/vfw_home/select_data.html:56
+msgid "Click here to select from drawing"
+msgstr ""
+
+#: templates/vfw_home/select_data.html:56
+msgid "Draw"
+msgstr ""
+
+#: templates/vfw_home/select_data.html:73
+msgid "Pass&#32datasets&#32to&#32data&#32store"
+msgstr "Auswahl&#32an&#32Datenablage&#32schicken"
+
+#: templates/vfw_home/select_data.html:74
+msgid "Pass&#32all&#32selected&#32datasets&#32to&#32session&#32data&#32store."
+msgstr "Senden&#32Sie&#32hier&#32die&#32Auswahl&#32in&#32die&#32Datenablage&#32der&#32aktuellen&#32Sitzung."
+
+#: templates/vfw_home/select_data.html:78
+msgid "Reset&#32filter&#32menu"
+msgstr "Filtermenü&#32zurücksetzen"
+
+#: templates/vfw_home/select_data.html:79
+msgid "Remove&#32selection&#32from&#32filter&#32menu."
+msgstr "Markierungen&#32aus&#32dem&#32Filtermenü&#32entfernen."
+
+#: templates/vfw_home/quick_filter.html:21
+msgid "Available datasets"
+msgstr "Verfügbare Datensätze"
+
+#: templates/vfw_home/quick_filter.html:37
+msgid "more..."
+msgstr "mehr..."
+
+#: templates/vfw_home/quick_filter.html:37
+msgid "river water level"
+msgstr "Pegelstand"
+
+#: templates/vfw_home/quick_filter.html:37
+msgid "CO2 concentration"
+msgstr "CO2 Konzentration"
+
+#: templates/vfw_home/quick_filter.html:37
+msgid "air temperature"
+msgstr "Lufttemperatur"
+
+#: templates/vfw_home/quick_filter.html:37
+msgid "wind direction"
+msgstr "Windrichtung"
+
+#: templates/vfw_home/quick_filter.html:37
+msgid "air pressure"
+msgstr "Luftdruck"
+
+#: templates/vfw_home/sidemenu.html:28
+msgid "  Help"
+msgstr "  Hilfe"
+
+#: templates/vfw_home/sidemenu.html:28
+msgid "  Legals"
+msgstr "  Impressum"
+
+#: templates/vfw_home/sidemenu.html:28
+msgid "  Privacy Policy"
+msgstr "  Datenschutzerklärung"
+
+#: templates/vfw_home/sidemenu.html:37
+msgid "  Documentation"
+msgstr "  Dokumentation"
+
+#: templates/vfw_home/wps_sidebar.html:73
+msgid " Download data & metadata"
+msgstr " Daten & Metadaten herunterladen"
+
+#: views.py:485
+msgid "help"
+msgstr "Hilfe"
+
+#: views.py:485
+msgid "No plot available. <br/>First access to this dataset is needed."
+msgstr "Kein Plot verfügbar. <br/>Zuerst ist Zugriff auf den Datensatz erforderlich."
+
+#: views.py:485
+msgid "Commercial use allowed"
+msgstr "Kommerzielle Nutzung erlaubt "
+
+#: views.py:661
+msgid "Abstract"
+msgstr "Kurzbeschreibung"
+
+#: views.py:661
+msgid "Variable name"
+msgstr "Variablenname"
+
+#: views.py:661
+msgid "Title"
+msgstr "Titel"
+
+#: templates/vfw_home/legals.html
+msgid "This page is still under construction."
+msgstr "Diese Seite befindet sich noch in der Entwicklung."
+
+#: templates/vfw_home/legals.html
+msgid "Provider"
+msgstr "Anbieter"
+
+#: templates/vfw_home/legals.html
+msgid "Copyright"
+msgstr "Copyright"
+
+#: templates/vfw_home/legals.html
+msgid "Disclaimer"
+msgstr "Haftung"
+
+#: templates/vfw_home/legals.html
+msgid "References to External Websites"
+msgstr "Verweise auf externe Web-Seiten"
+
+#: templates/vfw_home/legals.html
+msgid "Data Protection and IT Safety"
+msgstr "Datenschutz und IT-Sicherheit"
+
+
+#, fuzzy
+#~| msgid "Click on map to draw. Doubleclick to stop drawing."
+#~ msgid "Click on map to draw a square. Doubleclick to stop drawing."
+#~ msgstr ""
+#~ "Auf die Karte klicken um mit dem Zeichnen zu beginnen. Ein Doppelklick "
+#~ "beendet das Zeichnen."
+
+#, fuzzy
+#~| msgid "Click on map to draw. Doubleclick to stop drawing."
+#~ msgid "Click on map to draw a polygon. Doubleclick to stop drawing."
+#~ msgstr ""
+#~ "Auf die Karte klicken um mit dem Zeichnen zu beginnen. Ein Doppelklick "
+#~ "beendet das Zeichnen."
+
+#, fuzzy
+#~| msgid ""
+#~| "Click&#32on&#32map&#32to&#32draw."
+#~| "&#32Doubleclick&#32to&#32start&#32drawing."
+#~ msgid ""
+#~ "Click&#32on&#32map&#32to&#32draw.&#32Doubleclick&#32to stop&#32drawing."
+#~ msgstr "Auf&#32die&#32Karte&#32klicken&#32um&#32mit&#32dem&#32Zeichnen&#32zu&#32beginnen."
+
+#~ msgid "Requests"
+#~ msgstr "Anfragen"
+
+#~ msgid "  Visualisation"
+#~ msgstr "  Visualisierung"
+
+#~ msgid "  Currently no requests."
+#~ msgstr "  Derzeit keine Anfragen."
+
+#~ msgid "Resource Overview"
+#~ msgstr "Ressourcenüberblick"
+
+#~ msgid "Result store"
+#~ msgstr "Ergebnisablage"
+
+msgid "Area to make your results ready for further processing or visualisation available."
+msgstr "Bereich um die Ergebnisse zur weiteren Prozessierung oder zur Ansicht bereit zu stellen."
+
+msgid "Remove all results"
+msgstr "Alle Ergebnisse entfernen"
+
+#~ msgid "Remove&#32all&#32results&#32from&#32result&#32store"
+#~ msgstr "Alle&#32Ergebnisse&#32aus&#32der&#32Ergebnisablage&#32entfernen"
+
+msgid "View result"
+msgstr "Ergebnis anzeigen"
+
+msgid "required"
+msgstr "Notwendig"
+
+msgid "cancel"
+msgstr "Abbrechen"
+
+msgid "Place tool in Dropzone."
+msgstr "Prozess im Ablagebereich platzieren."
+
+msgid "Place tool in Dropzone. If tool already exists only change values."
+msgstr "Prozess im Ablagebereich platzieren. Falls der Prozess bereits platziert ist werden nur die Werte aktualisiert."
+
+#~ msgid " View as table"
+#~ msgstr " Ergebnistabelle"
+
+#~ msgid " Plot result"
+#~ msgstr " Graphisches Ergebnis"
+
+#~ msgid " Reopen Process"
+#~ msgstr " Werkzeug öffnen"
+
+#~ msgid " Download result"
+#~ msgstr " Ergebnis herunterladen"
+
+#~ msgid " Remove result"
+#~ msgstr " Ergebnis entfernen"
+
+msgid "Load workflow"
+msgstr "Prozesskette laden"
+
+msgid "Click to load a saved workflow"
+msgstr "Hier klicken um eine gespeicherte Prozesskette zu laden"
+
+msgid "Save workflow"
+msgstr "Prozesskette speichern"
+
+msgid "Click to save current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu speichern"
+
+msgid "Clear workflow"
+msgstr "Löschen"
+
+msgid "Name of current workflow"
+msgstr "Name der aktuellen Prozesskette"
+
+msgid "Name of current workflow with a max length of 50 characters. Allowed are characters, numbers, space, underscore and dash."
+msgstr "Name der aktuellen Prozesskette mit einer maximalen Länge von 50 Zeichen. Erlaubt sind Buchstaben, Zahlen, Leerzeichen, Unterstrich und Minus"
+
+msgid "Click to clear current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu entfernen"
+
+msgid "Run workflow"
+msgstr "Start"
+
+msgid "Click to run current workflow"
+msgstr "Hier klicken um die aktuelle Prozesskette zu starten"
+
+msgid "Drag & Drop your Data and Tools here"
+msgstr "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu erstellen"
+
+msgid "Dropzone"
+msgstr "Ablagebereich"
+
+#~ msgid "Advanced"
+#~ msgstr "Erweitert"
+
+#~ msgid "Set attributes and click on search to update results"
+#~ msgstr ""
+#~ "Die gewünschten Optionen setzen und erst durch einen klick auf den suchen "
+#~ "Knopf die Ergebnisse erhalten"
+
+#~ msgid " Log in"
+#~ msgstr " Einloggen"
+
+#~ msgid " Toolbox"
+#~ msgstr " Werkzeugkiste"
+
+#~ msgid "Project"
+#~ msgstr "Projekt"
+
+#~ msgid "Project/Domain"
+#~ msgstr "Projekt/Domäne"
+
+#~ msgid "Domain"
+#~ msgstr "Domäne"
+
+#~ msgid "Subdomain"
+#~ msgstr "Subdomäne"
+
+#~ msgid "License name"
+#~ msgstr "Lizenzname"
+
+#~ msgid "License"
+#~ msgstr "Lizenz"
+
+#~ msgid "X-Coordinate"
+#~ msgstr "X-Koordinaten"
+
+#~ msgid "Y-Coordinate"
+#~ msgstr "Y Koordinaten"
+
+#~ msgid "Geometry"
+#~ msgstr "Geometrie"
+
+#~ msgid "Location"
+#~ msgstr "Position"
+
+#~ msgid "Project name"
+#~ msgstr "Projektname"
+
+#~ msgid "project"
+#~ msgstr "Projekt"
+
+#~ msgid "Flag"
+#~ msgstr "Kennzeichen"
+
+#~ msgid "Quantifier"
+#~ msgstr "Gewichtung"
+
+#~ msgid "Quality"
+#~ msgstr "Qualität"
+
+#~ msgid "Site name"
+#~ msgstr "Standortname"
+
+#~ msgid "Elevation"
+#~ msgstr "Hohe"
+
+#~ msgid "Relative height"
+#~ msgstr "Relative Höhe"
+
+#~ msgid "Orientation"
+#~ msgstr "Richtung"
+
+#~ msgid "Slope"
+#~ msgstr "Hangneigung"
+
+#~ msgid "Landuse"
+#~ msgstr "Landnutzung"
+
+#~ msgid "Site comment"
+#~ msgstr "Standortkommentar"
+
+#~ msgid "Site"
+#~ msgstr "Standort"
+
+#~ msgid "Geology"
+#~ msgstr "Geologie"
+
+#~ msgid "Soil Type"
+#~ msgstr "Bodentyp"
+
+#~ msgid "Porosity"
+#~ msgstr "Porosität"
+
+#~ msgid "Field Capacity"
+#~ msgstr "Feldkapazität"
+
+#~ msgid "Residual Moisture"
+#~ msgstr "Restfeuchte"
+
+#~ msgid "Soil"
+#~ msgstr "Boden"
+
+#~ msgid "Unit"
+#~ msgstr "Einheit"
+
+#~ msgid "Institution"
+#~ msgstr "Einrichtung"
+
+#~ msgid "Department"
+#~ msgstr "Abteilung"
+
+#~ msgid "Last name"
+#~ msgstr "Nachname"
+
+#~ msgid "First name"
+#~ msgstr "Vorname"
+
+#~ msgid "Comment"
+#~ msgstr "Kommentar"
+
+#~ msgid "User"
+#~ msgstr "Nutzer"
+
+#~ msgid "User Comment"
+#~ msgstr "Nutzerkommentar"
+
+#~ msgid "Start of measurement"
+#~ msgstr "Messbeginn"
+
+#~ msgid "End of measurement"
+#~ msgstr "Messende"
+
+#~ msgid "Support"
+#~ msgstr "Auflage???"
+
+#~ msgid "Spacing"
+#~ msgstr "Schrittweite"
+
+#~ msgid "Creator"
+#~ msgstr "Ersteller"
+
+#~ msgid "Publisher"
+#~ msgstr "Veröffentlicher"
+
+#~ msgid "Name"
+#~ msgstr "Name"
+
+#~ msgid "Manufacturer"
+#~ msgstr "Hersteller"
+
+#~ msgid "Sensor"
+#~ msgstr "Sensor"
+
+#~ msgid "Variable Name"
+#~ msgstr "Variablenname"
+
+#~ msgid "Data type"
+#~ msgstr "Datentyp"
+
+#~ msgid "Sensor comment"
+#~ msgstr "Sensorkommentar"

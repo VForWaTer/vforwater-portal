@@ -1,0 +1,204 @@
+
+/* style of top bar*/
+/* TODO: Do we access the font Raleway online? For more see base_app/vcss/css*/
+.w3-main {
+    margin-left: 300px;
+    margin-top: 78px;
+}
+
+div.w3-main p {
+    /*text-align: center;*/
+}
+
+div.topcontainer {
+    z-index: 4
+}
+
+html, body, h1, h2, h3, h4, h5 {font-family: "Raleway", sans-serif}
+
+/*To have the menu in several lines change 'max-height' to 'height'*/
+/*When you want the menu to vanish on small screens set 'overflow' hidden - but then your dropdown does not show anything*/
+.w3-navbar {margin-top: 37px;max-height: 43px; overflow: visible}
+form.w3-hover-white {margin: 0px}
+a.w3-hover-blue{padding: 0px}
+@media screen and (min-width: 993px) {.w3-navbar {padding-left: 300px;}}
+@media screen and (max-width: 992px) {.w3-navbar {padding-left: 0px;}}
+.w3-dropdown-content {min-width: 200px;box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);z-index: 1;}
+
+/*style for a spinning wheel during load*/
+.loader {
+  border: 16px solid #00BAEE;
+  border-radius: 50%;
+  border-bottom: 16px solid #AADDF9;
+  border-right: 16px solid #D9EFFD;
+  border-top: 16px solid white;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 1.5s linear infinite; /* Safari */
+  animation: spin 1.5s linear infinite;
+}
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+ /* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 3px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+
+/*alternative loader*/
+.fading-dot-loader {
+  margin: 100px auto;
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+.fading-dot-loader .dot-loader {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.fading-dot-loader .dot-loader:before {
+  content: '';
+  display: block;
+  margin: 0 auto;
+  width: 25%;
+  height: 25%;
+  background-color: #333;
+  border-radius: 50%;
+  -webkit-animation: fading-dot-loader-delay 1.2s infinite ease-in-out both;
+          animation: fading-dot-loader-delay 1.2s infinite ease-in-out both;
+}
+@-webkit-keyframes fading-dot-loader-delay {
+   0%   {top: 00px; background: #00BAEE; width: 20px;}
+   60%   {background: #AADDF9;}
+  100% {top: 32px; background: #D9EFFD; width: 32px;}
+}
+@keyframes fading-dot-loader-delay {
+   0%   {top: 00px; background: #00BAEE; width: 20px;}
+   60%   {background: #AADDF9;}
+  100% {top: 32px; background: #D9EFFD; width: 32px;}
+}
+.fading-dot-loader .dot-loader2 {
+  -webkit-transform: rotate(60deg);
+      -ms-transform: rotate(60deg);
+          transform: rotate(60deg);
+}
+.fading-dot-loader .dot-loader3 {
+  -webkit-transform: rotate(120deg);
+      -ms-transform: rotate(120deg);
+          transform: rotate(120deg);
+}
+.fading-dot-loader .dot-loader4 {
+  -webkit-transform: rotate(180deg);
+      -ms-transform: rotate(180deg);
+          transform: rotate(180deg);
+}
+.fading-dot-loader .dot-loader5 {
+  -webkit-transform: rotate(240deg);
+      -ms-transform: rotate(240deg);
+          transform: rotate(240deg);
+}
+.fading-dot-loader .dot-loader6 {
+  -webkit-transform: rotate(300deg);
+      -ms-transform: rotate(300deg);
+          transform: rotate(300deg);
+}
+.fading-dot-loader .dot-loader2:before {
+  -webkit-animation-delay: -1s;
+          animation-delay: -1s;
+}
+.fading-dot-loader .dot-loader3:before {
+  -webkit-animation-delay: -0.8s;
+          animation-delay: -0.8s;
+}
+.fading-dot-loader .dot-loader4:before {
+  -webkit-animation-delay: -0.6s;
+          animation-delay: -0.6s;
+}
+.fading-dot-loader .dot-loader5:before {
+  -webkit-animation-delay: -0.4s;
+          animation-delay: -0.4s;
+}
+.fading-dot-loader .dot-loader6:before {
+  -webkit-animation-delay: -0.2s;
+          animation-delay: -0.2s;
+}
+
+
+
+ /* Style the button that is used to open and close the collapsible content */
+.collapsible {
+  background-color: #eee;
+  color: #444;
+  cursor: pointer;
+  padding: 8px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .collapsible:hover {
+  background-color: #ccc;
+}
+
+/* Style the collapsible content. Note: hidden by default */
+.content {
+  padding: 0 8px;
+  display: none;
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+/* Add a + and - if collapsible is open or closed */
+.collapsible:after {
+  content: '\02795'; /* Unicode character for "plus" sign (+) */
+  font-size: 13px;
+  color: white;
+  float: right;
+  margin-left: 5px;
+}
+.openElement:after {
+  content: "\2796"; /* Unicode character for "minus" sign (-) */
+}

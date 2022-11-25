@@ -1,0 +1,140 @@
+{% load i18n l10n %}
+<div id="{{ name }}pointmap_div"><p>
+  <div id="{{ name }}pointmap" class="pointmap"></div>
+  </p>
+  <table>
+    <tr>
+      <th></th>
+      <th style="padding-left: 30px"> Latitude</th>
+      <th style="padding-left: 30px"> Longitutde</th>
+      <th style="padding-left: 30px"> SRID</th>
+    </tr>
+    <tr>
+      <td>Map showing</td>
+      <td style="padding-left: 30px" id="lattext"> {{ default_lat }} </td>
+      <td style="padding-left: 30px" id="lontext"> {{ default_lon }} </td>
+      <td style="padding-left: 30px"> EPSG:{{ default_srid }}</td>
+    </tr>
+  </table>
+  </p>
+  <form oninput="{{ name }}.value = Lat.value, Lon.value, {{ default_srid }}">
+    <label for="Lat">Latitude: </label>
+    <input name="Lat" type="text" title="decimal degree, e.g. 49.00"
+           pattern="^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$" id="Lat">
+    <label for="Lon"> Longitude: </label>
+    <input name="Lon" type="text" title="decimal degree, e.g. -123.000"
+           pattern="^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$" id="Lon">
+    <input type="text" name="{{ name }}" id="{{ name }}element" hidden>
+    EPSG:{{ default_srid }}
+  </form>
+  <!-- <button type="button" onclick="alert("Lets transform!")"
+  Title="Click here if your coordinates are based on another SRID.">Transform Coordinates</button> -->
+  <br><br>
+</div>
+<script>
+  function {{ name }}upload_map_init() {
+    // ol.proj.useGeographic();  // should allow to use 4326 for map, but isn't working that way
+    const LatPattern = /^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{0,6})?))$/
+    const LatPatternDeg = /^((90[°|\s]\s*)(0{1,2}['|\s]\s*)?(0{1,2}([.|,]0{1,20})?["|\s]\s*)?|(([1-8]\d|\d)[°|\s]\s*)(([0-5]\d|\d)['|\s]\s*)?((([0-5]\d|\d)([.|,]\d{1,20})?)["|\s]\s*)?)([NSns]?)$/
+    const LonPattern = /^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{0,6})?))$/
+    const LonPatternDeg = /^((180[°|\s]\s*)(0{1,2}['|\s]\s*)?(0{1,2}([.|,]0{1,20})?["|\s]\s*)?|((1[0-7]\d|\d\d|\d)[°|\s]\s*)(([0-5]\d|\d)['|\s]\s*)?((([0-5]\d|\d)([.|,]\d{1,20})?)["|\s]\s*)?)([EWew]?)$/
+    const lattext = document.getElementById("lattext");
+    const lontext = document.getElementById("lontext");
+    const Lat = document.getElementById("Lat");
+    const Lon = document.getElementById("Lon");
+    const LatLon = document.getElementById("{{ name }}element");
+    let matches = [];
+    let minutes = 0;
+    let seconds = 0;
+    let hemisphere = 1;
+    let LonNum, LatNum;
+    let defaultLat = true;
+    let defaultLon = true;
+
+    // map elements
+    const coords = ol.proj.transform([{{ default_lon }}, {{ default_lat }}], 'EPSG:{{ default_srid }}', 'EPSG:3857')
+    const point = new ol.geom.Point(coords)
+    const mapView = new ol.View({
+      center: coords,
+      zoom: {{ default_zoom }},
+      projection: "EPSG:3857"
+    });
+    const map = new ol.Map({
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM(),
+          maxZoom: 9,
+        }),
+        new ol.layer.Vector({
+          source: new ol.source.Vector({features: [new ol.Feature({geometry: point})]}),
+          style: new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 5,
+              fill: new ol.style.Fill({color: "red",}),
+              stroke: new ol.style.Stroke({color: "darkred", width: 2,}),
+            }),
+          }),
+        })
+      ],
+      target: "{{ name }}pointmap",
+      view: mapView,
+    });
+
+    // update map and text
+    Lat.oninput = function () {
+      defaultLat = false;
+      let latval = this.value.replace(",", ".").replace("s", "S");
+      if (LatPattern.test(latval)) {
+        LatNum = parseFloat(latval);
+      } else if (LatPatternDeg.test(latval)) {
+        LatNum = degCoords2decCoords(latval, 'Lat')
+      } else {
+        LatNum = 0;
+      }
+      let LonNum;
+      LonNum = Math.abs(parseFloat(lontext.innerText)) > 0 && !defaultLon ? parseFloat(lontext.innerText) : 0;
+      update_coords(LatNum, LonNum);
+    };
+    Lon.oninput = function () {
+      defaultLon = false;
+      let lonval = this.value.replace(",", ".").replace("w", "W");
+      if (LonPattern.test(lonval)) {
+        LonNum = parseFloat(lonval);
+      } else if (LonPatternDeg.test(lonval)) {
+        LonNum = degCoords2decCoords(lonval, 'Lon')
+      } else {
+        LonNum = 0;
+      }
+      let LatNum;
+      LatNum = Math.abs(parseFloat(lattext.innerText)) > 0 && !defaultLat ? parseFloat(lattext.innerText) : 0;
+      update_coords(LatNum, LonNum);
+    };
+
+    function update_coords(uLat, uLon) {
+      let coords = ol.proj.transform([parseFloat(uLon), parseFloat(uLat)], 'EPSG:{{ default_srid }}', 'EPSG:3857');
+      LatLon.value = uLat + ", " + uLon + ", " + {{ default_srid }};
+      point.setCoordinates(coords);
+      mapView.setCenter(coords);
+      lattext.innerText = uLat;
+      lontext.innerText = uLon;
+    }
+
+    function degCoords2decCoords(coord, direction) {
+      matches = direction == 'Lat' ? LatPatternDeg.exec(coord) : LonPatternDeg.exec(coord);
+      minutes = typeof matches[9] == 'undefined' ? 0 : parseInt(matches[9]);
+      seconds = typeof matches[11] == 'undefined' ? 0 : parseFloat(matches[11]);
+      hemisphere = matches[14] == 'S' || matches[14] == 'W' ? -1 : 1;
+      return hemisphere * (parseInt(matches[7])+((minutes + (seconds/60))/60));
+    }
+
+  }
+
+  $(document).ready(function () {
+    {{ name }}upload_map_init();
+  });
+</script>
+<style> .pointmap {
+  width: {{ map_width }}px;
+  height: {{ map_height }}px;
+}
+</style>

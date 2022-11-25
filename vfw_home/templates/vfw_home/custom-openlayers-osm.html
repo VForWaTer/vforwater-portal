@@ -1,0 +1,25 @@
+{% extends "gis/openlayers.html" %}
+{% load l10n %}
+
+{% block options %}{{ block.super }}
+  options['default_lon'] = {{ default_lon|unlocalize }};
+  options['default_lat'] = {{ default_lat|unlocalize }};
+  options['default_zoom'] = {{ default_zoom|unlocalize }};
+
+  const style = new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 5,
+      fill: new ol.style.Fill({color: 'red',}),
+      stroke: new ol.style.Stroke({color: 'darkblue',width: 2,}),
+    }),
+  });
+  const pointGeom = new ol.geom.Point([{{ default_lon|unlocalize }}, {{ default_lat|unlocalize }}]);
+  const pointFeature = new ol.Feature({geometry: pointGeom})
+  const source = new ol.source.Vector({features: [pointFeature]});
+  const vectorLayer = new ol.layer.Vector({source: source, style: style,});
+  //map.addLayer(layer)
+{% endblock %}
+
+{% block base_layer %}
+  var base_layer = new ol.layer.Tile({source: new ol.source.OSM()});
+{% endblock %}

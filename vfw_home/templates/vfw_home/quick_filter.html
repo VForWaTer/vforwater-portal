@@ -1,0 +1,25 @@
+{#{% extends "vfw_home/select_data.html" %}#}
+
+{#{% load static %}#}
+{% load i18n %}
+{#{% get_current_language as LANGUAGE_CODE %}#}
+
+<form method="get" name="quickfilterform" id="quickfilter-form" style="padding-left: 12px; padding-right: 12px;">
+  <p>{% trans "Available datasets" %} <strong>{{ total }}</strong></p>
+  <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
+    {% for obj in quickfilter %}
+      <div>{{ obj.name }}: {{ obj }} </div></br>
+      {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
+    {% endfor %}
+    <button type="button" class="collapsible" id="quickfiltermore" onclick="vfw.util.collapsibleFun('quickfiltermore')">
+      {% trans "more..." %}</button>
+    <div class="content">
+      <p>
+        {% for obj in more %}
+          <div>{{ obj.name }}: {{ obj }} </div></br>
+        {% endfor %}
+      </p>
+    </div>
+{#    <button class="btn btn-primary" type="submit">Search</button>#}
+  </div>
+</form>

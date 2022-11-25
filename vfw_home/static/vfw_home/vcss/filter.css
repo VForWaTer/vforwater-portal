@@ -1,0 +1,481 @@
+/*TODO: This upper part isn't used now. Maybe a start to style the accordions of the filter menu*/
+/* Dropdown Button */
+:root{
+    --color_Item: #00baee;
+    --color_Child: #AADDF9;
+    --color_Parent: #D9EFFD;
+}
+
+.switch-field {
+    display: flex;
+    margin-bottom: 36px;
+    overflow: hidden;
+}
+
+.switch-field input {
+    position: absolute !important;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    width: 1px;
+    border: 0;
+    overflow: hidden;
+}
+
+.switch-field label {
+    background-color: lightgrey;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+    padding: 8px 16px;
+    margin-right: -1px;
+   /* border: 1px solid rgba(0, 0, 0, 0.1);*/
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.switch-field label:hover {
+    cursor: pointer;
+}
+
+.switch-field input:checked + label {
+    background-color: var(--color_Item);
+    box-shadow: none;
+}
+
+.switch-field label:first-of-type {
+    border-radius: 14px 0 0 14px;
+}
+
+.switch-field label:last-of-type {
+    border-radius: 0 14px 14px 0;
+}
+
+.filter-btn-block{
+    border:none;
+    display:inline-block;
+    outline:0;
+    padding:6px 16px;
+    vertical-align:middle;
+    overflow:hidden;
+    text-decoration:none!important;
+    color:black;
+    background-color: white;
+    text-align:left;
+    cursor:pointer;
+    white-space:nowrap}
+
+.dropbtn {
+    background-color: white;
+    color: black;
+    padding: 8px;
+    min-width: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: relative;
+    background-color: #f9f9f9;
+    min-width: 8px;
+    overflow: auto;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    padding: 5px 10px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown a:hover {background-color: #f1f1f1}
+
+.show {display:block;}
+
+/**** Sel-made "radio buttons" for items ****/
+/* Style the buttons */
+.btn {
+    cursor: pointer;
+    border: 1px solid white;
+
+}
+
+/* Style the active class, and buttons on mouse-over */
+.activeI, .btn:hover {
+    background-color: var(--color_Item);
+    color: black;
+}
+.activeC {
+    background-color: var(--color_Child);
+}
+.activeP {
+    background-color: var(--color_Parent);
+}
+
+/*TODO: This is an alternate version for a popup
+from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup
+When this is used on the map, you can remove the popup at the end of ol.css*/
+
+/* Popup container - can be anything you want */
+.w3popup {
+    position: absolute;
+    display: inline-block;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* The actual popup */
+.w3popup .popuptext {
+    visibility: hidden;
+    width: 160px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 16px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: 80px;
+}
+
+/* Popup arrow */
+.w3popup .popuptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+}
+
+/* Toggle this class - hide and show the popup */
+.w3popup .show {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}
+
+
+/**** Range Slider ****/
+/* Style for range slider from https://refreshless.com/nouislider/examples/ */
+    #input-select,
+    #input-number {
+        padding: 7px;
+        margin: 150px 5px 5px;
+        width: 70px;
+    }
+
+    #sliderwildcard{
+	padding: 28px 0 0 0;
+}
+
+    #datewildcard{
+	padding: 28px 0 0 0;
+}
+
+.noUi-tooltip {
+    display: none;
+}
+.noUi-active, .noUi-tooltip {
+    display: block;
+}
+
+.noUi-connect {
+    background: var(--color_Item) !important;
+}
+
+/*style from https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css*/
+.ui-rangeslider {
+    margin: .5em 0
+}
+
+.ui-rangeslider:before, .ui-rangeslider:after {
+    content: "";
+    display: table
+}
+
+.ui-rangeslider:after {
+    clear: both
+}
+
+.ui-rangeslider .ui-slider-input.ui-rangeslider-last {
+    float: right
+}
+
+.ui-rangeslider .ui-rangeslider-sliders {
+    position: relative;
+    overflow: visible;
+    height: 30px;
+    margin: 0 68px
+}
+
+.ui-rangeslider .ui-rangeslider-sliders .ui-slider-track {
+    position: absolute;
+    top: 6px;
+    right: 0;
+    left: 0;
+    margin: 0
+}
+
+.ui-rangeslider.ui-mini .ui-rangeslider-sliders .ui-slider-track {
+    top: 8px
+}
+
+.ui-rangeslider .ui-slider-track:first-child .ui-slider-bg {
+    display: none
+}
+
+.ui-rangeslider .ui-rangeslider-sliders .ui-slider-track:first-child {
+    background: 0;
+    border-width: 0;
+    height: 0
+}
+
+html > body .ui-rangeslider .ui-rangeslider-sliders .ui-slider-track:first-child {
+    height: 15px;
+    border-width: 1px
+}
+
+html > body .ui-rangeslider.ui-mini .ui-rangeslider-sliders .ui-slider-track:first-child {
+    height: 12px
+}
+
+div.ui-rangeslider label {
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px)
+}
+
+.ui-field-contain .ui-rangeslider input.ui-slider-input, .ui-field-contain .ui-rangeslider.ui-mini input.ui-slider-input, .ui-field-contain .ui-rangeslider .ui-rangeslider-sliders, .ui-field-contain .ui-rangeslider.ui-mini .ui-rangeslider-sliders {
+    margin-top: 0;
+    margin-bottom: 0
+}
+
+
+
+/*contextmenu:*/
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,300);
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+/* tasks */
+
+.tasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.task {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: solid 1px #dfdfdf;
+}
+
+.task:last-child {
+  border-bottom: none;
+}
+
+/* context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/*/
+
+.context-menu, .context-result {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  padding: 12px 0;
+  width: 260px;
+  background-color: #fff;
+  border: solid 1px #dfdfdf;
+  box-shadow: 1px 1px 2px #cfcfcf;
+}
+
+.context-menu--active, .context-result--active  {
+  display: block;
+}
+
+.context-menu__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu__item {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.context-menu__item:last-child {
+  margin-bottom: 0;
+}
+
+.context-menu__link {
+  display: block;
+  padding: 4px 12px;
+  color: #0066aa;
+  text-decoration: none;
+}
+
+.context-menu__link:hover {
+  color: #fff;
+  background-color: #0066aa;
+}
+
+
+/*popup based on ol-popup for sidebar*/
+.mod-popup {
+    z-index:3;
+    display:none;
+    position: absolute;
+    background-color: #EFFBFB;
+    -webkit-filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.5));
+    padding: 3px;
+    border-radius: 12px;
+    border: 0.1px solid #e9f2f2;
+    opacity: inherit;
+}
+
+.mod-popup--active {
+  display: block;
+}
+.mod-popup--inactive {
+  display: none;
+}
+
+.w3-modal-content{
+    margin:auto;
+    background-color:#fff;
+    position:relative;
+    padding:0;
+    outline:0;
+    width: -moz-fit-content;
+    width:fit-content
+}
+.wps-modal-content{
+    margin:auto;
+    background-color:#fff;
+    position:relative;
+    padding:0;
+    outline:0;
+    width:600px
+}
+
+.mod-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+
+.mod-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+
+.mod-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 10px;
+}
+
+.mod-popup-closer:after {
+    content: "✖";
+}
+
+.mod-header{
+   cursor: move;
+  }
+
+.activeM {
+    background-color: rgba(0, 60, 136, .9)!important;
+}
+
+
+/**
+ * Style of table for selections in entrieslist.html
+ */
+
+.outerPaginationTable, .innerPaginationTable {
+    width: 100%;
+    border: 1px solid black;
+    border-collapse: collapse;
+    /*background-color: whitesmoke;*/
+}
+.innerPaginationTable:hover {background-color: #ddd;}
+.AccessTrue, .AccessFalse {
+    margin: 5px;
+    height: 12px;
+    width: 12px;
+    font-weight: bold;
+}
+.embargoFalse {
+    background-color: lightgreen;
+
+}
+.embargoTrue {
+    background-color: #b15656;
+    color: white;
+}
+tbody td {
+  text-align: center;
+    padding: 2px;
+}
+thead th, tbody th {
+  text-align: left;
+}
+.outerPaginationTable td:nth-child(1),
+.innerPaginationTable td:nth-child(1){
+    /*background-color: pink;*/
+    width:36px;
+}
+.outerPaginationTable td:nth-child(2),
+.innerPaginationTable td:nth-child(2){
+    min-width:40%;
+}
+.outerPaginationTable td:nth-child(3),
+.innerPaginationTable td:nth-child(3){
+    width:17%;
+}
+.outerPaginationTable td:nth-child(4),
+.innerPaginationTable td:nth-child(4){
+    width:24%;
+}
+.outerPaginationTable td:nth-child(5),
+.innerPaginationTable td:nth-child(5){
+    width:15%;
+}
+

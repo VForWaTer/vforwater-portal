@@ -1,0 +1,54 @@
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+<meta charset="UTF-8">
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+
+<head>
+  <meta charset="UTF-8">
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.0.2.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.2.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.0.2.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="infoModal" class="w3-modal">
+
+  <!-- Modal content -->
+  <div class="w3-modal-content modal-body">
+    <div class="modal-header" id="modal-header">
+      <h3 id="mod_head"></h3>
+    </div>
+    <table>
+      <tr>
+        <td><p id="mod_dat_inf" class="modal-datainfo"></p></td>
+        <td><p id="mod_prev" class="modal-preview"></p></td>
+      </tr>
+    </table>
+    <div class="modal-footer" id="modal-footer">
+      <span-b class="modal-back" onclick="closeInfoModal()">{% trans "Back" %}</span-b>
+      <h3></h3>
+    </div>
+  </div>
+
+</div>
+</body>
+<script>
+  var bokehPreviewScript;
+  // Get the modal
+  let modal = document.getElementById("infoModal");
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = (event) => {if (event.target == modal) closeInfoModal()};
+
+  function closeInfoModal() {
+    modal.style.display = "none";
+    if (bokehPreviewScript) {
+      bokehPreviewScript.parentNode.removeChild(bokehPreviewScript);
+    }
+  }
+
+</script>
+

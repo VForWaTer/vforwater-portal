@@ -1,0 +1,44 @@
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+<meta charset="UTF-8">
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+<div id="mapModal" class="w3-modal">
+
+  <!-- Modal content -->
+  <div class="w3-modal-content modal-body">
+    <div class="modal-header" id="modal-map-header">
+    </div>
+
+    <div id="infomodal_paginationTable">
+      {% include 'vfw_home/mapmodal_entrieslist.html' %}
+    </div>
+    <div class="modal-footer" id="modal-map-footer">
+      <span-b class="modal-back" onclick="vfw.map.closeMapModal()">{% trans "Close" %}</span-b>
+      <h3></h3>
+    </div>
+  </div>
+
+</div>
+</body>
+<script>
+  let mapmodal = document.getElementById("mapModal");
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = event => {if (event.target == mapmodal) vfw.map.closeMapModal()};
+
+  vfw.map.closeMapModal = function () {
+    document.getElementById('infomodal_paginationTable').style.display = "none";
+    mapmodal.style.display = "none";
+  }
+
+</script>
+

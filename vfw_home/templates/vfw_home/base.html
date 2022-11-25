@@ -1,0 +1,309 @@
+{% load static %}<!DOCTYPE html>
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<html>
+
+{#Cookie window 1/2#}
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css"/>
+
+<head>
+  <title>VFORWaTer</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/w3.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/css.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/base.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/flag-icon.css' %}">
+  <link rel="icon" href="{% static 'vfw_home/images/Favicon.ico' %}">
+
+  <!--   our standard jquery for most of the portal  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  <link href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" ></script>
+{#  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.js"></script>#}
+  {% comment %}  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+          integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+          crossorigin="anonymous"></script>{% endcomment %}
+{#  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">#}
+{#<script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>#}
+
+  <!-- django translations for JavaScript -->
+  <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+  <!-- Openlayers -->
+  {% comment %}<script src="https://cdn.jsdelivr.net/npm/ol@v7.1.0/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.1.0/ol.css">{% endcomment %}
+  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/ol.css' %}">
+  <script src="{% static 'vfw_home/js/ol.js' %}" type="text/javascript"></script>
+  {#  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css">#}
+  {#    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>#}
+  <!-- Openlayers Extension -->
+{% comment %}  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+  <link rel="stylesheet" href="https://cdn.rawgit.com/Viglino/ol-ext/master/dist/ol-ext.min.css" />
+  <script type="text/javascript" src="https://cdn.rawgit.com/Viglino/ol-ext/master/dist/ol-ext.min.js"></script>{% endcomment %}
+  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/ol-ext.css' %}">
+  <script src="{% static 'vfw_home/js/ol-ext.js' %}" type="text/javascript"></script>
+
+    <!-- form.media for django map widget -->
+  {{ form.media }}
+</head>
+{#TODO: value has to be updated through js before reading to make sure its up-to-date #}
+<param id="is_authenticated" value="false">
+{#Cookie window 2/2#}
+<script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
+<script>
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": {
+        "background": "#d9effd"
+      },
+      "button": {
+        "background": "#00baee"
+      }
+    },
+    "position": "bottom-right"
+  });
+  const vfw = {
+    draw2d: {},
+    html: {},
+    map: {
+      layer: {
+        cluster: {},
+        hidden: {},
+        map: {},
+      },
+      source: {
+        wfsPointSource: {},
+      },
+      style: {
+        cache: {},
+      },
+      vars: {
+        wfsLayerName: '',
+      },
+      control: {
+        zoomToExt: {},
+      },
+    },
+    session: {},
+    sidebar: {},
+    util: {},
+    var: {
+      array: {},
+      dict: {},
+      obj: {},
+      str: {},
+    },
+    workspace: {
+      modal: {},
+      workflow: {},
+    },
+  }
+  vfw.html.loader = '<div id="loader"  class="fading-dot-loader">\n' +
+                    '  <div class="dot-loader1 dot-loader"></div>\n' +
+                    '  <div class="dot-loader2 dot-loader"></div>\n' +
+                    '  <div class="dot-loader3 dot-loader"></div>\n' +
+                    '  <div class="dot-loader4 dot-loader"></div>\n' +
+                    '  <div class="dot-loader5 dot-loader"></div>\n' +
+                    '  <div class="dot-loader6 dot-loader"></div> \n' +
+                    '</div>';
+  {#vfw.var.SERVER = "{{ VFW_SERVER }}";#}
+  vfw.var.MAP_SERVER = "{{ MAP_SERVER }}";
+  vfw.var.DEMO_VAR = "{{ DEMO_VAR }}";
+</script>
+
+<body class="w3-light-grey">
+<!-- Current language: {{ LANGUAGE_CODE }} -->
+<!--    Top container -->
+<div class="w3-container w3-top w3-black w3-large w3-padding" id="topcontainer">
+  <button class="w3-btn w3-hide-large w3-padding-0 w3-hover-text-grey" onclick="w3_open();"><i class="fa fa-bars"></i>
+  </button>
+  {#	  <span class="w3-right"><strong><small>Virtuelle Forschungsumgebung für die Wasser- und terrestrische Umweltforschung</small></strong></span>#}
+  <span class="w3-hide-small w3-right"><strong><small>{% trans "Virtual research environment for water and terrestrial environmental research" %}</small></strong>
+    </span>
+  <span class="w3-hide-medium w3-hide-large w3-right"
+        style="letter-spacing:3px"><strong><small>V-FOR-WaTer Portal</small></strong>
+    </span>
+</div>
+
+<!--	Navbar -->
+<div id="navbar" class="w3-top">
+  <ul class="w3-navbar w3-light-turquoise w3-top w3-left-align w3-large">
+    <li class="w3-opennav w3-right w3-hide-large">
+      <a href="javascript:void(0)" class="w3-hover-white w3-large w3-theme-d4" onclick="Sidemenu_open()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </li>
+    <li class="w3-hide-small w3-hide-medium"><a href="{% url 'vfw_home:home' %}" class="w3-hover-white">
+      <i class="fa fa-map-o fa-fw"></i>{% trans "  Home" %}</a>
+    </li>
+    <li class="w3-hide-small"><a href="{% url 'wps_gui:home' %}" class="w3-hover-white">
+      <i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
+    </li>
+    {% comment %}<li class="w3-hide-small"><a href="{% url 'process_monitor:home' %}" class="w3-hover-white">
+      <i class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>
+    </li>{% endcomment %}
+    {% comment %}<li class="w3-hide-small"><a href="{% url 'visual_app:home' %}" class="w3-hover-white">
+      <i class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a>
+    </li>{% endcomment %}
+    <li class="w3-hide-small">
+      <div class="w3-dropdown-hover w3-transparent">
+        <a class="w3-hover-white ">
+          <i class="fa fa-external-link fa-fw"></i> {% trans "Help" %}<i class="fa fa-caret-down fa-fw"></i>
+          <div class="w3-dropdown-content" style="right:0">
+            {#                        <a href="{% url 'vfw_home:help' %}" class="w3-hover-blue">#}
+            <a target="_blank" href="https://vforwater.github.io/documentation/index.html" style="text-decoration:none"
+               class="w3-hover-blue">
+              <i class="fa fa-book fa-fw"></i>{% trans "  Portal Help" %}
+            </a>
+            <a target="_blank" href="https://vforwater.de" style="text-decoration:none" class="w3-hover-blue">
+              <i class="fa fa-sitemap fa-fw"></i>{% trans "  Web Site" %}
+            </a>
+            {% comment %}     <a target="_blank" href={{ VFW_SERVER|add:"/doc" }} style="text-decoration:none" class="w3-hover-blue">
+                            <i class="fa fa-book fa-fw"></i>{% trans "  Documentation" %}
+                        </a>{% endcomment %}
+            <a target="_blank" href="https://github.com/VForWaTer/vforwater-portal" style="text-decoration:none"
+               class="w3-hover-blue">
+              <i class="fa fa-code fa-fw"></i>{% trans "  Source Code" %}
+            </a>
+            <a href="{% url 'legals' %}" style="text-decoration:none" class="w3-hover-blue">
+              <i class="fa fa-legal fa-fw"></i>{% trans "  Legals" %}
+            </a>
+            <a href="{% url 'privacy_policy' %}" style="text-decoration:none" class="w3-hover-blue">
+              <i class="fa fa-legal fa-fw"></i>{% trans "  Privacy Policy" %}
+            </a>
+          </div>
+        </a>
+      </div>
+
+    </li>
+    {#	    <li class="w3-hide-small"><a href="{% url 'upload:home' %}" class="w3-hover-white"><i class="fa fa-upload fa-fw"></i>  Upload</a></li>#}
+
+    {#        <li class="w3-hide-small"><a href="{% url 'vfw_home:test' %}" class="w3-hover-white">#}
+    {#            <i class="fa fa-bug fa-fw"></i>{% trans "  Test" %}</a>#}
+    {#        </li>#}
+    {% if user.is_authenticated %}
+      <param name="is_authenticated" value="true">
+      <!-- for Authentication app
+           TODO: Dropdown menu
+           Profile, Resource Overview, Manage Resources, Manage Users
+      -->
+
+      <li class="w3-hide-small w3-right">
+
+        <div class="w3-dropdown-hover w3-transparent">
+          <a class="w3-hover-white ">
+            <i class="fa fa-user fa-fw"></i>
+            {% if user.first_name %}
+              {{ user.first_name | capfirst }}
+	    {% elif user.last_name %}
+              {{ user.last_name | capfirst }}
+            {% elif user.email %}
+              {{ user.email }}
+            {% else %}
+              {{ user.username | capfirst }}
+            {% endif %}
+            <i class="fa fa-caret-down fa-fw"></i>
+
+            <div class="w3-dropdown-content" style="right:0">
+              <a class="w3-hover-blue " href="{% url 'upload:home' %}">{% trans "Upload Data" %}</a>
+              <a class="w3-hover-blue " href="{% url 'author_manage:profile' %}">{% trans "Profile" %}</a>
+{#              <a class="w3-hover-blue "#}
+{#                 href="{% url 'author_manage:resources-overview' %}">{% trans "Resource Overview" %}</a>#}
+              <a class="w3-hover-blue " href="{% url 'author_manage:my-resources' %}">{% trans "My Resources" %}</a>
+              <a href="#" class="w3-hover-blue">
+                <form action="{% url 'vfw_home:logout' %}" method="post"> {% csrf_token %}
+                  <input class="w3-btn-simple" type="submit" name="logout" value="Logout"/>
+                </form>
+              </a>
+            </div>
+          </a>
+        </div>
+
+      </li>
+
+      {% if user.is_staff %}  <!-- admin stuff goes here -->
+
+        <li class="w3-hide-small w3-right">
+          <div class="w3-dropdown-hover w3-transparent">
+            <a class="w3-hover-red">
+              <i class="fa fa-beer fa-fw"></i> Admin<i class="fa fa-caret-down fa-fw"></i>
+              <div class="w3-dropdown-content" style="right:0">
+                <a class="w3-hover-red nav" value="ManageUsers" title="Manage Users">Manage Users</a>
+                <a class="w3-hover-red nav" value="ManageSomething" title="Manage Something">Manage Something</a>
+                <a class="w3-hover-red nav" href="{% url 'vfw_status:home' %}">{% trans "VFW status" %}</a>
+              </div>
+            </a>
+          </div>
+        </li>
+        <!-- is_staff -->
+      {% endif %}
+
+      <!-- is_authenticated -->
+    {% else %} <!-- is not authenticated -->
+      <param name="is_authenticated" value="false">
+      <!-- {#       <li class="w3-hide-small w3-right"><a href="{% url 'vfw_home:login' %}" class="w3-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> #}-->
+      <li class="w3-hide-small w3-right">
+        <a class="w3-hide-small w3-right w3-hover-white">
+	  <a class="w3-btn-simple " href="{% url 'oidc_authentication_init' %}"><i class="fa fa-user fa-fw"></i>  {% trans "  Login" %}<a/>
+        </a>
+      </li>
+    {% endif %}
+
+    <!-- flag -->
+    {% get_current_language as LANGUAGE_CODE %}
+    {% if LANGUAGE_CODE == 'de' %}
+
+      <li class="w3-hide-small w3-right">
+        <a href="#" class="w3-hover-none">
+          <form action="{% url 'vfw_home:togglelang' %}" method="post"> {% csrf_token %}
+            <input class="w3-btn-simple flag-icon-background flag-icon-gb" type="submit" name="togglelang"
+                   value="&nbsp;&nbsp;&nbsp;"/>
+          </form>
+        </a>
+      </li>
+
+    {% else %}
+      <li class="w3-hide-small w3-right">
+        <a href="#" class="w3-hover-none">
+          <form action="{% url 'vfw_home:togglelang' %}" method="post"> {% csrf_token %}
+            <input class="w3-btn-simple flag-icon-background flag-icon-de" type="submit" name="togglelang"
+                   value="&nbsp;&nbsp;&nbsp;"/>
+          </form>
+        </a>
+      </li>
+
+    {% endif %}
+
+
+  </ul>
+</div>
+
+{% block sidebar %}
+{% endblock %}
+
+{% block toolbar %}
+{% endblock %}
+
+{% block sidemenu %}
+  {% include 'vfw_home/sidemenu.html' %}
+{% endblock %}
+
+<!-- 	!PAGE CONTENT! -->
+<div class="w3-main">
+  <script src="{% static 'vfw_home/js/vfw.js' %}" type="text/javascript"></script>
+
+  {# get map in the content block #}
+  {% block content %}{% endblock %}
+
+{#  <footer class="w3-container w3-padding-16 w3-light-grey">#}
+{#    <p>Copyright &copy; 2016-2021</p>#}
+{#    <p>{% trans "Powered by" %} <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> | Copyright &copy; 2016-2021</p>#}
+  </footer>
+
+</div>
+{{ form.media }}
+{#{{ geoform.media }}#}
+</body>
+</html>

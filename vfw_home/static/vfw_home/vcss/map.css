@@ -1,0 +1,77 @@
+div.map {
+    height: 88%;
+    width: 100%;
+}
+
+.popup {
+    position: absolute;
+    background-color: rgb(239, 251, 251);
+    -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+    padding: 2px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: 12px;
+    left: -50px;
+    /*min-width: 280px;*/
+}
+
+/*styles for the custom buttons on the map*/
+.custom-control {
+      top: 0.5em;
+    left: 2.9em;
+    position: absolute;
+  /*width: 70px;*/
+  /*height: 70px;*/
+  /*background: no-repeat url('http://openlayers.org/en/latest/examples/resources/logo-70x70.png')*/
+}
+/*.custom-control.ol-control {*/
+    /*position: absolute;*/
+    /*background-color: rgba(255, 255, 255, .4);*/
+    /*border-radius: 4px;*/
+    /*padding: 2px*/
+/*}*/
+.custom-control button {
+    position: absolute;
+    background-color: rgba(255, 255, 255, .4);
+    border-radius: 4px;
+    padding: 4px
+}
+
+.request-button {
+    background-color: darkred;
+}
+
+.store-button {
+    background-color: darkgreen;
+}
+
+.ol-attribution {
+    font-size: x-small;
+}
+
+
+#drawfilter {
+border-radius: 4px;
+padding: 2px;
+    /*display: block;*/
+}
+
+#draw_polygon, #modify_polygon, #draw_square, #remove_polygon {
+    width: 6px;
+    height: 6px;
+    background:rgba(0, 60, 136, .55);
+    border-radius: 4px;
+    padding: 3px;
+    color: white;
+}
+.draw-hover:hover{
+background:rgba(0, 60, 136, .9)!important;
+}
+#draw_toggle, #closed_drawfilter {
+    border-radius: 4px;
+    padding: 3px;
+}
+.hover-white:hover{
+    background:white!important;
+}
