@@ -1,0 +1,24 @@
+# Pipeline
+stages:
+    - build
+    - push
+
+# building docker image
+vfwportal-demo-build:
+    stage: build
+    script:
+        # build docker container using buildah
+        - buildah build-using-dockerfile -f Dockerfile -t vfwportal:$CI_COMMIT_SHA
+    only:
+        - demo
+
+# pushing docker image to some registry
+vfwportal-demo-push:
+    stage: push
+    script:
+        - echo "pushing vfwportal:$CI_COMMIT_SHA"
+        - buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal:$CI_COMMIT_SHA
+        - echo "pushing vfwportal:latest"
+        - buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal:latest
+    only:
+        - demo
