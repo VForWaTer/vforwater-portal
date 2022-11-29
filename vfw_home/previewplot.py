@@ -475,7 +475,7 @@ def get_cache(cache_obj: dict) -> tuple:
     img = None
     try:
         img = cache_obj['redis'].get(cache_obj['name'])
-    except Exception as err::
+    except Exception as err:
         cache_obj['use_redis'] = False
         logger.debug("Cannot connect to redis: {}".format(err))
 
