@@ -36,13 +36,14 @@ try:
 except:
     REDIS_DB = 0
 
-    
+import logging  
 
 import pandas as pd
 import time
 
 from wps_gui.models import WpsResults
 
+logger = logging.getLogger(__name__)
 
 def __DB_load_label(ID: int):
     """
@@ -476,6 +477,7 @@ def get_cache(cache_obj: dict) -> tuple:
         img = cache_obj['redis'].get(cache_obj['name'])
     except:
         cache_obj['use_redis'] = False
+        logger.debug("Cannot connect to redis")
 
     if cache_obj['use_redis']:
         if img is None:
