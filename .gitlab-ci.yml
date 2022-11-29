@@ -8,7 +8,7 @@ vfwportal-demo-build:
     stage: build
     script:
         # build docker container using buildah
-        - buildah build-using-dockerfile -f Dockerfile -t vfwportal:$CI_COMMIT_SHA
+        - /usr/bin/buildah build-using-dockerfile -f Dockerfile -t vfwportal:$CI_COMMIT_SHA
     only:
         - demo
 
@@ -17,8 +17,8 @@ vfwportal-demo-push:
     stage: push
     script:
         - echo "pushing vfwportal:$CI_COMMIT_SHA"
-        - buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal:$CI_COMMIT_SHA
+        - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal:$CI_COMMIT_SHA
         - echo "pushing vfwportal:latest"
-        - buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal:latest
+        - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal
     only:
         - demo
