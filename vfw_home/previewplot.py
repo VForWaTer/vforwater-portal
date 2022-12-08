@@ -36,7 +36,7 @@ try:
 except:
     REDIS_DB = 0
 
-import logging  
+import logging
 
 import pandas as pd
 import time
@@ -500,7 +500,7 @@ def get_plot_from_db_id(ID: str, full_res: bool, date: list, size: list = [700, 
     :param size:
     :return: Bokeh image consisting of 'script' and 'div'
     """
-    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(host=REDISHOST, port=REDIS_PORT, db=REDIS_DB),
+    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB),
                  'in_cache': False, 'name': "plot_{}".format('b' + str(ID) + str(size) + str(date))}
     cache_obj, img = get_cache(cache_obj)
 
