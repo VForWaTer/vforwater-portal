@@ -26,7 +26,7 @@ def home(request):
     Dummy page for Self Monitor tool.
     """
     services = {}
-    rs = redis.Redis(host=REDISHOST, port=REDIS_PORT, db=REDIS_DB)
+    rs = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
     def get_status(url, secret):
         checked_service = {'runs': False}
