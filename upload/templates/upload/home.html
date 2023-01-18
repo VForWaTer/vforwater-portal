@@ -70,7 +70,20 @@
           {% endfor %}
         </table>
 
+
+
         <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
+            <button type="button" class="collapsible openElement" id="geouploaddata"
+                  onclick="vfw.util.collapsibleFun('geouploaddata')">
+            {% trans "Geo Info" %}</button>
+          {% comment %}add formfields{% endcomment %}
+          <div class="content" style="display:block">
+            <p>
+              {% for obj in context.geoInfo %}
+                <div>{{ obj.name }}: {{ obj }} </div>
+              {% endfor %}
+            </p>
+          </div>
           <button type="button" class="collapsible" id="generaluploaddata"
                   onclick="vfw.util.collapsibleFun('generaluploaddata')">
             {% trans "General Info" %}</button>
@@ -82,19 +95,6 @@
               {% endfor %}
             </p>
           </div>
-
-          <button type="button" class="collapsible openElement" id="geouploaddata"
-                  onclick="vfw.util.collapsibleFun('geouploaddata')">
-            {% trans "Geo Info" %}</button>
-          {% comment %}add formfields{% endcomment %}
-          <div class="content" style="display:block">
-            <p>
-              {% for obj in context.geoInfo %}
-                <div>{{ obj.name }}: {{ obj }} </div>
-              {% endfor %}
-            </p>
-          </div>
-
 
           <button type="button" class="collapsible" id="datauploaddata"
                   onclick="vfw.util.collapsibleFun('datauploaddata')">

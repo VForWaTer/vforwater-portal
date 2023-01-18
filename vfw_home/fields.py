@@ -10,8 +10,8 @@ from django.contrib.gis import forms
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy
 
-from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider
-
+from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider, AutocompleteCharWidget
+from .utilities import regex_patterns
 
 class SliderField(forms.DateTimeField):
     def __init__(self, *args, **kwargs):
@@ -79,8 +79,8 @@ class CustomOSMField(forms.Field):
         'invalid': ugettext_lazy('Enter Latitude and Longitude'),
     }
     re_point = re.compile(r'^\s*(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(?:(\d{4,5})?)$')
-    lat_pattern = re.compile(r'^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$')
-    lon_pattern = re.compile(r'^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')
+    lat_pattern = regex_patterns['lat']
+    lon_pattern = regex_patterns['lon']
 
     def __int__(self, separator=",", *args, **kwargs):
 

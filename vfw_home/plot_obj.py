@@ -3,6 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 from bokeh.embed import components
+from bokeh.io import show
 from bokeh.layouts import column
 from bokeh.models import HoverTool, DatetimeTickFormatter, ColumnDataSource, BoxAnnotation, Whisker, \
     CustomJS, Range1d, LogColorMapper, ColorBar, TableColumn, DateFormatter, DataTable, PolyAnnotation, DateSlider, \
@@ -314,7 +315,7 @@ class PlotObject:
         # remove rows when there is a nan value (which cannot be plotted as footprint)
         df_db = df_db.dropna()
         grid = 500
-        tstamp = 50
+        tstamp = 5
 
         def get_footprint(tstamp):
             try:
@@ -360,20 +361,27 @@ class PlotObject:
         all_FP_north = all_FP_east = False
         t3 = time.time()
         for i, row in enumerate(df_db.itertuples()):
-            single_fp, single_FP_east, single_FP_north, single_fp_norm = get_footprint(row.Index)
+            i_list[i] = i
+            single_fp, FP_east, FP_north, single_fp_norm = get_footprint(row.Index)
+            single_fp[single_fp == 0] = np.nan
             all_fp[i] = single_fp
             all_fp_norm[i] = single_fp_norm
-            all_FP_east[i] = all_FP_east
-            all_FP_north[i] = all_FP_north
 
-        # source = ColumnDataSource(data=dict(fp=all_fp, FP_east=all_FP_east, FP_north=all_FP_north, fp_norm=all_fp_norm))
+        x_min = FP_east.min()
+        x_max = FP_east.max()
+        y_min = FP_north.min()
+        y_max = FP_north.max()
 
-        fp, FP_east, FP_north, fp_norm = get_footprint(tstamp)
-
-        # result = [f(row[0], ..., row[n]) for row in zip(df['col1'], ..., df['coln'])]
-        # source = ColumnDataSource({'date': self.dataObj.dataframe['tstamp'], 'count': self.dataObj.dataframe['sum']})
-        # pdsource = ColumnDataSource(data=dict(radius=hist, start=pdstart, end=pdend))
-
+        try:
+            jssource = ColumnDataSource(data=dict(fp=[all_fp],  # fp_norm=all_fp_norm,
+                                                  x=[x_min], y=[y_min],
+                                                  dw=[np.abs(x_min)+x_max], dh=[np.abs(y_min)+y_max],
+                                                  ))
+        except Exception as e:
+            print('Error in eddy ColumnDataSource creation: ', e)
+        # fp, FP_east, FP_north, fp_
+        norm = get_footprint(tstamp)
+        # pdsource =
         self.mainplot = figure(title="Eddy footprint preview",
                                x_range=(x_min, x_max), y_range=(y_min, y_max))
         # fp[fp == 0] = np.nan

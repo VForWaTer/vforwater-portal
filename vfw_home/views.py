@@ -2,9 +2,9 @@ import ast
 import csv
 import datetime
 import json
+import re
 import sys
 
-import pandas as pd
 import redis
 import requests
 from django.contrib.gis.db.models.aggregates import Extent
@@ -26,9 +26,7 @@ from django.utils import translation, timezone
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
-from future.builtins import isinstance
 
-import vfw_home
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
@@ -37,11 +35,12 @@ from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, for
 from wps_gui.models import WpsResults
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
     __get_axis_limits, __reduce_dataset, get_accessible_data
+from .delineator import delineate
 from .forms import QuickFilterForm
 from .data_obj import DataObject
 from .plot_obj import PlotObject
 from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
-    get_paginatorpage
+    get_paginatorpage, regex_patterns, is_coord
 
 mpl.use('Agg')
 
@@ -511,16 +510,16 @@ def previewplot(request):
 
     if not cache_obj['in_cache']:
         try:
-            bla = Entries.objects.filter(pk=webID[2:]).values_list('datasource__data_names',
-                                                                   'datasource__path',
-                                                                   'datasource__datatype__parent',
-                                                                   'datasource__datatype__name',
-                                                                   'datasource__datatype__title',
-                                                                   'datasource__datatype__description',
-                                                                   'datasource__temporal_scale__resolution',
-                                                                   'datasource__temporal_scale__observation_start',
-                                                                   'datasource__temporal_scale__support',
-                                                                   )
+            # bla = Entries.objects.filter(pk=webID[2:]).values_list('datasource__data_names',
+            #                                                        'datasource__path',
+            #                                                        'datasource__datatype__parent',
+            #                                                        'datasource__datatype__name',
+            #                                                        'datasource__datatype__title',
+            #                                                        'datasource__datatype__description',
+            #                                                        'datasource__temporal_scale__resolution',
+            #                                                        'datasource__temporal_scale__observation_start',
+            #                                                        'datasource__temporal_scale__support',
+            #                                                        )
 
             dataset = DataObject(webID, date)
 
@@ -552,6 +551,7 @@ def previewplot(request):
         img = plot.get_plot
     return JsonResponse(img)
 
+    # That code is only left to test previews of tools. Remove when plotobjects and dataobjects are working alone
     if webID[0:2] == 'db':
         try:
             accessible_data = get_accessible_data(request, webID[2:])
@@ -603,6 +603,7 @@ def previewplot(request):
         with open(path + ".json") as json_file:
             metadata = json.loads(json.load(json_file))
         json_file.close()
+
         label = format_label(metadata['meta']['variable']['name'],
                              metadata['meta']['variable']['symbol'],
                              metadata['meta']['variable']['unit']['symbol'])
@@ -918,6 +919,31 @@ def entries_pagination(request):
     return render(request, 'vfw_home/entrieslist.html', {'entries': entriespage,
                                                          'ownData': owndata,
                                                          'accessible_ids': accessible_ids})
+
+
+class Delineator(View):
+
+    @staticmethod
+    def get(request, catchout):
+        HIGH_RES = True
+        print('start: ')
+
+        coords = {
+            'lat': [catchout.split("catchout=")[2]],
+            'lng': [catchout.split("catchout=")[1][:-1]],
+        }
+        # validate input data:
+        if not is_coord(coords['lat'][0], 'lat') or not is_coord(coords['lng'][0], 'lon'):
+            return {'Error': 'Error in Coordinates.'}
+
+        print('lat, lng: ', coords)  # 64, -17
+
+        delineate(coords, HIGH_RES)
+
+        print(' -- back from delineate -- ')
+
+# def delineator(request, catchout):
+#     print('delin fun: ', catchout)
 
 
 def advanced_filter(request):

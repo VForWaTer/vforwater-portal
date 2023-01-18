@@ -339,6 +339,10 @@ function drawOnMapMenu(test) {
         geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
     });
+    drawCatchment = new ol.interaction.Draw({
+        source: selectionLayerSource,
+        type: 'Point',
+    })
 
     const overlayStyle = new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
     const select = new ol.interaction.Select({style: overlayStyle,});
@@ -497,6 +501,30 @@ function drawOnMapMenu(test) {
         // ol.observable.unByKey(listener);
     });
 
+    drawCatchment.on('drawstart', function (event) {
+        console.log('startevent: ', event)
+        selectionEdgeCoords = event.feature.getGeometry()
+        let coords = getEdgeCoords()
+        console.log('long ', coords[0])
+        console.log('lat ', coords[1])
+        // round coords to a reasonable length (0,000001° ~~ 0,1 m)
+        coords[0] = coords[0].toFixed(6);
+        coords[1] = coords[1].toFixed(6);
+        console.log('coords ', coords)
+        // let polygon = get_catchment({'lat': coords[1], 'long': coords[0]})
+        let polygon = get_catchment(coords)
+        console.log('polygon: ', polygon)
+
+        selectionLayerSource.clear();
+        listener = selectStartFun(event)
+    }, this);
+    drawCatchment.on('drawend', function () {
+        console.log('drawend')
+        removeInteractions();
+        toggle_draw(document.getElementById("draw_catchment"))
+
+    })
+
 }
 
 /**
@@ -506,6 +534,7 @@ function removeInteractions() {
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
     olmap.removeInteraction(drawSquare);
+    olmap.removeInteraction(drawCatchment);
 }
 
 /**
@@ -948,7 +977,7 @@ function getFilterURL(selection) {
     if (urlParams.toString() === "") {
         urlParams = 'reset'
     }
-    return '/home/quick_filter_args/' + urlParams.toString();
+    return urlParams.toString();
 
 }
 
@@ -964,7 +993,7 @@ function get_quick_selection(selection) {
     // url = '/home/quick_filter'
     if (url !== false) {
         $.ajax({
-            url: vfw.var.DEMO_VAR + url,
+            url: vfw.var.DEMO_VAR + '/home/quick_filter_args/' + url,
             // data: {
             //     selection: selection,
             //     'csrfmiddlewaretoken': csrf_token,
@@ -988,6 +1017,27 @@ function get_quick_selection(selection) {
     }
 }
 
+
+/**
+ * Get a river catchment / watershed according to the given coords
+ */
+function get_catchment(coords) {
+    let url = getFilterURL({'catchout': coords})
+    console.log('url: ', url)
+    if (url !== false) {
+        $.ajax({
+            url: vfw.var.DEMO_VAR + '/home/delineator/' + url,
+            type: "GET",
+            // datatype: 'json',
+            dataType: "text",
+        })
+            .done(function (result) {
+                let json = JSON.parse(result)
+                console.log('json: ', json)
+
+            })
+    }
+}
 
 /**
  * Update quickfilter onload() according to the given URL
