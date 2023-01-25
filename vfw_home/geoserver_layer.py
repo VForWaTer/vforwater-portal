@@ -50,7 +50,7 @@ def test_geoserver_env(store: str, workspace: str):
             )
         )
 
-        rest_url = "{}/rest/workspaces/{}/datastores".format(LOCAL_GEOSERVER, workspace)
+        rest_url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores'
         rest_build = requests.post(
             rest_url,
             auth=eval(SECRET_GEOSERVER),
@@ -61,11 +61,7 @@ def test_geoserver_env(store: str, workspace: str):
             print(
                 "\033[91mCannont build store: {}\033[0m".format(rest_build.status_code)
             )
-            logger.warning(
-                "Cannot build new store in geoserver, {}: {}".format(
-                    check.status_code, check.text
-                )
-            )
+            logger.warning(f'Cannot build new store in geoserver, {check.status_code}: {check.text}')
 
     # first check if workspace exists or try to build it if not:
     url = "{}/rest/workspaces/{}".format(LOCAL_GEOSERVER, workspace)
@@ -73,14 +69,10 @@ def test_geoserver_env(store: str, workspace: str):
         url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
     )
     if check.status_code != 200:  # if workspace doesn't exist build it
-        logger.warning(
-            "workspace missing, trying to build it, {}: {}".format(
-                check.status_code, check.text
-            )
-        )
+        logger.warning(f'workspace missing, trying to build it, {check.status_code}: {check.text}')
         # build new workspace:
-        url = "{}/rest/workspaces".format(LOCAL_GEOSERVER)
-        xml = "<workspace><name>{}</name></workspace>".format(workspace)
+        url = f'{LOCAL_GEOSERVER}/rest/workspaces'
+        xml = f'<workspace><name>{workspace}</name></workspace>'
         build = requests.post(
             url,
             auth=eval(SECRET_GEOSERVER),
@@ -88,44 +80,28 @@ def test_geoserver_env(store: str, workspace: str):
             headers={"Content-type": "text/xml"},
         )
         if build.status_code != 201:
-            print(
-                "Cannot build new workspace in geoserver, {}: {}".format(
-                    check.status_code, check.text
-                )
-            )
-            logger.warning(
-                "Cannot build new workspace in geoserver, {}: {}".format(
-                    check.status_code, check.text
-                )
-            )
+            print(f'Cannot build new workspace in geoserver, {check.status_code}: {check.text}')
+            logger.warning(f'Cannot build new workspace in geoserver, {check.status_code}: {check.text}')
         else:
-            url = "{}/rest/workspaces/{}".format(LOCAL_GEOSERVER, workspace)
+            url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}'
             check = requests.get(
                 url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
             )
             __build_store()
     else:
-        url = "{}/rest/workspaces/{}/datastores/{}".format(
-            LOCAL_GEOSERVER, workspace, store
-        )
+        url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{store}'
         check = requests.get(
             url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
         )
         if check.status_code != 200:  # if store doesn't exist build it
-            logger.warning(
-                "datastore missing, trying to build it, {}: {}".format(
-                    check.status_code, check.text
-                )
-            )
+            logger.warning(f'datastore missing, trying to build it, {check.status_code}: {check.text}')
             # build new workspace:
             __build_store()
         # else:
         # print('store exist too: ', check.status_code)
 
     # Now we know we have a workspace and store we can test if these access the right database
-    url = "{}/rest/workspaces/{}/datastores/{}".format(
-        LOCAL_GEOSERVER, workspace, store
-    )
+    url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{store}'
     check = requests.get(
         url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/json"}
     )
@@ -148,6 +124,7 @@ def create_layer(
     workspace: str,
     selection=None,
     srid: int = 4326,
+    layertype: str = "point",
 ):
     """
     Create a layer in your GeoServer.
@@ -161,16 +138,15 @@ def create_layer(
     :param srid:  The coordinate reference system according to the EPSG database for the new layer.
     """
     xml = __build_new_layer_xml(
-        request, filename, datastore, workspace, srid, selection
+        request, filename, datastore, workspace, srid, selection, layertype
     )
-    url = "{}/rest/workspaces/{}/datastores/{}/featuretypes".format(
-        LOCAL_GEOSERVER, workspace, datastore
-    )
+    url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes'
+
     build = requests.post(
         url, auth=eval(SECRET_GEOSERVER), data=xml, headers={"Content-type": "text/xml"}
     )
     if build.status_code != 201:
-        logger.warning("{}: {}".format(build.status_code, build.text))
+        logger.warning(f'{build.status_code}: {build.text}')
         print("create layer: ", str(build.status_code) + ": " + build.text)
 
 
@@ -182,9 +158,8 @@ def get_layer(filename: str, datastore: str, workspace: str) -> bool:
     :param datastore: Name of store the layer is stored in.
     :param workspace: Name of workspace for the store.
     """
-    url = "{}/rest/workspaces/{}/datastores/{}/featuretypes/{}".format(
-        LOCAL_GEOSERVER, workspace, datastore, filename
-    )
+    url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{filename}'
+
     build = requests.get(
         url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
     )
@@ -240,19 +215,20 @@ def __create_attributes(attributes_list):
         "date": "java.sql.Date",
         "int": "java.lang.Integer",
         "point": "com.vividsolutions.jts.geom.Point",
+        "polygon": "org.locationtech.jts.geom.Polygon",
         "string": "java.lang.String",
         "time": "java.sql.Time",
     }
 
     for element in attributes_list:
         attribute = (
-            "<attribute>"
-            "<name>" + element[0] + "</name>"
-            "<minOccurs>" + str(element[1]) + "</minOccurs>"
-            "<maxOccurs>" + str(element[2]) + "</maxOccurs>"
-            "<nillable>" + str(element[3]).lower() + "</nillable>"
-            "<binding>" + binding_dict[element[4]] + "</binding>"
-            "</attribute>"
+            '<attribute>'
+            f'<name>{element[0]}</name>'
+            f'<minOccurs>{str(element[1])}</minOccurs>'
+            f'<maxOccurs>{str(element[2])}</maxOccurs>'
+            f'<nillable>{str(element[3]).lower()}</nillable>'
+            f'<binding>{binding_dict[element[4]]}</binding>'
+            '</attribute>'
         )
 
         attributes += attribute
@@ -262,43 +238,70 @@ def __create_attributes(attributes_list):
 
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in '__build_xml_from_id'?)
 def __build_new_layer_xml(
-    request, filename: str, datastore: str, workspace: str, srid: int, selection
+    request, filename: str, datastore: str, workspace: str, srid: int, selection, layertype="point"
 ):
     """
 
-    :param selection:
     :param request:
     :type request:
     :param filename: Name of layer for Geoserver.
     :param datastore: Name of store the layer is stored in.
     :param workspace: Name of workspace for the store.
     :param srid:  The coordinate reference system according to the EPSG database for the new layer.
+    :param selection:
+    :param layertype: string - for now there is "point" (default) and "filtercatchment"
     :return:
     :rtype:
     """
+    # layer specific data
+    simpleConversion = ""
+    keycolumn = ""
+
     # attributes have to be defined according to the selected table columns in the query
     # query = 'SELECT ST_Transform(ST_FlipCoordinates(location), 4326) ::geometry as "Geometry", ' \
-    query = (
-        'SELECT ST_Transform(location, 4326) ::geometry as "Geometry", '
-        'title as "Beschreibung", name as "Datentyp", '
-        'comment as "Kommentar", '
-        'embargo as "Embargo", '
-        "entries.id "
-        "FROM entries LEFT JOIN variables on entries.variable_id = variables.id"
-    )
-    #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
-    if selection is not None:
-        query = f'{query} WHERE entries.id in ({selection})'
-    # if not request.user.is_authenticated:
-    #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
-    # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
-    attribute_list = [
-        ("Geometry", 0, 1, True, "point"),
-        ("Beschreibung", 1, 1, False, "string"),
-        ("Datentyp", 1, 1, False, "string"),
-        ("Kommentar", 0, 1, True, "string"),
-        ("Embargo", 1, 1, False, "bool"),
-    ]  # , ('id', 1, 1, False, 'int')]
+    if layertype == "point":
+        keycolumn = "<keyColumn>id</keyColumn>"
+        geometrytype = "Point"
+        query = (
+            'SELECT ST_Transform(location, 4326) ::geometry as "Geometry", '
+            'title as "Beschreibung", name as "Datentyp", '
+            'comment as "Kommentar", '
+            'embargo as "Embargo", '
+            "entries.id "
+            "FROM entries LEFT JOIN variables on entries.variable_id = variables.id"
+        )
+        #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
+        if selection is not None:
+            query = f'{query} WHERE entries.id in ({selection})'
+
+        # if not request.user.is_authenticated:
+        #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
+        # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
+        attribute_list = [
+            ("Geometry", 0, 1, True, "point"),
+            ("Beschreibung", 1, 1, False, "string"),
+            ("Datentyp", 1, 1, False, "string"),
+            ("Kommentar", 0, 1, True, "string"),
+            ("Embargo", 1, 1, False, "bool"),
+        ]  # , ('id', 1, 1, False, 'int')]
+
+    elif layertype == "filtercatchment":
+        # simpleConversion = "<simpleConversionEnabled>false</simpleConversionEnabled>"
+        geometrytype = "Polygon"
+        selectstring = ""
+        for i in selection:
+            selectstring += f'(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}),'
+
+        if len(selection) > 1:
+            query = f'SELECT ST_Union(ARRAY[{selectstring[:-1]}])'
+            # query = "SELECT ST_Union(ARRAY[{}]) as catchment".format(selectstring[:-1])
+        else:
+            query = selectstring[1:-2]
+            # query = "{} as catchment".format(selectstring[1:-2])
+
+        attribute_list = [
+            ("catchment", 0, 1, True, "polygon"),
+        ]
 
     attributes = __create_attributes(attribute_list)
     xml = (
@@ -327,8 +330,8 @@ def __build_new_layer_xml(
         "<virtualTable><name>" + filename + "</name>"
         "<sql>" + query + "</sql>"
         "<escapeSql>false</escapeSql>"
-        "<keyColumn>id</keyColumn>"
-        "<geometry><name>Geometry</name><type>Point</type><srid>"
+        + keycolumn
+        + "<geometry><name>Geometry</name><type>" + geometrytype + "</type><srid>"
         + str(srid)
         + "</srid></geometry>"
         "</virtualTable>"
@@ -347,6 +350,43 @@ def __build_new_layer_xml(
         "<overridingServiceSRS>false</overridingServiceSRS>"
         "<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>"
         "<attributes>" + attributes + "</attributes>"
+        "</featureType>"
+    )
+    xml = (
+        '<featureType>'
+        f'<name>{filename}</name>'
+        f'<nativeName>{filename}</nativeName>'
+        '<namespace>'
+        f'<name>{workspace}</name>'
+        f'<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" '
+        f'href="{LOCAL_GEOSERVER}/rest/namespaces/{workspace}.xml" type="application/xml"/>'
+        '</namespace>'
+        f'<title>{filename}</title>'
+        f'<keywords><string>features</string><string>{filename}</string></keywords>'
+        f'<nativeCRS>EPSG:{str(srid)}</nativeCRS>'
+        f'<srs>EPSG:{str(srid)}</srs>'
+        '<projectionPolicy>FORCE_DECLARED</projectionPolicy>'
+        '<enabled>true</enabled>'
+        '<metadata>'
+        '<entry key="JDBC_VIRTUAL_TABLE">'
+        f'<virtualTable><name>{filename}</name>'
+        f'<sql>{query}</sql>'
+        '<escapeSql>false</escapeSql>'
+        f'{keycolumn}'
+        f'<geometry><name>Geometry</name><type>{geometrytype}</type>'
+        f'<srid>{str(srid)}</srid>'
+        '</geometry>'
+        '</virtualTable>'
+        '</entry>'
+        '</metadata>'
+        f'<store class="dataStore"><name>{workspace}:{datastore}</name>'
+        '<atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="alternate" '
+        f'href="{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}.xml" type="application/xml"/>'
+        '</store>'
+        '<maxFeatures>0</maxFeatures><numDecimals>0</numDecimals>'
+        '<overridingServiceSRS>false</overridingServiceSRS>'
+        '<skipNumberMatched>false</skipNumberMatched><circularArcPresent>false</circularArcPresent>'
+        f'<attributes>{attributes}</attributes>'
         "</featureType>"
     )
 
