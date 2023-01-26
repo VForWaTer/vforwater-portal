@@ -136,6 +136,7 @@ def create_layer(
     :param datastore: Name of datastore where to find the layer
     :param workspace: Name of workspace where to store the datastore
     :param srid:  The coordinate reference system according to the EPSG database for the new layer.
+    :param layertype:  String defining the geo object. Default is point.
     """
     xml = __build_new_layer_xml(
         request, filename, datastore, workspace, srid, selection, layertype
@@ -300,7 +301,7 @@ def __build_new_layer_xml(
             # query = "{} as catchment".format(selectstring[1:-2])
 
         attribute_list = [
-            ("catchment", 0, 1, True, "polygon"),
+            ("geom", 0, 1, True, "polygon"),
         ]
 
     attributes = __create_attributes(attribute_list)
