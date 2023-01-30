@@ -925,8 +925,6 @@ class Delineator(View):
 
     @staticmethod
     def get(request, catchout):
-        HIGH_RES = True
-        print('start: ')
 
         coords = {
             'lat': [catchout.split("catchout=")[2]],
@@ -936,14 +934,9 @@ class Delineator(View):
         if not is_coord(coords['lat'][0], 'lat') or not is_coord(coords['lng'][0], 'lon'):
             return {'Error': 'Error in Coordinates.'}
 
-        print('lat, lng: ', coords)  # 64, -17
+        catchment = delineate(coords)
 
-        delineate(coords, HIGH_RES)
-
-        print(' -- back from delineate -- ')
-
-# def delineator(request, catchout):
-#     print('delin fun: ', catchout)
+        return JsonResponse({'wkt': catchment})
 
 
 def advanced_filter(request):

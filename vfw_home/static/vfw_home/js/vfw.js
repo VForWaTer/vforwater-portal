@@ -502,24 +502,30 @@ function drawOnMapMenu(test) {
     });
 
     drawCatchment.on('drawstart', function (event) {
-        console.log('startevent: ', event)
         selectionEdgeCoords = event.feature.getGeometry()
         let coords = getEdgeCoords()
-        console.log('long ', coords[0])
-        console.log('lat ', coords[1])
         // round coords to a reasonable length (0,000001° ~~ 0,1 m)
         coords[0] = coords[0].toFixed(6);
         coords[1] = coords[1].toFixed(6);
-        console.log('coords ', coords)
-        // let polygon = get_catchment({'lat': coords[1], 'long': coords[0]})
-        let polygon = get_catchment(coords)
-        console.log('polygon: ', polygon)
 
-        selectionLayerSource.clear();
-        listener = selectStartFun(event)
+        $.when(get_catchment(coords)).done(function(catchment) {
+            let catch_format = new ol.format.WKT();
+            let catch_feature = catch_format.readFeature(catchment.wkt, {
+              dataProjection: 'EPSG:4326',
+              featureProjection: 'EPSG:3857',
+            });
+            selectionLayerSource.clear();
+            selectionLayerSource = new ol.source.Vector({features: [catch_feature],});
+            selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'delineation_layer'});
+                selectionLayer.setStyle(new ol.style.Style({
+                    stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
+                }))
+                olmap.addLayer(selectionLayer)
+            listener = selectStartFun(event)
+        })
+
     }, this);
     drawCatchment.on('drawend', function () {
-        console.log('drawend')
         removeInteractions();
         toggle_draw(document.getElementById("draw_catchment"))
 
