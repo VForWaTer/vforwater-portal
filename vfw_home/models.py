@@ -574,27 +574,22 @@ class AdvancedFilter(BasicFilter):
 # Delineate Watershed Data models
 
 class merit_hydro_vect_level2(models.Model):
-    # name = models.CharField(max_length=50, blank=True)
     basin = models.BigIntegerField()
     geom = models.PolygonField(srid=4326)
 
     def __str__(self):
-        return self.name
+        return f'basin_id is {self.basin}'
 
     class Meta:
         managed = True
-        db_table = 'delineateleveltwobasins'
+        db_table = 'merit_hydro_vect_level2'
 
 
-
-# merit_hydro_vect_level2_mapping = {
-#     'basin': 'BASIN',
-#     'geom': 'POLYGON',
-# }
-
-
-class riv_pfaf_27_MERIT_Hydro_v07_Basins_v01(models.Model):
-    # name = models.CharField(max_length=50, blank=True)
+class riv_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
+    """
+    Datasource at https://www.reachhydro.org/home/params/merit-basins
+    pfaf_level_02
+    """
     comid = models.BigIntegerField()
     lengthkm = models.FloatField()
     lengthdir = models.FloatField()
@@ -610,51 +605,62 @@ class riv_pfaf_27_MERIT_Hydro_v07_Basins_v01(models.Model):
     up2 = models.BigIntegerField()
     up3 = models.BigIntegerField()
     up4 = models.BigIntegerField()
-    geom = models.LineStringField(srid=4326)
+    geom = models.MultiLineStringField(srid=4326)
 
     def __str__(self):
-        return self.name
+        return self.comid
 
     class Meta:
         managed = True
-        db_table = 'delineaterivers'
+        db_table = 'riv_pfaf_merit_hydro_v07_basins_v01'
 
 
-# riv_pfaf_27_merit_hydro_v07_basins_v01_mapping = {
-#     'comid': 'COMID',
-#     'lengthkm': 'lengthkm',
-#     'lengthdir': 'lengthdir',
-#     'sinuosity': 'sinuosity',
-#     'slope': 'slope',
-#     'uparea': 'uparea',
-#     'order': 'order',
-#     'strmdrop_t': 'strmDrop_t',
-#     'slope_taud': 'slope_taud',
-#     'nextdownid': 'NextDownID',
-#     'maxup': 'maxup',
-#     'up1': 'up1',
-#     'up2': 'up2',
-#     'up3': 'up3',
-#     'up4': 'up4',
-#     'geom': 'LINESTRING',
-# }
+class cat_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
+    """
+    Datasource at https://www.reachhydro.org/home/params/merit-basins
+    pfaf_level_02
+    add new shapes with:
+     shp2pgsql -a -s 4326 riv_pfaf_21_MERIT_Hydro_v07_Basins_v01_bugfix1.shp riv_pfaf_MERIT_Hydro_v07_Basins_v01 | psql -h localhost -d metacatalog-dev -U postgres -p 5434
 
-class cat_pfaf_27_MERIT_Hydro_v07_Basins_v01(models.Model):
-    # name = models.CharField(max_length=50, blank=True)
+    """
     comid = models.BigIntegerField()
     unitarea = models.FloatField()
     geom = models.PolygonField(srid=4326)
 
     def __str__(self):
-        return self.name
+        return self.comid
 
     class Meta:
         managed = True
-        db_table = 'delineatebasins'
+        db_table = 'cat_pfaf_merit_hydro_v07_basins_v01'
+
+class cat_pfaf_MERIT_Hydro_v07_Basins_v01_simple(models.Model):
+    """
+    Datasource at https://www.reachhydro.org/home/params/merit-basins
+    pfaf_level_02
+    add new shapes with:
+    shp2pgsql -a -I -s 4326 cat_pfaf_29_MERIT_Hydro_v07_Basins_v01.shp cat_pfaf_MERIT_Hydro_v07_Basins_v01_simple | psql -h localhost -d metacatalog-dev -U postgres -p 5434
+    shp2pgsql -I -i -s 4326 cat_pfaf_22_MERIT_Hydro_v07_Basins_v01.shp cat_pfaf_merit_hydro_v07_basins_v01_simple | psql -h localhost -d metacatalog-dev -U postgres -p 5434
+    """
+    comid = models.BigIntegerField()
+    unitarea = models.FloatField()
+    geom = models.PolygonField(srid=4326)
+
+    def __str__(self):
+        return self.comid
+
+    class Meta:
+        managed = True
+        db_table = 'cat_pfaf_merit_hydro_v07_basins_v01_simple'
+
+# add a shape file: -a = add; -I = Create a GiST index on the geometry column; -i = Coerce all integers to standard 32-bit integers.
+# shp2pgsql -a -s 4326 riv_pfaf_21_MERIT_Hydro_v07_Basins_v01_bugfix1.shp riv_pfaf_MERIT_Hydro_v07_Basins_v01 | psql -h localhost -d metacatalog-dev -U postgres -p 5434
+
+# raster data to db
+# raster2pgsql -s 4326 -I -C /home/marcus/github/delineator/delineator-1.0/data/raster/flowdir_basins/flowdir27.tif -t 50x50 -F public.flowdirbasins > /home/marcus/github/delineator/delineator-1.0/flowdir_basin.sql
+# psql -p 5434 -U postgres -h localhost -d metacatalog-dev -f flowdir_basin.sql
+#
+# raster2pgsql -s 4326 -I -C /home/marcus/github/delineator/delineator-1.0/data/raster/accum_basins/accum27.tif -t 50x50 -F public.accumbasins > /home/marcus/github/delineator/delineator-1.0/accum_basin.sql
+# psql -p 5434 -U postgres -h localhost -d metacatalog-dev -f accum_basin.sql
 
 
-# cat_pfaf_27_merit_hydro_v07_basins_v01_mapping = {
-#     'comid': 'COMID',
-#     'unitarea': 'unitarea',
-#     'geom': 'POLYGON',
-# }
