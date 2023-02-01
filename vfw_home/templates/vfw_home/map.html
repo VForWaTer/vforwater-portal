@@ -39,6 +39,7 @@
   </div>
 	<div class="w3-center" id="drawfilter" style="display:none">
 {#        <dl>#}
+    {% trans "Click&#32on&#32map&#32to&#32define&#32outlet&#32of&#32catchment&#32to&#32draw." as Draw_catchment %}
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32square.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_square %}
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32polygon.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_poly %}
     {% trans "Edit&#32drawing" as Edit %}
@@ -47,6 +48,8 @@
     {% trans "Close&#32drawing&#32panel&#32and&#32reactivate&#32doubleclick&#32zoom." as Close %}
     <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="hover-white" title={{ Close }}>
       <i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_catchment" class="draw-hover" title={{ Draw_catchment }}
+      value="Catchment"><i class="map_icon fa fa-hand-pointer-o fa-fw"></i></a>
     <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_square" class="draw-hover" title={{ Draw_square }}
       value="Square"><i class="map_icon fa fa-square-o fa-fw"></i></a>
     <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_polygon" class="draw-hover" title={{ Draw_poly }}
@@ -88,6 +91,17 @@ if (!isStorageSupported(window, "localStorage")) {
         removeInteractions()
         // olmap.addInteraction(selectCluster);
         drawfilter_close()
+    });
+   // add clickEvent to auto-draw catchment button
+    let drwcatch = document.getElementById('draw_catchment');
+    drwcatch.addEventListener('click', function () {
+        removeInteractions();
+        console.log('clicked on map')
+        {% comment %}document.body.style.cursor = 'default';{% endcomment %}
+        olmap.addInteraction(drawCatchment);
+        /* olmap.addInteraction(drawCatchment); */
+        /* Deactivate select and delete any existing polygons.
+            Only one polygon drawn at a time. */
     });
    // add clickEvent to draw square button
     let drwsqrst = document.getElementById('draw_square');

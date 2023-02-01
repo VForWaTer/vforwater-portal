@@ -569,3 +569,92 @@ class AdvancedFilter(BasicFilter):
 #         managed = False
 #         db_table = 'entries'
 #
+
+
+# Delineate Watershed Data models
+
+class merit_hydro_vect_level2(models.Model):
+    # name = models.CharField(max_length=50, blank=True)
+    basin = models.BigIntegerField()
+    geom = models.PolygonField(srid=4326)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'delineateleveltwobasins'
+
+
+
+# merit_hydro_vect_level2_mapping = {
+#     'basin': 'BASIN',
+#     'geom': 'POLYGON',
+# }
+
+
+class riv_pfaf_27_MERIT_Hydro_v07_Basins_v01(models.Model):
+    # name = models.CharField(max_length=50, blank=True)
+    comid = models.BigIntegerField()
+    lengthkm = models.FloatField()
+    lengthdir = models.FloatField()
+    sinuosity = models.FloatField()
+    slope = models.FloatField()
+    uparea = models.FloatField()
+    order = models.BigIntegerField()
+    strmdrop_t = models.FloatField()
+    slope_taud = models.FloatField()
+    nextdownid = models.BigIntegerField()
+    maxup = models.BigIntegerField()
+    up1 = models.BigIntegerField()
+    up2 = models.BigIntegerField()
+    up3 = models.BigIntegerField()
+    up4 = models.BigIntegerField()
+    geom = models.LineStringField(srid=4326)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'delineaterivers'
+
+
+# riv_pfaf_27_merit_hydro_v07_basins_v01_mapping = {
+#     'comid': 'COMID',
+#     'lengthkm': 'lengthkm',
+#     'lengthdir': 'lengthdir',
+#     'sinuosity': 'sinuosity',
+#     'slope': 'slope',
+#     'uparea': 'uparea',
+#     'order': 'order',
+#     'strmdrop_t': 'strmDrop_t',
+#     'slope_taud': 'slope_taud',
+#     'nextdownid': 'NextDownID',
+#     'maxup': 'maxup',
+#     'up1': 'up1',
+#     'up2': 'up2',
+#     'up3': 'up3',
+#     'up4': 'up4',
+#     'geom': 'LINESTRING',
+# }
+
+class cat_pfaf_27_MERIT_Hydro_v07_Basins_v01(models.Model):
+    # name = models.CharField(max_length=50, blank=True)
+    comid = models.BigIntegerField()
+    unitarea = models.FloatField()
+    geom = models.PolygonField(srid=4326)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        managed = True
+        db_table = 'delineatebasins'
+
+
+# cat_pfaf_27_merit_hydro_v07_basins_v01_mapping = {
+#     'comid': 'COMID',
+#     'unitarea': 'unitarea',
+#     'geom': 'POLYGON',
+# }

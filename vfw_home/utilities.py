@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -13,6 +14,19 @@ NUMPY_TYPES = ['array', '2darray', 'ndarray']
 SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
 DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
 SPECIALS = ['raster']
+
+regex_patterns = {
+    'lat': re.compile(r'^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$'),
+    'lon': re.compile(
+            r'^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')
+}
+
+def is_coord(testString, latlon):
+    if not regex_patterns[latlon].match(testString):
+        raise ValueError()
+    else:
+        return True
+
 
 # TODO: added embargo end in def get_accessible_data query. Check if the following function is still needed.
 
