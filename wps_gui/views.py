@@ -29,6 +29,7 @@ from wps_gui.utilities import (
     list_wps_service_engines,
     abstract_is_link,
 )
+from owslib.ogcapi.processes import Processes
 
 import logging
 
@@ -48,103 +49,142 @@ basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number']
 
 # from heron_wps.forms import InputForm
 
-
 def home(request):
-    """
-    Home page for Heron WPS tool. Lists all the WPS services that are linked.
-    """
-    # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
-    # TODO: IMPORTANT! Process description is only loaded once.
-    #  When changing a process, the version number has to be updated.
     jsondata = {}
-    wps_data = {}
-    WpsQueryset = WpsDescription.objects
+    ogcapi_proc = {}
     try:
-        wps_services = list_wps_service_engines()
-        # service = 'PyWPS_vforwater'
-        service = WebProcessingService.objects.values_list("name", flat=True)[0]
-        wps = get_wps_service_engine(service)
+        wps_services = list(WebProcessingService.objects.values_list("name", flat=True))
+        wps_services_url = list(WebProcessingService.objects.values_list('endpoint', flat=True))
+        service = wps_services[4] #[0] PyWPS_vforwater # [1] PyWPS_Elnaz_Local_Server #[2] pygeoapi # [3] pygeoapi_vforwater_Elnaz [4] pygeoapi_vforwater
+        endpoint = wps_services_url[4]
     except Exception as e:
         print("Exception in wps_gui.views.home: ", e)
 
-    # if WpsQueryset.exists():
-    #     for process in list(WpsQueryset.values('identifier', 'service', 'title', 'abstract', 'inputs', 'outputs',
-    #                                            'verbose', 'metadata', 'dataInputs', 'processOutputs', 'version',
-    #                                            'storeSupported', 'statusSupported'
-    #                                            )):
-    #         wps_data[process['identifier']] = {'service': process['service'],
-    #                                            'title': process['title'],
-    #                                            'abstract': process['abstract'],
-    #                                            'processin': process['inputs'],
-    #                                            'processout': process['outputs']}
-    #         jsondata[process['identifier']] = {'service': process['service'],
-    #                                            'verbose': json.dumps(process['verbose']),
-    #                                            'storeSupported': json.dumps(process['storeSupported']),
-    #                                            'statusSupported': json.dumps(process['statusSupported']),
-    #                                            'title': process['title'], 'abstract': process['abstract'],
-    #                                            'metadata': process['metadata'],
-    #                                            'dataInputs': json.dumps(process['dataInputs']),
-    #                                            'processOutputs': json.dumps(process['processOutputs']),
-    #                                            'version': json.dumps(process['version'])}
+    if service == 'pygeoapi_vforwater':
+        try:
+            apiproc = Processes(endpoint)
+            for process in apiproc.processes()['processes']:
+                if process['id'] not in jsondata.keys():
+                    ogcapi_proc[process['id']] = process
 
-    try:
-        for process in wps.processes:
-            if process.identifier not in jsondata.keys():
-                wps_data[process.identifier] = {}
-                wps_data[process.identifier] = {
-                    "title": process.title,
-                    "abstract": process.abstract,
-                    "identifier": process.identifier,
-                    "processin": "",
-                    "processout": "",
-                }
-                describedprocess = wps.describeprocess(process.identifier)
-                wps_data = get_process_metadata(
-                    wps_data, describedprocess, process.identifier
-                )
+        except Exception as e:
+            logger.error(sys.exc_info()[0])
+            service = ""
+            wps_services = []
+            print('in except: ', e)
 
-                jsondata[process.identifier] = process_to_json(process)
-                describedprocess_json = process_to_json(describedprocess)
+        if "dbloader" in ogcapi_proc:
+            del ogcapi_proc["dbloader"]
+        if "datareader" in ogcapi_proc:
+            del ogcapi_proc["datareader"]
+        if "workflow" in ogcapi_proc:
+            del ogcapi_proc["workflow"]
 
-                # WpsQueryset.create(service=service, title=wps_data[process.identifier]['title'],
-                #                    identifier=process.identifier,
-                #                    abstract=wps_data[process.identifier]['abstract'],
-                #                    inputs=wps_data[process.identifier]['processin'],
-                #                    outputs=wps_data[process.identifier]['processout'],
-                #                    verbose=jsondata[process.identifier]['verbose'],
-                #                    statusSupported=describedprocess_json['statusSupported'],
-                #                    storeSupported=describedprocess_json['storeSupported'],
-                #                    metadata=jsondata[process.identifier]['metadata'],
-                #                    dataInputs=describedprocess_json['dataInputs'],
-                #                    processOutputs=describedprocess_json['processOutputs'],
-                #                    version=jsondata[process.identifier]['processVersion']
-                #                    )
-    except Exception as e:
-        logger.error(sys.exc_info()[0])
-        service = ""
-        wps_services = []
-        print('in except: ', e)
+        context = {
+            "wps_services": wps_services,
+            "sessiondata": ogcapi_proc,
+            "service": service,
+        }
 
-    if "dbloader" in wps_data:
-        del wps_data["dbloader"]
-        # del jsondata['dbloader']
-    if "datareader" in wps_data:
-        del wps_data["datareader"]
-        # del jsondata['datareader']
+        return render(request, "wps_gui/home.html", context)
 
-    if "workflow" in wps_data:
-        del wps_data["workflow"]
 
-    context = {
-        "wps_services": wps_services,
-        "sessiondata": wps_data,
-        "service": service,
-        # 'tools': jsondata
-        # 'tools': {service: jsondata}
-        # 'tools': json.dumps({service: jsondata})
-    }
-
-    return render(request, "wps_gui/home.html", context)
+# def home(request):
+#     """
+#     Home page for Heron WPS tool. Lists all the WPS services that are linked.
+#     """
+#     # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
+#     # TODO: IMPORTANT! Process description is only loaded once.
+#     #  When changing a process, the version number has to be updated.
+#     jsondata = {}
+#     wps_data = {}
+#     WpsQueryset = WpsDescription.objects
+#     try:
+#         wps_services = list_wps_service_engines()
+#         # service = 'PyWPS_vforwater'
+#         service = WebProcessingService.objects.values_list("name", flat=True)[1] # [1] PyWPS_Elnaz_Local_Server #[0] PyWPS_vforwater #[2] pygeoapi
+#         wps = get_wps_service_engine(service)
+#     except Exception as e:
+#         print("Exception in wps_gui.views.home: ", e)
+#
+#     # if WpsQueryset.exists():
+#     #     for process in list(WpsQueryset.values('identifier', 'service', 'title', 'abstract', 'inputs', 'outputs',
+#     #                                            'verbose', 'metadata', 'dataInputs', 'processOutputs', 'version',
+#     #                                            'storeSupported', 'statusSupported'
+#     #                                            )):
+#     #         wps_data[process['identifier']] = {'service': process['service'],
+#     #                                            'title': process['title'],
+#     #                                            'abstract': process['abstract'],
+#     #                                            'processin': process['inputs'],
+#     #                                            'processout': process['outputs']}
+#     #         jsondata[process['identifier']] = {'service': process['service'],
+#     #                                            'verbose': json.dumps(process['verbose']),
+#     #                                            'storeSupported': json.dumps(process['storeSupported']),
+#     #                                            'statusSupported': json.dumps(process['statusSupported']),
+#     #                                            'title': process['title'], 'abstract': process['abstract'],
+#     #                                            'metadata': process['metadata'],
+#     #                                            'dataInputs': json.dumps(process['dataInputs']),
+#     #                                            'processOutputs': json.dumps(process['processOutputs']),
+#     #                                            'version': json.dumps(process['version'])}
+#
+#     try:
+#         for process in wps.processes:
+#             if process.identifier not in jsondata.keys():
+#                 wps_data[process.identifier] = {}
+#                 wps_data[process.identifier] = {
+#                     "title": process.title,
+#                     "abstract": process.abstract,
+#                     "identifier": process.identifier,
+#                     "processin": "",
+#                     "processout": "",
+#                 }
+#                 describedprocess = wps.describeprocess(process.identifier)
+#                 wps_data = get_process_metadata(
+#                     wps_data, describedprocess, process.identifier
+#                 )
+#
+#                 jsondata[process.identifier] = process_to_json(process)
+#                 describedprocess_json = process_to_json(describedprocess)
+#
+#                 # WpsQueryset.create(service=service, title=wps_data[process.identifier]['title'],
+#                 #                    identifier=process.identifier,
+#                 #                    abstract=wps_data[process.identifier]['abstract'],
+#                 #                    inputs=wps_data[process.identifier]['processin'],
+#                 #                    outputs=wps_data[process.identifier]['processout'],
+#                 #                    verbose=jsondata[process.identifier]['verbose'],
+#                 #                    statusSupported=describedprocess_json['statusSupported'],
+#                 #                    storeSupported=describedprocess_json['storeSupported'],
+#                 #                    metadata=jsondata[process.identifier]['metadata'],
+#                 #                    dataInputs=describedprocess_json['dataInputs'],
+#                 #                    processOutputs=describedprocess_json['processOutputs'],
+#                 #                    version=jsondata[process.identifier]['processVersion']
+#                 #                    )
+#     except Exception as e:
+#         logger.error(sys.exc_info()[0])
+#         service = ""
+#         wps_services = []
+#         print('in except: ', e)
+#
+#     if "dbloader" in wps_data:
+#         del wps_data["dbloader"]
+#         # del jsondata['dbloader']
+#     if "datareader" in wps_data:
+#         del wps_data["datareader"]
+#         # del jsondata['datareader']
+#
+#     if "workflow" in wps_data:
+#         del wps_data["workflow"]
+#
+#     context = {
+#         "wps_services": wps_services,
+#         "sessiondata": wps_data,
+#         "service": service,
+#         # 'tools': jsondata
+#         # 'tools': {service: jsondata}
+#         # 'tools': json.dumps({service: jsondata})
+#     }
+#
+#     return render(request, "wps_gui/home.html", context)
 
 
 # def use_pandoc(bla):
