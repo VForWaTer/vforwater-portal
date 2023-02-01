@@ -12,6 +12,7 @@ matplotlib
 numpy
 OWSLib>=0.27
 pandas
+geopandas>=0.12
 psycopg2
 psycopg2-binary
 pyzip
