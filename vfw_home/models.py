@@ -589,6 +589,7 @@ class riv_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
     """
     Datasource at https://www.reachhydro.org/home/params/merit-basins
     pfaf_level_02
+    shp2pgsql -a -s 4326 cat_pfaf_26_MERIT_Hydro_v07_Basins_v01_bugfix1.shp cat_pfaf_MERIT_Hydro_v07_Basins_v01 | psql -h localhost -d metacatalog-dev -U postgres -p 5434
     """
     comid = models.BigIntegerField()
     lengthkm = models.FloatField()
@@ -634,24 +635,26 @@ class cat_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
         managed = True
         db_table = 'cat_pfaf_merit_hydro_v07_basins_v01'
 
-class cat_pfaf_MERIT_Hydro_v07_Basins_v01_simple(models.Model):
-    """
-    Datasource at https://www.reachhydro.org/home/params/merit-basins
-    pfaf_level_02
-    add new shapes with:
-    shp2pgsql -a -I -s 4326 cat_pfaf_29_MERIT_Hydro_v07_Basins_v01.shp cat_pfaf_MERIT_Hydro_v07_Basins_v01_simple | psql -h localhost -d metacatalog-dev -U postgres -p 5434
-    shp2pgsql -I -i -s 4326 cat_pfaf_22_MERIT_Hydro_v07_Basins_v01.shp cat_pfaf_merit_hydro_v07_basins_v01_simple | psql -h localhost -d metacatalog-dev -U postgres -p 5434
-    """
-    comid = models.BigIntegerField()
-    unitarea = models.FloatField()
-    geom = models.PolygonField(srid=4326)
 
-    def __str__(self):
-        return self.comid
-
-    class Meta:
-        managed = True
-        db_table = 'cat_pfaf_merit_hydro_v07_basins_v01_simple'
+# TODO: the simple basins should be used for bigger catchments to reduce processing time. But the given data has the wrong comID. Maybe created by yourself
+# class cat_pfaf_MERIT_Hydro_v07_Basins_v01_simple(models.Model):
+#     """
+#     Datasource at https://www.reachhydro.org/home/params/merit-basins
+#     pfaf_level_02
+#     add new shapes with:
+#     shp2pgsql -a -I -s 4326 cat_pfaf_29_MERIT_Hydro_v07_Basins_v01.shp cat_pfaf_MERIT_Hydro_v07_Basins_v01_simple | psql -h localhost -d metacatalog-dev -U postgres -p 5434
+#     shp2pgsql -I -i -s 4326 cat_pfaf_22_MERIT_Hydro_v07_Basins_v01.shp cat_pfaf_merit_hydro_v07_basins_v01_simple | psql -h localhost -d metacatalog-dev -U postgres -p 5434
+#     """
+#     comid = models.BigIntegerField()
+#     unitarea = models.FloatField()
+#     geom = models.PolygonField(srid=4326)
+#
+#     def __str__(self):
+#         return self.comid
+#
+#     class Meta:
+#         managed = True
+#         db_table = 'cat_pfaf_merit_hydro_v07_basins_v01_simple'
 
 # add a shape file: -a = add; -I = Create a GiST index on the geometry column; -i = Coerce all integers to standard 32-bit integers.
 # shp2pgsql -a -s 4326 riv_pfaf_21_MERIT_Hydro_v07_Basins_v01_bugfix1.shp riv_pfaf_MERIT_Hydro_v07_Basins_v01 | psql -h localhost -d metacatalog-dev -U postgres -p 5434
