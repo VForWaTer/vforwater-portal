@@ -517,15 +517,25 @@ function drawOnMapMenu(test) {
             selectionLayerSource.clear();
             selectionLayerSource = new ol.source.Vector({features: [catch_feature],});
             selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'delineation_layer'});
-                selectionLayer.setStyle(new ol.style.Style({
-                    stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
-                }))
-                olmap.addLayer(selectionLayer)
-            listener = selectStartFun(event)
+            get_quick_selection({'draw': url_coords});
+            selectionLayer.setStyle(new ol.style.Style({
+                stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
+            }))
+            olmap.addLayer(selectionLayer)
+            // listener = selectStartFun(event)
+            // console.log('catch listener: ', listener)
         })
 
     }, this);
     drawCatchment.on('drawend', function () {
+        // removeInteractions();
+                /* remove preloaded layers defined by the url */
+        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+            .forEach(layer => olmap.removeLayer(layer));
+        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'delineation_layer')
+            .forEach(layer => olmap.removeLayer(layer));
+
+        get_quick_selection({'draw': getEdgeCoords()});
         removeInteractions();
         toggle_draw(document.getElementById("draw_catchment"))
 

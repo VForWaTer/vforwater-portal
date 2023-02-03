@@ -1005,32 +1005,6 @@ class QuickFilterResults(View):
                 it = iter([float(item) for item in values.split(',')])
                 poly = Polygon(tuple(zip(it, it)), srid=4326)
                 filter_dict['location__intersects'] = poly
-            elif i == 'catchout':
-                print('_____________ catachment')
-                print('selection: ', selection)
-                values = QueryDict(selection).getlist(i)
-                print(f'outlet{values[0]}_{values[1]}')
-                if f'outlet{values[0]}_{values[1]}' in request.session:
-                    # del request.session[f'outlet{values[0]}_{values[1]}']
-
-                    print('in')
-                    poly = request.session[f'outlet{values[0]}_{values[1]}']['wkt']  # geojson for session
-                    print('in 2')
-                    print('wkt: ', type(poly))
-                else:
-                    print('values: ', values)
-                    coords = {'lng': [values[0]], 'lat': [values[1]]}
-                    print('coords: ', coords)
-                    wkt = delineate(coords)
-                    print('inner wkt: ', wkt)
-                    poly = GEOSGeometry(delineate(coords)['wkt'], srid=4326)  # WKT
-                    request.session[f'outlet{values[0]}_{values[1]}'] = poly.json  # geojson for session
-                # print('wkt: ', wkt)
-                # poly = GEOSGeometry(delineate(coords)['wkt'], srid=4326)  # WKT
-                poly = GEOSGeometry(poly).wkt  # WKT for webside (little smaller than geojson)
-
-                print('poly: ', poly)
-                filter_dict['location__intersects'] = poly  # WKT
 
         query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
         total_results = query.count()
