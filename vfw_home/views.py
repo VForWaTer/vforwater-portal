@@ -44,7 +44,7 @@ from .utilities import human_readable_bool, has_pending_embargo, read_data, expr
 
 mpl.use('Agg')
 
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, GEOSGeometry
 from .query_functions import get_bbox_from_data
 # from .filter import QuickFilter
 from .filters import NMPersonsFilter
@@ -62,7 +62,7 @@ from time import time
 """
 logger = logging.getLogger(__name__)
 
-
+# class WorkflowView(TemplateView):
 # class WorkflowView(TemplateView):
 #     """
 #     Template View for plain workflow HTML Template.
@@ -92,8 +92,10 @@ class HomeView(TemplateView):
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
     # IMPORTANT! Don't use "-" in geoserver names!!!
-    store = 'metacatalogdev'  # 'new_vforwater_gis'
-    workspace = 'metacatalogdev'  # 'CAOS_update'
+    store = 'playnew'  # 'new_vforwater_gis'
+    workspace = 'playnew'  # 'CAOS_update'
+    # store = 'play'  # 'new_vforwater_gis'
+    # workspace = 'play'  # 'CAOS_update'
     unlocked_embargo = []
 
     try:
@@ -347,6 +349,8 @@ class LogoutView(View):
         :return:
         :rtype:
         """
+        print('logout view: ', self)
+        print('logut request: ', request)
         logger.debug('{} logged out'.format(request.user.username))
         logout(request)
 
@@ -358,6 +362,8 @@ class LogoutView(View):
         :return:
         :rtype:
         """
+        print('post view: ', self)
+        print('post request: ', request)
         self.logout(request)
         return redirect('vfw_home:home')
 
@@ -496,6 +502,7 @@ def previewplot(request):
     :return:
     """
     webID = request.GET.get('preview')
+    print('webID: ', webID )
     full_res = False
     plot_size = [700, 500]
     if request.GET.get('startdate') != 'None':
@@ -936,7 +943,7 @@ class Delineator(View):
 
         catchment = delineate(coords)
 
-        return JsonResponse({'wkt': catchment})
+        return JsonResponse(catchment)
 
 
 def advanced_filter(request):
@@ -993,13 +1000,42 @@ class QuickFilterResults(View):
                 #  (this exists because in exclude query is always some input needed)
                 fair_query = Q(embargo=True) & Q(embargo=False)
             elif i == 'draw':
+                print('_____________ draw')
                 values = QueryDict(selection).getlist(i)[0]
                 it = iter([float(item) for item in values.split(',')])
                 poly = Polygon(tuple(zip(it, it)), srid=4326)
                 filter_dict['location__intersects'] = poly
+            elif i == 'catchout':
+                print('_____________ catachment')
+                print('selection: ', selection)
+                values = QueryDict(selection).getlist(i)
+                print(f'outlet{values[0]}_{values[1]}')
+                if f'outlet{values[0]}_{values[1]}' in request.session:
+                    # del request.session[f'outlet{values[0]}_{values[1]}']
+
+                    print('in')
+                    poly = request.session[f'outlet{values[0]}_{values[1]}']['wkt']  # geojson for session
+                    print('in 2')
+                    print('wkt: ', type(poly))
+                else:
+                    print('values: ', values)
+                    coords = {'lng': [values[0]], 'lat': [values[1]]}
+                    print('coords: ', coords)
+                    wkt = delineate(coords)
+                    print('inner wkt: ', wkt)
+                    poly = GEOSGeometry(delineate(coords)['wkt'], srid=4326)  # WKT
+                    request.session[f'outlet{values[0]}_{values[1]}'] = poly.json  # geojson for session
+                # print('wkt: ', wkt)
+                # poly = GEOSGeometry(delineate(coords)['wkt'], srid=4326)  # WKT
+                poly = GEOSGeometry(poly).wkt  # WKT for webside (little smaller than geojson)
+
+                print('poly: ', poly)
+                filter_dict['location__intersects'] = poly  # WKT
 
         query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
         total_results = query.count()
+
+        print('_')
 
         # From here collect data to update map:
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT
@@ -1016,8 +1052,11 @@ class QuickFilterResults(View):
         else:
             # TODO: Selection with no result has to be handled properly
             pass
+        print('_ _')
+        print('selection: ', selection)
+        print('total_results: ', total_results)
 
-        return JsonResponse({'selection': selection, 'total': total_results,
+        return JsonResponse({'selection': selection, 'total': total_results, 'catchment': wkt,
                              'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
 
 
