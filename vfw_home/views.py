@@ -1000,7 +1000,6 @@ class QuickFilterResults(View):
                 #  (this exists because in exclude query is always some input needed)
                 fair_query = Q(embargo=True) & Q(embargo=False)
             elif i == 'draw':
-                print('_____________ draw')
                 values = QueryDict(selection).getlist(i)[0]
                 it = iter([float(item) for item in values.split(',')])
                 poly = Polygon(tuple(zip(it, it)), srid=4326)
@@ -1009,7 +1008,6 @@ class QuickFilterResults(View):
         query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
         total_results = query.count()
 
-        print('_')
 
         # From here collect data to update map:
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT
@@ -1026,11 +1024,8 @@ class QuickFilterResults(View):
         else:
             # TODO: Selection with no result has to be handled properly
             pass
-        print('_ _')
-        print('selection: ', selection)
-        print('total_results: ', total_results)
 
-        return JsonResponse({'selection': selection, 'total': total_results, 'catchment': wkt,
+        return JsonResponse({'selection': selection, 'total': total_results,
                              'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
 
 

@@ -115,29 +115,25 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
     comID_array = useSQLQuery(recursive_query_string)
 
     selectstring = ""
-    singleselectstring = "SELECT ST_AsText(geom, 8) AS catchment " \
+    simplification = 0.1  # 0.01
+    singleselectstring = f"SELECT ST_AsText(ST_Simplify(geom, {simplification}), 6) AS catchment " \
                          f"FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid}"
+    simplification = 0.01  # 0.01
     # union catchments
     for i in comID_array:
         # create query
         selectstring += "(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={}),".format(i[0])
 
     if len(comID_array) > 1:
-        wkbquerystring = "SELECT ST_AsText(ST_Simplify(ST_Union(ARRAY[{}]), 0.01), 6) as catchment".format(selectstring[:-1])
+        wkbquerystring = "SELECT ST_AsText(ST_Simplify(ST_Union(ARRAY[{}]), {}), 6) as catchment".format(
+            selectstring[:-1], simplification)
     else:
         wkbquerystring = "{};".format(singleselectstring)
 
     row = useSQLQuery(wkbquerystring)
 
-    if precise:
-        # create raster of watershed upstream of clickpoint
-        # To much details for a 'select on map' tool
-        pass
-
 
     # TODO: if layer creation in GeoServer, then think about moving store/workspace to settings.py
-    # store = 'playnew'  # 'new_vforwater_gis'
-    # workspace = 'playnew'
     # layer_name = f'catchment{terminal_comid}'  # only used for a geoserver layer
     # if not get_layer(layer_name, store, workspace):
     #     create_layer("", layer_name, store, workspace, B, layertype="filtercatchment")

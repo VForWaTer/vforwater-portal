@@ -96,10 +96,7 @@ if (!isStorageSupported(window, "localStorage")) {
     let drwcatch = document.getElementById('draw_catchment');
     drwcatch.addEventListener('click', function () {
         removeInteractions();
-        console.log('clicked on map')
-        {% comment %}document.body.style.cursor = 'default';{% endcomment %}
-        olmap.addInteraction(drawCatchment);
-        /* olmap.addInteraction(drawCatchment); */
+        olmap.addInteraction(drawCatchmentOutlet);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
     });

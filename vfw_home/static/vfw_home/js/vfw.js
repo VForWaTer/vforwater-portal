@@ -1,4 +1,4 @@
-let draw, drawSquare, modify, selectedFeatures, selectionEdgeCoords, selectionLayerSource;
+let draw, drawSquare, drawCatchmentOutlet, drawCatchmentWKT, modify, selectedFeatures, selectionEdgeCoords, selectionLayerSource;
 /**
  * Global Element (source layer) to drawn on
  */
@@ -339,7 +339,7 @@ function drawOnMapMenu(test) {
         geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
     });
-    drawCatchment = new ol.interaction.Draw({
+    drawCatchmentOutlet = new ol.interaction.Draw({
         source: selectionLayerSource,
         type: 'Point',
     })
@@ -427,7 +427,6 @@ function drawOnMapMenu(test) {
             changes = event.feature.getGeometry().on('change', function (event) {
                 // clear features so they deselect when polygon moves away
                 // selectedFeatures.clear();
-                // polygon = event.target;
                 selectionEdgeCoords = event.target;
 
             });
@@ -469,7 +468,7 @@ function drawOnMapMenu(test) {
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
 
-        get_quick_selection({'draw': getEdgeCoords()});
+        get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
         removeInteractions();
         toggle_draw(document.getElementById("draw_square"))
     });
@@ -501,38 +500,38 @@ function drawOnMapMenu(test) {
         // ol.observable.unByKey(listener);
     });
 
-    drawCatchment.on('drawstart', function (event) {
+    drawCatchmentOutlet.on('drawstart', function (event) {
         selectionEdgeCoords = event.feature.getGeometry()
-        let coords = getEdgeCoords()
+        listener = selectStartFun(event)
+        let click_coords = getEdgeCoords()
         // round coords to a reasonable length (0,000001° ~~ 0,1 m)
-        coords[0] = coords[0].toFixed(6);
-        coords[1] = coords[1].toFixed(6);
+        click_coords[0] = click_coords[0].toFixed(6);
+        click_coords[1] = click_coords[1].toFixed(6);
 
-        $.when(get_catchment(coords)).done(function(catchment) {
+        // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
+        $.when(get_catchment(click_coords)).done(function(catchment) {
             let catch_format = new ol.format.WKT();
             let catch_feature = catch_format.readFeature(catchment.wkt, {
               dataProjection: 'EPSG:4326',
               featureProjection: 'EPSG:3857',
             });
+            let polygon = catch_feature.getGeometry();
+            selectionEdgeCoords = polygon;
+            get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
+
             selectionLayerSource.clear();
             selectionLayerSource = new ol.source.Vector({features: [catch_feature],});
-            selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'delineation_layer'});
-            get_quick_selection({'draw': url_coords});
+            selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
             selectionLayer.setStyle(new ol.style.Style({
-                stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
+                stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
             }))
             olmap.addLayer(selectionLayer)
-            // listener = selectStartFun(event)
-            // console.log('catch listener: ', listener)
         })
 
     }, this);
-    drawCatchment.on('drawend', function () {
-        // removeInteractions();
-                /* remove preloaded layers defined by the url */
+    drawCatchmentOutlet.on('drawend', function () {
+
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
-            .forEach(layer => olmap.removeLayer(layer));
-        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'delineation_layer')
             .forEach(layer => olmap.removeLayer(layer));
 
         get_quick_selection({'draw': getEdgeCoords()});
@@ -550,7 +549,7 @@ function removeInteractions() {
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
     olmap.removeInteraction(drawSquare);
-    olmap.removeInteraction(drawCatchment);
+    olmap.removeInteraction(drawCatchmentOutlet);
 }
 
 /**
@@ -964,7 +963,7 @@ function quick_filter(selection) {
 
 
 /**
- * Build url from values from map, form object (send as selection) and from existing URL
+ * Build url from values from map (as coordinates), form object (send as selection) and from existing URL
  *
  * @param {string} selection
  */
@@ -1039,18 +1038,19 @@ function get_quick_selection(selection) {
  */
 function get_catchment(coords) {
     let url = getFilterURL({'catchout': coords})
-    console.log('url: ', url)
     if (url !== false) {
-        $.ajax({
+        return $.ajax({
             url: vfw.var.DEMO_VAR + '/home/delineator/' + url,
             type: "GET",
-            // datatype: 'json',
-            dataType: "text",
+            // async: false,
+            datatype: 'json',
         })
             .done(function (result) {
-                let json = JSON.parse(result)
-                console.log('json: ', json)
-
+                selectionEdgeCoords = result.wkt;
+                return result.wkt
+            })
+            .fail(function (bug) {
+                console.warn('3 got a bug: ', bug)
             })
     }
 }
