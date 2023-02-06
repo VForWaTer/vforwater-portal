@@ -106,16 +106,19 @@ def test_geoserver_env(store: str, workspace: str):
         url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/json"}
     )
     content = json.loads(check.content)
+    contlist = content['dataStore']['connectionParameters']['entry']
+    contdict = {}
+    for item in contlist:
+        contdict[item['@key']] = item['$']
     if (
         DATABASES["default"]["NAME"]
-        != content["dataStore"]["connectionParameters"]["entry"][0]["$"]
+        != contdict['database']
     ):
         print(
             "\033[91m +++ Geoserver layer: "
-            "Wrong database in use. Rename your store and workspace in views! +++\033[0m"
+            "Wrong database in use. Rename your store and workspace in views! {} != {}, +++\033[0m".format(DATABASES["default"]["NAME"] , contdict['database'])
         )
         __build_store()
-
 
 def create_layer(
     request,
