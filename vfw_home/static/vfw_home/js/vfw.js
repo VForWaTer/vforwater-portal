@@ -526,6 +526,9 @@ function drawOnMapMenu(test) {
                 stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
             }))
             olmap.addLayer(selectionLayer)
+            console.log('13')
+            get_quick_selection({'draw': getEdgeCoords()});
+            // listener = selectStartFun(event)
         })
 
     }, this);
@@ -533,8 +536,10 @@ function drawOnMapMenu(test) {
 
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
-
-        get_quick_selection({'draw': getEdgeCoords()});
+        // olmap.getLayers().getArray().filter(layer => layer.get('name') === 'delineation_layer')
+        //     .forEach(layer => olmap.removeLayer(layer));
+        console.log('16')
+        console.log('17')
         removeInteractions();
         toggle_draw(document.getElementById("draw_catchment"))
 
@@ -1034,7 +1039,8 @@ function get_quick_selection(selection) {
 
 
 /**
- * Get a river catchment / watershed according to the given coords
+ * Get a river catchment / watershed according to the given coords.
+ * This might take a while, so tell depending functions to wait!
  */
 function get_catchment(coords) {
     let url = getFilterURL({'catchout': coords})
