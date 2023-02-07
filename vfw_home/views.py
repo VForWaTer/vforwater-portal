@@ -84,7 +84,7 @@ class HomeView(TemplateView):
     # Before you make migrations
     # QuickFilter.items(requests)
     # data_layer = 'metacatalogdev'  # 'default_layer_prod'
-    data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
+    # data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
     data_layer = 'devel'
     # data_layer = 'play'
 
