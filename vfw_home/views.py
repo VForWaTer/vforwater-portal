@@ -84,7 +84,7 @@ class HomeView(TemplateView):
     # Before you make migrations
     # QuickFilter.items(requests)
     # data_layer = 'metacatalogdev'  # 'default_layer_prod'
-    data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
+    # data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
     data_layer = 'devel'
     # data_layer = 'play'
 
@@ -92,8 +92,8 @@ class HomeView(TemplateView):
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
     # IMPORTANT! Don't use "-" in geoserver names!!!
-    store = 'playnew'  # 'new_vforwater_gis'
-    workspace = 'playnew'  # 'CAOS_update'
+    store = 'metacatalogdev'  # 'new_vforwater_gis'
+    workspace = 'metacatalogdev'  # 'CAOS_update'
     # store = 'play'  # 'new_vforwater_gis'
     # workspace = 'play'  # 'CAOS_update'
     unlocked_embargo = []
