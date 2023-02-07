@@ -107,13 +107,13 @@ def test_geoserver_env(store: str, workspace: str):
     )
     content = json.loads(check.content)
     contlist = content['dataStore']['connectionParameters']['entry']
+
     contdict = {}
     for item in contlist:
         contdict[item['@key']] = item['$']
-    if (
-        DATABASES["default"]["NAME"]
-        != contdict['database']
-    ):
+    if DATABASES["default"]["NAME"] != contdict['database'] and \
+        DATABASES["default"]["NAME"].replace("-", "") != contdict['database'].replace("-", "") and \
+        DATABASES["default"]["NAME"].replace("_", "") != contdict['database'].replace("_", ""):
         print(
             "\033[91m +++ Geoserver layer: "
             "Wrong database in use. Rename your store and workspace in views! {} != {}, +++\033[0m".format(DATABASES["default"]["NAME"] , contdict['database'])
