@@ -116,8 +116,6 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
         print('e in river: ', e)
         return {'error': 'There is a problem with your river layer.'}
 
-    small_uparea = river_comid.values()[0]['uparea']  # might be used to check which resolution is used
-
     recursive_query_string = 'WITH RECURSIVE riv_tree (comid, nextdownid, level) AS (' \
                              'SELECT comid, nextdownid, 1 AS level ' \
                              'FROM riv_pfaf_merit_hydro_v07_basins_v01 ' \
@@ -133,6 +131,9 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
     comID_array = useSQLQuery(recursive_query_string)
 
     selectstring = ""
+    uparea = river_comid.values()[0]['uparea']  # might be used to check which resolution is used
+    simplification = -0.093 + 0.019 * np.log(int(uparea)) # 0.000232 * (int(uparea)**0.606)
+    # print('simplification: ', simplification)
     simplification = 0.1  # 0.01
     singleselectstring = f"SELECT ST_AsText(ST_Simplify(geom, {simplification}), 6) AS catchment " \
                          f"FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid}"
