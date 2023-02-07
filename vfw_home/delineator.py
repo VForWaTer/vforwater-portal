@@ -59,12 +59,6 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
 
         return row
 
-    gages_df = pd.DataFrame(data=coords)
-    if HIGH_RES:
-        gages_df['lat_snap'] = np.nan
-        gages_df['lng_snap'] = np.nan
-        gages_df['snap_dist'] = 0
-
     crs = 'EPSG:4326'
     coordinates = Point(float(coords['lng'][0]), float(coords['lat'][0]), crs)
     # coordinates = Point(10.042166, 48.311781, 'EPSG:4326')
@@ -80,7 +74,6 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
             level2_basin = merit_hydro_vect_level2.objects.filter(geom__dwithin=(coordinates, search_dist))
         except Exception as e:
             print('e: ', e)
-
 
         # if there is still no result, the return a warning
         if not level2_basin:
@@ -132,9 +125,9 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
 
     selectstring = ""
     uparea = river_comid.values()[0]['uparea']  # might be used to check which resolution is used
-    simplification = -0.093 + 0.019 * np.log(int(uparea)) # 0.000232 * (int(uparea)**0.606)
+    # simplification = -0.093 + 0.019 * np.log(int(uparea)) # 0.000232 * (int(uparea)**0.606)
     # print('simplification: ', simplification)
-    simplification = 0.1  # 0.01
+    simplification = 0.0001  # 0.01
     singleselectstring = f"SELECT ST_AsText(ST_Simplify(geom, {simplification}), 6) AS catchment " \
                          f"FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid}"
     simplification = 0.01  # 0.01
@@ -150,7 +143,6 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
         wkbquerystring = "{};".format(singleselectstring)
 
     row = useSQLQuery(wkbquerystring)
-
 
     # TODO: if layer creation in GeoServer, then think about moving store/workspace to settings.py
     # layer_name = f'catchment{terminal_comid}'  # only used for a geoserver layer

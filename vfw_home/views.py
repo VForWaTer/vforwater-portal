@@ -92,8 +92,8 @@ class HomeView(TemplateView):
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
     # IMPORTANT! Don't use "-" in geoserver names!!!
-    store = 'playnew'  # 'new_vforwater_gis'
-    workspace = 'playnew'  # 'CAOS_update'
+    store = 'metacatalogdev'  # 'marcus'  # 'new_vforwater_gis'
+    workspace = 'metacatalogdev'  # 'marcus'  # 'CAOS_update'
     # store = 'play'  # 'new_vforwater_gis'
     # workspace = 'play'  # 'CAOS_update'
     unlocked_embargo = []
@@ -942,6 +942,9 @@ class Delineator(View):
             return {'Error': 'Error in Coordinates.'}
 
         catchment = delineate(coords)
+
+        if 'error' in catchment:
+            print('Problems in delineation tool: ', catchment['error'])
 
         return JsonResponse(catchment)
 
