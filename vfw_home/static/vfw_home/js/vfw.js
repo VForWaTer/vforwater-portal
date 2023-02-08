@@ -517,8 +517,8 @@ function drawOnMapMenu(test) {
             });
             let polygon = catch_feature.getGeometry();
             selectionEdgeCoords = polygon;
-            get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
-
+            // TODO: make sure you got 'selectionEdgeCoords' before 'getEdgeCoords()' in 'drawend' runs. => create custom event?
+            // get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
             selectionLayerSource.clear();
             selectionLayerSource = new ol.source.Vector({features: [catch_feature],});
             selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
