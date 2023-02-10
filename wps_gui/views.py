@@ -55,8 +55,8 @@ def home(request):
     try:
         wps_services = list(WebProcessingService.objects.values_list("name", flat=True))
         wps_services_url = list(WebProcessingService.objects.values_list('endpoint', flat=True))
-        service = wps_services[4] #[0] PyWPS_vforwater # [1] PyWPS_Elnaz_Local_Server #[2] pygeoapi # [3] pygeoapi_vforwater_Elnaz [4] pygeoapi_vforwater
-        endpoint = wps_services_url[4]
+        service = wps_services[0] #[0] pygeoapi_vforwater
+        endpoint = wps_services_url[0]
     except Exception as e:
         print("Exception in wps_gui.views.home: ", e)
 
