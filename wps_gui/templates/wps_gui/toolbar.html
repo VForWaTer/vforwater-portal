@@ -19,58 +19,79 @@
 {#let DEMO_VAR = "{{ DEMO_VAR }}"#}
 {#</script>#}
 <body>
+  {{ processes|json_script:"processes-data" }}
+
 <script>
-{#  {% autoescape off %}#}
-{#    var tools =  {{ tools }}#}
-{#  {% endautoescape %}#}
-  {#sessionStorage.setItem("tools",  JSON.stringify({'{{ service }}': tools}))#}
-{#  sessionStorage.setItem("tools",  JSON.stringify(tools))#}
+  const processes = JSON.parse(document.getElementById('processes-data').textContent);
 
   /**
    * Build Type indicators for buttons in Toolbox
    * Don't draw a marker, this is done with css. Set only respective class here.
    * @param id
-   * @param invalues
-   * @param outvalues
    */
-  function inoutIndicator(id, invalues, outvalues) {
+  function inoutIndicator(id) {
+    let invalues = JSON.parse(processes[id].inputs);
+    let outvalues = JSON.parse(processes[id].outputs);
     let element = document.getElementById(id);
-    //console.log('- invalues: ', invalues)
-    invalues.forEach(function (val) {
-      if (val.includes('pattern')) {
-        element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
-          'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
-      } else if (Array.isArray(val) && val.length > 1) {
-        let newHeader = "";
-        val.forEach(function (inVal) {
-          newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-            'class="' + inVal + ' "title="Input: ' + val + '"></span>';
-        });
-        element.getElementsByTagName("button-header")[0].innerHTML +=
-          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
-      } else {
-        element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val + '" ' +
-          'style="display: inline-block;" title="Input: ' + val + '"></span>';
+    let headerHTML = '';
+    let footerHTML = '';
+
+    {#if (invalues.includes('pattern')) {#}
+    {#  console.log("invalues['pattern']: ", invalues['pattern'])#}
+    // TODO: Need functionality to add several dots when multiple types for one input are given (see old version)
+    for (const [key, value] of Object.entries(invalues)) {
+      headerHTML += '<span class="' + value.schema.type + '" ' +
+          'style="display: inline-block;" title="Input: ' + value.schema.type + '"></span>';
+    }
+    element.getElementsByTagName("button-header")[0].innerHTML += headerHTML;
+
+   // invalues.forEach(function (val) {
+   //   console.log('in val: ', val)
+   //   if (val.includes('pattern')) {
+   //     element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
+   //       'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
+   //   } else if (Array.isArray(val) && val.length > 1) {
+   //     let newHeader = "";
+   //     val.forEach(function (inVal) {
+   //       newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +
+   //         'class="' + inVal + ' "title="Input: ' + val + '"></span>';
+   //     });
+   //     element.getElementsByTagName("button-header")[0].innerHTML +=
+   //       '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
+   //   } else {
+   //     element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val + '" ' +
+   //       'style="display: inline-block;" title="Input: ' + val + '"></span>';
+   //   }
+   //});
+    for (const [key, value] of Object.entries(outvalues)) {
+      let val = value.schema.type;
+      if (value.schema.type === "object" && value.schema.contentMediaType === "application/json") {
+        val = "json"
       }
-    });
-    //console.log('outvalues: ', outvalues)
-    outvalues.forEach(function (val) {
-      if (Array.isArray(val) && val.length > 1) {
-        let newFooter = "";
-        val.forEach(function (outVal) {
-          newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-            'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
-        });
-        element.getElementsByTagName("button-footer")[0].innerHTML +=
-          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
-      } else {
-        element.getElementsByTagName("button-footer")[0].innerHTML +=
-          '<span style="align-self: flex-end;" <span class="' + val + '" ' +
-          'title="Ouput: ' + val + '"></span></div>';
-        {% comment %} display: inline-block for dots on the right side{% endcomment %}
-      }
-    })
+      footerHTML += '<span style="align-self: flex-end;" <span class="' + val + '" ' +
+        'title="Ouput: ' + val + '"></span></div>';
+
+    }
+    element.getElementsByTagName("button-footer")[0].innerHTML += footerHTML;
+
+   // outvalues.forEach(function (val) {
+   //   if (Array.isArray(val) && val.length > 1) {
+   //     let newFooter = "";
+   //     val.forEach(function (outVal) {
+   //       newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
+   //         'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
+   //     });
+   //     element.getElementsByTagName("button-footer")[0].innerHTML +=
+   //       '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
+   //   } else {
+   //     element.getElementsByTagName("button-footer")[0].innerHTML +=
+   //       '<span style="align-self: flex-end;" <span class="' + val + '" ' +
+   //       'title="Ouput: ' + val + '"></span></div>';
+   //     {% comment %} display: inline-block for dots on the right side{% endcomment %}
+   //   }
+   // });
   }
+
 </script>
 <!--   Sidenav/menu -->
 <!--   Show Data selected in Home in Data Store and start database loader -->
@@ -106,17 +127,17 @@
     {% endif %}
     <table style="width:100%">
       <div class="list-group">
-        {% for identifier, process in sessiondata.items %}
+        {% for identifier, process in processes.items %}
           {% if identifier != "dbloader" %}
           <tr>
             <div id="{{ identifier }}" class="process w3-card-2"
                  onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');"
-                 title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
+                 title="{{ process.description }}" draggable="true" ondragstart="dragstart_handler(event)"
                  data-service="{{ service }}" data-process="{{ identifier }}"
                  style="cursor:pointer;">
               <button-header class="w3-container" style="font-size: smaller">
               </button-header>
-              <div value="{{ process.processin }}"
+              <div value="{{ process.inputs }}"
                       {#                             href="{% url "wps_gui_app:process" service=service identifier=process.identifier %}"#}
                    class=" w3-container"
 
@@ -128,7 +149,8 @@
               <button-footer class="w3-container" style="font-size: smaller">
                 {#                                    <p>No output envisaged</p>#}
               </button-footer>
-              <style onload="inoutIndicator('{{ identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
+              <style onload="inoutIndicator('{{ identifier }}'),
+                vfw.workspace.workflow.draw_workflow()"></style>
 
             </div>
           </tr>
@@ -136,7 +158,6 @@
         {% endfor %}
       </div>
     </table>
-    {#    </div>#}
   </div>
   <div class="w3-container">
     <p></p>
@@ -147,7 +168,9 @@
 <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
 
-<script>
+
+{% comment %}<script>
+  console.log('im script')
   $.ajax({
     url: vfw.var.DEMO_VAR + "/workspace/updatetools",
     data: {
@@ -155,11 +178,15 @@
     },
   })
     .done(function(result){
+      console.log('first script result ', result)
       if (result['wps'].length > 0) {
         console.log('Got a database update. Please refresh page for new data for tool ', result)
       }
     })
-</script>
+  .fail(function(error) {
+    console.log('first script got error: ', error)
+  })
+</script>{% endcomment %}
 </body>
 
 

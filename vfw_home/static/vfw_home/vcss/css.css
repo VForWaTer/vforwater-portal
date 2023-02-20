@@ -182,7 +182,7 @@ button-footer {
     /*  !*display: inline-block;*!*/
     /*}*/
 .string, .array, .list, .integer, .positiveInteger, .dateTime,
-.boolean, .float, .html, .plot, .figure, .image {
+.boolean, .float, .html, .plot, .figure, .image, .json {
     margin: 5px;
     height: 12px;
     width: 12px;
@@ -283,6 +283,8 @@ button-footer {
 .image{background-color: rgb(50, 80, 51); fill: rgb(58, 113, 61)
 }
 
+.json{background-color: rgb(182, 164, 90); fill: rgb(182, 164, 90);
+    border: 1px solid rgb(238, 235, 59); stroke: rgb(238, 235, 59)}
 .string{background-color: rgb(255,255,191); fill: rgb(255,255,191);
     border: 1px solid #ffbf26; stroke: #ffbf26;}
 .boolean{background-color: rgb(50, 74, 147); fill: rgb(50, 74, 147);

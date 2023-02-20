@@ -50,8 +50,8 @@ basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number']
 # from heron_wps.forms import InputForm
 
 def home(request):
-    jsondata = {}
     ogcapi_proc = {}
+
     try:
         wps_services = list(WebProcessingService.objects.values_list("name", flat=True))
         wps_services_url = list(WebProcessingService.objects.values_list('endpoint', flat=True))
@@ -60,12 +60,21 @@ def home(request):
     except Exception as e:
         print("Exception in wps_gui.views.home: ", e)
 
-    if service == 'pygeoapi_vforwater':
+    if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
         try:
             apiproc = Processes(endpoint)
             for process in apiproc.processes()['processes']:
-                if process['id'] not in jsondata.keys():
-                    ogcapi_proc[process['id']] = process
+                ogcapi_proc[process['id']] = {}
+                ogcapi_proc[process['id']] = {
+                    "version": apiproc.process(process['id'])['version'],
+                    "id": apiproc.process(process['id'])['id'],
+                    "title": apiproc.process(process['id'])['title'],
+                    "description": apiproc.process(process['id'])['description'],  # process.abstract,
+                    "keywords": apiproc.process(process['id'])['keywords'],
+                    "inputs": apiproc.process(process['id'])['inputs'],
+                    "inputs": json.dumps(apiproc.process(process['id'])['inputs']),
+                    "outputs": json.dumps(apiproc.process(process['id'])['outputs']),
+                }
 
         except Exception as e:
             logger.error(sys.exc_info()[0])
@@ -73,6 +82,7 @@ def home(request):
             wps_services = []
             print('in except: ', e)
 
+        # Remove process that should not be visible for users
         if "dbloader" in ogcapi_proc:
             del ogcapi_proc["dbloader"]
         if "datareader" in ogcapi_proc:
@@ -82,7 +92,7 @@ def home(request):
 
         context = {
             "wps_services": wps_services,
-            "sessiondata": ogcapi_proc,
+            "processes": ogcapi_proc,
             "service": service,
         }
 
