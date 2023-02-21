@@ -22,7 +22,7 @@
   {{ processes|json_script:"processes-data" }}
 
 <script>
-  const processes = JSON.parse(document.getElementById('processes-data').textContent);
+  vfw.var.processes = JSON.parse(document.getElementById('processes-data').textContent);
 
   /**
    * Build Type indicators for buttons in Toolbox
@@ -30,8 +30,8 @@
    * @param id
    */
   function inoutIndicator(id) {
-    let invalues = JSON.parse(processes[id].inputs);
-    let outvalues = JSON.parse(processes[id].outputs);
+    let invalues = JSON.parse(vfw.var.processes[id].inputs);
+    let outvalues = JSON.parse(vfw.var.processes[id].outputs);
     let element = document.getElementById(id);
     let headerHTML = '';
     let footerHTML = '';
@@ -40,8 +40,8 @@
     {#  console.log("invalues['pattern']: ", invalues['pattern'])#}
     // TODO: Need functionality to add several dots when multiple types for one input are given (see old version)
     for (const [key, value] of Object.entries(invalues)) {
-      headerHTML += '<span class="' + value.schema.type + '" ' +
-          'style="display: inline-block;" title="Input: ' + value.schema.type + '"></span>';
+      headerHTML += '<span class="' + value + '" ' +
+          'style="display: inline-block;" title="Input: ' + value + '"></span>';
     }
     element.getElementsByTagName("button-header")[0].innerHTML += headerHTML;
 
@@ -64,8 +64,8 @@
    //   }
    //});
     for (const [key, value] of Object.entries(outvalues)) {
-      let val = value.schema.type;
-      if (value.schema.type === "object" && value.schema.contentMediaType === "application/json") {
+      let val = value.type;
+      if (value.type === "object" && value.contentMediaType === "application/json") {
         val = "json"
       }
       footerHTML += '<span style="align-self: flex-end;" <span class="' + val + '" ' +
@@ -149,8 +149,7 @@
               <button-footer class="w3-container" style="font-size: smaller">
                 {#                                    <p>No output envisaged</p>#}
               </button-footer>
-              <style onload="inoutIndicator('{{ identifier }}'),
-                vfw.workspace.workflow.draw_workflow()"></style>
+              <style onload="inoutIndicator('{{ identifier }}')"></style>
 
             </div>
           </tr>

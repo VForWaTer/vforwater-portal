@@ -43,7 +43,8 @@ const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
  * @param {string} identifier - identifier of a wps process
  * @param {string, list} inputs - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
  **/
-vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs) {
+vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs = null) {
+    console.log('A')
     let modal_values = vfw.session.get_workflow();
     let json = vfw.session.get_wpsprocess(service, identifier);
     vfw.workspace.modal.build_modal(json, service)

@@ -1,3 +1,4 @@
+import json
 from urllib.error import HTTPError, URLError
 
 from owslib.wps import WebProcessingService
@@ -204,3 +205,64 @@ def find_wps_service_engines():
     except:
         wps_log.debug('--- Exception in utilities.py, find_wps_service_engines. (Maybe no WPS_Service at port 8094.) ---')
         print('--- No WPS_Service at port 8094. ---')
+
+
+def get_endpoint_data(devel = False):
+
+    try:
+        wps_services = list(WpsModel.objects.values_list("name", flat=True))
+        wps_services_url = list(WpsModel.objects.values_list('endpoint', flat=True))
+        # print('wps_ services & wps_services_url: ', wps_services, wps_services_url)
+        service = wps_services[0]  # [0] pygeoapi_vforwater
+
+        if not devel:
+            endpoint = wps_services_url[0]  # server = http://geoapi:8895/geoapi/
+        else:
+            endpoint = 'http://localhost:8895/geoapi/'
+    except Exception as e:
+        print("Exception in wps_gui.views.home: ", e)
+    return service, endpoint, wps_services
+
+
+def get_process_basics(apiprocess):
+    """
+    Get a JSON description from a GeoApi process and return basic infos as needed for the toolbox buttons.
+    Button data is loaded all at once, so only load needed info, not everything to reduce upload time of workspace and
+    improve performance.
+
+    :param apiprocess: complete json of GeoApi
+    """
+    inputs = {}
+    outputs = {}
+    for k, v in apiprocess['inputs'].items():
+        inputs[k] = v['schema']['type']
+
+    for k, v in apiprocess['outputs'].items():
+        outputs[k] = v['schema']
+
+    return {
+        "id": apiprocess['id'],
+        "title": apiprocess['title'],
+        "description": apiprocess['description'][0:100],  # process.abstract,
+        "keywords": apiprocess['keywords'],
+        "inputs": json.dumps(inputs),
+        "outputs": json.dumps(outputs),
+    }
+
+
+def get_process_info(apiprocess):
+    """
+    Get a JSON description from a GeoApi process and return complete infos as needed for the toolbox.
+
+    :param apiprocess: complete json of GeoApi
+    """
+    return {
+        "version": apiprocess['version'],
+        "id": apiprocess['id'],
+        "title": apiprocess['title'],
+        "description": apiprocess['description'],  # process.abstract,
+        "keywords": apiprocess['keywords'],
+        "outputs": apiprocess['outputs'],
+        "inputs": apiprocess['inputs'],
+        "example": apiprocess['example'],
+    }

@@ -27,9 +27,9 @@ from wps_gui.models import WpsResults, WebProcessingService, WpsDescription
 from wps_gui.utilities import (
     get_wps_service_engine,
     list_wps_service_engines,
-    abstract_is_link,
+    abstract_is_link, get_endpoint_data, get_process_basics, get_process_info,
 )
-from owslib.ogcapi.processes import Processes
+from owslib.ogcapi.processes import Processes as getProcesses
 
 import logging
 
@@ -41,7 +41,7 @@ datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
              'ts-aggregate', 'ts-pickle', 'ts-merge', 'aggregate',
              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle'
              ]
-basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number']
+basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number', 'json']
 
 
 # datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
@@ -52,29 +52,14 @@ basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number']
 def home(request):
     ogcapi_proc = {}
 
-    try:
-        wps_services = list(WebProcessingService.objects.values_list("name", flat=True))
-        wps_services_url = list(WebProcessingService.objects.values_list('endpoint', flat=True))
-        service = wps_services[0] #[0] pygeoapi_vforwater
-        endpoint = wps_services_url[0]
-    except Exception as e:
-        print("Exception in wps_gui.views.home: ", e)
+    service, endpoint, wps_services = get_endpoint_data(False)
 
     if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
         try:
-            apiproc = Processes(endpoint)
+            apiproc = getProcesses(endpoint)
             for process in apiproc.processes()['processes']:
                 ogcapi_proc[process['id']] = {}
-                ogcapi_proc[process['id']] = {
-                    "version": apiproc.process(process['id'])['version'],
-                    "id": apiproc.process(process['id'])['id'],
-                    "title": apiproc.process(process['id'])['title'],
-                    "description": apiproc.process(process['id'])['description'],  # process.abstract,
-                    "keywords": apiproc.process(process['id'])['keywords'],
-                    "inputs": apiproc.process(process['id'])['inputs'],
-                    "inputs": json.dumps(apiproc.process(process['id'])['inputs']),
-                    "outputs": json.dumps(apiproc.process(process['id'])['outputs']),
-                }
+                ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
 
         except Exception as e:
             logger.error(sys.exc_info()[0])
@@ -283,12 +268,17 @@ class ProcessView(TemplateView):
     def get(self, request):
         selected_process = json.loads(request.GET.get("processview"))
 
-        wps = get_wps_service_engine(selected_process["serv"])
-        wps_process = wps.describeprocess(selected_process["id"])
+        if selected_process['serv'] == 'pygeoapi_vforwater':
+            service, endpoint, wps_services = get_endpoint_data(False)
+            apiproc = getProcesses(endpoint)
+            process_description = get_process_info(apiproc.process(selected_process['id']))
+        else:
+            wps = get_wps_service_engine(selected_process["serv"])
+            wps_process = wps.describeprocess(selected_process["id"])
 
-        wps_description = process_to_json(wps_process)
+            process_description = process_to_json(wps_process)
 
-        return JsonResponse(wps_description)
+        return JsonResponse(process_description)
 
 
 def process_to_json(wps_process):
