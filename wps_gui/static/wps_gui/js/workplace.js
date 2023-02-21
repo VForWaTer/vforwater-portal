@@ -1002,6 +1002,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
             inElement = document.createElement("INPUT");
             inElement.id = item.title;  // item.id;
             inElement.name = item.title;  // item.identifier;
+            inElement.title = item.description;  // item.identifier;
             inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
 
             // if (item.required === true) inElement.required = true;
