@@ -261,8 +261,18 @@ def get_process_info(apiprocess):
         "id": apiprocess['id'],
         "title": apiprocess['title'],
         "description": apiprocess['description'],  # process.abstract,
-        "keywords": apiprocess['keywords'],
+        "keywords": apiprocess['keywords'],  # ATTENTION! old wps hack used keywords to get info about accepted data in workplace.js - vfw.workspace.modal.build_modal()
         "outputs": apiprocess['outputs'],
-        "inputs": apiprocess['inputs'],
+        "inputs": add_required(apiprocess['inputs']),
         "example": apiprocess['example'],
     }
+
+
+def add_required(inputs):
+    for k, v in inputs.items():
+        if v['minOccurs'] > 0 and v['schema']['type'] != 'boolean' and v['schema']['type'] != 'bool':
+            inputs[k]['required'] = True
+        else:
+            inputs[k]['required'] = False
+
+    return inputs

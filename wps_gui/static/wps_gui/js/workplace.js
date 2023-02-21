@@ -763,15 +763,15 @@ vfw.session.remove_all_results = function () {
  */
 vfw.workspace.modal.build_regexText = function (item, newNode) {
     inElement = document.createElement("INPUT");
-    inElement.id = item.identifier;
-    inElement.name = item.identifier;
+    inElement.id = item.title;  // item.identifier;
+    inElement.name = item.title;  // item.identifier;
     inElement.setAttribute("pattern", item.keywords[1]);
     inElement.type = "text";
     if ('defaultValue' in item) {
         inElement.value = item.defaultValue;
     }
-    if ('abstract' in item) {
-        inElement.title = item.abstract;
+    if ('description' in item) {
+        inElement.title = item.description;
     }
     newNode.appendChild(inElement);
 }
@@ -788,10 +788,10 @@ vfw.workspace.modal.build_radio = function (item, newNode, option) {
     inElement.type = "radio";
     // inElement.setAttribute("type", "radio");
     inElement.value = option;
-    inElement.id = item.identifier;
+    inElement.id = item.title;  // item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
 
-    inElement.name = item.identifier;
+    inElement.name = item.title;  // item.identifier;
     if ('defaultValue' in item) {
         if (item.defaultValue == option) inElement.checked = true;
     }
@@ -933,10 +933,10 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     console.log('workflowData: ', workflowData)
     element.innerHTML = wpsInfo.title;
     element.dataset.service = service;
-    element.dataset.process = wpsInfo.identifier;
+    element.dataset.process = wpsInfo.id;
     element = document.getElementById("mod_abs");
-    if (wpsInfo.abstract) {
-        newElement = wpsInfo.abstract;
+    if (wpsInfo.description) {
+        newElement = wpsInfo.description;
         // } else {
         //     newElement = ""
     }
@@ -950,7 +950,8 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     let outElementIdList = [];
     let countDropDowns = 0;
 
-    wpsInfo.dataInputs.forEach(function (item, index) {
+    // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
+    Object.values(wpsInfo.inputs).forEach(function (item, index) {
         newNode = document.createElement("p");
 
         /** Set title of Input and set the 'required' flag if necessary **/
@@ -993,19 +994,19 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
             }
         } else if ('keywords' in item && item.keywords.includes('pattern')) {
             vfw.workspace.modal.build_regexText(item, newNode)
-        } else if ('keywords' in item) {
-            countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
+        // } else if ('keywords' in item) {  // don't use this for geoapi;
+        //     countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
 
             /** Set input element according to dataType */
         } else {
             inElement = document.createElement("INPUT");
-            inElement.id = item.identifier;
-            inElement.name = item.identifier;
-            inElement.setAttribute("list", item.identifier + '_list');
+            inElement.id = item.title;  // item.id;
+            inElement.name = item.title;  // item.identifier;
+            inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
 
             // if (item.required === true) inElement.required = true;
             // if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
-            switch (item.dataType) {
+            switch (item.schema.type) {  // (item.dataType) {
                 case 'string':
                     inElement.type = "text";
                     //inElement.className = "input"
@@ -1052,7 +1053,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
                     if ('defaultValue' in item) inElement.value = item.defaultValue;
                     break;
                 default:
-                    console.error(' new dataType: ', item.dataType)
+                    console.error(' new dataType: ', item.schema)  // item.dataType)
             }
             // TODO: is this here the third time I set required = True? Test if necessary
             if (item.minOccurs > 0) {
@@ -1098,7 +1099,7 @@ vfw.workspace.modal.set_textfield_opt = function (item, resultData, sessionStore
     let inDatalist = "";
     let type = item.dataType;
     inDatalist = document.createElement("DATALIST");
-    inDatalist.setAttribute("id", item.identifier + '_list');
+    inDatalist.setAttribute("id", item.title + '_list');  // item.identifier + '_list');
     let optElement = "";
     Object.entries(resultData).forEach((dataset) => {
         if (dataset[1].type === type) {
