@@ -19,7 +19,7 @@ from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import timezone
 
-from heron.settings import VFW_SERVER, HOST_NAME
+from heron.settings import VFW_SERVER, HOST_NAME, DEBUG
 from vfw_home.models import Entries, Datatypes
 from vfw_home.utilities import entry_has_data
 from vfw_home.views import get_accessible_data, get_dataset
@@ -52,7 +52,7 @@ basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number', 'json']
 def home(request):
     ogcapi_proc = {}
 
-    service, endpoint, wps_services = get_endpoint_data(False)
+    service, endpoint, wps_services = get_endpoint_data(DEBUG)
 
     if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
         try:
@@ -269,7 +269,7 @@ class ProcessView(TemplateView):
         selected_process = json.loads(request.GET.get("processview"))
 
         if selected_process['serv'] == 'pygeoapi_vforwater':
-            service, endpoint, wps_services = get_endpoint_data(False)
+            service, endpoint, wps_services = get_endpoint_data(DEBUG)
             apiproc = getProcesses(endpoint)
             process_description = get_process_info(apiproc.process(selected_process['id']))
         else:
