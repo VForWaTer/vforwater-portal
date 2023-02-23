@@ -1038,6 +1038,13 @@ function get_quick_selection(selection) {
 }
 
 
+// TODO: Usually coordinates are shared in the URL. This is not possible with catchments when they have to many Nodes.
+//  How to handle this?
+//  1) Don't care about it (actual implementation)
+//  2) Restrict users from moving nodes => clickpoint is enough to share
+//  3) Save click point and diffs (node index, x, y)
+//  4) enable user to store/share/upload geojson of catchment
+//  5) store changes in database and use/share ids
 /**
  * Get a river catchment / watershed according to the given coords.
  * This might take a while, so tell depending functions to wait!
