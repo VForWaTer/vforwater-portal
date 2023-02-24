@@ -98,7 +98,6 @@ folder vfw_home  {
   ]
   file legals.html
   file entrieslist.html
-  file result_modal.html
   file 404.html
   file autocomplete_widget.html
   file failedlogin.html
@@ -113,17 +112,16 @@ select_data.html --> quick_filter.html : include
 select_data.html --> advanced_filter.html : include
 base.html ==> home.html : extends
 base.html --> sidemenu.html : include
-home.html --> info_modal.html : include
 home.html --> map.html : include
+home.html --> info_modal.html : include
 home.html --> map_modal.html : include
 home.html --> entrieslist.html : include
 base.html ==> privacypolicy.html : extends
 help.html ==> legals.html : extends
 help.html --> static_sidebar.html : include
 base_sidebar.html --> select_data.html : include
-base_sidebar.html --> result_modal.html : include
 static_sidebar.html --> logo.html : include
-map_modal.html --> mapmodal_entrieslist.html : include
+mapmodal_entrieslist.html --> map_modal.html : include
 
 views.py ..> 404.html : render
 'views.py ..> advanced_filter.html : render
@@ -174,7 +172,7 @@ folder wps_gui {
         bokeh 3.0.2
         bokeh-widgets 3.0.2
     ]
-    file select_process.html
+'    file select_process.html
     file service.html
     file wpsguisidebar [
         sidebar.html
@@ -203,16 +201,18 @@ folder wps_gui {
         <color:blue>process.js
     ]
 
-wpsguihome ==> base.html : extends
+base.html ==> wpsguihome : extends
+base.html ==> service.html : extends
+service.html -> wpsguisidebar : include
 wpsguihome -> wpsguisidebar : include
 wpsguihome -> toolbar.html : include
 wpsguihome -> workplace.html : include
 wpsguisidebar -> select_data.html : include
-wpsguisidebar -> result_modal.html : include
-service.html ==> base.html : extends
-service.html -> wpsguisidebar : include
-wpsviews.py ..> process.html : render
+wpsguisidebar -> wpsgui_resultmodal : include
 workplace.html -> wpsguimodal : include
+wpsviews.py ..> process.html : render
+
+base_sidebar.html --> wpsgui_resultmodal : include
 }
 
 folder "author_manage" {
@@ -260,21 +260,21 @@ folder "author_manage" {
     file uploadpersion [
         upload_persons.html
     ]
-addnewresource ==> profile.html : extends
-authorbase ==> base.html : extends
-editperms ==> profile.html : extends
+base.html ==> authorbase : extends
 authhome ==> authorbase : extends
-myresources ==> profile.html : extends
-profile.html ==> authorbase : extends
-resourceoverview ==> authorbase : extends
-uploadpersion ==> addnewresource : extends
+authorbase ==> profile.html : extends
+authorbase ==> resourceoverview : extends
+profile.html ==> editperms : extends
+profile.html ==> myresources : extends
+profile.html ==> addnewresource : extends
+addnewresource ==> uploadpersion : extends
 }
 
 folder process_monitor {
     file monitor_home [
         home.html
     ]
-process_monitor ==> base.html : extends
+base.html ==> process_monitor : extends
 process_monitor -> static_sidebar.html : include
 }
 
