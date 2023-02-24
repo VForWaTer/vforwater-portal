@@ -1,73 +1,24 @@
-# Uses shell executor on portal.vforwater.de
-
 # Pipeline
 stages:
-    - test
-    - deploy
+    - build
+    - push
 
-# Test vforwater-portal
-vforwater-portal-test:
-    stage: test
-    before_script:
-        # For debugging
-        - pwd
-        - export
+# building docker image
+vfwportal-prod-build:
+    stage: build
     script:
-        # TODO Run test script...
-        - echo "Testing..."
-
-# Deploy vforwater-portal (production version)
-vforwater-portal-deploy-prod:
-    stage: deploy
-    script:
-        # Stop web server
-        - sudo systemctl stop vfwportal
-        # Move current installation to "vforwater-portal_old"
-        - sudo -u vfwportal rm -rf /home/vfwportal/vforwater-portal_old
-        #- test ! -d /home/vfwportal/vforwater-portal ||
-        - sudo -u vfwportal mv /home/vfwportal/vforwater-portal
-               /home/vfwportal/vforwater-portal_old
-        # Copy new files and prepared "settings.py"
-        - sudo cp -r ${CI_PROJECT_DIR} /home/vfwportal/vforwater-portal
-        - sudo chown -R vfwportal:vfwportal /home/vfwportal/vforwater-portal
-        - sudo -u vfwportal ln -s /home/vfwportal/vforwater-portal/heron/settings.py-prod
-             /home/vfwportal/vforwater-portal/heron/settings.py
-        # update pip packages
-        - sudo /usr/local/bin/pip3.7 install -r /home/vfwportal/vforwater-portal/requirements.txt
-        # collectstatic
-        - sudo su vfwportal -c 'cd  /home/vfwportal/vforwater-portal; PYTHONPATH=/usr/local/lib/python3.7/site-packages:/home/vfwportal/vforwater-portal LD_LIBRARY_PATH=/usr/local/lib PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vfwportal/.local/bin:/home/vfwportal/bin /usr/local/bin/python3.7 manage.py collectstatic --noinput'
-        # Start django service
-        - sudo systemctl start vfwportal
-    environment:
-        name: production
-        url: https://portal.vforwater.de/vfwheron/
+        # build docker container using buildah
+        - /usr/bin/buildah build-using-dockerfile -f Dockerfile -t vfwportal:$CI_COMMIT_SHA
     only:
         - production
 
-
-# Deploy vforwater-portal (demo version)
-vforwater-portal-deploy-demo:
-    stage: deploy
+# pushing docker image to some registry
+vfwportal-prod-push:
+    stage: push
     script:
-        # Stop web server
-        - sudo systemctl stop vfwportal-demo
-        # Move current installation to "vforwater-portal_old"
-        - sudo -u vfwdemo rm -rf /home/vfwdemo/vforwater-portal_old
-        #- test ! -d /home/vfwdemo/vforwater-portal ||
-        - sudo -u vfwdemo mv /home/vfwdemo/vforwater-portal
-               /home/vfwdemo/vforwater-portal_old
-        # Copy new files and prepared "settings.py"
-        - sudo cp -r ${CI_PROJECT_DIR} /home/vfwdemo/vforwater-portal
-        - sudo chown -R vfwdemo:vfwdemo /home/vfwdemo/vforwater-portal
-        - sudo -u vfwdemo ln -s /home/vfwdemo/vforwater-portal/heron/settings.py-demo /home/vfwdemo/vforwater-portal/heron/settings.py
-        # update pip packages
-        - sudo /usr/local/bin/pip3.7 install -r /home/vfwdemo/vforwater-portal/requirements.txt
-        # collectstatic
-        - sudo su vfwdemo -c 'cd  /home/vfwdemo/vforwater-portal; PYTHONPATH=/usr/local/lib/python3.7/site-packages:/home/vfwportal/vforwater-portal LD_LIBRARY_PATH=/usr/local/lib PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/vfwdemo/.local/bin:/home/vfwdemo/bin /usr/local/bin/python3.7 manage.py collectstatic --noinput'
-        # Start django service
-        - sudo systemctl start vfwportal-demo
-    environment:
-        name: development
-        url: https://portal.vforwater.de/demo/vfwheron/
+        - echo "pushing vfwportal:$CI_COMMIT_SHA"
+        - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/prod/vfwportal:$CI_COMMIT_SHA
+        - echo "pushing vfwportal:latest"
+        - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/prod/vfwportal
     only:
-        - demo
+        - production
