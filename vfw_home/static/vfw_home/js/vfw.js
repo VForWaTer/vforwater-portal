@@ -239,6 +239,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
  */
 function resetDraw() {
     get_quick_selection({'draw': []})
+    get_quick_selection({'catchout': []})
     vfw.var.obj.selectedIds.map = null;
     selectionLayerSource.clear();
     selectedFeatures.clear();
