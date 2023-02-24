@@ -86,15 +86,20 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-        'vfwheron': {
+        'vfw_home': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'watts_rsp': {
+        'mozilla_django_oidc': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        #'watts_rsp': {
+        #    'handlers': ['file'],
+        #    'level': 'DEBUG',
+        #    'propagate': True,
         # },
         # 'wps_gui': {
         #     'handlers': ['file'],
@@ -108,18 +113,19 @@ LOGGING = {
 # Application definition
 
 INSTALLED_APPS = [
-    'vfwheron.apps.VfwheronConfig',
+    'vfw_home.apps.vfw_homeConfig',
     # 'dashboard.apps.DashboardConfig',
     'django.contrib.admin',
     'django.contrib.auth',
+    'mozilla_django_oidc',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'wps_gui',
-    'heron_monitor',
-    'heron_visual',
+    'process_monitor',
+    'visual_app',
     'upload',
     # Three apps for wps_workflow
     # 'wps_workflow.apps.wps_workflowConfig',
@@ -139,6 +145,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'heron.middleware.LanguageCookieMiddleware.LanguageCookieMiddleware',
+    'mozilla_django_oidc.middleware.SessionRefresh',
 ]
 
 ROOT_URLCONF = 'heron.urls'
@@ -169,7 +176,7 @@ WSGI_APPLICATION = 'heron.wsgi.application'
 
 # TODO: Delete Router. Not necessary anymore now when only one database is used
 # DATABASE_ROUTERS = ['heron.router.DatabaseRouter']
-# DATABASE_APPS_MAPPING = {'vfwheron': 'vforwater'}
+# DATABASE_APPS_MAPPING = {'vfw_home': 'vforwater'}
 
 DATABASES = {
     'default': {
@@ -237,11 +244,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = Path(BASE_DIR) / 'media'
 
 # Default URLs for user authentication
-LOGIN_URL = 'vfwheron:login'
-LOGIN_REDIRECT_URL = 'vfwheron:home'
-LOGOUT_REDIRECT_URL = 'vfwheron:home'
-LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfwheron/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfwheron'
+LOGIN_URL = 'vfw_home:login'
+LOGIN_REDIRECT_URL = 'vfw_home:home'
+LOGOUT_REDIRECT_URL = 'vfw_home:home'
+LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfw_home/rsp/login/success'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfw_home'
 
 
 # Figure out if we're on our development server...
@@ -251,20 +258,21 @@ ON_VFW_SERVER = socket.gethostname() == HOST_NAME
 
 # ...if we are, enable Watts.
 if ON_VFW_SERVER:
-    INSTALLED_APPS.append('watts_rsp')
+    #INSTALLED_APPS.append('watts_rsp')
 
     # Authentication configuration
     AUTHENTICATION_BACKENDS = (
-        'watts_rsp.auth.WattsBackend',
+        'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
+        #'watts_rsp.auth.WattsBackend',
         'django.contrib.auth.backends.ModelBackend',
     )
 
     # WaTTS settings
-    WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
-    WATTS_SERVICE_NAME = 'rsp'
-    WATTS_ISSUER_ID = 'vforwater'
-    ##WATTS_PROVIDER_ID = 'iam'
-    WATTS_PROVIDER_ID = 'eudat'
+    #WATTS_RSP_ENDPOINT = 'https://watts-dev.data.kit.edu/rsp/'
+    #WATTS_SERVICE_NAME = 'rsp'
+    #WATTS_ISSUER_ID = 'vforwater'
+    ###WATTS_PROVIDER_ID = 'iam'
+    #WATTS_PROVIDER_ID = 'eudat'
 
 
 # Settings from workflowPSE, here for wps_workflow app
@@ -295,3 +303,14 @@ wps_log.addHandler(filehandler)
 # END OF settings from workflow app
 
 max_size_preview_plot = 50000
+
+OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
+OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
+# example settings for Helmholtz AAI (https://hifis.net/doc/helmholtz-aai/):
+OIDC_OP_AUTHORIZATION_ENDPOINT = "https://login.helmholtz.de/oauth2-as/oauth2-authz"
+OIDC_OP_TOKEN_ENDPOINT = "https://login.helmholtz.de/oauth2/token"
+OIDC_OP_USER_ENDPOINT = "https://login.helmholtz.de/oauth2/userinfo"
+OIDC_RP_SIGN_ALGO = 'RS256'
+OIDC_OP_JWKS_ENDPOINT = "https://login.helmholtz.de/oauth2/jwk"
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+OIDC_RP_SCOPES = 'openid email profile'

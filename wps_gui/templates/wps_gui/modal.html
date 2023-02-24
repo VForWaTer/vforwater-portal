@@ -2,7 +2,7 @@
 {#<html lang="en">#}
 <meta charset="UTF-8">
 
-{#{% extends "vfwheron/base.html" %}#}
+{#{% extends "vfw_home/base.html" %}#}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
@@ -96,24 +96,24 @@
   wspan.onclick = () => closeModal();
   wspan_r.onclick = () => {
     {#modal.style.display = "none";#}
-    if (is_required(modal) && check_pattern(modal)) modal_run_process()
+    if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) vfw.workspace.modal.run_process()
   };
   wspan_drop.onclick = (event) => {
     // TODO: check if modal is opened from an existing box. If yes update sessionStorage and don't drop a new box.
     let modal_value = document.getElementById("workflowID").value;
     let tool_id;
     let service;
-    if (is_required(modal) && check_pattern(modal)) {
+    if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) {
 
       console.log('modal_value: ', modal_value)
       {#console.log('tool_id.length: ', tool_id.length)#}
       /** check if the workspace box exists already in the sessionstorage */
       if (modal_value == "") {
         console.log('E')
-        drop_on_click(event);
+        vfw.workspace.drop_on_click(event);
         closeModal();
       } else {
-        let modal_data = prep_modal_data()
+        let modal_data = vfw.workspace.modal.prep_data()
         console.log('F')
         modal_value = JSON.parse(modal_value)
         tool_id = modal_value['id'];
@@ -125,15 +125,15 @@
         event.state = 'change';
         event.id = tool_id;
         toolbox.state = 'change';
-        {#let box_param = prepare_box_params(ev, tool_id, 'toolbar', service)#}
+        {#let box_param = vfw.draw2d.box_params(ev, tool_id, 'toolbar', service)#}
         console.log('event: ', event)
         console.log('toolbox: ', toolbox)
-        {#let box_param = prepare_box_params(event, tool_id, 'toolbar', service)#}
+        {#let box_param = vfw.draw2d.box_params(event, tool_id, 'toolbar', service)#}
         {#box_param.state = 'change';#}
         {#console.log('box_param: ', box_param)#}
         let metadata, newbox, coords;
         let change_values = {};
-        let workflow = get_sessionStorage_workflow();
+        let workflow = vfw.session.get_workflow();
         let active_tool = workflow[tool_id];
         console.log('modal_data: ', modal_data)
         console.log('active tool: ', active_tool)
@@ -145,9 +145,9 @@
               if (modal_data.inId_list[i] != active_tool.input_ids[i]) {
                 metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modal_data.inId_list[i]]
               console.log('metadata: ', metadata)
-                coords = get_drop_coords();
+                coords = vfw.workspace.get_drop_coords();
                 console.log('A')
-                newbox = drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
+                newbox = vfw.workspace.drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
                 console.log('B')
                 console.log('newbox: ', newbox)
                 change_values = {
@@ -198,7 +198,7 @@
           }
         change_values['state'] = 'change';
           console.log('--- Lets update with: ', change_values)
-          update_workflow(change_values)
+          vfw.workspace.workflow.update(change_values)
         }
         {% comment %}
         try {
@@ -223,7 +223,7 @@
   function closeModal() {
     document.getElementsByClassName("work_modal-output")[0].style.display = "none";
     modal.style.display = "none";
-    set_modalColor("dodgerblue");
+    vfw.workspace.modal.set_Color("dodgerblue");
     document.getElementById("workflowID").value = "";
   }
 

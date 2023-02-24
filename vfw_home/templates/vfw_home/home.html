@@ -1,0 +1,59 @@
+<meta charset="UTF-8">
+<meta name="description" content="Portal to share and use hydrological data">
+<meta name="keywords" content="Hydrologie, Hydrology, GIS, Portal, eScience, VRE, VFU, virtual research environment, Virtuelle Foschungsumgebung">
+<meta name="author" content="Elnaz Azmi, Marcus Strobl">
+
+{% extends "vfw_home/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block sidebar %}
+	{% include 'vfw_home/base_sidebar.html' %}
+{% endblock sidebar %}
+
+{% block content %}
+   <!-- Tab links -->
+<div class="tab">
+  <button class="tablinks" id="defaultMapTab" onclick="toggleMapTableFilter(event, 'Map')">{% trans "Map" %}
+  </button>
+  <button class="tablinks" id="tableTab"
+          onclick="toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Table" %}
+  </button>
+</div>
+
+<!-- Tab content -->
+<div id="Map" class="tabcontent">
+  {% include 'vfw_home/map.html' %}
+</div>
+
+<div id="paginationTable" class="tabcontent">
+  {% include 'vfw_home/entrieslist.html' %}
+</div>
+
+{% include 'vfw_home/map_modal.html' %}
+
+{% include 'vfw_home/info_modal.html' %}
+
+<!-- Login alert -->
+  {% if messages.alert %}
+     <script>alert("Login failed.");</script>
+
+     {% comment %}
+     {# todo: nice message window #}
+     <ul class="messages">
+     {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+     {% endfor %}
+     </ul>
+     {% endcomment %}
+  {% endif %}
+
+
+
+<script>
+// Get the element with id="defaultMapTab" and click on it
+document.getElementById("defaultMapTab").click();
+</script>
+{% endblock %}
+
+

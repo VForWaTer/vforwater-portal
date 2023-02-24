@@ -27,7 +27,7 @@ let start = new draw2d.shape.node.Start({x:80, y:150});
 start.add(new draw2d.shape.basic.Label({text:"Test Label"}), new draw2d.layout.locator.Locator());
 let Button = "Button"
 
-let dataRect = new VfwBox({
+let dataRect = new vfw.draw2d.Rectangle({
     width: 120,
     height: 30,
     radius: 5,

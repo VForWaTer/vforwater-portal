@@ -1,5 +1,5 @@
 import django_filters
-from vfwheron.models import Details, NmPersonsEntries, NmEntrygroups, NmKeywordsEntries
+from vfw_home.models import Details, NmPersonsEntries, NmEntrygroups, NmKeywordsEntries
 
 
 # class for person and person role

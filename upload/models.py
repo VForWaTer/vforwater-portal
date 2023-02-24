@@ -8,3 +8,4 @@ class UploadedFile(models.Model):
 
     class Meta:
         managed = True
+

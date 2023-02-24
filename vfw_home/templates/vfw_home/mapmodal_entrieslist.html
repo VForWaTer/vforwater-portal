@@ -1,0 +1,100 @@
+{#{% load static %}#}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<div class="entries">
+
+  <table>
+    <tbody>
+    <tr>
+      <td>
+        <style>table tr:nth-child(even) {
+          background-color: #c8ebee;
+        }</style>
+
+        <table id="metatable" class="outerPaginationTable table"
+               style="border: white; position: center">
+          <tbody>
+          {% for entry, values in entries_page.items %}
+            <tr>
+              {% for value in values %}
+
+                {% if entry == 'has_access' %}
+                  {% if forloop.first %}
+                    {% comment %}
+                    in the first loop add a empty column for the buttons {% endcomment %}
+                    <td></td>
+                  {% endif %}
+                  <td>
+                    <a><b><input id="show_data_preview{{ value.ssid }}" class="w3-btn-block" type="submit"
+                                 onclick="vfw.html.moreInfoModal('db{{ value.ssid }}')" data-toggle="tooltip"
+                                 value="{% trans "More" %}"
+                                 title="{% trans "Show more information about the dataset." %}">
+                    </b></a>
+                    <a><b><input type="submit"
+                      {% if value.access %}
+                                 class="w3-btn-block w3-btn-block:hover store-button"
+                                 onclick="vfw.sidebar.workspace_dataset('{{ value.ssid }}')"
+                                 value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
+                                 title="{% trans "Put dataset to session datastore." %}"
+                      {% else %}
+                                 class="w3-btn-block w3-btn-block:hover request-button"
+                                 onclick="vfw.map.requestDataset('{{ value.ssid }}')"
+                                 value="{% trans "Send request" %}" data-toggle="tooltip"
+                                 title="{% trans "Send an access request to the data owner." %}"
+                      {% endif %}
+                    ></b></a>
+                  </td>
+                {% else %}
+                  {% if forloop.first %}
+                    {% comment %}
+                    in the first loop add row names {% endcomment %}
+                    <td><b>{{ entry }}</b></td>
+                  {% endif %}
+                  <td>{{ value }}</td>
+                {% endif %}
+
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </table>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <div style="text-align:center;">
+
+    {#Pagination:#}
+    {% if current_page.has_other_pages %}
+      <ul class="pagination">
+        {% if current_page.has_previous %}
+          <a title="{% trans "First" %}" onclick="vfw.map.buildMapModal({{ data_sets }}, 1)">&#9474;&#8882;</a>
+          <a title="{% trans "Previous" %}"
+             onclick="vfw.map.buildMapModal({{ data_sets }}, {{ current_page.previous_page_number }})">&#8882;</a>
+        {% else %}
+          <a class="disabled"><span>&#9474;&#8882;</span></a>
+          <a class="disabled"><span>&#8882;</span></a>
+        {% endif %}
+        {% for i in current_page.paginator.page_range %}
+          {% if current_page.paginator.num_pages < 11 or i > current_page.number|add:"-5" and i < current_page.number|add:"5" %}
+            {% if current_page.number == i %}
+              <a class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></a>
+            {% else %}
+              <a onclick="vfw.map.buildMapModal({{ data_sets }}, {{ i }})">{{ i }}</a>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if current_page.has_next %}
+          <a title="{% trans "Next" %}"
+             onclick="vfw.map.buildMapModal({{ data_sets }}, {{ current_page.next_page_number }})">&#8883;</a>
+          <a title="{% trans "Last" %}"
+             onclick="vfw.map.buildMapModal({{ data_sets }}, {{ current_page.paginator.num_pages }})">&#8883;&#9474;</a>
+        {% else %}
+          <a class="disabled"><span>&#8883;</span></a>
+          <a class="disabled"><span>&#8883;&#9474;</span></a>
+        {% endif %}
+        <a class="disabled"><span>({{ current_page.number }}/{{ current_page.paginator.num_pages }})</span></a>
+      </ul>
+    {% endif %}
+  </div>
+</div>

@@ -1,0 +1,114 @@
+{% load i18n l10n %}
+{# adjusted code example from https://www.w3schools.com #}
+<div id="{{ name }}_div"><p>
+    <div class="autocomplete" style="width:300px;">
+      <input id="{{ name }}" type="text" name="{{ name }}">
+    </div>
+</div>
+
+<script>
+  function autocomplete(inp, arr) {  // input and possible arrguments
+    let currentFocus;
+    inp.addEventListener("input", function (e) {
+      let b, i, val = this.value;
+      closeAllLists();
+      if (!val) {
+        return false;
+      }
+      currentFocus = -1;
+      let a = document.createElement("DIV");
+      a.setAttribute("id", this.id + "autocomplete-list");
+      a.setAttribute("class", "autocomplete-items");
+      this.parentNode.appendChild(a);
+      for (i = 0; i < arr.length; i++) {
+        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+          /*create a DIV element for each matching element:*/
+          b = document.createElement("DIV");
+          b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>" + arr[i].substr(val.length) +
+            "<input type='hidden' value='" + arr[i] + "'>";
+          b.addEventListener("click", function (e) {
+            inp.value = this.getElementsByTagName("input")[0].value;
+            closeAllLists();
+          });
+          a.appendChild(b);
+        }
+      }
+    });
+    /* execute if a key is pressed on keyboard */
+    inp.addEventListener("keydown", function (e) {
+      let x = document.getElementById(this.id + "autocomplete-list");
+      if (x) x = x.getElementsByTagName("div");
+      if (e.keyCode == 40) {  // If the arrow DOWN key is pressed, increase the currentFocus variable
+        currentFocus++;
+        addActive(x);
+      } else if (e.keyCode == 38) {  // up
+        currentFocus--;
+        addActive(x);
+      } else if (e.keyCode == 13) {
+        e.preventDefault();
+        if (currentFocus > -1) {
+          if (x) x[currentFocus].click();  // simulate a click on the active item
+        }
+      }
+    });
+
+    function addActive(x) {
+      if (!x) return false;
+      removeActive(x);
+      if (currentFocus >= x.length) currentFocus = 0;
+      if (currentFocus < 0) currentFocus = (x.length - 1);
+      x[currentFocus].classList.add("autocomplete-active");
+    }
+
+    function removeActive(x) {
+      for (let i = 0; i < x.length; i++) {
+        x[i].classList.remove("autocomplete-active");
+      }
+    }
+
+    function closeAllLists(elment) {
+      let x = document.getElementsByClassName("autocomplete-items");
+      for (let i = 0; i < x.length; i++) {
+        if (elment != x[i] && elment != inp) {
+          x[i].parentNode.removeChild(x[i]);
+        }
+      }
+    }
+
+    /* close list when someone clicks in the document */
+    document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+    });
+  }
+
+  autocomplete(document.getElementById("{{ name }}"), {{ choices|safe }});
+</script>
+
+<style>
+  .autocomplete {
+    /*the container must be positioned relative:*/
+    position: relative;
+    display: inline-block;
+  }
+  .autocomplete-items {
+    position: absolute;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    left: 0;
+    right: 0;
+  }
+  .autocomplete-items div {
+    background-color: #fff;
+    padding: 4px;
+    cursor: pointer;
+  }
+  .autocomplete-items div:hover {
+    background-color: #e9e9e9;
+  }
+  .autocomplete-active {
+    /*when navigating through the items using the arrow keys:*/
+    background-color: DodgerBlue !important;
+    color: #ffffff;
+  }
+
+</style>

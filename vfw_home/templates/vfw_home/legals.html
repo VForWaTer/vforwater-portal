@@ -1,0 +1,108 @@
+<meta charset="UTF-8">
+
+{% extends "vfw_home/base.html" %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block content %}
+
+  <!DOCTYPE html>
+  <html lang="en">
+  {% load i18n %}
+  {% get_current_language as LANGUAGE_CODE %}
+  {% load static %}
+
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+{#TODO: Instead of translations create a page in different languages#}
+  {{ div | safe }}
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2">
+      <h1>{% trans "This page is still under construction." %}</h1>
+      <p>
+      <p>
+        <a href="#Provider">{% trans "Provider" %}</a><br>
+        <a href="#Copyright">{% trans "Copyright" %}</a><br>
+        <a href="#Disclaimer">{% trans "Disclaimer" %}</a><br>
+        <a href="#References_to_External_Websites">{% trans "References to External Webites" %}</a><br>
+        <a href="#Data_Protection_and_IT_Safety">{% trans "Data Protection and IT Safety" %}</a><br><br>
+      </p>
+      <p>&nbsp;</p>
+      <h2><a name="Provider">{% trans "Provider" %}</a></h2>
+      <table border="0" cellspacing="1" cellpadding="1" width="75%">
+        <tbody>
+        <tr>
+          <td>Registered Office:</td>
+          <td>Karlsruhe Institute of Technology<br> Kaiserstraße 12<br> 76131 Karlsruhe<br> Germany<br> Phone: +49 721
+            608-0<br> Fax: +49 721 608-44290<br> E-mail: <a href="mailto:info@kit.edu">info@kit.edu</a></td>
+        </tr>
+        <tr>
+          <td>Legal Form:</td>
+          <td>Corporation governed by public law</td>
+        </tr>
+        <tr>
+          <td>Authorized Representatives:</td>
+          <td>Prof. Dr.-Ing. Holger Hanselka (President of KIT)</td>
+        </tr>
+        <tr>
+          <td>Responsible for Content:</td>
+          <td><p><a href="https://www.scc.kit.edu/personen/joerg.meyer2.php">Dr. Jörg Meyer</a><br></p>
+
+          </td>
+        </tr>
+        <tr>
+          <td>Turnover Tax Identification Number:</td>
+          <td>DE266749428</td>
+        </tr>
+        </tbody>
+      </table>
+      </p>
+      <p>
+      <p>&nbsp;</p>
+      <h2><a name="Copyright">{% trans "Copyright" %}</a></h2>
+      For the internet pages of Karlsruhe Institute of Technology, the copyright and all other rights lie with the
+      Karlsruhe Institute of Technology, Kaiserstraße 12, 76131 Karlsruhe, Germany. Further dissemination, also in
+      parts, for pedagogic, scientific or private purposes is allowed, provided that the source is indicated (unless
+      otherwise expressly stated on the respective page). Use for commercial purposes shall require the approval by the
+      Karlsruhe Institute of Technology. Contact the
+      <a href="mailto:info@kit.edu">Strategic Corporate Development and Communications Department</a>.
+      </p>
+      <p>
+      <p>&nbsp;</p>
+      <h2><a name="Disclaimer">{% trans "Disclaimer" %}</a></h2>
+      These internet pages serve for information only. Their contents were compiled with due diligence. However,
+      Karlsruhe Institute of Technology shall not assume any liability, neither expressly nor implied, for the type or
+      correctness of the material offered and shall not be liable (including liability for indirect loss or loss of
+      profit) for the material or use of this material. In case contents of websites of the Karlsruhe Institute of
+      Technology violate valid legal regulations, we kindly ask you to inform us immediately. We will then remove the
+      site or the respective contents as quickly as possible.
+      </p>
+      <p>
+      <p>&nbsp;</p>
+      <h2><a name="References_to_External_Websites">{% trans "References to External Websites" %}</a></h2>
+      The websites of Karlsruhe Institute of Technology contain links to information offered by servers which are not
+      subject to the control and responsibility of the Karlsruhe Institute of Technology. Karlsruhe Institute of
+      Technology shall not assume any responsibility or guarantee for this information and shall not approve of or
+      support such information in terms of contents.
+      </p>
+      <p>
+      <p>&nbsp;</p>
+      <h2><a name="Data_Protection_and_IT_Safety">{% trans "Data Protection and IT Safety" %}</a></h2>
+      If you have further questions with respect to our data protection standards or if you wish to consult our public
+      procedures register, please contact our
+      <a href="mailto:datenschutzbeauftragter@kit.edu">Data Protection Commissioner</a>. In case you wish to inform yourself about
+      the concepts and technical implementation of our IT safety, do not hesitate to contact our
+      <a href="mailto:informationssicherheitsbeauftragter@kit.edu">Information Security Officer</a>.
+      </p>
+    </div>
+  </div>
+  </body>
+
+
+  </html>
+
+
+{% endblock %}

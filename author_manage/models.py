@@ -16,10 +16,10 @@ from datetime import datetime
 
 # from wps_workflow.models import Workflow, Process
 
-# from vfwheron.models import TblMeta
+# from vfw_home.models import TblMeta
 # from pandas.tests.arithmetic.conftest import id_func
 
-from vfwheron.models import Entries, Persons, NmPersonsEntries
+from vfw_home.models import Entries, Persons, NmPersonsEntries
 
 
 class CustomUser(User):  # == Reader in Resource

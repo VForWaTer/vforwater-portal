@@ -1,5 +1,6 @@
 import logging
 
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import render, redirect  #, _get_queryset  # , render_to_response
 from django.template.loader import render_to_string
@@ -11,7 +12,7 @@ from django.conf import settings
 import os
 from django.utils.decorators import method_decorator
 
-from vfwheron.models import Details
+from vfw_home.models import Details
 from .filters import PersonsFilter, DetailsFilter
 from .forms import AddNewResourceForm
 from django.template.context_processors import csrf

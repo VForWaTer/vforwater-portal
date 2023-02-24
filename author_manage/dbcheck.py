@@ -1,7 +1,7 @@
 from django.core.mail import send_mail, mail_admins
 
 from author_manage.models import User
-# from vfwheron.models import TblMeta
+# from vfw_home.models import TblMeta
 
 
 def metaMapCheck():

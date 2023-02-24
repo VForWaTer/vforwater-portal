@@ -95,7 +95,7 @@ class Box {
             boxTexty = 12;
         }
 
-        let box = new VfwBox({
+        let box = new vfw.draw2d.Rectangle({
             // id: boxId,
             minWidth: 100,
             width: this._boxwidth * 1.1,
@@ -116,7 +116,7 @@ class Box {
         })
         if (boxType === 'tool') {
             box.on('click', function (ev) {
-                open_wpsprocess_modal(service, name, box.getId());
+                vfw.workspace.modal.open_wpsprocess(service, name, box.getId());
                 document.getElementById("workflowID").value = JSON.stringify({'id': box.getId(), 'service': service});
                 // setModalValues(
                 //     JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
@@ -124,7 +124,7 @@ class Box {
                 // )
             })
             label.on('click', function (ev) {
-                open_wpsprocess_modal(service, name, box.getId());
+                vfw.workspace.modal.open_wpsprocess(service, name, box.getId());
                 document.getElementById("workflowID").value = JSON.stringify({'id': box.getId(), 'service': service});
                 // setModalValues(
                 //     JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
@@ -133,7 +133,7 @@ class Box {
             })
         }
         box.on('removed', function (ev) {
-            update_workflow({'state': 'remove', 'id': ev.id})
+            vfw.workspace.workflow.update({'state': 'remove', 'id': ev.id})
         })
         box.add(
             label,
@@ -215,7 +215,7 @@ class Box {
                     'index': parseInt(portNum),
                     // 'name': connection.port.getValue(),
                 };
-                update_workflow({'state': 'change', 'source': source, 'target': target});
+                vfw.workspace.workflow.update({'state': 'change', 'source': source, 'target': target});
             } else {
                 console.log("TODO: This shouldn't be connectable. Fix!")
                 // console.log('connection: ', connection.connection.id)
@@ -262,9 +262,10 @@ class Connection {
             // A) Define a spline to connect ports
             let SplineCon = new draw2d.Connection();
             SplineCon.on("added", function (connection, obj) {
-                draw2dsessionStore.setdata()
+                vfw.session.draw2d.setdata()
             })
             SplineCon.setRouter(new draw2d.layout.connection.SplineConnectionRouter());
+
             // Add Arrow to spline end
             let arrow = new draw2d.decoration.connection.ArrowDecorator(17, 12);
             arrow.setBackgroundColor(new draw2d.util.Color("#326dc4"))
@@ -320,78 +321,40 @@ class Connection {
     }
 }
 
-/*class Workflow {
-
-    constructor(name = 'my workflow', workflow = {}) {
-        this._name = name;
-        this._workflow = workflow;
-    }
-
-    get name() {
-        return this._name;
-    }
-
-    set session_storage(workflow) {
-        sessionStorage.setItem('workflow', JSON.stringify(workflow))
-        this._workflow = workflow;
-    }
-
-    /!**
-     * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
-     * @return {obj} json - object of a Workflow
-     *!/
-    get session_storage() {
-        let workflow = JSON.parse(sessionStorage.getItem('workflow'))
-        if (!workflow) {
-            workflow = {'name': this._name};
-            this.session_storage(workflow);
-        }
-        return workflow;
-    }
-
-    set_name(name = 'my workflow') { //set_sessionStorage_workflow_name(name = 'my workflow') {
-        this._name = name;
-        let workflow = this.session_storage()
-        workflow['name'] = name;
-        this.session_storage(workflow)
-    }
-
-
-}*/
- /**
-     * @method
-     * Constructor for a draw2d.shape.basic.Rectangle, but extended with a serializer for the label and ports position.
-  * Used from writer.marshal.
-     *
-     * @returns {Object}
-     */
-VfwBox = draw2d.shape.basic.Rectangle.extend({
-    NAME: "VfwBox",
+/**
+ * @method
+ * Constructor for a draw2d.shape.basic.Rectangle, but extended with a serializer for the label and ports position.
+ * Used from writer.marshal.
+ *
+ * @returns {Object}
+ */
+vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
+    NAME: "vfw.draw2d.Rectangle",
     /**
      * @method
      * Return an objects with all important attributes for XML or JSON serialization
      *
      * @returns {Object}
      */
-    getPersistentAttributes : function() {
+    getPersistentAttributes: function () {
         var memento = this._super();
 
         // add all decorations to the memento
         memento.labels = [];
-        this.children.each(function(i,e){
+        this.children.each(function (i, e) {
             var labelJSON = e.figure.getPersistentAttributes();
-            labelJSON.locator=e.locator.NAME;
+            labelJSON.locator = e.locator.NAME;
             memento.labels.push(labelJSON);
         });
 
-        this.inputPorts.data.forEach(function(e,i) {
+        this.inputPorts.data.forEach(function (e, i) {
             memento.ports[i].locatorAttr["x"] = e.locator.x;
             memento.ports[i].locatorAttr["y"] = e.locator.y;
         })
         var inputportlen = this.inputPorts.data.length;
-        this.outputPorts.data.forEach(function(e,i) {
-            memento.ports[inputportlen+i].locatorAttr["x"] = e.locator.x;
-            memento.ports[inputportlen+i].locatorAttr["y"] = e.locator.y;
+        this.outputPorts.data.forEach(function (e, i) {
+            memento.ports[inputportlen + i].locatorAttr["x"] = e.locator.x;
+            memento.ports[inputportlen + i].locatorAttr["y"] = e.locator.y;
         })
 
         return memento;
@@ -404,32 +367,32 @@ VfwBox = draw2d.shape.basic.Rectangle.extend({
      * @param {Object} memento
      * @returns
      */
-    setPersistentAttributes : function(memento) {
+    setPersistentAttributes: function (memento) {
         this._super(memento);
 
         // remove all decorations created in the constructor of this element
         this.resetChildren();
 
         // and add all children of the JSON document.
-        $.each(memento.labels, $.proxy(function(i,json){
+        $.each(memento.labels, $.proxy(function (i, json) {
             // create the figure stored in the JSON
-            var figure =  eval("new "+json.type+"()");
+            var figure = eval("new " + json.type + "()");
 
             // apply all attributes
             figure.attr(json);
 
             // instantiate the locator
-            var locator =  eval("new "+json.locator+"()");
+            var locator = eval("new " + json.locator + "()");
 
             // add the new figure as child to this figure
             this.add(figure, locator);
-        },this));
+        }, this));
     }
 });
 
-var draw2dsessionStore = {
-
-    setdata: function(){
+// var draw2dsessionStore = {
+vfw.session.draw2d = {
+    setdata: function () {
         let writer = new draw2d.io.json.Writer();
 
         writer.marshal(canvas, function (json) {
@@ -441,14 +404,8 @@ var draw2dsessionStore = {
         });
     },
 
-    getworkflow: function() {
-        let jsonDocument = sessionStorage.getItem("draw2ddata")
-        if (jsonDocument) {
-            console.log('read jsonDocument: ', JSON.parse(jsonDocument))
-            let reader = new draw2d.io.json.Reader();
-            // console.log('read: ', jsonDocument)
-            reader.unmarshal(canvas, JSON.parse(jsonDocument));
-        }
+    getworkflow: function () {
+        return sessionStorage.getItem("draw2ddata")
     },
 
 }
@@ -461,10 +418,10 @@ function vfw_drag() {
 
 }
 
-let canvas = new draw2d.Canvas('dropdiv');
+const canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
-let connection = new Connection();
+connection = new Connection();
 canvas.installEditPolicy(connection.connectionPolicy);
 
 /**
@@ -473,22 +430,15 @@ canvas.installEditPolicy(connection.connectionPolicy);
  * @param id
  * @returns {{outputs: *[], inputs: *[], name, type: string, orgid: string}}
  */
-function process_drop_params(service, id) {
+vfw.workspace.workflow.process_drop_params = function (service, id) {
     // TODO: improve data object to avoid building this obj manually!
     let box_param = '';
     let inputs = [];
     let input_key_list = [];
     let output_key_list = [];
     let outputs = [];
-    get_sessionStorage_tools(service)
-    let metadata = JSON.parse(sessionStorage.getItem("tools"))[service][id]
-    if (!metadata) {
-        $.when(get_wpsprocess(service, id)).done(function() {
-            metadata = JSON.parse(sessionStorage.getItem("workflow"))[id]
-        })
-        // get_wpsprocess(service, id);
-        // metadata = JSON.parse(sessionStorage.getItem("workflow"))[id]
-    }
+    let metadata = vfw.session.get_wpsprocess(service, id);
+
     if (metadata.hasOwnProperty('dataInputs')) {
         for (let i of metadata.dataInputs) {
             if ('keywords' in i) {
@@ -534,10 +484,11 @@ function process_drop_params(service, id) {
  * Remove elements from sessionStorage or add new elements according to the event on the Dropzone ('dropdiv')
  * @param event
  */
-function update_workflow(event) {
+vfw.workspace.workflow.update = function (event) {
+    console.log('update workflow event: ', event)
     let delete_element, index, chained_id;
     // let workflow = globalWorkflow.session_storage();
-    let workflow = get_sessionStorage_workflow();
+    let workflow = vfw.session.get_workflow();
     if (event.state === 'remove') {
         delete_element = workflow[event.id];
         if (delete_element.input_ids) {
@@ -578,18 +529,26 @@ function update_workflow(event) {
             output_ids: event.params.output_ids,
             output_boxes: [],
             source: event.element._sessionstore,
-            service: event.element._service
+            service: event.element._service,
         }
     } else if (event.state === 'change') {
-        if (event.hasOwnProperty('target') && !workflow[event.target.boxid]['input_values']) {
+        console.log('**************** change **************************')
+        console.log('event: ', event)
+        console.log('workflow: ', workflow)
+
+        // if (event.hasOwnProperty('target') && !workflow[event.target.boxid]['input_values']) {
+        if (event.hasOwnProperty('target')) {
             workflow[event.target.boxid]['input_values'] = []
-            workflow[event.target.boxid]['input_ids'] = array_insert(workflow[event.target.boxid]['input_ids'],
-                event.source.index, event.source.boxid)
+            let newinsert = vfw.var.array.insert(workflow[event.target.boxid]['input_ids'],
+                event.target.index, event.source.boxid)
+            workflow[event.target.boxid]['input_ids'] = vfw.var.array.insert(workflow[event.target.boxid]['input_ids'],
+                event.target.index, event.source.boxid)
         }
-        if (event.hasOwnProperty('source') && !workflow[event.source.boxid]['output_values']) {
+        // if (event.hasOwnProperty('source') && !workflow[event.source.boxid]['output_values']) {
+        if (event.hasOwnProperty('source')) {
             workflow[event.source.boxid]['output_values'] = []
-            workflow[event.source.boxid]['output_ids'] = array_insert(workflow[event.source.boxid]['output_ids'],
-                event.target.index, event.target.boxid)
+            workflow[event.source.boxid]['output_ids'] = vfw.var.array.insert(workflow[event.source.boxid]['output_ids'],
+                event.source.index, event.target.boxid)
         } else if (event.hasOwnProperty('source')) {
             // workflow[event.target.boxid]['input_values'][event.target.index] = event.source.value;
             // workflow[event.target.boxid]['input_ids'][event.target.index] = event.source.orgid;
@@ -605,7 +564,7 @@ function update_workflow(event) {
         }
     }
     sessionStorage.setItem('workflow', JSON.stringify(workflow))
-    draw2dsessionStore.setdata()
+    vfw.session.draw2d.setdata()
     // workflow[box.id] = box
 }
 
@@ -616,12 +575,12 @@ function update_workflow(event) {
  * @param {integer} index - position to change an item
  * @param {string} newItem - the new item for index position
  */
-function array_insert(arr, index, newItem) {
+vfw.var.array.insert = function (arr, index, newItem) {
     if (!arr) {
         arr = [...Array(index)].map(i => '')
         // arr.splice(index, 0, newItem);
-    } else if (arr.length < (index-1)) {
-        arr = arr.concat([...Array(index-arr.length-1)].map(i => ''));
+    } else if (arr.length < (index - 1)) {
+        arr = arr.concat([...Array(index - arr.length - 1)].map(i => ''));
     }
     arr.splice(index, 1, newItem)
     return arr;
@@ -634,7 +593,7 @@ function array_insert(arr, index, newItem) {
  * @param {string} source
  * @param {string} service
  */
-function prepare_box_params(ev, id, source, service= "") {
+vfw.draw2d.box_params = function (ev, id, source, service = "") {
     let box_param = '';
     if (source === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
@@ -650,7 +609,7 @@ function prepare_box_params(ev, id, source, service= "") {
             type: 'data'
         }
     } else if (source === 'toolbar') {
-        box_param = process_drop_params(service, id)
+        box_param = vfw.workspace.workflow.process_drop_params(service, id)
         try {
             box_param['input_ids'] = ev.inId_list;
             box_param['input_values'] = ev.value_list;
@@ -675,7 +634,7 @@ function prepare_box_params(ev, id, source, service= "") {
  * @param {string} service
  * @return {dict} {box, boxID} - box object and global ID of box dropped on workarea
  */
-function drop_handler(ev, x, y, id, source, service) {
+vfw.workspace.drop_handler = function (ev, x, y, id, source, service) {
     let box_param = '';
     let receivedData, prepared_params, newBox;
 
@@ -690,11 +649,11 @@ function drop_handler(ev, x, y, id, source, service) {
     } catch {
         console.log('0 catch ev: ', ev)
     }
-    prepared_params = prepare_box_params(ev, id, source, service);
+    prepared_params = vfw.draw2d.box_params(ev, id, source, service);
     box_param = prepared_params.params;
     service = prepared_params.service;
 
-    let boxID = box_param.orgid + get_workflow_id_affix()
+    let boxID = box_param.orgid + vfw.workspace.workflow.get_workflow_id_affix()
     let box = new Box(
         box_param.name, box_param.orgid, box_param.type,
         box_param.inputs, box_param.outputs, source, service, boxID
@@ -702,7 +661,7 @@ function drop_handler(ev, x, y, id, source, service) {
     newBox = box.box;
     canvas.add(newBox, x, y);
 
-    update_workflow({'state': 'drop', 'element': box, 'params': box_param});
+    vfw.workspace.workflow.update({'state': 'drop', 'element': box, 'params': box_param});
     // reduce_lap(x, y)
     return {'box': newBox, 'boxID': boxID};
 }
@@ -713,7 +672,7 @@ function drop_handler(ev, x, y, id, source, service) {
  * @param {string} service
  * @return {obj} json - object of a wps process as saved in sessionStorage
  */
-function get_sessionStorage_tools(service) {
+vfw.session.get_tools = function (service) {
     let tools = JSON.parse(sessionStorage.getItem('tools'))
     if (!tools) {
         tools = {}
@@ -730,10 +689,10 @@ function get_sessionStorage_tools(service) {
  * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
  * @return {obj} json - object of a Workflow
  */
-function get_sessionStorage_workflow() {
+vfw.session.get_workflow = function () {
     let workflow = JSON.parse(sessionStorage.getItem('workflow'))
     if (!workflow) {
-        workflow = set_sessionStorage_workflow_name()
+        workflow = vfw.session.set_workflow_name()
         sessionStorage.setItem('workflow', JSON.stringify(workflow))
     }
     return workflow
@@ -744,7 +703,7 @@ function get_sessionStorage_workflow() {
  * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
  * @return {obj} json - object of a Workflow
  */
-function set_sessionStorage_workflow_name(name = 'my workflow') {
+vfw.session.set_workflow_name = function (name = 'my workflow') {
     let workflow = JSON.parse(sessionStorage.getItem('workflow'))
     if (!workflow) {
         workflow = {'name': name}
@@ -760,7 +719,7 @@ function set_sessionStorage_workflow_name(name = 'my workflow') {
  * Get a number to create a unique id for workflow elements. Counts plus one with each call.
  * @return {string} number
  */
-function get_workflow_id_affix() {
+vfw.workspace.workflow.get_workflow_id_affix = function () {
     let affix = JSON.parse(sessionStorage.getItem('workflowIdAffix'))
     if (!affix) {
         affix = 1;
@@ -775,88 +734,12 @@ function get_workflow_id_affix() {
 /**
  * Collect information from session Storage and draw workflow boxes as given there.
  */
-function draw_workflow() {
-    draw2dsessionStore.getworkflow()
-}
-function draw_workflow_old() {
-    let box = {};
-    let newBox;
-    let coords = {};
-    let ports = {};  // key: boxname, values: ports
-    let portpairs = {};
-    let inputport, outputport;
-    let source, target;
-    let sourceName;
-    let workflow = get_sessionStorage_workflow()
-    // let workflow = globalWorkflow.session_storage();
-
-    // get connection/port pairs
-    Object.entries(workflow).map(function (boxDescription) {
-        console.log('workflow keys: ', Object.keys(workflow))
-        if (boxDescription[1].input_ids) {
-
-        }
-    })
-    let testportin, testportout
-    Object.entries(workflow).map(function (boxDescription) {
-        if (boxDescription[0] == 'name') {
-            document.getElementById("workflow_name").setAttribute('value', boxDescription[1])
-        } else {
-            box = new Box(
-                boxDescription[1].name, boxDescription[1].orgid, boxDescription[1].boxtype, boxDescription[1].inputs,
-                boxDescription[1].outputs, boxDescription[1].source, boxDescription[1].service, boxDescription[0]
-            )
-            newBox = box.box;
-            coords = get_drop_coords();
-            canvas.add(newBox, coords['x'], coords['y']);
-
-            ports[boxDescription[0]] = {
-                'inputPortNames': boxDescription[1].input_ids, 'inputPort': newBox.getInputPort(0), 'inputPorts': newBox.getInputPorts(),
-                // 'inputPortNames': boxDescription[1].input_ids, 'inputPorts': box.box.getInputPorts(),
-                'inputPortsSource': boxDescription[1].input_boxes,
-                'outputPortNames': boxDescription[1].output_ids, 'outputPort': newBox.getOutputPort(0), 'outputPorts': newBox.getOutputPorts(),
-                // 'outputPortNames': boxDescription[1].output_ids, 'outputPorts': box.box.getOutputPorts(),
-                'outputPortsTarget': boxDescription[1].output_boxes,
-                'box': newBox};
-
-            if (boxDescription[1].input_ids) {
-                boxDescription[1].input_ids.forEach(function(val, ind, arr) {
-                    console.log('val: ', val)
-                    console.log('ind: ', ind)
-                    console.log('arr: ', arr)
-
-                });
-
-        }
-
-        }
-    })
-
-    Object.entries(ports).map(function ([elementName, element]) {  // loop port objects
-        if (typeof element.inputPortNames !== "undefined") {  // if port has input connections
-            element.inputPortNames.forEach(function (val, ind) {  // loop input connections
-                if (val !== '') {  // if input actually has a connection => find corresponding output, get them, draw
-                    target = element.inputPort
-                    sourceName = element.inputPortNames[ind]
-                    // element is the inputport == target
-                    // ==> need output port. 1. get output element
-
-                    // 2. Get Output Portname:
-                    if (elementName == ports[sourceName].outputPortNames[0]) {
-                        source = ports[sourceName].outputPort
-                        add_connection(source, target)
-                    }
-
-                    // here is element.inputPorts.data[ind] (== ports.inputPortNames[ind] ?)
-                    //     add_connection(ports[val].box.getOutputPort(ports[val].outputPortNames.indexOf(k)),
-                    //         v.box.getInputPort(ind))
-                    //     v.box.box.getInputPorts().data[ind])
-                    // add_connection(ports[val].outputPorts.data[ports[val].outputPortNames.indexOf(k)],
-                    //     v.inputPorts.data[ind])
-                }
-                }
-            )
-        }
-
-    })
+vfw.workspace.workflow.draw_workflow = function () {
+    let jsonDocument = vfw.session.draw2d.getworkflow()
+    if (jsonDocument) {
+        console.log('read jsonDocument: ', JSON.parse(jsonDocument))
+        let reader = new draw2d.io.json.Reader();
+        // console.log('read: ', jsonDocument)
+        reader.unmarshal(canvas, JSON.parse(jsonDocument));
+    }
 }

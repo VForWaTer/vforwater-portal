@@ -1,0 +1,344 @@
+@startuml
+rectangle Legend {
+    hexagon python
+
+    file html1 [
+        html 1
+    ]
+    file html2 [
+        html 2
+        ====
+        <color:blue>vfw maintained
+    ]
+    file unused_html #red;line.dotted
+
+python ~~> html1 #line:green;text:green : get_template
+python ..> html1 #line:red;text:red : redirect
+python ..> html1 : render
+html2 --> html1 : include
+html2 ==> html1 : extends
+}
+
+folder vfw_home  {
+  file home.html [
+    home.html
+  ]
+  file base_sidebar.html [
+      base_sidebar.html
+      ====
+      logo_main.png
+  ]
+  file help.html
+  file select_data.html [
+      select_data.html
+      ====
+      <color:blue>filter.css
+  ]
+  file quick_filter.html
+  file advanced_filter.html
+  file base.html [
+      base.html
+      ====
+      <b>CSS
+      ....
+      w3, <color:blue>css, base</color>
+      font-awesome
+      flag-icon
+      ol, ol-ext
+      jquery-ui 1.12.1 (www)
+      cookieconsent (www)
+      ----
+      <b>JS
+      ....
+      <color:blue>vfw
+      <color:blue>javascript-catalog
+      ol 6.14.1
+      ol-ext 3.1.12
+      jquery 3.6.1 (www)
+      jquery-ui 1.12.1 (www)
+      cookieconsent (www)
+      ====
+      const vfw
+  ]
+  file sidemenu.html [
+      sidemenu.html
+      ====
+      <color:blue>sidebar.js
+      <color:blue>FileSaver.js
+  ]
+  file map.html [
+      map.html
+      ====
+      <b>CSS
+      <color:blue>map
+      ....
+      ====
+      <b>JS
+      ....
+      <color:blue>map
+      <color:blue>menu_objects
+  ]
+  file info_modal.html [
+      info_modal.html
+      ====
+      <b>JS
+      ....
+      bokeh 3.0.2
+      bokeh-widgets 3.0.2
+      bokeh-tables 3.0.2
+  ]
+  file map_modal.html
+  file mapmodal_entrieslist.html
+  file privacypolicy.html
+  file static_sidebar.html
+  file logo.html [
+      logo.html
+      ====
+      logo_main.png
+  ]
+  file legals.html
+  file entrieslist.html
+  file 404.html
+  file autocomplete_widget.html
+  file failedlogin.html
+  file map_widget.html
+  hexagon views.py
+'  hexagon urls.py
+  hexagon widgets.py
+
+home.html --> base_sidebar.html : include
+base.html ==> help.html : extends
+select_data.html --> quick_filter.html : include
+select_data.html --> advanced_filter.html : include
+base.html ==> home.html : extends
+base.html --> sidemenu.html : include
+home.html --> map.html : include
+home.html --> info_modal.html : include
+home.html --> map_modal.html : include
+home.html --> entrieslist.html : include
+base.html ==> privacypolicy.html : extends
+help.html ==> legals.html : extends
+help.html --> static_sidebar.html : include
+base_sidebar.html --> select_data.html : include
+static_sidebar.html --> logo.html : include
+mapmodal_entrieslist.html --> map_modal.html : include
+
+views.py ..> 404.html : render
+'views.py ..> advanced_filter.html : render
+'views.py ..> quick_filter.html : render
+'views.py ..> entrieslist.html : render
+'views.py ..> mapmodal_entrieslist.html : render
+'urls.py ..> failedlogin.html
+failedlogin.html  ..>  home.html #line:red;text:red
+widgets.py ~~> autocomplete_widget.html #line:green;text:green : get_template
+widgets.py ~~> map_widget.html #line:green;text:green : get_template
+}
+
+folder visual_app {
+    file "visual_app/home.html"
+    file visualplace.html [
+        visualplace.html
+        ====
+        bokeh
+    ]
+base.html ==> "visual_app/home.html" : extends
+visualplace.html -> "visual_app/home.html" : include
+}
+
+
+folder upload {
+file uploadhome.html [
+    home.html
+    ====
+    <color:blue>data_access.js
+    jquery.fileupload.js
+    jquery.iframe-transport.js
+    jquery.ui.widget.js
+]
+}
+base.html ==> uploadhome.html : extends
+
+folder wps_gui {
+
+    file wpsguihome [
+        home.html
+    ]
+    file wpsguimodal [
+        modal.html
+    ]
+    file wpsgui_resultmodal [
+        result_modal.html
+        ====
+        bokeh 3.0.2
+        bokeh-widgets 3.0.2
+    ]
+'    file select_process.html
+    file service.html
+    file wpsguisidebar [
+        sidebar.html
+        ====
+        logo_main.png
+    ]
+    file toolbar.html
+    file workplace.html [
+        workplace.html
+        ====
+        <b>CSS
+        ....
+        <color:blue>workplace
+        ----
+        <b>JS
+        draw2d
+        <color:blue>workplace
+        <color:blue>workfow
+    ]
+    hexagon wpsviews.py [
+        views.py
+    ]
+    file process.html #red;line.dotted[
+        process.html
+        ====
+        <color:blue>process.js
+    ]
+
+base.html ==> wpsguihome : extends
+base.html ==> service.html : extends
+service.html -> wpsguisidebar : include
+wpsguihome -> wpsguisidebar : include
+wpsguihome -> toolbar.html : include
+wpsguihome -> workplace.html : include
+wpsguisidebar -> select_data.html : include
+wpsguisidebar -> wpsgui_resultmodal : include
+workplace.html -> wpsguimodal : include
+wpsviews.py ..> process.html : render
+
+base_sidebar.html --> wpsgui_resultmodal : include
+}
+
+folder "author_manage" {
+    file addnewresource [
+        add-new-resource.html
+        ====
+        <color:blue>profile.css
+        <color:blue>my-resources.css
+        <color:blue>add-new-resource.css
+    ]
+    file authorbase [
+        base.html
+    ]
+    file editperms [
+        edit-permissions.html
+        ====
+        <color:blue>edit-permissions.css
+    ]
+    file authhome [
+        home.html
+        ====
+        <color:blue>base.css
+    ]
+    file myresources [
+        my_resources.html
+        ====
+        <color:blue>modal-dialog-info.css
+        <color:blue>modal-dialog-req.css
+        <color:blue>profile.css
+        <color:blue>my-resources.css
+    ]
+    file profile.html [
+        profile.html
+        ====
+        <color:blue>base.css
+        <color:blue>modal-dialog-req.css
+        <color:blue>profile.css
+    ]
+    file resourceoverview [
+        resources-overview.html
+        ====
+        <color:blue>modal-dialog-info.css
+        <color:blue>modal-dialog-req.css
+    ]
+    file uploadpersion [
+        upload_persons.html
+    ]
+base.html ==> authorbase : extends
+authhome ==> authorbase : extends
+authorbase ==> profile.html : extends
+authorbase ==> resourceoverview : extends
+profile.html ==> editperms : extends
+profile.html ==> myresources : extends
+profile.html ==> addnewresource : extends
+addnewresource ==> uploadpersion : extends
+}
+
+folder process_monitor {
+    file monitor_home [
+        home.html
+    ]
+base.html ==> process_monitor : extends
+process_monitor -> static_sidebar.html : include
+}
+
+
+@enduml
+
+
+@startuml
+'https://plantuml.com/component-diagram
+skinparam componentStyle rectangle
+
+package "vfw_home" {
+  [home.html] ..> [base_sidebar.html]
+  [base.html] ..> [help.html]
+  [select_data.html] ..> [quick_filter.html]
+  [select_data.html] ..> [advanced_filter.html]
+  [base.html] ..> [home.html]
+  [base.html] ..> [sidemenu.html]
+  [home.html] ..> [map.html]
+  [home.html] ..> [info_modal.html]
+  [home.html] ..> [map_modal.html]
+  [home.html] ..> [entrieslist.html]
+  [base.html] ..> [privacypolicy.html]
+  [help.html] ..> [legals.html]
+  [help.html] ..> [static_sidebar.html]
+  [base_sidebar.html] ..> [select_data.html]
+  [static_sidebar.html] ..> [logo.html]
+}
+package "visual_app" {
+  [base.html] ..> [visual_app/home.html]
+}
+package "upload" {
+  [base.html] ..> [upload/home.html]
+}
+package "wps_gui" {
+  [base_sidebar.html] ..> [wps_gui/result_modal.html]
+
+  [base.html] ..> [wps_gui/home.html]
+  [base.html] ..> [service.html]
+  [service.html] ..> [wps_gui/sidebar.html]
+  [wps_gui/sidebar.html]
+  [wps_gui/home.html] ..> [wps_gui/sidebar.html]
+  [wps_gui/home.html] ..> [toolbar.html]
+  [wps_gui/home.html] ..> [workplace.html]
+  [select_data.html] <.. [wps_gui/sidebar.html]
+  [wps_gui/result_modal.html] <.. [wps_gui/sidebar.html]
+  [workplace.html] ..> [wps_gui/modal.html]
+'  [process.html]
+'  [select_process.html]
+}
+
+package "author_manage" {
+  [base.html] ..> [author_manage/base.html]
+  [author_manage/home.html] ..> [author_manage/base.html]
+  [author_manage/base.html] ..> [profile.html]
+  [author_manage/base.html] ..> [resource-overview.html]
+  [profile.html] ..> [edit-permissions.html]
+  [profile.html] ..> [my-resources.html]
+  [add-new-resource.html] ..> [upload_persons.html]
+  [profile.html] ..> [add-new-resource.html]
+}
+package "process_monitor" {
+  [base.html] ..> [process_monitor/base.html]
+  [process_monitor/base.html] ..> [process_monitor/home.html]
+  [process_monitor/home.html] ..> [static_sidebar.html]
+}
+@enduml
