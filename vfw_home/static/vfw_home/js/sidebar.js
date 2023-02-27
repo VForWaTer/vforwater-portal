@@ -744,15 +744,8 @@ function menuItemListener(link) {
         item = JSON.parse(sessionStorage.getItem(store))[btnName];
     }
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
-    content.innerHTML = '<div id="loader" class="loader"></div>';
-    /*content.innerHTML = '<div id="loader"  class="fading-dot-loader">\n' +
-                    '  <div class="dot-loader1 dot-loader"></div>\n' +
-                    '  <div class="dot-loader2 dot-loader"></div>\n' +
-                    '  <div class="dot-loader3 dot-loader"></div>\n' +
-                    '  <div class="dot-loader4 dot-loader"></div>\n' +
-                    '  <div class="dot-loader5 dot-loader"></div>\n' +
-                    '  <div class="dot-loader6 dot-loader"></div> \n' +
-                    '</div>';*/
+    // content.innerHTML = '<div id="loader" class="loader"></div>';
+    content.innerHTML = vfw.html.loader
     vfw.html.popup.classList.add(popActive);
     popText.classList.remove(popInActive);
     positionPopup(vfw.html.popup);

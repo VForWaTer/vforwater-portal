@@ -114,7 +114,8 @@ class PlotObject:
         self.mainplot = figure(x_axis_label=self.x_axis_label, x_axis_type=self.x_axis_type,
                                y_axis_label=self.dataObj.label,
                                title=self.title,
-                               # sizing_mode='stretch_both',
+                               sizing_mode='scale_width',  # sidebar works
+                               # sizing_mode='scale_height',  # wide siebar, tiny map
                                width=self.plot_size[0], height=int(self.plot_size[1] * 0.9),
                                toolbar_location="above", tools="pan,wheel_zoom,box_zoom,reset, save",
                                active_drag="box_zoom")

@@ -527,7 +527,6 @@ function drawOnMapMenu(test) {
                 stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
             }))
             olmap.addLayer(selectionLayer)
-            console.log('13')
             get_quick_selection({'draw': getEdgeCoords()});
             // listener = selectStartFun(event)
         })

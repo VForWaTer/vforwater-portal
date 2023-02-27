@@ -83,9 +83,9 @@ folder vfw_home  {
       ====
       <b>JS
       ....
-      bokeh 3.0.2
-      bokeh-widgets 3.0.2
-      bokeh-tables 3.0.2
+      bokeh 3.0.3
+      bokeh-widgets 3.0.3
+      bokeh-tables 3.0.3
   ]
   file map_modal.html
   file mapmodal_entrieslist.html
@@ -169,8 +169,8 @@ folder wps_gui {
     file wpsgui_resultmodal [
         result_modal.html
         ====
-        bokeh 3.0.2
-        bokeh-widgets 3.0.2
+        bokeh 3.0.3
+        bokeh-widgets 3.0.3
     ]
 '    file select_process.html
     file service.html

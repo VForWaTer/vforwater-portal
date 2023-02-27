@@ -13,8 +13,8 @@
 {#  <script src="{% static 'visual_app/js/bokeh-2.4.3.min.js' %}" type="text/javascript"></script>#}
 {#    <script src="{% static 'visual_app/js/bokeh-widgets-2.4.3.min.js' %}" type="text/javascript"></script>#}
   {#  <script src="{% static 'visual_app/js/bokeh-tables-2.2.1.min.js' %}" type="text/javascript"></script>#}
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.0.2.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.2.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.0.3.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.3.min.js" crossorigin="anonymous"></script>
 {#    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.1.min.js"></script>#}
 </head>
 <body>
@@ -56,13 +56,13 @@
   let span = document.getElementsByClassName("close")[0];
   let rspan_b = document.getElementsByClassName("result_modal-close")[0];
   {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
-  let modalToggleSize = document.getElementsByClassName("togglefullscreen")[0];
+  let modalToggleSizeBtn = document.getElementsByClassName("togglefullscreen")[0];
   {% comment %}  span.onclick = function () {
         closeModal()
     };{% endcomment %}
   span.onclick = () => close_result_Modal();
   rspan_b.onclick = () => close_result_Modal();
-  modalToggleSize.onclick = () => toggle_Modal_size();
+  modalToggleSizeBtn.onclick = () => toggle_Modal_size();
   {#span_c.onclick = function () {closeModal()};#}
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = (event) => {if (event.target == rModal) close_result_Modal()};
@@ -70,9 +70,9 @@
   function close_result_Modal() {
     rModal.style.display = "none";
     {#document.getElementById("resultModal-content").style.width = "initial";#}
-    reset_Modal("resultModal-content", modalToggleSize)
-    if (modalToggleSize.style.display === "none") {
-      modalToggleSize.style.display = "block";
+    reset_Modal("resultModal-content", modalToggleSizeBtn)
+    if (modalToggleSizeBtn.style.display === "none") {
+      modalToggleSizeBtn.style.display = "block";
     }
     if (vfw.var.obj.bokehImage) {
       bokehResultScript.parentNode.removeChild(bokehResultScript);
@@ -81,12 +81,12 @@
   }
 
   function toggle_Modal_size() {
-    if (modalToggleSize.classList.contains('fa-expand')){
+    if (modalToggleSizeBtn.classList.contains('fa-expand')){
       document.getElementById("resultModal-content").style.width = window.innerWidth.toString()+"px";
-      modalToggleSize.classList.remove('fa-expand');
-      modalToggleSize.classList.add('fa-compress');
+      modalToggleSizeBtn.classList.remove('fa-expand');
+      modalToggleSizeBtn.classList.add('fa-compress');
     } else {
-      reset_Modal("resultModal-content", modalToggleSize)
+      reset_Modal("resultModal-content", modalToggleSizeBtn)
     }
     place_html_with_js("mod_result", vfw.var.obj.bokehImage)
     {#place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
