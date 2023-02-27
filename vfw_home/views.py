@@ -31,7 +31,7 @@ from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
 from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
+# from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
     __get_axis_limits, __reduce_dataset, get_accessible_data
@@ -40,7 +40,7 @@ from .forms import QuickFilterForm
 from .data_obj import DataObject
 from .plot_obj import PlotObject
 from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
-    get_paginatorpage, regex_patterns, is_coord
+    get_paginatorpage, regex_patterns, is_coord, get_cache
 
 mpl.use('Agg')
 

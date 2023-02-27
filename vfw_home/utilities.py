@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from django.utils import translation, timezone
 
 from heron.settings import DATA_DIR
 from vfw_home.models import Entries
+
+logger = logging.getLogger(__name__)
 
 NUMPY_TYPES = ['array', '2darray', 'ndarray']
 SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
@@ -106,6 +109,30 @@ def expressive_layer_name(user: object) -> str:
         namestring += user.username.translate({ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`=+"})
 
     return namestring + "_layer"
+
+
+def get_cache(cache_obj: dict) -> tuple:
+    """
+    Check if redis is used to cache images, and if image 'name' is cached.
+    Return state of redis, if image in cache and image if it is in cache.
+
+    :param name:
+    :return: returns two values. First cache object, second Bokeh image as dict of 'script' and 'div'
+    """
+    img = None
+    try:
+        img = cache_obj['redis'].get(cache_obj['name'])
+    except Exception as err:
+        cache_obj['use_redis'] = False
+        logger.debug("Cannot connect to redis: {}".format(err))
+
+    if cache_obj['use_redis']:
+        if img is None:
+            cache_obj['in_cache'] = False
+        else:
+            img = str(img, 'utf-8')
+            cache_obj['in_cache'] = True
+    return cache_obj, img
 
 
 def get_dataset(s_id: int) -> object:
