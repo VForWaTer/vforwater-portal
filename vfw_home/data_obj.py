@@ -88,49 +88,60 @@ class DataObject:
         Define the queryset to the respective data set according to its data_table_name.
         """
         qs = self.__general_data_qs__
-        if not self.full:
-            qs = self.__general_data_qs__[:self.__row_limit__]
+        # if not self.full:
+        #     qs = self.__general_data_qs__[:self.__row_limit__]
 
         if self.data_table_name == 'timeseries_1d':
             self.data_columns = self.db_cols_timeseries_1d
             self.value_column = 'value'
-            self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
-            self.__data_qs__ = qs.values(*self.__qs_cols__)  # .explain(verbose=True)
+            qs = self.__general_data_qs__.order_by(self.data_table_name + '__' +'tstamp')
+            #self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
+            #self.__data_qs__ = qs.values(*self.__qs_cols__)#.order_by('tstamp')  # .explain(verbose=True)
         elif self.data_table_name == 'timeseries':
             self.data_columns = self.db_cols_timeseries
             self.value_column = 'data'
+            qs = self.__general_data_qs__.order_by(self.data_table_name + '__' + 'tstamp')
             # self.data_format = '3D'
-            self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
-            self.__data_qs__ = qs.values(*self.__qs_cols__)
+            #self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
+            #self.__data_qs__ = qs.values(*self.__qs_cols__)
             if len(self.data_names) > 1:
                 self.multiple_lines = True
 
         else:
             print('\033[31mYou try to access a new table. Handle it!\033[0m ')
 
+        if not self.full:
+            qs = qs[:self.__row_limit__]
+
+        self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
+        self.__data_qs__ = qs.values(*self.__qs_cols__)
     def __get_db_data__(self):
 
-        if self.label.find('direction') != -1:
-            self.timestep_label = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            # if full_res is False:
-            self.dataframe, self.timestep_label = DB_load_directiondata(self.ID, self.timestep_label,
-                                                                        self.date, self.full)
-            self.__interest_in_gaps__ = False
-        elif self.label.find('windspeed') != -1:
-            print('its SPEED!! _________________')
-        elif self.label.find('Eddy Covariance') != -1:
-            self.__row_limit__ = 10
-            self.__set_data_qs__()
-            self.__get_eddy_data__()
-        else:
-            df = pd.DataFrame(list(self.__data_qs__))
-            self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
-            if isinstance(self.dataframe[self.value_column][0], list) \
-                and len(self.dataframe[self.value_column][0]) == 1:
-                self.dataframe[self.value_column] = [i[0] for i in self.dataframe[self.value_column]]
-            elif isinstance(self.dataframe[self.value_column][0], list) \
-                and len(self.dataframe[self.value_column][0]) > 1:
-                print('ERROR: Expect only one column for timeseries_1d')
+        try:
+            if self.label.find('direction') != -1:
+                self.timestep_label = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
+                # if full_res is False:
+                self.dataframe, self.timestep_label = DB_load_directiondata(self.ID, self.timestep_label,
+                                                                            self.date, self.full)
+                self.__interest_in_gaps__ = False
+            elif self.label.find('windspeed') != -1:
+                print('its SPEED!! _________________')
+            elif self.label.find('Eddy Covariance') != -1:
+                self.__row_limit__ = 10
+                self.__set_data_qs__()
+                self.__get_eddy_data__()
+            else:
+                df = pd.DataFrame(list(self.__data_qs__))
+                self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
+                if isinstance(self.dataframe[self.value_column][0], list) \
+                    and len(self.dataframe[self.value_column][0]) == 1:
+                    self.dataframe[self.value_column] = [i[0] for i in self.dataframe[self.value_column]]
+                elif isinstance(self.dataframe[self.value_column][0], list) \
+                    and len(self.dataframe[self.value_column][0]) > 1:
+                    print('ERROR: Expect only one column for timeseries_1d')
+        except Error as e:
+            print('\033[33mUnable to access database:\033[0m ', e)
+            raise Http404
 
         if self.multiple_lines:
             self.dataframe = self.__mulitvalcol_to_mulitcolval__(self.dataframe, self.data_names, self.value_column)
