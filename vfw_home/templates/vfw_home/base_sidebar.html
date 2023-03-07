@@ -72,15 +72,9 @@
     </ul>
   </nav>
 
-<nav id="loader-popup" class="mod-popup w3-center">
-{#    TODO: figure out how to aport download, then there is no need to hide the closer#}
-    <a href="#" id="pop-closer" class="mod-popup-closer w3-hide"></a>
-{#    <div id="loader" class="loader"></div>#}
-{#    <div id="loader-text"></div>#}
-    <div id="pop-content-side">
-    </div>
-    <a><h5><div id="popupText" class="mod-popup--inactive">{% trans " Please wait. Preparing data..." %}</div></h5></a>
-</nav>
+{% block loader_popup %}
+  {% include 'vfw_home/loader_popup.html' %}
+{% endblock  %}
 
 <nav id="img-popup" class="context-menu w3-center">
     <div id="imgPopup"></div>

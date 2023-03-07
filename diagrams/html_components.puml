@@ -101,6 +101,7 @@ folder vfw_home  {
   file 404.html
   file autocomplete_widget.html
   file failedlogin.html
+  file loader_popup.html
   file map_widget.html
   hexagon views.py
 '  hexagon urls.py
@@ -120,6 +121,7 @@ base.html ==> privacypolicy.html : extends
 help.html ==> legals.html : extends
 help.html --> static_sidebar.html : include
 base_sidebar.html --> select_data.html : include
+base_sidebar.html --> loader_popup.html : include
 static_sidebar.html --> logo.html : include
 mapmodal_entrieslist.html --> map_modal.html : include
 
@@ -209,6 +211,7 @@ wpsguihome -> toolbar.html : include
 wpsguihome -> workplace.html : include
 wpsguisidebar -> select_data.html : include
 wpsguisidebar -> wpsgui_resultmodal : include
+wpsguisidebar.html --> loader_popup.html : include
 workplace.html -> wpsguimodal : include
 wpsviews.py ..> process.html : render
 
