@@ -502,6 +502,12 @@ function drawOnMapMenu(test) {
     });
 
     drawCatchmentOutlet.on('drawstart', function (event) {
+        start()
+        // document.getElementById("mod_prev").classList.add("loader");
+        vfw.html.loaderOverlayOn()
+        // positionPopup(vfw.html.popup);
+        // content.innerHTML = vfw.html.loader
+        // selectionLayerSource.clear();
         selectionEdgeCoords = event.feature.getGeometry()
         listener = selectStartFun(event)
         let click_coords = getEdgeCoords()
@@ -529,6 +535,7 @@ function drawOnMapMenu(test) {
             olmap.addLayer(selectionLayer)
             get_quick_selection({'draw': getEdgeCoords()});
             // listener = selectStartFun(event)
+            vfw.html.loaderOverlayOff();
         })
 
     }, this);
@@ -536,10 +543,6 @@ function drawOnMapMenu(test) {
 
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
-        // olmap.getLayers().getArray().filter(layer => layer.get('name') === 'delineation_layer')
-        //     .forEach(layer => olmap.removeLayer(layer));
-        console.log('16')
-        console.log('17')
         removeInteractions();
         toggle_draw(document.getElementById("draw_catchment"))
 
@@ -645,6 +648,13 @@ function getCookie(name) {
 // TODO: not used in this file. So from where comes the used token? Which one is better?
 let csrf_token = getCookie('csrftoken');
 
+vfw.html.loaderOverlayOn = function () {
+    document.getElementById("loader-overlay").style.display = "block";
+}
+
+vfw.html.loaderOverlayOff = function () {
+    document.getElementById("loader-overlay").style.display = "none";
+}
 
 /**
  * Load metadata and preview plot of dataset from server asynchronous.
@@ -652,6 +662,7 @@ let csrf_token = getCookie('csrftoken');
  * @param {string} id of dataset as string.
  */
 vfw.html.moreInfoModal = function (id) {
+    vfw.html.loaderOverlayOn();
     let pdata;
     let urlParams = new URLSearchParams(window.location.search);
     let startdate, enddate;
@@ -720,7 +731,8 @@ vfw.html.moreInfoModal = function (id) {
     document.getElementById("mod_prev").innerHTML = "";
     console.log('document.getElementById("infomodal"): ', document.getElementById("infoModal"))
     console.log('document.getElementById("infomodal").classList: ', document.getElementById("infoModal").classList)
-    document.getElementById("mod_prev").classList.add("loader");
+    // document.getElementById("mod_prev").classList.add("loader");
+    // document.getElementById("infoModal").classList.add("loader");
 
     // The following is used to make sure to add first the table then the plot.
     /**
@@ -762,6 +774,7 @@ vfw.html.moreInfoModal = function (id) {
         if ('warning' in json) {
             document.getElementById('mod_prev').innerHTML = json.warning;
         } else {
+            document.getElementById('mod_prev').style.width = "700px";  // set size for plot
             document.getElementById('mod_prev').innerHTML = json.div; // add plot
             // bokehPreviewScript is a global variable to set and remove the script of bokeh
             bokehPreviewScript = document.createElement('script');
@@ -775,15 +788,16 @@ vfw.html.moreInfoModal = function (id) {
         .done(function (td, pd) {
             tableToModal(td)
             if (pdata !== false) {
-                console.log('B')
                 plotToModal(pd)
             }
-            document.getElementById("mod_prev").classList.remove("loader")
-            console.log('document.getElementById("mod_prev"): ', document.getElementById("mod_prev"))
+            // document.getElementById("mod_prev").classList.remove("loader")
         })
         .fail(function(e) {
             document.getElementById('mod_dat_inf').innerHTML = '<p>Error in dataset. Please try again later.</p>';
-            document.getElementById("mod_prev").classList.remove("loader")
+            // document.getElementById("mod_prev").classList.remove("loader")
+        })
+        .always(function() {
+          vfw.html.loaderOverlayOff();
         })
     // .always(document.getElementById("mod_prev").classList.remove("loader"))
     let modal = document.getElementById("infoModal");

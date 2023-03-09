@@ -129,13 +129,13 @@ a.w3-hover-blue{padding: 0px}
 }
 @-webkit-keyframes fading-dot-loader-delay {
    0%   {top: 00px; background: #00BAEE; width: 20px;}
-   60%   {background: #AADDF9;}
-  100% {top: 32px; background: #D9EFFD; width: 32px;}
+   60%   {background: rgba(170, 221, 249, 0.5);}
+  100% {top: 32px; background: rgba(217, 239, 253, 0.1); width: 32px;}
 }
 @keyframes fading-dot-loader-delay {
    0%   {top: 00px; background: #00BAEE; width: 20px;}
-   60%   {background: #AADDF9;}
-  100% {top: 32px; background: #D9EFFD; width: 32px;}
+   60%   {background: rgba(170, 221, 249, 0.5);}
+  100% {top: 32px; background: rgba(217, 239, 253, 0.1); width: 32px;}
 }
 .fading-dot-loader .dot-loader2 {
   -webkit-transform: rotate(60deg);
