@@ -458,8 +458,8 @@ var clickCoordsY;
 var menu = document.querySelector("#context-menu");
 var resultMenu = document.querySelector("#context-result");
 //popup = document.querySelector("#loader-popup");
-vfw.html.popup = document.querySelector("#loader-popup");
- // let popup = document.querySelector("#loader-popup");
+vfw.html.popup = document.querySelector("#loader-popup");  // needed in sidebar "Plot data"
+// let popup = document.querySelector("#loader-popup");
 let content = document.querySelector('#pop-content-side');
 let popText = document.querySelector('#popupText');
 let popClose = document.querySelector('#pop-closer');
@@ -729,6 +729,7 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {
 
 /**
  * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
+ * Gets accessed on click in right click menu
  *
  * @param {html} link - HTML Element of the clicked link
  */
@@ -745,10 +746,12 @@ function menuItemListener(link) {
     }
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
     // content.innerHTML = '<div id="loader" class="loader"></div>';
-    content.innerHTML = vfw.html.loader
-    vfw.html.popup.classList.add(popActive);
-    popText.classList.remove(popInActive);
-    positionPopup(vfw.html.popup);
+    vfw.html.loaderOverlayOn();
+    // content.innerHTML = vfw.html.loader  // define content of loader popup
+
+    // vfw.html.popup.classList.add(popActive);  // activate loader popup
+    // popText.classList.remove(popInActive);  // position loader popup
+    // positionPopup(vfw.html.popup);  // position loader popup
     switch (link.getAttribute("data-action")) {
 
         case "View":
@@ -768,7 +771,8 @@ function menuItemListener(link) {
                 })
                 .fail(function (failed) {
                     console.error('Failed to load any metadata for dataset ', id)
-                    vfw.html.popup.classList.remove(popActive);
+                    // vfw.html.popup.classList.remove(popActive);
+                    vfw.html.loaderOverlayOff();
                 })
             break;
         case "Downloadcsv":
@@ -784,7 +788,8 @@ function menuItemListener(link) {
                     saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
                 })
                 .always(function () {
-                    vfw.html.popup.classList.remove(popActive);
+                    // vfw.html.popup.classList.remove(popActive);
+                    vfw.html.loaderOverlayOff();
                 });
             break;
         case "Downloadshp":
@@ -805,7 +810,8 @@ function menuItemListener(link) {
                     saveAs(blob, String(taskItemInContext.getAttribute("btnName")) + ".zip");
                 })
                 .always(function () {
-                    vfw.html.popup.classList.remove(popActive);
+                    // vfw.html.popup.classList.remove(popActive);
+                    vfw.html.loaderOverlayOff();
                 });
             break;
         case "Downloadxml":
@@ -823,7 +829,8 @@ function menuItemListener(link) {
                     saveAs(blob, taskItemInContext.getAttribute("btnName"));
                 })
                 .always(function () {
-                    vfw.html.popup.classList.remove(popActive);
+                    // vfw.html.popup.classList.remove(popActive);
+                    vfw.html.loaderOverlayOff();
                 });
             break;
         case "OpenTool":
@@ -838,14 +845,16 @@ function menuItemListener(link) {
                 // JSON.parse(sessionStorage['resultBtn'])[btnName]['inputs']
                 item.input_keys, item.input_values
             )*/
-            vfw.html.popup.classList.remove(popActive);
+            // vfw.html.popup.classList.remove(popActive);
+            vfw.html.loaderOverlayOff();
             break;
         case "DownloadDMD":
             console.error('Not implemented yet')
             break;
         case "Remove":
             vfw.sidebar.remove_single_data(id);
-            vfw.html.popup.classList.remove(popActive);
+            // vfw.html.popup.classList.remove(popActive);
+            vfw.html.loaderOverlayOff();
             break;
         case "ViewResult":
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
@@ -905,7 +914,8 @@ function menuItemListener(link) {
                 document.getElementById("mod_result").innerHTML = item.outputs; // add plot
                 let rModal = document.getElementById("resultModal");
                 rModal.style.display = "block";
-                vfw.html.popup.classList.remove(popActive);
+                // vfw.html.popup.classList.remove(popActive);
+                vfw.html.loaderOverlayOff();
                 modalToggleSize.style.display = "none";
                 // modalToggleSize.hidden = true;
             }
@@ -958,24 +968,27 @@ function menuItemListener(link) {
                         console.error('Fehler: ', e)
                     })
                     .always(function () {
-                        vfw.html.popup.classList.remove(popActive);
+                        // vfw.html.popup.classList.remove(popActive);
+                        vfw.html.loaderOverlayOff();
                     })
             }
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});
             saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
-            vfw.html.popup.classList.remove(popActive);
+            // vfw.html.popup.classList.remove(popActive);
+            vfw.html.loaderOverlayOff();
             break;
         case "RemoveR":
             vfw.session.remove_single_result(id);
-            vfw.html.popup.classList.remove(popActive);
+            // vfw.html.popup.classList.remove(popActive);
+            vfw.html.loaderOverlayOff();
             break;
         default:
             console.error('Error! There is no function defined for "' + link.getAttribute("data-action") + '".')
 
     }
-    popText.classList.add(popInActive);
+    // popText.classList.add(popInActive);
     toggleMenuOff();
 }
 

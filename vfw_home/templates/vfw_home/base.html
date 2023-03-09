@@ -45,6 +45,7 @@
 {#TODO: value has to be updated through js before reading to make sure its up-to-date #}
 {#<param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->#}
 <param id="is_authenticated" value="false">
+
 {#Cookie window 2/2#}
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
 <script>
@@ -95,20 +96,36 @@
       workflow: {},
     },
   }
-  vfw.html.loader = '<div id="loader"  class="fading-dot-loader">\n' +
-                    '  <div class="dot-loader1 dot-loader"></div>\n' +
-                    '  <div class="dot-loader2 dot-loader"></div>\n' +
-                    '  <div class="dot-loader3 dot-loader"></div>\n' +
-                    '  <div class="dot-loader4 dot-loader"></div>\n' +
-                    '  <div class="dot-loader5 dot-loader"></div>\n' +
-                    '  <div class="dot-loader6 dot-loader"></div> \n' +
-                    '</div>';
+  {#vfw.html.loader = '<div id="loader"  class="fading-dot-loader">\n' +#}
+  {#                  '  <div class="dot-loader1 dot-loader"></div>\n' +#}
+  {#                  '  <div class="dot-loader2 dot-loader"></div>\n' +#}
+  {#                  '  <div class="dot-loader3 dot-loader"></div>\n' +#}
+  {#                  '  <div class="dot-loader4 dot-loader"></div>\n' +#}
+  {#                  '  <div class="dot-loader5 dot-loader"></div>\n' +#}
+  {#                  '  <div class="dot-loader6 dot-loader"></div> \n' +#}
+  {#                  '</div>';#}
   {#vfw.var.SERVER = "{{ VFW_SERVER }}";#}
   vfw.var.MAP_SERVER = "{{ MAP_SERVER }}";
   vfw.var.DEMO_VAR = "{{ DEMO_VAR }}";
 </script>
 
 <body class="w3-light-grey">
+
+{#<div id="loader-overlay" onclick="off()"></div>#}
+<div id="loader-overlay" onclick="vfw.html.loaderOverlayOff()"  ;>
+  <div class="fading-dot-loader">
+    <div class="dot-loader1 dot-loader"></div>
+    <div class="dot-loader2 dot-loader"></div>
+    <div class="dot-loader3 dot-loader"></div>
+    <div class="dot-loader4 dot-loader"></div>
+    <div class="dot-loader5 dot-loader"></div>
+    <div class="dot-loader6 dot-loader"></div>
+  </div>
+</div>
+<script>
+
+
+</script>
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 <!--    Top container -->
 <div class="w3-container w3-top w3-black w3-large w3-padding" id="topcontainer">

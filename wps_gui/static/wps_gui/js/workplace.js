@@ -127,15 +127,17 @@ vfw.session.get_wpsprocess = function (service, identifier) {
         tool_data = tools[service][identifier]
     } else {
         console.log('this might take a while')
-        vfw.html.popup.classList.add(popActive);
-        positionPopup(vfw.html.popup);
+        // vfw.html.popup.classList.add(popActive);
+        vfw.html.loaderOverlayOn()
+        // positionPopup(vfw.html.popup);
         $.when(vfw.session.load_wpsprocess(service, identifier))
             .done(
                 function (json) {
                     tools[service][identifier] = json
                     sessionStorage.setItem('tools', JSON.stringify(tools))
                     tool_data = json;
-                    vfw.html.popup.classList.remove(popActive);
+                    // vfw.html.popup.classList.remove(popActive);
+                    vfw.html.loaderOverlayOff();
                 })
         /* .fail(function (e) {
              console.error('Failed: ', e)

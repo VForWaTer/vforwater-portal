@@ -37,7 +37,8 @@ vfw.map.style.clusterStyle = function (feature) {
 }
 
 /**
- * Get a modal (pop up) with some information about the datasets at the clicked location.
+ * Whan clicked on a dataset o the map, then get a modal (pop up) with some information about the datasets
+ * at the clicked location.
  * @param {array} ids
  * @param {int} page
  */
@@ -60,6 +61,9 @@ vfw.map.buildMapModal = function (ids, page) {
         .fail(function (bug) {
             console.error('Bug! TODO: Remove this Layer!: ', bug)
             vfw.map.closeMapModal();
+        })
+        .always(function () {
+            vfw.html.loaderOverlayOff();
         })
 }
 
@@ -327,9 +331,10 @@ vfw.map.create_map = function () {
         if (vfw.map.vars.hit_cL) {
             content.innerHTML = '';
             try {
-                content.innerHTML = '<div id="loader" class="loader">bla</div>';
-                positionPopup(vfw.html.popup);
-                console.log('now u shall see a loader: ', content)
+                vfw.html.loaderOverlayOn();
+                // content.innerHTML = '<div id="loader" class="loader">bla</div>';
+                // positionPopup(vfw.html.popup);
+                // console.log('now u shall see a loader: ', content)
                 wfsLen = vfw.map.vars.wfsLayerName.length;
                 clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
                 ids = clickedFeatures.map(i => parseInt(i.getId().substr(wfsLen + 1, 8)));
@@ -339,8 +344,11 @@ vfw.map.create_map = function () {
                 vfw.map.buildMapModal(cleanedids, 1);
                 mapmodal.style.display = "block";
             } catch (err) {
-                content.innerHTML = '<div id="loader">Failed to load your selection</div>';
+                // content.innerHTML = '<div id="loader">Failed to load your selection</div>';
                 console.log('err: ', err)
+                vfw.html.loaderOverlayOff();
+            } finally {
+
             }
 
         } else {
