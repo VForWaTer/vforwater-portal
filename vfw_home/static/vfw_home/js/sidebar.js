@@ -992,13 +992,13 @@ function menuItemListener(link) {
     toggleMenuOff();
 }
 
-/** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
-popClose.onclick = function () {
-    // metaData_Overlay.setPosition(undefined);
-    // popClose.blur();
-    vfw.html.popup.classList.remove(popActive);
-    return false;
-};
+// /** * Add a click handler to hide the popup. * @return {boolean} Don't follow the href. */
+// popClose.onclick = function () {
+//     // metaData_Overlay.setPosition(undefined);
+//     // popClose.blur();
+//     vfw.html.popup.classList.remove(popActive);
+//     return false;
+// };
 
 /** make the popup dragable: */
 $(function () {
