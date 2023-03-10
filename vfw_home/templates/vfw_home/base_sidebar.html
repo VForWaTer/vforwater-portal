@@ -10,10 +10,13 @@
 </head>
 
 <body>
+
 <!-- TODO: check if still in use. If not delete that parm -->
 {#<param id="workdata" value ="{{ workspaceData }}"></param> <!-- param to bridge data from view to js  -->#}
 <!--   Sidenav/menu -->
   <nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br>
+{#  <nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br>#}
+
     <div class="w3-container w3-row">
       <div class="w3-col s4">
         <img src="{% static 'vfw_home/images/logo_main.png' %}" style="width:200px"><br>
@@ -72,7 +75,7 @@
     </ul>
   </nav>
 
-  {% include 'vfw_home/loader_popup.html' %}
+{#  {% include 'vfw_home/loader_popup.html' %}#}
 
 
 <nav id="img-popup" class="context-menu w3-center">
