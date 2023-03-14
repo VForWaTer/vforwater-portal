@@ -58,7 +58,7 @@ def home(request):
     if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
         try:
             apiproc = getProcesses(endpoint)
-            for process in apiproc.processes()['processes']:
+            for process in apiproc.processes():
                 ogcapi_proc[process['id']] = {}
                 ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
 
