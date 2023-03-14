@@ -165,7 +165,6 @@ class UploadForm(forms.Form):
     # map = forms.BaseGeometryWidget(widget=forms.OSMWidget(name='test'))
     # map = forms.OSMWidget()
     # map = CustomMap(attrs={'map_width': 200, 'map_height': 120})
-    print('a ___________________')
     # Mwidget.render('name', ['john', 'paul'])
     # print('Mwidget: ', Mwidget.render('name', ['john', 'paul']))
     # map = CustomMapField(attrs={'map_width': 50, 'map_height': 50})
@@ -173,7 +172,6 @@ class UploadForm(forms.Form):
     # point = forms.\
     #     PointField(widget=forms.OSMWidget(attrs={'map_width': 200,
     #                                              'map_height': 120}))
-    print('b ___________________')
     # map = CustomMapField()
     # map.widget(forms.OSMWidget(attrs={'map_width': 400,
     #                                   'map_height': 120}))
