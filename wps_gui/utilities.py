@@ -220,7 +220,7 @@ def get_endpoint_data(devel = False):
         else:
             endpoint = VFW_GEOAPI
     except Exception as e:
-        print("Exception in wps_gui.views.home: ", e)
+        print("Exception in wps_gui.utilities: {}, service: {}, endpoint: {}".format(e, service, endpoint))
     return service, endpoint, wps_services
 
 
