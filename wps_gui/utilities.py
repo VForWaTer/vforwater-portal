@@ -218,9 +218,10 @@ def get_endpoint_data(devel = False):
         if not devel:
             endpoint = wps_services_url[0]  # server = http://geoapi:8895/geoapi/
         else:
-            endpoint = 'http://localhost:8895/geoapi/'
+            endpoint = 'http://localhost:5000/'  # 'http://localhost:8000/'  # 'http://localhost:8895/geoapi/'
     except Exception as e:
         print("Exception in wps_gui.views.home: ", e)
+
     return service, endpoint, wps_services
 
 

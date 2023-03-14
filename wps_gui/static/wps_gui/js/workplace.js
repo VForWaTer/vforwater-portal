@@ -317,6 +317,7 @@ vfw.workspace.modal.prep_data = function () {
     /** collect inputs **/
     var inKey = [];
     var inValue = [];
+    let indict = {};  // pywps needed a set. For geoapi processes we can use a dict. TODO: delete set if not needed.
     var inType = [];
     var inId = [];
     let dDInput = 0;
@@ -345,6 +346,7 @@ vfw.workspace.modal.prep_data = function () {
             inKey.push(dropDInputs[i].name);
             inType.push(typeList);
             inId.push(inIdList);
+            indict[dropDInputs[i].name] = valueList;
 
             /** else if one dropdown **/
         } else {
@@ -352,9 +354,11 @@ vfw.workspace.modal.prep_data = function () {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
                 inValue.push(stored['source'] + stored['dbID']);
                 inType.push(stored['type']);
+                indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
             } else {
                 inValue.push(dDInput[0].value);
                 inType.push(stored['type']);
+                indict[dropDInputs[i].name] = dDInput[0].value;
             }
             inKey.push(dropDInputs[i].name);
             inId.push(dDInput[0].value);
@@ -367,6 +371,7 @@ vfw.workspace.modal.prep_data = function () {
                 inValue.push(inputInputs[i].value);
                 inType.push('string');
                 inId.push('');
+                indict[inputInputs[i].name] = dDInput[i].value;
             }
         } else if (inputInputs[i].type == "checkbox") {
             inKey.push(inputInputs[i].name);
@@ -374,16 +379,19 @@ vfw.workspace.modal.prep_data = function () {
                 inValue.push(true);
                 inType.push('boolean');
                 inId.push('');
+                indict[inputInputs[i].name] = true;
             } else {
                 inValue.push(false);
                 inType.push('boolean');
                 inId.push('');
+                indict[inputInputs[i].name] = false;
             }
         } else {
             inKey.push(inputInputs[i].name);
             inValue.push(inputInputs[i].value);
             inType.push('');
             inId.push('');
+            indict[inputInputs[i].name] = inputInputs[i].value;
         }
     }
 
@@ -414,7 +422,7 @@ vfw.workspace.modal.prep_data = function () {
     }
     return {
         'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
-        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId
+        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId, 'in_dict': indict,
     }
 }
 
@@ -761,12 +769,13 @@ vfw.session.remove_all_results = function () {
 
 /**
  * @param {json} item - input information loaded from Session Storage
+ * @param {string} entry_name - Name for the element (important! That name is also send to server!)
  * @param {string} newNode - The new HTML Element where the checkbox will be added
  */
-vfw.workspace.modal.build_regexText = function (item, newNode) {
+vfw.workspace.modal.build_regexText = function (item, entry_name, newNode) {
     inElement = document.createElement("INPUT");
     inElement.id = item.title;  // item.identifier;
-    inElement.name = item.title;  // item.identifier;
+    inElement.name = entry_name;  // item.identifier;
     inElement.setAttribute("pattern", item.keywords[1]);
     inElement.type = "text";
     if ('defaultValue' in item) {
@@ -780,10 +789,11 @@ vfw.workspace.modal.build_regexText = function (item, newNode) {
 
 /**
  * @param {json} item - input information loaded from Session Storage
+ * @param {string} entry_name - Name for the element (important! That name is also send to server!)
  * @param {string} newNode - The new HTML Element where the checkbox will be added
  * @param {string} option - String with predefined value from wps process
  */
-vfw.workspace.modal.build_radio = function (item, newNode, option) {
+vfw.workspace.modal.build_radio = function (item, entry_name, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("INPUT");
@@ -793,7 +803,7 @@ vfw.workspace.modal.build_radio = function (item, newNode, option) {
     inElement.id = item.title;  // item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
 
-    inElement.name = item.title;  // item.identifier;
+    inElement.name = entry_name;  // item.identifier;
     if ('defaultValue' in item) {
         if (item.defaultValue == option) inElement.checked = true;
     }
@@ -803,10 +813,11 @@ vfw.workspace.modal.build_radio = function (item, newNode, option) {
 
 /**
  * @param {json} item - input information loaded from Session Storage
+ * @param {string} entry_name - Name for the element (important! That name is also send to server!)
  * @param {HTMLElement} newNode - The new HTML Element where the checkbox will be added
  * @param {string} option - String with predefined value from wps process
  */
-vfw.workspace.modal.build_checkbox = function (item, newNode, option) {
+vfw.workspace.modal.build_checkbox = function (item, entry_name, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("input");
@@ -816,7 +827,7 @@ vfw.workspace.modal.build_checkbox = function (item, newNode, option) {
     inElement.id = item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
 
-    inElement.name = item.identifier;
+    inElement.name = entry_name;
     if ('defaultValue' in item) {
         if (item.defaultValue == option) inElement.checked = true;
     }
@@ -953,7 +964,9 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     let countDropDowns = 0;
 
     // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
-    Object.values(wpsInfo.inputs).forEach(function (item, index) {
+    Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
+        let item = entry_value[1];
+        let entry_name = entry_value[0];
         newNode = document.createElement("p");
 
         /** Set title of Input and set the 'required' flag if necessary **/
@@ -980,7 +993,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
                 if (item.maxOccurs === 1) {
                     // nodeText = "";
                     item.allowedValues.forEach(function (option) {
-                        vfw.workspace.modal.build_radio(item, newNode, option)
+                        vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
                     });
                 }
             }
@@ -989,13 +1002,13 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
                 if (item.maxOccurs === 1) {
                     // nodeText = "";
                     item.supportedValues.forEach(function (option) {
-                        vfw.workspace.modal.build_radio(item, newNode, option)
+                        vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
                     });
                     // inElement.setAttribute("type", "radio")
                 }
             }
         } else if ('keywords' in item && item.keywords.includes('pattern')) {
-            vfw.workspace.modal.build_regexText(item, newNode)
+            vfw.workspace.modal.build_regexText(item, entry_name, newNode)
         // } else if ('keywords' in item) {  // don't use this for geoapi;
         //     countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
 
@@ -1003,7 +1016,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
         } else {
             inElement = document.createElement("INPUT");
             inElement.id = item.title;  // item.id;
-            inElement.name = item.title;  // item.identifier;
+            inElement.name = entry_name;  // item.identifier;
             inElement.title = item.description;  // item.identifier;
             inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
 

@@ -9,6 +9,7 @@ import sys
 import time
 
 import jsonpickle
+import requests
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
@@ -265,7 +266,7 @@ def create_wpsdb_entry(wps_process: str, invalue: list, outputs):
 
 class ProcessView(TemplateView):
 
-    def get(self, request):
+    def get(self, request: object) -> object:
         selected_process = json.loads(request.GET.get("processview"))
 
         if selected_process['serv'] == 'pygeoapi_vforwater':
@@ -520,9 +521,16 @@ def process_run(request):
         inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""),
                           request_input.get("in_type_list", "")))
         inputs = edit_input(inputs)
-        wps = get_wps_service_engine(request_input.get("serv", ""))
+        if request_input['serv'] == 'pygeoapi_vforwater':
+            service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        else:
+            print('You try to run a process, but I do not know your server.')
         wps_process = request_input.get("id", "")
-        execution = wps.execute(wps_process, inputs)
+
+        execution = requests.post(f'{endpoint}processes/{wps_process}/execution',
+                                  # json={'inputs': {'name': 'asd325r' }}
+                                  json={'inputs': request_input.get("in_dict", "")}
+                                  )
 
         all_outputs = handle_wps_output(execution, wps_process, inputs)
     else:
@@ -530,6 +538,25 @@ def process_run(request):
         print('user is not authenticated. ', all_outputs)
 
     return JsonResponse(all_outputs)
+
+# # @login_required
+# def process_run(request):
+#     # if request.user.is_authenticated:
+#     if True:
+#         request_input = json.loads(request.GET.get('processrun'))
+#         inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""),
+#                           request_input.get("in_type_list", "")))
+#         inputs = edit_input(inputs)
+#         wps = get_wps_service_engine(request_input.get("serv", ""))
+#         wps_process = request_input.get("id", "")
+#         execution = wps.execute(wps_process, inputs)
+#
+#         all_outputs = handle_wps_output(execution, wps_process, inputs)
+#     else:
+#         all_outputs = {'execution_status': 'auth_error'}
+#         print('user is not authenticated. ', all_outputs)
+#
+#     return JsonResponse(all_outputs)
 
 
 def db_load(request):
