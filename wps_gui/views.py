@@ -64,7 +64,7 @@ def home(request):
 
         except Exception as e:
             logger.error(sys.exc_info()[0])
-            print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}, getProcesses{getProcesses(endpoint)}, allProcesses: {ogcapi_proc}')
+            print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}, all_processes: {getProcesses(endpoint).processes()}, process_dict_keys: {ogcapi_proc.keys()}')
 
         # Remove process that should not be visible for users
         if "dbloader" in ogcapi_proc:
