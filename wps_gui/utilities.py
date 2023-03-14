@@ -3,7 +3,7 @@ from urllib.error import HTTPError, URLError
 
 from owslib.wps import WebProcessingService
 from .models import WebProcessingService as WpsModel
-from heron.settings import VFW_SERVER, wps_log
+from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log
 
 
 def abstract_is_link(process):
@@ -213,12 +213,12 @@ def get_endpoint_data(devel = False):
         wps_services = list(WpsModel.objects.values_list("name", flat=True))
         wps_services_url = list(WpsModel.objects.values_list('endpoint', flat=True))
         # print('wps_ services & wps_services_url: ', wps_services, wps_services_url)
-        service = wps_services[0]  # [0] pygeoapi_vforwater
+        service = wps_services[0]  # pygeoapi_vforwater
 
         if not devel:
-            endpoint = wps_services_url[0]  # server = http://geoapi:8895/geoapi/
+            endpoint = wps_services_url[0] # http://geoapi:5000/
         else:
-            endpoint = 'http://localhost:8895/geoapi/'
+            endpoint = VFW_GEOAPI
     except Exception as e:
         print("Exception in wps_gui.views.home: ", e)
     return service, endpoint, wps_services
