@@ -141,6 +141,7 @@ class Box {
 
         // Don't show handles around rectangle when moving it
         box.installEditPolicy(new draw2d.policy.figure.GlowSelectionFeedbackPolicy())
+        // box.setCanvas(canvas)
         return box
     }
 
@@ -417,12 +418,17 @@ function onclick_handler(ev) {
 function vfw_drag() {
 
 }
+/*
 
 const canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
 connection = new Connection();
 canvas.installEditPolicy(connection.connectionPolicy);
+*/
+
+
+// let globalWorkflow = new Workflow();
 
 /**
  * Collect metadata of element needed to draw a box.
@@ -532,9 +538,9 @@ vfw.workspace.workflow.update = function (event) {
             service: event.element._service,
         }
     } else if (event.state === 'change') {
-        console.log('**************** change **************************')
-        console.log('event: ', event)
-        console.log('workflow: ', workflow)
+        // console.log('**************** change **************************')
+        // console.log('event: ', event)
+        // console.log('workflow: ', workflow)
 
         // if (event.hasOwnProperty('target') && !workflow[event.target.boxid]['input_values']) {
         if (event.hasOwnProperty('target')) {
@@ -737,7 +743,8 @@ vfw.workspace.workflow.get_workflow_id_affix = function () {
 vfw.workspace.workflow.draw_workflow = function () {
     let jsonDocument = vfw.session.draw2d.getworkflow()
     if (jsonDocument) {
-        console.log('read jsonDocument: ', JSON.parse(jsonDocument))
+        // console.log('3')
+        // console.log('read jsonDocument: ', JSON.parse(jsonDocument))
         let reader = new draw2d.io.json.Reader();
         // console.log('read: ', jsonDocument)
         reader.unmarshal(canvas, JSON.parse(jsonDocument));
