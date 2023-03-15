@@ -28,7 +28,7 @@ from wps_gui.models import WpsResults, WebProcessingService, WpsDescription
 from wps_gui.utilities import (
     get_wps_service_engine,
     list_wps_service_engines,
-    abstract_is_link, get_endpoint_data, get_process_basics, get_process_info,
+    abstract_is_link, get_endpoint_data, get_process_basics, get_process_info, handle_geoapiprocess_output,
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -516,21 +516,22 @@ def process_run(request):
     # if request.user.is_authenticated:
     if True:
         request_input = json.loads(request.GET.get('processrun'))
-        inputs = list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""),
-                          request_input.get("in_type_list", "")))
-        inputs = edit_input(inputs)
-        if request_input['serv'] == 'pygeoapi_vforwater':
-            service, endpoint, wps_services = get_endpoint_data(DEBUG)
-        else:
-            print('You try to run a process, but I do not know your server.')
         wps_process = request_input.get("id", "")
 
-        execution = requests.post(f'{endpoint}processes/{wps_process}/execution',
-                                  # json={'inputs': {'name': 'asd325r' }}
-                                  json={'inputs': request_input.get("in_dict", "")}
-                                  )
+        if request_input['serv'] == 'pygeoapi_vforwater':
+            service, endpoint, wps_services = get_endpoint_data(DEBUG)
+            apiproc = getProcesses(endpoint)
+            process_description = get_process_info(apiproc.process(wps_process))
+        else:
+            print('You try to run a process, but I do not know your server.')
 
-        all_outputs = handle_wps_output(execution, wps_process, inputs)
+        execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
+                                  json={'inputs': request_input.get("in_dict", ""),
+                                        # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
+                                        }
+                                  )
+        all_outputs = handle_geoapiprocess_output(execution, process_description, request_input)
+
     else:
         all_outputs = {'execution_status': 'auth_error'}
         print('user is not authenticated. ', all_outputs)

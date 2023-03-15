@@ -1,9 +1,14 @@
 import json
+import re
 from urllib.error import HTTPError, URLError
 
 from owslib.wps import WebProcessingService
 from .models import WebProcessingService as WpsModel
+from owslib.ogcapi.processes import Processes as ogcProcesses
 from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log
+# from .views import basicdatatypes
+
+basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number', 'json']
 
 
 def abstract_is_link(process):
@@ -276,3 +281,104 @@ def add_required(inputs):
             inputs[k]['required'] = False
 
     return inputs
+
+
+
+from owslib.ogcapi import Collections
+from owslib.util import Authentication
+
+class ogcCollections(Collections):
+    """Abstraction for OGC API - Processes"""
+
+    def __init__(self, url: str, json_: str = None, timeout: int = 30,
+                 headers: dict = None, auth: Authentication = None):
+        __doc__ = Collections.__doc__  # noqa
+        super().__init__(url, json_, timeout, headers, auth)
+
+    def processes(self) -> list:
+        """
+        implements /processes
+        @returns: `list` of available processes
+        """
+
+        path = 'processes'
+        return self._request(path=path)['processes']
+
+    def process(self, process_id: str) -> dict:
+        """
+        implements /processs/{processId}
+        @type process_id: string
+        @param process_id: id of process
+        @returns: `dict` of process desceription
+        """
+
+        path = f'processes/{process_id}'
+        return self._request(path=path)
+
+
+def handle_geoapiprocess_output(execution, wps_process, inputs):
+    """
+
+    :param execution: owslib.wps.output object
+    :type execution: object
+    :param wps_process: name of the process
+    :type wps_process: string
+    :param inputs: {'key_list': [], 'value_list': [], 'dataset': ''}
+    :type inputs: dict
+    :return:
+    """
+    all_outputs = {
+        "execution_status": execution.status_code,
+        "version": wps_process['version'],
+        "verbose": execution.reason,
+        # "timeout": execution.timeout,
+        # "percentCompleted": execution.percentCompleted,
+        "errors": [],  # execution.percentCompleted,
+        "processTime: ": execution.elapsed.total_seconds(),  # elapsed time in seconds
+        "creationTime: ": execution.headers['Date'],
+        # 'process': execution.process,
+        "result": execution.json(),
+    }
+    # if execution.errors != []:
+    if execution.status_code != 200:
+        return all_outputs
+
+    # iterate through list of outputs
+    for output in execution.json():
+
+        if 'identifier' in output and output.identifier == "error":  # this might never ever happen TODO: fix it
+            error_dict = {}
+            error = False
+            error_dict["error"] = output.data[0] == "True"
+            # error_dict = json.loads(output.data[0])
+            all_outputs["error"] = error_dict
+
+            if error_dict["error"] is not False:
+                print("error in wps process: ", error_dict)
+                all_outputs = {
+                    "execution_status": "error in wps process",
+                    "error": error_dict["message"],
+                }
+                break
+
+        # if no error build output for a result button in portal:
+        else:
+            single_output = {}
+            # get datatype
+            # single_output["type"] = type(execution.json()[output])
+            single_output["data"] = execution.json()[output]
+
+            all_outputs["result"][output] = single_output
+            # TODO: Have to handle bytes result
+            # if type(output.data[0]) is bytes:
+            #     if len(output.data[0]) > 30:
+            #         substring = str(output.data[0][:30])
+            #         if "xml" in substring:
+            #             print('XML as input not implemented yet. Got: ', output.data[0])
+            #             logger.error('XML as input not implemented yet.')
+            #             # tree = ET.fromstring(output.data[0])
+            #             # for child in tree:
+            #             #     print(child.tag, child.attrib)
+            #             del outputs_for_db[-1]
+
+    return all_outputs
