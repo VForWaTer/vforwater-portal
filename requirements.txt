@@ -2,11 +2,9 @@ Bokeh       ==3.0.3
 django      ==3.2.18
 django_crontab      ==0.7.1
 django-cors-headers ==3.2.1
-django-filter       ==21.1
 docutils    ==0.16
 future      ==0.18.3
 jsonpickle  ==3.0.1
-lxml        ==4.9.2
 markdown    ==3.3.4
 matplotlib  ==3.5.3
 numpy       ==1.22.4
