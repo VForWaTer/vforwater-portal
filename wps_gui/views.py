@@ -512,7 +512,7 @@ def handle_wps_output(execution, wps_process, inputs):
 
 
 # @login_required
-def process_run(request):
+def process_run(request):  # TODO: Check if identical input exists in db before starting the process again
     # if request.user.is_authenticated:
     if True:
         request_input = json.loads(request.GET.get('processrun'))
@@ -530,11 +530,14 @@ def process_run(request):
                                         # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
                                         }
                                   )
-        all_outputs = handle_geoapiprocess_output(execution, process_description, request_input)
-
+        if execution.status_code == 200:
+            all_outputs = handle_geoapiprocess_output(execution, process_description, request_input)
+        else:
+            all_outputs = {'execution_status': f'error: {execution.reason}'}
+            print(f'Error in process - caught in process_run function: {all_outputs}')
     else:
         all_outputs = {'execution_status': 'auth_error'}
-        print('user is not authenticated. ', all_outputs)
+        print(f'user is not authenticated. {all_outputs}')
 
     return JsonResponse(all_outputs)
 

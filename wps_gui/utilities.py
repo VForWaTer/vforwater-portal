@@ -316,20 +316,169 @@ class ogcCollections(Collections):
         return self._request(path=path)
 
 
-def handle_geoapiprocess_output(execution, wps_process, inputs):
+def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> object:
+    """
+    Create a database entry.
+    :param wps_process: identifier of the wps process
+    :param invalue: dict of input identifier of wps and respective value (e.g. a path)
+    :param outputs: dict of output or a path
+    """
+    db_result = {'id': 'bla'}
+    # db_result = WpsResults.objects.get_or_create(
+    #
+    #     open=False,
+    #     wps=wps_process,
+    #     inputs=invalue,
+    #     outputs=outputs,
+    #     creation=timezone.now(),
+    # )  # , access=timezone.now())
+    return db_result['id']
+
+
+def handle_geoapiprocess_output(execution, process_description, inputs):
     """
 
     :param execution: owslib.wps.output object
     :type execution: object
-    :param wps_process: name of the process
-    :type wps_process: string
+    :param process_description: name of the process
+    :type process_description: string
     :param inputs: {'key_list': [], 'value_list': [], 'dataset': ''}
     :type inputs: dict
     :return:
     """
+    result = execution.json();
+    # if result is a single output, first make sure the format is as expected like for multiple outputs
+    output_keys = process_description['outputs'].keys()
+    if len(output_keys) == 1 and output_keys[0] not in result.keys():
+        result = {output_keys[0]: {result}}
+
+    if len(str(result)) < 300:  # random number, typical pathlength < 260 chars
+        db_output_data = result
+    else:
+        db_output_data = str(result)[:300]
+
+    wpsid = create_wpsdb_entry(inputs['id'], inputs['in_dict'], db_output_data)
+
     all_outputs = {
         "execution_status": execution.status_code,
-        "version": wps_process['version'],
+        "version": process_description['version'],
+        "verbose": execution.reason,
+        # "timeout": execution.timeout,
+        # "percentCompleted": execution.percentCompleted,
+        "errors": [],  # execution.percentCompleted,
+        "processTime: ": execution.elapsed.total_seconds(),  # elapsed time in seconds
+        "creationTime: ": execution.headers['Date'],
+        # 'process': execution.process,
+        "result": result,
+    }
+
+    if 'error' in result and 'value' in result.error and result.error.value == True:
+        print(f"Status {execution.status_code}, error in wps process")
+        return all_outputs
+    else:
+        result.pop('error', None) # as there shouldn't be an error, we can remove it from the results
+        process_description['outputs'].pop('error', None) # as there shouldn't be an error, we can remove it from the results
+
+    def singleOutput2json(output_name, result, output_description):
+        single_output = {}
+        single_output["data"] = result
+
+        # get datatype
+        if output_description[output_name]['schema']['type'] == 'object':
+            if 'contentMediaType' in output_description[output_name]['schema'] \
+                and 'json' in output_description[output_name]['schema']['contentMediaType']:
+                single_output["type"] = 'json'
+            else:
+                single_output["type"] = output_description[output_name]['schema']['type']
+        else:
+            single_output["type"] = output_description[output_name]['schema']['type']
+
+        single_output["data"] = result
+
+        if 'URI' in output_description:
+            path = output_description['URI']
+        elif 'keywords' in output_description and "pickle" in output_description['keywords']:
+            path = result['URI']  # get first value of string tuple
+        else:
+            path = ""
+
+        if len(single_output["data"]['value']) < 300:  # random number, typical pathlength < 260 chars
+            single_output["data"] = result['value']
+            db_output_data = result['value']
+        elif path != "":  # TODO: fix it (compare with handle_wps_output)
+            try:
+                file_name = path[:-4] + single_output["type"] + path[-4:]
+                # text_file = open(file_name, "w")
+                # text_file.write(eval(output.data[0])[0])
+                # text_file.close()
+                # db_output_data = file_name
+                # single_output["data"] = eval(output.data[0])[0]
+            except Exception as e:
+                print("Warning: no file was created for long string")
+                print(e)
+        else:
+            db_output_data = ""
+
+        # TODO: create function to write to db
+        if db_output_data != "":
+            db_output = [output_name, single_output["type"], db_output_data]
+            # create db entry
+            wpsid = create_wpsdb_entry(process_description, inputs, db_output)
+
+            single_output["wpsID"] = wpsid
+            single_output["dropBtn"] = {
+                "orgid": wpsid,
+                "type": "data",
+                "name": "",
+                "inputs": [],
+                "outputs": [single_output["type"]],
+            }
+        else:
+            print("*** no output to write to db ***")
+            single_output["error"] = "no output to write to db"
+
+        return single_output
+
+    if len(process_description['outputs']) <= 1:
+        all_outputs["result"]['id'] = singleOutput2json(list(process_description['outputs'].keys())[0], execution.json(), process_description['outputs'])
+    else:
+        # iterate through dict of outputs
+        for output_k, output_v in execution.json().items():
+            single_output = singleOutput2json(output_k, execution.json()[output_k], process_description['outputs'][output_k])
+            all_outputs["result"][output_k] = single_output
+
+    # TODO: Have to handle bytes result
+    # if type(output.data[0]) is bytes:
+    #     if len(output.data[0]) > 30:
+    #         substring = str(output.data[0][:30])
+    #         if "xml" in substring:
+    #             print('XML as input not implemented yet. Got: ', output.data[0])
+    #             logger.error('XML as input not implemented yet.')
+    #             # tree = ET.fromstring(output.data[0])
+    #             # for child in tree:
+    #             #     print(child.tag, child.attrib)
+    #             del outputs_for_db[-1]
+
+    return all_outputs
+
+
+
+def handle_geoapiprocess_output_old(execution, process_description, inputs):
+    """
+
+    :param execution: owslib.wps.output object
+    :type execution: object
+    :param process_description: name of the process
+    :type process_description: string
+    :param inputs: {'key_list': [], 'value_list': [], 'dataset': ''}
+    :type inputs: dict
+    :return:
+    """
+    result = execution.json();
+
+    all_outputs = {
+        "execution_status": execution.status_code,
+        "version": process_description['version'],
         "verbose": execution.reason,
         # "timeout": execution.timeout,
         # "percentCompleted": execution.percentCompleted,
@@ -339,46 +488,133 @@ def handle_geoapiprocess_output(execution, wps_process, inputs):
         # 'process': execution.process,
         "result": execution.json(),
     }
-    # if execution.errors != []:
-    if execution.status_code != 200:
+
+    if execution.status_code != 200 or ('error' in result and 'value' in result.error and result.error.value == True):
+        print(f"{execution.status_code}, error in wps process")
         return all_outputs
+    else:
+        result.pop('error', None) # as there shouldn't be an error, we can remove it from the results
+        process_description['outputs'].pop('error', None) # as there shouldn't be an error, we can remove it from the results
 
-    # iterate through list of outputs
-    for output in execution.json():
-
-        if 'identifier' in output and output.identifier == "error":  # this might never ever happen TODO: fix it
-            error_dict = {}
-            error = False
-            error_dict["error"] = output.data[0] == "True"
-            # error_dict = json.loads(output.data[0])
-            all_outputs["error"] = error_dict
-
-            if error_dict["error"] is not False:
-                print("error in wps process: ", error_dict)
-                all_outputs = {
-                    "execution_status": "error in wps process",
-                    "error": error_dict["message"],
-                }
-                break
-
-        # if no error build output for a result button in portal:
+    def singleOutput2json(output_name, result, output_description):
+        single_output = {}
+        # get datatype
+        if output_description[output_name]['schema']['type'] == 'object':
+            if 'contentMediaType' in output_description[output_name]['schema'] \
+                and 'json' in output_description[output_name]['schema']['contentMediaType']:
+                single_output["type"] = 'json'
+            else:
+                single_output["type"] = output_description[output_name]['schema']['type']
         else:
-            single_output = {}
-            # get datatype
-            # single_output["type"] = type(execution.json()[output])
-            single_output["data"] = execution.json()[output]
+            single_output["type"] = output_description[output_name]['schema']['type']
 
-            all_outputs["result"][output] = single_output
-            # TODO: Have to handle bytes result
-            # if type(output.data[0]) is bytes:
-            #     if len(output.data[0]) > 30:
-            #         substring = str(output.data[0][:30])
-            #         if "xml" in substring:
-            #             print('XML as input not implemented yet. Got: ', output.data[0])
-            #             logger.error('XML as input not implemented yet.')
-            #             # tree = ET.fromstring(output.data[0])
-            #             # for child in tree:
-            #             #     print(child.tag, child.attrib)
-            #             del outputs_for_db[-1]
+        single_output["data"] = result
+
+        if 'keywords' in output_description and "pickle" in output_description['keywords']:
+            path = result['URI']  # get first value of string tuple
+        else:
+            path = ""
+
+        if len(single_output["data"]['value']) < 300:  # random number, typical pathlength < 260 chars
+            single_output["data"] = result['value']
+            db_output_data = result['value']
+        elif path != "":  # TODO: fix it (compare with handle_wps_output)
+            try:
+                file_name = path[:-4] + single_output["type"] + path[-4:]
+                # text_file = open(file_name, "w")
+                # text_file.write(eval(output.data[0])[0])
+                # text_file.close()
+                # db_output_data = file_name
+                # single_output["data"] = eval(output.data[0])[0]
+            except Exception as e:
+                print("Warning: no file was created for long string")
+                print(e)
+        else:
+            db_output_data = ""
+
+        # TODO: create function to write to db
+        if db_output_data != "":
+            pass
+        #     db_output = [inputs.id, single_output["type"], db_output_data]
+        #     # create db entry
+        #     wpsid = create_wpsdb_entry(inputs['id'], inputs, db_output)
+        #
+        #     single_output["wpsID"] = wpsid
+        #     single_output["dropBtn"] = {
+        #         "orgid": wpsid,
+        #         "type": "data",
+        #         "name": "",
+        #         "inputs": [],
+        #         "outputs": [single_output["type"]],
+        #     }
+        else:
+            print("*** no output to write to db ***")
+            single_output["error"] = "no output to write to db"
+
+        return single_output
+
+    if len(process_description['outputs']) <= 1:
+        single_output = singleOutput2json(list(process_description['outputs'].keys())[0], execution.json(), process_description['outputs'])
+    else:
+        # iterate through dict of outputs
+        for output_k, output_v in execution.json().items():
+            single_output = singleOutput2json(output_k, execution.json()[output_k], process_description['outputs'][output_k])
+
+    def singleoutput2db():
+        pass
+
+
+    for output_k, output_v in execution.json().items():
+        # single_output["data"] = output_v
+
+        # prepare data for database
+        if len(single_output["data"]) < 300:  # random number, typical pathlength < 260 chars
+            db_output_data = output_v
+        elif path != "":  # TODO: fix it (compare with handle_wps_output)
+            print('output.data: ', output_v)
+            try:
+                file_name = path[:-4] + single_output["type"] + path[-4:]
+                # text_file = open(file_name, "w")
+                # text_file.write(eval(output.data[0])[0])
+                # text_file.close()
+                db_output_data = file_name
+                # single_output["data"] = eval(output.data[0])[0]
+            except Exception as e:
+                print("Warning: no file was created for long string")
+                print(e)
+        else:
+            db_output_data = ""
+
+        print('db_output_data: ', db_output_data)
+        # add data to database
+        if db_output_data != "":
+            db_output = [output.identifier, single_output["type"], db_output_data]
+            # create db entry
+            wpsid = create_wpsdb_entry(process_description, inputs, db_output)
+
+            single_output["wpsID"] = wpsid
+            single_output["dropBtn"] = {
+                "orgid": wpsid,
+                "type": "data",
+                "name": "",
+                "inputs": [],
+                "outputs": [single_output["type"]],
+            }
+        else:
+            print("*** no output to write to db ***")
+            single_output["error"] = "no output to write to db"
+
+        all_outputs["result"][output] = single_output
+        # TODO: Have to handle bytes result
+        # if type(output.data[0]) is bytes:
+        #     if len(output.data[0]) > 30:
+        #         substring = str(output.data[0][:30])
+        #         if "xml" in substring:
+        #             print('XML as input not implemented yet. Got: ', output.data[0])
+        #             logger.error('XML as input not implemented yet.')
+        #             # tree = ET.fromstring(output.data[0])
+        #             # for child in tree:
+        #             #     print(child.tag, child.attrib)
+        #             del outputs_for_db[-1]
 
     return all_outputs
