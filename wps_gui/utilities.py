@@ -348,9 +348,9 @@ def handle_geoapiprocess_output(execution, process_description, inputs):
     """
     result = execution.json();
     # if result is a single output, first make sure the format is as expected like for multiple outputs
-    output_keys = process_description['outputs'].keys()
+    output_keys = list(process_description['outputs'].keys())
     if len(output_keys) == 1 and output_keys[0] not in result.keys():
-        result = {output_keys[0]: {result}}
+        result = {output_keys[0]: result}
 
     if len(str(result)) < 300:  # random number, typical pathlength < 260 chars
         db_output_data = result
@@ -440,7 +440,7 @@ def handle_geoapiprocess_output(execution, process_description, inputs):
         return single_output
 
     if len(process_description['outputs']) <= 1:
-        all_outputs["result"]['id'] = singleOutput2json(list(process_description['outputs'].keys())[0], execution.json(), process_description['outputs'])
+        all_outputs["result"][output_keys[0]] = singleOutput2json(list(process_description['outputs'].keys())[0], execution.json(), process_description['outputs'])
     else:
         # iterate through dict of outputs
         for output_k, output_v in execution.json().items():
