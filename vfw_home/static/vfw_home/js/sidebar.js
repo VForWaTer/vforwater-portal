@@ -894,6 +894,7 @@ function menuItemListener(link) {
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
             popClose.classList.remove('w3-hide');
             positionPopup(vfw.html.popup);
+            vfw.html.loaderOverlayOff();
             break;
         case "Plot":
             console.log('item: ', item)
