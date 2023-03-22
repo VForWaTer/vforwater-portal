@@ -793,6 +793,7 @@ vfw.html.moreInfoModal = function (id) {
             // document.getElementById("mod_prev").classList.remove("loader")
         })
         .fail(function(e) {
+            console.log('loading of plot or table failed: ', e)
             document.getElementById('mod_dat_inf').innerHTML = '<p>Error in dataset. Please try again later.</p>';
             // document.getElementById("mod_prev").classList.remove("loader")
         })
@@ -864,32 +865,33 @@ vfw.sidebar.workspace_dataset = function (id) {
     }
 }
 
-/**
- * Send ID to server to build preview and add preview image to html
- * @param {int} id - Id of dataset
- * TODO: Check if used at all => NO! DELETE!
- */
-function show_preview(id) {
-    document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
-    $.ajax({
-        url: vfw.var.DEMO_VAR + "/home/previewplot",
-        datatype: 'image/png;base64',
-        data: {
-            preview: id,
-            'csrfmiddlewaretoken': csrf_token,
-        }, // data sent with the post request
-    })
-        .done(function (json) {
-            $.each(json, function (key, value) {
-                // document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value; // Strobl svg
-                document.getElementById("preview_img").innerHTML = value; // png
-                document.getElementById("show_data_preview" + id.toString()).value = "Reload Preview"
-            });
-        })
-        .fail(function (e) {
-            console.error('fehler: ', e)
-        })
-}
+// /**
+//  * Send ID to server to build preview and add preview image to html
+//  * @param {int} id - Id of dataset
+//  * TODO: Check if used at all => NO! DELETE!
+//  */
+// function show_preview(id) {
+//     console.log('Du hast mich benutzt!')
+//     document.getElementById("show_data_preview" + id.toString()).value = "Loading Preview";
+//     $.ajax({
+//         url: vfw.var.DEMO_VAR + "/home/previewplot",
+//         datatype: 'image/png;base64',
+//         data: {
+//             preview: id,
+//             'csrfmiddlewaretoken': csrf_token,
+//         }, // data sent with the post request
+//     })
+//         .done(function (json) {
+//             $.each(json, function (key, value) {
+//                 // document.getElementById("preview_img").innerHTML = '<img src="data:image/svg,' + value; // Strobl svg
+//                 document.getElementById("preview_img").innerHTML = value; // png
+//                 document.getElementById("show_data_preview" + id.toString()).value = "Reload Preview"
+//             });
+//         })
+//         .fail(function (e) {
+//             console.error('fehler: ', e)
+//         })
+// }
 
 
 /**

@@ -159,12 +159,10 @@ vfw.workspace.get_drop_coords = function () {
     let x, y
     if (dropzone_coords.height > 100) {
         x_pad = 300
-    }
-    ;
+    };
     if (dropzone_coords.width > 300) {
         y_pad = 200
-    }
-    ;
+    };
     x = Math.floor((Math.random() * (dropzone_coords.width - x_pad)) - x_pad + dropzone_coords.left);
     y = Math.floor((Math.random() * (dropzone_coords.height - y_pad)) + y_pad / 2 - dropzone_coords.top);
     return {'x': x, 'y': y}
@@ -294,7 +292,7 @@ vfw.workspace.is_required = function (checkElement) {
             }
         }
     }
-    return passed
+    return passed;
 }
 
 /**
@@ -437,6 +435,7 @@ vfw.workspace.modal.run_process = function () {
     let groupName = ''
     let i = 0;
     let members = [];
+    vfw.html.loaderOverlayOn();
 
     $.ajax({
         url: vfw.var.DEMO_VAR + "/workspace/processrun",
@@ -446,7 +445,7 @@ vfw.workspace.modal.run_process = function () {
         }, /** data sent with post request **/
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
-            if (json.execution_status == "ProcessSucceeded") {
+            if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
                 json.wps = modal_input.id;
                 json.inputs = {};
                 $.each(modal_input.inKey, function (key, value) {
@@ -464,7 +463,7 @@ vfw.workspace.modal.run_process = function () {
 
                 for (let i in json.result) {
                     let btnName = vfw.sidebar.set_result_btn_name(modal_input.outputName);
-                    json.result[i].dropBtn.name = btnName;
+                    json.result[i].dropBtn['name'] = btnName;
                     let btnData = {
                         dbID: json.result[i].wpsID,
                         inputs: json.inputs,
@@ -517,7 +516,8 @@ vfw.workspace.modal.run_process = function () {
         .fail(function (json) {
             vfw.workspace.modal.set_Color("firebrick");
             console.error('Error, No success: ', json)
-        });
+        })
+        .always(vfw.html.loaderOverlayOff());
 }
 
 /**

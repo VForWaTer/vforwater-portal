@@ -444,23 +444,20 @@ vfw.util.getPosition = function (e) {
  */
 // var contextMenuClassName = "context-menu";
 // var contextMenuItemClassName = "context-menu__item";
-var contextMenuLinkClassName = "context-menu__link";
+// var contextMenuLinkClassName = "context-menu__link";
 var contextMenuActive = "context-menu--active";
 var contextResultActive = "context-result--active";
 
 var taskItemClassName = "task";
 var taskItemInContext;
 
-var clickCoords;
-var clickCoordsX;
-var clickCoordsY;
-
 var menu = document.querySelector("#context-menu");
 var resultMenu = document.querySelector("#context-result");
 //popup = document.querySelector("#loader-popup");
 vfw.html.popup = document.querySelector("#loader-popup");  // needed in sidebar "Plot data"
 // let popup = document.querySelector("#loader-popup");
-let content = document.querySelector('#pop-content-side');
+vfw.html.popup_content = document.querySelector('#pop-content-side');
+// let content = document.querySelector('#pop-content-side');
 let popText = document.querySelector('#popupText');
 let popClose = document.querySelector('#pop-closer');
 let popActive = "mod-popup--active";
@@ -471,9 +468,9 @@ var menuWidth;
 var menuHeight;
 var resultMenuWidth;
 var resultMenuHeight;
-var menuPosition;
-var menuPositionX;
-var menuPositionY;
+// var menuPosition;
+// var menuPositionX;
+// var menuPositionY;
 
 var windowWidth;
 var windowHeight;
@@ -520,7 +517,7 @@ function contextListener() {
  */
 function clickListener() {
     document.addEventListener("click", function (e) {
-        let clickeElIsLink = vfw.sidebar.clickInsideElement(e, contextMenuLinkClassName);
+        let clickeElIsLink = vfw.sidebar.clickInsideElement(e, "context-menu__link");
         if (clickeElIsLink) {
             e.preventDefault();
             menuItemListener(clickeElIsLink);
@@ -600,9 +597,7 @@ function toggleMenuOff(chooseContext) {
  */
 function positionMenu(e) {
     console.log('e: ', e)
-    clickCoords = vfw.util.getPosition(e);
-    clickCoordsX = clickCoords.x;
-    clickCoordsY = clickCoords.y;
+    vfw.html.mouse.clickCoords = vfw.util.getPosition(e);
 
     menuWidth = menu.offsetWidth + 4;
     menuHeight = menu.offsetHeight + 4;
@@ -610,15 +605,15 @@ function positionMenu(e) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
 
-    menu.style.left = ((windowWidth - clickCoordsX) < menuWidth) ? `${windowWidth - menuWidth}px` : `${clickCoordsX}px`;
-    menu.style.top = ((windowHeight - clickCoordsY) < menuHeight) ? `${windowHeight - menuHeight}px` : `${clickCoordsY}px`;
+    menu.style.left = ((windowWidth - vfw.html.mouse.clickCoords.x) < menuWidth) ? `${windowWidth - menuWidth}px` : `${vfw.html.mouse.clickCoords.x}px`;
+    menu.style.top = ((windowHeight - vfw.html.mouse.clickCoords.y) < menuHeight) ? `${windowHeight - menuHeight}px` : `${vfw.html.mouse.clickCoords.y}px`;
 
     if (resultMenu) {
         resultMenuWidth = resultMenu.offsetWidth + 4;
         resultMenuHeight = resultMenu.offsetHeight + 4;
 
-        resultMenu.style.left = ((windowWidth - clickCoordsX) < resultMenuWidth) ? `${windowWidth - resultMenuWidth}px` : `${clickCoordsX}px`;
-        resultMenu.style.top = ((windowHeight - clickCoordsY) < resultMenuHeight) ? `${windowHeight - resultMenuHeight}px` : `${clickCoordsY}px`;
+        resultMenu.style.left = ((windowWidth - vfw.html.mouse.clickCoords.x) < resultMenuWidth) ? `${windowWidth - resultMenuWidth}px` : `${vfw.html.mouse.clickCoords.x}px`;
+        resultMenu.style.top = ((windowHeight - vfw.html.mouse.clickCoords.y) < resultMenuHeight) ? `${windowHeight - resultMenuHeight}px` : `${vfw.html.mouse.clickCoords.y}px`;
     }
 }
 
@@ -631,8 +626,8 @@ function positionMenu(e) {
 function positionPopup(window) {
     let popupWidth = window.offsetWidth + 4;
     let popupHeight = window.offsetHeight + 4;
-    window.style.left = ((windowWidth - clickCoordsX) < popupWidth) ? `${windowWidth - popupWidth}px` : `${clickCoordsX}px`;
-    window.style.top = ((windowHeight - clickCoordsY) < popupHeight) ? `${windowHeight - popupHeight}px` : `${clickCoordsY}px`;
+    window.style.left = ((windowWidth - vfw.html.mouse.clickCoords.x) < popupWidth) ? `${windowWidth - popupWidth}px` : `${vfw.html.mouse.clickCoords.x}px`;
+    window.style.top = ((windowHeight - vfw.html.mouse.clickCoords.y) < popupHeight) ? `${windowHeight - popupHeight}px` : `${vfw.html.mouse.clickCoords.y}px`;
 }
 
 /**
@@ -649,7 +644,7 @@ function showDataInfo(properties) {
         // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
         popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
     }
-    content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+    vfw.html.popup_content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
         '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
     popClose.classList.remove('w3-hide');
     positionPopup(vfw.html.popup);
@@ -890,10 +885,14 @@ function menuItemListener(link) {
             //         }
             //     }
             // }
-            content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+            // vfw.html.popup_content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+            //     '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
+            // popClose.classList.remove('w3-hide');
+            // positionPopup(vfw.html.popup.innerHTML);
+            document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-            popClose.classList.remove('w3-hide');
-            positionPopup(vfw.html.popup);
+            let rModal = document.getElementById("resultModal");
+            rModal.style.display = "block";
             vfw.html.loaderOverlayOff();
             break;
         case "Plot":

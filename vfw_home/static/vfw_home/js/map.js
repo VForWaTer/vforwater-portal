@@ -55,6 +55,7 @@ vfw.map.buildMapModal = function (ids, page) {
         }, /** data sent with the post request **/
     })
         .done(function (html) {
+            mapmodal.style.display = "block";
             document.getElementById("infomodal_paginationTable").innerHTML = html;
             document.getElementById('infomodal_paginationTable').style.display = "block";
         })
@@ -329,7 +330,7 @@ vfw.map.create_map = function () {
     function checkMode(evt) {
         let clickedFeatures, ids, cleanedids, wfsLen;
         if (vfw.map.vars.hit_cL) {
-            content.innerHTML = '';
+            // content.innerHTML = '';
             try {
                 vfw.html.loaderOverlayOn();
                 // content.innerHTML = '<div id="loader" class="loader">bla</div>';
@@ -342,7 +343,7 @@ vfw.map.create_map = function () {
                     return !Number.isNaN(value);
                 });
                 vfw.map.buildMapModal(cleanedids, 1);
-                mapmodal.style.display = "block";
+
             } catch (err) {
                 // content.innerHTML = '<div id="loader">Failed to load your selection</div>';
                 console.log('err: ', err)
