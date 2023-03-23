@@ -396,7 +396,7 @@ vfw.session.draw2d = {
     setdata: function () {
         let writer = new draw2d.io.json.Writer();
 
-        writer.marshal(canvas, function (json) {
+        writer.marshal(vfw.draw2d.canvas, function (json) {
             // convert the json object into string representation
             console.log('json writer: ', json)
             let jsonTxt = JSON.stringify(json, null, 2);
@@ -420,12 +420,11 @@ function vfw_drag() {
 }
 /*
 
-const canvas = new draw2d.Canvas('dropdiv');
+vfw.draw2d.canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
 connection = new Connection();
-canvas.installEditPolicy(connection.connectionPolicy);
-*/
+vfw.draw2d.canvas.installEditPolicy(connection.connectionPolicy);
 
 
 // let globalWorkflow = new Workflow();
@@ -665,7 +664,7 @@ vfw.workspace.drop_handler = function (ev, x, y, id, source, service) {
         box_param.inputs, box_param.outputs, source, service, boxID
     )
     newBox = box.box;
-    canvas.add(newBox, x, y);
+    vfw.draw2d.canvas.add(newBox, x, y);
 
     vfw.workspace.workflow.update({'state': 'drop', 'element': box, 'params': box_param});
     // reduce_lap(x, y)
@@ -747,6 +746,6 @@ vfw.workspace.workflow.draw_workflow = function () {
         // console.log('read jsonDocument: ', JSON.parse(jsonDocument))
         let reader = new draw2d.io.json.Reader();
         // console.log('read: ', jsonDocument)
-        reader.unmarshal(canvas, JSON.parse(jsonDocument));
+        reader.unmarshal(vfw.draw2d.canvas, JSON.parse(jsonDocument));
     }
 }

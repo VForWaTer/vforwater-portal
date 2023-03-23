@@ -1242,7 +1242,7 @@ vfw.workspace.workflow.prep_wps_workflow = function (workflow, processChain) {
  * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
  */
 vfw.workspace.workflow.clear_workflow = function () {
-    canvas.clear();
+    vfw.draw2d.canvas.clear();
     // globalWorkflow.set_name();
     vfw.session.set_workflow_name()
     document.getElementById("workflow_name").value = gettext('my workflow')
