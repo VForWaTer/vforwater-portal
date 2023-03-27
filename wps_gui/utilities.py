@@ -483,7 +483,8 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
         if db_output_data != "":
             db_output = [output_name, single_output["type"], db_output_data]
             # create db entry
-            wpsid = create_wpsdb_entry(user, process_description, inputs, db_output)
+            wpsid = create_wpsdb_entry(process_description, inputs, db_output)
+            # wpsid = create_wpsdb_entry(user, process_description, inputs, db_output)
 
             single_output["wpsID"] = wpsid
             single_output["dropBtn"] = {

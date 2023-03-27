@@ -531,7 +531,7 @@ def process_run(request):  # TODO: Check if identical input exists in db before 
                                         }
                                   )
         if execution.status_code == 200:
-            all_outputs = handle_geoapiprocess_output(execution, process_description, request_input)
+            all_outputs = handle_geoapiprocess_output(request.user, execution, process_description, request_input)
         else:
             all_outputs = {'execution_status': f'error: {execution.reason}'}
             print(f'Error in process - caught in process_run function: {all_outputs}')
