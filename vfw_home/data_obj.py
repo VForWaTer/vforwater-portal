@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from decimal import Decimal
 from django.core.exceptions import EmptyResultSet
+from django.http import Http404
 
 from heron.settings import max_size_preview_plot
 from vfw_home.data_tools import DB_load_directiondata
@@ -139,7 +140,7 @@ class DataObject:
                 elif isinstance(self.dataframe[self.value_column][0], list) \
                     and len(self.dataframe[self.value_column][0]) > 1:
                     print('ERROR: Expect only one column for timeseries_1d')
-        except Error as e:
+        except Exception as e:
             print('\033[33mUnable to access database:\033[0m ', e)
             raise Http404
 
