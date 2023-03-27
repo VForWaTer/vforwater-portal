@@ -262,18 +262,77 @@ def get_process_info(apiprocess):
     :param apiprocess: complete json of GeoApi
     """
     return {
-        "version": apiprocess['version'],
-        "id": apiprocess['id'],
-        "title": apiprocess['title'],
         "description": apiprocess['description'],  # process.abstract,
-        "keywords": apiprocess['keywords'],  # ATTENTION! old wps hack used keywords to get info about accepted data in workplace.js - vfw.workspace.modal.build_modal()
-        "outputs": apiprocess['outputs'],
-        "inputs": add_required(apiprocess['inputs']),
         "example": apiprocess['example'],
+        "id": apiprocess['id'],
+        "identifier": apiprocess['id'],
+        "inputs": add_required(apiprocess['inputs']),
+        "dataInputs": geoapi_input2wps_datainput(apiprocess['inputs']),
+        "outputs": apiprocess['outputs'],
+        "processOutputs": geoapi_output2wps_processoutput(apiprocess['outputs']),
+        "keywords": apiprocess['keywords'],  # ATTENTION! old wps hack used keywords to get info about accepted data in workplace.js - vfw.workspace.modal.build_modal(),
+        "title": apiprocess['title'],
+        "version": apiprocess['version'],
     }
 
 
+def geoapi_output2wps_processoutput(outputs):
+    """
+    Change input object as needed for the dropbox in the workspace.
+    :param inputs:
+    :return:
+    """
+    dataoutputs = []
+
+    # Todo: frontend (e.g. vfw.workspace.workflow.process_drop_params) is still as needed for wps. Update for geoapi!
+    for k, v in outputs.items():
+        v['identifier'] = k
+        v['dataType'] = v['schema']['type']
+
+        if 'keywords' in v:
+            v['keywords'].append(v['schema']['type'])
+        else:
+            v['keywords'] = []
+
+        if 'contentMediaType' in v['schema'] and v['schema']['type'] == 'object':
+            if 'json' in v['schema']['contentMediaType']:
+                v['keywords'].append("json")
+                v['dataType'] = "json"
+            else:
+                v['keywords'].append(v['schema']['type'])
+
+
+        dataoutputs.append(v)
+
+    return dataoutputs
+
+
+def geoapi_input2wps_datainput(inputs):
+    """
+    Change input object as needed for the dropbox in the workspace.
+    :param inputs:
+    :return:
+    """
+    datainputs = []
+
+    # Todo: frontend (e.g. vfw.workspace.workflow.process_drop_params) is still as needed for wps. Update for geoapi!
+    for k, v in inputs.items():
+        v['identifier'] = k
+        v['dataType'] = v['schema']['type']
+        if 'keywords' in v:
+            v['keywords'].append(v['schema']['type'])
+
+        datainputs.append(v)
+
+    return datainputs
+
+
 def add_required(inputs):
+    """
+    Depending on datatyp (bool) and minOccurs(>0) add a required flag to the input.
+    :param inputs: dict
+    :return:
+    """
     for k, v in inputs.items():
         if v['minOccurs'] > 0 and v['schema']['type'] != 'boolean' and v['schema']['type'] != 'bool':
             inputs[k]['required'] = True
@@ -325,7 +384,7 @@ def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> obje
     """
     db_result = {'id': 'bla'}
     # db_result = WpsResults.objects.get_or_create(
-    #
+    #     # owner=user,
     #     open=False,
     #     wps=wps_process,
     #     inputs=invalue,
@@ -335,7 +394,7 @@ def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> obje
     return db_result['id']
 
 
-def handle_geoapiprocess_output(execution, process_description, inputs):
+def handle_geoapiprocess_output(user, execution, process_description, inputs):
     """
 
     :param execution: owslib.wps.output object
@@ -358,6 +417,7 @@ def handle_geoapiprocess_output(execution, process_description, inputs):
         db_output_data = str(result)[:300]
 
     wpsid = create_wpsdb_entry(inputs['id'], inputs['in_dict'], db_output_data)
+    # wpsid = create_wpsdb_entry(user, inputs['id'], inputs['in_dict'], db_output_data)
 
     all_outputs = {
         "execution_status": execution.status_code,
@@ -423,7 +483,7 @@ def handle_geoapiprocess_output(execution, process_description, inputs):
         if db_output_data != "":
             db_output = [output_name, single_output["type"], db_output_data]
             # create db entry
-            wpsid = create_wpsdb_entry(process_description, inputs, db_output)
+            wpsid = create_wpsdb_entry(user, process_description, inputs, db_output)
 
             single_output["wpsID"] = wpsid
             single_output["dropBtn"] = {

@@ -446,7 +446,7 @@ vfw.workspace.workflow.process_drop_params = function (service, id) {
 
     if (metadata.hasOwnProperty('dataInputs')) {
         for (let i of metadata.dataInputs) {
-            if ('keywords' in i) {
+            if ('keywords' in i && !('dataType' in i)) {
 
                 for (let j of i['keywords']) {
                     inputs.push(j)
@@ -460,7 +460,7 @@ vfw.workspace.workflow.process_drop_params = function (service, id) {
     if (metadata.hasOwnProperty('processOutputs')) {
         for (let i of metadata.processOutputs) {
             if (i.identifier !== 'error') {
-                if ('keywords' in i) {
+                if ('keywords' in i && !('dataType' in i)) {
                     for (let j in i.keywords) {
                         outputs.push(j)
                     }
