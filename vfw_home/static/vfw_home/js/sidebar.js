@@ -644,10 +644,11 @@ function showDataInfo(properties) {
         // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
         popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
     }
-    vfw.html.popup_content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
-        '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-    popClose.classList.remove('w3-hide');
-    positionPopup(vfw.html.popup);
+
+    document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+        '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';; // add table
+    let rModal = document.getElementById("resultModal");
+    rModal.style.display = "block";
 }
 
 vfw.workspace.modal.setPortValue = function (btnKeys, btnValues) {
@@ -768,6 +769,8 @@ function menuItemListener(link) {
                 .fail(function (failed) {
                     console.error('Failed to load any metadata for dataset ', id)
                     // vfw.html.popup.classList.remove(popActive);
+                })
+                .always(function () {
                     vfw.html.loaderOverlayOff();
                 })
             break;

@@ -125,7 +125,6 @@ vfw.session.get_wpsprocess = function (service, identifier) {
     if (tools[service][identifier]) {
         tool_data = tools[service][identifier]
     } else {
-        console.log('this might take a while')
         // vfw.html.popup.classList.add(popActive);
         vfw.html.loaderOverlayOn()
         // positionPopup(vfw.html.popup);
