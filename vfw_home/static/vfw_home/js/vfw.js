@@ -729,10 +729,6 @@ vfw.html.moreInfoModal = function (id) {
     }
     document.getElementById('mod_dat_inf').innerHTML = "";
     document.getElementById("mod_prev").innerHTML = "";
-    console.log('document.getElementById("infomodal"): ', document.getElementById("infoModal"))
-    console.log('document.getElementById("infomodal").classList: ', document.getElementById("infoModal").classList)
-    // document.getElementById("mod_prev").classList.add("loader");
-    // document.getElementById("infoModal").classList.add("loader");
 
     // The following is used to make sure to add first the table then the plot.
     /**
@@ -786,6 +782,8 @@ vfw.html.moreInfoModal = function (id) {
 
     $.when(ajaxTable(), ajaxPlot())
         .done(function (td, pd) {
+            let modal = document.getElementById("infoModal");
+            modal.style.display = "block";
             tableToModal(td)
             if (pdata !== false) {
                 plotToModal(pd)
@@ -801,8 +799,6 @@ vfw.html.moreInfoModal = function (id) {
           vfw.html.loaderOverlayOff();
         })
     // .always(document.getElementById("mod_prev").classList.remove("loader"))
-    let modal = document.getElementById("infoModal");
-    modal.style.display = "block";
 }
 
 /**
