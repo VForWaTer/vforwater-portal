@@ -660,13 +660,14 @@ vfw.workspace.modal.setPortValue = function (btnKeys, btnValues) {
  * @param {list} btnKeys names of input fields
  * @param {list} btnValues values for the input fields
  */
-vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {
+vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO: Need source data or result
     // for (let i = 0; i < btnName.length; i++) {  // use this loop for older browsers
     //     document.getElementById(btnName[i].identifier).value = btnValues[btnName[i].identifier]
     // }
     let htmlElement = {};
-    let datastore = JSON.parse(sessionStorage['dataBtn']);
-    // let resultstore = JSON.parse(sessionStorage['resultBtn']);
+    let workmodal = document.getElementById('workModal');
+    // let datastore = JSON.parse(sessionStorage['dataBtn']);
+    let resultstore = JSON.parse(sessionStorage['resultBtn']);
 
     // loop values of result to insert them in the respective field
     let loopLength = 0;
@@ -675,7 +676,7 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {
     }
     for (let i = 0; i < loopLength; i++) {
 
-        htmlElement = document.getElementById(btnKeys[i]);
+        htmlElement = document.getElementById('mod_in_el_' + btnKeys[i]);
         // if (typeof btnValues[i] === 'string') {
         //     btnDict[btnKeys[i]] = btnValues[i];
         // } else {
@@ -684,17 +685,17 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {
         if (htmlElement.type == "checkbox") {
             htmlElement.checked = btnValues[i];
         } else if (htmlElement.type == "select-one") {
-            let datastore_selection;
+            let resultstore_selection;
             // name/id stored in result is not given in modal, so loop datastore for the right name/id
             for (let j in datastore) {
-                if ((datastore[j].source + datastore[j].dbID) == btnValues[i]) {
-                    datastore_selection = j;
+                if ((resultstore[j].source + resultstore[j].dbID) == btnValues[i]) {
+                    resultstore_selection = j;
                     break;
                 }
             }
             // if right name(id is found loop html element to find this element to pre-select it
             for (const [key, value] of Object.entries(htmlElement.options)) {
-                if (htmlElement.options[key].value == datastore_selection) {
+                if (htmlElement.options[key].value == resultstore_selection) {
                     htmlElement.options[key].selected = 'true';
                     break;
                 }

@@ -118,7 +118,7 @@ class Box {
             box.on('click', function (ev) {
                 vfw.workspace.modal.open_wpsprocess(service, name, box.getId());
                 document.getElementById("workflowID").value = JSON.stringify({'id': box.getId(), 'service': service});
-                // setModalValues(
+                // vfw.workspace.modal.setProcessValues(
                 //     JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
                 //     item.input_keys, item.input_values
                 // )
@@ -126,7 +126,7 @@ class Box {
             label.on('click', function (ev) {
                 vfw.workspace.modal.open_wpsprocess(service, name, box.getId());
                 document.getElementById("workflowID").value = JSON.stringify({'id': box.getId(), 'service': service});
-                // setModalValues(
+                // vfw.workspace.modal.setProcessValues(
                 //     JSON.parse(sessionStorage['tools'])[service][wpsToOpen]['dataInputs'],
                 //     item.input_keys, item.input_values
                 // )
@@ -742,7 +742,6 @@ vfw.workspace.workflow.get_workflow_id_affix = function () {
 vfw.workspace.workflow.draw_workflow = function () {
     let jsonDocument = vfw.session.draw2d.getworkflow()
     if (jsonDocument) {
-        // console.log('3')
         // console.log('read jsonDocument: ', JSON.parse(jsonDocument))
         let reader = new draw2d.io.json.Reader();
         // console.log('read: ', jsonDocument)

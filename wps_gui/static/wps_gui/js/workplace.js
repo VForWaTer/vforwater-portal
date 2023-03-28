@@ -44,7 +44,6 @@ const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
  * @param {string, list} inputs - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
  **/
 vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs = null) {
-    console.log('A')
     let modal_values = vfw.session.get_workflow();
     let json = vfw.session.get_wpsprocess(service, identifier);
     vfw.workspace.modal.build_modal(json, service)
@@ -774,7 +773,7 @@ vfw.session.remove_all_results = function () {
  */
 vfw.workspace.modal.build_regexText = function (item, entry_name, newNode) {
     inElement = document.createElement("INPUT");
-    inElement.id = item.title;  // item.identifier;
+    inElement.id = 'mod_in_el_' + item.title;  // item.identifier;
     inElement.name = entry_name;  // item.identifier;
     inElement.setAttribute("pattern", item.keywords[1]);
     inElement.type = "text";
@@ -800,7 +799,7 @@ vfw.workspace.modal.build_radio = function (item, entry_name, newNode, option) {
     inElement.type = "radio";
     // inElement.setAttribute("type", "radio");
     inElement.value = option;
-    inElement.id = item.title;  // item.identifier;
+    inElement.id = 'mod_in_el_' + item.title;  // item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
 
     inElement.name = entry_name;  // item.identifier;
@@ -943,7 +942,6 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     } else {
         workflowData = workflowData[boxId]
     }
-    console.log('workflowData: ', workflowData)
     element.innerHTML = wpsInfo.title;
     element.dataset.service = service;
     element.dataset.process = wpsInfo.id;
@@ -1015,7 +1013,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
             /** Set input element according to dataType */
         } else {
             inElement = document.createElement("INPUT");
-            inElement.id = item.title;  // item.id;
+            inElement.id = 'mod_in_el_' + item.identifier;  // item.id;
             inElement.name = entry_name;  // item.identifier;
             inElement.title = item.description;  // item.identifier;
             inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
@@ -1115,7 +1113,7 @@ vfw.workspace.modal.set_textfield_opt = function (item, resultData, sessionStore
     let inDatalist = "";
     let type = item.dataType;
     inDatalist = document.createElement("DATALIST");
-    inDatalist.setAttribute("id", item.title + '_list');  // item.identifier + '_list');
+    inDatalist.setAttribute("id", 'mod_in_el_' + item.title + '_list');  // item.identifier + '_list');
     let optElement = "";
     Object.entries(resultData).forEach((dataset) => {
         if (dataset[1].type === type) {
