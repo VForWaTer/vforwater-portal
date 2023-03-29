@@ -453,11 +453,8 @@ var taskItemInContext;
 
 var menu = document.querySelector("#context-menu");
 var resultMenu = document.querySelector("#context-result");
-//popup = document.querySelector("#loader-popup");
 vfw.html.popup = document.querySelector("#loader-popup");  // needed in sidebar "Plot data"
-// let popup = document.querySelector("#loader-popup");
 vfw.html.popup_content = document.querySelector('#pop-content-side');
-// let content = document.querySelector('#pop-content-side');
 let popText = document.querySelector('#popupText');
 let popClose = document.querySelector('#pop-closer');
 let popActive = "mod-popup--active";
@@ -468,9 +465,6 @@ var menuWidth;
 var menuHeight;
 var resultMenuWidth;
 var resultMenuHeight;
-// var menuPosition;
-// var menuPositionX;
-// var menuPositionY;
 
 var windowWidth;
 var windowHeight;
@@ -644,16 +638,41 @@ vfw.workspace.modal.showDataInfo = function (properties) {
         // TODO: compare with let values = eval('properties["' + j + '"]'); in buildPopupTextvfw why eval?
         popUpText += '<tr><td><b>' + j + '</b></td><td>' + properties[j] + '</td></tr>';
     }
+    vfw.workspace.modal.openResultModal(popUpText);
+    // document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+    //     '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';; // add table
+    // vfw.html.resultModal.style.display = "block";
+}
 
-    document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
-        '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';; // add table
+
+/**
+ * Add innerHTML to a modal and open it. As standard the html code is part of a table. As an alternative one can also
+ * add just the html without table for is_simple = true.
+ *
+ * @param {string} html
+ * @param {boolean} js_simple
+ */
+vfw.workspace.modal.openResultModal = function (html, is_simple = false) {
+    if (is_simple) {
+        document.getElementById("mod_result").innerHTML = html;
+    } else {
+        document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+        '{background-color: #c8ebee;}</style><table>' + html + '</table></div>'; // add table
+    }
     vfw.html.resultModal.style.display = "block";
 }
+
+vfw.workspace.modal.selectInput = function (btnKeys) {
+    vfw.html.resultModal
+}
+
 
 vfw.workspace.modal.setPortValue = function (btnKeys, btnValues) {
     console.log('btnKeys: ', btnKeys )
     console.log('btnValues: ', btnValues )
 }
+
+
 /**
  * Fill a process modal with values from a result.
  *
@@ -892,9 +911,10 @@ function menuItemListener(link) {
             //     '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
             // popClose.classList.remove('w3-hide');
             // positionPopup(vfw.html.popup.innerHTML);
-            document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
-                '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-            vfw.html.resultModal.style.display = "block";
+            vfw.workspace.modal.openResultModal(popUpText)
+            // document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
+            //     '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
+            // vfw.html.resultModal.style.display = "block";
             vfw.html.loaderOverlayOff();
             break;
         case "Plot":
@@ -913,8 +933,9 @@ function menuItemListener(link) {
             }
             if (item.type == 'figure') {
                 // document.getElementById("pop-content-side").innerHTML = item.outputs; // add plot
-                document.getElementById("mod_result").innerHTML = item.outputs; // add plot
-                vfw.html.resultModal.style.display = "block";
+                vfw.workspace.modal.openResultModal(item.outputs, true)
+                // document.getElementById("mod_result").innerHTML = item.outputs; // add plot
+                // vfw.html.resultModal.style.display = "block";
                 // vfw.html.popup.classList.remove(popActive);
                 vfw.html.loaderOverlayOff();
                 modalToggleSize.style.display = "none";
