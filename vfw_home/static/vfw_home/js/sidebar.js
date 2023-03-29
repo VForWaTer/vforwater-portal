@@ -635,7 +635,7 @@ function positionPopup(window) {
  *
  * @param {dict} properties
  */
-function showDataInfo(properties) {
+vfw.workspace.modal.showDataInfo = function (properties) {
     // TODO: This function changes the style of the table used instead of the map. (To the Style I is supposed to be.
     //  Why only after this function and not without. What is this function doing?)
     let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
@@ -761,7 +761,7 @@ function menuItemListener(link) {
                 }, // data sent with the post request
             })
                 .done(function (properties) {
-                    showDataInfo(properties['table']);
+                    vfw.workspace.modal.showDataInfo(properties['table']);
                     if (properties['warning'] !== '') {
                         console.warn(properties['warning']);
                     }

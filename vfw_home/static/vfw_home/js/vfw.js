@@ -758,7 +758,6 @@ vfw.html.moreInfoModal = function (id) {
             }
         }
         document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
-        showDataInfo(properties);
     }
 
     /**
