@@ -683,9 +683,9 @@ def short_info_pagination(request):
         if type(datasets) is str:
             datasets = [int(datasets)]
 
-        field = ['title', 'id', 'variable__name', 'embargo', 'embargo_end']
-        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'embargo': 'Embargo',
-                      'has_access': 'has_access', 'embargo_end': 'embargo_end'}
+        field = ['title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end']
+        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
+                      'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'}
 
         if datasets:
             entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
@@ -770,7 +770,8 @@ def show_info(request):
             group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
                 .values_list('entry_id', flat=True)
 
-        table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0][prefix + 'variable__name'])}
+        table = {'id': ids, 'uuid': db_info[0][prefix + 'uuid'],
+                 translation.gettext('Name'): translation.gettext(db_info[0][prefix + 'variable__name'])}
 
         table[translation.gettext('Commercial use allowed')] = \
             human_readable_bool(db_info[0][prefix + 'license__commercial_use'])
@@ -855,8 +856,9 @@ def workspace_data(request):
         accessible_ids = accessible_data['open']
 
         result_dataset = NmEntrygroups.objects. \
-            values('entry__id', 'entry__variable__name', 'entry__variable__symbol', 'entry__variable__unit__symbol',
-                   'entry__datasource__datatype__name', 'group__title', 'group_id').filter(pk__in=accessible_ids)
+            values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
+                   'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
+                   'group_id').filter(pk__in=accessible_ids)
 
         if len(error_ids) > 0:
             error_dict = {'message': 'no access', 'id': error_ids}
@@ -868,6 +870,7 @@ def workspace_data(request):
                                                                     'type': dataset['entry__datasource__datatype__name'],
                                                                     'source': 'db',
                                                                     'dbID': dataset['entry__id'],
+                                                                    'uuID': dataset['entry__uuid'],
                                                                     'orgID': 'db' + str(dataset['entry__id']),
                                                                     'start': startdate,
                                                                     'end': enddate,
@@ -902,7 +905,7 @@ def entries_pagination(request):
     """
     accessible_ids = []
     datasets = json.loads(request.GET.get('datasets', 1))
-    field = {'id', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
+    field = {'id', 'uuid', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
              'variable__unit__symbol', 'variable__keyword__value',
              'datasource__datatype__name', 'datasource__temporal_scale__resolution',
              'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',

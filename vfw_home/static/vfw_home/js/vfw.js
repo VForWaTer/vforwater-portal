@@ -1044,7 +1044,7 @@ vfw.html.get_quick_selection = function (selection) {
                     }
                 )
                 if (json['total'] == 0) {
-                    $("#quickfilter-form p:first").css({'background-color': 'yellow'});
+                    $("#quickfilter-form p:first").css({'background-color': 'khaki'});
                 } else {
                     $("#quickfilter-form p:first").css({'background-color': 'white'});
                 }
