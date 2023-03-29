@@ -238,8 +238,8 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
  * Reset the draw menu, clear selections in memory and on map
  */
 function resetDraw() {
-    get_quick_selection({'draw': []})
-    get_quick_selection({'catchout': []})
+    vfw.html.get_quick_selection({'draw': []})
+    vfw.html.get_quick_selection({'catchout': []})
     vfw.var.obj.selectedIds.map = null;
     selectionLayerSource.clear();
     selectedFeatures.clear();
@@ -406,7 +406,7 @@ function drawOnMapMenu(test) {
         vfw.var.obj.selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
         selectionEdgeCoords = polygon;
-        get_quick_selection({'draw': getEdgeCoords()});
+        vfw.html.get_quick_selection({'draw': getEdgeCoords()});
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -469,7 +469,7 @@ function drawOnMapMenu(test) {
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
 
-        get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
+        vfw.html.get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
         removeInteractions();
         toggle_draw(document.getElementById("draw_square"))
     });
@@ -490,7 +490,7 @@ function drawOnMapMenu(test) {
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
 
-        get_quick_selection({'draw': getEdgeCoords()});
+        vfw.html.get_quick_selection({'draw': getEdgeCoords()});
         removeInteractions();
         toggle_draw(document.getElementById("draw_polygon"))
 
@@ -525,7 +525,7 @@ function drawOnMapMenu(test) {
             let polygon = catch_feature.getGeometry();
             selectionEdgeCoords = polygon;
             // TODO: make sure you got 'selectionEdgeCoords' before 'getEdgeCoords()' in 'drawend' runs. => create custom event?
-            // get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
+            // vfw.html.get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
             selectionLayerSource.clear();
             selectionLayerSource = new ol.source.Vector({features: [catch_feature],});
             selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
@@ -533,7 +533,7 @@ function drawOnMapMenu(test) {
                 stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
             }))
             olmap.addLayer(selectionLayer)
-            get_quick_selection({'draw': getEdgeCoords()});
+            vfw.html.get_quick_selection({'draw': getEdgeCoords()});
             // listener = selectStartFun(event)
             vfw.html.loaderOverlayOff();
         })
@@ -1019,7 +1019,7 @@ function getFilterURL(selection) {
  *
  * @param {string} selection
  */
-function get_quick_selection(selection) {
+vfw.html.get_quick_selection = function (selection) {
     let url = getFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
@@ -1043,6 +1043,11 @@ function get_quick_selection(selection) {
                         return txt.replace(/\d+/, json['total'].toString());
                     }
                 )
+                if (json['total'] == 0) {
+                    $("#quickfilter-form p:first").css({'background-color': 'yellow'});
+                } else {
+                    $("#quickfilter-form p:first").css({'background-color': 'white'});
+                }
 
                 vfw.map.updateMapSelection(json)
             })

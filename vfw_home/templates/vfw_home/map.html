@@ -24,7 +24,7 @@
 
 {#TODO: Don't like "show_data()" in map.html, but 2 onload in app don't work. Any better solution?#}
 {#<body onload="vfw.sidebar.show_data()">#}
-<body onload="vfw.map.create_map(); vfw.sidebar.show_data(); get_quick_selection(); update_quickfilter()">
+<body onload="vfw.map.create_map(); vfw.sidebar.show_data(); vfw.html.get_quick_selection(); update_quickfilter()">
 	<!-- <body class="w3-light-grey" onload="vfw.map.create_map()">  -->
 	<div id="map" class="map"></div>
 
@@ -133,7 +133,7 @@ if (!isStorageSupported(window, "localStorage")) {
 
       {#source.clear();#}
       {#select.setActive(false);#}
-      // get_quick_selection({});
+      // vfw.html.get_quick_selection({});
       resetDraw();
     });
 
