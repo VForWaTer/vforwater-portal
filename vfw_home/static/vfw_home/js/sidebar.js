@@ -647,8 +647,7 @@ vfw.workspace.modal.showDataInfo = function (properties) {
 
     document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
         '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';; // add table
-    let rModal = document.getElementById("resultModal");
-    rModal.style.display = "block";
+    vfw.html.resultModal.style.display = "block";
 }
 
 vfw.workspace.modal.setPortValue = function (btnKeys, btnValues) {
@@ -895,8 +894,7 @@ function menuItemListener(link) {
             // positionPopup(vfw.html.popup.innerHTML);
             document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
                 '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
-            let rModal = document.getElementById("resultModal");
-            rModal.style.display = "block";
+            vfw.html.resultModal.style.display = "block";
             vfw.html.loaderOverlayOff();
             break;
         case "Plot":
@@ -916,8 +914,7 @@ function menuItemListener(link) {
             if (item.type == 'figure') {
                 // document.getElementById("pop-content-side").innerHTML = item.outputs; // add plot
                 document.getElementById("mod_result").innerHTML = item.outputs; // add plot
-                let rModal = document.getElementById("resultModal");
-                rModal.style.display = "block";
+                vfw.html.resultModal.style.display = "block";
                 // vfw.html.popup.classList.remove(popActive);
                 vfw.html.loaderOverlayOff();
                 modalToggleSize.style.display = "none";
@@ -965,8 +962,7 @@ function menuItemListener(link) {
                         }
                         // popClose.classList.remove('w3-hide');
                         // positionPopup(vfw.html.popup);
-                        let rModal = document.getElementById("resultModal");
-                        rModal.style.display = "block";
+                        vfw.html.resultModal.style.display = "block";
                     })
                     .fail(function (e) {
                         console.error('Fehler: ', e)

@@ -50,29 +50,29 @@
 <script>
   var bokehResultScript;
   // Get the modal
-  let rModal = document.getElementById("resultModal");
+  vfw.html.resultModal = document.getElementById("resultModal");
   // Get the <span> element that closes the modal
   // When the user clicks on <span> (x), close the modal
-  let span = document.getElementsByClassName("close")[0];
-  let rspan_b = document.getElementsByClassName("result_modal-close")[0];
+  vfw.html.closeBtn = document.getElementsByClassName("close")[0];
+  vfw.html.resultModalClose = document.getElementsByClassName("result_modal-close")[0];
   {#let span_c = document.getElementsByClassName("modal-cancel")[0];#}
-  let modalToggleSizeBtn = document.getElementsByClassName("togglefullscreen")[0];
+  vfw.html.resultModalToggleSizeBtn = document.getElementsByClassName("togglefullscreen")[0];
   {% comment %}  span.onclick = function () {
         closeModal()
     };{% endcomment %}
-  span.onclick = () => close_result_Modal();
-  rspan_b.onclick = () => close_result_Modal();
-  modalToggleSizeBtn.onclick = () => toggle_Modal_size();
+  vfw.html.closeBtn.onclick = () => vfw.html.close_result_Modal();
+  vfw.html.resultModalClose.onclick = () => vfw.html.close_result_Modal();
+  vfw.html.resultModalToggleSizeBtn.onclick = () => vfw.html.toggle_Modal_size();
   {#span_c.onclick = function () {closeModal()};#}
   // When the user clicks anywhere outside of the modal, close it
-  window.onclick = (event) => {if (event.target == rModal) close_result_Modal()};
+  window.onclick = (event) => {if (event.target == vfw.html.resultModal) vfw.html.close_result_Modal()};
 
-  function close_result_Modal() {
-    rModal.style.display = "none";
+  vfw.html.close_result_Modal = function () {
+    vfw.html.resultModal.style.display = "none";
     {#document.getElementById("resultModal-content").style.width = "initial";#}
-    reset_Modal("resultModal-content", modalToggleSizeBtn)
-    if (modalToggleSizeBtn.style.display === "none") {
-      modalToggleSizeBtn.style.display = "block";
+    vfw.html.reset_Modal("resultModal-content", vfw.html.resultModalToggleSizeBtn)
+    if (vfw.html.resultModalToggleSizeBtn.style.display === "none") {
+      vfw.html.resultModalToggleSizeBtn.style.display = "block";
     }
     if (vfw.var.obj.bokehImage) {
       bokehResultScript.parentNode.removeChild(bokehResultScript);
@@ -80,19 +80,19 @@
     }
   }
 
-  function toggle_Modal_size() {
-    if (modalToggleSizeBtn.classList.contains('fa-expand')){
+  vfw.html.toggle_Modal_size = function () {
+    if (vfw.html.resultModalToggleSizeBtn.classList.contains('fa-expand')){
       document.getElementById("resultModal-content").style.width = window.innerWidth.toString()+"px";
-      modalToggleSizeBtn.classList.remove('fa-expand');
-      modalToggleSizeBtn.classList.add('fa-compress');
+      vfw.html.resultModalToggleSizeBtn.classList.remove('fa-expand');
+      vfw.html.resultModalToggleSizeBtn.classList.add('fa-compress');
     } else {
-      reset_Modal("resultModal-content", modalToggleSizeBtn)
+      vfw.html.reset_Modal("resultModal-content", vfw.html.resultModalToggleSizeBtn)
     }
     place_html_with_js("mod_result", vfw.var.obj.bokehImage)
     {#place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
   }
 
-  function reset_Modal(modalID, toggleElement) {
+  vfw.html.reset_Modal = function (modalID, toggleElement) {
     document.getElementById(modalID).style.width = "700px";
     toggleElement.classList.remove('fa-compress');
     toggleElement.classList.add('fa-expand');

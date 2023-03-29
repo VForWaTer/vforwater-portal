@@ -71,14 +71,21 @@ vfw.workspace.modal.open_port = function (service, identifier, boxidentifier, in
     console.log('boxidentifier: ', boxidentifier)
     let modal_values = vfw.session.get_workflow();
     console.log('modal values. ', modal_values)
-    let json = vfw.session.get_wpsprocess(service, boxidentifier);
+    let json = vfw.session.get_wpsprocess(service, identifier);
     console.log('json: ', json)
-    // vfw.workspace.modal.build_modal(json, service)
-    /** Fill the tool with selection made to receive this result button */
-    if (typeof inputs === 'string') {
-        vfw.workspace.modal.setPortValue(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
-    } else if (Array.isArray(inputs)) {
-        vfw.workspace.modal.setPortValue(inputs[0], inputs[1])
+    if (porttype === 'output') {
+        console.warn('No action for output ports is implemented yet.');
+        return;
+    } else {
+        // TODO: implement selection of just one element according to its type
+        // vfw.workspace.modal.build_modal(json, service)
+        /** Fill the tool with selection made to receive this result button */
+        // if (typeof inputs === 'string') {
+        if (inputtype === 'string') {
+            vfw.workspace.modal.setPortValue(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+        } else if (Array.isArray(inputs)) {
+            vfw.workspace.modal.setPortValue(inputs[0], inputs[1])
+        }
     }
 }
 
@@ -526,8 +533,7 @@ vfw.workspace.view_result = function (json) {
     if (json.type == 'figure' || json.type == 'string' || json.type == 'integer') {
         document.getElementById("mod_result").innerHTML = json.outputs; // add plot
     }
-    let rModal = document.getElementById("resultModal");
-    rModal.style.display = "block";
+    vfw.html.resultModal.style.display = "block";
     vfw.html.popup.classList.remove(popActive);
     modalToggleSize.style.display = "none";
 }

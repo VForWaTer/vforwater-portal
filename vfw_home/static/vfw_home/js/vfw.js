@@ -754,7 +754,7 @@ vfw.html.moreInfoModal = function (id) {
                     '<tr><td colspan = "2"><div style="height:20px"></div></td></tr>'
             } else if (j == 'group_entry_ids') {
                 metaText += '<tr><td colspan = "2">' + vfw.map.showGroupBtn(properties.group_entry_ids) + '</td></tr>' +
-                    '<tr><td colspan = "2">' + vfw.map.storeGroupBtn(properties.group_entry_ids, properties.has_embargo) + '</td></tr>'
+                    '<tr><td colspan = "2">' + vfw.map.storeGroupBtn( properties.group_entry_ids, properties.has_embargo) + '</td></tr>'
             }
         }
         document.getElementById('mod_dat_inf').innerHTML = metaText + '</table>';
