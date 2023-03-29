@@ -1,5 +1,4 @@
-class Box {
-
+vfw.draw2d.Box = class {
     /**
      * Box class to be added (dropped) on a draw2d.Canvas Element.
      * @param {string} name Name of the box
@@ -237,7 +236,7 @@ class Box {
     }
 }
 
-class Connection {
+vfw.draw2d.Connection = class {
 
     constructor() {
     }
@@ -423,8 +422,8 @@ function vfw_drag() {
 vfw.draw2d.canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
-connection = new Connection();
-vfw.draw2d.canvas.installEditPolicy(connection.connectionPolicy);
+vfw.var.connection = new vfw.draw2d.Connection();
+vfw.draw2d.canvas.installEditPolicy(vfw.var.connection.connectionPolicy);
 
 
 // let globalWorkflow = new Workflow();
@@ -659,7 +658,7 @@ vfw.workspace.drop_handler = function (ev, x, y, id, source, service) {
     service = prepared_params.service;
 
     let boxID = box_param.orgid + vfw.workspace.workflow.get_workflow_id_affix()
-    let box = new Box(
+    let box = new vfw.draw2d.Box(
         box_param.name, box_param.orgid, box_param.type,
         box_param.inputs, box_param.outputs, source, service, boxID
     )
