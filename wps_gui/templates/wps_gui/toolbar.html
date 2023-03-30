@@ -112,14 +112,21 @@
     {#    <div class="col-md-8 col-md-offset-2">#}
     {% if wps_services %}
       <div class="list-group">
-        {% for wps in wps_services %}
+        {% if "Error" in service %}
           <a
-                  {#                        <a href="{% url 'wps_gui_app:service' service=wps.identification.title %}"#}
-                  class="list-group-item wps">
-            <h6 class="list-group-item-heading title">{{ wps }}</h6>
-{#            <h6 class="list-group-item-heading title">{{ wps.identification.title }}</h6>#}
+            class="list-group-item wps">
+            <h3 class="list-group-item-heading title">{{ wps_services }}</h3>
           </a>
-        {% endfor %}
+        {% else %}
+          {% for wps in wps_services %}
+            <a
+              {#                        <a href="{% url 'wps_gui_app:service' service=wps.identification.title %}"#}
+              class="list-group-item wps">
+              <h6 class="list-group-item-heading title">{{ wps }}</h6>
+              {#            <h6 class="list-group-item-heading title">{{ wps.identification.title }}</h6>#}
+            </a>
+          {% endfor %}
+        {% endif %}
       </div>
     {% else %}
       <p>Currently there are no WPS services or tools linked to this instance. We are working on this issue,

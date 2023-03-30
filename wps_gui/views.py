@@ -18,7 +18,7 @@ from django.http.response import Http404
 from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
-from django.utils import timezone
+from django.utils import translation, timezone
 
 from heron.settings import VFW_SERVER, HOST_NAME, DEBUG
 from vfw_home.models import Entries, Datatypes
@@ -64,7 +64,13 @@ def home(request):
 
         except Exception as e:
             logger.error(sys.exc_info()[0])
-            print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}, all_processes: {getProcesses(endpoint).processes()}, process_dict_keys: {ogcapi_proc.keys()}')
+            print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}')
+            context = {
+                "wps_services": translation.gettext("At the moment the processes are not available. We apologize for the inconvenience."),
+                "processes": "",
+                "service": "Error",
+            }
+            return render(request, "wps_gui/home.html", context)
 
         # Remove process that should not be visible for users
         if "dbloader" in ogcapi_proc:

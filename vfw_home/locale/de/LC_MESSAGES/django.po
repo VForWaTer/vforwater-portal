@@ -505,6 +505,9 @@ msgstr "Daten und Werkzeuge in diesen Bereich ziehen um eine Prozesskette zu ers
 msgid "Dropzone"
 msgstr "Ablagebereich"
 
+msgid "At the moment the processes are not available. We apologize for the inconvenience."
+msgstr "Derzeit sind keine Prozesse verfügbar. Wir bitten dies zu entschuldigen."
+
 #~ msgid "Advanced"
 #~ msgstr "Erweitert"
 
