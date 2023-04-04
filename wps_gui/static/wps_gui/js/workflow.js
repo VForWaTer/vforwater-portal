@@ -195,6 +195,8 @@ vfw.draw2d.Box = class {
 
         port.setCssClass(porttype)
         port.on('click', function () {
+            vfw.workspace.modal.open_port(port.userData.service, port.userData.orgid,
+                port.userData.boxid, port.userData.index, port.cssClass, 'input');
         })
         port.on("connect", function (emitterPort, connection) {
             // console.log('emitterPort: ', emitterPort.getValue())
@@ -390,8 +392,27 @@ vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
     }
 });
 
-// var draw2dsessionStore = {
+
+// TODO: Soon! (~May 2023) Access to sessionStorage should have a common interface. Use this as an example for the others.
+// How to use the session Storage:
+// tools: Dict of server, subdict of tool definitions
+// draw2ddata: description of workflow elements in Dropzone as output of draw2d
+// workflow: workflow as basis to pass info to processing server, hence mainly has ids, inputs and connections
+/**
+ * Interface to access draw2ddata in Session Storage
+ * @type {{setdata: vfw.session.draw2d.setdata, getworkflow: (function(): string)}}
+ */
 vfw.session.draw2d = {
+    /**
+     * Get workflow from Session Storage.
+     * @returns {string}
+     */
+    getworkflow: function () {
+        return sessionStorage.getItem("draw2ddata")
+    },
+    /**
+     * Write workflow to Session Storage. Data is taken directly from draw2d canvas.
+     */
     setdata: function () {
         let writer = new draw2d.io.json.Writer();
 
@@ -404,10 +425,6 @@ vfw.session.draw2d = {
         });
     },
 
-    getworkflow: function () {
-        return sessionStorage.getItem("draw2ddata")
-    },
-
 }
 
 // define drag and drop interaction from outside to canvas to the draw2d canvas
@@ -417,7 +434,6 @@ function onclick_handler(ev) {
 function vfw_drag() {
 
 }
-/*
 
 vfw.draw2d.canvas = new draw2d.Canvas('dropdiv');
 
@@ -535,6 +551,12 @@ vfw.workspace.workflow.update = function (event) {
             source: event.element._sessionstore,
             service: event.element._service,
         }
+        /*    Object.entries(workflow[event.element.box.id]).forEach(([key, val]) => {
+                console.log('workflow loop key: ', key, ' - val: ', val)
+                if (typeof val === 'undefined') {
+                    workflow[event.element.box.id][key] = [];
+                }}
+            )*/
     } else if (event.state === 'change') {
         // console.log('**************** change **************************')
         // console.log('event: ', event)
@@ -700,6 +722,20 @@ vfw.session.get_workflow = function () {
         sessionStorage.setItem('workflow', JSON.stringify(workflow))
     }
     return workflow
+}
+
+
+/**
+ * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
+ * @return {obj} json - object of a Workflow
+ */
+vfw.session.get_draw2ddata = function () {
+    let draw2ddata = JSON.parse(sessionStorage.getItem("draw2ddata"))
+    if (!draw2ddata) {
+        draw2ddata = {};
+        sessionStorage.setItem('draw2ddata', JSON.stringify(draw2ddata));
+    }
+    return draw2ddata
 }
 
 
