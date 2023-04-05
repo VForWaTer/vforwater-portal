@@ -24,6 +24,8 @@ HOME_DIR = Path.home()
 VFW_DIR = Path(HOME_DIR) / '.vforwater'
 if not Path(VFW_DIR).exists():
     Path(VFW_DIR).mkdir()
+PROCESSES_IN_DIR = "/home/geoapi/in"
+PROCESSES_OUT_DIR = "/home/geoapi/out"
 
 # Variable to set the demo path in static files
 DEMO_VAR = ''

@@ -21,6 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # TODO: path should not be set to wps results, but wps results should be an URL
 DATA_DIR = '/home/vfwtools/pywps'
+PROCESSES_IN_DIR = "/home/geoapi/in"
+PROCESSES_OUT_DIR = "/home/geoapi/out"
 
 # For now, place all data files in VFW_DIR and not into source directory.
 HOME_DIR = Path.home()
