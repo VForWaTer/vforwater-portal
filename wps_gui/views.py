@@ -7,6 +7,7 @@ import numbers
 import re
 import sys
 import time
+from pathlib import Path
 
 import jsonpickle
 import requests
@@ -20,8 +21,9 @@ from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import translation, timezone
 
-from heron.settings import VFW_SERVER, HOST_NAME, DEBUG
-from vfw_home.models import Entries, Datatypes
+from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR
+from vfw_home.data_obj import DataObject
+from vfw_home.models import Entries, Datatypes, EntrygroupTypes, Datasources, Timeseries_1D
 from vfw_home.utilities import entry_has_data
 from vfw_home.views import get_accessible_data, get_dataset
 from wps_gui.models import WpsResults, WebProcessingService, WpsDescription
@@ -577,6 +579,7 @@ def db_load(request):
     """
     wps_process = "dbloader"
     request_input = json.loads(request.GET.get("dbload"))
+    request_dict = dict(zip(request_input['key_list'], request_input['value_list']))
     orgid = request_input.get("dataset")
     result = {}
 
@@ -592,6 +595,31 @@ def db_load(request):
 
     # format inputs for wps server
     inputs = edit_input(list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""))))
+
+    lookup_arguments = {'entry_id': orgid[2:]}
+    if request_dict['start'] != 'None' and request_dict['end'] != 'None':
+        lookup_arguments['tstamp__gte'] = request_dict['start']
+        lookup_arguments['tstamp__lte'] = request_dict['end']
+
+    if request_dict['start'] != 'None':
+        date = [make_aware(datetime.datetime.strptime(request_dict['start'], '%Y-%m-%d')),
+                make_aware(datetime.datetime.strptime(request_dict['end'], '%Y-%m-%d'))]
+    else:
+        date = None
+
+    dataset = DataObject(orgid, date)
+
+    filename = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
+               f'__start{request_dict["start"]}__end{request_dict["end"]}'
+    filepath = Path(f'{PROCESSES_IN_DIR}/{filename}.csv')
+
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+
+    dataset.dataframe.to_csv(filepath)
+
+
+    # TODO: data is saved, now create metadata
+
 
     try:
         preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)

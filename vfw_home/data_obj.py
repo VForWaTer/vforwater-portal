@@ -11,8 +11,12 @@ from vfw_home.models import Entries, NmEntrygroups
 
 class DataObject:
 
-    def __init__(self, webID="", date=None):
+    def __init__(self, webID: object = "", date: object = None) -> object:
+        """
 
+        :param webID: string like 'wps123' or 'db123'
+        :param date: should be formated with make_aware(datetime.datetime.strptime(request_dict['end'], '%Y-%m-%d')
+        """
         self.__data_qs__ = None
         self.__general_data_qs__ = None
         self.__interest_in_gaps__ = True
