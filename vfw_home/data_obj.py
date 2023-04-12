@@ -46,6 +46,7 @@ class DataObject:
         self.timescale = None
         self.timestep_label = ""
         self.type = ""
+        self.uuID = None
         self.webID = webID
 
         self.__set_vars__()
@@ -60,6 +61,7 @@ class DataObject:
             self.source = 'db'
             self.__qs_entry__ = Entries.objects.filter(id=self.ID)
             self.type = self.__qs_entry__.values_list('datasource__datatype__name', flat=True)[0]
+            self.uuID = self.__qs_entry__.values_list('uuid', flat=True)[0]
             label = self.__qs_entry__.values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
             self.label = self.format_label(label[0][0], label[0][1], label[0][2])
 
