@@ -1,6 +1,7 @@
-const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
-    'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
-    'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
+// TODO: box_types aren't used anymore, though one has to make sure there is no problem now with 2darray
+// vfw.var.box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
+//     'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
+//     'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
 
 // function allowDrop(ev) {
 //     ev.preventDefault();
@@ -67,25 +68,36 @@ vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs = nu
  **/
 vfw.workspace.modal.open_port = function (service, identifier, boxidentifier, index, inputtype, porttype) {
 
-    console.log('service: ', service)
-    console.log('boxidentifier: ', boxidentifier)
-    let modal_values = vfw.session.get_workflow();
-    console.log('modal values. ', modal_values)
-    let json = vfw.session.get_wpsprocess(service, identifier);
-    console.log('json: ', json)
+    let btnObj = {};
+    let workflowBoxes = vfw.session.get_workflow();
+    let process = vfw.session.get_wpsprocess(service, identifier);
     if (porttype === 'output') {
         console.warn('No action for output ports is implemented yet.');
         return;
     } else {
-        // TODO: implement selection of just one element according to its type
-        // vfw.workspace.modal.build_modal(json, service)
-        /** Fill the tool with selection made to receive this result button */
-        // if (typeof inputs === 'string') {
-        if (inputtype === 'string') {
-            vfw.workspace.modal.setPortValue(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
-        } else if (Array.isArray(inputs)) {
-            vfw.workspace.modal.setPortValue(inputs[0], inputs[1])
+        let input_key, input_value = "nothing selected yet";
+        let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
+
+        input_key = workflowBoxes[boxidentifier]['input_keys'][index];
+        if (workflowBoxes[boxidentifier]['input_values']) {
+            input_value = workflowBoxes[boxidentifier]['input_values'][index];
         }
+        popUpText += '<tr><td><b>' + input_key + ':</b></td><td>' + input_value + '</td></tr>';
+        vfw.workspace.modal.openResultModal(popUpText)
+
+        // TODO: implement possibility not only to preview, but also to select data for port.
+        //  Improve code of vfw.workspace.modal.build_radio and others to allow reuse of these functions
+        btnObj = [process['dataInputs'][index]['identifier'], process['dataInputs'][index]]
+
+        /** Fill the tool with selection made to receive this result button */
+        // if (inputtype === 'string') {
+        //
+        //     vfw.workspace.modal.setInPortValue(process['dataInputs'][index]['identifier'], process['dataInputs'][index])
+        //     // vfw.workspace.modal.setInPortValue(modal_values[boxidentifier]['input_keys'], modal_values[boxidentifier]['input_values'])
+        //     // vfw.workspace.modal.setInPortValue(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+        // } else if (Array.isArray(inputs)) {
+        //     vfw.workspace.modal.setInPortValue(inputs[0], inputs[1])
+        // }
     }
 }
 
@@ -175,7 +187,7 @@ vfw.workspace.get_drop_coords = function () {
 
 
 /**
- * Collect data to drop element. (When 'Okay' in Modal is pressed)
+ * Collect data to drop element. (When 'Drop' in Modal is pressed)
  * Check if any inputs or outputs are selected and drop resprective elements, too.
  *
  * @param {object} ev - object passed with drop event
@@ -191,7 +203,7 @@ vfw.workspace.drop_on_click = function (ev) {
 
     /** Check if tool is connected with other elements to drop and get ports **/
     for (let i in modalData.in_type_list) {
-        if (box_types.includes(modalData.in_type_list[i]) && modalData.inId_list[i]) {
+        if (vfw.var.DATATYPES.includes(modalData.in_type_list[i]) && modalData.inId_list[i]) {
             metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
             newbox = vfw.workspace.drop_handler(metadata, coords['x'] - 40, coords['y'] - 40, 'sidebtn' + modalData.inId_list[i], 'workspace')
             // console.log("'sidebtn' + modalData.inId_list[i]: ", 'sidebtn' + modalData.inId_list[i])
@@ -853,11 +865,14 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     let boxLen = 0;
     let aptStoreData = {};
     let aptResultData = {};
-    let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
+    let acceptedDataTypes = DATATYPE.accepts([item.datatype])
+    // let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
 
     htmlSelect.id = item.identifier;
 
-    for (let i in sessionStoreData) if (acceptedDataTypes.has(sessionStoreData[i].type)) {
+    for (let i in sessionStoreData) {
+        if (acceptedDataTypes.has(sessionStoreData[i].type)) {
+        }
         aptStoreData[i] = sessionStoreData[i];
     }
     for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
@@ -925,6 +940,126 @@ vfw.workspace.modal.build_dropdown_opt = function (item, optionGroup, sidebarDat
     return optionGroup
 }
 
+vfw.html.create_input_element = function (input_tool_description, resultData, sessionStoreData) {
+    let inElement = "", newNode = "", nodeText = "";
+    let item = input_tool_description[1];
+    let entry_name = input_tool_description[0];
+    let countDropDowns = 0;
+    newNode = document.createElement("p");
+
+    /** Set title of Input and set the 'required' flag if necessary **/
+    let titleText = "";
+    // if ('minOccurs' in item) {  // outer if seems to be unused
+    if (item.minOccurs == 0) {
+        titleText = " " + item.title + ": "
+    } else if (item.defaultValue) {
+        titleText = " " + item.title + ": "
+    } else if (item.required === true) {
+        // } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
+        titleText = " " + item.title + " (*) : ";
+        inElement.required = true;
+        // }
+    } else {
+        titleText = " " + item.title + ": "
+    }
+
+    // if (item.minOccurs === 1) inElement.required = true;
+    nodeText = document.createTextNode(titleText);
+    newNode.appendChild(nodeText);
+    if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
+        if ('maxOccurs' in item) {
+            if (item.maxOccurs === 1) {
+                // nodeText = "";
+                item.allowedValues.forEach(function (option) {
+                    vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
+                });
+            }
+        }
+    } else if ('supportedValues' in item && Array.isArray(item.supportedValues) && item.supportedValues.length > 1) {
+        if ('maxOccurs' in item) {
+            if (item.maxOccurs === 1) {
+                // nodeText = "";
+                item.supportedValues.forEach(function (option) {
+                    vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
+                });
+                // inElement.setAttribute("type", "radio")
+            }
+        }
+    } else if ('keywords' in item && item.keywords.includes('pattern')) {
+        vfw.workspace.modal.build_regexText(item, entry_name, newNode)
+    // } else if ('keywords' in item) {  // don't use this for geoapi;
+    } else if (vfw.var.EXT_DATATYPES.includes(item.dataType)) {  // don't use this for geoapi;
+        countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
+
+        /** Set input element according to dataType */
+    } else {
+        inElement = document.createElement("INPUT");
+        inElement.id = 'mod_in_el_' + item.identifier;  // item.id;
+        inElement.name = entry_name;  // item.identifier;
+        inElement.title = item.description;  // item.identifier;
+        inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
+
+        // if (item.required === true) inElement.required = true;
+        // if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
+        switch (item.schema.type) {  // (item.dataType) {
+            case 'string':
+                inElement.type = "text";
+                //inElement.className = "input"
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ('defaultValue' in item) {
+                    inElement.value = item.defaultValue;
+                }
+                // if ('defaultValue' in item) inElement.value = item.defaultValue;
+                break;
+            case 'boolean':
+                inElement.type = "checkbox";
+                if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;
+                break;
+            case 'dateTime':
+                inElement.type = "datetime-local";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                break;
+            case 'float':
+                inElement.type = "number";
+                inElement.step = "0.000001";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                break;
+            case 'integer':
+                inElement.type = "number";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                break;
+            case 'positiveInteger':
+                inElement.type = "number";
+                inElement.min = "0";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                break;
+            case 'ComplexData':
+                inElement.type = "text";
+                if ('defaultValue' in item) {
+                    if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
+                }
+                break;
+            case 'BoundingBoxData':
+                console.error('you have to handle BoundingBoxData properly');
+                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                break;
+            default:
+                console.error(' new dataType: ', item.schema)  // item.dataType)
+        }
+        // TODO: is this here the third time I set required = True? Test if necessary
+        if (item.minOccurs > 0) {
+            inElement.required = true
+        } //else {inElement.required = false}
+        newNode.appendChild(inElement);
+    }
+    return newNode;
+}
+
+
 /**
  * Build modal (popup) for a selected wps tool.
  *
@@ -964,122 +1099,11 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     element.innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
-    let countDropDowns = 0;
 
     // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
     Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
-        let item = entry_value[1];
-        let entry_name = entry_value[0];
-        newNode = document.createElement("p");
-
-        /** Set title of Input and set the 'required' flag if necessary **/
-        let titleText = "";
-        // if ('minOccurs' in item) {  // outer if seems to be unused
-        if (item.minOccurs == 0) {
-            titleText = " " + item.title + ": "
-        } else if (item.defaultValue) {
-            titleText = " " + item.title + ": "
-        } else if (item.required === true) {
-            // } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
-            titleText = " " + item.title + " (*) : ";
-            inElement.required = true;
-            // }
-        } else {
-            titleText = " " + item.title + ": "
-        }
-
-        // if (item.minOccurs === 1) inElement.required = true;
-        nodeText = document.createTextNode(titleText);
-        newNode.appendChild(nodeText);
-        if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
-            if ('maxOccurs' in item) {
-                if (item.maxOccurs === 1) {
-                    // nodeText = "";
-                    item.allowedValues.forEach(function (option) {
-                        vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
-                    });
-                }
-            }
-        } else if ('supportedValues' in item && Array.isArray(item.supportedValues) && item.supportedValues.length > 1) {
-            if ('maxOccurs' in item) {
-                if (item.maxOccurs === 1) {
-                    // nodeText = "";
-                    item.supportedValues.forEach(function (option) {
-                        vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
-                    });
-                    // inElement.setAttribute("type", "radio")
-                }
-            }
-        } else if ('keywords' in item && item.keywords.includes('pattern')) {
-            vfw.workspace.modal.build_regexText(item, entry_name, newNode)
-        // } else if ('keywords' in item) {  // don't use this for geoapi;
-        //     countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
-
-            /** Set input element according to dataType */
-        } else {
-            inElement = document.createElement("INPUT");
-            inElement.id = 'mod_in_el_' + item.identifier;  // item.id;
-            inElement.name = entry_name;  // item.identifier;
-            inElement.title = item.description;  // item.identifier;
-            inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
-
-            // if (item.required === true) inElement.required = true;
-            // if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
-            switch (item.schema.type) {  // (item.dataType) {
-                case 'string':
-                    inElement.type = "text";
-                    //inElement.className = "input"
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) {
-                        inElement.value = item.defaultValue;
-                    }
-                    // if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'boolean':
-                    inElement.type = "checkbox";
-                    if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;
-                    break;
-                case 'dateTime':
-                    inElement.type = "datetime-local";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'float':
-                    inElement.type = "number";
-                    inElement.step = "0.000001";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'integer':
-                    inElement.type = "number";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'positiveInteger':
-                    inElement.type = "number";
-                    inElement.min = "0";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'ComplexData':
-                    inElement.type = "text";
-                    if ('defaultValue' in item) {
-                        if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
-                    }
-                    break;
-                case 'BoundingBoxData':
-                    console.error('you have to handle BoundingBoxData properly');
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                default:
-                    console.error(' new dataType: ', item.schema)  // item.dataType)
-            }
-            // TODO: is this here the third time I set required = True? Test if necessary
-            if (item.minOccurs > 0) {
-                inElement.required = true
-            } //else {inElement.required = false}
-            newNode.appendChild(inElement);
-        }
+        console.log('entry value: ', entry_value)
+        newNode = vfw.html.create_input_element(entry_value, resultData, sessionStoreData);
         if (typeof (newNode) === 'object') element.appendChild(newNode)
     });
 
