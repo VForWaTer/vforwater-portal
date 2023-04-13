@@ -102,17 +102,18 @@
       workflow: {},
     },
   }
-  {#vfw.html.loader = '<div id="loader"  class="fading-dot-loader">\n' +#}
-  {#                  '  <div class="dot-loader1 dot-loader"></div>\n' +#}
-  {#                  '  <div class="dot-loader2 dot-loader"></div>\n' +#}
-  {#                  '  <div class="dot-loader3 dot-loader"></div>\n' +#}
-  {#                  '  <div class="dot-loader4 dot-loader"></div>\n' +#}
-  {#                  '  <div class="dot-loader5 dot-loader"></div>\n' +#}
-  {#                  '  <div class="dot-loader6 dot-loader"></div> \n' +#}
-  {#                  '</div>';#}
-  {#vfw.var.SERVER = "{{ VFW_SERVER }}";#}
-  vfw.var.MAP_SERVER = "{{ MAP_SERVER }}";
-  vfw.var.DEMO_VAR = "{{ DEMO_VAR }}";
+  </script>
+{#TODO: This is the safe way to pass vars from python to json. Make sure only this method is used. #}
+{{ MAP_SERVER|json_script:"mapserver-var" }}
+{{ DEMO_VAR|json_script:"demo-var" }}
+{{ EXT_DATATYPES|json_script:"ext-datatypes-var" }}
+{{ BASE_DATATYPES|json_script:"base-datatypes-var" }}
+  <script>
+  vfw.var.MAP_SERVER = JSON.parse(document.getElementById('mapserver-var').textContent);
+  vfw.var.DEMO_VAR = JSON.parse(document.getElementById('demo-var').textContent);
+  vfw.var.EXT_DATATYPES = JSON.parse(document.getElementById('ext-datatypes-var').textContent);
+  vfw.var.BASE_DATATYPES = JSON.parse(document.getElementById('base-datatypes-var').textContent);
+  vfw.var.DATATYPES = vfw.var.BASE_DATATYPES.concat(vfw.var.EXT_DATATYPES);
 </script>
 
 <body class="w3-light-grey">
@@ -354,7 +355,7 @@
 {#  <footer class="w3-container w3-padding-16 w3-light-grey">#}
 {#    <p>Copyright &copy; 2016-2021</p>#}
 {#    <p>{% trans "Powered by" %} <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> | Copyright &copy; 2016-2021</p>#}
-  </footer>
+{#  </footer>#}
 
 </div>
 {{ form.media }}
