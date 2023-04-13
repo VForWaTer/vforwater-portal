@@ -581,7 +581,6 @@ def db_load(request):
     request_input = json.loads(request.GET.get("dbload"))
     request_dict = dict(zip(request_input['key_list'], request_input['value_list']))
     orgid = request_input.get("dataset")
-    result = {}
 
     # check if user has access to dataset
     accessible_data = get_accessible_data(request, orgid[2:])
@@ -607,68 +606,44 @@ def db_load(request):
     else:
         date = None
 
-    dataset = DataObject(orgid, date)
-
-    filename = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
-               f'__start{request_dict["start"]}__end{request_dict["end"]}'
-    filepath = Path(f'{PROCESSES_IN_DIR}/{filename}.csv')
-
-    filepath.parent.mkdir(parents=True, exist_ok=True)
-
-    dataset.dataframe.to_csv(filepath)
-
-
-    # TODO: data is saved, now create metadata
-
-
     try:
         preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)
-        output = json.loads(preloaded_data.outputs)
-        result = {
-            "orgid": orgid,
-            "id": "wps" + str(preloaded_data.id),
-            "type": output["type"],
-            "inputs": inputs,
-        }
-    except ObjectDoesNotExist:
-        # collect variables for wps and run wps
-        service = WebProcessingService.objects.values_list("name", flat=True)[0]
-        wps = get_wps_service_engine(service)
-        execution = wps.execute(wps_process, inputs)
+        output = ast.literal_eval(preloaded_data.outputs)
+        result = {"id": "wps" + str(preloaded_data.id),
+                  "inputs": inputs,
+                  "orgid": orgid,
+                  "type": output["type"],
+                  }
+    except:
+        try:
+            dataset = DataObject(orgid, date)  # load data from database
+            filename = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
+                       f'__start{request_dict["start"]}__end{request_dict["end"]}'
+            filepath = Path(f'{PROCESSES_IN_DIR}/{filename}.csv')
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            dataset.dataframe.to_csv(filepath)
+            output = {'path': str(filepath), 'type': dataset.type}
 
-        # create output for client
-        if execution.status == "ProcessSucceeded":
-            for output in execution.processOutputs:
-                if output.identifier == "data":
-                    path = output.data[0]
-                elif output.identifier == "datatype":
-                    dtype = output.data[0]
-            output = json.dumps({"path": path, "type": dtype})
-            # write result to database
-            try:
-                dbkey = WpsResults.objects.create(
-                    open=True,
-                    wps=wps_process,
-                    inputs=inputs,
-                    outputs=output,
-                    creation=timezone.now(),
-                )
-            except Exception as e:
-                print("Exception while creating DB entry: ", e)
+            dbkey = WpsResults.objects.create(
+                open=True,
+                wps=wps_process,
+                inputs=inputs,
+                outputs=output,
+                creation=timezone.now(),
+            )
 
-            result = {
-                "orgid": orgid,
-                "id": "wps" + str(dbkey.id),
-                "type": dtype,
-                "inputs": inputs,
-                "outputs": output,
-            }
-        elif execution.status == 'Exception':
-            print('WPS error while trying to preload dataset ', inputs)
+            result = {"id": "wps" + str(dbkey.id),
+                      "inputs": json.dumps(inputs),
+                      "orgid": orgid,
+                      "outputs": output,
+                      "type": dataset.type,
+                      }
 
-    # except Exception as e:
-    #     print('Exception in db_load: ', e)
-    #     raise Http404
+        except Exception as e:
+            print('Exception in db_load: ', e)
+            raise Http404
+
+        # TODO: data is saved, now create metadata
 
     return JsonResponse(result)
 
