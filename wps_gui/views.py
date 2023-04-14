@@ -518,10 +518,10 @@ def process_run(request):  # TODO: Check if identical input exists in db before 
     # if request.user.is_authenticated:
     if True:
         # request_input = json.loads(request.GET.get('processrun'))
-        request_input = prepare_inputs(json.loads(request.GET.get('processrun')))
-        wps_process = request_input.get("id", "")
+        input = prepare_inputs(json.loads(request.GET.get('processrun')))
+        wps_process = input.get("id", "")
 
-        if request_input['serv'] == 'pygeoapi_vforwater':
+        if input['serv'] == 'pygeoapi_vforwater':
             service, endpoint, wps_services = get_endpoint_data(DEBUG)
             apiproc = getProcesses(endpoint)
             process_description = get_process_info(apiproc.process(wps_process))
@@ -529,12 +529,12 @@ def process_run(request):  # TODO: Check if identical input exists in db before 
             print('You try to run a process, but I do not know your server.')
 
         execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
-                                  json={'inputs': request_input.get("in_dict", ""),
+                                  json={'inputs': input.get("in_dict", ""),
                                         # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
                                         }
                                   )
         if execution.status_code == 200:
-            all_outputs = handle_geoapiprocess_output(request.user, execution, process_description, request_input)
+            all_outputs = handle_geoapiprocess_output(request.user, execution, process_description, input)
         else:
             all_outputs = {'execution_status': f'error: {execution.reason}'}
             print(f'Error in process - caught in process_run function: {all_outputs}')
@@ -614,8 +614,8 @@ def db_load(request):
             dataset = DataObject(orgid, date)  # load data from database
             # filename = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
             #            f'__start{request_dict["start"]}__end{request_dict["end"]}'
-            folder = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
-                       f'__start{request_dict["start"]}__end{request_dict["end"]}'
+            now = datetime.datetime.now()
+            folder = f'{request.user.pk}_dbload_{now.strftime("%d%m%y_%H%M%S")}'  # use user, toolname, and datetime
             fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/dataframe.csv')
             fullpath.parent.mkdir(parents=True, exist_ok=True)
             dataset.dataframe.to_csv(fullpath)
