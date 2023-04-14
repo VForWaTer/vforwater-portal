@@ -449,7 +449,8 @@ var contextMenuActive = "context-menu--active";
 var contextResultActive = "context-result--active";
 
 var taskItemClassName = "task";
-var taskItemInContext;
+// var taskItemInContext;
+vfw.var.taskItemInContext = null;
 
 var menu = document.querySelector("#context-menu");
 var resultMenu = document.querySelector("#context-result");
@@ -484,23 +485,23 @@ function init() {
  */
 function contextListener() {
     document.addEventListener("contextmenu", function (e) {
-        taskItemInContext = vfw.sidebar.clickInsideElement(e, taskItemClassName);
-        // console.log('taskItemInContext.dataset.sessionstore: ', taskItemInContext.dataset.sessionstore)
+        vfw.var.taskItemInContext = vfw.sidebar.clickInsideElement(e, taskItemClassName);
+        // console.log('vfw.var.taskItemInContext.dataset.sessionstore: ', vfw.var.taskItemInContext.dataset.sessionstore)
 
         let chooseContext;
         let btndata;
-        if (taskItemInContext && !taskItemInContext.classList.contains("groupaccordion")) {
-            if (taskItemInContext.classList.contains('is-result')) {
+        if (vfw.var.taskItemInContext && !vfw.var.taskItemInContext.classList.contains("groupaccordion")) {
+            if (vfw.var.taskItemInContext.classList.contains('is-result')) {
                 chooseContext = 'is-result';
-                btndata = JSON.parse(sessionStorage.getItem("resultBtn"))[taskItemInContext.dataset.btnname]
+                btndata = JSON.parse(sessionStorage.getItem("resultBtn"))[vfw.var.taskItemInContext.dataset.btnname]
             } else {
-                btndata = JSON.parse(sessionStorage.getItem("dataBtn"))[taskItemInContext.dataset.orgid]
+                btndata = JSON.parse(sessionStorage.getItem("dataBtn"))[vfw.var.taskItemInContext.dataset.orgid]
             }
             e.preventDefault();
-            toggleMenuOn(chooseContext, taskItemInContext.dataset, btndata);
+            toggleMenuOn(chooseContext, vfw.var.taskItemInContext.dataset, btndata);
             positionMenu(e);
         } else {
-            taskItemInContext = null;
+            vfw.var.taskItemInContext = null;
             toggleMenuOff();
         }
     });
@@ -667,9 +668,22 @@ vfw.workspace.modal.selectInput = function (btnKeys) {
 }
 
 
-vfw.workspace.modal.setPortValue = function (btnKeys, btnValues) {
-    console.log('btnKeys: ', btnKeys )
-    console.log('btnValues: ', btnValues )
+vfw.workspace.modal.setInPortValue = function (btnKey, btnValues) {
+    let entry_value = [btnKey, btnValues]
+
+
+    let btnName = vfw.var.taskItemInContext.getAttribute('btnname');
+    let store = vfw.var.taskItemInContext.getAttribute('data-sessionstore');
+    let item = JSON.parse(sessionStorage.getItem(store))[btnName];
+    if (!item) {
+        btnName = vfw.var.taskItemInContext.getAttribute('data-orgid');
+        item = JSON.parse(sessionStorage.getItem(store))[btnName];
+    }
+
+    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
+    let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    let htmlelement = vfw.html.create_input_element(btnValues, resultData, sessionStoreData)
 }
 
 
@@ -751,22 +765,18 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
 function menuItemListener(link) {
     let wpsToOpen = "";
     let service = {};
-    let id = taskItemInContext.getAttribute("data-id");
-    let btnName = taskItemInContext.getAttribute('btnname');
-    let store = taskItemInContext.getAttribute('data-sessionstore');
+    let id = vfw.var.taskItemInContext.getAttribute("data-id");
+    let btnName = vfw.var.taskItemInContext.getAttribute('btnname');
+    let store = vfw.var.taskItemInContext.getAttribute('data-sessionstore');
+    console.log('**** store: ****: ', store)
     let item = JSON.parse(sessionStorage.getItem(store))[btnName];
     if (!item) {
-        btnName = taskItemInContext.getAttribute('data-orgid');
+        btnName = vfw.var.taskItemInContext.getAttribute('data-orgid');
         item = JSON.parse(sessionStorage.getItem(store))[btnName];
     }
     let result = JSON.parse(sessionStorage.getItem('resultBtn'));
-    // content.innerHTML = '<div id="loader" class="loader"></div>';
     vfw.html.loaderOverlayOn();
-    // content.innerHTML = vfw.html.loader  // define content of loader popup
 
-    // vfw.html.popup.classList.add(popActive);  // activate loader popup
-    // popText.classList.remove(popInActive);  // position loader popup
-    // positionPopup(vfw.html.popup);  // position loader popup
     switch (link.getAttribute("data-action")) {
 
         case "View":
@@ -786,7 +796,6 @@ function menuItemListener(link) {
                 })
                 .fail(function (failed) {
                     console.error('Failed to load any metadata for dataset ', id)
-                    // vfw.html.popup.classList.remove(popActive);
                 })
                 .always(function () {
                     vfw.html.loaderOverlayOff();
@@ -802,7 +811,7 @@ function menuItemListener(link) {
             })
                 .done(function (json) {
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
+                    saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName") + ".csv");
                 })
                 .always(function () {
                     // vfw.html.popup.classList.remove(popActive);
@@ -824,7 +833,7 @@ function menuItemListener(link) {
                 .done(function (data) {
                     let blob = new File([data], {type: "application/octet-stream"});
                     // let blob = new Blob([data], {type: "application/octet-binary"});
-                    saveAs(blob, String(taskItemInContext.getAttribute("btnName")) + ".zip");
+                    saveAs(blob, String(vfw.var.taskItemInContext.getAttribute("btnName")) + ".zip");
                 })
                 .always(function () {
                     // vfw.html.popup.classList.remove(popActive);
@@ -843,7 +852,7 @@ function menuItemListener(link) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, taskItemInContext.getAttribute("btnName"));
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
                 })
                 .always(function () {
                     // vfw.html.popup.classList.remove(popActive);
@@ -972,7 +981,6 @@ function menuItemListener(link) {
                     .done(function (requestResult) {
                         // content.innerHTML = '<div class="mod-header">' + 'result' + '</div>';
                         // content.innerHTML = result.div;
-                        // let bokehResultScript;
                         console.log('make a previewplot')
                         if ('html' in requestResult) {
                             document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
@@ -996,7 +1004,7 @@ function menuItemListener(link) {
             break;
         case "DownloadR":
             let blob = new Blob([sessionStorage.getItem(id)], {type: "text/csv;charset=utf-8"});
-            saveAs(blob, taskItemInContext.getAttribute("btnName") + ".csv");
+            saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName") + ".csv");
             // vfw.html.popup.classList.remove(popActive);
             vfw.html.loaderOverlayOff();
             break;

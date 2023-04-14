@@ -21,7 +21,7 @@ from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import translation, timezone
 
-from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR
+from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR, basicdatatypes, datatypes
 from vfw_home.data_obj import DataObject
 from vfw_home.models import Entries, Datatypes, EntrygroupTypes, Datasources, Timeseries_1D
 from vfw_home.utilities import entry_has_data
@@ -31,20 +31,13 @@ from wps_gui.utilities import (
     get_wps_service_engine,
     list_wps_service_engines,
     abstract_is_link, get_endpoint_data, get_process_basics, get_process_info, handle_geoapiprocess_output,
+    prepare_inputs,
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
 import logging
 
 logger = logging.getLogger(__name__)
-datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
-             'raster', 'ndarray', 'vraster', '2darray', 'idataframe', 'vdataframe',
-             'time-dataframe', 'vtime-dataframe',
-             # outdated values:
-             'ts-aggregate', 'ts-pickle', 'ts-merge', 'aggregate',
-             'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle'
-             ]
-basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number', 'json']
 
 
 # datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
@@ -523,7 +516,8 @@ def handle_wps_output(execution, wps_process, inputs):
 def process_run(request):  # TODO: Check if identical input exists in db before starting the process again
     # if request.user.is_authenticated:
     if True:
-        request_input = json.loads(request.GET.get('processrun'))
+        # request_input = json.loads(request.GET.get('processrun'))
+        request_input = prepare_inputs(json.loads(request.GET.get('processrun')))
         wps_process = request_input.get("id", "")
 
         if request_input['serv'] == 'pygeoapi_vforwater':
@@ -617,12 +611,14 @@ def db_load(request):
     except:
         try:
             dataset = DataObject(orgid, date)  # load data from database
-            filename = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
+            # filename = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
+            #            f'__start{request_dict["start"]}__end{request_dict["end"]}'
+            folder = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
                        f'__start{request_dict["start"]}__end{request_dict["end"]}'
-            filepath = Path(f'{PROCESSES_IN_DIR}/{filename}.csv')
-            filepath.parent.mkdir(parents=True, exist_ok=True)
-            dataset.dataframe.to_csv(filepath)
-            output = {'path': str(filepath), 'type': dataset.type}
+            fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/dataframe.csv')
+            fullpath.parent.mkdir(parents=True, exist_ok=True)
+            dataset.dataframe.to_csv(fullpath)
+            output = {'path': str(fullpath), 'type': dataset.type, 'folder': str(folder)}
 
             dbkey = WpsResults.objects.create(
                 open=True,

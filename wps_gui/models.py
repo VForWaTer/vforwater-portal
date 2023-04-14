@@ -30,9 +30,9 @@ class WpsResults(models.Model):
     creation = models.DateTimeField(blank=True, null=True)
     access = models.DateTimeField(blank=True, null=True)
     open = models.BooleanField()
-    outputs = models.CharField(max_length=1024)
+    outputs = models.CharField(max_length=1024)  # TODO: Use jsonField instead of CharField
     wps = models.CharField(max_length=255)
-    inputs = models.CharField(max_length=2048)
+    inputs = models.CharField(max_length=2048)  # TODO: Use jsonField instead of CharField
 
     def __str__(self):
         return '%s %s' % (self.wps, self.inputs)

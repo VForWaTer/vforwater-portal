@@ -888,7 +888,6 @@ def workspace_data(request):
         # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
         result = build_selection(json.loads(request.GET.get('workspaceData')),
                                  request.GET.get('startDate'), request.GET.get('endDate'))
-        print('result: ', result)
         return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
     except TypeError:

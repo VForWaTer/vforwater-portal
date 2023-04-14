@@ -1,11 +1,14 @@
+import ast
 import json
 import re
+from os import path
 from urllib.error import HTTPError, URLError
 
 from owslib.wps import WebProcessingService
-from .models import WebProcessingService as WpsModel
+from .models import WebProcessingService as WpsModel, WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
-from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log
+from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log, datatypes
+
 # from .views import basicdatatypes
 
 basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number', 'json']
@@ -679,3 +682,17 @@ def handle_geoapiprocess_output_old(execution, process_description, inputs):
         #             del outputs_for_db[-1]
 
     return all_outputs
+
+
+def prepare_inputs(request_input):
+    """
+    Check if input is a basic datatype (like string, int, bool...) or more sophisticated data with source path in db.
+    :param request_input:
+    :return:
+    """
+    for i, val in enumerate(request_input['in_type_list']):
+        if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if not a basicdatatype look for data in db
+            folder = ast.literal_eval(WpsResults.objects.get(id=request_input['value_list'][i][3:]).outputs)['folder']
+            request_input['value_list'][i] = folder
+
+    return request_input
