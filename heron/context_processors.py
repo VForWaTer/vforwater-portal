@@ -1,5 +1,6 @@
 from django.conf import settings
-from wps_gui.views import datatypes, basicdatatypes
+from vfw_home.datatypes import datatypes, basicdatatypes
+
 
 # TODO: document
 def global_settings(request):

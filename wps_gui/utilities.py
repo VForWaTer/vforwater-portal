@@ -7,11 +7,7 @@ from urllib.error import HTTPError, URLError
 from owslib.wps import WebProcessingService
 from .models import WebProcessingService as WpsModel, WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
-from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log, datatypes
-
-# from .views import basicdatatypes
-
-basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number', 'json']
+from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log
 
 
 def abstract_is_link(process):

@@ -21,8 +21,9 @@ from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import translation, timezone
 
-from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR, basicdatatypes, datatypes
+from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR
 from vfw_home.data_obj import DataObject
+from vfw_home.datatypes import basicdatatypes, datatypes
 from vfw_home.models import Entries, Datatypes, EntrygroupTypes, Datasources, Timeseries_1D
 from vfw_home.utilities import entry_has_data
 from vfw_home.views import get_accessible_data, get_dataset
