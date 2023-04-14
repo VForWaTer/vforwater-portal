@@ -5,6 +5,8 @@ from os import path
 from urllib.error import HTTPError, URLError
 
 from owslib.wps import WebProcessingService
+
+from vfw_home.datatypes import datatypes
 from .models import WebProcessingService as WpsModel, WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
 from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log
