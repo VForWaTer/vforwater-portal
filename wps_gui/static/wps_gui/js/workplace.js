@@ -462,6 +462,7 @@ vfw.workspace.modal.run_process = function () {
         }, /** data sent with post request **/
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
+        vfw.html.loaderOverlayOff()
             if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
                 json.wps = modal_input.id;
                 json.inputs = {};
@@ -531,10 +532,11 @@ vfw.workspace.modal.run_process = function () {
             }
         })
         .fail(function (json) {
+            vfw.html.loaderOverlayOff()
             vfw.workspace.modal.set_Color("firebrick");
             console.error('Error, No success: ', json)
         })
-        .always(vfw.html.loaderOverlayOff());
+        // .always(vfw.html.loaderOverlayOff());
 }
 
 /**
