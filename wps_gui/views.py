@@ -621,6 +621,7 @@ def db_load(request):
             fullpath.parent.mkdir(mode=0o775, parents=True, exist_ok=True)
             dataset.dataframe.to_csv(fullpath)
             subprocess.run(["chgrp", "geoapi", f'{PROCESSES_IN_DIR}/{folder}'])  # change owner of folder
+            fullpath.parent.chmod(0o775)
             # subprocess.run(["chown", "geoapi", fullpath], capture_output=True)  # change owner of folder
 
             output = {'path': str(fullpath), 'type': dataset.type, 'folder': str(folder)}
