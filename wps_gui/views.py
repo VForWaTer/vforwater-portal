@@ -5,6 +5,7 @@ import itertools
 import json
 import numbers
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -617,8 +618,11 @@ def db_load(request):
             now = datetime.datetime.now()
             folder = f'{request.user.pk}_dbload_{now.strftime("%d%m%y_%H%M%S")}'  # use user, toolname, and datetime
             fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/dataframe.csv')
-            fullpath.parent.mkdir(parents=True, exist_ok=True)
+            fullpath.parent.mkdir(mode=775, parents=True, exist_ok=True)
             dataset.dataframe.to_csv(fullpath)
+            subprocess.run(["chgrp", "geoapi", f'{PROCESSES_IN_DIR}/{folder}'])  # change owner of folder
+            # subprocess.run(["chown", "geoapi", fullpath], capture_output=True)  # change owner of folder
+
             output = {'path': str(fullpath), 'type': dataset.type, 'folder': str(folder)}
 
             dbkey = WpsResults.objects.create(
