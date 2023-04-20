@@ -692,5 +692,6 @@ def prepare_inputs(request_input):
         if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if not a basicdatatype look for data in db
             folder = ast.literal_eval(WpsResults.objects.get(id=request_input['value_list'][i][3:]).outputs)['folder']
             request_input['value_list'][i] = folder
+            request_input['in_dict'][request_input['key_list'][i]] = folder
 
     return request_input
