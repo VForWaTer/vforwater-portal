@@ -463,7 +463,7 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
         else:
             path = ""
 
-        if len(single_output["data"]['value']) < 300:  # random number, typical pathlength < 260 chars
+        if 'value' in single_output["data"] and len(single_output["data"]['value']) < 300:  # random number, typical pathlength < 260 chars
             single_output["data"] = result['value']
             db_output_data = result['value']
         elif path != "":  # TODO: fix it (compare with handle_wps_output)
