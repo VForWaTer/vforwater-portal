@@ -502,7 +502,7 @@ function drawOnMapMenu(test) {
     });
 
     drawCatchmentOutlet.on('drawstart', function (event) {
-        start()
+        // start()
         // document.getElementById("mod_prev").classList.add("loader");
         vfw.html.loaderOverlayOn()
         // positionPopup(vfw.html.popup);
