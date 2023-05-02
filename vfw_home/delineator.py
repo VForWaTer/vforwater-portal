@@ -90,7 +90,9 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
     try:
         catchment = level1_catchment.filter(geom__contains=coordinates)
     except Exception as e:
-        print('e: ', e)
+        print('e in catchment.filter: ', e)
+        return {'error': e,
+                'vfw_message': f'unable to filter level1 catchment with coordinates {coordinates}'}
 
     if not catchment.exists():
         wkbquerystring = "SELECT ST_AsText(geom, 9) AS catchment " \
