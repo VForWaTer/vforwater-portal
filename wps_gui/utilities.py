@@ -406,7 +406,7 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
     :type inputs: dict
     :return:
     """
-    result = execution.json();
+    result = execution.json()
     # if result is a single output, first make sure the format is as expected like for multiple outputs
     output_keys = list(process_description['outputs'].keys())
     if len(output_keys) == 1 and output_keys[0] not in result.keys():

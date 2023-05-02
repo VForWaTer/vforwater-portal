@@ -1,6 +1,5 @@
-from django.conf.urls import include
 from wps_gui import views
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 
 
 app_name = 'wps_gui'

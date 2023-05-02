@@ -14,10 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include, re_path
 from django.views.generic.base import RedirectView
 from vfw_home import views as vfw_views
 from django.views.i18n import JavaScriptCatalog
@@ -26,7 +25,7 @@ from django.views.i18n import JavaScriptCatalog
 #  https://docs.djangoproject.com/en/2.2/topics/i18n/translation/#note-on-performance
 urlpatterns = [
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
-    url(r'^$', RedirectView.as_view(url='home/', permanent=False)),
+    re_path(r'^$', RedirectView.as_view(url='home/', permanent=False)),
     path('home/', include('vfw_home.urls')),
     path('admin/', admin.site.urls),
     path('legals', vfw_views.Legals.as_view(), name='legals'),

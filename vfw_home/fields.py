@@ -7,8 +7,8 @@ from django.core.exceptions import ValidationError
 # from django import forms
 from django.db import models
 from django.contrib.gis import forms
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy
+from django.utils.encoding import force_str
+from django.utils.translation import gettext_lazy
 
 from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider, AutocompleteCharWidget
 from .utilities import regex_patterns
@@ -76,7 +76,7 @@ class DateTimeRangeSliderField(forms.DateTimeField):
 class CustomOSMField(forms.Field):
 
     default_error_messages = {
-        'invalid': ugettext_lazy('Enter Latitude and Longitude'),
+        'invalid': gettext_lazy('Enter Latitude and Longitude'),
     }
     re_point = re.compile(r'^\s*(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(?:(\d{4,5})?)$')
     lat_pattern = regex_patterns['lat']
@@ -98,7 +98,7 @@ class CustomOSMField(forms.Field):
         if value in self.empty_values:
             return None
         try:
-            m = self.re_point.match(force_text(value))
+            m = self.re_point.match(force_str(value))
             lat = self.lat_pattern.match(m.group(1))
             lon = self.lon_pattern.match(m.group(2))
             srid = m.group(3)
@@ -121,7 +121,7 @@ class CustomOSMField(forms.Field):
 class AutocompleteCharField(forms.Field):
 
     default_error_messages = {
-        'invalid': ugettext_lazy('Enter Latitude and Longitude'),
+        'invalid': gettext_lazy('Enter Latitude and Longitude'),
     }
 
     def __int__(self, *args, **kwargs):

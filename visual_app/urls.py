@@ -1,6 +1,5 @@
-from django.conf.urls import url, include
 from visual_app import views
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 
 
 app_name = 'visual'
