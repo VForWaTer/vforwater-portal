@@ -15,7 +15,7 @@ from vfw_home.models import Entries, NmPersonsEntries, Persons, Variables, Datas
 
 class MultiUploadFileForm(forms.Form):
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={
-        'multiple': True,
+        'allow_multiple_selected': True,
         'id': 'select_data_button',
         'style': 'display: none',
         'onchange': "this.form.submit()",
