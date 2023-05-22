@@ -39,6 +39,7 @@ class WpsResults(models.Model):
 
     class Meta:
         managed = True
+        db_table = 'wps_gui_wpsresults'
 
 
 class WpsDescription(models.Model):

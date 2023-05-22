@@ -882,6 +882,11 @@ function menuItemListener(link) {
             // vfw.html.popup.classList.remove(popActive);
             vfw.html.loaderOverlayOff();
             break;
+        case "ViewHTML":
+            console.log('item: ', item)
+            vfw.workspace.modal.openResultModal(item.report_html)
+            vfw.html.loaderOverlayOff();
+            break;
         case "ViewResult":
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
             if (!(result[btnName] instanceof Object)) {

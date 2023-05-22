@@ -941,6 +941,7 @@ class Delineator(View):
         }
         # validate input data:
         if not is_coord(coords['lat'][0], 'lat') or not is_coord(coords['lng'][0], 'lon'):
+            logger.error(f'Wrong coordinates from client: ({coords}). Improve coordinate handling on client')
             return {'Error': 'Error in Coordinates.'}
 
         catchment = delineate(coords)

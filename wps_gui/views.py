@@ -613,16 +613,18 @@ def db_load(request):
     except:
         try:
             dataset = DataObject(orgid, date)  # load data from database
-            # filename = f'user{request.user.pk}__data{request_dict["entry_id"][2:]}' \
-            #            f'__start{request_dict["start"]}__end{request_dict["end"]}'
             now = datetime.datetime.now()
+
+            # FIXME: processes need their data in a previously defined folder, so we need write rights for django and
+            #  for processes. => we have to ensure the folder of the shared data always has the appropriate rights
+            # TODO: User URLs instead of folders
             folder = f'{request.user.pk}_dbload_{now.strftime("%d%m%y_%H%M%S")}'  # use user, toolname, and datetime
-            fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/dataframe.csv')
-            fullpath.parent.mkdir(mode=0o775, parents=True, exist_ok=True)
-            dataset.dataframe.to_csv(fullpath)
-            subprocess.run(["chgrp", "geoapi", f'{PROCESSES_IN_DIR}/{folder}'])  # change owner of folder
-            fullpath.parent.chmod(0o775)
-            # subprocess.run(["chown", "geoapi", fullpath], capture_output=True)  # change owner of folder
+            # fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/dataframe.csv')
+            fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/')
+            fullpath.mkdir(mode=0o775, parents=True, exist_ok=True)
+            dataset.dataframe.to_csv(fullpath.joinpath('dataframe.csv'))
+            # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
+            fullpath.chmod(0o775)
 
             output = {'path': str(fullpath), 'type': dataset.type, 'folder': str(folder)}
 

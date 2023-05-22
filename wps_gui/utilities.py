@@ -2,14 +2,17 @@ import ast
 import json
 import re
 from os import path
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 
+from django.utils import timezone
 from owslib.wps import WebProcessingService
 
 from vfw_home.datatypes import datatypes
-from .models import WebProcessingService as WpsModel, WpsResults
+from .models import WebProcessingService as WpsModel
+from .models import WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
-from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log
+from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR
 
 
 def abstract_is_link(process):
@@ -383,16 +386,18 @@ def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> obje
     :param invalue: dict of input identifier of wps and respective value (e.g. a path)
     :param outputs: dict of output or a path
     """
-    db_result = {'id': 'bla'}
-    # db_result = WpsResults.objects.get_or_create(
-    #     # owner=user,
-    #     open=False,
-    #     wps=wps_process,
-    #     inputs=invalue,
-    #     outputs=outputs,
-    #     creation=timezone.now(),
-    # )  # , access=timezone.now())
-    return db_result['id']
+    obj, created = WpsResults.objects.get_or_create(
+        # owner=user,
+        open=False,
+        wps=wps_process,
+        inputs=invalue,
+        outputs=outputs,
+        creation=timezone.now(),
+    )  # , access=timezone.now())
+    if created:
+        return {'id': obj.id}
+    else:
+        return {'id': 'error while creating db entry.'}
 
 
 def handle_geoapiprocess_output(user, execution, process_description, inputs):
@@ -407,17 +412,41 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
     :return:
     """
     result = execution.json()
+    report_path = result['dir'] + '/report'
+
+    def load_report(path, type):
+        if type == 'json':
+            with open(report_path + '.json') as user_file:
+                file_contents = user_file.read()
+                file_contents = json.loads(file_contents)
+        elif type == 'html':
+            with open(report_path + '.html') as user_file:
+                file_contents = user_file.read()
+        return file_contents
+
+    report_html = load_report(report_path, 'html')
+
     # if result is a single output, first make sure the format is as expected like for multiple outputs
     output_keys = list(process_description['outputs'].keys())
     if len(output_keys) == 1 and output_keys[0] not in result.keys():
         result = {output_keys[0]: result}
 
+    # shorten output for the database. TODO: In the model 1024 chars are allowed
     if len(str(result)) < 300:  # random number, typical pathlength < 260 chars
         db_output_data = result
     else:
         db_output_data = str(result)[:300]
 
-    wpsid = create_wpsdb_entry(inputs['id'], inputs['in_dict'], db_output_data)
+    # if 'res' is result and 'value' in result['res'] and result['res']['value'] == 'completed':
+    # This might indicate that we got the result from a process TODO: Think of something better...
+    # if 'path' in process_description['outputs']:
+        # for i in process_description['outputs']:
+        # db_output_data['path'] = Path(f'{PROCESSES_OUT_DIR}/{folder}/')
+        # if
+        #     pass
+
+    # (get or) create database entry  TODO: Doesn't make much sense to write errors to DB. Fix for production phase.
+    # wpsid = create_wpsdb_entry(wps_process=inputs['id'], invalue=inputs['in_dict'], outputs=db_output_data)
     # wpsid = create_wpsdb_entry(user, inputs['id'], inputs['in_dict'], db_output_data)
 
     all_outputs = {
@@ -431,16 +460,26 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
         "creationTime: ": execution.headers['Date'],
         # 'process': execution.process,
         "result": result,
+        "report_html": report_html,
+        # "report": report_json,
     }
 
     if 'error' in result and 'value' in result.error and result.error.value == True:
         print(f"Status {execution.status_code}, error in wps process")
         return all_outputs
+    elif "res" in result and "description" in result["res"] and "error" in result["res"]["description"]:
+        print('error in result: ', execution.status_code)
+        print('TODO: figure out how to handle this.')
+        return all_outputs
     else:
         result.pop('error', None) # as there shouldn't be an error, we can remove it from the results
         process_description['outputs'].pop('error', None) # as there shouldn't be an error, we can remove it from the results
 
-    def singleOutput2json(output_name, result, output_description):
+    def singleOutput2json(output_name: object, result: object, output_description: object) -> object:
+        """
+
+        :rtype: object
+        """
         single_output = {}
         single_output["data"] = result
 
@@ -484,7 +523,9 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
         if db_output_data != "":
             db_output = [output_name, single_output["type"], db_output_data]
             # create db entry
-            wpsid = create_wpsdb_entry(process_description, inputs, db_output)
+
+            # TODO: What is happening here? wpsdb entry is done at the beginning of the function!
+            wpsid = create_wpsdb_entry(wps_process=process_description['identifier'], invalue=inputs, outputs=db_output)
             # wpsid = create_wpsdb_entry(user, process_description, inputs, db_output)
 
             single_output["wpsID"] = wpsid

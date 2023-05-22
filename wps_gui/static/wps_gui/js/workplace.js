@@ -464,6 +464,8 @@ vfw.workspace.modal.run_process = function () {
         .done(function (json) {  /** Results are stored in the sessionStorage **/
         vfw.html.loaderOverlayOff()
             if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
+                let btnName = '';
+                let btnData = {};
                 json.wps = modal_input.id;
                 json.inputs = {};
                 $.each(modal_input.inKey, function (key, value) {
@@ -472,6 +474,14 @@ vfw.workspace.modal.run_process = function () {
                 });
                 vfw.workspace.modal.set_Color("forestgreen");
 
+                // if there is an html available for a result show it directly as result
+                if ('report_html' in json) {
+                    btnData['report_html'] = json.report_html;
+                    vfw.workspace.modal.openResultModal(json.report_html)
+                    // vfw.html.loaderOverlayOff();
+                }
+
+                // if there are more then one result, than create a grouped button
                 if (Object.keys(json.result).length > 1) {
                     group = true;
                     groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
@@ -480,9 +490,9 @@ vfw.workspace.modal.run_process = function () {
                 }
 
                 for (let i in json.result) {
-                    let btnName = vfw.sidebar.set_result_btn_name(modal_input.outputName);
+                    btnName = vfw.sidebar.set_result_btn_name(modal_input.outputName);
                     json.result[i].dropBtn['name'] = btnName;
-                    let btnData = {
+                    btnData = {
                         dbID: json.result[i].wpsID,
                         inputs: json.inputs,
                         input_keys: modal_input.key_list,
@@ -509,6 +519,7 @@ vfw.workspace.modal.run_process = function () {
                         members.push([btnName, btnData])
                     }
                 }
+
                 if (group === true) {
                     document.getElementById("workspace_results").innerHTML
                         += vfw.workspace.build_resultgroup_button(groupName, members);
