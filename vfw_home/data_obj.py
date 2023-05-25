@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pandas as pd
 from decimal import Decimal
@@ -25,6 +27,7 @@ class DataObject:
         self.__qs_group__ = None
         self.__row_limit__ = max_size_preview_plot
         self.__value_before_gap__ = None
+        self.coords = None
         self.data_columns = None
         self.data_format = None
         self.data_table_name = None
@@ -64,7 +67,9 @@ class DataObject:
             self.uuID = self.__qs_entry__.values_list('uuid', flat=True)[0]
             label = self.__qs_entry__.values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
             self.label = self.format_label(label[0][0], label[0][1], label[0][2])
-
+            location = self.__qs_entry__.values_list('location', flat=True)[0]
+            self.coords = json.loads(location.geojson)
+            self.coords['srid'] = location.srid  # TODO: check how many queries for coords
             self.data_table_name = self.__qs_entry__.values_list('datasource__path', flat=True)[0]
             self.data_names = self.__qs_entry__.values_list('datasource__data_names', flat=True)[0]
             if not self.data_names:
