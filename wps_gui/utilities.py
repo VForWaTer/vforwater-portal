@@ -244,10 +244,16 @@ def get_process_basics(apiprocess):
     inputs = {}
     outputs = {}
     for k, v in apiprocess['inputs'].items():
-        inputs[k] = v['schema']['type']
+        if 'format' in v['schema']:
+            inputs[k] = f"{v['schema']['type']} {v['schema']['format']}"
+        else:
+            inputs[k] = v['schema']['type']
 
     for k, v in apiprocess['outputs'].items():
-        outputs[k] = v['schema']
+        if 'format' in v['schema']:
+            outputs[k] = f"{v['schema']['type']} {v['schema']['format']}"
+        else:
+            outputs[k] = v['schema']
 
     return {
         "id": apiprocess['id'],
@@ -338,7 +344,9 @@ def add_required(inputs):
     :return:
     """
     for k, v in inputs.items():
-        if v['minOccurs'] > 0 and v['schema']['type'] != 'boolean' and v['schema']['type'] != 'bool':
+        if 'schema' in v and 'required' in v['schema'] and v['schema']['required'] == 'true' \
+            or 'minOccurs' in v and v['minOccurs'] > 0 \
+            and 'type' in v['schema'] and v['schema']['type'] != 'boolean' and v['schema']['type'] != 'bool':
             inputs[k]['required'] = True
         else:
             inputs[k]['required'] = False

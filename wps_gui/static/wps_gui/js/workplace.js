@@ -998,6 +998,10 @@ vfw.html.create_input_element = function (input_tool_description, resultData, se
                 // inElement.setAttribute("type", "radio")
             }
         }
+    } else if ("enum" in item.schema) {
+        item.schema.enum.forEach(function (option) {
+            vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
+        });
     } else if ('keywords' in item && item.keywords.includes('pattern')) {
         vfw.workspace.modal.build_regexText(item, entry_name, newNode)
     // } else if ('keywords' in item) {  // don't use this for geoapi;
@@ -1019,36 +1023,47 @@ vfw.html.create_input_element = function (input_tool_description, resultData, se
                 inElement.type = "text";
                 //inElement.className = "input"
                 inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                if ('defaultValue' in item) {
-                    inElement.value = item.defaultValue;
-                }
-                // if ('defaultValue' in item) inElement.value = item.defaultValue;
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
                 break;
             case 'boolean':
                 inElement.type = "checkbox";
-                if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;
+                if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;  // TODO!
                 break;
             case 'dateTime':
                 inElement.type = "datetime-local";
                 inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
                 break;
             case 'float':
                 inElement.type = "number";
                 inElement.step = "0.000001";
                 inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
                 break;
             case 'integer':
                 inElement.type = "number";
                 inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
+                break;
+            case 'number':
+                inElement.type = "number";
+                if (item.schema.format  == "float") inElement.step = "0.000001";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ("minimum" in item.schema) inElement.min = item.schema.minimum;
+                if ("maximum" in item.schema) inElement.max = item.schema.maximum;
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
                 break;
             case 'positiveInteger':
                 inElement.type = "number";
                 inElement.min = "0";
                 inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
                 break;
             case 'ComplexData':
                 inElement.type = "text";
