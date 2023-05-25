@@ -527,6 +527,26 @@ class Variables(models.Model):
         filter_items = {'variable__' + column + '__in': selection}
         return filter_items
 
+"""
+*** End of Database description. Next block is for Database views ***
+"""
+
+class Locations(models.Model):
+    """
+    Access db view
+    """
+    st_asewkt = models.CharField()
+    point_location = models.CharField()
+    geom = models.CharField()
+    area_sqm = models.DecimalField(max_digits=999, decimal_places=999)
+
+    class Meta:
+        managed = False
+        db_table = 'locations'
+
+"""
+*** End of Database views. Next block is for Functions/Classes ***
+"""
 
 class BasicFilter:
     """
