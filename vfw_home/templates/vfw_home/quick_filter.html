@@ -22,4 +22,12 @@
     </div>
 {#    <button class="btn btn-primary" type="submit">Search</button>#}
   </div>
+  <p><b><input
+    type="submit"
+    class="w3-btn-block w3-btn-block:hover group-store-button"
+    onclick="vfw.sidebar.workspace_dataset('all_selected')"
+{#    onclick="vfw.sidebar.collect_workspace_datasets('all_selected')"#}
+    value="{% trans "Pass all filtered datasets to datastore" %}" data-toggle="tooltip"
+    title="{% trans "Put the complete filter result as a group to the session datastore." %}"
+  ></b></p>
 </form>

@@ -114,18 +114,21 @@
 
 }
 
+.group-store-button {background-color: darkgreen}
+
+/*TODO: Seems unused. Delete in next Version: */
 /* Style the active class, and buttons on mouse-over */
-.activeI, .btn:hover {
+/*.activeI, .btn:hover {
     background-color: var(--color_Item);
     color: black;
-    /*border: 1px solid #1f2e38;*/
+    !*border: 1px solid #1f2e38;*!
 }
 .activeC {
     background-color: var(--color_Child);
 }
 .activeP {
     background-color: var(--color_Parent);
-}
+}*/
 
 /*TODO: This is an alternate version for a popup
 from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_popup

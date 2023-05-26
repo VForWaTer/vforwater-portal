@@ -300,6 +300,14 @@ msgstr "Markierungen&#32aus&#32dem&#32Filtermenü&#32entfernen."
 msgid "Available datasets"
 msgstr "Verfügbare Datensätze"
 
+#: templates/vfw_home/quick_filter.html:31
+msgid "Pass all filtered datasets to datastore"
+msgstr "Alle Filterergebnisse zur Datenablage"
+
+#: templates/vfw_home/quick_filter.html:32
+msgid "Put the complete filter result as a group to the session datastore."
+msgstr "Alle gefilterten Datensätze zur weiteren Verarbeitung im Data Store ablegen"
+
 #: templates/vfw_home/quick_filter.html:37
 msgid "more..."
 msgstr "mehr..."

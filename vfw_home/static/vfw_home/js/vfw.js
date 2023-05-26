@@ -819,6 +819,8 @@ vfw.sidebar.workspace_dataset = function (id) {
 
     if (typeof id !== 'string' ) {
         id = JSON.stringify(id);
+    } else if (id === 'all_selected') {
+        id = vfw.var.obj.selectedIds.quickMenu;
     }
 
     if (id !== 'null') {
@@ -1048,6 +1050,12 @@ vfw.html.get_quick_selection = function (selection) {
                     $("#quickfilter-form p:first").css({'background-color': 'white'});
                 }
 
+                /** Add button to select group if no more than 100 datasets are selected **/
+                if (json['total'] <= 100) {
+                    $("#quickfilter-form input").show();
+                } else {
+                    $("#quickfilter-form input").hide();
+                }
                 vfw.map.updateMapSelection(json)
             })
     }

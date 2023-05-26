@@ -535,7 +535,7 @@ class Locations(models.Model):
     """
     Access db view
     """
-    st_asewkt = models.CharField()
+    st_asewkt = models.CharField()  # TODO: why do I get a list of points for point data?
     point_location = models.CharField()
     geom = models.CharField()
     area_sqm = models.DecimalField(max_digits=999, decimal_places=999)
