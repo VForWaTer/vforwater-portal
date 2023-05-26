@@ -833,9 +833,9 @@ vfw.workspace.modal.build_radio = function (item, entry_name, newNode, option) {
     if (item.minOccurs === 1) inElement.required = true;
 
     inElement.name = entry_name;  // item.identifier;
-    if ('defaultValue' in item) {
-        if (item.defaultValue == option) inElement.checked = true;
-    }
+    // inElement.title = item.description;  // item.identifier;
+    if ("default" in item.schema) if (item.schema.default == option) inElement.checked = true;  // TODO!
+
     newNode.appendChild(inElement);
     newNode.appendChild(nodeText);
 }
@@ -857,8 +857,8 @@ vfw.workspace.modal.build_checkbox = function (item, entry_name, newNode, option
     if (item.minOccurs === 1) inElement.required = true;
 
     inElement.name = entry_name;
-    if ('defaultValue' in item) {
-        if (item.defaultValue == option) inElement.checked = true;
+    if ("default" in item.schema) {
+        if (item.schema.default == option) inElement.checked = true;  // TODO!
     }
     newNode.appendChild(inElement);
     newNode.appendChild(nodeText);
