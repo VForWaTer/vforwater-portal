@@ -518,6 +518,7 @@ def handle_wps_output(execution, wps_process, inputs):
 def process_run(request):  # TODO: Check if identical input exists in db before starting the process again
     # if request.user.is_authenticated:
     if True:
+        process_description = ""
         # request_input = json.loads(request.GET.get('processrun'))
         input = prepare_inputs(json.loads(request.GET.get('processrun')))
         wps_process = input.get("id", "")
@@ -602,6 +603,7 @@ def db_load(request):
     else:
         date = None
 
+    # Try to reed path from database. If not available load in except block from db and store (meta-)data o disk.
     try:
         preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)
         output = ast.literal_eval(preloaded_data.outputs)
@@ -623,6 +625,9 @@ def db_load(request):
             fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/')
             fullpath.mkdir(mode=0o775, parents=True, exist_ok=True)
             dataset.dataframe.to_csv(fullpath.joinpath('dataframe.csv'))
+            with open("fullpath.joinpath('dataframe.json')", "w") as outfile:
+                json.dump(dataset.coords, outfile)
+            # print('coords: ', dataset.coords)
             # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
             fullpath.chmod(0o775)
 
