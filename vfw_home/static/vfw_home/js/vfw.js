@@ -801,6 +801,16 @@ vfw.html.moreInfoModal = function (id) {
 }
 
 /**
+ * Collect filltered data and use it to build a group button
+ */
+vfw.sidebar.collect_workspace_datasets = function () {
+    console.log('selected: ', vfw.var.obj.selectedIds.quickMenu)
+    let selection = vfw.var.obj.selectedIds.quickMenu;
+
+}
+
+
+/**
  * send request to view to get info about selection
  * @param {string} id - can be a single id or a list of ids
  */
@@ -1052,9 +1062,9 @@ vfw.html.get_quick_selection = function (selection) {
 
                 /** Add button to select group if no more than 100 datasets are selected **/
                 if (json['total'] <= 100) {
-                    $("#quickfilter-form input").show();
+                    $("#quickfilter-form .group-store-button").show();
                 } else {
-                    $("#quickfilter-form input").hide();
+                    $("#quickfilter-form .group-store-button").hide();
                 }
                 vfw.map.updateMapSelection(json)
             })
