@@ -1060,8 +1060,9 @@ vfw.html.get_quick_selection = function (selection) {
                     $("#quickfilter-form p:first").css({'background-color': 'white'});
                 }
 
-                /** Add button to select group if no more than 100 datasets are selected **/
-                if (json['total'] <= 100) {
+                /** Add button to select group if no more than 100 datasets are selected. The responsible button
+                 * is defined with class 'group-store-button' **/
+                if (json['total'] <= 100 && json['total'] > 0) {
                     $("#quickfilter-form .group-store-button").show();
                 } else {
                     $("#quickfilter-form .group-store-button").hide();
