@@ -1,5 +1,5 @@
 {% load i18n l10n %}
-<div onmouseup='{{ onchange|safe }}' onmouseleave='{{ onchange|safe }}' id="slider-d-t-range-{{ elem_id }}">
+<div id="slider-d-t-range-{{ elem_id }}">
 </div>
 <script>
   {{ onchange|safe }}
@@ -14,6 +14,9 @@
       let minDate = new Date(ui.values[0]).toLocaleString();
       let maxDate = new Date(ui.values[1]).toLocaleString();
       $("#id_{{ elem_id }}").val(" {{ elem_name }} " + minDate + " - " + maxDate);
+    },
+    stop: function(event, ui) {
+      {{ onchange|safe }}
     }
   });
   // initial values of box:
