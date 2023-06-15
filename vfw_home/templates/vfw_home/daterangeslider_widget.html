@@ -4,6 +4,7 @@
 <script>
   $('#id_{{ elem_id }}').attr("readonly", true)
   $("#slider-date-range-{{ elem_id }}").slider({
+    animate: "fast",
     range: true,
     min: new Date('{{ minimum }}').getTime(),
     max: new Date('{{ maximum }}').getTime(),
@@ -17,7 +18,7 @@
       $("#id_{{ elem_id }}")
         .data("values", [minDate.toISOString().split('T')[0], maxDate.toISOString().split('T')[0]]);
       // if (event.keyCode >= 37 && event.keyCode <= 40) {
-      if (event.keyCode == 13 || event.key === 'Enter') {
+      if (event.keyCode == 13 || event.key === 'Enter') {  // event.keyCode == 13 is depricated, but not completely supported yet
         {{ onchange|safe }}
       }
     },

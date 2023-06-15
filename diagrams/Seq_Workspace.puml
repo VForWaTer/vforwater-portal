@@ -89,7 +89,7 @@ activate sidebar.html
 sidebar.html -> sidebar.js ++: vfw.sidebar.show_data()
 opt if sessionStorage(dataBtn)
     sessionStorage -> sidebar.js: get "dataBtn"
-    sidebar.js -> sidebar.html ++: vfw.sidebar.build_datastore_button()
+    sidebar.js -> sidebar.html ++: vfw.sidebar.buildDatastoreButton()
     opt data in datastore without link to DB
         sidebar.js -> sidebar.js ++: vfw.sidebar.preload_datastore_button()
         rnote over views.py: ProcessView

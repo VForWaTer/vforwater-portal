@@ -1,5 +1,5 @@
 //Search
-function search_close() {
+function closeSearch() {
 
     document.getElementById("search_box").outerHTML = "<a href='#' onclick='open_search()' id='srch_box' " +
         "class='w3-hover-white'><i class='fa fa-search fa-fw'></i>  Search</a>";
@@ -15,11 +15,11 @@ function search_open() {
 
         var searchBut = document.getElementById("srch_but");
         searchBut.outerHTML = "<a href='#' class='w3-hover-white' style='height:72px' id='search_but' " +
-            "onclick='search_close()'><i class='fa fa-search fa-fw'></i></a>";
+            "onclick='closeSearch()'><i class='fa fa-search fa-fw'></i></a>";
 
         var closeBut = document.getElementById("srch_close_but");
         closeBut.outerHTML = "<a href='javascript:void(0)' class='w3-hover-white' style='height:72px' " +
-            "id='search_close_but' onclick='search_close()'><i class='fa fa-remove fa-fw'></i></a>";
+            "id='search_close_but' onclick='closeSearch()'><i class='fa fa-remove fa-fw'></i></a>";
     }
 }
 

@@ -6,8 +6,8 @@ hide footbox
 
 == click on Button to open draw menu ==
 [-> vfw.js ++: DrawOnMapMenu
-note left: drawfilter_open()
-vfw.js -> vfw.js: drawfilter_open()
+note left: openDrawfilter()
+vfw.js -> vfw.js: openDrawfilter()
 
 
 

@@ -87,7 +87,7 @@
               <td><a><b><input type="submit"
                       {% if entry.id in accessible_ids %}
                                  class="w3-btn-block w3-btn-block:hover store-button"
-                                 onclick="vfw.sidebar.workspace_dataset('db{{ entry.id }}')"
+                                 onclick="vfw.sidebar.workspaceDataset('db{{ entry.id }}')"
                                  value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
                                  title="{% trans "Put dataset to session datastore." %}"
                       {% else %}

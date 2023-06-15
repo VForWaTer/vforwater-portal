@@ -31,9 +31,9 @@
 
     <hr style="margin-bottom:0px;">
 
-{#  <div ondrop="vfw.sidebar.workspace_dataset(JSON.parse(event.dataTransfer.getData('text'))[0])"   ondragenter="check_access(event)">#}
-  <div ondrop="vfw.sidebar.workspace_dataset(JSON.parse(event.dataTransfer.getData('text'))[0])"  ondragover="dragover_handler(event)">
-{#  <div ondrop="vfw.sidebar.workspace_dataset(JSON.stringify(event))"  ondragover="allowDrop(event)">#}
+{#  <div ondrop="vfw.sidebar.workspaceDataset(JSON.parse(event.dataTransfer.getData('text'))[0])"   ondragenter="check_access(event)">#}
+  <div ondrop="vfw.sidebar.workspaceDataset(JSON.parse(event.dataTransfer.getData('text'))[0])"  ondragover="dragover_handler(event)">
+{#  <div ondrop="vfw.sidebar.workspaceDataset(JSON.stringify(event))"  ondragover="allowDrop(event)">#}
     <div class="w3-container w3-light-turquoise">
       <b title="{%  trans " Area to make the datasets you have selected available for further use." %}">{%  trans "Data store" %}</b>
     </div>

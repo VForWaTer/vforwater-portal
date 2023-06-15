@@ -24,7 +24,7 @@
 
 {#TODO: Don't like "show_data()" in map.html, but 2 onload in app don't work. Any better solution?#}
 {#<body onload="vfw.sidebar.show_data()">#}
-<body onload="vfw.map.create_map(); vfw.sidebar.show_data(); vfw.html.get_quick_selection(); update_quickfilter()">
+<body onload="vfw.map.create_map(); vfw.sidebar.show_data(); vfw.html.getQuickSelection(); updateQuickfilter()">
 	<!-- <body class="w3-light-grey" onload="vfw.map.create_map()">  -->
 	<div id="map" class="map"></div>
 
@@ -46,20 +46,20 @@
     {% trans "Remove&#32drawing" as Remove %}
 {#    {% trans "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom." as Exit %}#}
     {% trans "Close&#32drawing&#32panel&#32and&#32reactivate&#32doubleclick&#32zoom." as Close %}
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="hover-white" title={{ Close }}>
+    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_close" class="hover-white" title={{ Close }}>
       <i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_catchment" class="draw-hover" title={{ Draw_catchment }}
+    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_catchment" class="draw-hover" title={{ Draw_catchment }}
       value="Catchment"><i class="map_icon fa fa-hand-pointer-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_square" class="draw-hover" title={{ Draw_square }}
+    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_square" class="draw-hover" title={{ Draw_square }}
       value="Square"><i class="map_icon fa fa-square-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_polygon" class="draw-hover" title={{ Draw_poly }}
+    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_polygon" class="draw-hover" title={{ Draw_poly }}
       value="Polygon"><i class="map_icon fa fa-pencil fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="modify_polygon" class="draw-hover" title={{ Edit }}>
+    <a href="javascript:void(0)" onclick=toggleDraw(this); id="modify_polygon" class="draw-hover" title={{ Edit }}>
       <i class="map_icon fa fa-edit fa-fw"></i></a>
     {#		  <a href="javascript:void(0)" id="select_polygon" class="draw-hover" title="Select Drawing"><i class="fa fa-hand-pointer-o fa-fw"></i></a>#}
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="remove_polygon" class="draw-hover" title={{ Remove }}>
+    <a href="javascript:void(0)" onclick=toggleDraw(this); id="remove_polygon" class="draw-hover" title={{ Remove }}>
       <i class="map_icon fa fa-trash fa-fw"></i></a>
-{#    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="w3-hover-white" title={{ Exit }}><i class="map_icon fa fa-remove fa-fw"></i></a>#}
+{#    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_close" class="w3-hover-white" title={{ Exit }}><i class="map_icon fa fa-remove fa-fw"></i></a>#}
 {#            </dl>#}
 	</div>
 		{# <input type="button" onclick="toggleLayer(vectorLayer)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp; #}
@@ -90,7 +90,7 @@ if (!isStorageSupported(window, "localStorage")) {
     closst.addEventListener('click', function () {
         removeInteractions()
         // olmap.addInteraction(selectCluster);
-        drawfilter_close()
+        closeDrawfilter()
     });
    // add clickEvent to auto-draw catchment button
     let drwcatch = document.getElementById('draw_catchment');
@@ -133,7 +133,7 @@ if (!isStorageSupported(window, "localStorage")) {
 
       {#source.clear();#}
       {#select.setActive(false);#}
-      // vfw.html.get_quick_selection({});
+      // vfw.html.getQuickSelection({});
       resetDraw();
     });
 

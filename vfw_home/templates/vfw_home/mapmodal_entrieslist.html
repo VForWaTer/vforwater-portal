@@ -34,7 +34,7 @@
                     <a><b><input type="submit"
                       {% if value.access %}
                                  class="w3-btn-block w3-btn-block:hover store-button"
-                                 onclick="vfw.sidebar.workspace_dataset('{{ value.ssid }}')"
+                                 onclick="vfw.sidebar.workspaceDataset('{{ value.ssid }}')"
                                  value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
                                  title="{% trans "Put dataset to session datastore." %}"
                       {% else %}
