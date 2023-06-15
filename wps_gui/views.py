@@ -603,7 +603,7 @@ def db_load(request):
     else:
         date = None
 
-    # Try to reed path from database. If not available load in except block from db and store (meta-)data o disk.
+    # Try to read path from database. If not available load in except block from db and store (meta-)data o disk.
     try:
         preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)
         output = ast.literal_eval(preloaded_data.outputs)
@@ -625,7 +625,9 @@ def db_load(request):
             fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/')
             fullpath.mkdir(mode=0o775, parents=True, exist_ok=True)
             dataset.dataframe.to_csv(fullpath.joinpath('dataframe.csv'))
-            with open("fullpath.joinpath('dataframe.json')", "w") as outfile:
+
+            # Create a dictionary with metadata that might be needed for a tool, e.g.coordinates, datatype, ...
+            with open(fullpath.joinpath('dataframe.json'), "w") as outfile:
                 json.dump(dataset.coords, outfile)
             # print('coords: ', dataset.coords)
             # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
@@ -694,8 +696,9 @@ def edit_input(inputs):
                               ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path']))
         elif key_value[0] == 'start' or key_value[0] == 'end':
             if key_value[1] != 'None':
-                wps_input.append((key_value[0], make_aware(datetime.datetime.strptime(key_value[1], '%Y-%m-%d')
-                                  .strftime("%Y-%m-%dT%H:%M:%S"))))
+                wps_input.append((key_value[0], make_aware(
+                    value=datetime.datetime.strptime(key_value[1], '%Y-%m-%d')).strftime("%Y-%m-%dT%H:%M:%S")
+                                  ))
         # elif key_value[1] is None:
         #     print('Yes! It is None!')
         else:
