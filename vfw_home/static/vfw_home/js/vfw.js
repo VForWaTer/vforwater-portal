@@ -822,12 +822,18 @@ vfw.url.getDateFromURL = function () {
         startdate = date[0].toString();
         enddate = date[1].toString();
     }
+    return {'start': startdate, 'end': enddate}
+}
 
-    if (typeof id !== 'string' ) {
-        id = JSON.stringify(id);
-    } else if (id === 'all_selected') {
-        id = vfw.var.obj.selectedIds.quickMenu;
-    }
+
+/**
+ * send request to view to get info about selection
+ * @param {string} id - can be a single id or a list of ids
+ */
+vfw.sidebar.workspaceDataset = function (id) {
+    let date = vfw.url.getDateFromURL();
+
+    id = JSON.stringify(id);  // ensure id is a string
 
     if (id !== 'null') {
         $.ajax({

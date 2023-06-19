@@ -24,12 +24,12 @@
     {#  Add button to select a group #}
     {#   <button class="btn btn-primary" type="submit">Search</button>#}
   </div>
-  <p><b><input
-    type="submit"
-    class="w3-btn-block w3-btn-block:hover group-store-button"
-    onclick="vfw.sidebar.workspaceDataset('all_selected')"
-{#    onclick="vfw.sidebar.collectWorkspaceDatasets('all_selected')"#}
-    value="{% trans "Pass all filtered datasets to datastore" %}" data-toggle="tooltip"
-    title="{% trans "Put the complete filter result as a group to the session datastore." %}"
-  ></b></p>
 </form>
+
+<p><b><input
+  type="submit"
+  class="w3-btn-block w3-btn-block:hover group-store-button"
+  onclick="vfw.sidebar.workspaceDataset(vfw.var.obj.selectedIds.quickMenu)"
+  value="{% trans "Pass all filtered datasets to datastore" %}" data-toggle="tooltip"
+  title="{% trans "Put the complete filter result as a group to the session datastore." %}"
+></b></p>
