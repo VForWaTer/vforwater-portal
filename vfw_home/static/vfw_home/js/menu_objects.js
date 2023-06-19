@@ -52,7 +52,7 @@ function reset_filter(){
     olmap.removeInteraction(draw);
     olmap.removeInteraction(modify);
     olmap.removeLayer(selectionLayer);
-    drawfilter_close();
+    closeDrawfilter();
     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
     // vfw.map.layer.cluster.changed()
 }

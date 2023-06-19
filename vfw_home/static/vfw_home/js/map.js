@@ -441,10 +441,10 @@ vfw.map.create_map = function () {
  * @param {int} ssid
  * @param {string} embargo "True" or "False"
  */
-vfw.map.storeBtn = function (ssid, embargo) {
+vfw.map.createStoreBtn = function (ssid, embargo) {
     if (embargo === "False" || vfw.map.UNBLOCKED_IDS.includes(ssid)) {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
-            'onclick=\"vfw.sidebar.workspace_dataset(\'' + ssid + '\')\" ' +
+            'onclick=\"vfw.sidebar.workspaceDataset(\'' + ssid + '\')\" ' +
             'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
     } else {
@@ -474,7 +474,7 @@ vfw.map.showGroupBtn = function (ssids) {
 vfw.map.storeGroupBtn = function (ssids, embargo) {
     if (ssids.length > 1 && (embargo === "False" || vfw.map.UNBLOCKED_IDS.includes(ssids))) {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
-            'onclick=\"vfw.sidebar.workspace_dataset(' + JSON.stringify(ssids) + '); closeInfoModal()\" ' +
+            'onclick=\"vfw.sidebar.workspaceDataset(' + JSON.stringify(ssids) + '); closeInfoModal()\" ' +
             'value="' + gettext("Pass group to datastore") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Select all ") + ssids.length + gettext(" datasets of one group.") + '"></b></a>'
     } else if (ssids.length > 1) {

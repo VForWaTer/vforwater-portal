@@ -65,7 +65,7 @@ vfw.sidebar.show_data = function () {
         // (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
-        vfw.sidebar.build_datastore_button(workspaceData);
+        vfw.sidebar.buildDatastoreButton(workspaceData);
         if (window.location.pathname !== '/home/') {
             // check if datasets are pickled and update buttons
             vfw.sidebar.preload_datastore_button(workspaceData);
@@ -262,7 +262,7 @@ vfw.session.update_datastore_button = function (wpsDBInfo) {
  * build buttons in workspace and store selection in clients sessionStorage
  * @param {object} json
  */
-vfw.sidebar.build_datastore_button = function (json) {
+vfw.sidebar.buildDatastoreButton = function (json) {
     // if (json['workspaceData'] !== undefined) {
     //     $.each(json['workspaceData'], function (key, value) {
     let html = "";

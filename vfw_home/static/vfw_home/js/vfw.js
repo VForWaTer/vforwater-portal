@@ -238,8 +238,8 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
  * Reset the draw menu, clear selections in memory and on map
  */
 function resetDraw() {
-    vfw.html.get_quick_selection({'draw': []})
-    vfw.html.get_quick_selection({'catchout': []})
+    vfw.html.getQuickSelection({'draw': []})
+    vfw.html.getQuickSelection({'catchout': []})
     vfw.var.obj.selectedIds.map = null;
     selectionLayerSource.clear();
     selectedFeatures.clear();
@@ -289,7 +289,7 @@ function addInteraction(type) {
  * @param test
  */
 function drawOnMapMenu(test) {
-    drawfilter_open();
+    openDrawfilter();
     // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // olmap.removeInteraction(selectCluster);
     let collection = new ol.Collection();
@@ -406,7 +406,7 @@ function drawOnMapMenu(test) {
         vfw.var.obj.selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
         selectionEdgeCoords = polygon;
-        vfw.html.get_quick_selection({'draw': getEdgeCoords()});
+        vfw.html.getQuickSelection({'draw': getEdgeCoords()});
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -469,9 +469,9 @@ function drawOnMapMenu(test) {
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
 
-        vfw.html.get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
+        vfw.html.getQuickSelection({'draw': getEdgeCoords()});  // update selection on map
         removeInteractions();
-        toggle_draw(document.getElementById("draw_square"))
+        toggleDraw(document.getElementById("draw_square"))
     });
 
     draw.on('drawstart', function (event) {
@@ -490,9 +490,9 @@ function drawOnMapMenu(test) {
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
 
-        vfw.html.get_quick_selection({'draw': getEdgeCoords()});
+        vfw.html.getQuickSelection({'draw': getEdgeCoords()});
         removeInteractions();
-        toggle_draw(document.getElementById("draw_polygon"))
+        toggleDraw(document.getElementById("draw_polygon"))
 
         /*let extent = draw.getGeometry().getExtent();
         clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
@@ -516,7 +516,7 @@ function drawOnMapMenu(test) {
         click_coords[1] = click_coords[1].toFixed(6);
 
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
-        $.when(get_catchment(click_coords)).done(function(catchment) {
+        $.when(getCatchment(click_coords)).done(function(catchment) {
             let catch_format = new ol.format.WKT();
             let catch_feature = catch_format.readFeature(catchment.wkt, {
               dataProjection: 'EPSG:4326',
@@ -533,7 +533,7 @@ function drawOnMapMenu(test) {
                 stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
             }))
             olmap.addLayer(selectionLayer)
-            vfw.html.get_quick_selection({'draw': getEdgeCoords()});
+            vfw.html.getQuickSelection({'draw': getEdgeCoords()});
             // listener = selectStartFun(event)
             vfw.html.loaderOverlayOff();
         })
@@ -544,7 +544,7 @@ function drawOnMapMenu(test) {
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
         removeInteractions();
-        toggle_draw(document.getElementById("draw_catchment"))
+        toggleDraw(document.getElementById("draw_catchment"))
 
     })
 
@@ -563,7 +563,7 @@ function removeInteractions() {
 /**
  * Toggle between showing and hiding drawfilter
  */
-function drawfilter_open() {
+function openDrawfilter() {
     let drawfilter = document.getElementById("drawfilter");
     let closed_drawfilter = document.getElementById("closed_drawfilter");
     closed_drawfilter.style.display = "none";
@@ -571,7 +571,7 @@ function drawfilter_open() {
     // document.getElementById("toggle_draw").className = 'active'
 }
 
-function drawfilter_close() {
+function closeDrawfilter() {
     let drawfilter = document.getElementById("drawfilter");
     let closed_drawfilter = document.getElementById("closed_drawfilter");
     closed_drawfilter.style.display = "block";
@@ -583,7 +583,7 @@ function drawfilter_close() {
 /**
  * add toggle function for background of draw and modify button, and remove background by press on delete and close
  */
-function toggle_draw(self) {
+function toggleDraw(self) {
     let siblings = document.getElementsByClassName('draw-hover');
     let s;
     let sLen = siblings.length - 1;  // avoid to toggle on the delete button
@@ -602,7 +602,7 @@ function toggle_draw(self) {
 //--- draw end ---------------------------------------------------------------------------------------------------------
 
 //Search
-function search_close() {
+function closeSearch() {
 
     document.getElementById("search_box").outerHTML = "<a href='#' onclick='open_search()' id='srch_box' " +
         "class='w3-hover-white'><i class='fa fa-search fa-fw'></i>  Search</a>";
@@ -618,11 +618,11 @@ function search_open() {
 
         let searchBut = document.getElementById("srch_but");
         searchBut.outerHTML = "<a href='#' class='w3-hover-white' style='height:103px' id='search_but' " +
-            "onclick='search_close()'><i class='fa fa-search fa-fw'></i></a>";
+            "onclick='closeSearch()'><i class='fa fa-search fa-fw'></i></a>";
 
         let closeBut = document.getElementById("srch_close_but");
         closeBut.outerHTML = "<a href='javascript:void(0)' class='w3-hover-white' style='height:103px' " +
-            "id='search_close_but' onclick='search_close()'><i class='fa fa-remove fa-fw'></i></a>";
+            "id='search_close_but' onclick='closeSearch()'><i class='fa fa-remove fa-fw'></i></a>";
     }
 }
 
@@ -750,7 +750,7 @@ vfw.html.moreInfoModal = function (id) {
                     '</tr>';
             } else if (j == 'has_embargo') {
                 metaText += '<tr>' +
-                    '<td colspan = "2">' + vfw.map.storeBtn(properties.id, properties.has_embargo) + '</td></tr>' +
+                    '<td colspan = "2">' + vfw.map.createStoreBtn(properties.id, properties.has_embargo) + '</td></tr>' +
                     '<tr><td colspan = "2"><div style="height:20px"></div></td></tr>'
             } else if (j == 'group_entry_ids') {
                 metaText += '<tr><td colspan = "2">' + vfw.map.showGroupBtn(properties.group_entry_ids) + '</td></tr>' +
@@ -803,18 +803,14 @@ vfw.html.moreInfoModal = function (id) {
 /**
  * Collect filltered data and use it to build a group button
  */
-vfw.sidebar.collect_workspace_datasets = function () {
+vfw.sidebar.collectWorkspaceDatasets = function () {
     console.log('selected: ', vfw.var.obj.selectedIds.quickMenu)
     let selection = vfw.var.obj.selectedIds.quickMenu;
 
 }
 
 
-/**
- * send request to view to get info about selection
- * @param {string} id - can be a single id or a list of ids
- */
-vfw.sidebar.workspace_dataset = function (id) {
+vfw.url.getDateFromURL = function () {
     let startdate, enddate;
     let urlParams = new URLSearchParams(window.location.search);
     let date = urlParams.getAll('date');
@@ -839,8 +835,8 @@ vfw.sidebar.workspace_dataset = function (id) {
             datatype: 'json',
             data: {
                 workspaceData: id,
-                startDate: startdate,
-                endDate: enddate,
+                startDate: date['start'],
+                endDate: date['end'],
                 'csrfmiddlewaretoken': csrf_token,
             }, // data sent with post request
         })
@@ -867,7 +863,7 @@ vfw.sidebar.workspace_dataset = function (id) {
                     });
                 }
                 // build buttons
-                vfw.sidebar.build_datastore_button(json['workspaceData']);
+                vfw.sidebar.buildDatastoreButton(json['workspaceData']);
             }) // function in sidebar.js
     }
 }
@@ -995,7 +991,7 @@ function quick_filter(selection) {
  *
  * @param {string} selection
  */
-function getFilterURL(selection) {
+vfw.url.getFilterURL = function(selection)  {
 
     let nextURL;
     let url = window.location
@@ -1030,8 +1026,8 @@ function getFilterURL(selection) {
  *
  * @param {string} selection
  */
-vfw.html.get_quick_selection = function (selection) {
-    let url = getFilterURL(selection)
+vfw.html.getQuickSelection = function (selection) {
+    let url = vfw.url.getFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
     if (url !== false) {
@@ -1084,8 +1080,8 @@ vfw.html.get_quick_selection = function (selection) {
  * Get a river catchment / watershed according to the given coords.
  * This might take a while, so tell depending functions to wait!
  */
-function get_catchment(coords) {
-    let url = getFilterURL({'catchout': coords})
+function getCatchment(coords) {
+    let url = vfw.url.getFilterURL({'catchout': coords})
     if (url !== false) {
         return $.ajax({
             url: vfw.var.DEMO_VAR + '/home/delineator/' + url,
@@ -1106,7 +1102,7 @@ function get_catchment(coords) {
 /**
  * Update quickfilter onload() according to the given URL
  */
-function update_quickfilter() {
+function updateQuickfilter() {
 
     let url = window.location
     let urlParams = new URLSearchParams(url.search);
