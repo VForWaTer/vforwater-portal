@@ -1066,9 +1066,9 @@ vfw.html.getQuickSelection = function (selection) {
                 /** Add button to select group if no more than 100 datasets are selected. The responsible button
                  * is defined with class 'group-store-button' **/
                 if (json['total'] <= 100 && json['total'] > 0) {
-                    $("#quickfilter-form .group-store-button").show();
+                    $(".group-store-button").show();
                 } else {
-                    $("#quickfilter-form .group-store-button").hide();
+                    $(".group-store-button").hide();
                 }
                 vfw.map.updateMapSelection(json)
             })
