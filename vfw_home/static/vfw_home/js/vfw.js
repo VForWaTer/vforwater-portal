@@ -540,7 +540,8 @@ function drawOnMapMenu(test) {
 
     }, this);
     drawCatchmentOutlet.on('drawend', function () {
-
+        // removeInteractions();
+                /* remove preloaded layers defined by the url */
         olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
             .forEach(layer => olmap.removeLayer(layer));
         removeInteractions();
@@ -1131,6 +1132,8 @@ function updateQuickfilter() {
                 if (date === "") {
                     date = (new Date(urlKey[1])).toLocaleDateString();
                 } else {
+                    let sliderelement = $('#slider-date-range-' + urlKey[0])
+                    sliderelement.slider('values', [(new Date(date)).getTime(), (new Date(urlKey[1])).getTime()]).val()
                     ajax_element.prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);
                 }
             } else if (urlKey[0] === 'draw') {

@@ -965,8 +965,8 @@ def advanced_filter(request):
 def quick_filter_defaults(request):
     total = Entries.objects.exclude(Q(embargo=True) & Q(embargo_end__gte=timezone.now())).count()
 
-    quickfilter = QuickFilterForm()
-    more = QuickFilterForm.More()
+    quickfilter = QuickFilterForm()  # standard of django is a required attribute for all forms.
+    more = QuickFilterForm.More()    # you can remove the required with use_required_attribute=False
     selection = []
     return {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
 

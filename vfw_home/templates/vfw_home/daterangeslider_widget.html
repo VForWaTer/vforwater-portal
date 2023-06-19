@@ -5,9 +5,9 @@
   $('#id_{{ elem_id }}').attr("readonly", true)
   $("#slider-date-range-{{ elem_id }}").slider({
     animate: "fast",
-    range: true,
     min: new Date('{{ minimum }}').getTime(),
     max: new Date('{{ maximum }}').getTime(),
+    range: true,
     step: {{ step }},
     values: [new Date('{{ minimum }}'), new Date('{{ maximum }}')],
     slide: function (event, ui) {

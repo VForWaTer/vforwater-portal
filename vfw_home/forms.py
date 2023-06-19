@@ -128,7 +128,7 @@ class QuickFilterForm(forms.Form):
                                 onchange='vfw.html.getQuickSelection({"date": $("#id_date").data("values")});')
                                 # onchange='vfw.html.getQuickSelection({"date": $("#id_date").val()});')
     is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
-        attrs={'onchange': 'vfw.html.get_quick_selection({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
+        attrs={'onchange': 'vfw.html.getQuickSelection({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
 
     class More(forms.Form):
         institution = forms.ModelMultipleChoiceField(
