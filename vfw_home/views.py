@@ -34,7 +34,7 @@ from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
-    __get_axis_limits, __reduce_dataset, get_accessible_data
+    __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection
 from .delineator import delineate
 from .forms import QuickFilterForm
 from .data_obj import DataObject
@@ -833,65 +833,19 @@ def workspace_data(request):
     :return:
     """
 
-    def build_selection(requested_id, startdate='', enddate=''):
-        """
-        function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
-        :param requested_id:
-        :param startdate: string
-        :param enddate: string
-        :return:
-        """
-        dataset_dict = {}
-        error_dict = {}
-
-        # if min_time != 0:
-        #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
-        # if max_time != 0:
-        #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
-        # from_var = 'public.tbl_data'
-        # where_var = 'tbl_data.meta_id = ' + str(requested_id)
-
-        accessible_data = get_accessible_data(request, requested_id)
-        error_ids = accessible_data['blocked']
-        accessible_ids = accessible_data['open']
-
-        result_dataset = NmEntrygroups.objects. \
-            values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
-                   'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
-                   'group_id').filter(pk__in=accessible_ids)
-
-        if len(error_ids) > 0:
-            error_dict = {'message': 'no access', 'id': error_ids}
-
-        for dataset in result_dataset:
-            dataset_dict.update({'db' + str(dataset['entry__id']): {'name': dataset['entry__variable__name'],
-                                                                    'abbr': dataset['entry__variable__symbol'],
-                                                                    'unit': dataset['entry__variable__unit__symbol'],
-                                                                    'type': dataset['entry__datasource__datatype__name'],
-                                                                    'source': 'db',
-                                                                    'dbID': dataset['entry__id'],
-                                                                    'uuID': dataset['entry__uuid'],
-                                                                    'orgID': 'db' + str(dataset['entry__id']),
-                                                                    'start': startdate,
-                                                                    'end': enddate,
-                                                                    'inputs': [],
-                                                                    'outputs': dataset['entry__datasource__datatype__name'],
-                                                                    'group': dataset['group__title'],
-                                                                    'groupID': dataset['group_id']
-                                                                    }
-                                 })
-
-        # TODO: Need timestamp in name to see if different selection
-        return {'data': dataset_dict, 'error': error_dict}
-
     try:
-        # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
-        result = build_selection(json.loads(request.GET.get('workspaceData')),
+        # prepare dataset_iddatasetdownload differently for list and single value to use in collect_selection
+        result = collect_selection(request, json.loads(request.GET.get('workspaceData')),
                                  request.GET.get('startDate'), request.GET.get('endDate'))
         return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
 
-    except TypeError:
+    except TypeError as e:
+        print('Type Error in vfw_home/views/workspace_data: ', e)
+        logger.debug('Type Error in vfw_home/views/workspace_data: ', e)
         raise Http404
+    except Exception as e:
+        print('unhandled exception in vfw_home/views/workspace_data(): ', e)
+        logger.debug('unhandled exception in vfw_home/views/workspace_data(): ', e)
 
 
 def entries_pagination(request):

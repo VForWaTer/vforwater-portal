@@ -1,4 +1,5 @@
 # from typing import Literal
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -8,7 +9,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from heron.settings import max_size_preview_plot
-from vfw_home.models import Entries, Timeseries, Timeseries_1D
+from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups
 
 
 def get_accessible_data(request: object, requested_ids: list) -> (list, list):
@@ -37,6 +38,82 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     # check if there is still data not accessible and create error for these
     error_list = list(set(requested_ids) - set(accessible_data))
     return {'open': accessible_data, 'blocked': error_list}
+
+
+def collect_selection(request, requested_id, startdate='', enddate=''):
+    """
+    function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
+    :param requested_id:
+    :param startdate: string
+    :param enddate: string
+    :return:
+    """
+    dataset_dict = {}
+    error_dict = {}
+    group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group '}
+    name_group = {'group_titles': [], 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': []}
+
+    # if min_time != 0:
+    #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
+    # if max_time != 0:
+    #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
+    # from_var = 'public.tbl_data'
+    # where_var = 'tbl_data.meta_id = ' + str(requested_id)
+
+    accessible_data = get_accessible_data(request, requested_id)
+    error_ids = accessible_data['blocked']
+    accessible_ids = accessible_data['open']
+
+    result_dataset = NmEntrygroups.objects. \
+        values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
+               'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
+               'group_id', 'entry__location', 'entry__geom').filter(pk__in=accessible_ids)
+
+    if len(error_ids) > 0:
+        error_dict = {'message': 'no access', 'id': error_ids}
+
+    for dataset in result_dataset:
+        dataset_dict.update({'db' + str(dataset['entry__id']): {'name': dataset['entry__variable__name'],
+                                                                'abbr': dataset['entry__variable__symbol'],
+                                                                'unit': dataset['entry__variable__unit__symbol'],
+                                                                'type': dataset['entry__datasource__datatype__name'],
+                                                                'source': 'db',
+                                                                'dbID': dataset['entry__id'],
+                                                                'uuID': dataset['entry__uuid'],
+                                                                'orgID': 'db' + str(dataset['entry__id']),
+                                                                'start': startdate,
+                                                                'end': enddate,
+                                                                'inputs': [],
+                                                                'outputs': dataset['entry__datasource__datatype__name'],
+                                                                'group': dataset['group__title'],
+                                                                'groupID': dataset['group_id'],
+                                                                # 'geom': dataset['entry__geom'].json,
+                                                                'location': dataset['entry__location'].json
+                                                                }
+                             })
+        # summarize possible attributes to name a group
+        name_group['group_titles'].append(dataset['group__title'])  # #1
+        name_group['var_names'].append(dataset['entry__variable__name'])  # #2
+        name_group['type_names'].append(dataset['entry__datasource__datatype__name'])  # #3
+        # name_group['geom'].append(dataset['entry__geom'].json)  # #4
+        name_group['geom_type'].append(dataset['entry__location'].geom_type)  # #4
+        name_group['coords'].append(dataset['entry__location'].coords)  # #5
+
+    if len(accessible_ids) > 1:
+        group_dict['is_group'] = True
+        # if all the fields 'group_titles', 'var_names' or 'type_names' are identical, then use it for groupname
+        for attr in name_group.keys():
+            # print("Counter result: ", Counter(name_group[group]).most_common(1)[0])
+            if Counter(name_group[attr]).most_common(1)[0][1] == 2*len(accessible_ids) \
+                and name_group[attr][0] is not None:
+                group_dict['name'] += name_group[attr][0] + ' '
+                # if all datasets have the same datatype use this type as group type
+                if attr == 'type_names':
+                    group_dict['type'] = name_group[attr][0]
+
+
+    # TODO: Need timestamp in name to see if different selection
+    return {'data': dataset_dict, 'error': error_dict, 'group': group_dict}
 
 
 def __get_timescale(df, ID=None):
