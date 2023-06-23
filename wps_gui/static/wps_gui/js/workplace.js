@@ -486,7 +486,7 @@ vfw.workspace.modal.run_process = function () {
                     group = true;
                     groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
                     // document.getElementById("workspace_results").innerHTML
-                    //     += vfw.workspace.build_resultgroup_button(groupName);
+                    //     += vfw.workspace.buildResultGroupButton(groupName);
                 }
 
                 for (let i in json.result) {
@@ -514,7 +514,7 @@ vfw.workspace.modal.run_process = function () {
 
                     if (group === false) {
                         document.getElementById("workspace_results").innerHTML
-                            += vfw.workspace.build_resultstore_button(btnName, btnData);
+                            += vfw.workspace.buildResultStoreButton(btnName, btnData);
                     } else {
                         members.push([btnName, btnData])
                     }
@@ -522,7 +522,7 @@ vfw.workspace.modal.run_process = function () {
 
                 if (group === true) {
                     document.getElementById("workspace_results").innerHTML
-                        += vfw.workspace.build_resultgroup_button(groupName, members);
+                        += vfw.workspace.buildResultGroupButton(groupName, members);
                     vfw.sidebar.add_groupaccordion_toggle()
                 }
             } else if (json.execution_status == "Exception") {
@@ -722,7 +722,7 @@ vfw.session.add_resultbtn = function (btnName, json) {
  * @param  {obj} json - Object holding all necessary info about result
  * @return {string} - HTML Code for the button
  **/
-vfw.workspace.build_resultstore_button = function (name, json) {
+vfw.workspace.buildResultStoreButton = function (name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result" data-sessionStore="resultBtn" ' +
@@ -731,7 +731,7 @@ vfw.workspace.build_resultstore_button = function (name, json) {
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div>' +
         '</span><span class="' + json['type'] + '"></span>' +
-        '<a href="javascript:void(0)" onclick="vfw.session.remove_single_result(\'' + name + '\')" class="w3-hover-white">' +
+        '<a href="javascript:void(0)" onclick="vfw.session.removeSingleResult(\'' + name + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
@@ -742,7 +742,7 @@ vfw.workspace.build_resultstore_button = function (name, json) {
  * @param  {string} name name for the group button
  * @return {string} HTML Code for the group button
  **/
-vfw.workspace.build_resultgroup_button = function (groupname, members) {
+vfw.workspace.buildResultGroupButton = function (groupname, members) {
     let mhtml = ''
     let ghtml = '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result-group groupaccordion" data-sessionStore="resultBtn"' +
@@ -750,39 +750,39 @@ vfw.workspace.build_resultgroup_button = function (groupname, members) {
         'data-btnName="' + groupname + '" id="' + groupname + '"><span class="w3-medium">' +
         '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +
         '<span class=""></span>' +
-        '<a href="javascript:void(0)" onclick="vfw.session.remove_group_result(\'' + groupname + '\')" class="w3-hover-white">' +
+        '<a href="javascript:void(0)" onclick="vfw.session.removeGroupResult(\'' + groupname + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 
     members.forEach(function (singlemember) {
-        mhtml += vfw.workspace.build_resultstore_button(singlemember[0], singlemember[1]);
+        mhtml += vfw.workspace.buildResultStoreButton(singlemember[0], singlemember[1]);
     })
     ghtml += '<div class="grouppanel">' + mhtml + '</div>'
     return ghtml
 }
 
-vfw.session.remove_single_result = function (removeData) {
+vfw.session.removeSingleResult = function (removeData) {
     document.getElementById(removeData).remove();
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
     delete workspaceData[removeData];
     sessionStorage.setItem("resultBtn", JSON.stringify(workspaceData))
 }
 
-vfw.session.remove_group_result = function (removeData) {
+vfw.session.removeGroupResult = function (removeData) {
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
     $.each(workspaceData, function (i) {
         if (workspaceData[i].group === removeData) {
-            vfw.session.remove_single_result(i)
+            vfw.session.removeSingleResult(i)
         }
     })
     document.getElementById(removeData).remove();
 }
 
-vfw.session.remove_all_results = function () {
+vfw.session.removeAllResults = function () {
     let groupSet = new Set();
     /** remove button from portal **/
     $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key, value) {
         groupSet.add(value.group)
-        vfw.session.remove_single_result(key);
+        vfw.session.removeSingleResult(key);
     });
 
     /** remove result data from session **/
@@ -825,6 +825,7 @@ vfw.workspace.modal.build_regexText = function (item, entry_name, newNode) {
 vfw.workspace.modal.build_radio = function (item, entry_name, newNode, option) {
     // let radioNode = document.createElement("p");
     let nodeText = document.createTextNode(" " + option + " ");
+
     let inElement = document.createElement("INPUT");
     inElement.type = "radio";
     // inElement.setAttribute("type", "radio");

@@ -343,7 +343,7 @@ vfw.sidebar.buildDatastoreButton = function (json) {
 //         '</span>' +
 //         '<span class="data ' + value['type'] + '"></span>' +
 //         '<a href="javascript:void(0)" ' +
-//             'onclick="vfw.sidebar.remove_single_data(' + key + ')" ' +
+//             'onclick="vfw.session.removeSingleData(' + key + ')" ' +
 //             'class="w3-hover-white w3-right">' +
 //             '<i class="fa fa-remove fa-fw"></i>' +
 //         '</a><br></li>';
@@ -351,7 +351,7 @@ vfw.sidebar.buildDatastoreButton = function (json) {
 
 
 /** Remove data / elements from workspace **/
-vfw.sidebar.remove_single_data = function (removeData) {
+vfw.session.removeSingleData = function (removeData) {
     /** remove data from portal: **/
     document.getElementById("sidebtn" + removeData).remove();
     // removeData.remove();  // could be used when the element where send directly
@@ -361,7 +361,7 @@ vfw.sidebar.remove_single_data = function (removeData) {
 
     delete workspaceData[removeData];
     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
-    sessionStorageData = workspaceData
+    sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
 }
 
 vfw.sidebar.remove_all_datasets = function () {
@@ -370,6 +370,20 @@ vfw.sidebar.remove_all_datasets = function () {
     $.each(storedData, function (key, value) {
         if ("name" in value) {
             vfw.sidebar.remove_single_data(key);
+            // document.getElementById("id" + key).remove()
+        }
+    });
+    /** remove button from session **/
+    sessionStorage.removeItem("dataBtn");
+    sessionStorageData = {};
+}
+
+vfw.session.removeAllDatasets = function () {
+    /** remove button from portal **/
+    let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
+    $.each(storedData, function (key, value) {
+        if ("name" in value) {
+            vfw.session.removeSingleData(key);
             // document.getElementById("id" + key).remove()
         }
     });
@@ -878,7 +892,7 @@ function menuItemListener(link) {
             console.error('Not implemented yet')
             break;
         case "Remove":
-            vfw.sidebar.remove_single_data(id);
+            vfw.session.removeSingleData(id);
             // vfw.html.popup.classList.remove(popActive);
             vfw.html.loaderOverlayOff();
             break;
@@ -1014,7 +1028,7 @@ function menuItemListener(link) {
             vfw.html.loaderOverlayOff();
             break;
         case "RemoveR":
-            vfw.session.remove_single_result(id);
+            vfw.session.removeSingleResult(id);
             // vfw.html.popup.classList.remove(popActive);
             vfw.html.loaderOverlayOff();
             break;

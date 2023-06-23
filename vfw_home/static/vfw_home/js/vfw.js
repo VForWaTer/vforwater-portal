@@ -208,7 +208,7 @@ function createBtnName(name, abbr, unit, dbID) {
  * @param {string} btnName
  * @param {string} title
  */
-function sidebar_btn_html(storeID, btnData, btnName, title) {
+vfw.html.createSidebarBtn = function (storeID, btnData, btnName, title) {
     let drag_html = "";
 
     let noData = "";
@@ -228,7 +228,7 @@ function sidebar_btn_html(storeID, btnData, btnName, title) {
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content ' + noData + '">' + btnName + '</div><div class="task__actions"></div>' +
         '</span><span class="data ' + btnData['type'] + '"></span>' +
-        '<a onclick="vfw.sidebar.remove_single_data(\'' + storeID + '\')" ' +
+        '<a onclick="vfw.session.removeSingleData(\'' + storeID + '\')" ' +
         'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +
         '</a><br></li>';
 }
@@ -525,7 +525,7 @@ function drawOnMapMenu(test) {
             let polygon = catch_feature.getGeometry();
             selectionEdgeCoords = polygon;
             // TODO: make sure you got 'selectionEdgeCoords' before 'getEdgeCoords()' in 'drawend' runs. => create custom event?
-            // vfw.html.get_quick_selection({'draw': getEdgeCoords()});  // update selection on map
+            // vfw.html.getQuickSelection({'draw': getEdgeCoords()});  // update selection on map
             selectionLayerSource.clear();
             selectionLayerSource = new ol.source.Vector({features: [catch_feature],});
             selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
@@ -852,6 +852,7 @@ vfw.sidebar.workspaceDataset = function (id) {
                     // TODO: handle errors/data selected but without access
                     console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')
                 }
+
                 if (sessionStorage.getItem("dataBtn")) {
                     let stored = JSON.parse(sessionStorage.getItem("dataBtn"));
                     $.each(json['workspaceData'], function (key, value) {
