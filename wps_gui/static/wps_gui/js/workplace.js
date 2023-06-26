@@ -876,10 +876,12 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     let htmlSelect = document.createElement("SELECT");
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    let groupedData = JSON.parse(sessionStorage.getItem("dataGroup"));
     let boxLen = 0;
     let aptStoreData = {};
     let aptResultData = {};
-    let acceptedDataTypes = DATATYPE.accepts([item.datatype])
+    let aptGroupedData = {};
+    let acceptedDataTypes = DATATYPE.accepts([item.datatype])  // TODO: Whats wrong in this Class?
     // let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
 
     htmlSelect.id = item.identifier;
@@ -890,6 +892,13 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
         aptStoreData[i] = sessionStoreData[i];
     }
     for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
+    for (let i in groupedData) {
+        if (acceptedDataTypes.has(groupedData[i].type)) {
+            // aptGroupedData[i] = groupedData[i]
+            // aptGroupedData[i] = groupedData[i]
+        }
+        aptGroupedData[i] = groupedData[i]
+    }
     // for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
     // for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
     boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length;
@@ -907,6 +916,12 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     } else {
         htmlSelect.size = (boxLen > 3) ? "5" : (boxLen + 2).toString();
         htmlSelect.name = item.identifier;
+        if (groupedData !== null) {
+            let optionGroup = document.createElement("OPTGROUP");
+            optionGroup.label = "Data Groups";
+            optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptGroupedData);
+            htmlSelect.appendChild(optionGroup);
+        }
         if (storeData !== null) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Data store";
@@ -931,24 +946,24 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
 /**
  * Collect elements for a dropdown HTMLElement.
  *
- * @param {Object} item - Data description from the wps process.
+ * @param {Object} processAttribute - Data description from the wps process.
  * @param {HTMLElement} optionGroup - HTML group Element. Different groups to seperate Data and Results in dropdown
- * @param {Object} sidebarData - The relevant elements from the sessionStorage
+ * @param {Object} selectables - The relevant elements from the sessionStorage
  */
-vfw.workspace.modal.build_dropdown_opt = function (item, optionGroup, sidebarData) {
+vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup, selectables) {
     // let opt = document.createElement("OPTION");
     let opt;
-    Object.keys(sidebarData).forEach(function (singleData) {
+    Object.keys(selectables).forEach(function (singleData) {
         opt = document.createElement("OPTION");
-        if (sidebarData[singleData].abbr && sidebarData[singleData].unit) {
-            opt.innerText = `${singleData} ${sidebarData[singleData].name} (${sidebarData[singleData].abbr}
-            in ${sidebarData[singleData].unit})`;
+        if (selectables[singleData].abbr && selectables[singleData].unit) {
+            opt.innerText = `${singleData} ${selectables[singleData].name} (${selectables[singleData].abbr}
+            in ${selectables[singleData].unit})`;
         } else {
             opt.innerText = `${singleData}`;
         }
-        opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
-        // opt.setAttribute('data-datatype', sidebarData[singleData].type);
-        if ('keywords' in item && item.keywords.length == 1) opt.selected = true;
+        opt.value = selectables[singleData].wpsID ? 'wpsID' + (selectables[singleData].wpsID) : singleData;
+        // opt.setAttribute('data-datatype', selectables[singleData].type);
+        if ('keywords' in processAttribute && processAttribute.keywords.length == 1) opt.selected = true;
         optionGroup.appendChild(opt);
     })
     return optionGroup

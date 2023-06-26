@@ -870,9 +870,26 @@ vfw.sidebar.workspaceDataset = function (id) {
                         sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
                     });
                 }
+
+                if (sessionStorage.getItem("dataGroup")) {
+                    stored = JSON.parse(sessionStorage.getItem("dataGroup"));
+                    $.each(json['group'], function (key, value) {
+                        if (!stored[key]) stored[key] = value;
+                    });
+                    sessionStorage.setItem("dataBtn", JSON.stringify(stored))
+                    sessionStorageData = stored;
+                } else {
+                    console.log("json['dataGroup']: ", json['group'])
+                    console.log("json['group']: ", json['group'])
+                    sessionStorage.setItem("dataGroup", JSON.stringify(json['group']));
+                    // sessionStorageData = json['group']
+                }
                 // build buttons
                 vfw.sidebar.buildDatastoreButton(json['workspaceData']);
             }) // function in sidebar.js
+            .fail(function (json) {
+                console.log('fail json: ', json)
+            })
     }
 }
 
@@ -1133,9 +1150,12 @@ function updateQuickfilter() {
                 if (date === "") {
                     date = (new Date(urlKey[1])).toLocaleDateString();
                 } else {
-                    let sliderelement = $('#slider-date-range-' + urlKey[0])
-                    sliderelement.slider('values', [(new Date(date)).getTime(), (new Date(urlKey[1])).getTime()]).val()
-                    ajax_element.prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);
+                    ajax_element.prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);  // textbox
+                    $('#slider-date-range-' + urlKey[0])
+                        .slider('values', [
+                            (new Date(date)).getTime(),
+                            (new Date(urlKey[1])).getTime()])
+                        .val()  // update slider
                 }
             } else if (urlKey[0] === 'draw') {
                 let coords_list = urlKey[1].split(',').map(Number)

@@ -835,9 +835,12 @@ def workspace_data(request):
 
     try:
         # prepare dataset_iddatasetdownload differently for list and single value to use in collect_selection
-        result = collect_selection(request, json.loads(request.GET.get('workspaceData')),
-                                 request.GET.get('startDate'), request.GET.get('endDate'))
-        return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
+        result = collect_selection(request,
+                                   json.loads(request.GET.get('workspaceData')),
+                                   request.GET.get('startDate'),
+                                   request.GET.get('endDate')
+                                   )
+        return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group']})
 
     except TypeError as e:
         print('Type Error in vfw_home/views/workspace_data: ', e)

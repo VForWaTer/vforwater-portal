@@ -80,7 +80,7 @@ vfw.sidebar.show_data = function () {
             let mhtml = "";
             $.each(resultData, function (btnName, value) {
                 if (!value.group) {
-                    html += vfw.workspace.build_resultstore_button(btnName, value);
+                    html += vfw.workspace.buildResultStoreButton(btnName, value);
                 } else {
                     if (!(value.group in groups)) {
                         groups[value.group] = [];
@@ -92,9 +92,9 @@ vfw.sidebar.show_data = function () {
                 mhtml = "";
                 ghtml = "";
                 members.forEach(function (singlemember) {
-                    return mhtml += vfw.workspace.build_resultstore_button(singlemember[0], singlemember[1]);
+                    return mhtml += vfw.workspace.buildResultStoreButton(singlemember[0], singlemember[1]);
                 })
-                html += vfw.workspace.build_resultgroup_button(groupname, members)
+                html += vfw.workspace.buildResultGroupButton(groupname, members)
                 // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
                 // html += ghtml
             })
@@ -240,8 +240,8 @@ vfw.session.update_datastore_button = function (wpsDBInfo) {
         storageEntry.inputs = wpsDBInfo['inputs']
     }
     button.remove();
-    // parent.innerHTML += sidebar_btn_html(wpsDBInfo['id'].substring(3,),
-    parent.innerHTML += sidebar_btn_html(datasetKey,
+    // parent.innerHTML += vfw.html.createSidebarBtn(wpsDBInfo['id'].substring(3,),
+    parent.innerHTML += vfw.html.createSidebarBtn(datasetKey,
         storageEntry, btnName, title)
     workspaceData[datasetKey] = storageEntry
     /*$.each(wpsDBInfo, function (keyID, value) {
@@ -263,31 +263,60 @@ vfw.session.update_datastore_button = function (wpsDBInfo) {
  * @param {object} json
  */
 vfw.sidebar.buildDatastoreButton = function (json) {
-    // if (json['workspaceData'] !== undefined) {
-    //     $.each(json['workspaceData'], function (key, value) {
+    let ghtml = ''  // group html
+    let mhtml = ''  // group member html
+    let groupdict = {'names': []};
+    let group = false;
     let html = "";
-    $.each(json, function (k, v) {
+    // create html elements (single buttons as elements of group buttons as well)
+    $.each(json, function (dataset, v) {
         let btnName = createBtnName(v['name'], v['abbr'], v['unit'], v['dbID'])
         let title = `${v['name']} (${v['abbr']} in ${v['unit']})`;
         // check if buttons already exist before creating a new one:
-        if (document.getElementById("sidebtn" + k) === null) {
-            html += sidebar_btn_html(k, v, btnName, title)
+        if (document.getElementById(`sidebtn${dataset}`) === null && !('group' in v)) {
+            html += vfw.html.createSidebarBtn(dataset, v, btnName, title)
             /*
             document.getElementById("workspace").innerHTML += '<li draggable="true" class="w3-padding" ' +
                 'onmouseover="" style="cursor: pointer;"rese id="' + key + '" onclick="store_menu(' + key + ')" >' +
                 '<span class="w3-medium" title="'+title+'">' + btnName + '</span><a href="javascript:void(0)"' +
-                'onclick="vfw.sidebar.remove_single_data('+key+')"; class="w3-hover-white w3-right">' +
+                'onclick="vfw.session.removeSingleData('+key+')"; class="w3-hover-white w3-right">' +
                 '<i class="fa fa-remove fa-fw"></i></a><br></li>' +
                 '<div id="w3popup" class="w3popup"><span class="popuptext" id="pop' + key + '"></span></div>' +
         '<li class="task" data-id="1"><div class="task__content">Build An App</div><div class="task__actions">' +
         '</div></li>';*/
+        } else if (document.getElementById(`sidebtn${dataset}`) === null) {
+            if (!groupdict.names.includes(v.group)) {
+                groupdict['names'].push(v.group)
+                groupdict[v.group] = vfw.html.createSidebarBtn(dataset, v, btnName, title)
+            } else {
+                groupdict[v.group] += vfw.html.createSidebarBtn(dataset, v, btnName, title)
+            }
         }
     });
-    document.getElementById('workspace').innerHTML += html
-    // }
+
+    // Loop all groups to collect elements
+    groupdict['names'].forEach(function (groupname) {
+        // bring all group button elements in one html bundle
+
+        ghtml += '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
+            'class="w3-padding task is-data-group" data-sessionStore="dataBtn"' +
+            '" btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
+            'data-btnName="' + groupname + '" id="' + groupname + '">' +
+            '<span class="w3-medium">' +
+            '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +
+            '<span class=""></span>' +
+            '<a href="javascript:void(0)" onclick="vfw.session.removeGroupData(\'' + groupname + '\')" ' +
+            'class="w3-hover-white"> <i class="fa fa-remove fa-fw"></i></a><br></li>';  // group html
+
+        /*ghtml += '<li class="collapsible" id=' + groupname.replace(/ /g,"_") +
+            ' onclick="vfw.util.collapsibleFun(\'' + groupname.replace(/ /g,"_") + '\')">' + groupname + '' +
+            '<i class="fa fa-remove fa-fw"></i></li>'*/  // simple collapsible, hard to use here for button with multiple functions
+        ghtml += '<div class="grouppanel content">' + groupdict[groupname] + '</div>'  // add the group elements
+    })
+    document.getElementById('workspace').innerHTML += ghtml
 }
 
-// TODO: create html of vfw.workspace.build_resultstore_button and vfw.sidebar.build_datastore_button in one function
+// TODO: create html of vfw.workspace.buildResultStoreButton and vfw.sidebar.buildDatastoreButton in one function
 // /**
 //  * Build html for store buttons.
 //  * data-id is used to find results on server
@@ -324,7 +353,7 @@ vfw.sidebar.buildDatastoreButton = function (json) {
 //         '</span>' +
 //         '<span class="' + json['type'] + '"></span>' +
 //         '<a href="javascript:void(0)" ' +
-//             'onclick="vfw.session.remove_single_result(\'' + name + '\')" ' +
+//             'onclick="vfw.session.removeSingleResult(\'' + name + '\')" ' +
 //             'class="w3-hover-white">' +
 //             '<i class="fa fa-remove fa-fw"></i>' +
 //         '</a><br></li>';
@@ -364,18 +393,16 @@ vfw.session.removeSingleData = function (removeData) {
     sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
 }
 
-vfw.sidebar.remove_all_datasets = function () {
+vfw.session.removeGroupData = function (removeData) {
     /** remove button from portal **/
     let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
-    $.each(storedData, function (key, value) {
-        if ("name" in value) {
-            vfw.sidebar.remove_single_data(key);
+    $.each(storedData, function (i) {
+        if (storedData[i].group === removeData) {
+            vfw.session.removeSingleData(i);
             // document.getElementById("id" + key).remove()
         }
     });
-    /** remove button from session **/
-    sessionStorage.removeItem("dataBtn");
-    sessionStorageData = {};
+    document.getElementById(removeData).remove();
 }
 
 vfw.session.removeAllDatasets = function () {
@@ -864,7 +891,7 @@ function menuItemListener(link) {
             })
                 .done(function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    // saveAs(blob, taskItemInContext.getAttribute("btnName"));
+                    // saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
                 })

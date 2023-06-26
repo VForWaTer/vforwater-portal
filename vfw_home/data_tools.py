@@ -50,8 +50,9 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     """
     dataset_dict = {}
     error_dict = {}
-    group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group '}
-    name_group = {'group_titles': [], 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': []}
+    group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group ', 'dbIDs': [], 'orgIDs': [], 'uuIDs': []}
+    name_group = {'group_titles': [], 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': [],
+                  'mixed_vars': True}
 
     # if min_time != 0:
     #     work_query = work_query + 'AND tbl_data.tstamp > ' + str(min_time)
@@ -85,23 +86,29 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                                                 'end': enddate,
                                                                 'inputs': [],
                                                                 'outputs': dataset['entry__datasource__datatype__name'],
-                                                                'group': dataset['group__title'],
-                                                                'groupID': dataset['group_id'],
+                                                                'DBgroup': dataset['group__title'],
+                                                                'DBgroupID': dataset['group_id'],
                                                                 # 'geom': dataset['entry__geom'].json,
                                                                 'location': dataset['entry__location'].json
                                                                 }
                              })
+        group_dict['dbIDs'].append(dataset['entry__id'])
+        group_dict['orgIDs'].append('db' + str(dataset['entry__id']))
+        group_dict['uuIDs'].append(dataset['entry__uuid'])
         # summarize possible attributes to name a group
         name_group['group_titles'].append(dataset['group__title'])  # #1
         name_group['var_names'].append(dataset['entry__variable__name'])  # #2
         name_group['type_names'].append(dataset['entry__datasource__datatype__name'])  # #3
-        # name_group['geom'].append(dataset['entry__geom'].json)  # #4
+        # name_group['geom'].append(dataset['entry__geom'])  # #4
         name_group['geom_type'].append(dataset['entry__location'].geom_type)  # #4
         name_group['coords'].append(dataset['entry__location'].coords)  # #5
 
+    # Set the name of the group
     if len(accessible_ids) > 1:
         group_dict['is_group'] = True
-        # if all the fields 'group_titles', 'var_names' or 'type_names' are identical, then use it for groupname
+        if Counter(name_group['var_names']).most_common(1)[0][1] == 2 * len(accessible_ids):
+            name_group['mixed_vars'] = False
+            # if all the fields 'group_titles', 'var_names' or 'type_names' are identical, then use it for groupname
         for attr in name_group.keys():
             # print("Counter result: ", Counter(name_group[group]).most_common(1)[0])
             if Counter(name_group[attr]).most_common(1)[0][1] == 2*len(accessible_ids) \
@@ -111,9 +118,14 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                 if attr == 'type_names':
                     group_dict['type'] = name_group[attr][0]
 
+    # Now add the group name to the group members
+    for dataset, values in dataset_dict.items():
+        dataset_dict[dataset]['group'] = group_dict['name']
+        dataset_dict[dataset]['type'] = group_dict['type']
+        # dataset_dict[dataset]['members'] = group_dict['type']
 
     # TODO: Need timestamp in name to see if different selection
-    return {'data': dataset_dict, 'error': error_dict, 'group': group_dict}
+    return {'data': dataset_dict, 'error': error_dict, 'group': {group_dict['name']: group_dict}}
 
 
 def __get_timescale(df, ID=None):
