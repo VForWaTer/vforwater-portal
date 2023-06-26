@@ -848,13 +848,14 @@ vfw.sidebar.workspaceDataset = function (id) {
             }, // data sent with post request
         })
             .done(function (json) {
+                let stored = {};
                 if (json['error']['message']) {
                     // TODO: handle errors/data selected but without access
                     console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')
                 }
 
                 if (sessionStorage.getItem("dataBtn")) {
-                    let stored = JSON.parse(sessionStorage.getItem("dataBtn"));
+                    stored = JSON.parse(sessionStorage.getItem("dataBtn"));
                     $.each(json['workspaceData'], function (key, value) {
                         if (!stored[key]) stored[key] = value;
                     });

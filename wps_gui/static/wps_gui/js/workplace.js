@@ -371,6 +371,8 @@ vfw.workspace.modal.prep_data = function () {
                 inType.push(stored['type']);
                 indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
             } else {
+                // TODO: What if I have another source than only dataBtn or dataGroup? Have to get this key somehow.
+                stored = JSON.parse(sessionStorage.getItem("dataGroup"))[dDInput[0].value]
                 inValue.push(dDInput[0].value);
                 inType.push(stored['type']);
                 indict[dropDInputs[i].name] = dDInput[0].value;
