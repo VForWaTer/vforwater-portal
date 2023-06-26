@@ -948,7 +948,7 @@ vfw.workspace.modal.build_dropdown_opt = function (item, optionGroup, sidebarDat
         }
         opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
         // opt.setAttribute('data-datatype', sidebarData[singleData].type);
-        if (item.keywords.length == 1) opt.selected = true;
+        if ('keywords' in item && item.keywords.length == 1) opt.selected = true;
         optionGroup.appendChild(opt);
     })
     return optionGroup
