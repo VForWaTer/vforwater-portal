@@ -51,7 +51,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     """
     dataset_dict = {}
     error_dict = {}
-    group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group ', 'dbIDs': [], 'orgIDs': [], 'uuIDs': []}
+    group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group', 'dbIDs': [], 'orgIDs': [], 'uuIDs': []}
     name_group = {'group_titles': [], 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': [],
                   'mixed_vars': True}
 
@@ -71,7 +71,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     result_dataset = NmEntrygroups.objects. \
         values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
                'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
-               'group_id', 'entry__location', 'entry__geom').filter(pk__in=accessible_ids).distinct()
+               'group_id', 'entry__location', 'entry__geom').filter(pk__in=accessible_ids)  # .distinct()
 
     if len(error_ids) > 0:
         error_dict = {'message': 'no access', 'id': error_ids}
@@ -108,8 +108,8 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         # name_group['geom_type'].append(dataset['entry__location'].geom_type)  # #4
         # name_group['coords'].append(dataset['entry__location'].coords)  # #5
 
-        # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
-        #  behaviour of '.distinct()' This is done in a seperate loop
+    # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
+    #  behaviour of '.distinct()' This is done in a seperate loop
     for k, v in dataset_dict.items():
         group_dict['dbIDs'].append(v['dbID'])
         group_dict['orgIDs'].append(k)
@@ -122,6 +122,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         name_group['geom_type'].append(json.loads(v['location'])['type'])  # #4
         name_group['coords'].append(json.loads(v['location'])['coordinates'])  # #5
 
+
     # Set the name of the group
     if len(accessible_ids) > 1:
         group_dict['is_group'] = True
@@ -129,7 +130,10 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             name_group['mixed_vars'] = False
             # if all the fields 'group_titles', 'var_names' or 'type_names' are identical, then use it for groupname
         for attr in name_group.keys():
-            # print("Counter result: ", Counter(name_group[group]).most_common(1)[0])
+            # TODO: Poor function/design of object so we have to skip for certain values. Improve the function/object
+            if attr == 'coords' or attr == 'mixed_vars':
+                continue
+
             if Counter(name_group[attr]).most_common(1)[0][1] == len(accessible_ids) \
                 and name_group[attr][0] is not None:
                 group_dict['name'] += name_group[attr][0] + ' '
@@ -137,11 +141,11 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                 if attr == 'type_names':
                     group_dict['type'] = name_group[attr][0]
 
-    # Now add the group name to the group members
-    for dataset, values in dataset_dict.items():
-        dataset_dict[dataset]['group'] = group_dict['name']
-        dataset_dict[dataset]['type'] = group_dict['type']
-        # dataset_dict[dataset]['members'] = group_dict['type']
+        # Now add the group name to the group members
+        for dataset, values in dataset_dict.items():
+            dataset_dict[dataset]['group'] = group_dict['name']
+            dataset_dict[dataset]['type'] = group_dict['type']
+            # dataset_dict[dataset]['members'] = group_dict['type']
 
     # TODO: Need timestamp in name to see if different selection
     return {'data': dataset_dict, 'error': error_dict, 'group': {group_dict['name']: group_dict}}
