@@ -1,4 +1,5 @@
 # from typing import Literal
+import json
 from collections import Counter
 
 import numpy as np
@@ -65,10 +66,12 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     error_ids = accessible_data['blocked']
     accessible_ids = accessible_data['open']
 
+    # TDOO: The results are all returned twice. '.distinct()' should avoid this behaviour, but seems not to work.
+    # Fix this somehow!
     result_dataset = NmEntrygroups.objects. \
         values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
                'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
-               'group_id', 'entry__location', 'entry__geom').filter(pk__in=accessible_ids)
+               'group_id', 'entry__location', 'entry__geom').filter(pk__in=accessible_ids).distinct()
 
     if len(error_ids) > 0:
         error_dict = {'message': 'no access', 'id': error_ids}
@@ -92,26 +95,42 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                                                 'location': dataset['entry__location'].json
                                                                 }
                              })
-        group_dict['dbIDs'].append(dataset['entry__id'])
-        group_dict['orgIDs'].append('db' + str(dataset['entry__id']))
-        group_dict['uuIDs'].append(dataset['entry__uuid'])
+        # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
+        #  behaviour of '.distinct()' This is done in a seperate loop
+        # group_dict['dbIDs'].append(dataset['entry__id'])
+        # group_dict['orgIDs'].append('db' + str(dataset['entry__id']))
+        # group_dict['uuIDs'].append(dataset['entry__uuid'])
+        # # summarize possible attributes to name a group
+        # name_group['group_titles'].append(dataset['group__title'])  # #1
+        # name_group['var_names'].append(dataset['entry__variable__name'])  # #2
+        # name_group['type_names'].append(dataset['entry__datasource__datatype__name'])  # #3
+        # # name_group['geom'].append(dataset['entry__geom'])  # #4
+        # name_group['geom_type'].append(dataset['entry__location'].geom_type)  # #4
+        # name_group['coords'].append(dataset['entry__location'].coords)  # #5
+
+        # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
+        #  behaviour of '.distinct()' This is done in a seperate loop
+    for k, v in dataset_dict.items():
+        group_dict['dbIDs'].append(v['dbID'])
+        group_dict['orgIDs'].append(k)
+        group_dict['uuIDs'].append(v['uuID'])
         # summarize possible attributes to name a group
-        name_group['group_titles'].append(dataset['group__title'])  # #1
-        name_group['var_names'].append(dataset['entry__variable__name'])  # #2
-        name_group['type_names'].append(dataset['entry__datasource__datatype__name'])  # #3
+        name_group['group_titles'].append(v['DBgroup'])  # #1
+        name_group['var_names'].append(v['name'])  # #2
+        name_group['type_names'].append(v['type'])  # #3
         # name_group['geom'].append(dataset['entry__geom'])  # #4
-        name_group['geom_type'].append(dataset['entry__location'].geom_type)  # #4
-        name_group['coords'].append(dataset['entry__location'].coords)  # #5
+        name_group['geom_type'].append(json.loads(v['location'])['type'])  # #4
+        name_group['coords'].append(json.loads(v['location'])['coordinates'])  # #5
 
     # Set the name of the group
     if len(accessible_ids) > 1:
         group_dict['is_group'] = True
-        if Counter(name_group['var_names']).most_common(1)[0][1] == 2 * len(accessible_ids):
+        if Counter(name_group['var_names']).most_common(1)[0][1] == len(accessible_ids):
             name_group['mixed_vars'] = False
             # if all the fields 'group_titles', 'var_names' or 'type_names' are identical, then use it for groupname
         for attr in name_group.keys():
             # print("Counter result: ", Counter(name_group[group]).most_common(1)[0])
-            if Counter(name_group[attr]).most_common(1)[0][1] == 2*len(accessible_ids) \
+            if Counter(name_group[attr]).most_common(1)[0][1] == len(accessible_ids) \
                 and name_group[attr][0] is not None:
                 group_dict['name'] += name_group[attr][0] + ' '
                 # if all datasets have the same datatype use this type as group type
