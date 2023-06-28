@@ -313,7 +313,7 @@ vfw.sidebar.buildDatastoreButton = function (json) {
             '<i class="fa fa-remove fa-fw"></i></li>'*/  // simple collapsible, hard to use here for button with multiple functions
         ghtml += '<div class="grouppanel content">' + groupdict[groupname] + '</div>'  // add the group elements
     })
-    document.getElementById('workspace').innerHTML += ghtml
+    document.getElementById('workspace').innerHTML += ghtml + html
 }
 
 // TODO: create html of vfw.workspace.buildResultStoreButton and vfw.sidebar.buildDatastoreButton in one function
