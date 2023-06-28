@@ -849,41 +849,42 @@ vfw.sidebar.workspaceDataset = function (id) {
         })
             .done(function (json) {
                 let stored = {};
+                let storedGroup = {};
                 if (json['error']['message']) {
                     // TODO: handle errors/data selected but without access
                     console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')
                 }
+                if (json['group']['is_group']) {
 
-                if (sessionStorage.getItem("dataBtn")) {
-                    stored = JSON.parse(sessionStorage.getItem("dataBtn"));
-                    $.each(json['workspaceData'], function (key, value) {
-                        if (!stored[key]) stored[key] = value;
-                    });
-                    sessionStorage.setItem("dataBtn", JSON.stringify(stored))
-                    sessionStorageData = stored;
+                    if (sessionStorage.getItem("dataGroup")) {
+                        storedGroup = JSON.parse(sessionStorage.getItem("dataGroup"));
+                        $.each(json['group'], function (key, value) {
+                            if (!storedGroup[key]) storedGroup[key] = value;
+                        });
+                        sessionStorage.setItem("dataBtn", JSON.stringify(storedGroup))
+                        sessionStorageData = storedGroup;
+                    } else {
+                        sessionStorage.setItem("dataGroup", JSON.stringify(json['group']));
+                        // sessionStorageData = json['group']
+                    }
                 } else {
-                    sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
-                    sessionStorageData = json['workspaceData']
+                    if (sessionStorage.getItem("dataBtn")) {
+                        stored = JSON.parse(sessionStorage.getItem("dataBtn"));
+                        $.each(json['workspaceData'], function (key, value) {
+                            if (!stored[key]) stored[key] = value;
+                        });
+                        sessionStorage.setItem("dataBtn", JSON.stringify(stored))
+                        sessionStorageData = stored;
+                    } else {
+                        sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
+                        sessionStorageData = json['workspaceData']
 
-                    $.each(json['workspaceData2'], function (k) {
-                        let dataset = new storeData(json['workspaceData2'][k])
-                        //dataset.save(json['workspaceData2'][k])
-                        sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
-                    });
-                }
-
-                if (sessionStorage.getItem("dataGroup")) {
-                    stored = JSON.parse(sessionStorage.getItem("dataGroup"));
-                    $.each(json['group'], function (key, value) {
-                        if (!stored[key]) stored[key] = value;
-                    });
-                    sessionStorage.setItem("dataBtn", JSON.stringify(stored))
-                    sessionStorageData = stored;
-                } else {
-                    console.log("json['dataGroup']: ", json['group'])
-                    console.log("json['group']: ", json['group'])
-                    sessionStorage.setItem("dataGroup", JSON.stringify(json['group']));
-                    // sessionStorageData = json['group']
+                        $.each(json['workspaceData2'], function (k) {
+                            let dataset = new storeData(json['workspaceData2'][k])
+                            //dataset.save(json['workspaceData2'][k])
+                            sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
+                        });
+                    }
                 }
                 // build buttons
                 vfw.sidebar.buildDatastoreButton(json['workspaceData']);

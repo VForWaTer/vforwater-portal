@@ -931,7 +931,7 @@ function menuItemListener(link) {
         case "ViewResult":
             let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
             if (!(result[btnName] instanceof Object)) {
-                popUpText += '<tr><td><b>' + btnName + '</b></td><td>' + result[btnName] + '</td></tr>';
+                popUpText += '<tr><td><b>${btnName}</b></td><td>${result[btnName]}</td></tr>';
             } else {
                 popUpText += '<tr><td><b>' + 'result name' + '</b></td><td>' + result[btnName]['name'] + '</td></tr>';
                 for (let j in result[btnName]['input_values']) {

@@ -719,10 +719,12 @@ def short_info_pagination(request):
 
     except TypeError:
         print('Short info Pagination failed.')
+        logger.debug('Short info Pagination failed.')
         raise Http404
 
     except Exception as e:
         print('Exception while getting short info pagination: ', e)
+        logger.debug('Exception while getting short info pagination: ', e)
 
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?

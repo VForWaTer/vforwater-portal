@@ -627,8 +627,11 @@ def db_load(request):
             dataset.dataframe.to_csv(fullpath.joinpath('dataframe.csv'))
 
             # Create a dictionary with metadata that might be needed for a tool, e.g.coordinates, datatype, ...
+            basic_metadata = dataset.coords
+            # basic_metadata.update(dataset)
             with open(fullpath.joinpath('dataframe.json'), "w") as outfile:
-                json.dump(dataset.coords, outfile)
+                # json.dump(dataset.coords, outfile)
+                json.dump(basic_metadata, outfile)
             # print('coords: ', dataset.coords)
             # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
             fullpath.chmod(0o775)
