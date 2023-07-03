@@ -96,7 +96,8 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
     },
     strategy: ol.loadingstrategy.bbox
 });
-
+/** get the different background maps **/
+// Create vfw style map
 vfw.map.source.vfwSource = new ol.source.XYZ({
     attributions: [gettext("Map data from") + ' <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>, ' +
     'SRTM | ' + gettext("Map style from") + ' <a href="https://www.vforwater.de/">V-FOR-WaTer</a> '],
@@ -192,7 +193,8 @@ vfw.map.create_map = function () {
         className: 'cluster-layer',
         source: new ol.source.Cluster({
             distance: 30,
-            source: vfw.map.source.wfsPointSource
+            source: vfw.map.source.wfsPointSource,
+            crossOrigin: 'anonymous',
         }),
         animationDuration: 0,
         /** Cluster style  **/
@@ -272,19 +274,18 @@ vfw.map.create_map = function () {
         animate: ({duration: 5000} /*, {easing: 'elastic'}*/),
     });
 
-    /** build app for box with draw buttons **/
-    window.cApp = {};
-    let cApp = window.cApp;
-    cApp.drawControls = function () {
-        let element = document.createElement('div');
-        element.className = 'custom-control ol-unselectable ol-control';
-        element.appendChild(document.getElementById('drawfilter'));
-        element.appendChild(document.getElementById('closed_drawfilter'));
-        ol.control.Control.call(this, {
-            element: element
-        });
-    };
-    ol.inherits(cApp.drawControls, ol.control.Control);
+    /** build Class for box with draw buttons **/
+    class DrawControls extends ol.control.Control {
+        constructor(opt_options) {
+            const element = document.createElement('div');
+            element.className = 'custom-control ol-unselectable ol-control';
+            element.appendChild(document.getElementById('drawfilter'));
+            element.appendChild(document.getElementById('closed_drawfilter'));
+            super({
+                element: element,
+            });
+        }
+    }
 
     /** Initialise map **/
     let map_tar = document.getElementById("map");
@@ -315,7 +316,7 @@ vfw.map.create_map = function () {
                 }
             }),
             new ol.control.ScaleLine(),
-            new cApp.drawControls,
+            new DrawControls(),
             vfw.map.control.zoomToExt,
             new ol.control.LayerPopup(),
             // new ol.control.LayerSwitcher(),
@@ -326,35 +327,23 @@ vfw.map.create_map = function () {
     /** get information about your data in a popup when you click on a data point in the map **/
     olmap.on('singleclick', checkMode);
 
-    /** check what is clicked **/
+    /** check what is clicked and open a modal with information about data **/
     function checkMode(evt) {
         let clickedFeatures, ids, cleanedids, wfsLen;
-        if (vfw.map.vars.hit_cL) {
-            // content.innerHTML = '';
-            try {
+        // TODO: This code works only on the cluster layer. For other geometries/layers this function must be adjusted!
+        vfw.map.layer.cluster.getFeatures(evt.pixel).then((features) => {
+            if (features[0]) {
                 vfw.html.loaderOverlayOn();
-                // content.innerHTML = '<div id="loader" class="loader">bla</div>';
-                // positionPopup(vfw.html.popup);
-                // console.log('now u shall see a loader: ', content)
                 wfsLen = vfw.map.vars.wfsLayerName.length;
-                clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+                // clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+                clickedFeatures = features[0].getProperties().features;
                 ids = clickedFeatures.map(i => parseInt(i.getId().substr(wfsLen + 1, 8)));
                 cleanedids = ids.filter(value => {
                     return !Number.isNaN(value);
                 });
                 vfw.map.buildMapModal(cleanedids, 1);
-
-            } catch (err) {
-                // content.innerHTML = '<div id="loader">Failed to load your selection</div>';
-                console.log('err: ', err)
-                vfw.html.loaderOverlayOff();
-            } finally {
-
             }
-
-        } else {
-            // console.log('Nothing to click here')
-        }
+        })
     }
 
     /** select data with doubleclick **/
@@ -404,19 +393,9 @@ vfw.map.create_map = function () {
         if (evt.dragging) {
             return;
         }
-        // let pixel = olmap.getEventPixel(evt.originalEvent);
-        vfw.map.vars.hit_cL = olmap.forEachLayerAtPixel(evt.pixel, function (feature) {
-                return feature;
-            },
-            {
-                layerFilter: function (layer) {
-                    // console.log('+++++ layer: ', layer === clusterLayer)
-                    // return layer === vector
-                    return layer === vfw.map.layer.cluster
-                }
-            }
-        );
-        olmap.getTargetElement().style.cursor = vfw.map.vars.hit_cL ? 'pointer' : '';
+        vfw.map.layer.cluster.getFeatures(evt.pixel).then((features) => {
+            olmap.getTargetElement().style.cursor = features[0] ? 'pointer' : '';
+        })
     });
 
     // On selected => get feature in cluster and show info
