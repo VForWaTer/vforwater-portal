@@ -16,7 +16,9 @@ div.map {
     /*min-width: 280px;*/
 }
 
-/*styles for the custom buttons on the map*/
+/**
+* styles for the custom buttons on the map
+*/
 .custom-control {
       top: 0.5em;
     left: 2.9em;
@@ -54,24 +56,76 @@ div.map {
 #drawfilter {
 border-radius: 4px;
 padding: 2px;
+    background-color: rgba(255, 255, 255, 0.5);
     /*display: block;*/
 }
 
 #draw_polygon, #modify_polygon, #draw_square, #remove_polygon, #draw_catchment {
     width: 6px;
     height: 6px;
-    background:rgba(0, 60, 136, .55);
-    border-radius: 4px;
-    padding: 3px;
-    color: white;
+    /*background:rgba(0, 60, 136, .55);*/
+    color:#666666;
+    border-radius: 1px;
+    padding: 2px;
+    background: white;
+    /*color: white;*/
 }
 .draw-hover:hover{
-background:rgba(0, 60, 136, .9)!important;
+    background: rgba(208, 208, 208, 0.9) !important;
+/*background:rgba(0, 60, 136, .9)!important;*/
 }
 #draw_toggle, #closed_drawfilter {
     border-radius: 4px;
     padding: 3px;
 }
+.hover-white{
+    background:white;
+}
 .hover-white:hover{
-    background:white!important;
+    background: rgba(208, 208, 208, 0.9);
+    /*background:white;*/
+}
+
+/**
+* The zoomslider shall be placed between the zoom-in and zoom-out buttons.
+*/
+#map .ol-zoom .ol-zoom-out {
+    /*    width: 6px;*/
+    /*height: 6px;*/
+    /*background:rgba(0, 60, 136, .55);*/
+    /*border-radius: 4px;*/
+    /*padding: 3px;*/
+    /*color: white;*/
+/*margin-top: 200px;*/
+}
+#map .ol-zoomslider {
+background-color: rgba(255, 255, 255, 0.5);
+/*top: calc(0.5em + 2px + 1px + 1.14 * 1.375em);*/
+}
+
+#map .ol-touch .ol-zoom .ol-zoom-out {
+/*margin-top: 212px;*/
+}
+#map .ol-touch .ol-zoomslider {
+/*top: 2.75em;*/
+}
+
+#map .ol-zoom-in.ol-has-tooltip:hover [role=tooltip],
+#map .ol-zoom-in.ol-has-tooltip:focus [role=tooltip] {
+/*top: 3px;*/
+}
+
+#map .ol-zoom-out.ol-has-tooltip:hover [role=tooltip],
+#map .ol-zoom-out.ol-has-tooltip:focus [role=tooltip] {
+/*top: 232px;*/
+}
+
+#map .ol-zoom-extent {
+/*top: 258px;*/
+/*        width: 6px;*/
+/*    height: 6px;*/
+/*    background:rgba(0, 60, 136, .55);*/
+/*    border-radius: 4px;*/
+/*    padding: 3px;*/
+/*    color: white;*/
 }
