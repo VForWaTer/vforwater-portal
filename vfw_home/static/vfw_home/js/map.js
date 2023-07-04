@@ -152,10 +152,9 @@ vfw.map.create_map = function () {
     //     "Open Topo map": vfw.map.source.opentopoSource
     // };
 
-    let dataExt = ol.proj.transformExtent(JSON.parse(document.getElementById('dataExt').value),
-        'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
+    let dataExt = ol.proj.transformExtent(vfw.var.DATA_EXT, 'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
 
-    vfw.map.vars.wfsLayerName = document.getElementById('data_layer').value;
+    vfw.map.vars.wfsLayerName = vfw.var.DATA_LAYER;
     if (vfw.map.vars.wfsLayerName.search("Error") !== -1) {
         console.error(vfw.map.vars.wfsLayerName)
         let tabBtn = {'currentTarget': document.getElementById('tableTab')}
