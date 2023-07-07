@@ -263,7 +263,7 @@ vfw.session.update_datastore_button = function (wpsDBInfo) {
  * @param {object} json
  */
 vfw.sidebar.buildDatastoreButton = function (json) {
-    let ghtml = ''  // group html
+    let ghtml = '';  // group html
     let mhtml = ''  // group member html
     let groupdict = {'names': []};
     let group = false;
@@ -287,9 +287,10 @@ vfw.sidebar.buildDatastoreButton = function (json) {
         } else if (document.getElementById(`sidebtn${dataset}`) === null) {
             if (!groupdict.names.includes(v.group)) {
                 groupdict['names'].push(v.group)
-                groupdict[v.group] = vfw.html.createSidebarBtn(dataset, v, btnName, title)
+                groupdict[v.group] = {'elements': [dataset]}
             } else {
-                groupdict[v.group] += vfw.html.createSidebarBtn(dataset, v, btnName, title)
+                groupdict[v.group]['elements'].push(dataset)
+                // groupdict[v.group] += vfw.html.createSidebarBtn(dataset, v, btnName, title)
             }
         }
     });
@@ -297,10 +298,10 @@ vfw.sidebar.buildDatastoreButton = function (json) {
     // Loop all groups to collect elements
     groupdict['names'].forEach(function (groupname) {
         // bring all group button elements in one html bundle
-
         ghtml += '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
-            'class="w3-padding task is-data-group" data-sessionStore="dataBtn"' +
-            '" btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
+            'class="w3-padding task is-data-group" data-sessionStore="dataBtn" ' +
+            'data-groupelements=' + groupdict[groupname]['elements'].toString() +
+            ' btnName="' + groupname + '" onmouseover="" style="cursor:pointer;" ' +
             'data-btnName="' + groupname + '" id="' + groupname + '">' +
             '<span class="w3-medium">' +
             '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +
