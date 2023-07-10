@@ -363,7 +363,7 @@ vfw.workspace.modal.prep_data = function () {
             inId.push(inIdList);
             indict[dropDInputs[i].name] = valueList;
 
-            /** else if one dropdown **/
+        /** else if one dropdown **/
         } else {
             if (dDInput[0].value.substring(0, 2) == 'db') {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
@@ -464,7 +464,7 @@ vfw.workspace.modal.run_process = function () {
         }, /** data sent with post request **/
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
-        vfw.html.loaderOverlayOff()
+            vfw.html.loaderOverlayOff()
             if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
                 let btnName = '';
                 let btnData = {};
@@ -891,7 +891,11 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     for (let i in sessionStoreData) {
         if (acceptedDataTypes.has(sessionStoreData[i].type)) {
         }
-        aptStoreData[i] = sessionStoreData[i];
+        if (sessionStoreData[i].hasOwnProperty('group')) {
+            aptGroupedData[i] = sessionStoreData[i];
+        } else {
+            aptStoreData[i] = sessionStoreData[i];
+        }
     }
     for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
     for (let i in groupedData) {
@@ -903,7 +907,7 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     }
     // for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
     // for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
-    boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length;
+    boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length + Object.keys(aptGroupedData).length;
     // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???
     if (item.minOccurs > 1) htmlSelect.required = true;
 
@@ -918,13 +922,13 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     } else {
         htmlSelect.size = (boxLen > 3) ? "5" : (boxLen + 2).toString();
         htmlSelect.name = item.identifier;
-        if (groupedData !== null) {
+        if (aptGroupedData !== null) {
             let optionGroup = document.createElement("OPTGROUP");
-            optionGroup.label = "Data Groups";
+            optionGroup.label = "Data groups";
             optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptGroupedData);
             htmlSelect.appendChild(optionGroup);
         }
-        if (storeData !== null) {
+        if (aptStoreData !== null && Object.keys(aptStoreData).length) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Data store";
             optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptStoreData);
@@ -955,18 +959,64 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
 vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup, selectables) {
     // let opt = document.createElement("OPTION");
     let opt;
+    let optGroupDict = {};
+    let groupName = '';
+    const groups = new Set([]);
+
+    /**
+     * Add a value to a the button or update the value for a group button
+     * @param {Object} selectables
+     * @param {number} singleData
+     */
+    function chooseDataID (selectables, singleData) {
+        let value
+        if (selectables[singleData].wpsID) {
+            value = 'wpsID' + (selectables[singleData].wpsID);
+        } else {
+            value = singleData;
+        }
+        return value;
+            // opt.setAttribute('data-datatype', selectables[singleData].type);
+        }
+
     Object.keys(selectables).forEach(function (singleData) {
         opt = document.createElement("OPTION");
-        if (selectables[singleData].abbr && selectables[singleData].unit) {
+        groupName = ''
+
+        // Check if a Button for a group, or a single button is needed
+        if (!selectables[singleData].hasOwnProperty('group') &&  // is no group
+            selectables[singleData].abbr && selectables[singleData].unit) {  // but has unit and abbriviation
             opt.innerText = `${singleData} ${selectables[singleData].name} (${selectables[singleData].abbr}
             in ${selectables[singleData].unit})`;
-        } else {
+            opt.value = chooseDataID(selectables, singleData);
+        } else if (selectables[singleData].hasOwnProperty('group') &&  // is group
+            !groups.has(selectables[singleData]['group'])) {  // but seen the first time
+            groupName = selectables[singleData]['group']
+            // Here the group element is build
+            groups.add(groupName)
+            opt.innerText = `${groupName}`;
+            optGroupDict[groupName] = {'opt': {}};
+            optGroupDict[groupName]['opt'] = opt;
+            optGroupDict[groupName]['value'] = [chooseDataID(selectables, singleData)];
+            return
+        } else if (!groups.has(selectables[singleData]['group'])) {  // is no group
             opt.innerText = `${singleData}`;
+            opt.value = chooseDataID(selectables, singleData);
+        } else if (selectables[singleData].hasOwnProperty('group') &&  // is group,
+            groups.has(selectables[singleData]['group'])) {  // but seen before, so add more values to an existing button
+            optGroupDict[selectables[singleData]['group']]['value'].push(chooseDataID(selectables, singleData))
+            return
+        } else {
+            console.warn('New case. Fix this')
+            return;
         }
-        opt.value = selectables[singleData].wpsID ? 'wpsID' + (selectables[singleData].wpsID) : singleData;
-        // opt.setAttribute('data-datatype', selectables[singleData].type);
+
         if ('keywords' in processAttribute && processAttribute.keywords.length == 1) opt.selected = true;
         optionGroup.appendChild(opt);
+    })
+    Object.keys(optGroupDict).forEach(function (group) {
+        optGroupDict[group]['opt'].value = optGroupDict[group]['value'];
+        optionGroup.appendChild(optGroupDict[group]['opt']);
     })
     return optionGroup
 }
