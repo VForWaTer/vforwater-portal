@@ -738,9 +738,19 @@ def prepare_inputs(request_input):
     :return:
     """
     for i, val in enumerate(request_input['in_type_list']):
+
+        folder = ''
         if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if not a basicdatatype look for data in db
-            folder = ast.literal_eval(WpsResults.objects.get(id=request_input['value_list'][i][3:]).outputs)['folder']
-            request_input['value_list'][i] = folder
-            request_input['in_dict'][request_input['key_list'][i]] = folder
+            folder = ast.literal_eval(WpsResults.objects
+                                      .get(id=int(request_input['value_list'][i][3:])).outputs)['folder']
+
+        elif isinstance(request_input['value_list'][i], list):  # if there is a grouped dataset do:
+            ids = list(map(lambda list_val: int(list_val[3:]), request_input['value_list'][i]))
+            folder = []
+            for j in WpsResults.objects.filter(id__in=ids):
+                folder.append(ast.literal_eval(j.outputs)['folder'])
+
+        request_input['value_list'][i] = folder
+        request_input['in_dict'][request_input['key_list'][i]] = folder
 
     return request_input
