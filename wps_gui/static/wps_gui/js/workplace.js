@@ -365,17 +365,28 @@ vfw.workspace.modal.prep_data = function () {
 
         /** else if one dropdown **/
         } else {
-            if (dDInput[0].value.substring(0, 2) == 'db') {
+            // if (dDInput[0].value.substring(0, 2) == 'db') {
+            if (dDInput[0].value.split(",").length == 1) {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
                 inValue.push(stored['source'] + stored['dbID']);
                 inType.push(stored['type']);
                 indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
             } else {
                 // TODO: What if I have another source than only dataBtn or dataGroup? Have to get this key somehow.
-                stored = JSON.parse(sessionStorage.getItem("dataGroup"))[dDInput[0].value]
-                inValue.push(dDInput[0].value);
-                inType.push(stored['type']);
-                indict[dropDInputs[i].name] = dDInput[0].value;
+                let groupInValues = [];
+                let groupInTypes = [];
+                // Try to get wps ID for data
+                for (let dataset of dDInput[0].value.split(",")) {
+                    stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dataset]
+                    groupInValues.push(stored['source'] + stored['dbID'])
+                    groupInTypes.push(stored['type']);
+                }
+                inValue.push(groupInValues)
+                inType.push(groupInTypes);
+                // inValue.push(dDInput[0].value.split(","));
+                // inValue.push(dDInput[0].value);
+                // inType.push(stored['type']);
+                indict[dropDInputs[i].name] = dDInput[0].value.split(",");
             }
             inKey.push(dropDInputs[i].name);
             inId.push(dDInput[0].value);
