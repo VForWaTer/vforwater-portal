@@ -1,23 +1,23 @@
 @startuml
-rectangle Legend {
-    hexagon python
-
-    file html1 [
-        html 1
-    ]
-    file html2 [
-        html 2
-        ====
-        <color:blue>vfw maintained
-    ]
-    file unused_html #red;line.dotted
-
-python ~~> html1 #line:green;text:green : get_template
-python ..> html1 #line:red;text:red : redirect
-python ..> html1 : render
-html2 --> html1 : include
-html2 ==> html1 : extends
-}
+'rectangle Legend {
+'    hexagon python
+'
+'    file html1 [
+'        html 1
+'    ]
+'    file html2 [
+'        html 2
+'        ====
+'        <color:blue>vfw maintained
+'    ]
+'    file unused_html #red;line.dotted
+'
+'python ~~> html1 #line:green;text:green : get_template
+'python ..> html1 #line:red;text:red : redirect
+'python ..> html1 : render
+'html2 --> html1 : include
+'html2 ==> html1 : extends
+'}
 
 folder vfw_home  {
   file home.html [
@@ -98,14 +98,14 @@ folder vfw_home  {
   ]
   file legals.html
   file entrieslist.html
-  file 404.html
-  file autocomplete_widget.html
+'  file 404.html
+'  file autocomplete_widget.html
   file failedlogin.html
   file loader_popup.html
   file map_widget.html
-  hexagon views.py
+'  hexagon views.py
 '  hexagon urls.py
-  hexagon widgets.py
+'  hexagon widgets.py
 
 home.html --> base_sidebar.html : include
 base.html ==> help.html : extends
@@ -125,40 +125,40 @@ base_sidebar.html --> loader_popup.html : include
 static_sidebar.html --> logo.html : include
 mapmodal_entrieslist.html --> map_modal.html : include
 
-views.py ..> 404.html : render
+'views.py ..> 404.html : render
 'views.py ..> advanced_filter.html : render
 'views.py ..> quick_filter.html : render
 'views.py ..> entrieslist.html : render
 'views.py ..> mapmodal_entrieslist.html : render
 'urls.py ..> failedlogin.html
 failedlogin.html  ..>  home.html #line:red;text:red
-widgets.py ~~> autocomplete_widget.html #line:green;text:green : get_template
-widgets.py ~~> map_widget.html #line:green;text:green : get_template
+'widgets.py ~~> autocomplete_widget.html #line:green;text:green : get_template
+'widgets.py ~~> map_widget.html #line:green;text:green : get_template
 }
 
-folder visual_app {
-    file "visual_app/home.html"
-    file visualplace.html [
-        visualplace.html
-        ====
-        bokeh
-    ]
-base.html ==> "visual_app/home.html" : extends
-visualplace.html -> "visual_app/home.html" : include
-}
+'folder visual_app {
+'    file "visual_app/home.html"
+'    file visualplace.html [
+'        visualplace.html
+'        ====
+'        bokeh
+'    ]
+'base.html ==> "visual_app/home.html" : extends
+'visualplace.html -> "visual_app/home.html" : include
+'}
 
 
-folder upload {
-file uploadhome.html [
-    home.html
-    ====
-    <color:blue>data_access.js
-    jquery.fileupload.js
-    jquery.iframe-transport.js
-    jquery.ui.widget.js
-]
-}
-base.html ==> uploadhome.html : extends
+'folder upload {
+'file uploadhome.html [
+'    home.html
+'    ====
+'    <color:blue>data_access.js
+'    jquery.fileupload.js
+'    jquery.iframe-transport.js
+'    jquery.ui.widget.js
+']
+'base.html ==> uploadhome.html : extends
+'}
 
 folder wps_gui {
 
@@ -273,13 +273,13 @@ profile.html ==> addnewresource : extends
 addnewresource ==> uploadpersion : extends
 }
 
-folder process_monitor {
-    file monitor_home [
-        home.html
-    ]
-base.html ==> process_monitor : extends
-process_monitor -> static_sidebar.html : include
-}
+'folder process_monitor {
+'    file monitor_home [
+'        home.html
+'    ]
+'base.html ==> process_monitor : extends
+'process_monitor -> static_sidebar.html : include
+'}
 
 
 @enduml

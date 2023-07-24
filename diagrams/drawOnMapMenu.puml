@@ -16,7 +16,7 @@ vfw.js -> vfw.js: openDrawfilter()
 menu_objects.js -> menu_objects.js ++: showSelectionOnMap
 group ajax
 menu_objects.js -> views.py ++: **ajax**\nfilter_selection_map
-views.py -> views.py ++: MenuView.build_selection
+views.py -> views.py ++: MenuView.collect_selection
 views.py -> filter.py ++: build_id_list
 loop parents in selection
     loop childs in selection

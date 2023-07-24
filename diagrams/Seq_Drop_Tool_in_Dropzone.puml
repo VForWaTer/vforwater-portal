@@ -1,0 +1,48 @@
+@startuml
+title Dropzone
+
+hide footbox
+
+participant workplace.html
+participant workflow.js
+
+== Drop Tool ==
+workplace.html -> workflow.js: vfw.workspace.drop_handler(ev)
+activate workflow.js
+group try
+    rnote over workflow.js: get data from html
+    workflow.js -> workflow.js: ev.dataTransfer.getData()
+end
+workflow.js -> workflow.js ++: vfw.draw2d.box_params(ev)
+opt workspace
+    workflow.js -> workflow.js: metadata = sessionStorage.getItem('dataBtn')
+else toolbar
+    workflow.js -> workflow.js ++: metadata = vfw.workspace.workflow.process_drop_params()
+    workflow.js -> workflow.js ++: metadata = vfw.session.get_wpsprocess()
+    workflow.js -> workflow.js: tools = vfw.session.get_tools()
+    opt tool in tools
+        workflow.js -> workflow.js: tool = tools[tool]
+    else tool not in tools
+        workflow.js -> workflow.js: tools = vfw.session.load_wpsprocess()
+        workflow.js -> workflow.js: sessionStorage.setItem('tools', tool)
+'        workflow.js --
+        workflow.js -> workflow.js: box_param = {inputs, name, input_key_list, orgid, outputs, type}
+    end
+    return return tool_data
+    return return box_param
+else workspace_results
+    workflow.js -> workflow.js: metadata = sessionStorage.getItem('resultBtn')
+end
+return return box_param
+workflow.js -> workflow.js: boxID = box_param.orgid + vfw.workspace.workflow.get_workflow_id_affix()
+workflow.js -> workflow.js: box = new Box()
+workflow.js -> workflow.js: newBox = box.box
+workflow.js -> workflow.js: vfw.draw2d.canvas.add()
+workflow.js -> workflow.js: vfw.workspace.workflow.update()
+return return box
+
+
+@enduml
+
+
+-----------------------------------------------------------------------
