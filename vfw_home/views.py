@@ -331,7 +331,7 @@ class LoginView(View):
         if not request.user.is_authenticated:
             logger.debug('The user is not authenticated!')
         else:
-            logger.debug('{} logged in as'.format(request.user.username))
+            logger.debug(f'{request.user.username} logged in as')
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -351,7 +351,7 @@ class LogoutView(View):
         """
         print('logout view: ', self)
         print('logut request: ', request)
-        logger.debug('{} logged out'.format(request.user.username))
+        logger.debug(f'{request.user.username} logged out')
         logout(request)
 
     def post(self, request):
@@ -428,7 +428,7 @@ class ToggleLanguageView(View):
         :rtype:
         """
         lang = translation.get_language()
-        logger.debug('current language: {}'.format(lang))
+        logger.debug(f'current language: {lang}')
         logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),
                                                                             translation.check_for_language('en-us'),
                                                                             translation.check_for_language('en-gb')))

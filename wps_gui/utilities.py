@@ -1,18 +1,22 @@
 import ast
+import datetime
 import json
 import re
 from os import path
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 
+from django.http import Http404
 from django.utils import timezone
 from owslib.wps import WebProcessingService
 
+from vfw_home.data_obj import DataObject
 from vfw_home.datatypes import datatypes
 from .models import WebProcessingService as WpsModel
 from .models import WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
 from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR
+import polars as pl
 
 
 def abstract_is_link(process):
@@ -191,7 +195,7 @@ def get_wps_service_engine(name, app_class=None):
                 return activate_wps(wps=wps, endpoint=site_wps_service.endpoint, name=site_wps_service.name)
 
     error_msg = ('Could not find wps service with name "{0}". Please check that a wps service with that name '
-                    'exists in the admin console or in your app.py.'.format(name))
+                 'exists in the admin console or in your app.py.'.format(name))
     wps_log.debug(error_msg)
     raise NameError(error_msg)
 
@@ -212,12 +216,12 @@ def find_wps_service_engines():
         new_data.save()
 
     except:
-        wps_log.debug('--- Exception in utilities.py, find_wps_service_engines. (Maybe no WPS_Service at port 8094.) ---')
+        wps_log.debug(
+            '--- Exception in utilities.py, find_wps_service_engines. (Maybe no WPS_Service at port 8094.) ---')
         print('--- No WPS_Service at port 8094. ---')
 
 
-def get_endpoint_data(devel = False):
-
+def get_endpoint_data(devel=False):
     try:
         wps_services = list(WpsModel.objects.values_list("name", flat=True))
         wps_services_url = list(WpsModel.objects.values_list('endpoint', flat=True))
@@ -225,7 +229,7 @@ def get_endpoint_data(devel = False):
         service = wps_services[0]  # pygeoapi_vforwater
 
         if not devel:
-            endpoint = wps_services_url[0] # http://geoapi:5000/
+            endpoint = wps_services_url[0]  # http://geoapi:5000/
         else:
             endpoint = VFW_GEOAPI
     except Exception as e:
@@ -280,7 +284,8 @@ def get_process_info(apiprocess):
         "dataInputs": geoapi_input2wps_datainput(apiprocess['inputs']),
         "outputs": apiprocess['outputs'],
         "processOutputs": geoapi_output2wps_processoutput(apiprocess['outputs']),
-        "keywords": apiprocess['keywords'],  # ATTENTION! old wps hack used keywords to get info about accepted data in workplace.js - vfw.workspace.modal.build_modal(),
+        "keywords": apiprocess['keywords'],
+        # ATTENTION! old wps hack used keywords to get info about accepted data in workplace.js - vfw.workspace.modal.build_modal(),
         "title": apiprocess['title'],
         "version": apiprocess['version'],
     }
@@ -310,7 +315,6 @@ def geoapi_output2wps_processoutput(outputs):
                 v['dataType'] = "json"
             else:
                 v['keywords'].append(v['schema']['type'])
-
 
         dataoutputs.append(v)
 
@@ -480,8 +484,9 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
         print('TODO: figure out how to handle this.')
         return all_outputs
     else:
-        result.pop('error', None) # as there shouldn't be an error, we can remove it from the results
-        process_description['outputs'].pop('error', None) # as there shouldn't be an error, we can remove it from the results
+        result.pop('error', None)  # as there shouldn't be an error, we can remove it from the results
+        process_description['outputs'].pop('error',
+                                           None)  # as there shouldn't be an error, we can remove it from the results
 
     def singleOutput2json(output_name: object, result: object, output_description: object) -> object:
         """
@@ -510,7 +515,8 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
         else:
             path = ""
 
-        if 'value' in single_output["data"] and len(single_output["data"]['value']) < 300:  # random number, typical pathlength < 260 chars
+        if 'value' in single_output["data"] and len(
+            single_output["data"]['value']) < 300:  # random number, typical pathlength < 260 chars
             single_output["data"] = result['value']
             db_output_data = result['value']
         elif path != "":  # TODO: fix it (compare with handle_wps_output)
@@ -533,7 +539,8 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
             # create db entry
 
             # TODO: What is happening here? wpsdb entry is done at the beginning of the function!
-            wpsid = create_wpsdb_entry(wps_process=process_description['identifier'], invalue=inputs, outputs=db_output)
+            wpsid = create_wpsdb_entry(wps_process=process_description['identifier'], invalue=inputs,
+                                       outputs=db_output)
             # wpsid = create_wpsdb_entry(user, process_description, inputs, db_output)
 
             single_output["wpsID"] = wpsid
@@ -551,11 +558,13 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
         return single_output
 
     if len(process_description['outputs']) <= 1:
-        all_outputs["result"][output_keys[0]] = singleOutput2json(list(process_description['outputs'].keys())[0], execution.json(), process_description['outputs'])
+        all_outputs["result"][output_keys[0]] = singleOutput2json(list(process_description['outputs'].keys())[0],
+                                                                  execution.json(), process_description['outputs'])
     else:
         # iterate through dict of outputs
         for output_k, output_v in execution.json().items():
-            single_output = singleOutput2json(output_k, execution.json()[output_k], process_description['outputs'][output_k])
+            single_output = singleOutput2json(output_k, execution.json()[output_k],
+                                              process_description['outputs'][output_k])
             all_outputs["result"][output_k] = single_output
 
     # TODO: Have to handle bytes result
@@ -604,8 +613,9 @@ def handle_geoapiprocess_output_old(execution, process_description, inputs):
         print(f"{execution.status_code}, error in wps process")
         return all_outputs
     else:
-        result.pop('error', None) # as there shouldn't be an error, we can remove it from the results
-        process_description['outputs'].pop('error', None) # as there shouldn't be an error, we can remove it from the results
+        result.pop('error', None)  # as there shouldn't be an error, we can remove it from the results
+        process_description['outputs'].pop('error',
+                                           None)  # as there shouldn't be an error, we can remove it from the results
 
     def singleOutput2json(output_name, result, output_description):
         single_output = {}
@@ -665,11 +675,13 @@ def handle_geoapiprocess_output_old(execution, process_description, inputs):
         return single_output
 
     if len(process_description['outputs']) <= 1:
-        single_output = singleOutput2json(list(process_description['outputs'].keys())[0], execution.json(), process_description['outputs'])
+        single_output = singleOutput2json(list(process_description['outputs'].keys())[0], execution.json(),
+                                          process_description['outputs'])
     else:
         # iterate through dict of outputs
         for output_k, output_v in execution.json().items():
-            single_output = singleOutput2json(output_k, execution.json()[output_k], process_description['outputs'][output_k])
+            single_output = singleOutput2json(output_k, execution.json()[output_k],
+                                              process_description['outputs'][output_k])
 
     def singleoutput2db():
         pass
@@ -731,7 +743,7 @@ def handle_geoapiprocess_output_old(execution, process_description, inputs):
     return all_outputs
 
 
-def prepare_inputs(request_input):
+def prepare_inputs(request, request_input):
     """
     Check if input is a basic datatype (like string, int, bool...) or more sophisticated data with source path in db.
     :param request_input:
@@ -739,18 +751,103 @@ def prepare_inputs(request_input):
     """
     for i, val in enumerate(request_input['in_type_list']):
 
-        folder = ''
-        if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if not a basicdatatype look for data in db
-            folder = ast.literal_eval(WpsResults.objects
+        value = ''
+        if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if basicdatatype and already stored as file. (if not a basicdatatype look for data in db???)
+            value = ast.literal_eval(WpsResults.objects
                                       .get(id=int(request_input['value_list'][i][3:])).outputs)['folder']
+        elif val in datatypes and request_input['value_list'][i][0:2] == 'db':  # if basicdatatype and not stored as file
+            orgid = request_input['value_list'][i]
+            result = save_dataset(request=request, orgid=request_input['value_list'][i],
+                                  inputs=[('entry_id', str(orgid)), ('uuid', '')], wps_process="dbloader")
+            value = result['path']
 
         elif isinstance(request_input['value_list'][i], list):  # if there is a grouped dataset do:
-            ids = list(map(lambda list_val: int(list_val[3:]), request_input['value_list'][i]))
-            folder = []
+            value = []
+            ids = []
+            for element in request_input['value_list'][i]:
+                if element[0:3] == 'wps':  # check if element is already loaded. If not do so.
+                    ids.append(element[3:])
+                else:  # if element is not on disc load it and write to db
+                    result = save_dataset(request=request, orgid=element,
+                                          inputs=[('entry_id', element), ('uuid', '')], wps_process="dbloader")
+                    value.append(result['path'])
+            # ids = list(map(lambda list_val: int(list_val[3:]), request_input['value_list'][i]))
+            # value = []
             for j in WpsResults.objects.filter(id__in=ids):
-                folder.append(ast.literal_eval(j.outputs)['folder'])
+                value.append(ast.literal_eval(j.outputs)['folder'])
 
-        request_input['value_list'][i] = folder
-        request_input['in_dict'][request_input['key_list'][i]] = folder
+        else:
+            value = request_input['value_list'][i]
 
+        request_input['value_list'][i] = value
+        request_input['in_dict'][request_input['key_list'][i]] = value
     return request_input
+
+
+def save_dataset(request, orgid, inputs, wps_process, date=None):
+    try:
+        dataset = DataObject(orgid, date)  # load data from database
+        # print('dataset: ', dataset.dataframe)
+        now = datetime.datetime.now()
+
+        # FIXME: processes need their data in a previously defined folder, so we need write rights for django and
+        #  for processes. => we have to ensure the folder of the shared data always has the appropriate rights
+        # TODO: User URLs instead of folders
+
+        # TODO: Make sure a name is unique!
+        folder = f'{request.user.pk}_dbload_{now.strftime("%d%m%y_%H%M%S%f")}'  # use user, toolname, and datetime
+        # fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/dataframe.csv')
+        fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/')
+        fullpath.mkdir(mode=0o775, parents=True, exist_ok=True)
+        # dataset.dataframe.to_csv(fullpath.joinpath('dataframe.csv'), index=False)
+        pl.from_pandas(dataset.dataframe).write_csv(fullpath.joinpath('dataframe.csv'))
+
+        # Create a dictionary with metadata that might be needed for a tool, e.g.coordinates, datatype, ...
+        # basic_metadata = dataset.coords
+        # basic_metadata['ordig'] = orgid
+        # print('basic_metadata: ', basic_metadata)
+        # # basic_metadata.update(dataset)
+        # with open(fullpath.joinpath('dataframe.json'), "w") as outfile:
+        #     # json.dump(dataset.coords, outfile)
+        #     json.dump(basic_metadata, outfile)
+        # print('coords: ', dataset.coords)
+        # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
+        fullpath.chmod(0o775)
+
+        output = {'path': str(fullpath), 'type': dataset.type, 'folder': str(folder)}
+
+        dbkey = WpsResults.objects.create(
+            open=True,
+            wps=wps_process,
+            inputs=inputs,
+            outputs=output,
+            creation=timezone.now(),
+        )
+
+        # Create a dictionary with metadata that might be needed for a tool, e.g.coordinates, datatype, ...
+        basic_metadata = dataset.coords
+        basic_metadata['orgid'] = orgid
+        basic_metadata['id'] = "wps" + str(dbkey.id)
+
+        # print('basic_metadata: ', basic_metadata)
+
+        # basic_metadata.update(dataset)
+        with open(fullpath.joinpath('dataframe.json'), "w") as outfile:
+            # json.dump(dataset.coords, outfile)
+            json.dump(basic_metadata, outfile)
+        # print('coords: ', dataset.coords)
+        # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
+        fullpath.chmod(0o775)
+
+        result = {"id": "wps" + str(dbkey.id),
+                  "inputs": json.dumps(inputs),
+                  "orgid": orgid,
+                  "outputs": output,
+                  "type": dataset.type,
+                  }
+
+    except Exception as e:
+        print('Exception in save_dataset: ', e)
+        raise Http404
+
+    return {"short_info": result, "path": folder}

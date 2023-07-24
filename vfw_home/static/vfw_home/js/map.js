@@ -1,11 +1,7 @@
-//let zoomToExt;
-// let wfsLayerName;
-
 vfw.map.vars.hit_cL = {};
 let olmap;
 // TODO: Check if clusterlayer has to be global!
 //let selectCluster;
-//let wfsPointSource;
 // let dcz = new ol.interaction.DoubleClickZoom();
 
 /** build style for cluster **/
@@ -43,9 +39,6 @@ vfw.map.style.clusterStyle = function (feature) {
  * @param {int} page
  */
 vfw.map.buildMapModal = function (ids, page) {
-    //document.getElementById('mod_dat_inf').innerHTML = "";
-    //document.getElementById("mapModal").innerHTML = "";
-    //document.getElementById("loader-popup").classList.add("loader");
     $.ajax({
         url: vfw.var.DEMO_VAR + "/home/short_info_pagination",
         dataType: 'html',

@@ -232,7 +232,7 @@ vfw.session.update_datastore_button = function (wpsDBInfo) {
         storageEntry['unit'], wpsDBInfo['id'].substring(3,))
     let title = `${storageEntry['name']} (${storageEntry['abbr']} in ${storageEntry['unit']})`;
     let button = document.getElementById('sidebtn' + wpsDBInfo['orgid'])
-    let parent = document.getElementById('sidebtn' + wpsDBInfo['orgid']).parentElement
+    // let parent = document.getElementById('sidebtn' + wpsDBInfo['orgid']).parentElement
 
     if (wpsDBInfo['id'].substring(0, 3) == 'wps') {
         storageEntry.source = wpsDBInfo['id'].substring(0, 3)
@@ -241,8 +241,8 @@ vfw.session.update_datastore_button = function (wpsDBInfo) {
     }
     button.remove();
     // parent.innerHTML += vfw.html.createSidebarBtn(wpsDBInfo['id'].substring(3,),
-    parent.innerHTML += vfw.html.createSidebarBtn(datasetKey,
-        storageEntry, btnName, title)
+    // parent.innerHTML += vfw.html.createSidebarBtn(datasetKey,
+    //     storageEntry, btnName, title)
     workspaceData[datasetKey] = storageEntry
     /*$.each(wpsDBInfo, function (keyID, value) {
         if (workspaceData[keyID] && workspaceData[keyID]['wpsID']) {

@@ -33,7 +33,7 @@ from wps_gui.utilities import (
     get_wps_service_engine,
     list_wps_service_engines,
     abstract_is_link, get_endpoint_data, get_process_basics, get_process_info, handle_geoapiprocess_output,
-    prepare_inputs,
+    prepare_inputs, save_dataset,
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -520,7 +520,7 @@ def process_run(request):  # TODO: Check if identical input exists in db before 
     if True:
         process_description = ""
         # request_input = json.loads(request.GET.get('processrun'))
-        input = prepare_inputs(json.loads(request.GET.get('processrun')))
+        input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
         wps_process = input.get("id", "")
 
         if input['serv'] == 'pygeoapi_vforwater':
@@ -592,10 +592,10 @@ def db_load(request):
     # format inputs for wps server
     inputs = edit_input(list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""))))
 
-    lookup_arguments = {'entry_id': orgid[2:]}
-    if request_dict['start'] != 'None' and request_dict['end'] != 'None':
-        lookup_arguments['tstamp__gte'] = request_dict['start']
-        lookup_arguments['tstamp__lte'] = request_dict['end']
+    # lookup_arguments = {'entry_id': orgid[2:]}
+    # if request_dict['start'] != 'None' and request_dict['end'] != 'None':
+    #     lookup_arguments['tstamp__gte'] = request_dict['start']
+    #     lookup_arguments['tstamp__lte'] = request_dict['end']
 
     if request_dict['start'] != 'None':
         date = [make_aware(datetime.datetime.strptime(request_dict['start'], '%Y-%m-%d')),
@@ -612,50 +612,11 @@ def db_load(request):
                   "orgid": orgid,
                   "type": output["type"],
                   }
-    except:
-        try:
-            dataset = DataObject(orgid, date)  # load data from database
-            now = datetime.datetime.now()
-
-            # FIXME: processes need their data in a previously defined folder, so we need write rights for django and
-            #  for processes. => we have to ensure the folder of the shared data always has the appropriate rights
-            # TODO: User URLs instead of folders
-            folder = f'{request.user.pk}_dbload_{now.strftime("%d%m%y_%H%M%S")}'  # use user, toolname, and datetime
-            # fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/dataframe.csv')
-            fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/')
-            fullpath.mkdir(mode=0o775, parents=True, exist_ok=True)
-            dataset.dataframe.to_csv(fullpath.joinpath('dataframe.csv'))
-
-            # Create a dictionary with metadata that might be needed for a tool, e.g.coordinates, datatype, ...
-            basic_metadata = dataset.coords
-            # basic_metadata.update(dataset)
-            with open(fullpath.joinpath('dataframe.json'), "w") as outfile:
-                # json.dump(dataset.coords, outfile)
-                json.dump(basic_metadata, outfile)
-            # print('coords: ', dataset.coords)
-            # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
-            fullpath.chmod(0o775)
-
-            output = {'path': str(fullpath), 'type': dataset.type, 'folder': str(folder)}
-
-            dbkey = WpsResults.objects.create(
-                open=True,
-                wps=wps_process,
-                inputs=inputs,
-                outputs=output,
-                creation=timezone.now(),
-            )
-
-            result = {"id": "wps" + str(dbkey.id),
-                      "inputs": json.dumps(inputs),
-                      "orgid": orgid,
-                      "outputs": output,
-                      "type": dataset.type,
-                      }
-
-        except Exception as e:
-            print('Exception in db_load: ', e)
-            raise Http404
+        # print('*** dataset is already loaded ***')
+    except Exception as e:
+        save_result = save_dataset(request=request, orgid=orgid, inputs=inputs, wps_process=wps_process, date=date)
+        result = save_result['short_info']
+        # print('*** (worked as expected) dataset wasnt loaded: ', e)
 
         # TODO: data is saved, now create metadata
 
@@ -806,6 +767,7 @@ def clean_wpsresult():
 
 
 def workflow_run(request):
+
     if True:
         request_input = json.loads(request.GET.get("processrun"))
         workflow = request_input["workflow"]

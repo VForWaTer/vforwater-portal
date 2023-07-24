@@ -41,8 +41,8 @@ a.w3-hover-blue{padding: 0px}
   /*border-top: 16px solid var(--color_Child);*/
   width: 120px;
   height: 120px;
-  -webkit-animation: spin 1.5s linear infinite; /* Safari */
-  animation: spin 1.5s linear infinite;
+  -webkit-animation: spin 1.2s linear infinite; /* Safari */
+  animation: spin 1.2s linear infinite;
 }
 /* Safari */
 @-webkit-keyframes spin {

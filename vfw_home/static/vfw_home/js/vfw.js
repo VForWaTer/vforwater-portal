@@ -73,7 +73,7 @@ vfw.var.obj.selectedIds = {
 /**
  * Class to store data used on different URLs. Every change should be stored in session storage.
  */
-class storeData {
+class StoreData {
 
     constructor(definition) {
         console.log('constructor: ', definition)
@@ -880,7 +880,7 @@ vfw.sidebar.workspaceDataset = function (id) {
                         sessionStorageData = json['workspaceData']
 
                         $.each(json['workspaceData2'], function (k) {
-                            let dataset = new storeData(json['workspaceData2'][k])
+                            let dataset = new StoreData(json['workspaceData2'][k])
                             //dataset.save(json['workspaceData2'][k])
                             sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
                         });

@@ -392,6 +392,8 @@ vfw.workspace.modal.prep_data = function () {
             inId.push(dDInput[0].value);
         }
     }
+
+    /** now check the other elements like radio buttons or checkboxes **/
     for (let i = 0; i < inputInputs.length; i++) {
         if (inputInputs[i].type == "radio") {
             if (inputInputs[i].checked == true) {
@@ -399,7 +401,8 @@ vfw.workspace.modal.prep_data = function () {
                 inValue.push(inputInputs[i].value);
                 inType.push('string');
                 inId.push('');
-                indict[inputInputs[i].name] = dDInput[i].value;
+                indict[inputInputs[i].name] = inputInputs[i].value;
+                // indict[inputInputs[i].name] = dDInput[i].value;
             }
         } else if (inputInputs[i].type == "checkbox") {
             inKey.push(inputInputs[i].name);
@@ -1236,6 +1239,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     // TODO: get right name for sessionstorage
     // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
     // console.log('+++: ', JSON.stringify(vfw.workspace.modalObj))
+    // return modal;
 }
 
 /**

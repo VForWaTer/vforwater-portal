@@ -1,9 +1,6 @@
 import logging
 import time
 
-import numpy as np
-import pandas as pd
-
 from django.contrib.gis.geos import Point
 from django.db import connection
 from vfw_home.models import merit_hydro_vect_level2, cat_pfaf_MERIT_Hydro_v07_Basins_v01, \
