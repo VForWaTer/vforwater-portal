@@ -19,6 +19,7 @@
 <body onload="vfw.map.create_map(); vfw.sidebar.show_data(); vfw.html.getQuickSelection(); updateQuickfilter()">
 	<div id="map" class="map"></div>
 
+{# collect variables from server for startup of map #}
 {{ dataExt|json_script:"dataExt" }}
 {{ data_layer|json_script:"data_layer" }}
     <script>
