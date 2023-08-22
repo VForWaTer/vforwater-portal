@@ -44,7 +44,7 @@ vfw.map.buildMapModal = function (ids, page) {
         dataType: 'html',
         data: {
             datasets: JSON.stringify(ids), page: page,
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, /** data sent with the post request **/
     })
         .done(function (html) {

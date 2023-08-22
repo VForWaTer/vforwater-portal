@@ -10,7 +10,7 @@
 <!--   Sidemenu -->
 <nav class="w3-sidenav w3-white w3-animate-right w3-hide-large"
      style="z-index:3; width:160px; height:280px; right: 0; margin-top: 80px; display:none" id="mySidemenu">
-  <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.Sidemenu_close()"
+  <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.sidemenuClose()"
      title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
   <div id="accordion">
     <br>
@@ -99,7 +99,7 @@
 </nav>
 
 {#  Overlay effect when opening sidenav on small screens #}
-<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.Sidemenu_close()" style="cursor:pointer"
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.sidemenuClose()" style="cursor:pointer"
      title="close side menu" id="mySidemenuOverlay"></div>
 
 </body>

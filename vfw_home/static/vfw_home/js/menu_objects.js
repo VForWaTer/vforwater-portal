@@ -31,7 +31,7 @@ function showAllPointsOnMap(){
        dataType: 'json',
        data: {
            all_datasets: 'True',
-           'csrfmiddlewaretoken': csrf_token,
+           'csrfmiddlewaretoken': vfw.var.csrf_token,
        }, // data sent with the post request
        })
        .done(function (json) {

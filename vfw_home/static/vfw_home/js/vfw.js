@@ -151,7 +151,8 @@ const DATATYPE = new class AbstractType {
      * @return {boolean}
      */
     validInput(inputType, outputType) {
-        return true ? outputType in this.HIERACHY[inputType] || inputType == outputType : false
+        return outputType in this.HIERACHY[inputType] || inputType === outputType
+        // return true ? outputType in this.HIERACHY[inputType] || inputType == outputType : false
     }
 
     /**
@@ -628,7 +629,7 @@ function search_open() {
 }
 
 // TODO: check if CSRF is properly implemented! vgl. https://godjango.com/18-basic-ajax/
-function getCookie(name) {
+vfw.util.getCookie = function(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         let cookies = document.cookie.split(';');
@@ -647,7 +648,7 @@ function getCookie(name) {
 }
 
 // TODO: not used in this file. So from where comes the used token? Which one is better?
-let csrf_token = getCookie('csrftoken');
+vfw.var.csrf_token = vfw.util.getCookie('csrftoken');
 
 vfw.html.loaderOverlayOn = function () {
     document.getElementById("loader-overlay").style.display = "block";
@@ -684,7 +685,7 @@ vfw.html.moreInfoModal = function (id) {
             dataType: 'json',
             data: {
                 show_info: id,
-                'csrfmiddlewaretoken': csrf_token,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
             }, // data sent with post request
         })
             .done(function (data) {
@@ -710,7 +711,7 @@ vfw.html.moreInfoModal = function (id) {
                 // date: date.toString(),
                 startdate: startdate,
                 enddate: enddate,
-                'csrfmiddlewaretoken': csrf_token,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
             }, // data sent with the post request
         })
             .done(function (data) {
@@ -844,10 +845,14 @@ vfw.sidebar.workspaceDataset = function (id) {
                 workspaceData: id,
                 startDate: date['start'],
                 endDate: date['end'],
-                'csrfmiddlewaretoken': csrf_token,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
             }, // data sent with post request
         })
             .done(function (json) {
+                $.each(json['workspaceData'], function (k) {
+                    vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
+                });
+                return
                 let stored = {};
                 let storedGroup = {};
                 if (json['error']['message']) {
@@ -908,7 +913,7 @@ vfw.sidebar.workspaceDataset = function (id) {
 //         datatype: 'image/png;base64',
 //         data: {
 //             preview: id,
-//             'csrfmiddlewaretoken': csrf_token,
+//             'csrfmiddlewaretoken': vfw.var.csrf_token,
 //         }, // data sent with the post request
 //     })
 //         .done(function (json) {
@@ -969,7 +974,7 @@ function filter_pagination(page) {
         data: {
             page: page, datasets: data,
             // TODO: send filter options from URL instead of IDs
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, // data sent with post request
     })
         .done(function (json) {
@@ -1194,7 +1199,7 @@ function advanced_filter_query(selection) {
         datatype: 'json',
         data: {
             selection: selection,
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, // data sent with the post request
     })
         .done(function (json) {

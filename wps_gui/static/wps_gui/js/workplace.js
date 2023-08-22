@@ -117,7 +117,7 @@ vfw.session.load_wpsprocess = function (service, identifier) {
             async: false,
             data: {
                 processview: JSON.stringify({id: identifier, serv: service}),
-                'csrfmiddlewaretoken': csrf_token,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
             }, /** data sent with the post request **/
         })
     )
@@ -474,7 +474,7 @@ vfw.workspace.modal.run_process = function () {
         url: vfw.var.DEMO_VAR + "/workspace/processrun",
         data: {
             processrun: JSON.stringify(modal_input),
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, /** data sent with post request **/
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
@@ -539,7 +539,7 @@ vfw.workspace.modal.run_process = function () {
                 if (group === true) {
                     document.getElementById("workspace_results").innerHTML
                         += vfw.workspace.buildResultGroupButton(groupName, members);
-                    vfw.sidebar.add_groupaccordion_toggle()
+                    vfw.sidebar.addGroupaccordionToggle()
                 }
             } else if (json.execution_status == "Exception") {
                 console.error('error in wps process')
@@ -605,7 +605,7 @@ function run_wps(input_dict) {
                 key_list: input_dict.keys(), value_list: input_dict.values()
             }),
             // processrun: JSON.stringify(input_dict),
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, /** data sent with the post request **/
     })
         .done(function (json) {
@@ -919,6 +919,7 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
         }
         aptGroupedData[i] = groupedData[i]
     }
+
     // for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
     // for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
     boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length + Object.keys(aptGroupedData).length;
@@ -1335,7 +1336,7 @@ vfw.workspace.workflow.run = function () {
         url: vfw.var.DEMO_VAR + "/workspace/workflowrun",
         data: {
             processrun: JSON.stringify({'workflow': preppedWorkflow, 'chain': processChain}),
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, /** data sent with post request **/
     })
         .done(function (result) {

@@ -1,19 +1,19 @@
-Bokeh       ==3.2.1
+Bokeh==3.2.2
 django      ==4.2.4
 django_crontab      ==0.7.1
 django-cors-headers ==4.2.0
 django-filter       ==23.2
 docutils    ==0.20
 future      ==0.18.3
-jsonpickle  ==3.0.1
+jsonpickle==3.0.2
 lxml        ==4.9.2
 markdown    ==3.3.4
 matplotlib  ==3.7.2
-numpy       ==1.25.0
-OWSLib      ==0.28
+numpy==1.25.2
+OWSLib==0.29.2
 geopandas   ==0.13.2
 pandas      ==2.0.3
-polars      ==0.18.7
+polars==0.18.15
 pyarrow     ==12.0.1
 # psycopg2    ==2.9.6
 psycopg2-binary     ==2.9.6
@@ -23,3 +23,5 @@ requests    ==2.31.0
 mozilla-django-oidc ==2.0.0
 bridget     ==0.2.4
 python-decouple     ==3.6
+
+django-debug-toolbar==4.2.0

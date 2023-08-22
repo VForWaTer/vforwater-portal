@@ -15,7 +15,7 @@ views.py -> home.html--: render wps services
 
 home.html -> sidebar.html: call sidebar
 activate sidebar.html
-sidebar.html -> sidebar.js ++: vfw.sidebar.show_data()
+sidebar.html -> sidebar.js ++: vfw.sidebar.showData()
 sidebar.js -> sidebar.html : create datastore
 sidebar.js -> sidebar.js ++: preload_data()
 opt data in datastore
@@ -86,12 +86,12 @@ views.py -> home.html--: render wps services
 
 home.html -> sidebar.html: call sidebar
 activate sidebar.html
-sidebar.html -> sidebar.js ++: vfw.sidebar.show_data()
+sidebar.html -> sidebar.js ++: vfw.sidebar.showData()
 opt if sessionStorage(dataBtn)
     sessionStorage -> sidebar.js: get "dataBtn"
     sidebar.js -> sidebar.html ++: vfw.sidebar.buildDatastoreButton()
     opt data in datastore without link to DB
-        sidebar.js -> sidebar.js ++: vfw.sidebar.preload_datastore_button()
+        sidebar.js -> sidebar.js ++: vfw.sidebar.preloadDatastoreButton()
         rnote over views.py: ProcessView
         activate views.py
         sidebar.js -> views.py: <<ajax>> request 'dbload'
@@ -106,7 +106,7 @@ opt if sessionStorage(dataBtn)
         deactivate views.py
         views.py -> sidebar.js: link to data
             sidebar.js -> sessionStorage: update "dataBtn"
-            sidebar.js -> sidebar.html: vfw.session.update_datastore_button
+            sidebar.js -> sidebar.html: vfw.session.updateDatastoreButton
             deactivate sidebar.html
             deactivate sidebar.js
     end

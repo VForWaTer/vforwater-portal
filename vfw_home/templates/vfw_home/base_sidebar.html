@@ -22,7 +22,7 @@
         <img src="{% static 'vfw_home/images/logo_main.png' %}" style="width:200px"><br>
       </div>
     </div>
-    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>{%  trans "  Close Menu" %}</a>
+    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.w3_Close()" title="close menu"><i class="fa fa-remove fa-fw"></i>{%  trans "  Close Menu" %}</a>
     <hr style="margin-bottom:0px;">
 
   {% block data %}
@@ -82,7 +82,7 @@
     <div id="imgPopup"></div>
 </nav>
 {#  Overlay effect when opening sidenav on small screens#}
-<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.w3_Close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
 
 {% block rModal %}
     {% include 'wps_gui/result_modal.html' %}

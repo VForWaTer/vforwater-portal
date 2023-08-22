@@ -1,5 +1,5 @@
 /** Toggle between showing and hiding the sidenav, and add overlay effect **/
-function w3_open() {
+vfw.sidebar.w3_Open = function () {
     // Get the Sidenav
     var mySidenav = document.getElementById("mySidenav");
 
@@ -16,7 +16,7 @@ function w3_open() {
 }
 
 /** Close the sidenav with the close button **/
-function w3_close() {
+vfw.sidebar.w3_Close = function () {
     var mySidenav = document.getElementById("mySidenav");
 
     var overlayBg = document.getElementById("myOverlay");
@@ -26,7 +26,7 @@ function w3_close() {
 }
 
 /** Toggle between showing and hiding the sidemenu, and add overlay effect **/
-function Sidemenu_open() {
+vfw.sidebar.sidemenuOpen = function () {
     // Get the Sidemenu
     var mySidemenu = document.getElementById("mySidemenu");
 
@@ -43,7 +43,7 @@ function Sidemenu_open() {
 }
 
 /** Close the sidemenu with the close button **/
-vfw.sidebar.Sidemenu_close = function () {
+vfw.sidebar.sidemenuClose = function () {
     var mySidemenu = document.getElementById("mySidemenu");
 
     var overlaymenu = document.getElementById("mySidemenuOverlay");
@@ -58,17 +58,22 @@ vfw.sidebar.Sidemenu_close = function () {
  * it is stored as a string, so the following function transforms this string back to a dictionary
  */
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
-vfw.sidebar.show_data = function () {
+vfw.sidebar.showData = function () {
     /** Initiate creation of data Button in data and result store.
-     * When called from outside of 'Home' check if data is
+     * When called from outside 'Home' check if data is
      * already pickled. If not pickle it. **/
         // (TODO: Should be monitored if a lot of data gets pickled but never used!)
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
+        $.each(workspaceData, function (k) {
+            vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(workspaceData[k]);
+                    // console.log('vfw.datasets.dataObjects[k].test(): ', vfw.datasets.dataObjects[k].test())
+            });
+        return
         vfw.sidebar.buildDatastoreButton(workspaceData);
         if (window.location.pathname !== '/home/') {
             // check if datasets are pickled and update buttons
-            vfw.sidebar.preload_datastore_button(workspaceData);
+            vfw.sidebar.preloadDatastoreButton(workspaceData);
         }
     }
     if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
@@ -101,7 +106,7 @@ vfw.sidebar.show_data = function () {
             // ghtml += build_resultgroup_button(value.group)
             document.getElementById("workspace_results").innerHTML += html;
 
-            vfw.sidebar.add_groupaccordion_toggle()
+            vfw.sidebar.addGroupaccordionToggle()
         }
     }
 }
@@ -109,7 +114,7 @@ vfw.sidebar.show_data = function () {
 /**
  * add accordion function to group button
  */
-vfw.sidebar.add_groupaccordion_toggle = function () {
+vfw.sidebar.addGroupaccordionToggle = function () {
     let acc = document.getElementsByClassName("groupaccordion");
     for (let i of acc) {
         i.addEventListener("click", function () {
@@ -129,11 +134,11 @@ vfw.sidebar.add_groupaccordion_toggle = function () {
  *
  * @param workspaceData
  */
-vfw.sidebar.preload_datastore_button = function (workspaceData) {
+vfw.sidebar.preloadDatastoreButton = function (workspaceData) {
     /** USE THIS UPPER PART WHEN YOU PREFER TO LOAD EACH DATASET SEPARATELY **/
     for (let dataset in workspaceData) {
 
-        // ensoure datasets without type will not be loaded (because there usually have no actual data)
+        // ensure datasets without type will not be loaded (because there usually have no actual data)
         if (!workspaceData[dataset]['type']) {
             continue
         }
@@ -154,14 +159,14 @@ vfw.sidebar.preload_datastore_button = function (workspaceData) {
                 // dataType: 'json',
                 "timeout": 5000,
                 data: {
-                    dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
+                    dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': vfw.var.csrf_token,
                 }, /** data sent with post request **/
             })
                 .done(function (wpsDBInfo) {
                     if (wpsDBInfo.Error) {
                         console.warn(wpsDBInfo.Error)
                     } else {
-                        vfw.session.update_datastore_button(wpsDBInfo);
+                        vfw.session.updateDatastoreButton(wpsDBInfo);
                     }
                 },)
                 .fail(function (wpsDBInfo) {
@@ -186,7 +191,7 @@ vfw.sidebar.preload_datastore_button = function (workspaceData) {
                     }
                     else {
                         console.log('back: ', wpsDBInfo)
-                        vfw.session.update_datastore_button(wpsDBInfo);
+                        vfw.session.updateDatastoreButton(wpsDBInfo);
                     }
                 })
                 .catch(function (wpsDBInfo) {
@@ -214,7 +219,7 @@ vfw.sidebar.preload_datastore_button = function (workspaceData) {
     //             dbload: JSON.stringify(preload), 'csrfmiddlewaretoken': csrf_token,
     //         }, // data sent with post request
     //         success: function (wpsDBInfo) {
-    //             vfw.session.update_datastore_button(wpsDBInfo, 'pickle');
+    //             vfw.session.updateDatastoreButton(wpsDBInfo, 'pickle');
     //         },
     //         error: function (wpsDBInfo) {
     //             console.log('Error in preload of data. ', wpsDBInfo)
@@ -223,7 +228,7 @@ vfw.sidebar.preload_datastore_button = function (workspaceData) {
     // }
 }
 
-vfw.session.update_datastore_button = function (wpsDBInfo) {
+vfw.session.updateDatastoreButton = function (wpsDBInfo) {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     // let workspaceData = sessionStorageData
     let datasetKey = wpsDBInfo['orgid']
@@ -827,7 +832,7 @@ function menuItemListener(link) {
                 dataType: 'json',
                 data: {
                     show_info: id,
-                    'csrfmiddlewaretoken': csrf_token,
+                    'csrfmiddlewaretoken': vfw.var.csrf_token,
                 }, // data sent with the post request
             })
                 .done(function (properties) {
@@ -1020,7 +1025,7 @@ function menuItemListener(link) {
                     datatype: 'json',
                     data: {
                         preview: id,
-                        'csrfmiddlewaretoken': csrf_token,
+                        'csrfmiddlewaretoken': vfw.var.csrf_token,
                         startdate: startdate,
                         enddate: enddate,
                     }, // data sent with post

@@ -17,7 +17,7 @@
     {#const DEMO_VAR = "{{ DEMO_VAR }}"#}
 </script>
 
-<body onload="vfw.sidebar.show_data(), vfw.workspace.workflow.draw_workflow()">
+<body onload="vfw.sidebar.showData(), vfw.workspace.workflow.draw_workflow()">
 <!-- TODO: check if still in use. If not delete that parm -->
 {#<param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js; cannot find any#}
   usage => can it be deleited? -->
@@ -29,7 +29,7 @@
             <img src="{% static 'vfw_home/images/logo_main.png' %}" style="width:200px"><br>
         </div>
     </div>
-    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()"
+    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.w3_Close()"
        title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
     <hr style="margin-bottom:0px;">
 
@@ -157,7 +157,7 @@
     <div id="imgPopup"></div>
 </nav>
 {#  Overlay effect when opening sidenav on small screens#}
-<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer"
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.w3_Close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
 
 {% block rModal %}
