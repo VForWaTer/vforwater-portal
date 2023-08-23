@@ -800,7 +800,8 @@ def save_dataset(request, orgid, inputs, wps_process, date=None):
         fullpath = Path(f'{PROCESSES_IN_DIR}/{folder}/')
         fullpath.mkdir(mode=0o775, parents=True, exist_ok=True)
         # dataset.dataframe.to_csv(fullpath.joinpath('dataframe.csv'), index=False)
-        pl.from_pandas(dataset.dataframe).write_csv(fullpath.joinpath('dataframe.csv'))
+        # write to csv with polars is supposed to be faster, but has problems with lists in columns
+        # pl.from_pandas(dataset.dataframe).write_csv(fullpath.joinpath('dataframe.csv'))
 
         # Create a dictionary with metadata that might be needed for a tool, e.g.coordinates, datatype, ...
         # basic_metadata = dataset.coords
@@ -811,6 +812,13 @@ def save_dataset(request, orgid, inputs, wps_process, date=None):
         #     # json.dump(dataset.coords, outfile)
         #     json.dump(basic_metadata, outfile)
         # print('coords: ', dataset.coords)
+        basic_metadata = dataset.coords
+        basic_metadata['ordig'] = orgid
+        # basic_metadata.update(dataset)
+        # writing from pandas is slower but more flexible
+        with open(fullpath.joinpath('dataframe.json'), "w") as outfile:
+            # json.dump(dataset.coords, outfile)
+            json.dump(basic_metadata, outfile)
         # subprocess.run(["chgrp", "geoapi", str(fullpath)])  # change owner of folder
         fullpath.chmod(0o775)
 
