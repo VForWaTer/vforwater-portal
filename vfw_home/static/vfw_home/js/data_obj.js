@@ -2,6 +2,23 @@
 create new object with new vfw.datasets.DataObj(json)
 */
 vfw.datasets.DataObj = class {
+    orgID;
+    uuID;
+    workID;
+    abbr;
+    name;
+    unit;
+    title;
+    type;
+    start;
+    end;
+    inputs;
+    outputs;
+    location;
+    isGroupMember;
+    group;
+    source;
+
     constructor(data) {
         const defaultParams = {
             orgID: "",
@@ -35,7 +52,13 @@ vfw.datasets.DataObj = class {
         this.url = window.location.pathname;
 
         Object.assign(this, {...defaultParams, ...data});
-        this.storeKey = Array.isArray(this.inputs) && this.inputs.length ? "resultBtn" : "dataBtn";
+        if (Array.isArray(this.inputs) && this.inputs.length) {
+            this.storeKey = "resultBtn";
+            this.btnPosition = "";
+        } else {
+            this.storeKey = "dataBtn";
+            this.btnPosition = "sidebtn";
+        }
 
         this.#setTitle();
         this.#createHtmlName();
@@ -46,29 +69,13 @@ vfw.datasets.DataObj = class {
         }
         this.#placeHtmlButton();
         this.save(data);
-        // this.workID = "";
-        if (this.url !== `/home/`) this.#preloadData()
+        if (this.url !== `/home/`) {
+            this.#update()
+        }
     }
 
-    #preloadData() {
-        // ensure datasets without type will not be loaded (because there usually have no actual data)
-        if (!this.type) return
-        let preloadData = {};
-        if (this.source === 'db') {
-            preloadData = {
-                key_list: ['entry_id', 'uuid', 'start', 'end'],
-                value_list: [this.orgID.toString(), this.uuID, this.start, this.end],
-                dataset: this.orgID
-            };
-            $.ajax({
-                url: vfw.var.DEMO_VAR + "/workspace/dbload",
-                // dataType: 'json',
-                "timeout": 5000,
-                data: {
-                    dbload: JSON.stringify(preloadData), 'csrfmiddlewaretoken': vfw.var.csrf_token,
-                }, /** data sent with post request **/
-            })
-        }
+    htmlElementID() {
+        return this.btnPosition + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
     }
 
     #buildHtmlGroup() {
@@ -80,21 +87,15 @@ vfw.datasets.DataObj = class {
     }
 
     #buildHtmlButton() {
-        // set where to place the button
-        let btnPosition = "";
+        /** set where to place the button **/
         let dragHtml = "";
-        if (this.storeKey == "dataBtn") {
-            btnPosition = "sidebtn";
-        }
-
-        if (this.url == '/workspace/') {
+        if (this.url === '/workspace/') {
             dragHtml = 'draggable="true" ondragstart="dragstart_handler(event)"'
         }
-        let elementID = btnPosition + this.workID; // storeID;  // TODO: not sure what storeID should be or any other ID here...
         return `<li ` + dragHtml + ` class="w3-padding task" data-sessionstore=${this.storeKey} ` +
             `data-orgid="${this.orgID}"` +
-            `data-id="${this.orgID}" btnName="${this.htmlName}" onmouseover="" ` +
-            `data-btnName="${this.htmlName}" style="cursor:pointer;" id="${elementID}${this.orgID}">` +
+            `data-id="${this.orgID}" btnName="${this.htmlName}" onmouseover="" ` +  // TODO: remove btnName - might be used when dropped i dropzone
+            `data-btnName="${this.htmlName}" style="cursor:pointer;" id="${this.htmlElementID()}">` +
             `<span class="w3-medium" title="${this.title}">` +
             `<div class="task__content ${this.noData}">${this.htmlName}</div><div class="task__actions"></div>` +
             `</span><span class="data ${this.type}"></span>` +
@@ -107,8 +108,6 @@ vfw.datasets.DataObj = class {
         if (this.source) {
             if (this.source.substring(0, 2) === 'db') {
                 this.source = 'db'
-                // storageEntry.source = wpsDBInfo['id'].substring(0, 3)
-                // storageEntry.dbID = wpsDBInfo['id'].substring(3,)
             } else if (this.source.substring(0, 3) === 'wps') {
                 this.source = 'wps'
             }
@@ -126,16 +125,17 @@ vfw.datasets.DataObj = class {
         }
     }
 
-    save(data) {
+    save(data, update = false) {
         let stored;
         data['inSessionStorage'] = true;
         if (sessionStorage.getItem(this.storeKey)) {
             stored = JSON.parse(sessionStorage.getItem(this.storeKey));
         }
-        console.log('stored: ', stored)
         if (sessionStorage.getItem(this.storeKey)) {
             stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-            if (!stored[this.orgID]) stored[this.orgID] = data;
+            if (update || !stored[this.orgID]) {
+                stored[this.orgID] = data;
+            }
             sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
             sessionStorageData = stored;
         } else {
@@ -163,10 +163,10 @@ vfw.datasets.DataObj = class {
             this.htmlName = this.abbr + ' in ' + this.unit + ' - ' + this.dbID;
         }
         //     check if the name is unique and append a number if not
-        var newName = this.htmlName;
+        let newName = this.htmlName;
         if (sessionStorage.getItem(this.storeKey)) {
             let result_btns = JSON.parse(sessionStorage.getItem(this.storeKey));
-            var i = 0;
+            let i = 0;
             while (Object.keys(result_btns).includes(newName)) {
                 newName = name + i++;
             }
@@ -174,30 +174,9 @@ vfw.datasets.DataObj = class {
         this.htmlName = newName;
     }
 
-    #updateDataButton(wpsDBInfo) {
-        let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
-        // let workspaceData = sessionStorageData
-        let datasetKey = wpsDBInfo['orgid']
-        let storageEntry = workspaceData[datasetKey]
-        let btnName = createBtnName(storageEntry['name'], storageEntry['abbr'],
-            storageEntry['unit'], wpsDBInfo['id'].substring(3,))
-        let title = `${storageEntry['name']} (${storageEntry['abbr']} in ${storageEntry['unit']})`;
-        let button = document.getElementById('sidebtn' + wpsDBInfo['orgid'])
-
-        if (wpsDBInfo['id'].substring(0, 3) == 'wps') {
-            storageEntry.source = wpsDBInfo['id'].substring(0, 3)
-            storageEntry.dbID = wpsDBInfo['id'].substring(3,)
-            storageEntry.inputs = wpsDBInfo['inputs']
-        }
-        workspaceData[datasetKey] = storageEntry
-        sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData));
-        sessionStorageData = workspaceData
-    }
-
     removeData(removeData) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
-        document.getElementById("sidebtn" + removeData).remove();
-        // removeData.remove();  // could be used when the element where send directly
+        document.getElementById(this.htmlElementID()).remove();
 
         /** remove data from session: **/
         let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
@@ -207,5 +186,65 @@ vfw.datasets.DataObj = class {
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
     }
 
+    async #requestData(url, data) {
+        let preloadData = {};
+        return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: vfw.var.DEMO_VAR + url,
+                    // dataType: 'json',
+                    "timeout": 5000,
+                    data: {
+                        dbload: JSON.stringify(data), 'csrfmiddlewaretoken': vfw.var.csrf_token,
+                    }, /** data sent with post request **/
+                })
+                    .done(resultJson => {
+                        preloadData = resultJson;
+                        resolve(resultJson);
+                    })
+                    .fail(wpsDBInfo => {
+                        console.error('Error in preload of data. ', wpsDBInfo)
+                        reject(wpsDBInfo);
+                    });
+            }
+        )
+    }
+
+    async #update() {
+        /** ensure datasets without type will not be loaded (because usually they have no actual data) **/
+        if (!this.type) return
+
+        if (this.source === 'db') {
+            let preloadData = {
+                key_list: ['entry_id', 'uuid', 'start', 'end'],
+                value_list: [this.orgID.toString(), this.uuID, this.start, this.end],
+                dataset: this.orgID
+            };
+            let wpsDBInfo = await this.#requestData("/workspace/dbload", preloadData)
+            if (wpsDBInfo.Error) {
+                console.warn(wpsDBInfo.Error)
+                return
+            }
+            if (wpsDBInfo['id'].substring(0, 3) === 'wps') {
+                /** update properties **/
+                this.source = wpsDBInfo['id'].substring(0, 3);
+                this.dbID = wpsDBInfo['id'].substring(3,);
+                this.inputs = wpsDBInfo['inputs'];
+                /** adjust html and sessionStorage **/
+                let properties = {};
+                for (const key of Object.keys(this)) {
+                    properties[key] = this[key];
+                }
+                this.save(properties, true)
+                this.#createHtmlName()
+                this.#buildHtmlButton()
+                this.#replaceHtmlButton()
+            }
+        }
+    }
+
+    #replaceHtmlButton() {
+        let thisHtmlButton = document.getElementById(this.htmlElementID())
+        $(thisHtmlButton).replaceWith(this.#buildHtmlButton());
+    }
 }
 
