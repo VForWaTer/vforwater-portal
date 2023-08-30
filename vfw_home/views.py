@@ -10,7 +10,8 @@ import requests
 from django.contrib.gis.db.models.aggregates import Extent
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.db.models import Q
+from django.db.models import Q, Count, Value, CharField, OuterRef, Subquery
+from django.db.models.functions import Concat
 from django.utils.timezone import make_aware
 from pyzip import PyZip
 
@@ -48,7 +49,7 @@ from django.contrib.gis.geos import Polygon, GEOSGeometry
 from .query_functions import get_bbox_from_data
 # from .filter import QuickFilter
 from .filters import NMPersonsFilter
-from .models import Entries, NmEntrygroups
+from .models import Entries, NmEntrygroups, Entrygroups
 
 import logging
 from pathlib import Path
@@ -692,13 +693,25 @@ def short_info_pagination(request):
         field_name = {'entry__title': 'Title', 'entry__variable__name': 'Variable name',
                       'entry__id': 'ID', 'entry__uuid': 'UUID',
                       'entry__embargo': 'Embargo', 'entry__has_access': 'has_access',
-                      'entry__embargo_end': 'embargo_end'}
+                      'entry__embargo_end': 'embargo_end', 'group__type__name': 'Group name',
+                      'entries': 'entries', 'groupType': 'Group type'}
 
         if datasets:
+            group_types_subquery = Entrygroups.objects.filter(pk__in=OuterRef(datasets)).values('type__entrygroups__title')
             # entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
             #     .order_by('variable__name', 'title', 'id')
             entries_list = NmEntrygroups.objects.values(*field).filter(pk__in=datasets) \
+                .annotate(
+                groupType=Subquery(
+                    Concat(
+                        Subquery(group_types_subquery, output_field=CharField()),
+                        Value(', '), output_field=CharField())
+                    )
+                ) \
                 .order_by('entry__variable__name', 'entry__title', 'entry__id')
+                # .annotate(groupType=Concat('group__type__name', Value(', '), output_field=CharField())) \
+
+
             accessible_data = get_accessible_data(request, datasets)
             # error_ids = accessible_data['blocked']
             accessible_ids = accessible_data['open']
