@@ -683,18 +683,27 @@ def short_info_pagination(request):
         if type(datasets) is str:
             datasets = [int(datasets)]
 
-        field = ['title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end']
-        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
-                      'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'}
+        # field = ['title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end']
+        # field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
+        #               'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'}
+
+        field = ['entry__title', 'entry__id', 'entry__uuid', 'entry__variable__name',
+                 'entry__embargo', 'entry__embargo_end']
+        field_name = {'entry__title': 'Title', 'entry__variable__name': 'Variable name',
+                      'entry__id': 'ID', 'entry__uuid': 'UUID',
+                      'entry__embargo': 'Embargo', 'entry__has_access': 'has_access',
+                      'entry__embargo_end': 'embargo_end'}
 
         if datasets:
-            entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
-                .order_by('variable__name', 'title', 'id')
+            # entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
+            #     .order_by('variable__name', 'title', 'id')
+            entries_list = NmEntrygroups.objects.values(*field).filter(pk__in=datasets) \
+                .order_by('entry__variable__name', 'entry__title', 'entry__id')
             accessible_data = get_accessible_data(request, datasets)
             # error_ids = accessible_data['blocked']
             accessible_ids = accessible_data['open']
         else:
-            entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
+            entries_list = Entries.objects.values(*field).order_by('entry__variable__name', 'entry__title', 'entry__id')
 
         # build pagination for entries
         current_page = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
@@ -702,14 +711,14 @@ def short_info_pagination(request):
         newdict = defaultdict(list)
         for d in current_page:
             for key, val in d.items():
-                if key != 'embargo_end':
+                if key != 'entry__embargo_end':
                     newdict[translation.gettext(field_name[key])].append(val)
                 else:
                     # if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
-                    if not has_pending_embargo(d['embargo'], val) or d['id'] in accessible_ids:
-                        newdict['has_access'].append({'access': True, 'ssid': d['id']})
+                    if not has_pending_embargo(d['entry__embargo'], val) or d['entry__id'] in accessible_ids:
+                        newdict['has_access'].append({'access': True, 'ssid': d['entry__id']})
                     else:
-                        newdict['has_access'].append({'access': False, 'ssid': d['id']})
+                        newdict['has_access'].append({'access': False, 'ssid': d['entry__id']})
 
         entries = dict(newdict.items())
 
