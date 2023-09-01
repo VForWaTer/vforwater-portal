@@ -679,44 +679,71 @@ def short_info_pagination(request):
     :return:
     """
     try:
+        accessible_ids = []
         naive_today = timezone.make_naive(timezone.now())
         datasets = json.loads(request.GET.get('datasets'))
         if type(datasets) is str:
             datasets = [int(datasets)]
 
-        # field = ['title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end']
-        # field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
-        #               'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'}
+        field = ['title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end']
+        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
+                      'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'}
 
-        field = ['entry__title', 'entry__id', 'entry__uuid', 'entry__variable__name',
-                 'entry__embargo', 'entry__embargo_end']
-        field_name = {'entry__title': 'Title', 'entry__variable__name': 'Variable name',
-                      'entry__id': 'ID', 'entry__uuid': 'UUID',
-                      'entry__embargo': 'Embargo', 'entry__has_access': 'has_access',
-                      'entry__embargo_end': 'embargo_end', 'group__type__name': 'Group name',
-                      'entries': 'entries', 'groupType': 'Group type'}
+        # field = ['entry__title', 'entry__id', 'entry__uuid', 'entry__variable__name',
+        #          'entry__embargo', 'entry__embargo_end', 'group__type__name']
+        # field_name = {'entry__title': 'Title', 'entry__variable__name': 'Variable name',
+        #               'entry__id': 'ID', 'entry__uuid': 'UUID',
+        #               'entry__embargo': 'Embargo', 'entry__has_access': 'has_access',
+        #               'entry__embargo_end': 'embargo_end', 'group__type__name': 'Group name',
+        #               'entries': 'entries'}
 
         if datasets:
-            group_types_subquery = Entrygroups.objects.filter(pk__in=OuterRef(datasets)).values('type__entrygroups__title')
-            # entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
-            #     .order_by('variable__name', 'title', 'id')
-            entries_list = NmEntrygroups.objects.values(*field).filter(pk__in=datasets) \
-                .annotate(
-                groupType=Subquery(
-                    Concat(
-                        Subquery(group_types_subquery, output_field=CharField()),
-                        Value(', '), output_field=CharField())
-                    )
-                ) \
-                .order_by('entry__variable__name', 'entry__title', 'entry__id')
-                # .annotate(groupType=Concat('group__type__name', Value(', '), output_field=CharField())) \
+            entries_list = list(Entries.objects.values(*field).filter(pk__in=datasets) \
+                .order_by('variable__name', 'title', 'id'))
 
 
             accessible_data = get_accessible_data(request, datasets)
             # error_ids = accessible_data['blocked']
             accessible_ids = accessible_data['open']
+
+            split_datasets = (Entries.objects.filter(pk__in=datasets, nmentrygroups__group__type__name='Split dataset')
+                              .values('id', 'nmentrygroups__group_id')
+                              .order_by('nmentrygroups__group_id'))
+
+            # put ids of a all parts of a split dataset in one list (with their group id as key)
+            grouped_dict = defaultdict(list)
+            for i in split_datasets:
+                grouped_dict[i['nmentrygroups__group_id']].append(i['id'])
+
+            # create a dict with indices and ids of datasets in entries_list, for a quick change of values
+            entries_id_map = {d['id']: idx for idx, d in enumerate(entries_list)}
+
+            # the first dataset from the split_ids, defined in append_dict,  will get all necessary info,
+            # the values in the delete dict can be deleted
+            append_dict = {}
+            delete_list = []
+            for k, v in grouped_dict.items():
+                append_dict[v[0]] = v[1:]
+                delete_list.extend(v[1:])
+
+            # get the indices for the elements to delete:
+            delete_indices = []
+            for i in delete_list:
+                delete_indices.append(entries_id_map[i])
+
+            # now extend datasets according to the append_dict
+            for target, split_list in append_dict.items():
+                for dataset in split_list:
+                    for k, v in entries_list[entries_id_map[target]].items():
+                        if v != entries_list[entries_id_map[dataset]][k]:
+                            entries_list[entries_id_map[target]][k] = [entries_list[entries_id_map[target]][k], entries_list[entries_id_map[dataset]][k]]
+
+            # next remove the additional split datasets:
+            for delete_id in sorted(delete_indices, reverse=True):
+                entries_list.remove(entries_list[delete_id])
+
         else:
-            entries_list = Entries.objects.values(*field).order_by('entry__variable__name', 'entry__title', 'entry__id')
+            entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
 
         # build pagination for entries
         current_page = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
@@ -724,14 +751,14 @@ def short_info_pagination(request):
         newdict = defaultdict(list)
         for d in current_page:
             for key, val in d.items():
-                if key != 'entry__embargo_end':
+                if key != 'embargo_end':
                     newdict[translation.gettext(field_name[key])].append(val)
                 else:
                     # if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
-                    if not has_pending_embargo(d['entry__embargo'], val) or d['entry__id'] in accessible_ids:
-                        newdict['has_access'].append({'access': True, 'ssid': d['entry__id']})
+                    if not has_pending_embargo(d['embargo'], val) or d['id'] in accessible_ids:
+                        newdict['has_access'].append({'access': True, 'ssid': d['id']})
                     else:
-                        newdict['has_access'].append({'access': False, 'ssid': d['entry__id']})
+                        newdict['has_access'].append({'access': False, 'ssid': d['id']})
 
         entries = dict(newdict.items())
 
