@@ -426,17 +426,19 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
     result = execution.json()
     report_path = result['dir'] + '/report'
 
-    def load_report(path, type):
-        if type == 'json':
+    def load_report(report_path, result_type):
+        if result_type == 'json':
             with open(report_path + '.json') as user_file:
                 file_contents = user_file.read()
                 file_contents = json.loads(file_contents)
-        elif type == 'html':
+        elif result_type == 'html':
             with open(report_path + '.html') as user_file:
                 file_contents = user_file.read()
         return file_contents
 
-    report_html = load_report(report_path, 'html')
+    if 'dir' in result:
+        report_path = result['dir'] + '/report'
+        report_html = load_report(report_path, 'html')
 
     # if result is a single output, first make sure the format is as expected like for multiple outputs
     output_keys = list(process_description['outputs'].keys())
@@ -804,14 +806,6 @@ def save_dataset(request, orgid, inputs, wps_process, date=None):
         # pl.from_pandas(dataset.dataframe).write_csv(fullpath.joinpath('dataframe.csv'))
 
         # Create a dictionary with metadata that might be needed for a tool, e.g.coordinates, datatype, ...
-        # basic_metadata = dataset.coords
-        # basic_metadata['ordig'] = orgid
-        # print('basic_metadata: ', basic_metadata)
-        # # basic_metadata.update(dataset)
-        # with open(fullpath.joinpath('dataframe.json'), "w") as outfile:
-        #     # json.dump(dataset.coords, outfile)
-        #     json.dump(basic_metadata, outfile)
-        # print('coords: ', dataset.coords)
         basic_metadata = dataset.coords
         basic_metadata['ordig'] = orgid
         # basic_metadata.update(dataset)
@@ -851,6 +845,7 @@ def save_dataset(request, orgid, inputs, wps_process, date=None):
                   "inputs": json.dumps(inputs),
                   "orgid": orgid,
                   "outputs": output,
+                  "process": wps_process,
                   "type": dataset.type,
                   }
 

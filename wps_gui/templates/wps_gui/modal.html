@@ -101,7 +101,7 @@
   vfw.html.workModal.close.onclick = () => closeModal();
   vfw.html.workModal.run.onclick = () => {
     {#vfw.html.workModal.style.display = "none";#}
-    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.check_pattern(vfw.html.workModal)) vfw.workspace.modal.run_process()
+    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal)) vfw.workspace.modal.runProcess()
   };
   vfw.html.workModal.drop.onclick = (event) => {
     console.log('onclick __________')
@@ -109,7 +109,7 @@
     let modal_value = document.getElementById("workflowID").value;
     let tool_id;
     let service;
-    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.check_pattern(vfw.html.workModal)) {
+    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal)) {
 
       console.log('modal_value: ', modal_value)
       {#console.log('tool_id.length: ', tool_id.length)#}
@@ -119,7 +119,7 @@
         vfw.workspace.drop_on_click(event);
         closeModal();
       } else {
-        let modal_data = vfw.workspace.modal.prep_data()
+        let modal_data = vfw.workspace.modal.prepData()
         console.log('F')
         modal_value = JSON.parse(modal_value)
         tool_id = modal_value['id'];
@@ -229,7 +229,7 @@
   function closeModal() {
     document.getElementsByClassName("work_modal-output")[0].style.display = "none";
     vfw.html.workModal.style.display = "none";
-    vfw.workspace.modal.set_Color("dodgerblue");
+    vfw.workspace.modal.setColor("dodgerblue");
     document.getElementById("workflowID").value = "";
   }
 

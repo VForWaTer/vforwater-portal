@@ -196,7 +196,7 @@ vfw.workspace.drop_on_click = function (ev) {
     /** Prepare and drop a tool button **/
     let data_id, tool_id, box_id, newbox, toolbox, databox, metadata, dataport, toolport, params, workflow;
     let coords = vfw.workspace.get_drop_coords();
-    let modalData = vfw.workspace.modal.prep_data();
+    let modalData = vfw.workspace.modal.prepData();
     newbox = vfw.workspace.drop_handler(modalData, coords['x'], coords['y'], modalData.id, 'toolbar', modalData.serv)
     tool_id = newbox.boxID;
     toolbox = newbox.box;
@@ -317,7 +317,7 @@ vfw.workspace.is_required = function (checkElement) {
  *
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
-vfw.workspace.check_pattern = function (checkElement) {
+vfw.workspace.checkPattern = function (checkElement) {
     /** check if an Element of a wps is required **/
     console.warn('TODO: Add pattern check where necessary.')
     return true
@@ -328,7 +328,7 @@ vfw.workspace.check_pattern = function (checkElement) {
  * Collect data from modal neeeded to run a process.
  * @returns {{in_type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
  */
-vfw.workspace.modal.prep_data = function () {
+vfw.workspace.modal.prepData = function () {
     /** collect inputs **/
     var inKey = [];
     var inValue = [];
@@ -460,9 +460,9 @@ vfw.workspace.modal.prep_data = function () {
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
 // TODO: Improve code by using HTML Forms
-vfw.workspace.modal.run_process = function () {
-    vfw.workspace.modal.set_Color("dodgerblue");
-    let modal_input = vfw.workspace.modal.prep_data();
+vfw.workspace.modal.runProcess = function () {
+    vfw.workspace.modal.setColor("dodgerblue");
+    let modal_input = vfw.workspace.modal.prepData();
     let directshowdatatypes = ['figure', 'string', 'html', 'integer', 'float']
     let group = false;
     let groupName = ''
@@ -488,7 +488,7 @@ vfw.workspace.modal.run_process = function () {
                     json.inputs[value] = modal_input.inValue[i];
                     i++;
                 });
-                vfw.workspace.modal.set_Color("forestgreen");
+                vfw.workspace.modal.setColor("forestgreen");
 
                 // if there is an html available for a result show it directly as result
                 if ('report_html' in json) {
@@ -543,14 +543,14 @@ vfw.workspace.modal.run_process = function () {
                 }
             } else if (json.execution_status == "Exception") {
                 console.error('error in wps process')
-                vfw.workspace.modal.set_Color("firebrick");
+                vfw.workspace.modal.setColor("firebrick");
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "error in wps process") {
-                vfw.workspace.modal.set_Color("firebrick");
+                vfw.workspace.modal.setColor("firebrick");
                 console.error('Error in wps process: ', json.error)
                 // alert('Error: Failed to execute your request.');
             } else if (json.execution_status == "auth_error") {
-                vfw.workspace.modal.set_Color("firebrick");
+                vfw.workspace.modal.setColor("firebrick");
                 /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
@@ -560,7 +560,7 @@ vfw.workspace.modal.run_process = function () {
         })
         .fail(function (json) {
             vfw.html.loaderOverlayOff()
-            vfw.workspace.modal.set_Color("firebrick");
+            vfw.workspace.modal.setColor("firebrick");
             console.error('Error, No success: ', json)
         })
         // .always(vfw.html.loaderOverlayOff());
@@ -613,7 +613,7 @@ function run_wps(input_dict) {
         })
         .fail(function (json) {
             console.error('Error, No success: ', json)
-            vfw.workspace.modal.set_Color("firebrick");
+            vfw.workspace.modal.setColor("firebrick");
         })
 }
 
@@ -668,7 +668,7 @@ vfw.sidebar.set_group_btn_name = function (name, storage) {
  *
  * @param {string} color
  */
-vfw.workspace.modal.set_Color = function (color) {
+vfw.workspace.modal.setColor = function (color) {
     let modalColor = document.getElementById("modal-header");
     modalColor.style.backgroundColor = color;
     modalColor = document.getElementById("modal-footer");
