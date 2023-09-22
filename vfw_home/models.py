@@ -52,7 +52,7 @@ class DatasourceTypes(models.Model):
         db_table = 'datasource_types'
 
     def __str__(self):
-        return 'Data source type {}'.format(self.name)
+        return f'Data source type {self.name}'
 
 
 class Datasources(models.Model):
@@ -72,7 +72,7 @@ class Datasources(models.Model):
         db_table = 'datasources'
 
     def __str__(self):
-        return '{} data source at {} <ID={}}>'.format(self.type.name, self.path, self.id)
+        return f'{self.type.name} data source at {self.path} <ID={self.id}>'
         # return "%s data source at %s <ID=%d>" % (self.type.name, self.path, self.id)
 
 
@@ -87,7 +87,7 @@ class Datatypes(models.Model):
         db_table = 'datatypes'
 
     def __str__(self):
-        return 'Data type {}'.format(self.name)
+        return f'Data type {self.name}'
 
 
 class Details(models.Model):
@@ -107,7 +107,7 @@ class Details(models.Model):
         unique_together = (('entry', 'stem'),)
 
     def __str__(self):
-        return '{}: {}'.format(self.key, self.value)
+        return f'{self.key}: {self.value}'
 
 
 class Entries(models.Model):
@@ -150,7 +150,7 @@ class Entries(models.Model):
         db_table = 'entries'
 
     def __str__(self):
-        return '<ID={} {} [{}] >'.format(self.id, self.title[:20], self.variable.name)
+        return f'<ID={self.id} {self.title[:20]} [{self.variable.name}] >'
 
 
 class EntrygroupTypes(models.Model):
@@ -165,7 +165,7 @@ class EntrygroupTypes(models.Model):
         db_table = 'entrygroup_types'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.name, self.id)
+        return f'{self.name} <ID={self.id}>'
 
 
 class Entrygroups(models.Model):
@@ -197,7 +197,7 @@ class Generic_Geometry_Data(models.Model):
         unique_together = (('entry', 'index'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Generic_1D_Data(models.Model):
@@ -212,7 +212,7 @@ class Generic_1D_Data(models.Model):
         unique_together = (('entry', 'index'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Generic_2D_Data(models.Model):
@@ -229,7 +229,7 @@ class Generic_2D_Data(models.Model):
         unique_together = (('entry', 'index'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Geom_Timeseries(models.Model):
@@ -245,7 +245,7 @@ class Geom_Timeseries(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Keywords(models.Model):
@@ -284,7 +284,7 @@ class Keywords(models.Model):
     #     return ' > '.join(reversed(keyword_path))
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.full_path, self.id)
+        return f'{self.full_path} <ID={self.id}>'
 
 
 class Licenses(models.Model):
@@ -305,7 +305,7 @@ class Licenses(models.Model):
         db_table = 'licenses'
 
     def __str__(self):
-        return '{} ({})'.format(self.short_title, self.title)
+        return f'{self.short_title} ({self.title})'
         # return '{} <ID={}>'.format(self.title, self.id)
 
 
@@ -320,7 +320,7 @@ class Logs(models.Model):
         db_table = 'logs'
 
     def __str__(self):
-        return 'Date={} Code={}'.format(self.tstamp, self.code)
+        return f'Date={self.tstamp} Code={self.code}'
 
 
 class NmEntrygroups(models.Model):
@@ -343,7 +343,7 @@ class NmKeywordsEntries(models.Model):
         unique_together = (('keyword', 'entry'),)
 
     def __str__(self):
-        return '<Entry ID={}> tagged {}'.format(self.entry.id, self.keyword.value)
+        return f'<Entry ID={self.entry.id}> tagged {self.keyword.value}'
 
 
 class NmPersonsEntries(models.Model):
@@ -358,8 +358,8 @@ class NmPersonsEntries(models.Model):
         unique_together = (('person', 'entry'),)
 
     def __str__(self):
-        return '{} <ID={}> as {} for Entry <ID={}>'.format(self.person.full_name, self.person.id,
-                                                           self.relationship_type.name, self.entry.id)
+        return (f'{self.person.full_name} <ID={self.person.id}> as {self.relationship_type.name} '
+                f'for Entry <ID={self.entry.id}>')
 
 
 class PersonRoles(models.Model):
@@ -371,7 +371,7 @@ class PersonRoles(models.Model):
         db_table = 'person_roles'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.name, self.id)
+        return f'{self.name} <ID={self.id}>'
 
 
 class Persons(models.Model):
@@ -386,18 +386,18 @@ class Persons(models.Model):
     organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
 
-    full_name = '{} {}'.format(first_name, last_name)
+    full_name = f'{first_name} {last_name}'
 
     class Meta:
         managed = False
         db_table = 'persons'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.full_name, self.id)
+        return f'{self.full_name} <ID={self.id}>'
 
     @staticmethod
     def filter(column, selection):
-        filter_items = {'nmpersonsentries__person__' + column + '__in': selection}
+        filter_items = {f'nmpersonsentries__person__{column}__in': selection}
         print('filter_items: ', filter_items)
         return filter_items
 
@@ -412,7 +412,7 @@ class SpatialScales(models.Model):
         db_table = 'spatial_scales'
 
     def __str__(self):
-        return '<ID={}> extent={}'.format(self.id, self.extent)
+        return f'<ID={self.id}> extent={self.extent}'
 
 
 class TemporalScales(models.Model):
@@ -457,7 +457,7 @@ class Timeseries(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Timeseries_1D(models.Model):
@@ -472,7 +472,7 @@ class Timeseries_1D(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Timeseries_2D(models.Model):
@@ -489,7 +489,7 @@ class Timeseries_2D(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Units(models.Model):
@@ -502,7 +502,7 @@ class Units(models.Model):
         db_table = 'units'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.name, self.id)
+        return f'{self.name} <ID={self.id}>'
 
 
 class Variables(models.Model):
@@ -524,7 +524,7 @@ class Variables(models.Model):
 
     @staticmethod
     def filter(column, selection):
-        filter_items = {'variable__' + column + '__in': selection}
+        filter_items = {f'variable__{column}__in': selection}
         return filter_items
 
 """
@@ -686,4 +686,26 @@ class cat_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
 # raster2pgsql -s 4326 -I -C /home/marcus/github/delineator/delineator-1.0/data/raster/accum_basins/accum27.tif -t 50x50 -F public.accumbasins > /home/marcus/github/delineator/delineator-1.0/accum_basin.sql
 # psql -p 5434 -U postgres -h localhost -d metacatalog-dev -f accum_basin.sql
 
-
+#
+# entries_list = [{'title': 'LUBW gauge data: Weinheim', 'id': 386, 'uuid': 'c67343d3-4ca6-418a-90d1-a6f50ba23e73', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 292824)},{'title': 'LUBW gauge data: Weinheim', 'id': 387, 'uuid': 'fa7a06ba-7180-4c62-b10d-17ef2038b487', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 326063)},{'title': 'LUBW gauge data: Weinheim-SKA', 'id': 866, 'uuid': 'ade15e99-ab11-41c7-8bfa-6f1b5722978d', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 201908)},{'title': 'LUBW gauge data: Weinheim-SKA', 'id': 867, 'uuid': 'db8bf0f6-5ba5-4277-924b-49f2c0bd73e5', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 235210)},{'title': 'LUBW gauge data: Weinheim', 'id': 388, 'uuid': '3d4a4b91-7acf-4fb6-bd05-009b14284462', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 417271)},{'title': 'LUBW gauge data: Weinheim', 'id': 389, 'uuid': '416351da-6812-4ced-a5da-31cd6641d0f6', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 451066)},{'title': 'LUBW gauge data: Weinheim-SKA', 'id': 868, 'uuid': '65222d16-04d8-418c-a5dd-d1c8a9d86ad8', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 335406)},{'title': 'LUBW gauge data: Weinheim-SKA', 'id': 869, 'uuid': 'f634afb4-0d0b-4775-9a84-c2c87e72778f', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 368602)}]
+# split_datasets = [{'id': 386, 'nmentrygroups__group_id': 183}, {'id': 387, 'nmentrygroups__group_id': 183}, {'id': 388, 'nmentrygroups__group_id': 184}, {'id': 389, 'nmentrygroups__group_id': 184}, {'id': 866, 'nmentrygroups__group_id': 423}, {'id': 867, 'nmentrygroups__group_id': 423}, {'id': 868, 'nmentrygroups__group_id': 424}, {'id': 869, 'nmentrygroups__group_id': 424}]
+# entries_list = [
+#     {'title': 'LUBW gauge data: Weinheim', 'id': 386, 'uuid': 'c67343d3', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 292824)},
+#     {'title': 'LUBW gauge data: Weinheim', 'id': 387, 'uuid': 'fa7a06ba', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 326063)},
+#     {'title': 'LUBW gauge data: Weinheim-SKA', 'id': 866, 'uuid': 'ade15e99', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 201908)},
+#     {'title': 'LUBW gauge data: Weinheim-SKA', 'id': 867, 'uuid': 'db8bf0f6', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 235210)},
+#     {'title': 'LUBW gauge data: Weinheim', 'id': 388, 'uuid': '3d4a4b91', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 417271)},
+#     {'title': 'LUBW gauge data: Weinheim', 'id': 389, 'uuid': '416351da', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 451066)},
+#     {'title': 'LUBW gauge data: Weinheim-SKA', 'id': 868, 'uuid': '65222d16', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 335406)},
+#     {'title': 'LUBW gauge data: Weinheim-SKA', 'id': 869, 'uuid': 'f634afb4', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 368602)}
+# ]
+# entries_list_new = [
+#     {'title': 'LUBW gauge data: Weinheim', 'id': 386, 'uuid': 'c67343d3', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 292824),
+#      'split_ids': [386, 387], 'split_uuid': ['c67343d3', 'fa7a06ba'], 'split_embargo_end': [datetime.datetime(2023, 5, 6, 10, 29, 44, 292824), datetime.datetime(2023, 5, 6, 10, 29, 44, 326063)]},
+#     {'title': 'LUBW gauge data: Weinheim-SKA', 'id': 866, 'uuid': 'ade15e99', 'variable__name': 'discharge', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 201908),
+#      'split_ids': [866, 861], 'split_uuid': ['ade15e99', 'db8bf0f6'], 'split_embargo_end': [datetime.datetime(2023, 5, 6, 10, 30, 16, 201908), datetime.datetime(2023, 5, 6, 10, 30, 16, 235210)]},
+#     {'title': 'LUBW gauge data: Weinheim', 'id': 388, 'uuid': '3d4a4b91', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 29, 44, 417271),
+#      'split_ids': [388, 389], 'split_uuid': ['3d4a4b91', '416351da'], 'split_embargo_end': [datetime.datetime(2023, 5, 6, 10, 29, 44, 417271), datetime.datetime(2023, 5, 6, 10, 29, 44, 451066)]},
+#     {'title': 'LUBW gauge data: Weinheim-SKA', 'id': 868, 'uuid': '65222d16', 'variable__name': 'river water level', 'embargo': False, 'embargo_end': datetime.datetime(2023, 5, 6, 10, 30, 16, 335406),
+#      'split_ids': [868, 869], 'split_uuid': ['65222d16', 'f634afb4'], 'split_embargo_end': [datetime.datetime(2023, 5, 6, 10, 30, 16, 335406), datetime.datetime(2023, 5, 6, 10, 30, 16, 368602)]},
+# ]

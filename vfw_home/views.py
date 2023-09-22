@@ -10,8 +10,7 @@ import requests
 from django.contrib.gis.db.models.aggregates import Extent
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.db.models import Q, Count, Value, CharField, OuterRef, Subquery
-from django.db.models.functions import Concat
+from django.db.models import Q, Count, Exists, OuterRef, Sum
 from django.utils.timezone import make_aware
 from pyzip import PyZip
 
@@ -34,6 +33,7 @@ from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
+from .Fig_obj import FigObject
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
     __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection
 from .delineator import delineate
@@ -504,6 +504,30 @@ def previewplot(request):
     """
     webID = request.GET.get('preview')
     print('webID: ', webID )
+    try:
+        webID = request.GET.get('preview')
+        if webID[-1] == ']':
+
+            parts = webID[0:-1].split('[')
+            webID = [f'db{id.strip()}' for id in parts[1].split(',')]
+        else:
+            parts = [0, webID[1:-1]]
+
+        accessible_data = get_accessible_data(request, [parts[1]])
+        error_list = accessible_data['blocked']
+        accessible_data = accessible_data['open']
+
+        # ID = 1013
+        # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+
+        # accessible_data = [1014]  # 1014: wind direction, 1013: 3D direction
+        if len(accessible_data) < 1:
+            return JsonResponse({'warning': translation.gettext(
+                'No plot available. <br/>First access to this dataset is needed.')})
+
+    except Exception as e:
+        print('e: ', e)
+
     full_res = False
     plot_size = [700, 500]
     if request.GET.get('startdate') != 'None':
@@ -530,6 +554,14 @@ def previewplot(request):
             #                                                        )
 
             dataset = DataObject(webID, date)
+            if isinstance(webID, list):
+                dataset = []
+                for i in webID:
+                    dataset.append(DataObject(i, date))
+            else:
+                t0 = time()
+                dataset = DataObject(webID, date)
+                t1 = time()
 
         except TypeError as e:
             print('\033[33mType error in Data Object:\033[0m ', e)
@@ -552,8 +584,10 @@ def previewplot(request):
             return JsonResponse({'error': e})
         except FieldError as e:
             print('\033[33mField Error in Data Object:\033[0m ', e)
+            raise Http404
         except Exception as e:
             print('\033[31mAn unhandled error in Data Object func:\033[0m ', e)
+            raise Http404
 
         plot = PlotObject(dataset, plot_size)
         img = plot.get_plot
@@ -809,6 +843,15 @@ def show_info(request):
                     nm_prefix + 'group__title', nm_prefix + 'group_id']
 
         db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+        try:
+            if ids[0] == '[':
+                string_list = ids[1:-1].split(",")
+                ids = list(map(int, string_list))
+                db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
+            else:
+                db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+        except Exception as e:
+            print('Error in views.show_info.collect_data: ', e)
 
         if not db_info.exists():
             warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
@@ -830,7 +873,8 @@ def show_info(request):
             has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
         table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
             if db_info[0][prefix + 'abstract'] else '-'
-        table['has_embargo'] = str(has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
+        table['has_embargo'] = str(
+            has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
 
         table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
             if db_info[0][nm_prefix + 'group__title'] else '-'
@@ -974,7 +1018,7 @@ def quick_filter_defaults(request):
     total = Entries.objects.exclude(Q(embargo=True) & Q(embargo_end__gte=timezone.now())).count()
 
     quickfilter = QuickFilterForm()  # standard of django is a required attribute for all forms.
-    more = QuickFilterForm.More()    # you can remove the required with use_required_attribute=False
+    more = QuickFilterForm.More()  # you can remove the required with use_required_attribute=False
     selection = []
     return {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
 

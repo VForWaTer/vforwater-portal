@@ -22,24 +22,26 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     :param requested_ids:
     :return: accessible_ids, error_ids
     """
-    if isinstance(requested_ids, int):
-        requested_ids = [requested_ids]
-    elif isinstance(requested_ids, str):
-        requested_ids = [int(requested_ids)]
-    # first get datasets that are open for for everyone and without embargo or expired embargo
-    accessible_data = list(Entries.objects.values_list('id', flat=True)
-                           .filter(pk__in=requested_ids)
-                           .filter(Q(embargo=False) |
-                                   Q(embargo=True, embargo_end__lt=timezone.now())))
+    try:
+        if isinstance(requested_ids, int):
+            requested_ids = [requested_ids]
+        elif isinstance(requested_ids, str):
+            requested_ids = [int(requested_ids)]
+        # first get datasets that are open for everyone and without embargo or expired embargo
+        accessible_data = list(Entries.objects.values_list('id', flat=True)
+                               .filter(pk__in=requested_ids)
+                               .filter(Q(embargo=False) |
+                                       Q(embargo=True, embargo_end__lt=timezone.now())))
 
-    # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
-    if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
-        accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
-        accessible_data.extend(accessible_embargo_datasets)
-    # check if there is still data not accessible and create error for these
-    error_list = list(set(requested_ids) - set(accessible_data))
-    return {'open': accessible_data, 'blocked': error_list}
-
+        # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
+        if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:
+            accessible_embargo_datasets = list(set(requested_ids) & set(request.session['datasets']))  # intersect sets
+            accessible_data.extend(accessible_embargo_datasets)
+        # check if there is still data not accessible and create error for these
+        error_list = list(set(requested_ids) - set(accessible_data))
+        return {'open': accessible_data, 'blocked': error_list}
+    except Exception as e:
+        print('Error in data_tools.get_accessible_data: ', e)
 
 def collect_selection(request, requested_id, startdate='', enddate=''):
     """

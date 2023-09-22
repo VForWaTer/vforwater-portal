@@ -49,6 +49,7 @@ vfw.datasets.DataObj = class {
         this.inputs = [];
         this.noData = "";  // TODO: what was the purpose of this variable again?
         this.title = "";
+        this.isResult = false;
         this.url = window.location.pathname;
 
         Object.assign(this, {...defaultParams, ...data});
@@ -58,6 +59,7 @@ vfw.datasets.DataObj = class {
         } else {
             this.storeKey = "dataBtn";
             this.btnPosition = "sidebtn";
+            this.btnPosition = "workspace";
         }
 
         this.#setTitle();
@@ -83,10 +85,10 @@ vfw.datasets.DataObj = class {
     }
 
     #placeHtmlButton() {
-        document.getElementById('workspace').innerHTML += this.#buildHtmlButton();
+        document.getElementById(this.btnPosition).innerHTML += this.#createHtmlButton();
     }
 
-    #buildHtmlButton() {
+    #createHtmlButton() {
         /** set where to place the button **/
         let dragHtml = "";
         if (this.url === '/workspace/') {
@@ -101,6 +103,9 @@ vfw.datasets.DataObj = class {
             `</span><span class="data ${this.type}"></span>` +
             `<a onclick=vfw.datasets.dataObjects['${this.orgID}'].removeData('${this.orgID}') ` +
             `class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>` +
+            `</a>` +
+            `<a onclick=vfw.datasets.dataObjects['${this.orgID}'].showContextMenu('${this.orgID}') ` +
+            `class="w3-hover-white w3-right"><i class="fa fa-caret-down fa-fw"></i>` +
             `</a><br></li>`;
     }
 
@@ -174,14 +179,14 @@ vfw.datasets.DataObj = class {
         this.htmlName = newName;
     }
 
-    removeData(removeData) {  // TODO: removeData var should be taken from this!
+    removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
         document.getElementById(this.htmlElementID()).remove();
 
         /** remove data from session: **/
         let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
 
-        delete workspaceData[removeData];
+        delete workspaceData[this.orgID];
         sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
     }
@@ -236,7 +241,7 @@ vfw.datasets.DataObj = class {
                 }
                 this.save(properties, true)
                 this.#createHtmlName()
-                this.#buildHtmlButton()
+                this.#createHtmlButton()
                 this.#replaceHtmlButton()
             }
         }
@@ -244,7 +249,33 @@ vfw.datasets.DataObj = class {
 
     #replaceHtmlButton() {
         let thisHtmlButton = document.getElementById(this.htmlElementID())
-        $(thisHtmlButton).replaceWith(this.#buildHtmlButton());
+        $(thisHtmlButton).replaceWith(this.#createHtmlButton());
     }
+
+    /** Several functions to fill and show a context menu **/
+    showContextMenu() {
+        console.log('...reached')
+        this.#createContextMenu()
+
+    }
+    #createContextMenu() {
+        let menu = document.getElementById("context-menu")
+        let htmlElements = ""
+        let itemParams = {
+            "timeseries": [["Plot", "fa-eye", gettext("Plot data")],
+                ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
+                ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
+                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"]
+            ]}
+
+        function createMenuItem(action, iconClass, name, title) {
+            htmlElements += `<li className="context-menu__item">
+                <a href="#" className="context-menu__link context-menu-plot" data-action=${action}>
+                <i className="fa ${iconClass}"></i> ${name}</a>
+                </li>`
+        }
+
+        itemParams[this.type].forEach((value) => createMenuItem(...value))
+        }
 }
 

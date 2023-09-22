@@ -54,7 +54,7 @@ function reset_filter(){
     olmap.removeLayer(selectionLayer);
     closeDrawfilter();
     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
-    // vfw.map.layer.cluster.changed()
+    // vfw.map.layer.cluster.changed()  // renamed to clusterLayer
 }
 
 /** update objects on map according to filter results */

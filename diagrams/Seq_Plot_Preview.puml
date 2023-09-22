@@ -1,9 +1,9 @@
 @startuml
 title Handle geoapiprocess output
-
+!theme bluegray
 hide footbox
-participant previewplot.py order 20
-participant data_tools.py order 30
+'participant previewplot.py order 20
+'participant data_tools.py order 30
 
 ====
 ' actor user #lightblue
@@ -83,44 +83,52 @@ vfw.js -> views.py ++: **ajax**\n previewplot
 opt if source is 'db'
     views.py -> views.py: get_accessible_data
 
-    views.py -> data_tools.py ++: is_data_short
-    return
-    views.py -> previewplot.py ++: get_plot_from_db_id
+'    views.py -> data_tools.py ++: is_data_short
+'    return
     opt if data is not 'in_cache'
-        previewplot.py -> previewplot.py: __DB_load_label
+        views.py -> views.py: DataObject()
+        views.py -> Fig_obj.py ++: initialize FigObject
+        Fig_obj.py -> Fig_obj.py ++: __set_values__()
         opt
         else if 'direction' is in label
-            previewplot.py -> data_tools.py ++: __DB_load_directiondata
+            Fig_obj.py -> Fig_obj.py ++: __get_direction_plot__()
+            Fig_obj.py -> Fig_obj.py: self.titletext
+            Fig_obj.py -> Fig_obj.py: self.mainplot
+            Fig_obj.py -> plot_obj.py ++: DirectionPlot()
             return
-            previewplot.py -> previewplot.py: direction_plot
+            return
         else else
-            previewplot.py -> data_tools.py ++: __DB_load_data
-            opt if 'timeseries_1d'
-            data_tools.py -> data_tools.py: __reduce_dataset
-            data_tools.py -> data_tools.py: __get_timescale
-            data_tools.py -> data_tools.py: __has_precision
-            else else if 'timeseries'
-            data_tools.py -> data_tools.py: __reduce_dataset
-            data_tools.py -> data_tools.py: __unify_dataframe
-            data_tools.py -> data_tools.py: __get_timescale
-            data_tools.py -> data_tools.py: __has_precision
+            Fig_obj.py -> Fig_obj.py ++: __plot_timeseries__()
+            Fig_obj.py -> Fig_obj.py: __set_mainplot____()
+            Fig_obj.py -> plot_obj.py ++: XYTimeseriesPlot()
+            plot_obj.py -> plot_obj.py ++: create_plot()
+            opt if 'multiple_lines'
+            loop
+                plot_obj.py -> plot_obj.py: __set_colormap__()
+                plot_obj.py -> plot_obj.py: __add_multiple_lines__()
+            end
+            else else
+            plot_obj.py -> plot_obj.py: __datetime_hovertool__()
+            opt if 'has nan'
+                plot_obj.py -> plot_obj.py: __show_nan__()
+            end
+            opt if 'has precision'
+                plot_obj.py -> plot_obj.py: __show_precision__()
+            end
+            plot_obj.py -> plot_obj.py: __add_line__()
             end
             return
-            opt if 'has_preci'
-                previewplot.py -> data_tools.py ++: precision_to_minmax
-                return
-            end
-                previewplot.py -> data_tools.py ++: find_data_gaps
-                data_tools.py -> data_tools.py: __get_gap_position
-                return
-                previewplot.py -> data_tools.py ++: __get_axis_limits
-                return
-                previewplot.py -> previewplot.py: get_bokeh_std_fullres
+        return
+        return
+        end
+        return
+        return
+    views.py -> views.py: FigObject.get_plot()
     end
-end
-    return
-else if source is 'wps'
-    views.py -> previewplot.py ++: format_label
+    end
+'else if source is 'wps'
+'    views.py -> previewplot.py ++: format_label
+return
 return
 end
 [<- vfw.js

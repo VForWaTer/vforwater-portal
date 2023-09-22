@@ -322,68 +322,6 @@ vfw.sidebar.buildDatastoreButton = function (json) {
     document.getElementById('workspace').innerHTML += ghtml + html
 }
 
-// TODO: create html of vfw.workspace.buildResultStoreButton and vfw.sidebar.buildDatastoreButton in one function
-// /**
-//  * Build html for store buttons.
-//  * data-id is used to find results on server
-//  * id is used for the remove button
-//  * @param  {string} name name for the button
-//  * @param  {obj} json Object holding all necessary info about result
-//  * @param  {string} title for the button title
-//  * @param  {string} key is used for the button id
-//  * @param  {boolean} result to set the 'is-result' flag
-//  * @return {string} HTML Code for the button
-//  **/
-// function store_btn_html(name, json, title, key, result) {
-//     console.log("Page path is: ", window.location.pathname)
-//     let drag_html = ''
-//     let is_result = ''
-//     if (window.location.pathname == '/workspace/') {
-//         drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
-//     }
-//     if (result) {
-//         is_result = ' is-result'
-//     }
-//     return
-//     '<li ' + drag_html +
-//         'class="w3-padding task' + is_result +'" ' +
-//         'data-id="wps' + json.wpsID + '" ' +
-//         'btnName="' + name + '" ' +
-//         'onmouseover="" ' +
-//         'style="cursor:pointer;" ' +
-//         'id="' + name + '">' +
-//         '<span class="w3-medium" ' +
-//             'title="' + title + '">' +
-//             '<div class="task__content">' + name + '</div>' +
-//             '<div class="task__actions"></div>' +
-//         '</span>' +
-//         '<span class="' + json['type'] + '"></span>' +
-//         '<a href="javascript:void(0)" ' +
-//             'onclick="vfw.session.removeSingleResult(\'' + name + '\')" ' +
-//             'class="w3-hover-white">' +
-//             '<i class="fa fa-remove fa-fw"></i>' +
-//         '</a><br></li>';
-//
-//     '<li draggable="true" ' +
-//         'class="w3-padding task" ' +
-//         'data-id="' + key + '" ' +
-//         'btnName="' + btnName + '" ' +
-//         'onmouseover="" ' +
-//         'style="cursor:pointer;" ' +
-//         'id="id' + key + '">' +
-//         '<span class="w3-medium" ' +
-//             'title="' + title + '">' +
-//             '<div class="task__content">' + btnName + '</div>' +
-//             '<div class="task__actions"></div>' +
-//         '</span>' +
-//         '<span class="data ' + value['type'] + '"></span>' +
-//         '<a href="javascript:void(0)" ' +
-//             'onclick="vfw.session.removeSingleData(' + key + ')" ' +
-//             'class="w3-hover-white w3-right">' +
-//             '<i class="fa fa-remove fa-fw"></i>' +
-//         '</a><br></li>';
-// }
-
 
 /** Remove data / elements from workspace **/
 vfw.session.removeSingleData = function (removeData) {
@@ -494,7 +432,7 @@ vfw.util.getPosition = function (e) {
 // var contextMenuLinkClassName = "context-menu__link";
 var contextMenuActive = "context-menu--active";
 var contextResultActive = "context-result--active";
-
+document.querySelector
 var taskItemClassName = "task";
 // var taskItemInContext;
 vfw.var.taskItemInContext = null;
@@ -545,7 +483,7 @@ function contextListener() {
                 btndata = JSON.parse(sessionStorage.getItem("dataBtn"))[vfw.var.taskItemInContext.dataset.orgid]
             }
             e.preventDefault();
-            toggleMenuOn(chooseContext, vfw.var.taskItemInContext.dataset, btndata);
+            vfw.html.toggleMenuOn(chooseContext, vfw.var.taskItemInContext.dataset, btndata);
             positionMenu(e);
         } else {
             vfw.var.taskItemInContext = null;
@@ -607,7 +545,7 @@ function togglePlotContext(menunode, btndata) {
 /**
  * Turns the custom context menu on.
  */
-function toggleMenuOn(chooseContext, data, btndata) {
+vfw.html.toggleMenuOn = function (chooseContext, data, btndata) {
     toggleMenuOff(chooseContext);
     if (menuState !== 1) {
         menuState = 1;

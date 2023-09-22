@@ -259,7 +259,7 @@ class DataObject:
         if data_table_name is None:
             raise LookupError({'error': 'Dataset has no datasource__path.'})
 
-        query_path = {'{0}'.format(data_table_name): ID}
+        query_path = {f'{data_table_name}': ID}
         if date and date[0]:
             query_path[data_table_name + '__tstamp__gte'] = date[0]
             query_path[data_table_name + '__tstamp__lte'] = date[1]
@@ -274,7 +274,7 @@ class DataObject:
         self.length = self.__general_data_qs__.count()
         if self.length == 0:  # if not qs.exists():
             print('Problems with query_path: ', self.__general_data_qs__)
-            raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(self.ID))
+            raise EmptyResultSet(f'Got no data in data_tools.is_data_short for id={self.ID}')
 
         if self.length > self.__row_limit__:
             self.full = False
