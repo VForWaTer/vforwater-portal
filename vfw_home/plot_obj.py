@@ -17,14 +17,16 @@ from numpy import mean
 from math import radians, ceil, sqrt
 
 from vfw_home.previewplot import distribution_plot
+import logging
 
+logger = logging.getLogger(__name__)
 
 class PlotObject:
     """
     Class calculates parameters accroding the parameters.
     """
 
-    def __init__(self, data=None, mainplot=None):
+    def __init__(self, data=None, mainplot=None, style=None):
         self.dataObj = data
         self.source = ColumnDataSource(self.dataObj.dataframe)
         self.y_col = data.value_column
@@ -116,28 +118,26 @@ class PlotObject:
     #     self.__create_plot__()
 
     def __add_line__(self):
-        # plot value line
-        self.x_col = 'tstamp'
-        print('self.x_col: ', self.x_col)
-        print('self.y_col: ', self.y_col)
-        print('self.dataObj.dataframe.dtypes: ', self.dataObj.dataframe.dtypes)
-        # print('self.mainplot.x_axis_type: ', self.mainplot.x_axis_type)
-        print('self.mainplot: ', self.mainplot)
-        print('self.dataObj.data_columns: ', self.dataObj.data_columns)
-        # p = figure(width=800, height=250, x_axis_type="datetime")
+        try:
+            # plot value line
+            self.x_col = 'tstamp'
+            # p = figure(width=800, height=250, x_axis_type="datetime")
 
-        # self.mainplot.line(self.dataObj.dataframe['tstamp'], self.dataObj.dataframe['value'], color='navy', alpha=0.5)
+            # self.mainplot.line(self.dataObj.dataframe['tstamp'], self.dataObj.dataframe['value'], color='navy', alpha=0.5)
 
-        # show(self.mainplot)
-        self.mainplot.line(x=self.x_col, y=self.y_col, source=self.source,
-                           line_width=3, line_color=self.linecolor,
-                           legend_label=self.y_col.replace('_', ' '))
+            # show(self.mainplot)
+            self.mainplot.line(x=self.x_col, y=self.y_col, source=self.source,
+                               line_width=3, line_color=self.style['linecolor'],
+                               legend_label=self.y_col.replace('_', ' '))
+        except Exception as e:
+            print(f'Exception in plot_obj.PlotObject.__add_line__(): {e}')
+            logger.debug(f'Cannot add line to fig object, {e}')
 
     def __add_multiple_lines__(self):
         # plot value line
         self.mainplot.line(x=self.dataObj.dataframe[self.x_col],
                            y=self.dataObj.dataframe[self.y_col],
-                           line_width=3, line_color=self.linecolor,
+                           line_width=3, line_color=self.style['linecolor'],
                            legend_label=self.y_col.replace('_', ' '))
 
     def __add_multiline__(self):
@@ -309,8 +309,8 @@ class PlotObject:
 
 class XYTimeseriesPlot(PlotObject):
 
-    def __init__(self, data, mainplot):
-        super().__init__(data, mainplot)
+    def __init__(self, data, mainplot, style):
+        super().__init__(data, mainplot, style)
         self.x_col = 'tstamp'
         self.create_plot()
 
@@ -321,7 +321,7 @@ class XYTimeseriesPlot(PlotObject):
             # self.__prepare_multiline_data__()
             self.__set_colormap__()
             for i, col_name in enumerate(self.dataObj.data_names):
-                self.linecolor = self.colormap[i]
+                self.style['linecolor'] = self.colormap[i]
                 self.y_col = col_name
                 self.__add_multiple_lines__()
             # self.__add_multiline__()
@@ -532,6 +532,7 @@ class EddyFootPrintPlot(PlotObject):
                                  direction=df_db['wind_direction'], tstamp=tstamp, grid=grid)
             except Exception as e:
                 print('Error in eddy footprint Function: ', e)
+                logger.debug(f'Error while trying to get eddy footprint, {e}')
                 pass
 
         # # result = [get_footprint()]
@@ -582,6 +583,7 @@ class EddyFootPrintPlot(PlotObject):
                                                   ))
         except Exception as e:
             print('Error in eddy ColumnDataSource creation: ', e)
+            logger.debug(f'Error in eddy ColumnDataSource creation, {e}')
         # fp, FP_east, FP_north, fp_
         norm = get_footprint(tstamp)
         # pdsource =
@@ -613,6 +615,7 @@ class EddyFootPrintPlot(PlotObject):
 
         except Exception as e:
             print('Error while trying to create an image for eddy data: ', e)
+            logger.debug(f'Error while trying to create an image for eddy data: {e}')
 
         # slider = Slider(start=min(df.columns), end=max(df.columns), value=min(df.columns), step=stepsize,
         #                    title="date within histogram")

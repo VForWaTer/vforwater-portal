@@ -1,12 +1,15 @@
 from bokeh.embed import components
 from bokeh.io import show
 from bokeh.layouts import column
+from bokeh.palettes import brewer
 from bokeh.plotting import figure
 from django.utils.translation import gettext
 
 from heron.settings import max_size_preview_plot
-from vfw_home.plot_obj_new import XYTimeseriesPlot, DirectionPlot
+from vfw_home.plot_obj import XYTimeseriesPlot, DirectionPlot
+import logging
 
+logger = logging.getLogger(__name__)
 
 class FigObject:
     def __init__(self, data=None, plot_size=[700, 500]):
@@ -24,7 +27,7 @@ class FigObject:
 
     def __set_values__(self):
 
-        def choose_plottype():
+        def choose_plottype(new_figure=True, style=None):
             try:
                 if self.dataObj.full:
                     self.title = ''
@@ -49,28 +52,29 @@ class FigObject:
                     print('we need a 3D plot ________________-')
                 elif self.dataObj.data_table_name.lower().find('timeseries') != -1:
                     print('3')
-                    self.__plot_timeseries__()
+                    self.__plot_timeseries__(new_figure, style)
                     print('4')
 
                 else:
                     print('we need a standard plot!_______________')
             except Exception as e:
-                print('Unable to create Figure: ', e)
+                print('Fig_obj.FigObject.__set_values__.choose_plottype; Unable to create Figure: ', e)
+                logger.debug(f'Unable to create Figure, {e}')
 
-        print('self.data: ', self.data)
         if isinstance(self.data, list):
-            print('*** its a list')
-            for dataset in self.data:
-                print('dataset: ', dataset)
+            if len(self.data) > 2:
+                self.colormap = brewer['Blues'][len(self.data)]
+            else:
+                self.colormap = ('royalblue', 'blue')
+            for count, dataset in enumerate(self.data):
+                style = {'linecolor': self.colormap[count]}
                 self.dataObj = dataset
-                choose_plottype()
-                break
-
-            print('** list of datasets is still to implement')
+                choose_plottype(new_figure=not bool(count), style=style)
         else:
             self.dataObj = self.data
             choose_plottype()
 
+        self.script, self.div = components(column(self.mainplot, sizing_mode="scale_both"), wrap_script=False)
         self.get_figure = {'script': self.script, 'div': self.div}
 
     def __set_mainplot__(self):
@@ -89,22 +93,25 @@ class FigObject:
 
         except Exception as e:
             print('Error in Fig Object. Cannot set mainplot: ', e)
+            logger.debug(f'Cannot set mainplot, {e}')
 
-    def __plot_timeseries__(self):
+    def __plot_timeseries__(self, new_figure, style):
         # show(self.mainplot)  # test if plot is working at all
         try:
-            self.x_axis_type = "datetime"
-            self.x_axis_label = "Time"
-            self.__set_mainplot__()
-            # self.mainplot.BoxAnnotation(top=80, fill_alpha=0.1, fill_color='red')
-            plot = XYTimeseriesPlot(self.dataObj, self.mainplot)
+            if new_figure:
+                self.x_axis_type = "datetime"
+                self.x_axis_label = "Time"
+                self.__set_mainplot__()
 
-            mainplot = plot.get_mainplot()
-            # show(column(mainplot, sizing_mode="scale_both"))  # test if plot is working at all
+            plot = XYTimeseriesPlot(self.dataObj, self.mainplot, style)
+
+            # mainplot = plot.get_mainplot()
+            # show(column(self.mainplot, sizing_mode="scale_both"))  # test if plot is working at all
             # show(column(mainplot, sizing_mode="scale_both"), wrap_script=False)  # test if plot is working at all
-            self.script, self.div = components(column(mainplot, sizing_mode="scale_both"), wrap_script=False)
+
         except Exception as e:
             print('Error in Fig Object. Cannot create timeseries plot: ', e)
+            logger.debug(f'Cannot create timeseries plot, {e}')
 
     def __get_direction_plot__(self):
         try:
@@ -124,6 +131,7 @@ class FigObject:
             # self.script, self.div = components(column(mainplot, sizing_mode="scale_both"), wrap_script=False)
         except Exception as e:
             print('Error in Fig Object. Cannot create direction plot: ', e)
+            logger.debug(f'Cannot create direction plot, {e}')
 
     def get_plot(self):
         return {'script': self.script, 'div': self.div}

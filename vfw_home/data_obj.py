@@ -153,6 +153,7 @@ class DataObject:
                 elif isinstance(self.dataframe[self.value_column][0], list) \
                     and len(self.dataframe[self.value_column][0]) > 1:
                     print('ERROR: Expect only one column for timeseries_1d')
+        #             TODO: handle the other columns as well! ...handled in __mulitvalcol_to_mulitcolval__???
         except Exception as e:
             print('\033[33mUnable to access database:\033[0m ', e)
             raise Http404

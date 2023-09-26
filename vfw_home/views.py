@@ -39,7 +39,6 @@ from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is
 from .delineator import delineate
 from .forms import QuickFilterForm
 from .data_obj import DataObject
-from .plot_obj import PlotObject
 from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
     get_paginatorpage, regex_patterns, is_coord, get_cache
 
