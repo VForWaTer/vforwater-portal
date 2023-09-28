@@ -506,11 +506,14 @@ def previewplot(request):
     try:
         webID = request.GET.get('preview')
         if webID[-1] == ']':
+        if webID[0:3] == 'db[':
 
             parts = webID[0:-1].split('[')
             webID = [f'db{id.strip()}' for id in parts[1].split(',')]
+        elif webID[0:2] == 'db':
+            parts = [0, webID[2:]]
         else:
-            parts = [0, webID[1:-1]]
+            print('views.py: Figure how to handle such an ID: ', webID)
 
         accessible_data = get_accessible_data(request, [parts[1]])
         error_list = accessible_data['blocked']
@@ -551,8 +554,6 @@ def previewplot(request):
             #                                                        'datasource__temporal_scale__observation_start',
             #                                                        'datasource__temporal_scale__support',
             #                                                        )
-
-            dataset = DataObject(webID, date)
             if isinstance(webID, list):
                 dataset = []
                 for i in webID:
@@ -590,6 +591,8 @@ def previewplot(request):
 
         plot = PlotObject(dataset, plot_size)
         img = plot.get_plot
+        plot = FigObject(dataset, plot_size)
+        img = plot.get_plot()
     return JsonResponse(img)
 
     # That code is only left to test previews of tools. Remove when plotobjects and dataobjects are working alone
@@ -841,7 +844,6 @@ def show_info(request):
                     prefix + 'datasource__temporal_scale__observation_end',
                     nm_prefix + 'group__title', nm_prefix + 'group_id']
 
-        db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
         try:
             if ids[0] == '[':
                 string_list = ids[1:-1].split(",")
@@ -880,7 +882,6 @@ def show_info(request):
         table['group_entry_ids'] = list(group_entry_ids)
 
         return JsonResponse({'table': table, 'warning': warning})
-
 
     webID = request.GET.get('show_info')
     if webID[0:3] == 'wps':
@@ -1064,7 +1065,6 @@ class QuickFilterResults(View):
 
         query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
         total_results = query.count()
-
 
         # From here collect data to update map:
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT

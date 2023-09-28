@@ -75,6 +75,13 @@ class FigObject:
             choose_plottype()
 
         self.script, self.div = components(column(self.mainplot, sizing_mode="scale_both"), wrap_script=False)
+        if not self.script:
+            try:
+                self.script, self.div = components(column(self.mainplot, sizing_mode="scale_both"), wrap_script=False)
+            except Exception as e:
+                print(f'Error in Fig_obj.FigObject__set_values__(). Error getting script and div: {e}')
+                logger.debug(f'Error getting script and div: {e}')
+
         self.get_figure = {'script': self.script, 'div': self.div}
 
     def __set_mainplot__(self):
@@ -128,7 +135,6 @@ class FigObject:
             rslider = plot.get_rangeslider()
             # show(column(distriplot, mainplot, slider, rslider))
             self.script, self.div = components(column(distriplot, mainplot, slider, rslider), wrap_script=False)
-            # self.script, self.div = components(column(mainplot, sizing_mode="scale_both"), wrap_script=False)
         except Exception as e:
             print('Error in Fig Object. Cannot create direction plot: ', e)
             logger.debug(f'Cannot create direction plot, {e}')

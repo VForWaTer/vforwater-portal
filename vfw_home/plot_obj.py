@@ -42,9 +42,10 @@ class PlotObject:
         self.xs = []
         self.ys = []
         self.colormap = None
-        self.linecolor = 'blue'
-
-        # self.__set_values__()
+        if style:
+            self.style = style
+        else:
+            self.style = {'linecolor': 'blue'}
 
     def get_mainplot(self):
         return self.mainplot
