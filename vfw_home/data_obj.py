@@ -1,4 +1,5 @@
 import json
+import logging
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,8 @@ from django.http import Http404
 from heron.settings import max_size_preview_plot
 from vfw_home.data_tools import DB_load_directiondata
 from vfw_home.models import Entries, NmEntrygroups
+
+logger = logging.getLogger(__name__)
 
 
 class DataObject:
@@ -73,7 +76,7 @@ class DataObject:
             self.data_table_name = self.__qs_entry__.values_list('datasource__path', flat=True)[0]
             self.data_names = self.__qs_entry__.values_list('datasource__data_names', flat=True)[0]
             if not self.data_names:
-                print('WARNING: Dataset with ID ' + self.ID + ' has no data name in datasource table!')
+                print(f'WARNING: Dataset with ID {self.ID} has no data name in datasource table!')
                 self.data_names = [label[0][0]]
             self.__general_data_qs__ = self.__set_general_data_qs__(self.data_table_name, self.date, self.ID)
             self.length = self.db_data_length()
@@ -153,6 +156,8 @@ class DataObject:
                 elif isinstance(self.dataframe[self.value_column][0], list) \
                     and len(self.dataframe[self.value_column][0]) > 1:
                     print('ERROR: Expect only one column for timeseries_1d')
+                    logger.debug('ERROR: Expect only one column for timeseries_1d')
+                    # self.dataframe[self.value_column] = [i[0] for i in self.dataframe[self.value_column]]
         #             TODO: handle the other columns as well! ...handled in __mulitvalcol_to_mulitcolval__???
         except Exception as e:
             print('\033[33mUnable to access database:\033[0m ', e)
@@ -275,6 +280,7 @@ class DataObject:
         self.length = self.__general_data_qs__.count()
         if self.length == 0:  # if not qs.exists():
             print('Problems with query_path: ', self.__general_data_qs__)
+            logger.debug(f'Problems with query_path, {e}')
             raise EmptyResultSet(f'Got no data in data_tools.is_data_short for id={self.ID}')
 
         if self.length > self.__row_limit__:

@@ -34,7 +34,6 @@ class FigObject:
                 else:
                     self.title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
 
-                print('2')
                 if self.dataObj.label.lower().find('direction') != -1:
                     self.__get_direction_plot__()
                 elif self.dataObj.label.lower().find('eddy covariance') != -1:
@@ -51,9 +50,7 @@ class FigObject:
                     print('self.dataObj.data_format: ', self.dataObj.data_format)
                     print('we need a 3D plot ________________-')
                 elif self.dataObj.data_table_name.lower().find('timeseries') != -1:
-                    print('3')
                     self.__plot_timeseries__(new_figure, style)
-                    print('4')
 
                 else:
                     print('we need a standard plot!_______________')
@@ -74,7 +71,6 @@ class FigObject:
             self.dataObj = self.data
             choose_plottype()
 
-        self.script, self.div = components(column(self.mainplot, sizing_mode="scale_both"), wrap_script=False)
         if not self.script:
             try:
                 self.script, self.div = components(column(self.mainplot, sizing_mode="scale_both"), wrap_script=False)
@@ -82,7 +78,7 @@ class FigObject:
                 print(f'Error in Fig_obj.FigObject__set_values__(). Error getting script and div: {e}')
                 logger.debug(f'Error getting script and div: {e}')
 
-        self.get_figure = {'script': self.script, 'div': self.div}
+        # self.get_figure = {'script': self.script, 'div': self.div}
 
     def __set_mainplot__(self):
         try:
@@ -110,7 +106,7 @@ class FigObject:
                 self.x_axis_label = "Time"
                 self.__set_mainplot__()
 
-            plot = XYTimeseriesPlot(self.dataObj, self.mainplot, style)
+            XYTimeseriesPlot(self.dataObj, self.mainplot, style)
 
             # mainplot = plot.get_mainplot()
             # show(column(self.mainplot, sizing_mode="scale_both"))  # test if plot is working at all

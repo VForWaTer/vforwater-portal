@@ -441,6 +441,7 @@ class ToggleLanguageView(View):
                 request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
         logger.debug('new language: {}'.format(translation.get_language()))
         logger.debug('translation test: {}'.format(translation.gettext("help")))
+        logger.debug(f'new language: {translation.get_language()}')
         response = redirect(DEMO_VAR + '/')
         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request.session[translation.LANGUAGE_SESSION_KEY])
         return response
@@ -501,13 +502,10 @@ def previewplot(request):
     :param request:
     :return:
     """
-    webID = request.GET.get('preview')
-    print('webID: ', webID )
     try:
         webID = request.GET.get('preview')
-        if webID[-1] == ']':
+        # webID = 'db869'
         if webID[0:3] == 'db[':
-
             parts = webID[0:-1].split('[')
             webID = [f'db{id.strip()}' for id in parts[1].split(',')]
         elif webID[0:2] == 'db':
@@ -528,7 +526,7 @@ def previewplot(request):
                 'No plot available. <br/>First access to this dataset is needed.')})
 
     except Exception as e:
-        print('e: ', e)
+        print('Exception: ', e)
 
     full_res = False
     plot_size = [700, 500]
@@ -589,123 +587,10 @@ def previewplot(request):
             print('\033[31mAn unhandled error in Data Object func:\033[0m ', e)
             raise Http404
 
-        plot = PlotObject(dataset, plot_size)
-        img = plot.get_plot
+        # plot = MultiplePlotsObject(dataset, plot_size=plot_size)
         plot = FigObject(dataset, plot_size)
         img = plot.get_plot()
     return JsonResponse(img)
-
-    # That code is only left to test previews of tools. Remove when plotobjects and dataobjects are working alone
-    if webID[0:2] == 'db':
-        try:
-            accessible_data = get_accessible_data(request, webID[2:])
-            error_list = accessible_data['blocked']
-            accessible_data = accessible_data['open']
-
-            # ID = 1013
-            # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
-
-            # accessible_data = [1014]  # 1014: wind direction, 1013: 3D direction
-            if len(accessible_data) < 1:
-                return JsonResponse({'warning': translation.gettext(
-                    'No plot available. <br/>First access to this dataset is needed.')})
-
-            full_res = is_data_short(accessible_data[0], 'db', date)
-
-            if type(full_res) is dict and 'error' in full_res:
-                return JsonResponse(full_res)
-            # plot with bokeh
-            return JsonResponse(get_plot_from_db_id(ID=accessible_data[0], full_res=full_res, date=date))
-            # else:
-            # return JsonResponse(get_preview(accessible_data[0]))
-
-        except TypeError as e:
-            print('Type error in previewplot: ', e)
-            raise Http404
-        except IndexError as e:
-            # print('index error: ', e)
-            if request.user.is_authenticated:
-                # TODO: Rethink how to handle unallowed requests
-                print('Index Error in previewplot: ', e)
-                raise Http404
-            else:
-                # TODO: Redirect to login
-                raise Http404
-                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-                # return redirect('vfw_home:login')
-        except EmptyResultSet as e:
-            print('EmptyResultSet Error in previewplot: ', e)
-        except FieldError as e:
-            print('Field Error in previewplot: ', e)
-        except Exception as e:
-            print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
-
-    elif webID[0:3] == 'wps':
-        dataset = WpsResults.objects.filter(id=webID[3:])
-        typelist = ast.literal_eval(dataset.values('outputs')[0]['outputs'])
-        path = DATA_DIR + typelist['path'][1::]
-        with open(path + ".json") as json_file:
-            metadata = json.loads(json.load(json_file))
-        json_file.close()
-
-        label = format_label(metadata['meta']['variable']['name'],
-                             metadata['meta']['variable']['symbol'],
-                             metadata['meta']['variable']['unit']['symbol'])
-
-        if typelist['type'] == 'timeseries':
-            dataReader = DataTypes()
-            df = dataReader.read_data(filepath=path, datatype=typelist['type'])
-            # df = pd.read_csv(path + ".csv")
-            # df['tstamp'] = pd.to_datetime(df['tstamp'])
-            if len(df.index) > 50000:
-                data = __reduce_dataset(df, full_res)
-
-            if metadata['meta']['variable']['name'] in data['df'].columns:
-                data['df'].rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
-            elif metadata['meta']['variable']['name'].replace(" ", "_") in data['df'].columns:
-                data['df'].rename(columns={metadata['meta']['variable']['name'].replace(" ", "_"): "value"}, inplace=True)
-            else:
-                print('Error: Unknown name of column name in your dataset. '
-                      'Should be ', metadata['meta']['variable']['name'])
-
-            # data = __unify_dataframe(data)
-
-            if not 'tstamp' in data['df'].columns:
-                print('no tstamp')
-                # df['tstamp'] = df.index.values
-                data['df'] = data['df'].reset_index()
-
-            if 'scale' in metadata:
-                # TODO: scale should be in metadata. Add and get it here
-                scale = metadata['scale']
-            else:
-                scale = __get_timescale(data['df'])
-
-            # prepare dataset for plot
-            if 'entry_id' in data['df']:
-                del data['df']['entry_id']
-
-            plot_data = {'df': data['df'], 'scale': scale}
-            # timescale = pd.to_timedelta(timescale)
-            # plotdata = {'data': result, 'df': df, 'axis': axis, 'scale': timescale}
-            if 'precision' in plot_data['df'].columns and not data['df']['precision'].isnull().all():
-                plot_data['df'] = precision_to_minmax(plot_data['df'])
-                plot_data['has_preci'] = True
-            else:
-                plot_data['has_preci'] = False
-
-            plot_data = find_data_gaps(plot_data)
-            plot_data = __get_axis_limits(plot_data)
-            # return JsonResponse(get_plot(ID=plot_data))
-            return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=full_res, size=[700, 500], label=label))
-
-        if 'figure' in typelist:
-            return JsonResponse('Warning: Not implemented yet.')
-
-        raise Http404
-
-    else:
-        raise Http404
 
 
 def short_info_pagination(request):
