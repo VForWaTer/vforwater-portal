@@ -1139,7 +1139,7 @@ function updateQuickfilter() {
     let url = window.location
     let urlParams = new URLSearchParams(url.search);
     let urlKey, long_search_id, ajax_element;
-    let date = "";
+    let date = 0;
     let selector_string = "";
 
     if (urlParams !== false) {
@@ -1154,15 +1154,15 @@ function updateQuickfilter() {
                 long_search_id = selector_string + " [value=\"" + urlKey[1] + "\"]"
                 $(long_search_id).attr("selected", "selected");
             } else if (ajax_element.prop('name') === 'date') {
-                if (date === "") {
-                    date = (new Date(urlKey[1])).toLocaleDateString();
+                if (date === 0) {
+                    date = new Date(urlKey[1]);
                 } else {
-                    ajax_element.prop('value', [date + " - " + (new Date(urlKey[1])).toLocaleDateString()]);  // textbox
+                    ajax_element.prop('value', [date.toLocaleDateString() + " - " + (new Date(urlKey[1])).toLocaleDateString()]);  // textbox
                     $('#slider-date-range-' + urlKey[0])
                         .slider('values', [
                             (new Date(date)).getTime(),
-                            (new Date(urlKey[1])).getTime()])
-                        .val()  // update slider
+                            (new Date(urlKey[1])).getTime()
+                        ]).val()  // update slider
                 }
             } else if (urlKey[0] === 'draw') {
                 let coords_list = urlKey[1].split(',').map(Number)
