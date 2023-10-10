@@ -32,11 +32,13 @@
     }
   });
   // initial values of box:
-  let minStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 0)).toLocaleDateString()
-  let maxStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 1)).toLocaleDateString()
-  $("#id_{{ elem_id }}").val("{{ elem_name }}" + minStart + " - " + maxStart);
-  $("#from_{{ elem_id }}").val(minStart);
-  $("#to_{{ elem_id }}").val(maxStart);
+  $(function () {
+    let minStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 0)).toLocaleDateString()
+    let maxStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 1)).toLocaleDateString()
+    $("#id_{{ elem_id }}").val("{{ elem_name }}" + minStart + " - " + maxStart);
+    $("#from_{{ elem_id }}").val(minStart);
+    $("#to_{{ elem_id }}").val(maxStart);
+  })
 
   $(function () {
     let datepickerSettings = {
