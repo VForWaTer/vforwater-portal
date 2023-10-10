@@ -1134,7 +1134,7 @@ function getCatchment(coords) {
 /**
  * Update quickfilter onload() according to the given URL
  */
-function updateQuickfilter() {
+vfw.sidebar.updateQuickfilter = function() {
 
     let url = window.location
     let urlParams = new URLSearchParams(url.search);
@@ -1158,6 +1158,8 @@ function updateQuickfilter() {
                     date = new Date(urlKey[1]);
                 } else {
                     ajax_element.prop('value', [date.toLocaleDateString() + " - " + (new Date(urlKey[1])).toLocaleDateString()]);  // textbox
+                    $('#from_' + urlKey[0]).val(date.toLocaleDateString())  // update date picker
+                    $('#to_' + urlKey[0]).val((new Date(urlKey[1])).toLocaleDateString())  // update date picker
                     $('#slider-date-range-' + urlKey[0])
                         .slider('values', [
                             (new Date(date)).getTime(),

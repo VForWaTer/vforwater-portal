@@ -10,7 +10,8 @@ from django.contrib.gis import forms
 from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy
 
-from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider, AutocompleteCharWidget
+from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider, AutocompleteCharWidget, \
+    DateRangeSliderDatePicker
 from .utilities import regex_patterns
 
 class SliderField(forms.DateTimeField):
@@ -50,6 +51,19 @@ class DateRangeSliderField(forms.DateField):
         if 'label' not in kwargs.keys():
             kwargs['label'] = False
         super(DateRangeSliderField, self).__init__(*args, **kwargs)
+
+
+class DateRangeSliderDatePickerField(forms.DateField):
+    def __init__(self, *args, **kwargs):
+        self.name = kwargs.pop('name', '')
+        self.minimum = kwargs.pop('minimum', 0)
+        self.maximum = kwargs.pop('maximum', 100)
+        self.step = kwargs.pop('step', 1)
+        self.onchange = kwargs.pop('onchange', '')
+        kwargs['widget'] = DateRangeSliderDatePicker(self.minimum, self.maximum, self.step, self.name, self.onchange)
+        if 'label' not in kwargs.keys():
+            kwargs['label'] = False
+        super(DateRangeSliderDatePickerField, self).__init__(*args, **kwargs)
 
 
 class DateTimeRangeSliderField(forms.DateTimeField):

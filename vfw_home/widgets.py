@@ -93,6 +93,32 @@ class DateRangeSlider(forms.DateInput):
         return mark_safe(s + html)
 
 
+class DateRangeSliderDatePicker(forms.DateInput):
+    # same as DateRangeSlider, but one can click on the dates to select a date on a calendar panel
+    # TODO: Make sure min/max of Slider is min/max of data (no missing hours/..)
+    def __init__(self, minimum, maximum, step, elem_name, onchange, *args, **kwargs):
+        widget = super(DateRangeSliderDatePicker, self).__init__(*args, **kwargs)
+        self.minimum = str(minimum)
+        self.maximum = str(maximum)
+        self.step = str(step)
+        self.elem_name = str(elem_name)
+        self.onchange = str(onchange)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        s = super(DateRangeSliderDatePicker, self).render(name, value, attrs)
+        self.elem_id = re.findall(r'id_([A-Za-z0-9_\./\\-]*)"', s)[0]
+
+        html = loader.get_template('vfw_home/daterangeslider_datepicker_widget.html')\
+            .render(context={'onchange': self.onchange,
+                             'elem_id': self.elem_id,
+                             'elem_name': self.elem_name,
+                             'minimum': self.minimum,
+                             'maximum': self.maximum,
+                             'step': self.step,
+                             })
+        return mark_safe(s + html)
+
+
 class DateTimeRangeSlider(forms.DateTimeInput):
     def __init__(self, minimum, maximum, step, elem_name, onchange, *args, **kwargs):
         widget = super(DateTimeRangeSlider, self).__init__(*args, **kwargs)

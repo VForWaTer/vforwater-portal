@@ -439,9 +439,8 @@ class ToggleLanguageView(View):
             translation.activate('en-gb')
             if hasattr(request, 'session'):
                 request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
-        logger.debug('new language: {}'.format(translation.get_language()))
-        logger.debug('translation test: {}'.format(translation.gettext("help")))
         logger.debug(f'new language: {translation.get_language()}')
+        logger.debug(f'translation test: {translation.gettext("help")}')
         response = redirect(DEMO_VAR + '/')
         response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request.session[translation.LANGUAGE_SESSION_KEY])
         return response

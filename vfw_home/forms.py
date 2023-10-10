@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from author_manage.views import MyResourcesView
-from vfw_home.fields import DateRangeSliderField
+from vfw_home.fields import DateRangeSliderField, DateRangeSliderDatePickerField
 from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
 
 
@@ -121,12 +121,12 @@ class QuickFilterForm(forms.Form):
         attrs={'onchange': 'vfw.html.getQuickSelection({"variables": $("#id_variables").val()});'}),
         queryset=QuickFilterQuerySets.variables_qs)
     # time = DateRangeSliderField(label="Date", minimum=observation_min.date(),
-    date = DateRangeSliderField(label="Date", minimum=QuickFilterQuerySets.observation_min_qs.date(),
-                                maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
-                                # widget=DateRangeSliderFiled(
-                                # attrs={'onchange': 'console.log("YEAH!");'}))
-                                onchange='vfw.html.getQuickSelection({"date": $("#id_date").data("values")});')
-                                # onchange='vfw.html.getQuickSelection({"date": $("#id_date").val()});')
+    date = DateRangeSliderDatePickerField(label="Date", minimum=QuickFilterQuerySets.observation_min_qs.date(),
+                                          maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
+                                          # widget=DateRangeSliderFiled(
+                                          # attrs={'onchange': 'console.log("YEAH!");'}))
+                                          onchange='vfw.html.getQuickSelection({"date": $("#id_date").data("values")});')
+                                          # onchange='vfw.html.getQuickSelection({"date": $("#id_date").val()});')
     is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
         attrs={'onchange': 'vfw.html.getQuickSelection({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
 
