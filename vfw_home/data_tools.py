@@ -30,6 +30,8 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
                 requested_ids = [int(requested_ids)]
             except ValueError as e:
                 requested_ids = requested_ids[1:-1].split(',')
+        elif isinstance(requested_ids, list) and isinstance(requested_ids[0], str):
+            requested_ids = [int(r_id) for r_id in requested_ids[0].split(',')]
 
         # first get datasets that are open for everyone and without embargo or expired embargo
         accessible_data = list(Entries.objects.values_list('id', flat=True)
