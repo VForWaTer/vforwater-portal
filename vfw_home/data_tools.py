@@ -219,7 +219,7 @@ def is_data_short(ID: int, source: str, date: list):
         query_path[datapath + '__tstamp__gte'] = date[0]
         query_path[datapath + '__tstamp__lte'] = date[1]
 
-    # TODO: Think about using the following queryset instead of creating it serveral times per plot
+    # TODO: Think about using the following queryset instead of creating it several times per plot
     datalength = Entries.objects.filter(**query_path).count()
 
     if datalength == 0:  # if not qs.exists():
@@ -692,3 +692,14 @@ class Button:
         self.inputs = inputs
         if self.wps:
             self.source = "wps"
+
+
+def has_data(web_ID):
+    data_path = Entries.objects.filter(id=web_ID).values_list('datasource__path', flat=True)[0]
+    if data_path is None:
+        return False
+    query_path = {'{0}'.format(data_path): web_ID}
+
+    # TODO: Think about reusing the following queryset instead of creating it several times per plot
+    data = Entries.objects.filter(**query_path).first()
+    return data is not None

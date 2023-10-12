@@ -35,7 +35,7 @@ from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test
 from wps_gui.models import WpsResults
 from .Fig_obj import FigObject
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
-    __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection
+    __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection, has_data
 from .delineator import delineate
 from .forms import QuickFilterForm
 from .data_obj import DataObject
@@ -554,11 +554,21 @@ def previewplot(request):
             if isinstance(webID, list):
                 dataset = []
                 for i in webID:
-                    dataset.append(DataObject(i, date))
+                    if has_data(i[2:]):
+                        dataset.append(DataObject(i, date))
+                    else:
+                        print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
             else:
                 t0 = time()
                 dataset = DataObject(webID, date)
                 t1 = time()
+                if has_data(webID):
+                    t0 = time()
+                    dataset = DataObject(webID, date)
+                    t1 = time()
+                else:
+                    print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
+                    return JsonResponse({'error': f'No Data for dataset with entries ID {webID}'})
 
         except TypeError as e:
             print('\033[33mType error in Data Object:\033[0m ', e)
@@ -583,7 +593,7 @@ def previewplot(request):
             print('\033[33mField Error in Data Object:\033[0m ', e)
             raise Http404
         except Exception as e:
-            print('\033[31mAn unhandled error in Data Object func:\033[0m ', e)
+            print('\033[31mAn unhandled error in Data Object:\033[0m ', e)
             raise Http404
 
         # plot = MultiplePlotsObject(dataset, plot_size=plot_size)
@@ -954,6 +964,15 @@ class QuickFilterResults(View):
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT
         if query:
             data_ext = list(query.aggregate(Extent('location'))['location__extent'])
+        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrary zoom location for NO RESULT
+        try:
+            if query:
+                data_ext = list(query.aggregate(Extent('location'))['location__extent'])
+        except TypeError as e:
+            print('Selection has no extend')
+        except Exception as e:
+            print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
+            logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
 
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
