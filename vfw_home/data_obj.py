@@ -42,6 +42,8 @@ class DataObject:
         self.has_nan = False
         self.has_precision = False
         self.ID = None
+        self.split_in = []
+        self.is_split = False   # True when dataset is split due to different resolutions
         self.label = ""
         self.length = None
         self.metadata = {}
@@ -84,6 +86,7 @@ class DataObject:
             self.__get_db_data__()
             self.__set_precision__()
             self.__set_timescale__()
+            # self.__get_split__()
             if self.__interest_in_gaps__:
                 self.__get_gap_pos__()
                 if len(self.__value_before_gap__) > 0:
@@ -279,8 +282,8 @@ class DataObject:
         """
         self.length = self.__general_data_qs__.count()
         if self.length == 0:  # if not qs.exists():
-            print('Problems with query_path: ', self.__general_data_qs__)
-            logger.debug(f'Problems with query_path, {e}')
+            print('Data_obj.db_data_length: Problems with query_path: ', self.__general_data_qs__)
+            logger.debug(f'Problems with query_path, {self.__general_data_qs__}')
             raise EmptyResultSet(f'Got no data in data_tools.is_data_short for id={self.ID}')
 
         if self.length > self.__row_limit__:
@@ -439,3 +442,10 @@ class DataObject:
             # add new rows to dataframe and reset the index to integer
             self.dataframe = pd.concat([self.dataframe, new_df_rows]).sort_index().reset_index(drop=True)
             self.missing_data = pd.DataFrame({'tstamp': defect_x, self.value_column: defect_y})
+
+    def __get_split__(self):
+        split_datasets = (Entries.objects.filter(pk=self.ID, nmentrygroups__group__type__name='Split dataset')
+                          .values('id', 'nmentrygroups__group_id')
+                          .order_by('nmentrygroups__group_id'))
+        print('split_datasets 2: ', split_datasets)
+        pass

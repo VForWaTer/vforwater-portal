@@ -29,7 +29,7 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
             try:
                 requested_ids = [int(requested_ids)]
             except ValueError as e:
-                requested_ids = requested_ids[1:-1].split(',')
+                requested_ids = [int(r_id) for r_id in requested_ids[1:-1].split(',')]
         elif isinstance(requested_ids, list) and isinstance(requested_ids[0], str):
             requested_ids = [int(r_id) for r_id in requested_ids[0].split(',')]
 
@@ -59,8 +59,9 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     """
     dataset_dict = {}
     error_dict = {}
-    group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group', 'dbIDs': [], 'orgIDs': [], 'uuIDs': []}
-    name_group = {'group_titles': [], 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': [],
+    group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group', 'dbIDs': [], 'orgIDs': [], 'uuIDs': [],
+                  'group_IDs': [], }
+    name_group = {'group_titles': set(), 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': [],
                   'mixed_vars': True}
 
     # if min_time != 0:
@@ -85,24 +86,30 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         error_dict = {'message': 'no access', 'id': error_ids}
 
     for dataset in result_dataset:
-        dataset_dict.update({'db' + str(dataset['entry__id']): {'name': dataset['entry__variable__name'],
-                                                                'abbr': dataset['entry__variable__symbol'],
-                                                                'unit': dataset['entry__variable__unit__symbol'],
-                                                                'type': dataset['entry__datasource__datatype__name'],
-                                                                'source': 'db',
-                                                                'dbID': dataset['entry__id'],
-                                                                'uuID': dataset['entry__uuid'],
-                                                                'orgID': 'db' + str(dataset['entry__id']),
-                                                                'start': startdate,
-                                                                'end': enddate,
-                                                                'inputs': [],
-                                                                'outputs': dataset['entry__datasource__datatype__name'],
-                                                                'DBgroup': dataset['group__title'],
-                                                                'DBgroupID': dataset['group_id'],
-                                                                # 'geom': dataset['entry__geom'].json,
-                                                                'location': dataset['entry__location'].json
-                                                                }
-                             })
+        dataset_id = 'db' + str(dataset['entry__id'])
+        # tried to use an object to build dataset_dict more easily, but using object is too cumbersome
+        if dataset_id in dataset_dict:
+            dataset_dict[dataset_id]['DBgroup'].add(dataset['group__title'])
+            dataset_dict[dataset_id]['DBgroupID'].add(dataset['group_id'])
+        else:
+            dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
+                                              'abbr': dataset['entry__variable__symbol'],
+                                              'unit': dataset['entry__variable__unit__symbol'],
+                                              'type': dataset['entry__datasource__datatype__name'],
+                                              'source': 'db',
+                                              'dbID': dataset['entry__id'],
+                                              'uuID': dataset['entry__uuid'],
+                                              'orgID': dataset_id,
+                                              'start': startdate,
+                                              'end': enddate,
+                                              'inputs': [],
+                                              'outputs': dataset['entry__datasource__datatype__name'],
+                                              'DBgroup': {dataset['group__title']},
+                                              'DBgroupID': {dataset['group_id']},
+                                              # 'geom': dataset['entry__geom'].json,
+                                              'location': dataset['entry__location'].json
+                                              }
+                                 })
         # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
         #  behaviour of '.distinct()' This is done in a seperate loop
         # group_dict['dbIDs'].append(dataset['entry__id'])
@@ -123,22 +130,25 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         group_dict['orgIDs'].append(k)
         group_dict['uuIDs'].append(v['uuID'])
         # summarize possible attributes to name a group
-        name_group['group_titles'].append(v['DBgroup'])  # #1
+        name_group['group_titles'].update(v['DBgroup'])  # #1
         name_group['var_names'].append(v['name'])  # #2
         name_group['type_names'].append(v['type'])  # #3
         # name_group['geom'].append(dataset['entry__geom'])  # #4
         name_group['geom_type'].append(json.loads(v['location'])['type'])  # #4
         name_group['coords'].append(json.loads(v['location'])['coordinates'])  # #5
 
-
     # Set the name of the group
     if len(accessible_ids) > 1:
         group_dict['is_group'] = True
+
         if Counter(name_group['var_names']).most_common(1)[0][1] == len(accessible_ids):
             name_group['mixed_vars'] = False
             # if all the fields 'group_titles', 'var_names' or 'type_names' are identical, then use it for groupname
         for attr in name_group.keys():
             # TODO: Poor function/design of object so we have to skip for certain values. Improve the function/object
+            if isinstance(name_group[attr], set):
+                name_group[attr] = list(name_group[attr])
+
             if attr == 'coords' or attr == 'mixed_vars':
                 continue
 
@@ -151,6 +161,8 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
 
         # Now add the group name to the group members
         for dataset, values in dataset_dict.items():
+            dataset_dict[dataset]['DBgroup'] = list(dataset_dict[dataset]['DBgroup'])
+            dataset_dict[dataset]['DBgroupID'] = list(dataset_dict[dataset]['DBgroupID'])
             dataset_dict[dataset]['group'] = group_dict['name']
             dataset_dict[dataset]['type'] = group_dict['type']
             # dataset_dict[dataset]['members'] = group_dict['type']

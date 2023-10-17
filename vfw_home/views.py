@@ -559,10 +559,7 @@ def previewplot(request):
                     else:
                         print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
             else:
-                t0 = time()
-                dataset = DataObject(webID, date)
-                t1 = time()
-                if has_data(webID):
+                if has_data(entriesID):
                     t0 = time()
                     dataset = DataObject(webID, date)
                     t1 = time()
@@ -571,10 +568,12 @@ def previewplot(request):
                     return JsonResponse({'error': f'No Data for dataset with entries ID {webID}'})
 
         except TypeError as e:
-            print('\033[33mType error in Data Object:\033[0m ', e)
+            print('\033[33mhome.views.previewplot: Type error in Data Object:\033[0m ', e)
+            logger.debug('Type Error in Data Object: ', e)
             raise Http404
         except IndexError as e:
-            print('\033[33mindex error in Data Object:\033[0m ', e)
+            print('\033[33mhome.views.previewplot: index error in Data Object:\033[0m ', e)
+            logger.debug('Index Error in Data Object: ', e)
             if request.user.is_authenticated:
                 # TODO: Rethink how to handle unallowed requests
                 raise Http404
@@ -584,16 +583,20 @@ def previewplot(request):
                 # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
                 # return redirect('vfw_home:login')
         except EmptyResultSet as e:
-            print('\033[33mEmptyResultSet Error in Data Object:\033[0m ', e)
+            print('\033[33mhome.views.previewplot: EmptyResultSet Error in Data Object:\033[0m ', e)
+            logger.debug('EmptyResultSet Error in Data Object: ', e)
             return JsonResponse({'error': e})
         except LookupError as e:
-            print('\033[33mLookupError in Data Object:\033[0m ', e)
+            print('\033[33mhome.views.previewplot: LookupError in Data Object:\033[0m ', e)
+            logger.debug('LookupError in Data Object: ', e)
             return JsonResponse({'error': e})
         except FieldError as e:
-            print('\033[33mField Error in Data Object:\033[0m ', e)
+            print('\033[33mhome.views.previewplot: Field Error in Data Object:\033[0m ', e)
+            logger.debug('Field Error in Data Object: ', e)
             raise Http404
         except Exception as e:
-            print('\033[31mAn unhandled error in Data Object:\033[0m ', e)
+            print('\033[31mhome.views.previewplot: An unhandled error in Data Object:\033[0m ', e)
+            logger.debug('An unhandled Error in Data Object: ', e)
             raise Http404
 
         # plot = MultiplePlotsObject(dataset, plot_size=plot_size)
@@ -747,6 +750,7 @@ def show_info(request):
                 db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
         except Exception as e:
             print('Error in views.show_info.collect_data: ', e)
+            logger.debug('Error in views.show_info.collect_data: ', e)
 
         if not db_info.exists():
             warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
