@@ -60,7 +60,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     dataset_dict = {}
     error_dict = {}
     group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group', 'dbIDs': [], 'orgIDs': [], 'uuIDs': [],
-                  'group_IDs': [], }
+                  'group_IDs': [], 'is_split': []}
     name_group = {'group_titles': set(), 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': [],
                   'mixed_vars': True}
 
@@ -75,12 +75,12 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     error_ids = accessible_data['blocked']
     accessible_ids = accessible_data['open']
 
-    # TDOO: The results are all returned twice. '.distinct()' should avoid this behaviour, but seems not to work.
+    # TDOO: The results are all returned twice. Maybe because of split datasets?
     # Fix this somehow!
     result_dataset = NmEntrygroups.objects. \
         values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
                'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
-               'group_id', 'entry__location', 'entry__geom').filter(pk__in=accessible_ids)  # .distinct()
+               'group_id', 'entry__location', 'entry__geom', 'group__type__name').filter(pk__in=accessible_ids)  # .distinct()
 
     if len(error_ids) > 0:
         error_dict = {'message': 'no access', 'id': error_ids}
@@ -91,10 +91,14 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         if dataset_id in dataset_dict:
             dataset_dict[dataset_id]['DBgroup'].add(dataset['group__title'])
             dataset_dict[dataset_id]['DBgroupID'].add(dataset['group_id'])
+            dataset_dict[dataset_id]['groupTypeName'].add(
+                dataset['groupTypeName'] if 'groupTypeName' in dataset else "")
         else:
             dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
                                               'abbr': dataset['entry__variable__symbol'],
                                               'unit': dataset['entry__variable__unit__symbol'],
+                                              'is_split': True
+                                              if dataset['group__type__name'].find('Split dataset') else None,
                                               'type': dataset['entry__datasource__datatype__name'],
                                               'source': 'db',
                                               'dbID': dataset['entry__id'],
@@ -106,6 +110,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                               'outputs': dataset['entry__datasource__datatype__name'],
                                               'DBgroup': {dataset['group__title']},
                                               'DBgroupID': {dataset['group_id']},
+                                              'groupTypeName': {dataset['group__type__name']},
                                               # 'geom': dataset['entry__geom'].json,
                                               'location': dataset['entry__location'].json
                                               }
@@ -161,6 +166,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
 
         # Now add the group name to the group members
         for dataset, values in dataset_dict.items():
+            dataset_dict[dataset]['groupTypeName'] = list(dataset_dict[dataset]['groupTypeName'])
             dataset_dict[dataset]['DBgroup'] = list(dataset_dict[dataset]['DBgroup'])
             dataset_dict[dataset]['DBgroupID'] = list(dataset_dict[dataset]['DBgroupID'])
             dataset_dict[dataset]['group'] = group_dict['name']
