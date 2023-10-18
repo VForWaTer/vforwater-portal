@@ -244,7 +244,7 @@ vfw.session.updateDatastoreButton = function (wpsDBInfo) {
         storageEntry.dbID = wpsDBInfo['id'].substring(3,)
         storageEntry.inputs = wpsDBInfo['inputs']
     }
-    button.remove();
+    // button.remove();
     // parent.innerHTML += vfw.html.createSidebarBtn(wpsDBInfo['id'].substring(3,),
     // parent.innerHTML += vfw.html.createSidebarBtn(datasetKey,
     //     storageEntry, btnName, title)
@@ -324,25 +324,28 @@ vfw.sidebar.buildDatastoreButton = function (json) {
 
 
 /** Remove data / elements from workspace **/
-vfw.session.removeSingleData = function (removeData) {
-    /** remove data from portal: **/
-    document.getElementById("sidebtn" + removeData).remove();
-    // removeData.remove();  // could be used when the element where send directly
-
-    /** remove data from session: **/
-    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
-
-    delete workspaceData[removeData];
-    sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
-    sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
-}
+// vfw.session.removeSingleData = function (removeData) {
+//     console.log('removeData: ', removeData)
+//     console.log('document.getElementById("sidebtn' + removeData + '"): ', document.getElementById("sidebtn" + removeData))
+//     /** remove data from portal: **/
+//     document.getElementById("sidebtn" + removeData).remove();
+//     // removeData.remove();  // could be used when the element where send directly
+//
+//     /** remove data from session: **/
+//     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+//
+//     delete workspaceData[removeData];
+//     sessionStorage.setItem("dataBtn", JSON.stringify(workspaceData))
+//     sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
+// }
 
 vfw.session.removeGroupData = function (removeData) {
     /** remove button from portal **/
     let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (i) {
         if (storedData[i].group === removeData) {
-            vfw.session.removeSingleData(i);
+            // vfw.session.removeSingleData(i);
+            vfw.datasets.dataObjects[i].removeData(i)
             // document.getElementById("id" + key).remove()
         }
     });
@@ -353,14 +356,16 @@ vfw.session.removeAllDatasets = function () {
     /** remove button from portal **/
     let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (key, value) {
+        vfw.datasets.dataObjects[key].removeData(key)
+        /*
         if ("name" in value) {
-            vfw.session.removeSingleData(key);
+            // vfw.session.removeSingleData(key);
             // document.getElementById("id" + key).remove()
-        }
+        }*/
     });
     /** remove button from session **/
-    sessionStorage.removeItem("dataBtn");
-    sessionStorageData = {};
+    // sessionStorage.removeItem("dataBtn");
+    // sessionStorageData = {};
 }
 
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
@@ -863,7 +868,8 @@ function menuItemListener(link) {
             console.error('Not implemented yet')
             break;
         case "Remove":
-            vfw.session.removeSingleData(id);
+            // vfw.session.removeSingleData(id);
+            vfw.datasets.dataObjects[id].removeData(id)
             // vfw.html.popup.classList.remove(popActive);
             vfw.html.loaderOverlayOff();
             break;

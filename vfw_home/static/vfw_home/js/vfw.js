@@ -229,7 +229,8 @@ vfw.html.createSidebarBtn = function (storeID, btnData, btnName, title) {
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content ' + noData + '">' + btnName + '</div><div class="task__actions"></div>' +
         '</span><span class="data ' + btnData['type'] + '"></span>' +
-        '<a onclick="vfw.session.removeSingleData(\'' + storeID + '\')" ' +
+        '<a onclick="vfw.datasets.dataObjects[\'' + storeID + '\'].removeData(\'' + storeID + '\')" ' +
+        // '<a onclick="vfw.session.removeSingleData(\'' + storeID + '\')" ' +
         'class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>' +
         '</a><br></li>';
 }
@@ -1096,6 +1097,9 @@ vfw.html.getQuickSelection = function (selection) {
                     $(".group-store-button").hide();
                 }
                 vfw.map.updateMapSelection(json)
+            })
+            .fail(function (bug) {
+                console.warn('got a bug in getQuickSelection: ', bug)
             })
     }
 }
