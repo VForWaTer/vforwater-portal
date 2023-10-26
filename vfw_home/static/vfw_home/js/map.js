@@ -48,7 +48,7 @@ vfw.map.buildMapModal = function (ids, page) {
         }, /** data sent with the post request **/
     })
         .done(function (html) {
-            mapmodal.style.display = "block";
+            vfw.map.html.mapModal.style.display = "block";
             document.getElementById("infomodal_paginationTable").innerHTML = html;
             document.getElementById('infomodal_paginationTable').style.display = "block";
         })

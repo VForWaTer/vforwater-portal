@@ -39,13 +39,17 @@
 </div>
 </body>
 <script>
-  vfw.util.bokehPreviewScript;
-  {#var bokehPreviewScript;#}
   // Get the modal
   vfw.sidebar.modal = document.getElementById("infoModal");
 
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = (event) => {if (event.target == vfw.sidebar.modal) vfw.sidebar.modal.closeInfoModal()};
+  // When the user clicks anywhere outside the Info- or MapModal, close it
+  window.onclick = (event) => {
+    if (event.target === vfw.sidebar.modal) {
+      vfw.sidebar.modal.closeInfoModal()
+    } else if (event.target === vfw.map.html.mapModal) {
+      vfw.map.closeMapModal()
+    }};
+  {#window.onclick = (event) => {if (event.target == vfw.sidebar.modal) vfw.sidebar.modal.closeInfoModal()};#}
 
   vfw.sidebar.modal.closeInfoModal = function() {
     vfw.sidebar.modal.style.display = "none";

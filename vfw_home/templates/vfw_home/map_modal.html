@@ -30,14 +30,12 @@
 </div>
 </body>
 <script>
-  let mapmodal = document.getElementById("mapModal");
+  vfw.map.html.mapModal = document.getElementById("mapModal");
 
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = event => {if (event.target == mapmodal) vfw.map.closeMapModal()};
-
+  //* Close the map modal
   vfw.map.closeMapModal = function () {
     document.getElementById('infomodal_paginationTable').style.display = "none";
-    mapmodal.style.display = "none";
+    vfw.map.html.mapModal.style.display = "none";
   }
 
 </script>
