@@ -48,7 +48,10 @@
       vfw.sidebar.modal.closeInfoModal()
     } else if (event.target === vfw.map.html.mapModal) {
       vfw.map.closeMapModal()
-    }};
+    } else if (event.target === vfw.html.resultModal) {
+      vfw.html.close_result_Modal()
+    }
+  };
   {#window.onclick = (event) => {if (event.target == vfw.sidebar.modal) vfw.sidebar.modal.closeInfoModal()};#}
 
   vfw.sidebar.modal.closeInfoModal = function() {

@@ -255,7 +255,6 @@ vfw.datasets.DataObj = class {
     /** Several functions to fill and show a context menu **/
     showContextMenu() {
         console.log('...reached')
-        this.#createContextMenu()
         // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
         let htmlElements = this.#createContextMenu(this.orgID)
         vfw.workspace.modal.openResultModal(htmlElements, true)
@@ -304,11 +303,6 @@ vfw.datasets.DataObj = class {
                 ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"]
             ]}
 
-        function createMenuItem(action, iconClass, name, title) {
-            htmlElements += `<li className="context-menu__item">
-                <a href="#" className="context-menu__link context-menu-plot" data-action=${action}>
-                <i className="fa ${iconClass}"></i> ${name}</a>
-                </li>`
         function createMenuItem(action, iconClass, name, func) {
 
             htmlElements += `<li className="context-menu__item"> ` +
@@ -319,7 +313,6 @@ vfw.datasets.DataObj = class {
         }
 
         itemParams[this.type].forEach((value) => createMenuItem(...value))
-        }
 
         return htmlElements
 

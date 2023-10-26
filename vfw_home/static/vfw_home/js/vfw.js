@@ -1354,10 +1354,10 @@ class SidebarButtonWPS extends SidebarButton {
  */
 function place_html_with_js(divID, data) {
     document.getElementById(divID).innerHTML = data.div; // add plot
-    bokehResultScript = document.createElement('script');
-    bokehResultScript.type = 'text/javascript';
-    bokehResultScript.text = data.script;
-    document.head.appendChild(bokehResultScript);
+    vfw.util.bokehResultScript = document.createElement('script');
+    vfw.util.bokehResultScript.type = 'text/javascript';
+    vfw.util.bokehResultScript.text = data.script;
+    document.head.appendChild(vfw.util.bokehResultScript);
 }
 
 /**

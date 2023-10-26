@@ -442,8 +442,8 @@ var taskItemClassName = "task";
 // var taskItemInContext;
 vfw.var.taskItemInContext = null;
 
-var menu = document.querySelector("#context-menu");
 vfw.html.contextMenu = document.querySelector("#context-menu");  // get element with id context-menu
+// var vfw.html.contextMenu = document.querySelector("#context-menu");
 var resultMenu = document.querySelector("#context-result");
 vfw.html.popup = document.querySelector("#loader-popup");  // needed in sidebar "Plot data"
 vfw.html.popup_content = document.querySelector('#pop-content-side');
@@ -461,12 +461,15 @@ var resultMenuHeight;
 var windowWidth;
 var windowHeight;
 
+/*
+// TODO: seems unused. Delete!
 window.onclick = function(event) {
     console.log('test')
   if (event.target == vfw.html.contextMenu) {
     vfw.html.contextMenu.style.display = "none";
   }
 }
+*/
 
 /**
  * Initialise our application's code.
@@ -592,8 +595,8 @@ vfw.sidebar.positionMenu = function (e) {
     console.log('e: ', e)
     vfw.html.mouse.clickCoords = vfw.util.getPosition(e);
 
-    menuWidth = menu.offsetWidth + 4;
-    menuHeight = menu.offsetHeight + 4;
+    menuWidth = vfw.html.contextMenu.offsetWidth + 4;
+    menuHeight = vfw.html.contextMenu.offsetHeight + 4;
 
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
