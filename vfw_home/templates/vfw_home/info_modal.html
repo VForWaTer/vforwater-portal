@@ -12,9 +12,9 @@
 {#  <script src="{% static 'visual_app/js/bokeh-2.4.3.min.js' %}" type="text/javascript"></script>#}
 {#  <script src="{% static 'visual_app/js/bokeh-tables-2.4.3.min.js' %}" type="text/javascript"></script>#}
 {#  <script src="{% static 'visual_app/js/bokeh-widgets-2.4.3.min.js' %}" type="text/javascript"></script>#}
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.2.2.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.2.2.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.2.2.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.0.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.3.0.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.3.0.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div id="infoModal" class="w3-modal" style="background-color: rgba(0,0,0,0.1)">
@@ -31,7 +31,7 @@
       </tr>
     </table>
     <div class="modal-footer" id="modal-footer">
-      <span-b class="modal-back" onclick="closeInfoModal()">{% trans "Back" %}</span-b>
+      <span-b class="modal-back" onclick="vfw.sidebar.modal.closeInfoModal()">{% trans "Back" %}</span-b>
       <h3></h3>
     </div>
   </div>
@@ -39,20 +39,41 @@
 </div>
 </body>
 <script>
-  var bokehPreviewScript;
+  vfw.util.bokehPreviewScript;
+  {#var bokehPreviewScript;#}
   // Get the modal
-  let modal = document.getElementById("infoModal");
+  vfw.sidebar.modal = document.getElementById("infoModal");
 
   // When the user clicks anywhere outside of the modal, close it
-  window.onclick = (event) => {if (event.target == modal) closeInfoModal()};
+  window.onclick = (event) => {if (event.target == vfw.sidebar.modal) vfw.sidebar.modal.closeInfoModal()};
 
-  function closeInfoModal() {
-    modal.style.display = "none";
-    if (bokehPreviewScript) {
-      bokehPreviewScript.parentNode.removeChild(bokehPreviewScript);
+  vfw.sidebar.modal.closeInfoModal = function() {
+    vfw.sidebar.modal.style.display = "none";
+    if (vfw.util.bokehPreviewScript) {
+      vfw.util.bokehPreviewScript.parentNode.removeChild(vfw.util.bokehPreviewScript);
       document.getElementById('mod_prev').style.width= "";
     }
   }
+
+  /**
+ * Add innerHTML to the info modal and open it. One can add html to id="mod_dat_inf" (default) or id="mod_prev"
+ *
+ * @param {string} html
+ * @param {string} position
+ */
+vfw.sidebar.modal.openInfoModal = function (html, position="mod_dat_inf") {
+    if (position === "mod_dat_inf") {
+        document.getElementById("mod_dat_inf").innerHTML = html;
+    } else {
+        document.getElementById("mod_prev").innerHTML = html;
+    }
+    vfw.html.resultModal.style.display = "block";
+}
+
+vfw.workspace.modal.selectInput = function (btnKeys) {
+    vfw.html.resultModal
+}
+
 
 </script>
 

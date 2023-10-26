@@ -443,6 +443,7 @@ var taskItemClassName = "task";
 vfw.var.taskItemInContext = null;
 
 var menu = document.querySelector("#context-menu");
+vfw.html.contextMenu = document.querySelector("#context-menu");  // get element with id context-menu
 var resultMenu = document.querySelector("#context-result");
 vfw.html.popup = document.querySelector("#loader-popup");  // needed in sidebar "Plot data"
 vfw.html.popup_content = document.querySelector('#pop-content-side');
@@ -459,6 +460,13 @@ var resultMenuHeight;
 
 var windowWidth;
 var windowHeight;
+
+window.onclick = function(event) {
+    console.log('test')
+  if (event.target == vfw.html.contextMenu) {
+    vfw.html.contextMenu.style.display = "none";
+  }
+}
 
 /**
  * Initialise our application's code.
@@ -489,7 +497,7 @@ function contextListener() {
             }
             e.preventDefault();
             vfw.html.toggleMenuOn(chooseContext, vfw.var.taskItemInContext.dataset, btndata);
-            positionMenu(e);
+            vfw.sidebar.positionMenu(e);
         } else {
             vfw.var.taskItemInContext = null;
             toggleMenuOff();
@@ -508,7 +516,7 @@ function clickListener() {
             menuItemListener(clickeElIsLink);
         } else {
             let button = e.which || e.button;
-            if (button === 1) toggleMenuOff();
+            if (button === 1) toggleMenuOff();  // 1 == left button; 3 == right button
         }
     });
 }
@@ -558,8 +566,8 @@ vfw.html.toggleMenuOn = function (chooseContext, data, btndata) {
             resultMenu.classList.add(contextResultActive);
             togglePlotContext(resultMenu, btndata)
         } else {
-            menu.classList.add(contextMenuActive);
-            togglePlotContext(menu, btndata)
+            vfw.html.contextMenu.classList.add(contextMenuActive);
+            togglePlotContext(vfw.html.contextMenu, btndata)
         }
     }
 }
@@ -571,7 +579,7 @@ function toggleMenuOff(chooseContext) {
     if (menuState !== 0) {
         menuState = 0;
         if (resultMenu) resultMenu.classList.remove(contextResultActive);
-        menu.classList.remove(contextMenuActive);
+        vfw.html.contextMenu.classList.remove(contextMenuActive);
     }
 }
 
@@ -580,7 +588,7 @@ function toggleMenuOff(chooseContext) {
  *
  * @param {Object} e The event
  */
-function positionMenu(e) {
+vfw.sidebar.positionMenu = function (e) {
     console.log('e: ', e)
     vfw.html.mouse.clickCoords = vfw.util.getPosition(e);
 
@@ -590,8 +598,8 @@ function positionMenu(e) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
 
-    menu.style.left = ((windowWidth - vfw.html.mouse.clickCoords.x) < menuWidth) ? `${windowWidth - menuWidth}px` : `${vfw.html.mouse.clickCoords.x}px`;
-    menu.style.top = ((windowHeight - vfw.html.mouse.clickCoords.y) < menuHeight) ? `${windowHeight - menuHeight}px` : `${vfw.html.mouse.clickCoords.y}px`;
+    vfw.html.contextMenu.style.left = ((windowWidth - vfw.html.mouse.clickCoords.x) < menuWidth) ? `${windowWidth - menuWidth}px` : `${vfw.html.mouse.clickCoords.x}px`;
+    vfw.html.contextMenu.style.top = ((windowHeight - vfw.html.mouse.clickCoords.y) < menuHeight) ? `${windowHeight - menuHeight}px` : `${vfw.html.mouse.clickCoords.y}px`;
 
     if (resultMenu) {
         resultMenuWidth = resultMenu.offsetWidth + 4;
@@ -637,13 +645,13 @@ vfw.workspace.modal.showDataInfo = function (properties) {
 
 
 /**
- * Add innerHTML to a modal and open it. As standard the html code is part of a table. As an alternative one can also
- * add just the html without table for is_simple = true.
+ * Add innerHTML to the result modal and open it. As standard the html code is part of a table.
+ * As an alternative one can also add just the html without table for is_simple = true.
  *
  * @param {string} html
  * @param {boolean} js_simple
  */
-vfw.workspace.modal.openResultModal = function (html, is_simple = false) {
+vfw.workspace.modal.openResultModal = function (html, is_simple=false) {
     if (is_simple) {
         document.getElementById("mod_result").innerHTML = html;
     } else {
@@ -651,10 +659,6 @@ vfw.workspace.modal.openResultModal = function (html, is_simple = false) {
         '{background-color: #c8ebee;}</style><table>' + html + '</table></div>'; // add table
     }
     vfw.html.resultModal.style.display = "block";
-}
-
-vfw.workspace.modal.selectInput = function (btnKeys) {
-    vfw.html.resultModal
 }
 
 
@@ -843,6 +847,10 @@ function menuItemListener(link) {
                     // saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
                     let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
+                    vfw.workspace.modal.openResultModal(json)
+                })
+                .fail(function (failed) {
+                    console.error('Failed to load metadata: ', failed)
                 })
                 .always(function () {
                     // vfw.html.popup.classList.remove(popActive);

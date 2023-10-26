@@ -58,8 +58,8 @@ vfw.datasets.DataObj = class {
             this.btnPosition = "";
         } else {
             this.storeKey = "dataBtn";
-            this.btnPosition = "sidebtn";
             this.btnPosition = "workspace";
+            // this.btnPosition = "sidebtn";
         }
 
         this.#setTitle();
@@ -256,13 +256,49 @@ vfw.datasets.DataObj = class {
     showContextMenu() {
         console.log('...reached')
         this.#createContextMenu()
+        // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
+        let htmlElements = this.#createContextMenu(this.orgID)
+        vfw.workspace.modal.openResultModal(htmlElements, true)
 
+    }
+
+    getPlot() {
+        console.log('getPlot: ')
+        vfw.html.loaderOverlayOn();
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/previewplot",
+            datatype: 'json',
+            data: {
+                preview: this.orgID,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+                startdate: this.start,
+                enddate: this.end,
+            }, // data sent with post
+        })
+        .done(function (requestResult) {
+            if ('html' in requestResult) {
+                document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
+            } else {  // plot from bokeh
+                vfw.var.obj.bokehImage = requestResult;
+                place_html_with_js("mod_result", requestResult)
+            }
+            vfw.html.resultModal.style.display = "block";
+        })
+        .fail(function (e) {
+            console.error('Fehler: ', e)
+        })
+        .always(function () {
+            vfw.html.loaderOverlayOff();
+        })
     }
     #createContextMenu() {
         let menu = document.getElementById("context-menu")
+
+    #createContextMenu(orgID) {
         let htmlElements = ""
         let itemParams = {
-            "timeseries": [["Plot", "fa-eye", gettext("Plot data")],
+            "timeseries": [
+                ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
                 ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
                 ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
                 ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"]
@@ -273,9 +309,33 @@ vfw.datasets.DataObj = class {
                 <a href="#" className="context-menu__link context-menu-plot" data-action=${action}>
                 <i className="fa ${iconClass}"></i> ${name}</a>
                 </li>`
+        function createMenuItem(action, iconClass, name, func) {
+
+            htmlElements += `<li className="context-menu__item"> ` +
+                `<a href="#" className="context-menu__link" data-action=${action} ` +
+                `onclick=vfw.datasets.dataObjects['${orgID}'].${func}('${orgID}') > ` +
+                `<i className="fa ${iconClass}"></i> ${name}</a> ` +
+                `</li>`
         }
 
         itemParams[this.type].forEach((value) => createMenuItem(...value))
         }
+
+        return htmlElements
+
+    }
+    #loadPlot() {
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/previewplot",
+            datatype: 'json',
+            data: {
+                preview: this.id,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+                startdate: this.start,
+                enddate: this.end,
+                    }, // data sent with post
+            })
+    }
+
 }
 

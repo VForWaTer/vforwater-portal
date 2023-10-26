@@ -775,10 +775,10 @@ vfw.html.moreInfoModal = function (id) {
             document.getElementById('mod_prev').style.width = "700px";  // set size for plot
             document.getElementById('mod_prev').innerHTML = json.div; // add plot
             // bokehPreviewScript is a global variable to set and remove the script of bokeh
-            bokehPreviewScript = document.createElement('script');
-            bokehPreviewScript.type = 'text/javascript';
-            bokehPreviewScript.text = json.script;
-            document.head.appendChild(bokehPreviewScript);
+            vfw.util.bokehPreviewScript = document.createElement('script');
+            vfw.util.bokehPreviewScript.type = 'text/javascript';
+            vfw.util.bokehPreviewScript.text = json.script;
+            document.head.appendChild(vfw.util.bokehPreviewScript);
         }
     }
 

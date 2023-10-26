@@ -428,10 +428,10 @@ vfw.map.createStoreBtn = function (ssid, embargo) {
 
 
 vfw.map.showGroupBtn = function (ssids) {
-    let btn = '';
+    let btn;
     if (ssids.length > 1) {
         btn = '<a><b><input class="w3-btn-block w3-btn-block:hover" type="submit" ' +
-            'onclick=\"vfw.map.buildMapModal(' + JSON.stringify(ssids) + ', 1); closeInfoModal()\" ' +
+            'onclick=\"vfw.map.buildMapModal(' + JSON.stringify(ssids) + ', 1); vfw.sidebar.modal.closeInfoModal()\" ' +
             'value="' + gettext("Show group") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Show all ") + ssids.length + gettext(" associated datasets.") + '"></b></a>'
     } else {
@@ -445,12 +445,12 @@ vfw.map.showGroupBtn = function (ssids) {
 vfw.map.storeGroupBtn = function (ssids, embargo) {
     if (ssids.length > 1 && (embargo === "False" || vfw.map.UNBLOCKED_IDS.includes(ssids))) {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
-            'onclick=\"vfw.sidebar.workspaceDataset(' + JSON.stringify(ssids) + '); closeInfoModal()\" ' +
+            'onclick=\"vfw.sidebar.workspaceDataset(' + JSON.stringify(ssids) + '); vfw.sidebar.modal.closeInfoModal()\" ' +
             'value="' + gettext("Pass group to datastore") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Select all ") + ssids.length + gettext(" datasets of one group.") + '"></b></a>'
     } else if (ssids.length > 1) {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover request-button" type="submit" ' +
-            'onclick=\"vfw.map.requestDataset(' + JSON.stringify(ssids) + '); closeInfoModal()\" ' +
+            'onclick=\"vfw.map.requestDataset(' + JSON.stringify(ssids) + '); vfw.sidebar.modal.closeInfoModal()\" ' +
             'value="' + gettext("Send group request") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Send access request(s) to the data owner(s).") + '"></b></a>'
     } else {
