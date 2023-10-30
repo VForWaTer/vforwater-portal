@@ -507,7 +507,6 @@ function drawOnMapMenu(test) {
         // start()
         // document.getElementById("mod_prev").classList.add("loader");
         vfw.html.loaderOverlayOn()
-        // positionPopup(vfw.html.popup);
         // content.innerHTML = vfw.html.loader
         // selectionLayerSource.clear();
         selectionEdgeCoords = event.feature.getGeometry()

@@ -614,19 +614,6 @@ vfw.sidebar.positionMenu = function (e) {
 }
 
 /**
- * Positions the popup properly.
- *
- * @param {Object} e The event
- */
-// TODO: Why is the position only sometimes correctly updated?
-function positionPopup(window) {
-    let popupWidth = window.offsetWidth + 4;
-    let popupHeight = window.offsetHeight + 4;
-    window.style.left = ((windowWidth - vfw.html.mouse.clickCoords.x) < popupWidth) ? `${windowWidth - popupWidth}px` : `${vfw.html.mouse.clickCoords.x}px`;
-    window.style.top = ((windowHeight - vfw.html.mouse.clickCoords.y) < popupHeight) ? `${windowHeight - popupHeight}px` : `${vfw.html.mouse.clickCoords.y}px`;
-}
-
-/**
  * Dummy action function that logs an action when a menu item link is clicked
  *
  * @param {dict} properties
@@ -926,7 +913,6 @@ function menuItemListener(link) {
             // vfw.html.popup_content.innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
             //     '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
             // popClose.classList.remove('w3-hide');
-            // positionPopup(vfw.html.popup.innerHTML);
             vfw.workspace.modal.openResultModal(popUpText)
             // document.getElementById("mod_result").innerHTML = '<div class="mod-header"><table><td><style>table tr:nth-child(even) ' +
             //     '{background-color: #c8ebee;}</style><table>' + popUpText + '</table></div>';
@@ -997,7 +983,6 @@ function menuItemListener(link) {
                             place_html_with_js("mod_result", requestResult)
                         }
                         // popClose.classList.remove('w3-hide');
-                        // positionPopup(vfw.html.popup);
                         vfw.html.resultModal.style.display = "block";
                     })
                     .fail(function (e) {
