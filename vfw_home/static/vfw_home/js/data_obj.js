@@ -53,7 +53,9 @@ vfw.datasets.DataObj = class {
         this.url = window.location.pathname;
 
         Object.assign(this, {...defaultParams, ...data});
-        if (Array.isArray(this.inputs) && this.inputs.length) {
+
+        // if (Array.isArray(this.inputs) && this.inputs.length) {
+        if (this.isResult) {
             this.storeKey = "resultBtn";
             this.btnPosition = "";
         } else {
@@ -252,7 +254,9 @@ vfw.datasets.DataObj = class {
         $(thisHtmlButton).replaceWith(this.#createHtmlButton());
     }
 
-    /** Several functions to fill and show a context menu **/
+    /** Several functions to fill and show a context menu
+     * - actually its a more user friendly  dropdown instead of a context menu -
+     * **/
     showContextMenu() {
         console.log('...reached')
         // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
@@ -290,8 +294,6 @@ vfw.datasets.DataObj = class {
             vfw.html.loaderOverlayOff();
         })
     }
-    #createContextMenu() {
-        let menu = document.getElementById("context-menu")
 
     #createContextMenu(orgID) {
         let htmlElements = ""
@@ -300,15 +302,19 @@ vfw.datasets.DataObj = class {
                 ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
                 ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
                 ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
-                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"]
+                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset")]
             ]}
 
+        /** Build a html button for the context menu
+         *
+         * */
         function createMenuItem(action, iconClass, name, func) {
 
-            htmlElements += `<li className="context-menu__item"> ` +
-                `<a href="#" className="context-menu__link" data-action=${action} ` +
+            htmlElements += `<li class="context-menu__item"> ` +
+                `<a class="context-menu__link" data-action=${action} ` +
                 `onclick=vfw.datasets.dataObjects['${orgID}'].${func}('${orgID}') > ` +
-                `<i className="fa ${iconClass}"></i> ${name}</a> ` +
+                `<i class="fa ${iconClass}"></i> ${name}</a>` +
                 `</li>`
         }
 

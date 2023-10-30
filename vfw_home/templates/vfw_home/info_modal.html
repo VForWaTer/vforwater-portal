@@ -1,6 +1,7 @@
 {#<!DOCTYPE html>#}
 {#<html lang="en">#}
 <meta charset="UTF-8">
+{# Used for the detailed view of the datasets selected on the map #}
 
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -31,7 +32,7 @@
       </tr>
     </table>
     <div class="modal-footer" id="modal-footer">
-      <span-b class="modal-back" onclick="vfw.sidebar.modal.closeInfoModal()">{% trans "Back" %}</span-b>
+      <span-b class="modal-back" onclick="vfw.html.infoModal.close()">{% trans "Back" %}</span-b>
       <h3></h3>
     </div>
   </div>
@@ -40,22 +41,24 @@
 </body>
 <script>
   // Get the modal
-  vfw.sidebar.modal = document.getElementById("infoModal");
+  vfw.html.infoModal = document.getElementById("infoModal");
 
   // When the user clicks anywhere outside the Info- or MapModal, close it
   window.onclick = (event) => {
-    if (event.target === vfw.sidebar.modal) {
-      vfw.sidebar.modal.closeInfoModal()
+    if (event.target === vfw.html.infoModal) {
+      vfw.html.infoModal.close()
     } else if (event.target === vfw.map.html.mapModal) {
       vfw.map.closeMapModal()
+    } else if (event.target === vfw.html.contextModal) {
+      vfw.sidebar.html.contextModal.close()
     } else if (event.target === vfw.html.resultModal) {
-      vfw.html.close_result_Modal()
+      vfw.html.resultModal.close()
     }
   };
   {#window.onclick = (event) => {if (event.target == vfw.sidebar.modal) vfw.sidebar.modal.closeInfoModal()};#}
 
-  vfw.sidebar.modal.closeInfoModal = function() {
-    vfw.sidebar.modal.style.display = "none";
+  vfw.html.infoModal.close = function() {
+    vfw.html.infoModal.style.display = "none";
     if (vfw.util.bokehPreviewScript) {
       vfw.util.bokehPreviewScript.parentNode.removeChild(vfw.util.bokehPreviewScript);
       document.getElementById('mod_prev').style.width= "";
@@ -68,9 +71,9 @@
  * @param {string} html
  * @param {string} position
  */
-vfw.sidebar.modal.openInfoModal = function (html, position="mod_dat_inf") {
+vfw.html.infoModal.openInfoModal = function (html, position="mod_dat_inf") {
     if (position === "mod_dat_inf") {
-        document.getElementById("mod_dat_inf").innerHTML = html;
+      document.getElementById("mod_dat_inf").innerHTML = html;
     } else {
         document.getElementById("mod_prev").innerHTML = html;
     }

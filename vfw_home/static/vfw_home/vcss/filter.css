@@ -377,6 +377,7 @@ div.ui-rangeslider label {
 .context-menu__link:hover {
   color: #fff;
   background-color: #0066aa;
+    cursor: pointer
 }
 
 

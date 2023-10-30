@@ -148,6 +148,39 @@ button-footer {
     /*height:50vh;*/
     /*width:20vw;*/
 }
+
+#modal-context-menu {
+    position: absolute;
+    z-index: 10;
+    width: 260px;
+    background-color: #fff;
+    border: solid 1px #5e5e5e;
+    box-shadow: 1px 1px 2px #cfcfcf;
+}
+
+.context-modal {
+    z-index: 3;
+    display: none;
+    position: fixed;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+    border: solid 1px #c7c7c7;
+}
+
+.context-modal-content{
+    /*margin:auto;*/
+    position: relative;
+    background-color:#fff;
+    /*position:relative;*/
+    /*left: 1000px;*/
+    padding:0;
+    outline:0;
+    /*width: -webkit-fit-content;*/
+    /*width: -moz-fit-content;*/
+    width:fit-content
+    /*width:600px*/
+}
+
 /* !**
 * End styling of modal.
 **! */

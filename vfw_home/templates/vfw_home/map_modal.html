@@ -1,7 +1,7 @@
 {#<!DOCTYPE html>#}
 {#<html lang="en">#}
 <meta charset="UTF-8">
-
+{# Used for the data preview when clicked on a point on the map #}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
@@ -32,7 +32,9 @@
 <script>
   vfw.map.html.mapModal = document.getElementById("mapModal");
 
-  //* Close the map modal
+  /**
+   * Close the map modal
+   * */
   vfw.map.closeMapModal = function () {
     document.getElementById('infomodal_paginationTable').style.display = "none";
     vfw.map.html.mapModal.style.display = "none";

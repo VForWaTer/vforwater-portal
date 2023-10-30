@@ -405,7 +405,7 @@ vfw.sidebar.clickInsideElement = function (e, className) {
  * @return {Object} Returns the x and y position
  */
 // TODO: THIS!!!!
-vfw.util.getPosition = function (e) {
+vfw.util.getEventPosition = function (e) {
     var posx = 0;
     var posy = 0;
 
@@ -474,10 +474,10 @@ window.onclick = function(event) {
 /**
  * Initialise our application's code.
  */
-function init() {
+vfw.init = function() {
     contextListener();
     clickListener();
-    keyupListener();
+    vfw.init.keyupListener();
     resizeListener();
 }
 
@@ -527,9 +527,21 @@ function clickListener() {
 /**
  * Listens for keyup events.
  */
-function keyupListener() {
+vfw.init.keyupListener = function () {
     window.onkeyup = function (e) {
-        if (e.keyCode === 27) toggleMenuOff();
+        if (e.keyCode === 27) {
+            // close everything when ESC was pressed
+            toggleMenuOff()
+            try {
+                vfw.html.infoModal.close()
+            } catch {}
+            try {
+                vfw.map.closeMapModal()
+            } catch {}
+            try {
+                vfw.html.resultModal.close()
+            } catch {}
+        }
     }
 }
 
@@ -593,7 +605,7 @@ function toggleMenuOff(chooseContext) {
  */
 vfw.sidebar.positionMenu = function (e) {
     console.log('e: ', e)
-    vfw.html.mouse.clickCoords = vfw.util.getPosition(e);
+    vfw.html.mouse.clickCoords = vfw.util.getEventPosition(e);
 
     menuWidth = vfw.html.contextMenu.offsetWidth + 4;
     menuHeight = vfw.html.contextMenu.offsetHeight + 4;
@@ -1043,5 +1055,5 @@ window.onclick = function(event) {
 /**
  * Run the app.
  */
-init();
+vfw.init();
 // })();
