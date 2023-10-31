@@ -5,6 +5,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from django.core.cache import cache
+from django.core.exceptions import FieldError
 from django.core.paginator import PageNotAnInteger, EmptyPage
 from django.utils import translation, timezone
 
@@ -229,44 +231,57 @@ def read_data(uuid: str, datatype: str) -> object:
         return load_meta(uuid, filepath)
 
 
-    def check_data_consistency():
-        """
-        Get all Entries and check if every entry has a datasource associated, and if yes if there is also data
-        for the respective ID at the datasource.
-        """
-        datapaths = Entries.objects.values_list('datasource__path', flat=True).distinct()
-        print('datapaths: ', datapaths)
-        datapaths = ['timeseries', 'timeseries_1d', 'timeseries_2d', 'geom_timeseries',
-                     'generic_geometry_data',
-                     'generic_2d_data', 'generic_1d_data']
-        all_Entries = Entries.objects.values_list('id', 'datasource__path')
-            # print(Entries.objects.values_list('id', 'datasource__path').explain())
-        id_without_datasoure = []
-        id_without_data = []
-        id_wrong_table = []
-        print('all_Entries: ', all_Entries, len(all_Entries))
-        all_num = len(all_Entries)
-        # print("connection.queries", connection.queries)
-        count = 0
+def check_data_consistency():
+    """
+    Get all Entries and check if every entry has a datasource associated, and if yes if there is also data
+    for the respective ID at the datasource.
+    """
+    datapaths = Entries.objects.values_list('datasource__path', flat=True).distinct()
+    datapaths = ['timeseries', 'timeseries_1d', 'timeseries_2d', 'geom_timeseries',
+                 'generic_geometry_data',
+                 'generic_2d_data', 'generic_1d_data']
+    all_Entries = Entries.objects.values_list('id', 'datasource__path')
+    id_without_datasoure = []
+    id_without_data = []
+    id_wrong_table = []
+    all_num = len(all_Entries)
+    count = 0
+    try:
         for i in all_Entries:
+            test = False
             count += 1
             if not i[1]:
                 id_without_datasoure.append(i[0])
             else:
                 query_path = {'{0}'.format(i[1]): i[0]}
-                # print(Entries.objects.filter(**query_path).exists().explain())
-                test = Entries.objects.filter(**query_path).exists()
-                if int(count/20) == count/20:
-                    print('i[0]: ', i[0], test, ' did ', str(int(count)/int(all_num)*100), '%')
+                try:
+                    test = Entries.objects.filter(**query_path).exists()
+                except FieldError as e:
+                    print(f"\033[91mError: Got a new source for data storage (path: entry_ID {query_path})"
+                          f" in vfw_home/utilities/check_data_consistency: {e}.\033[0m")
+                    # logger.debug(f"Got a new source for data storage (path: entry_ID {query_path}): {e}")
+
+                if int(count/200) == count/200:
+                    print(f'i[0]: {i[0], test} did {str(int(int(count)/int(all_num)*100))}%')
                 # print(Entries.objects.filter(timeseries__pk=i[0]).exists())
                 if not test:
                     id_without_data.append(i[0])
+                    """ check if dataset is associated with wrong table """
                     for dp in datapaths:
                         new_query_path = {'{0}'.format(dp): i[0]}
                         inner_test = Entries.objects.filter(**new_query_path).exists()
                         if inner_test:
                             id_wrong_table.append((i[0], dp))
+    except Exception as e:
+        print('e: ', e)
 
-        print('id_without_datasoure: ', id_without_datasoure)
-        print('id_without_data: ', id_without_data)
-        print('id_wrong_table: ', id_wrong_table)
+    if len(id_without_datasoure) > 0:
+        print(f'\033[93mWARNING: following IDs have no data source: {id_without_datasoure}\033[0m')
+    if len(id_without_data) > 0:
+        print(f'\033[93mWARNING: following IDs have no data: {id_without_data}\033[0m')
+    if len(id_wrong_table) > 0:
+        print(f'\033[91mERROR: following IDs are associated with the wrong table: {id_wrong_table}\033[0m')
+
+    cache.set('ids_without_data', id_without_data + id_without_datasoure)
+    return id_without_data + id_without_datasoure
+

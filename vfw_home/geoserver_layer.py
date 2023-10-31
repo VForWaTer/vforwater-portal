@@ -4,7 +4,10 @@
 import json
 import logging
 import requests
+from django.core.cache import cache
+
 from heron.settings import LOCAL_GEOSERVER, SECRET_GEOSERVER, DATABASES
+from vfw_home.utilities import check_data_consistency
 
 """
 
@@ -271,18 +274,27 @@ def __build_new_layer_xml(
             'title as "Beschreibung", name as "Datentyp", '
             'comment as "Kommentar", '
             'embargo as "Embargo", '
-            "entries.id "
-            "FROM entries LEFT JOIN variables on entries.variable_id = variables.id"
+            'entries.id '
+            'FROM entries LEFT JOIN variables on entries.variable_id = variables.id'
         )
         #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
-        if selection is not None:
-            query = f'{query} WHERE entries.id in ({selection})'
+        ids_without_data = cache.get('ids_without_data')
+        if ids_without_data is None:
+            ids_without_data = check_data_consistency()
+            cache.set('ids_without_data', ids_without_data, 3*60)
+
+        if selection is None:
+            query = f'{query} WHERE entries.id not in ({ids_without_data})'
+        else:
+            selection = list(set(selection) - set(ids_without_data))
+            query = f'{query} WHERE entries.id in ({str(selection)[1:-1]})'
 
         # if not request.user.is_authenticated:
         #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
         # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
         attribute_list = [
             ("Geometry", 0, 1, True, "point"),
+            # ("GroupTypeName", 1, 1, False, "string"),
             ("Beschreibung", 1, 1, False, "string"),
             ("Datentyp", 1, 1, False, "string"),
             ("Kommentar", 0, 1, True, "string"),

@@ -56,13 +56,11 @@ from pathlib import Path
 # for debugging:
 from time import time
 
-# Create your views here.
 """
 
 """
 logger = logging.getLogger(__name__)
 
-# class WorkflowView(TemplateView):
 # class WorkflowView(TemplateView):
 #     """
 #     Template View for plain workflow HTML Template.
@@ -70,10 +68,12 @@ logger = logging.getLogger(__name__)
 #     """
 #     template_name = "vfw_home/workflow.html"
 
-
-# from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
+"""
+# IMPORTANT:
+# From Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
+"""
 
 class HomeView(TemplateView):
     """
@@ -253,6 +253,8 @@ class DatasetDownloadView(TemplateView):
                 # srid = str(Entries.objects.filter(pk=s_id).values_list('geometry__srid__srid', flat=True)[0])
                 srid = 4326
                 # create layer on geoserver to request shp file
+                # TODO: later this ids are compared to a list of numbers, so the s_id here has to be a list of numbers
+                print('TODO: later this ids are compared to a list of numbers, so the s_id here has to be a list of numbers')
                 create_layer(request, layer_name, store, workspace, s_id)
                 # use GEOSERVER shape-zip
                 url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{' \
@@ -535,6 +537,7 @@ def previewplot(request):
     else:
         date = None
 
+    # TODO: Add the redis cache properly (https://docs.djangoproject.com/en/4.2/topics/cache/#redis)
     cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
                  'in_cache': False, 'name': "plot_{}".format('b' + str(webID) + str(plot_size) + str(date))}
     cache_obj, img = get_cache(cache_obj)
@@ -828,12 +831,14 @@ def workspace_data(request):
 
     try:
         # prepare dataset_iddatasetdownload differently for list and single value to use in collect_selection
+        start_date = request.GET.get('startDate')
+        end_date = request.GET.get('endDate')
         result = collect_selection(request,
                                    json.loads(request.GET.get('workspaceData')),
-                                   request.GET.get('startDate'),
-                                   request.GET.get('endDate')
+                                   start_date, end_date
                                    )
-        return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group']})
+        return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group'],
+                             'selectedDate': [start_date, end_date]})
 
     except TypeError as e:
         print('Type Error in vfw_home/views/workspace_data: ', e)
@@ -965,9 +970,6 @@ class QuickFilterResults(View):
         total_results = query.count()
 
         # From here collect data to update map:
-        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT
-        if query:
-            data_ext = list(query.aggregate(Extent('location'))['location__extent'])
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrary zoom location for NO RESULT
         try:
             if query:

@@ -200,6 +200,15 @@ DATABASES = {
 
 }
 
+# TODO: Add the redis cache properly (https://docs.djangoproject.com/en/4.2/topics/cache/#redis)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "TIMEOUT": 60*60,   # time out in seconds
+        # "LOCATION": "unique-snowflake",
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
