@@ -281,10 +281,10 @@ def __build_new_layer_xml(
         ids_without_data = cache.get('ids_without_data')
         if ids_without_data is None:
             ids_without_data = check_data_consistency()
-            cache.set('ids_without_data', ids_without_data, 3*60)
+            # cache.set('ids_without_data', ids_without_data, 3*60)
 
         if selection is None:
-            query = f'{query} WHERE entries.id not in ({ids_without_data})'
+            query = f'{query} WHERE entries.id not in ({str(ids_without_data)[1:-1]})'
         else:
             selection = list(set(selection) - set(ids_without_data))
             query = f'{query} WHERE entries.id in ({str(selection)[1:-1]})'
