@@ -1,7 +1,7 @@
 Bokeh==3.3.0
-django==4.2.6
+django==4.2.7
 django_crontab      ==0.7.1
-django-cors-headers ==4.2.0
+django-cors-headers==4.3.0
 django-filter       ==23.2
 docutils    ==0.20
 future      ==0.18.3
