@@ -9,7 +9,7 @@ from django.db import connections
 from django.db.models import Q
 from django.utils import timezone
 
-from heron.settings import max_size_preview_plot
+from heron.settings import MAX_SIZE_PREVIEW_PLOT
 from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups
 
 
@@ -173,6 +173,14 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             dataset_dict[dataset]['type'] = group_dict['type']
             # dataset_dict[dataset]['members'] = group_dict['type']
 
+    else:
+        # make sure there is no set in the dataset left (set/JSON conflict)
+        for dataset_name, dataset in dataset_dict.items():
+            for attr, values in dataset_dict[dataset_name].items():
+                if isinstance(values, set):
+                    dataset_dict[dataset_name][attr] = list(values)
+
+
     # TODO: Need timestamp in name to see if different selection
     return {'data': dataset_dict, 'error': error_dict, 'group': {group_dict['name']: group_dict}}
 
@@ -244,7 +252,7 @@ def is_data_short(ID: int, source: str, date: list):
         print('Problems with query_path: ', query_path)
         raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(ID))
 
-    if datalength <= max_size_preview_plot:
+    if datalength <= MAX_SIZE_PREVIEW_PLOT:
         full = True
     else:
         full = False
@@ -285,7 +293,7 @@ def __unify_dataframe(data):
 def DB_load_data(ID: int, date: list, full_res: bool):
     """
     Load data from database and return a dict with data, pandas df and axis. When full resolution == False limit length
-    of result according to settings.max_size_preview_plot
+    of result according to settings.MAX_SIZE_PREVIEW_PLOT
 
     :param ID: integer
     :param date: list
@@ -350,7 +358,7 @@ def __has_precision(df):
 
 def __reduce_dataset(qs: object, full_res: bool):
     """
-    Reduce length of dataset to length given in 'settings.max_size_preview_plot' to speed up loading time of preview.
+    Reduce length of dataset to length given in 'settings.MAX_SIZE_PREVIEW_PLOT' to speed up loading time of preview.
 
     :param qs: data as django queryset or pandas dataframe
     :param full_res: bool
@@ -361,14 +369,14 @@ def __reduce_dataset(qs: object, full_res: bool):
         if full_res:
             df = qs
         else:
-            df = (qs.tail(max_size_preview_plot)).copy()
+            df = (qs.tail(MAX_SIZE_PREVIEW_PLOT)).copy()
             reduced = True
     else:
         if full_res:
             df = pd.DataFrame(list(qs))
         else:
             qs_length = qs.count()
-            df = pd.DataFrame(list(qs[qs_length - max_size_preview_plot:qs_length]))
+            df = pd.DataFrame(list(qs[qs_length - MAX_SIZE_PREVIEW_PLOT:qs_length]))
             reduced = True
     return {'df': df, 'reduced': reduced}
 

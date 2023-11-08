@@ -505,14 +505,17 @@ def previewplot(request):
     """
     try:
         webID = request.GET.get('preview')
+        entriesID = webID
         # webID = 'db869'
         if webID[0:3] == 'db[':
             parts = webID[0:-1].split('[')
             webID = [f'db{id.strip()}' for id in parts[1].split(',')]
         elif webID[0:2] == 'db':
             parts = [0, webID[2:]]
+            entriesID = webID[2:]
         else:
-            print('views.py: Figure how to handle such an ID: ', webID)
+            print('views.py: Figure how to handle such an ID: ', webID, type(webID))
+            # logger.warning(f'Figure how to handle an ID like {webID}')
 
         accessible_data = get_accessible_data(request, [parts[1]])
         error_list = accessible_data['blocked']
@@ -986,7 +989,8 @@ class QuickFilterResults(View):
             delete_layer(id_layer, HomeView.store, HomeView.workspace)
 
         if IDs:
-            create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
+            create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs)
+            # create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
         else:
             # TODO: Selection with no result has to be handled properly
             pass

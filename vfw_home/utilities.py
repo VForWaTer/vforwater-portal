@@ -282,6 +282,6 @@ def check_data_consistency():
     if len(id_wrong_table) > 0:
         print(f'\033[91mERROR: following IDs are associated with the wrong table: {id_wrong_table}\033[0m')
 
-    cache.set('ids_without_data', id_without_data + id_without_datasoure)
+    cache.set('ids_without_data', id_without_data + id_without_datasoure, 60*60)
     return id_without_data + id_without_datasoure
 

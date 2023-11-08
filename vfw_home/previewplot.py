@@ -17,7 +17,7 @@ from bokeh.palettes import Oranges9, Spectral11
 
 from numpy import mean
 
-from heron.settings import max_size_preview_plot
+from heron.settings import MAX_SIZE_PREVIEW_PLOT
 from vfw_home.data_tools import DB_load_directiondata, find_data_gaps, DB_load_data, \
     precision_to_minmax, __get_axis_limits
 from vfw_home.models import Entries
@@ -78,7 +78,7 @@ def get_bokeh_3D_fullres(plot_data: object, full_res: bool, size: list, label: s
     if full_res:
         title = ''
     else:
-        title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
+        title = gettext("Showing only latest {0} datapoints.").format(str(MAX_SIZE_PREVIEW_PLOT))
         # Plot average as main plot
         mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                           y_axis_label=label,
@@ -108,7 +108,7 @@ def get_bokeh_std_fullres(plot_data: object, full_res: bool, size: list, label: 
     if full_res:
         title = ''
     else:
-        title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
+        title = gettext("Showing only latest {0} datapoints.").format(str(MAX_SIZE_PREVIEW_PLOT))
     # Plot average as main plot
     mainplot = figure(x_axis_label='Time', x_axis_type="datetime",
                       y_axis_label=label,

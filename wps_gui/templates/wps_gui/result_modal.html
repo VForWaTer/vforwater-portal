@@ -1,7 +1,7 @@
 {#<!DOCTYPE html>#}
 {#<html lang="en">#}
 <meta charset="UTF-8">
-
+{# Used to show data in the data store and the result store, especially for Bokeh plots #}
 {#{% extends "vfw_home/base.html" %}#}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -48,7 +48,6 @@
 </div>
 </body>
 <script>
-  var bokehResultScript;
   // Get the modal
   vfw.html.resultModal = document.getElementById("resultModal");
   // Get the <span> element that closes the modal
@@ -60,14 +59,12 @@
   {% comment %}  span.onclick = function () {
         closeModal()
     };{% endcomment %}
-  vfw.html.closeBtn.onclick = () => vfw.html.close_result_Modal();
-  vfw.html.resultModalClose.onclick = () => vfw.html.close_result_Modal();
+  vfw.html.closeBtn.onclick = () => vfw.html.resultModal.close();
+  vfw.html.resultModalClose.onclick = () => vfw.html.resultModal.close();
   vfw.html.resultModalToggleSizeBtn.onclick = () => vfw.html.toggle_Modal_size();
   {#span_c.onclick = function () {closeModal()};#}
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = (event) => {if (event.target == vfw.html.resultModal) vfw.html.close_result_Modal()};
 
-  vfw.html.close_result_Modal = function () {
+  vfw.html.resultModal.close = function () {
     vfw.html.resultModal.style.display = "none";
     {#document.getElementById("resultModal-content").style.width = "initial";#}
     vfw.html.reset_Modal("resultModal-content", vfw.html.resultModalToggleSizeBtn)
@@ -75,7 +72,7 @@
       vfw.html.resultModalToggleSizeBtn.style.display = "block";
     }
     if (vfw.var.obj.bokehImage) {
-      bokehResultScript.parentNode.removeChild(bokehResultScript);
+      vfw.util.bokehResultScript.parentNode.removeChild(vfw.util.bokehResultScript);
       vfw.var.obj.bokehImage = false;
     }
   }

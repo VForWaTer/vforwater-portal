@@ -5,7 +5,7 @@ from bokeh.palettes import brewer
 from bokeh.plotting import figure
 from django.utils.translation import gettext
 
-from heron.settings import max_size_preview_plot
+from heron.settings import MAX_SIZE_PREVIEW_PLOT
 from vfw_home.plot_obj import XYTimeseriesPlot, DirectionPlot
 import logging
 
@@ -32,7 +32,7 @@ class FigObject:
                 if self.dataObj.full:
                     self.title = ''
                 else:
-                    self.title = gettext("Showing only latest {0} datapoints.").format(str(max_size_preview_plot))
+                    self.title = gettext("Showing only latest {0} datapoints.").format(str(MAX_SIZE_PREVIEW_PLOT))
 
                 if self.dataObj.label.lower().find('direction') != -1:
                     self.__get_direction_plot__()

@@ -7,7 +7,7 @@ from decimal import Decimal
 from django.core.exceptions import EmptyResultSet
 from django.http import Http404
 
-from heron.settings import max_size_preview_plot
+from heron.settings import MAX_SIZE_PREVIEW_PLOT
 from vfw_home.data_tools import DB_load_directiondata
 from vfw_home.models import Entries, NmEntrygroups
 
@@ -28,7 +28,7 @@ class DataObject:
         self.__qs_cols__ = None
         self.__qs_entry__ = None
         self.__qs_group__ = None
-        self.__row_limit__ = max_size_preview_plot
+        self.__row_limit__ = MAX_SIZE_PREVIEW_PLOT
         self.__value_before_gap__ = None
         self.coords = None
         self.data_columns = None
@@ -278,7 +278,7 @@ class DataObject:
     def db_data_length(self):
         """
         Get length of Dataset stored in the database.
-        If size is greater than allowed in settings.max_size_preview_plot the "full" flag is set to False
+        If size is greater than allowed in settings.MAX_SIZE_PREVIEW_PLOT the "full" flag is set to False
         """
         self.length = self.__general_data_qs__.count()
         if self.length == 0:  # if not qs.exists():
