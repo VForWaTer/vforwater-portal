@@ -353,4 +353,4 @@ wps_log.addHandler(filehandler)
 #     )
 # END OF settings from workflow app
 
-max_size_preview_plot = 50000
+MAX_SIZE_PREVIEW_PLOT = 50000

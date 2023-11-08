@@ -313,7 +313,7 @@ wps_log.addHandler(filehandler)
 #     )
 # END OF settings from workflow app
 
-max_size_preview_plot = 50000
+MAX_SIZE_PREVIEW_PLOT = 50000
 
 OIDC_RP_CLIENT_ID = os.environ['OIDC_RP_CLIENT_ID']
 OIDC_RP_CLIENT_SECRET = os.environ['OIDC_RP_CLIENT_SECRET']
