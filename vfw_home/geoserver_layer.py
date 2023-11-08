@@ -283,11 +283,13 @@ def __build_new_layer_xml(
             ids_without_data = check_data_consistency()
             # cache.set('ids_without_data', ids_without_data, 3*60)
 
+        selectable_data = tuple(set(selection) - set(ids_without_data))
         if selection is None:
             query = f'{query} WHERE entries.id not in {tuple(ids_without_data)}'
+        elif len(selectable_data) > 1:
+            query = f'{query} WHERE entries.id in {selectable_data}'
         else:
-            selection = tuple(set(selection) - set(ids_without_data))
-            query = f'{query} WHERE entries.id in {selection}'
+            query = f'{query} WHERE entries.id = {selectable_data[0]}'
 
         # if not request.user.is_authenticated:
         #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
