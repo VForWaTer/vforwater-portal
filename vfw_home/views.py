@@ -4,6 +4,7 @@ import datetime
 import json
 import re
 import sys
+from http.cookiejar import CookieJar
 
 import redis
 import requests
@@ -64,7 +65,7 @@ logger = logging.getLogger(__name__)
 # class WorkflowView(TemplateView):
 #     """
 #     Template View for plain workflow HTML Template.
-#     Template so far does only contain iframe in content Block, that embedds wps_workflow app
+#     Template so far does only contain iframe in content Block, that embeds wps_workflow app
 #     """
 #     template_name = "vfw_home/workflow.html"
 
@@ -867,12 +868,12 @@ def entries_pagination(request):
              'datasource__datatype__name', 'datasource__temporal_scale__resolution',
              'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',
              'datasource__spatial_scale__extent', 'license__short_title', 'license__title'}
-    if datasets:
+    if datasets and len(datasets) > 0:
         entries_list = Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
         accessible_data = get_accessible_data(request, datasets)
         # error_ids = accessible_data['blocked']
         accessible_ids = accessible_data['open']
-    elif len(datasets) == 0:
+    elif datasets and len(datasets) == 0:
         entries_list = []
     else:
         entries_list = Entries.objects.values(*field).order_by('title')
