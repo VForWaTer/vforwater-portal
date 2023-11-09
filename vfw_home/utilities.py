@@ -231,10 +231,12 @@ def read_data(uuid: str, datatype: str) -> object:
         return load_meta(uuid, filepath)
 
 
-def check_data_consistency():
+def check_data_consistency(check_interval=60*60*24):
     """
     Get all Entries and check if every entry has a datasource associated, and if yes if there is also data
     for the respective ID at the datasource.
+    :param check_interval: time in seconds until a new check of the database; default is once a day
+    :return:
     """
     datapaths = Entries.objects.values_list('datasource__path', flat=True).distinct()
     datapaths = ['timeseries', 'timeseries_1d', 'timeseries_2d', 'geom_timeseries',
@@ -282,6 +284,6 @@ def check_data_consistency():
     if len(id_wrong_table) > 0:
         print(f'\033[91mERROR: following IDs are associated with the wrong table: {id_wrong_table}\033[0m')
 
-    cache.set('ids_without_data', id_without_data + id_without_datasoure, 60*60)
+    cache.set('ids_without_data', id_without_data + id_without_datasoure, check_interval)
     return id_without_data + id_without_datasoure
 

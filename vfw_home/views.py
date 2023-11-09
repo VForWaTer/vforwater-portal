@@ -41,7 +41,7 @@ from .delineator import delineate
 from .forms import QuickFilterForm
 from .data_obj import DataObject
 from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
-    get_paginatorpage, regex_patterns, is_coord, get_cache
+    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency
 
 mpl.use('Agg')
 
@@ -62,6 +62,7 @@ from time import time
 """
 logger = logging.getLogger(__name__)
 
+check_data_consistency()
 # class WorkflowView(TemplateView):
 #     """
 #     Template View for plain workflow HTML Template.

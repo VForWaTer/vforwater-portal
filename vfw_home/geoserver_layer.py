@@ -123,15 +123,8 @@ def test_geoserver_env(store: str, workspace: str):
         )
         __build_store()
 
-def create_layer(
-    request,
-    filename: str,
-    datastore: str,
-    workspace: str,
-    selection=None,
-    srid: int = 4326,
-    layertype: str = "point",
-):
+def create_layer(request, filename: str, datastore: str, workspace: str, selection=None, srid: int = 4326,
+                 layertype: str = "point",):
     """
     Create a layer in your GeoServer.
 
@@ -282,9 +275,12 @@ def __build_new_layer_xml(
         if ids_without_data is None:
             ids_without_data = check_data_consistency()
             # cache.set('ids_without_data', ids_without_data, 3*60)
+        if selection is None:
+            selection = []
 
         selectable_data = tuple(set(selection) - set(ids_without_data))
-        if selection is None:
+
+        if selection == []:
             query = f'{query} WHERE entries.id not in {tuple(ids_without_data)}'
         elif len(selectable_data) > 1:
             query = f'{query} WHERE entries.id in {selectable_data}'
