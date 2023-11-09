@@ -853,6 +853,7 @@ vfw.sidebar.workspaceDataset = function (id) {
                     vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
                 });
                 return
+                console.log('vfw.datasets.dataObjects: ', vfw.datasets.dataObjects)
                 let stored = {};
                 let storedGroup = {};
                 if (json['error']['message']) {
@@ -962,6 +963,70 @@ function toggleMapTableFilter(evt, tabName, isFilter = false) {
     // Show the current tab, and add an "active" class to the button that opened the tab
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
+}
+
+
+/**
+ * Update quickfilter onload() according to the given URL
+ */
+vfw.filter.updateQuickfilter = function() {
+
+    let url = window.location
+    let urlParams = new URLSearchParams(url.search);
+    let urlKey, long_search_id, ajax_element;
+    let date = 0;
+    let selector_string = "";
+
+    if (urlParams !== false) {
+        for (urlKey of urlParams) {
+            selector_string = "#id_" + urlKey[0]
+            ajax_element = $(selector_string);
+
+            if (ajax_element.prop('type') === 'checkbox') {
+                ajax_element.prop('checked', JSON.parse(urlKey[1].toLowerCase()));
+            } else if (ajax_element.prop('type') === 'select-multiple' ||
+                ajax_element.prop('type') === 'select') {
+                long_search_id = selector_string + " [value=\"" + urlKey[1] + "\"]"
+                $(long_search_id).attr("selected", "selected");
+            } else if (ajax_element.prop('name') === 'date') {
+                if (date === 0) {
+                    date = new Date(urlKey[1]);
+                } else {
+                    ajax_element.prop('value', [date.toLocaleDateString() + " - " + (new Date(urlKey[1])).toLocaleDateString()]);  // textbox
+                    $('#from_' + urlKey[0]).val(date.toLocaleDateString())  // update date picker
+                    $('#to_' + urlKey[0]).val((new Date(urlKey[1])).toLocaleDateString())  // update date picker
+                    $('#slider-date-range-' + urlKey[0])
+                        .slider('values', [
+                            (new Date(date)).getTime(),
+                            (new Date(urlKey[1])).getTime()
+                        ]).val()  // update slider
+                }
+            } else if (urlKey[0] === 'draw') {
+                let coords_list = urlKey[1].split(',').map(Number)
+                let coords_len = coords_list.length;
+                let coords = []
+                for (let i = 0; i < coords_len; i += 2) {
+                    coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i + 1]]))
+                }
+
+                // TODO: Do not create a new layer, but reuse the layers in drawOnMapManu
+                //  to enable modification after refreshing website
+                let url_feature = new ol.Feature({geometry: new ol.geom.Polygon([coords]),});
+                selectionLayerSource = new ol.source.Vector({features: [url_feature],});
+                selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
+                selectionLayer.setStyle(new ol.style.Style({
+                    stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
+                }))
+                olmap.addLayer(selectionLayer)
+
+            } else {
+                console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
+            }
+        }
+    } else {
+        // TODO: This might be useful to reset the quick filter menu
+    }
+
 }
 
 
@@ -1132,69 +1197,6 @@ function getCatchment(coords) {
                 console.warn('3 got a bug: ', bug)
             })
     }
-}
-
-/**
- * Update quickfilter onload() according to the given URL
- */
-vfw.sidebar.updateQuickfilter = function() {
-
-    let url = window.location
-    let urlParams = new URLSearchParams(url.search);
-    let urlKey, long_search_id, ajax_element;
-    let date = 0;
-    let selector_string = "";
-
-    if (urlParams !== false) {
-        for (urlKey of urlParams) {
-            selector_string = "#id_" + urlKey[0]
-            ajax_element = $(selector_string);
-
-            if (ajax_element.prop('type') === 'checkbox') {
-                ajax_element.prop('checked', JSON.parse(urlKey[1].toLowerCase()));
-            } else if (ajax_element.prop('type') === 'select-multiple' ||
-                ajax_element.prop('type') === 'select') {
-                long_search_id = selector_string + " [value=\"" + urlKey[1] + "\"]"
-                $(long_search_id).attr("selected", "selected");
-            } else if (ajax_element.prop('name') === 'date') {
-                if (date === 0) {
-                    date = new Date(urlKey[1]);
-                } else {
-                    ajax_element.prop('value', [date.toLocaleDateString() + " - " + (new Date(urlKey[1])).toLocaleDateString()]);  // textbox
-                    $('#from_' + urlKey[0]).val(date.toLocaleDateString())  // update date picker
-                    $('#to_' + urlKey[0]).val((new Date(urlKey[1])).toLocaleDateString())  // update date picker
-                    $('#slider-date-range-' + urlKey[0])
-                        .slider('values', [
-                            (new Date(date)).getTime(),
-                            (new Date(urlKey[1])).getTime()
-                        ]).val()  // update slider
-                }
-            } else if (urlKey[0] === 'draw') {
-                let coords_list = urlKey[1].split(',').map(Number)
-                let coords_len = coords_list.length;
-                let coords = []
-                for (let i = 0; i < coords_len; i += 2) {
-                    coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i + 1]]))
-                }
-
-                // TODO: Do not create a new layer, but reuse the layers in drawOnMapManu
-                //  to enable modification after refreshing website
-                let url_feature = new ol.Feature({geometry: new ol.geom.Polygon([coords]),});
-                selectionLayerSource = new ol.source.Vector({features: [url_feature],});
-                selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
-                selectionLayer.setStyle(new ol.style.Style({
-                    stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
-                }))
-                olmap.addLayer(selectionLayer)
-
-            } else {
-                console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
-            }
-        }
-    } else {
-        // TODO: This might be useful to reset the quick filter menu
-    }
-
 }
 
 
