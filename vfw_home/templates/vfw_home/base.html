@@ -75,6 +75,7 @@
         dataObjects: {},
     },
     draw2d: {},
+    filter: {},
     html: {
       cssClass: {
       },
@@ -137,7 +138,8 @@
   vfw.var.DATATYPES = vfw.var.BASE_DATATYPES.concat(vfw.var.EXT_DATATYPES);
 </script>
 
-<body class="w3-light-grey">
+<body class="w3-light-grey"
+onload="vfw.map.create_map(); vfw.sidebar.showData(); vfw.html.getQuickSelection(); vfw.filter.updateQuickfilter()">
 
 {#<div id="loader-overlay" onclick="off()"></div>#}
 <div id="loader-overlay" onclick="vfw.html.loaderOverlayOff()"  ;>
