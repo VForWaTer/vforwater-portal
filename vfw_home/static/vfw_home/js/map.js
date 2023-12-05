@@ -62,6 +62,37 @@ vfw.map.buildMapModal = function (ids, page) {
 }
 
 
+/** get catchments from server **/
+vfw.map.source.wfsCatchmentSource = new ol.source.Vector({
+    format: new ol.format.GeoJSON(),
+    loader: function (extent) {
+        // let layerName = 'cat_pfaf_merit_hydro_v07_basins_v01'
+        // let layerName = 'catchment27000045'
+        let layerName = vfw.map.vars.wfsLayerName
+        // fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
+            + extent.join(',') + '/3857',
+            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+            // credentials: 'same-origin'}
+        )
+            .then(function (response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return Promise.reject(response);
+                }
+            })
+            .then(function (response) {
+                vfw.map.source.wfsCatchmentSource.addFeatures(vfw.map.source.wfsCatchmentSource.getFormat().readFeatures(response));
+            })
+            .catch(function (error) {
+                console.warn('No result for selected area. Unable to build vector layer.');
+                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                vfw.map.source.wfsCatchmentSource.removeLoadedExtent(extent);
+            })
+    },
+    strategy: ol.loadingstrategy.bbox
+});
 /** get data points from server **/
 vfw.map.source.wfsPointSource = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
@@ -125,8 +156,8 @@ vfw.map.layer.openTopo = new ol.layer.Tile({
 //     title: "Watercolor",
 //     baseLayer: true,
 //     visible: false,
-//     source: new ol.source.Stamen({
-//         layer: 'watercolor'
+//     source: new ol.source.StadiaMaps({
+//         layer: 'stamen_watercolor'
 //     })
 // });
 vfw.map.layer.osm = new ol.layer.Tile({
@@ -197,6 +228,21 @@ vfw.map.create_map = function () {
         source: vfw.map.source.wfsPointSource,
     });
 
+    /** create a separate layer for catchments **/
+    // const catchmentLayer = new ol.layer.
+    const catchmentLayer = new ol.layer.Vector({
+            background: '#1a2b39',
+            source: vfw.map.source.wfsCatchmentSource,
+            // source: new VectorSource({
+            //     url: 'https://openlayers.org/data/vector/ecoregions.json',
+            //     format: new GeoJSON(),
+            // }),
+            style: {
+                'fill-color': ['string', ['get', 'COLOR'], '#eee'],
+                'stroke-color': 'rgba(192,84,16,0.89)',
+                'stroke-width': 2,
+            },
+        });
     /* /!** Style for selection/single circles around cluster  **!/
      // used for Eddy footprint
          let img = new ol.style.Circle({
