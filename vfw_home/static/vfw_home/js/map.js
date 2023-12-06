@@ -63,13 +63,43 @@ vfw.map.buildMapModal = function (ids, page) {
 
 
 /** get catchments from server **/
+// vfw.map.source.wfsCatchmentSource = new ol.source.VectorTile({
+//       source: new ol.source.VectorTile({
+//         tilePixelRatio: 1, // oversampling when > 1
+//         tileGrid: ol.tilegrid.createXYZ({maxZoom: 19}),
+//         format: new ol.format.MVT(),
+//         url: vfw.var.DEMO_VAR + '/home/geoserver/gwc/service/tms/1.0.0/metacatalogdev:merit_river_test@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf'
+//       })
+    /*format: new ol.format.GeoJSON(),
+    loader: function (extent) {
+        let url = vfw.var.DEMO_VAR + '/home/geoserver/gwc/service/tms/1.0.0/merit_river_test@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf'
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
+            + extent.join(',') + '/3857',
+            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+            // credentials: 'same-origin'}
+        )
+            .then(function (response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return Promise.reject(response);
+                }
+            })
+            .then(function (response) {
+                vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
+            })
+            .catch(function (error) {
+                console.warn('No result for selected area. Unable to build vector layer.');
+                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                vfw.map.source.wfsPointSource.removeLoadedExtent(extent);
+            })
+    },
+    strategy: ol.loadingstrategy.bbox*/
+// });
 vfw.map.source.wfsCatchmentSource = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     loader: function (extent) {
-        // let layerName = 'cat_pfaf_merit_hydro_v07_basins_v01'
-        // let layerName = 'catchment27000045'
-        let layerName = vfw.map.vars.wfsLayerName
-        // fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
+        let layerName = 'merit_river_test'
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
@@ -231,17 +261,17 @@ vfw.map.create_map = function () {
     /** create a separate layer for catchments **/
     // const catchmentLayer = new ol.layer.
     const catchmentLayer = new ol.layer.Vector({
-            background: '#1a2b39',
-            source: vfw.map.source.wfsCatchmentSource,
+            // background: '#1a2b39',
             // source: new VectorSource({
             //     url: 'https://openlayers.org/data/vector/ecoregions.json',
             //     format: new GeoJSON(),
             // }),
             style: {
-                'fill-color': ['string', ['get', 'COLOR'], '#eee'],
-                'stroke-color': 'rgba(192,84,16,0.89)',
+                // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
+                'stroke-color': 'rgba(98,165,241,0.89)',
                 'stroke-width': 2,
             },
+            source: vfw.map.source.wfsCatchmentSource,
         });
     /* /!** Style for selection/single circles around cluster  **!/
      // used for Eddy footprint
