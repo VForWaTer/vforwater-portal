@@ -3,7 +3,7 @@
 // First child: C1
 // Second child: C2
 // First Item: I1...
-vfw.map.UNBLOCKED_IDS = JSON.parse(unblockedIds)
+// vfw.map.UNBLOCKED_IDS = JSON.parse(unblockedIds)
 
 
 /* Drop Down Menu Button Function to toggle what is shown in it*/

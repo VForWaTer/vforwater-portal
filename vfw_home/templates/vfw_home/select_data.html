@@ -49,12 +49,14 @@
 </div>
 
 </body>
-
+{{ UNBLOCKED_IDS|json_script:"unblockedIds" }}
 <script>
 {#TODO: Do I need this, or can I just use the csrftoken in vfw.js?#}
-{# csrf_token = '{{ csrf_token }}';#}
+//{# csrf_token = '{{ csrf_token }}';#}
 //var jsonMenu = "{{ Filter_Menu|escapejs }}";
-var unblockedIds = "{{ unblocked_ids }}";
+//{#var unblockedIds = "{{ unblocked_ids }}";#}
+vfw.map.UNBLOCKED_IDS = JSON.parse(document.getElementById('unblockedIds').textContent);
+{#vfw.map.UNBLOCKED_IDS = JSON.parse(unblockedIds)#}
 // Get the element with id="defaultMapTab" and click on it
 {#document.getElementById("defaultFilterTab").click();#}
 
