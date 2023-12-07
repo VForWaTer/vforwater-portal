@@ -63,7 +63,62 @@ vfw.map.buildMapModal = function (ids, page) {
 
 
 /** get catchments from server **/
-// vfw.map.source.wfsCatchmentSource = new ol.source.VectorTile({
+vfw.map.source.wfsMeritCatchment = new ol.source.Vector({
+    format: new ol.format.GeoJSON(),
+    // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
+    loader: function (extent) {
+        let layerName = 'merit_catch_test'
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
+            + extent.join(',') + '/3857',
+            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+            // credentials: 'same-origin'}
+        )
+            .then(function (response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return Promise.reject(response);
+                }
+            })
+            .then(function (response) {
+                vfw.map.source.wfsMeritCatchment.addFeatures(vfw.map.source.wfsMeritCatchment.getFormat().readFeatures(response));
+            })
+            .catch(function (error) {
+                console.warn('No result for selected area. Unable to build vector layer of Catchments.');
+                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                vfw.map.source.wfsMeritCatchment.removeLoadedExtent(extent);
+            })
+    },
+    strategy: ol.loadingstrategy.bbox
+});
+/** get catchments in coarse scale from server **/
+vfw.map.source.wfsCoarseMeritCatchment = new ol.source.Vector({
+    format: new ol.format.GeoJSON(),
+    // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
+    loader: function (extent) {
+        let layerName = 'merit_catch_test_v2'
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
+            + extent.join(',') + '/3857',
+        )
+            .then(function (response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return Promise.reject(response);
+                }
+            })
+            .then(function (response) {
+                vfw.map.source.wfsCoarseMeritCatchment.addFeatures(vfw.map.source.wfsCoarseMeritCatchment.getFormat().readFeatures(response));
+            })
+            .catch(function (error) {
+                console.warn('No result for selected area. Unable to build vector layer of coarse Catchments.');
+                vfw.map.source.wfsCoarseMeritCatchment.removeLoadedExtent(extent);
+            })
+    },
+    strategy: ol.loadingstrategy.bbox
+});
+/** get rivers from server **/
+// vfw.map.source.wfsMeritRiver = new ol.source.VectorTile({
 //       source: new ol.source.VectorTile({
 //         tilePixelRatio: 1, // oversampling when > 1
 //         tileGrid: ol.tilegrid.createXYZ({maxZoom: 19}),
@@ -96,8 +151,9 @@ vfw.map.buildMapModal = function (ids, page) {
     },
     strategy: ol.loadingstrategy.bbox*/
 // });
-vfw.map.source.wfsCatchmentSource = new ol.source.Vector({
+vfw.map.source.wfsMeritRiver = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
+    // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
     loader: function (extent) {
         let layerName = 'merit_river_test'
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
@@ -113,12 +169,12 @@ vfw.map.source.wfsCatchmentSource = new ol.source.Vector({
                 }
             })
             .then(function (response) {
-                vfw.map.source.wfsCatchmentSource.addFeatures(vfw.map.source.wfsCatchmentSource.getFormat().readFeatures(response));
+                vfw.map.source.wfsMeritRiver.addFeatures(vfw.map.source.wfsMeritRiver.getFormat().readFeatures(response));
             })
             .catch(function (error) {
-                console.warn('No result for selected area. Unable to build vector layer.');
+                console.warn('No result for selected area. Unable to build vector layer of rivers.');
                 // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
-                vfw.map.source.wfsCatchmentSource.removeLoadedExtent(extent);
+                vfw.map.source.wfsMeritRiver.removeLoadedExtent(extent);
             })
     },
     strategy: ol.loadingstrategy.bbox
@@ -143,7 +199,7 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
                 vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
             })
             .catch(function (error) {
-                console.warn('No result for selected area. Unable to build vector layer.');
+                console.warn('No result for selected area. Unable to build vector layer with data points.');
                 // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
                 vfw.map.source.wfsPointSource.removeLoadedExtent(extent);
             })
@@ -190,12 +246,21 @@ vfw.map.layer.openTopo = new ol.layer.Tile({
 //         layer: 'stamen_watercolor'
 //     })
 // });
-vfw.map.layer.osm = new ol.layer.Tile({
+const osmLayer = new ol.layer.Tile({
     title: "OSM",
     baseLayer: true,
     visible: false,
     source: new ol.source.OSM(),
 });
+
+// create a Sentinel-2 basemap layer
+// vfw.map.source.sentinel2 = new ol.Layer.WMS({
+//     url: 'https://sgx.geodatenzentrum.de/wms_sen2europe?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2018'
+    // 'https://sgx.geodatenzentrum.de/wms_sen2europe?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:3857&Format=image/png&TIME=2018'
+// })
+// see: http://sg.geodatenzentrum.de/web_bkg_webmap/doc/factories.html
+// see: https://www.ldbv.bayern.de/file/pdf/10544/Diplomarbeit_Wengerter.pdf
+
 
 /** Fetch V-FOR-WaTer base layer **/
 vfw.map.create_map = function () {
@@ -216,16 +281,16 @@ vfw.map.create_map = function () {
         filter_pagination();
     }
     /** build the background map **/
-    vfw.map.layer.map = new ol.layer.Tile({
-        name: 'DefaultMap',
+    const backgroundLayer = new ol.layer.Tile({
+        name: 'Default Map',
         preload: Infinity,
         baseLayer: true,
         visible: true,
         source: vfw.map.source.vfwSource,
     });
     /** get OSM/OTM in case local map is not loading: **/
-    vfw.map.layer.map.getSource().on('tileloaderror', function () {
-        vfw.map.layer.map.setSource(vfw.map.source.opentopoSource)
+    backgroundLayer.getSource().on('tileloaderror', function () {
+        backgroundLayer.setSource(vfw.map.source.opentopoSource)
     });
 
     let mapView = new ol.View({
@@ -241,8 +306,8 @@ vfw.map.create_map = function () {
     //     url = https://sgx.geodatenzentrum.de/wms_sentinel2_de?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2019
 
     /** Make (animated) cluster layer from data points **/
-    vfw.map.layer.cluster = new ol.layer.AnimatedCluster({
-        name: 'DataClusters',
+    const clusterLayer = new ol.layer.AnimatedCluster({
+        name: 'Data Clusters',
         className: 'cluster-layer',
         source: new ol.source.Cluster({
             distance: 30,
@@ -258,21 +323,47 @@ vfw.map.create_map = function () {
         source: vfw.map.source.wfsPointSource,
     });
 
-    /** create a separate layer for catchments **/
-    // const catchmentLayer = new ol.layer.
-    const catchmentLayer = new ol.layer.Vector({
-            // background: '#1a2b39',
-            // source: new VectorSource({
-            //     url: 'https://openlayers.org/data/vector/ecoregions.json',
-            //     format: new GeoJSON(),
-            // }),
-            style: {
-                // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
-                'stroke-color': 'rgba(98,165,241,0.89)',
-                'stroke-width': 2,
-            },
-            source: vfw.map.source.wfsCatchmentSource,
-        });
+    /** create a separate layer for merit Rivers **/
+    const meritRiverLayer = new ol.layer.Vector({
+        style: {
+            // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
+            'stroke-color': 'rgba(98,165,241,0.89)',
+            'stroke-width': 2,
+        },
+        source: vfw.map.source.wfsMeritRiver,
+        minZoom: 7,
+        name: 'Merit River',
+        className: 'cluster-layer',
+        visible: false,
+    });
+    /** create a separate layer for merit Rivers **/
+    const meritCatchmentLayer = new ol.layer.Vector({
+        style: {
+            // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
+            'stroke-color': 'rgba(44,51,180,0.89)',
+            'stroke-width': 2,
+        },
+        source: vfw.map.source.wfsMeritCatchment,
+        minZoom: 8,
+        name: 'Merit Catchment',
+        className: 'cluster-layer',
+        visible: false,
+    });
+/** create a separate layer for merit Rivers **/
+    const meritCoarseCatchmentLayer = new ol.layer.Vector({
+        style: {
+            // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
+            'stroke-color': 'rgba(55,19,110,0.89)',
+            'stroke-width': 3,
+        },
+        source: vfw.map.source.wfsCoarseMeritCatchment,
+        minZoom: 2,
+        name: 'coarse Merit Catchment',
+        className: 'cluster-layer',
+        visible: false,
+    });
+
+
     /* /!** Style for selection/single circles around cluster  **!/
      // used for Eddy footprint
          let img = new ol.style.Circle({
@@ -362,10 +453,11 @@ vfw.map.create_map = function () {
         target: map_tar,
         layers: [
             // vfw.map.layer.waterColor,
-            vfw.map.layer.osm, vfw.map.layer.openTopo,
-            vfw.map.layer.map, vfw.map.layer.cluster
+            osmLayer, vfw.map.layer.openTopo,
+            backgroundLayer, clusterLayer,
+            meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer
         ],
-        // layers: [mapLayer, testPointLayer, testlayer, clusterLayer],  // Eddy footprint testlayer
+        // layers: [mapLayer, testPointLayer, testlayer, clusterLayerNew],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
         // interactions: ol.interaction.defaults().extend([featureselect, featuremodify]),
 
@@ -399,7 +491,7 @@ vfw.map.create_map = function () {
     function checkMode(evt) {
         let clickedFeatures, ids, cleanedids, wfsLen;
         // TODO: This code works only on the cluster layer. For other geometries/layers this function must be adjusted!
-        vfw.map.layer.cluster.getFeatures(evt.pixel).then((features) => {
+        clusterLayer.getFeatures(evt.pixel).then((features) => {
             if (features[0]) {
                 vfw.html.loaderOverlayOn();
                 wfsLen = vfw.map.vars.wfsLayerName.length;
@@ -461,7 +553,7 @@ vfw.map.create_map = function () {
         if (evt.dragging) {
             return;
         }
-        vfw.map.layer.cluster.getFeatures(evt.pixel).then((features) => {
+        clusterLayer.getFeatures(evt.pixel).then((features) => {
             olmap.getTargetElement().style.cursor = features[0] ? 'pointer' : '';
         })
     });
