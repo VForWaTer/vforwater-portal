@@ -22,9 +22,15 @@
 {# collect variables from server for startup of map #}
 {{ dataExt|json_script:"dataExt" }}
 {{ data_layer|json_script:"data_layer" }}
+{{ merit_river_layer|json_script:"merit_river_layer" }}
+{{ merit_catchment_layer|json_script:"merit_catchment_layer" }}
+{{ merit_catchment_coarse_layer|json_script:"merit_catchment_coarse_layer" }}
     <script>
   vfw.var.DATA_EXT = JSON.parse(document.getElementById('dataExt').textContent);
   vfw.var.DATA_LAYER = JSON.parse(document.getElementById('data_layer').textContent);
+  vfw.var.MERIT_RIVER_LAYER = JSON.parse(document.getElementById('merit_river_layer').textContent);
+  vfw.var.MERIT_CATCHMENT_LAYER = JSON.parse(document.getElementById('merit_catchment_layer').textContent);
+  vfw.var.MERIT_CATCHMENT_COARSE_LAYER = JSON.parse(document.getElementById('merit_catchment_coarse_layer').textContent);
 </script>
 
   <div class="w3-center" id="closed_drawfilter">

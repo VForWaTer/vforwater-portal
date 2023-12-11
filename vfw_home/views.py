@@ -35,6 +35,7 @@ from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
 from .Fig_obj import FigObject
+from .checks import check_geoserver_layers
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
     __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection, has_data
 from .delineator import delineate
@@ -89,6 +90,9 @@ class HomeView(TemplateView):
     # data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
     data_layer = 'devel'
     # data_layer = 'play'
+    merit_river_layer = ['merit_river_test', 'merit_river']  # [layername, layertype]
+    merit_catchment_layer = ['merit_catchment', 'merit_catchment']
+    merit_catchment_coarse_layer = ['merit_catchment_coarse', 'merit_catchment_coarse']
 
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
@@ -100,14 +104,7 @@ class HomeView(TemplateView):
     # workspace = 'play'  # 'CAOS_update'
     unlocked_embargo = []
 
-    try:
-        test_geoserver_env(store, workspace)
-    # except ConnectionError:
-    #     print('\033[91mConnection Error! No geoserver\033[0m ')
-    # except JSONDecodeError:
-    #     print('\033[91mJSONDecodeError! No geoserver\033[0m ')
-    except:
-        print('\033[91mno geoserver\033[0m ', sys.exc_info()[0])
+    check_geoserver_layers(store, workspace, [merit_river_layer, merit_catchment_layer, merit_catchment_coarse_layer])
 
     # TODO: Test with users if this makes any sense
     def __set_layer_name(self):
@@ -155,6 +152,8 @@ class HomeView(TemplateView):
 
         return {'dataExt': self.data_ext, 'data_layer': self.data_layer,
                 'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids,
+                'merit_river_layer': self.merit_river_layer[0], 'merit_catchment_layer': self.merit_catchment_layer[0],
+                'merit_catchment_coarse_layer': self.merit_catchment_coarse_layer[0],
                 **context}
 
 

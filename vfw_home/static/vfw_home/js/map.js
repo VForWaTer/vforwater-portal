@@ -61,6 +61,9 @@ vfw.map.buildMapModal = function (ids, page) {
         })
 }
 
+vfw.map.source.getSourceVector = function (layerName) {
+
+}
 
 /** get catchments from server **/
 vfw.map.source.wfsMeritCatchment = new ol.source.Vector({
@@ -454,8 +457,9 @@ vfw.map.create_map = function () {
         layers: [
             // vfw.map.layer.waterColor,
             osmLayer, vfw.map.layer.openTopo,
-            backgroundLayer, clusterLayer,
-            meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer
+            backgroundLayer,
+            meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer,
+            clusterLayer,
         ],
         // layers: [mapLayer, testPointLayer, testlayer, clusterLayerNew],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
