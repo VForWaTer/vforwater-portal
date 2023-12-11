@@ -442,7 +442,7 @@ class Thesaurus(models.Model):
         db_table = 'thesaurus'
 
     def __str__(self):
-        return '<ID={}>   <UUID={}>    Name={}/{}'.format(self.id, self.uuid, self.name)
+        return '<ID={}>   <UUID={}>    Name={}/{}'.format(self.uuid, self.uuid, self.name)
 
 # TODO: check if DecimalField or FloatField fits better to 'real' here.
 class Timeseries(models.Model):
@@ -457,7 +457,7 @@ class Timeseries(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return f'<ID={self.id}>'
+        return f'<ID={self.entry}>'
 
 
 class Timeseries_1D(models.Model):
@@ -472,7 +472,7 @@ class Timeseries_1D(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return f'<ID={self.id}>'
+        return f'<ENTRY={self.entry}>'
 
 
 class Timeseries_2D(models.Model):
