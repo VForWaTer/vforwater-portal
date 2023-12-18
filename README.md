@@ -1,3 +1,6 @@
+# This project has moved to https://gitlab.kit.edu/kit/vforwater/vforwater-portal. Don't make any changes here. They will be lost in 2024!
+
+
 Vforwater-portal is open source virtual research environment written in django for common and systematic management of data obtained from water and environmental research.
 
 
