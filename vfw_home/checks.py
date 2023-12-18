@@ -7,9 +7,9 @@ def check_geoserver_layers(store: str, workspace: str, layers: list) -> object:
     """
     Check that geoserver is running and has the needed stores, workspace, and layers
 
-    :param store:
-    :param workspace:
-    :param layers:
+    :param store: str
+    :param workspace: str
+    :param layers: list
     """
     geoserver_alive = False
     try:
