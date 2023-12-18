@@ -321,10 +321,10 @@ vfw.map.create_map = function () {
         /** Cluster style  **/
         style: vfw.map.style.clusterStyle
     });
-    vfw.map.layer.hidden = new ol.layer.VectorImage({
-        className: 'hidden-layer',
-        source: vfw.map.source.wfsPointSource,
-    });
+    // vfw.map.layer.hidden = new ol.layer.VectorImage({
+    //     className: 'hidden-layer',
+    //     source: vfw.map.source.wfsPointSource,
+    // });
 
     /** create a separate layer for merit Rivers **/
     const meritRiverLayer = new ol.layer.Vector({

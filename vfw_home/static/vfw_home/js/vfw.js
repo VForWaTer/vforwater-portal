@@ -389,7 +389,7 @@ function drawOnMapMenu(test) {
     vfw.var.obj.selectedIds.map = null;
     let sketch, listener, polygon;
     let append_str = vfw.map.vars.wfsLayerName + '.';
-    let features = vfw.map.layer.hidden.getSource().getFeatures();
+    // let features = vfw.map.layer.hidden.getSource().getFeatures();
 
     /**
      * Point features select/deselect as you move polygon.
