@@ -264,7 +264,7 @@ def check_data_consistency(check_interval=60*60*24):
                     # logger.debug(f"Got a new source for data storage (path: entry_ID {query_path}): {e}")
 
                 if int(count/200) == count/200:
-                    print(f'i[0]: {i[0], test} did {str(int(int(count)/int(all_num)*100))}%')
+                    print(f'Check data consistency, did {i[0], test} - {str(int(int(count)/int(all_num)*100))}%')
                 # print(Entries.objects.filter(timeseries__pk=i[0]).exists())
                 if not test:
                     id_without_data.append(i[0])
