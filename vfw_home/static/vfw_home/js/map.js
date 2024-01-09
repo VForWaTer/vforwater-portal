@@ -1,11 +1,10 @@
+vfw.map.vars.selectCatchmentIDs = [];
 vfw.map.vars.hit_cL = {};
-let olmap;
 // TODO: Check if clusterlayer has to be global!
-//let selectCluster;
 // let dcz = new ol.interaction.DoubleClickZoom();
 
 /** build style for cluster **/
-vfw.map.style.clusterStyle = function (feature) {
+vfw.map.style.clusterData = function (feature) {
     let size = feature.get('features').length;
     let style = vfw.map.style.cache[size];
     if (!style) {
@@ -31,6 +30,16 @@ vfw.map.style.clusterStyle = function (feature) {
     }
     return [style];
 }
+/** build style for merrit catchments **/
+vfw.map.style.merritCatchment = new ol.style.Style({
+    fill: new ol.style.Fill({
+        color: 'rgba(255,255,255,0)',
+    }),
+    stroke: new ol.style.Stroke({
+        color: 'rgba(44,51,180,0.89)',
+        width: 2
+    })
+})
 
 /**
  * Whan clicked on a dataset o the map, then get a modal (pop up) with some information about the datasets
@@ -154,11 +163,12 @@ vfw.map.source.wfsCoarseMeritCatchment = new ol.source.Vector({
     },
     strategy: ol.loadingstrategy.bbox*/
 // });
+/** get simplified merit rivers from server. Only used to select upstream catchment, not for visualisation **/
 vfw.map.source.wfsMeritRiver = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
     loader: function (extent) {
-        let layerName = 'merit_river_test'
+        let layerName = 'merit_river_simple'
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
@@ -285,10 +295,12 @@ vfw.map.create_map = function () {
     }
     /** build the background map **/
     const backgroundLayer = new ol.layer.Tile({
-        name: 'Default Map',
+        name: 'V-FOR-WaTer style',
         preload: Infinity,
         baseLayer: true,
         visible: true,
+        // minResolution: 100,
+        maxZoom: 20,
         source: vfw.map.source.vfwSource,
     });
     /** get OSM/OTM in case local map is not loading: **/
@@ -319,40 +331,43 @@ vfw.map.create_map = function () {
         }),
         animationDuration: 0,
         /** Cluster style  **/
-        style: vfw.map.style.clusterStyle
+        style: vfw.map.style.clusterData
     });
     // vfw.map.layer.hidden = new ol.layer.VectorImage({
     //     className: 'hidden-layer',
     //     source: vfw.map.source.wfsPointSource,
     // });
 
-    /** create a separate layer for merit Rivers **/
+    /** create a separate layer for merit Rivers. This layer is not visible and hidden in the menu on the map **/
     const meritRiverLayer = new ol.layer.Vector({
         style: {
             // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
-            'stroke-color': 'rgba(98,165,241,0.89)',
-            'stroke-width': 2,
+            'stroke-color': 'rgba(98,165,241,0)',
+            // 'stroke-width': 20,
+            // 'fill-color': 'rgba(170,200,234,0.9)',
+            // 'opacity': 0.8,
+            // 'fill-opacity': 0.1
         },
         source: vfw.map.source.wfsMeritRiver,
-        minZoom: 7,
-        name: 'Merit River',
+        minZoom: 8,
+        name: 'Merit River Simple',
         className: 'cluster-layer',
-        visible: false,
+        // visible: false,
+        displayInLayerSwitcher: false,
     });
-    /** create a separate layer for merit Rivers **/
+    /** create a separate layer for merit Catchments **/
     const meritCatchmentLayer = new ol.layer.Vector({
-        style: {
-            // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
-            'stroke-color': 'rgba(44,51,180,0.89)',
-            'stroke-width': 2,
-        },
+        style: vfw.map.style.merritCatchment,
         source: vfw.map.source.wfsMeritCatchment,
         minZoom: 8,
         name: 'Merit Catchment',
         className: 'cluster-layer',
-        visible: false,
+        visible: true,
+        on: function (e) {
+            console.log(e)
+        },
     });
-/** create a separate layer for merit Rivers **/
+    /** create a separate layer for coarse merit Catchments **/
     const meritCoarseCatchmentLayer = new ol.layer.Vector({
         style: {
             // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
@@ -449,21 +464,62 @@ vfw.map.create_map = function () {
         }
     }
 
+    const selectedCatchmentStyle = new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(229,113,40,0.98)',
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#9f3700',
+            width: 2
+        })
+    });
+
+    vfw.map.selectStyle = function (feature) {
+        /**
+         * Returns the selected style for a given feature.
+         *
+         * @param {Feature} feature - The feature to select the style for.
+         * @return {Style} The selected style for the feature.
+         */
+        const color = feature.get('COLOR') || 'rgba(229,113,40,0.98)';
+        selectedCatchmentStyle.getFill().setColor(color);
+        return selectedCatchmentStyle;
+    }
+
+    const selectCatch = new ol.interaction.Select({
+        // wrapX: false,
+        style: vfw.map.selectStyle
+    })
+    // TODO: modifyCatch is needed to allow modifications of the vector layer. Not sure if we want that
+    // const modifyCatch = new ol.interaction.Modify({
+    //     features: selectCatch.getFeatures(),
+    // })
+
     /** Initialise map **/
     let map_tar = document.getElementById("map");
-    olmap = new ol.Map({
+    vfw.map.olmap = new ol.Map({
         // renderer: 'canvas',
         target: map_tar,
         layers: [
             // vfw.map.layer.waterColor,
-            osmLayer, vfw.map.layer.openTopo,
-            backgroundLayer,
-            meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer,
-            clusterLayer,
+            new ol.layer.Group({
+                title: 'Base layers',  // shown on the map in the menu
+                layers: [osmLayer, vfw.map.layer.openTopo, backgroundLayer,],
+                name: 'Maps shown in the background.',
+            }),
+            new ol.layer.Group({
+                openInLayerSwitcher: true,
+                layers: [meritCatchmentLayer, meritRiverLayer, meritCoarseCatchmentLayer, clusterLayer], //meritRiverLayer,vfw.map.source.wfsMeritRiver,
+                name: 'Datalayers',
+            }),
+            // meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer,
+            // clusterLayer,
         ],
         // layers: [mapLayer, testPointLayer, testlayer, clusterLayerNew],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
         // interactions: ol.interaction.defaults().extend([featureselect, featuremodify]),
+        // interactions: ol.interaction.defaults.defaults().extend([selectCatch, modifyCatch]),
+        interactions: ol.interaction.defaults.defaults().extend([selectCatch]),
 
         controls: [
             new ol.control.Zoom({
@@ -482,32 +538,69 @@ vfw.map.create_map = function () {
             new ol.control.ScaleLine(),
             new DrawControls(),
             vfw.map.control.zoomToExt,
-            new ol.control.LayerPopup(),
-            // new ol.control.LayerSwitcher(),
+            // new ol.control.LayerPopup({
+            //    title: 'Legende',
+            //    tipLabel: 'Legende',
+            //    label: 'layers'
+            // }),
+            //  new ol.control.LayerShop({
+            new ol.control.LayerSwitcher({
+                label: 'layers',
+                fold: 'open',
+                collapsed: false,
+
+                // reverse: true,
+                tipLabel: 'Legend',
+                title: 'Lllayers',
+                name: 'nLllayers',
+            }),
         ],
         view: mapView//dataview
     });
 
-    /** get information about your data in a popup when you click on a data point in the map **/
-    olmap.on('singleclick', checkMode);
+    /** get information about your data in a popup when you click on a data point in the map,
+     * or select by catchment when clicked within a catchment **/
+    vfw.map.olmap.on('singleclick', checkMode);
 
     /** check what is clicked and open a modal with information about data **/
     function checkMode(evt) {
-        let clickedFeatures, ids, cleanedids, wfsLen;
+        console.log('evt: ', evt)
+        let clickedFeatures, ids, cleanedids, wfsLen, catchmentID;
+        let hasLayer = function (checkLayer) {
+            // TODO: There is a lot of looping going on here.
+            //  Maybe use getFeatureAtPixel and loop yourself to be able to break the loop again.
+            return vfw.map.olmap.hasFeatureAtPixel(evt.pixel,
+                {
+                    layerFilter: function (layer) {
+                        return layer.get('name') === checkLayer;
+                    }
+                })
+        }
+
         // TODO: This code works only on the cluster layer. For other geometries/layers this function must be adjusted!
-        clusterLayer.getFeatures(evt.pixel).then((features) => {
-            if (features[0]) {
+        if (hasLayer('Data Clusters')) {
+            clusterLayer.getFeatures(evt.pixel).then((features) => {
+
                 vfw.html.loaderOverlayOn();
                 wfsLen = vfw.map.vars.wfsLayerName.length;
-                // clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+                // TODO: I assume the features are in the first layer, but this might not always be the case
                 clickedFeatures = features[0].getProperties().features;
+                console.log('clickedFeatures: ', clickedFeatures)
                 ids = clickedFeatures.map(i => parseInt(i.getId().substr(wfsLen + 1, 8)));
                 cleanedids = ids.filter(value => {
                     return !Number.isNaN(value);
                 });
                 vfw.map.buildMapModal(cleanedids, 1);
-            }
-        })
+            })
+        } else if (hasLayer('Merit Catchment')) {
+            meritCatchmentLayer.getFeatures(evt.pixel).then((catchment) => {
+                console.log('catchment: ', catchment)
+                if (catchment[0]) {
+                    catchmentID = catchment[0].getProperties().comid;
+                    vfw.map.createRiverBasin(catchmentID)
+                }
+            })
+        }
     }
 
     /** select data with doubleclick **/
@@ -553,12 +646,12 @@ vfw.map.create_map = function () {
         olmap.addInteraction(selectCluster);*/
 
     /** change cursor to pointer when hover over data **/
-    olmap.on('pointermove', function (evt) {
+    vfw.map.olmap.on('pointermove', function (evt) {
         if (evt.dragging) {
             return;
         }
         clusterLayer.getFeatures(evt.pixel).then((features) => {
-            olmap.getTargetElement().style.cursor = features[0] ? 'pointer' : '';
+            vfw.map.olmap.getTargetElement().style.cursor = features[0] ? 'pointer' : '';
         })
     });
 
@@ -630,7 +723,51 @@ vfw.map.storeGroupBtn = function (ssids, embargo) {
     }
 }
 
-
+vfw.map.vars.styledMerritCatchments = [];
 vfw.map.requestDataset = function (dataId) {
     console.warn('Noch nicht implementiert.')
+}
+
+/**
+ * Creates the contour of a river basin based on the provided startID.
+ *
+ * @param {type} startID - The ID of the river to start creating the basin from.
+ * @return {type} undefined - This function does not return anything.
+ */
+vfw.map.createRiverBasin = function (startID) {
+    let catchmentIDsList = [];
+    // Get all the features from the meritRiverLayer
+    let riverFeatures = vfw.map.source.wfsMeritRiver.getFeatures();
+    let catchmentFeatures = vfw.map.source.wfsMeritCatchment.getFeatures();
+
+    //first reset style of previously selected catchments
+    for (let i in vfw.map.vars.styledMerritCatchments) {
+        vfw.map.vars.styledMerritCatchments[i].setStyle(vfw.map.defaultStyle);
+    }
+
+    function colorCatchment(comID) {
+        const feature = catchmentFeatures.find(feature => feature.get('comid') === comID);
+        feature.setStyle(vfw.map.selectStyle);
+        vfw.map.vars.styledMerritCatchments.push(feature);
+    }
+
+// Recursive function to loop through the features and find the one with the desired values
+    function getAllRivers(riverID) {
+        const feature = riverFeatures.find(feature => feature.get('comid') === riverID);
+        if (!feature) return;
+        catchmentIDsList.push(riverID);
+        colorCatchment(riverID);
+        for (let j = 1; j < 5; j++) {
+            const upstreamID = feature.values_['up' + j];
+            if (upstreamID !== 0) {
+                getAllRivers(upstreamID);
+            } else {
+                break;
+            }
+        }
+    }
+
+    getAllRivers(startID)
+    vfw.map.vars.selectCatchmentIDs = catchmentIDsList;
+
 }
