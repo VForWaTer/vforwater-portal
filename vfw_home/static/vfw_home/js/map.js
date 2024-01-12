@@ -129,40 +129,7 @@ vfw.map.source.wfsCoarseMeritCatchment = new ol.source.Vector({
     },
     strategy: ol.loadingstrategy.bbox
 });
-/** get rivers from server **/
-// vfw.map.source.wfsMeritRiver = new ol.source.VectorTile({
-//       source: new ol.source.VectorTile({
-//         tilePixelRatio: 1, // oversampling when > 1
-//         tileGrid: ol.tilegrid.createXYZ({maxZoom: 19}),
-//         format: new ol.format.MVT(),
-//         url: vfw.var.DEMO_VAR + '/home/geoserver/gwc/service/tms/1.0.0/metacatalogdev:merit_river_test@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf'
-//       })
-    /*format: new ol.format.GeoJSON(),
-    loader: function (extent) {
-        let url = vfw.var.DEMO_VAR + '/home/geoserver/gwc/service/tms/1.0.0/merit_river_test@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf'
-        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
-            + extent.join(',') + '/3857',
-            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
-            // credentials: 'same-origin'}
-        )
-            .then(function (response) {
-                if (response.ok) {
-                    return response.text();
-                } else {
-                    return Promise.reject(response);
-                }
-            })
-            .then(function (response) {
-                vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
-            })
-            .catch(function (error) {
-                console.warn('No result for selected area. Unable to build vector layer.');
-                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
-                vfw.map.source.wfsPointSource.removeLoadedExtent(extent);
-            })
-    },
-    strategy: ol.loadingstrategy.bbox*/
-// });
+
 /** get simplified merit rivers from server. Only used to select upstream catchment, not for visualisation **/
 vfw.map.source.wfsMeritRiver = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
@@ -509,9 +476,11 @@ vfw.map.create_map = function () {
             }),
             new ol.layer.Group({
                 openInLayerSwitcher: true,
-                layers: [meritCatchmentLayer, meritRiverLayer, meritCoarseCatchmentLayer, clusterLayer], //meritRiverLayer,vfw.map.source.wfsMeritRiver,
+                layers: [meritCatchmentLayer, meritRiverLayer, meritCoarseCatchmentLayer,
+                    clusterLayer, ], //meritRiverLayer,vfw.map.source.wfsMeritRiver,
                 name: 'Datalayers',
             }),
+            vfw.map.layer.selectionLayer,
             // meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer,
             // clusterLayer,
         ],
@@ -604,7 +573,6 @@ vfw.map.create_map = function () {
     }
 
     /** select data with doubleclick **/
-    //olmap.on('doubleclick', selectDataset);
     // TODO: Cluster gives error when click on sketched polygon. Not used yet anyways, so uncommented until usefull
     /*    selectCluster = new ol.interaction.SelectCluster(
             {	// Point radius: to calculate distance between the features
@@ -643,7 +611,7 @@ vfw.map.create_map = function () {
                     }
                 }
             });
-        olmap.addInteraction(selectCluster);*/
+        vfw.map.olmap.addInteraction(selectCluster);*/
 
     /** change cursor to pointer when hover over data **/
     vfw.map.olmap.on('pointermove', function (evt) {
@@ -731,11 +699,11 @@ vfw.map.requestDataset = function (dataId) {
 /**
  * Creates the contour of a river basin based on the provided startID.
  *
- * @param {type} startID - The ID of the river to start creating the basin from.
- * @return {type} undefined - This function does not return anything.
+ * @param {int} startID - The ID of the river to start creating the basin from.
  */
 vfw.map.createRiverBasin = function (startID) {
     let catchmentIDsList = [];
+    let featureList = [];
     // Get all the features from the meritRiverLayer
     let riverFeatures = vfw.map.source.wfsMeritRiver.getFeatures();
     let catchmentFeatures = vfw.map.source.wfsMeritCatchment.getFeatures();
@@ -751,11 +719,15 @@ vfw.map.createRiverBasin = function (startID) {
         vfw.map.vars.styledMerritCatchments.push(feature);
     }
 
-// Recursive function to loop through the features and find the one with the desired values
+/** Recursive function to loop through the features and find the one with the desired values
+ *
+ * @param {int} riverID - The ID of the river to start creating the basin from.
+ */
     function getAllRivers(riverID) {
         const feature = riverFeatures.find(feature => feature.get('comid') === riverID);
         if (!feature) return;
         catchmentIDsList.push(riverID);
+        featureList.push(feature)
         colorCatchment(riverID);
         for (let j = 1; j < 5; j++) {
             const upstreamID = feature.values_['up' + j];
@@ -769,5 +741,13 @@ vfw.map.createRiverBasin = function (startID) {
 
     getAllRivers(startID)
     vfw.map.vars.selectCatchmentIDs = catchmentIDsList;
-
+    // vfw.map.vars.catchmentCollection.addFeature({
+    //     geometry: new ol.geom.GeometryCollection(featureList),
+        // name: 'Selection Catchment'
+    // })
+    vfw.map.vars.catchmentFeature = new ol.Feature({
+        geometry: new ol.geom.GeometryCollection(featureList),
+        name: 'Selection Catchment',
+    })
+    vfw.map.source.select.addFeatures(vfw.map.vars.catchmentFeature)
 }

@@ -2,7 +2,7 @@ let draw, drawSquare, drawCatchmentOutlet, drawCatchmentWKT, modify, selectedFea
 /**
  * Global Element (source layer) to drawn on
  */
-let selectionLayer;
+// let selectionLayer;
 let activeMap = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
 let sessionStorageData = {};
@@ -236,6 +236,27 @@ vfw.html.createSidebarBtn = function (storeID, btnData, btnName, title) {
 }
 
 //--- draw start -------------------------------------------------------------------------------------------------------
+// vfw.map.interaction.drawPolygon = null;
+vfw.map.source.selectionSource = new ol.source.Vector({
+    wrapX: false,
+    features: new ol.Collection(),
+    useSpatialIndex: false,
+    zindex: -100
+});
+// Create a layer used to select data on the map
+vfw.map.layer.selectionLayer = new ol.layer.Vector({
+    name: 'Selection Layer',
+    source: vfw.map.source.selectionSource,
+    style: new ol.style.Style({
+        stroke: new ol.style.Stroke({
+            color: '#ff0040',
+            width: 2.5
+        }),
+    }),
+    // zindex: -100,
+    updateWhileAnimating: true, // optional, for instant visual feedback
+    updateWhileInteracting: true // optional, for instant visual feedback
+});
 /**
  * Reset the draw menu, clear selections in memory and on map
  */
@@ -243,19 +264,21 @@ function resetDraw() {
     vfw.html.getQuickSelection({'draw': []})
     vfw.html.getQuickSelection({'catchout': []})
     vfw.var.obj.selectedIds.map = null;
-    selectionLayerSource.clear();
+    vfw.map.source.selectionSource.clear();
     selectedFeatures.clear();
 
-    olmap.removeInteraction(draw);
-    olmap.removeInteraction(modify);
+    vfw.map.olmap.removeInteraction(draw);
+    vfw.map.olmap.removeInteraction(modify);
     // removeInteractions()
-    // olmap.removeLayer(selectionLayer);
+    // vfw.map.olmap.removeLayer(selectionLayer);
 
-    olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
-        .forEach(layer => olmap.removeLayer(layer));
+    // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+    //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 }
 
 function addInteraction(type) {
+// TODO: seems to be unused
+/*function addInteraction(type) {
     if (type == 'Polygon') {
         draw = new ol.interaction.Draw({
             source: selectionLayerSource,
@@ -282,7 +305,7 @@ function addInteraction(type) {
         });
     }
     map.addInteraction(draw);
-}
+}*/
 
 
 /**
@@ -293,63 +316,63 @@ function addInteraction(type) {
 function drawOnMapMenu(test) {
     openDrawfilter();
     // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
-    // olmap.removeInteraction(selectCluster);
-    let collection = new ol.Collection();
+    // vfw.map.olmap.removeInteraction(selectCluster);
+    // let collection = new ol.Collection();
 
-    /**
+ /*   /!**
      * Element (layer) to be included on map
-     */
+     *!/
     selectionLayerSource = new ol.source.Vector({
         wrapX: false,
         features: collection,
         useSpatialIndex: false,
         zindex: -100
-    });
+    });*/
 
     // create source layer
-    selectionLayer = new ol.layer.Vector({
-        source: selectionLayerSource,
-        style: new ol.style.Style({
-            // fill: new ol.style.Fill({
-            //     color: 'rgba(255, 255, 255, 0.2)'
-            // }),
-            stroke: new ol.style.Stroke({
-                color: '#ff0040',
-                width: 1
-            }),
-        }),
-        // zindex: -100,
-        updateWhileAnimating: true, // optional, for instant visual feedback
-        updateWhileInteracting: true // optional, for instant visual feedback
-    });
-    olmap.addLayer(selectionLayer);
+    // selectionLayer = new ol.layer.Vector({
+    //     source: vfw.map.source.selectionSource,
+    //     style: new ol.style.Style({
+    //         // fill: new ol.style.Fill({
+    //         //     color: 'rgba(255, 255, 255, 0.2)'
+    //         // }),
+    //         stroke: new ol.style.Stroke({
+    //             color: '#ff0040',
+    //             width: 1
+    //         }),
+    //     }),
+    //     // zindex: -100,
+    //     updateWhileAnimating: true, // optional, for instant visual feedback
+    //     updateWhileInteracting: true // optional, for instant visual feedback
+    // });
+    // vfw.map.olmap.addLayer(selectionLayer);
 
     /**
      * Create and add interactions
      */
     // let select = new ol.interaction.Select();
-    // olmap.addInteraction(select);
+    // vfw.map.olmap.addInteraction(select);
 
     draw = new ol.interaction.Draw({
-        source: selectionLayerSource,
+        source: vfw.map.source.selectionSource,
         type: 'Polygon',
         stopClick: true,
     });
     // draw.setZIndex(-100);
     drawSquare = new ol.interaction.Draw({
-        source: selectionLayerSource,
+        source: vfw.map.source.selectionSource,
         type: 'Circle',
         geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
     });
     drawCatchmentOutlet = new ol.interaction.Draw({
-        source: selectionLayerSource,
+        source: vfw.map.source.selectionSource,
         type: 'Point',
     })
 
     const overlayStyle = new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
     const select = new ol.interaction.Select({style: overlayStyle,});
-    olmap.addInteraction(select)
+    vfw.map.olmap.addInteraction(select)
 
     modify = new ol.interaction.Modify({
         // features: collection.getFeaturesCollection(),
@@ -452,7 +475,7 @@ function drawOnMapMenu(test) {
     }
 
     drawSquare.on('drawstart', function (event) {
-        selectionLayerSource.clear();
+        vfw.map.source.selectionSource.clear();
         listener = selectStartFun(event)
     }, this);
     drawSquare.on('drawend', function () {
@@ -468,8 +491,8 @@ function drawOnMapMenu(test) {
         }*/
 
         // /* remove preloaded layers defined by the url */
-        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
-            .forEach(layer => olmap.removeLayer(layer));
+        // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+        //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
         vfw.html.getQuickSelection({'draw': getEdgeCoords()});  // update selection on map
         removeInteractions();
@@ -477,7 +500,7 @@ function drawOnMapMenu(test) {
     });
 
     draw.on('drawstart', function (event) {
-        selectionLayerSource.clear();
+        vfw.map.source.selectionSource.clear();
         listener = selectStartFun(event)
     }, this);
     draw.on('drawend', function () {
@@ -489,8 +512,8 @@ function drawOnMapMenu(test) {
             });*/
 
         /* remove preloaded layers defined by the url */
-        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
-            .forEach(layer => olmap.removeLayer(layer));
+        // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
+        //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
         vfw.html.getQuickSelection({'draw': getEdgeCoords()});
         removeInteractions();
@@ -527,13 +550,14 @@ function drawOnMapMenu(test) {
             selectionEdgeCoords = polygon;
             // TODO: make sure you got 'selectionEdgeCoords' before 'getEdgeCoords()' in 'drawend' runs. => create custom event?
             // vfw.html.getQuickSelection({'draw': getEdgeCoords()});  // update selection on map
-            selectionLayerSource.clear();
-            selectionLayerSource = new ol.source.Vector({features: [catch_feature],});
-            selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
-            selectionLayer.setStyle(new ol.style.Style({
-                stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
-            }))
-            olmap.addLayer(selectionLayer)
+            // vfw.map.source.selectionSource.clear();
+            vfw.map.source.selectionSource = new ol.source.Vector({features: [catch_feature],});
+            vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+            // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
+            // selectionLayer.setStyle(new ol.style.Style({
+            //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
+            // }))
+            // vfw.map.olmap.addLayer(selectionLayer)
             vfw.html.getQuickSelection({'draw': getEdgeCoords()});
             // listener = selectStartFun(event)
             vfw.html.loaderOverlayOff();
@@ -543,8 +567,8 @@ function drawOnMapMenu(test) {
     drawCatchmentOutlet.on('drawend', function () {
         // removeInteractions();
                 /* remove preloaded layers defined by the url */
-        olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
-            .forEach(layer => olmap.removeLayer(layer));
+        // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'Selection Layer')
+        //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
         removeInteractions();
         toggleDraw(document.getElementById("draw_catchment"))
 
@@ -556,10 +580,10 @@ function drawOnMapMenu(test) {
  * Remove interactions from draw menu options (draw, drawSquare and modify).
  */
 function removeInteractions() {
-    olmap.removeInteraction(draw);
-    olmap.removeInteraction(modify);
-    olmap.removeInteraction(drawSquare);
-    olmap.removeInteraction(drawCatchmentOutlet);
+    vfw.map.olmap.removeInteraction(draw);
+    vfw.map.olmap.removeInteraction(modify);
+    vfw.map.olmap.removeInteraction(drawSquare);
+    vfw.map.olmap.removeInteraction(drawCatchmentOutlet);
 }
 
 /**
@@ -1011,13 +1035,18 @@ vfw.filter.updateQuickfilter = function() {
 
                 // TODO: Do not create a new layer, but reuse the layers in drawOnMapManu
                 //  to enable modification after refreshing website
-                let url_feature = new ol.Feature({geometry: new ol.geom.Polygon([coords]),});
-                selectionLayerSource = new ol.source.Vector({features: [url_feature],});
-                selectionLayer = new ol.layer.Vector({source: selectionLayerSource, name: 'url_layer'});
-                selectionLayer.setStyle(new ol.style.Style({
-                    stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
-                }))
-                olmap.addLayer(selectionLayer)
+                // vfw.map.source.selectionSource.clear();
+                vfw.map.source.selectionSource = new ol.source.Vector({
+                    features: [new ol.Feature({
+                        geometry: new ol.geom.Polygon([coords]),
+                    })],
+                });
+                vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+                // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
+                // selectionLayer.setStyle(new ol.style.Style({
+                //     stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
+                // }))
+                // vfw.map.olmap.addLayer(selectionLayer)
 
             } else {
                 console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
@@ -1176,6 +1205,7 @@ vfw.html.getQuickSelection = function (selection) {
 //  3) Save click point and diffs (node index, x, y)
 //  4) enable user to store/share/upload geojson of catchment
 //  5) store changes in database and use/share ids
+//  6) store complete catchment for individual selections and river IDs (+layer) for simple selection (next implementation)
 /**
  * Get a river catchment / watershed according to the given coords.
  * This might take a while, so tell depending functions to wait!
