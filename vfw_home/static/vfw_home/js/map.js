@@ -741,6 +741,35 @@ vfw.map.createRiverBasin = function (startID) {
 
     getAllRivers(startID)
     vfw.map.vars.selectCatchmentIDs = catchmentIDsList;
+
+    /*// TODO: function to union catchments in browser. Not working. Try another time...
+    function unionCatchments(catchmentFeatures) {
+        const parser = new jsts.io.OL3Parser();
+        parser.inject(
+          ol.geom.Point,
+          ol.geom.LineString,
+          ol.geom.LinearRing,
+          ol.geom.Polygon,
+          ol.geom.MultiPoint,
+          ol.geom.MultiLineString,
+          ol.geom.MultiPolygon
+        );
+        let unionFeatures = parser.read(catchmentFeatures[0].getGeometry());
+        for (let i = 1; i < catchmentFeatures.length; i++) {
+          const feature = catchmentFeatures[i];
+          // convert the OpenLayers geometry to a JSTS geometry
+          const jstsGeom = parser.read(feature.getGeometry());
+
+          // create a buffer of 40 meters around each line
+          unionFeatures = unionFeatures.union(jstsGeom);
+
+          // convert back from JSTS and replace the geometry on the feature
+          unionFeatures.setGeometry(parser.write(unionFeatures));
+        }
+        return unionFeatures
+    }
+    unionCatchments(catchFeatureList)*/
+
     // vfw.map.vars.catchmentCollection.addFeature({
     //     geometry: new ol.geom.GeometryCollection(featureList),
         // name: 'Selection Catchment'
