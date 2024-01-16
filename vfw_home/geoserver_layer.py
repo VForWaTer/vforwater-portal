@@ -254,12 +254,14 @@ def __build_layer_xml(
         geometrytype = "Point"
 
         query = (
-            'SELECT ST_Transform(location, 4326) ::geometry as "Geometry", '
-            'title as "Beschreibung", name as "Datentyp", '
-            'comment as "Kommentar", '
-            'embargo as "Embargo", '
+            'SELECT ST_Transform(locations.point_location, 4326) ::geometry as "Geometry", '
+            'entries.title as "Beschreibung", '
+            'variables.name as "Datentyp", '
+            'entries.comment as "Kommentar", '
+            'entries.embargo as "Embargo", '
             'entries.id '
-            'FROM entries LEFT JOIN variables on entries.variable_id = variables.id'
+            'FROM entries LEFT JOIN variables on entries.variable_id = variables.id '
+            'LEFT JOIN locations ON entries.id = locations.id'
         )
         #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
         ids_without_data = cache.get('ids_without_data')
