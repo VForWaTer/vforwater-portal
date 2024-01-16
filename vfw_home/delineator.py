@@ -28,6 +28,24 @@ MERIT Hydro is available for download at http://hydro.iis.u-tokyo.ac.jp/~yamadai
 The copyright of MERIT Hydro is held by the developers, 2019, all rights reserved.
 """
 
+
+def useSQLQuery(wkbquerystring):
+    """
+    Just a try-except block around a raw sql query
+    :param wkbquerystring:
+    :return:
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(wkbquerystring)
+            row = cursor.fetchall()
+    except Exception as e:
+        print('e: ', e)
+        row = [('error', e)]
+
+    return row
+
+
 def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
     """
     code is based on delineator-1.0 of https://github.com/mheberger/delineator
@@ -52,22 +70,6 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
     search_dist = 0.01
 
     accuracy = 4  # 4 decimals ~= 10m; 6 decimals ~= 1m
-
-    def useSQLQuery(wkbquerystring):
-        """
-        Just a try-except block around a raw sql query
-        :param wkbquerystring:
-        :return:
-        """
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(wkbquerystring)
-                row = cursor.fetchall()
-        except Exception as e:
-            print('e: ', e)
-            row = [('error', e)]
-
-        return row
 
     crs = 'EPSG:4326'
     coordinates = Point(float(coords['lng'][0]), float(coords['lat'][0]), crs)
@@ -126,17 +128,7 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
         return {'error': 'There is a problem with your river layer.'}
 
     # starting from the catchment at the clickpoint, search for the connected rivers upstream
-    comID_array = useSQLQuery('WITH RECURSIVE riv_tree (comid, nextdownid, level) AS ('
-                              'SELECT comid, nextdownid, 1 AS level '
-                              'FROM riv_pfaf_merit_hydro_v07_basins_v01 '
-                              f'WHERE comid = {terminal_comid} '
-                              'UNION ALL '
-                              'SELECT r.comid, r.nextdownid, rt.level + 1 '
-                              'FROM riv_tree rt '
-                              'JOIN riv_pfaf_merit_hydro_v07_basins_v01 r ON rt.comid IN (r.nextdownid)'
-                              ')'
-                              'SELECT comid '
-                              'FROM riv_tree;')
+    comID_array = get_ID_array(terminal_comid)
 
     # Some simplification of catchment is necessary no to follow corners of every pixel.
     # Also the delineation is used in the url to allow sharing and bookmarking. Max length of URLs is 4096 chars, so
@@ -152,32 +144,39 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
         simplification = 0.1  # 0.01
 
     # create raw query. Small difference if the query is only for one catchment, or if several have to be unified
-    if len(comID_array) > 1:
+    newcomID_array = tuple(*zip(*comID_array))
+    if len(newcomID_array) > 1:
         # union catchments
-        selectstring = ""
-        for i in comID_array:
-            # create query
-            selectstring += f'(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i[0]}),'
-
         wkbquerystring = 'SELECT ST_AsText(' \
                          'ST_Simplify(' \
-                         f'ST_Union(ARRAY[{selectstring[:-1]}]), ' \
+                         f'ST_Union(ARRAY(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid in {newcomID_array})), ' \
                          f'{simplification}), ' \
                          f'{accuracy}) as catchment'
-        # counting vertices might become helpful, though the following is too slow
-        # vertices_count = "SELECT ST_NPoints(ST_GeomFromText(ST_AsText(ST_Simplify(ST_Union(ARRAY[{}]), {}), {}))) as catchment".format(
-        #     selectstring[:-1], simplification, accuracy)
     else:
         wkbquerystring = f'SELECT ST_AsText(ST_Simplify(geom, {simplification}), {accuracy}) AS catchment ' \
                          f'FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid};'
-        # vertices_count = f"SELECT ST_NPoints(ST_GeomFromText(ST_AsText(ST_Simplify(geom, {simplification}), {accuracy}))) " \
-        #              f"AS catchment FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid}"
 
     row = useSQLQuery(wkbquerystring)
 
-    # TODO: if layer creation in GeoServer, then think about moving store/workspace to settings.py
-    # layer_name = f'catchment{terminal_comid}'  # only used for a geoserver layer
-    # if not get_layer(layer_name, store, workspace):
-    #     create_layer("", layer_name, store, workspace, B, layertype="filtercatchment")
-
     return {'wkt': row[0][0]}
+
+
+def get_ID_array(terminal_comid):
+    """
+    Retrieves an array of IDs following the rivers from the database using a recursive SQL query.
+
+    :param: terminal_comid (int): The ID of the terminal comid to start the recursive query from.
+    :return: list[int]: An array of comid values retrieved from the database.
+    """
+    return useSQLQuery('WITH RECURSIVE riv_tree (comid, nextdownid, level) AS ('
+                       'SELECT comid, nextdownid, 1 AS level '
+                       'FROM riv_pfaf_merit_hydro_v07_basins_v01 '
+                       f'WHERE comid = {terminal_comid} '
+                       'UNION ALL '
+                       'SELECT r.comid, r.nextdownid, rt.level + 1 '
+                       'FROM riv_tree rt '
+                       'JOIN riv_pfaf_merit_hydro_v07_basins_v01 r ON rt.comid IN (r.nextdownid)'
+                       ')'
+                       'SELECT comid '
+                       'FROM riv_tree;')
+
