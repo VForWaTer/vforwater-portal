@@ -132,12 +132,12 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             #     split_datasets[dataset['group_id']] if dataset['group__type__name'].find('Split dataset') else None)
         else:
             try:
-                if dataset['group__type__name'].find('Split dataset'):
+                # if dataset['group__type__name'].find('Split dataset'):
                     # print('is a split dataset')
                     # print("is_split: dataset['group_id']: ", True)
                     # print("split_group: dataset['group_id']: ", dataset['group_id'])
                     # print("split_members: dataset['group_id']: ", dataset_id)
-                else:
+                # else:
                     # print('is not a split dataset: ', False, 0, [])
 
                 dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
