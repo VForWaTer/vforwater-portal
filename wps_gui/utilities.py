@@ -16,7 +16,7 @@ from .models import WebProcessingService as WpsModel
 from .models import WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
 from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR
-import polars as pl
+# import polars as pl
 
 
 def abstract_is_link(process):
