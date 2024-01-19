@@ -265,7 +265,6 @@ function resetDraw() {
     vfw.html.getQuickSelection({'catchout': []})
     vfw.var.obj.selectedIds.map = null;
     vfw.map.source.selectionSource.clear();
-    selectedFeatures.clear();
 
     vfw.map.olmap.removeInteraction(draw);
     vfw.map.olmap.removeInteraction(modify);
@@ -276,7 +275,6 @@ function resetDraw() {
     //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 }
 
-function addInteraction(type) {
 // TODO: seems to be unused
 /*function addInteraction(type) {
     if (type == 'Polygon') {
@@ -408,7 +406,6 @@ function drawOnMapMenu(test) {
             }),
         });*/
 
-    selectedFeatures = select.getFeatures();
     vfw.var.obj.selectedIds.map = null;
     let sketch, listener, polygon;
     let append_str = vfw.var.DATA_LAYER_NAME + '.';
