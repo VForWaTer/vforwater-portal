@@ -159,11 +159,14 @@ vfw.map.source.wfsMeritRiver = new ol.source.Vector({
     },
     strategy: ol.loadingstrategy.bbox
 });
+
 /** get data points from server **/
 vfw.map.source.wfsPointSource = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     loader: function (extent) {
-        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
+        console.log('data: ', vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.DATA_LAYER_NAME + '/'
+            + extent.join(',') + '/3857')
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.DATA_LAYER_NAME + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
             // credentials: 'same-origin'}
@@ -181,11 +184,53 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
             .catch(function (error) {
                 console.warn('No result for selected area. Unable to build vector layer with data points.');
                 // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
-                vfw.map.source.wfsPointSource.removeLoadedExtent(extent);
+                // vfw.map.source.wfsPointSource.removeLoadedExtent(extent);  // TODO: why was this there? test before delete!
             })
     },
     strategy: ol.loadingstrategy.bbox
 });
+/** get areal data from server **/
+vfw.map.source.wfsArealSource = new ol.source.Vector({
+    format: new ol.format.GeoJSON(),
+    loader: function (extent) {
+        console.log('layername: ', vfw.var.AREAL_DATA_LAYER_NAME)
+        console.log('url: ', vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.AREAL_DATA_LAYER_NAME + '/'
+            + extent.join(',') + '/3857')
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.AREAL_DATA_LAYER_NAME + '/'
+            + extent.join(',') + '/3857',
+            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+            // credentials: 'same-origin'}
+        )
+            .then(function (response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return Promise.reject(response);
+                }
+            })
+            .then(function (response) {
+                vfw.map.source.wfsArealSource.addFeatures(vfw.map.source.wfsArealSource.getFormat().readFeatures(response));
+            })
+            .catch(function (error) {
+                console.warn('No result for selected area. Unable to build vector layer with data points.');
+                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                vfw.map.source.wfsArealSource.removeLoadedExtent(extent);
+            })
+    },
+    strategy: ol.loadingstrategy.bbox
+});
+
+/** get areal data from server as TileWMS **/
+vfw.map.source.wmsTileArealSource = new ol.source.TileWMS({
+          url: 'http://localhost:8888/geoserver/metacatalogdev/wms',
+          params: {'FORMAT': 'image/png',
+                   tiled: true,
+                "STYLES": '',
+                "LAYERS": 'metacatalogdev:marcus_areal_devel',
+                "exceptions": 'application/vnd.ogc.se_inimage',
+             tilesOrigin: 10.093123972656114 + "," + 50.400550842285156
+          }
+        });
 /** get the different background maps **/
 // Create vfw style map
 vfw.map.source.vfwSource = new ol.source.XYZ({
@@ -253,9 +298,9 @@ vfw.map.create_map = function () {
 
     let dataExt = ol.proj.transformExtent(vfw.var.DATA_EXT, 'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
 
-    vfw.map.vars.wfsLayerName = vfw.var.DATA_LAYER;
-    if (vfw.map.vars.wfsLayerName.search("Error") !== -1) {
-        console.error(vfw.map.vars.wfsLayerName)
+    // vfw.var.DATA_LAYER_NAME = vfw.var.DATA_LAYER_NAME;
+    if (vfw.var.DATA_LAYER_NAME.search("Error") !== -1) {
+        console.error(vfw.var.DATA_LAYER_NAME)
         let tabBtn = {'currentTarget': document.getElementById('tableTab')}
         toggleMapTableFilter(tabBtn, 'paginationTable');
         filter_pagination();
@@ -305,6 +350,19 @@ vfw.map.create_map = function () {
     //     source: vfw.map.source.wfsPointSource,
     // });
 
+    const arealDataLayer = new ol.layer.Vector({  // TODO: not working
+        style: {
+            'stroke-color': 'rgba(13,188,194,0.65)',
+            'stroke-width': 5,
+            'fill-color': 'rgba(13,188,194,0.02)',
+        },
+        source: vfw.map.source.wfsArealSource,
+        name: 'Areal Data Layer',
+        displayInLayerSwitcher: true,
+    })
+    // const arealDataLayer = new ol.layer.Tile({
+    //     source: vfw.map.source.wmsTileArealSource
+    // })
     /** create a separate layer for merit Rivers. This layer is not visible and hidden in the menu on the map **/
     const meritRiverLayer = new ol.layer.Vector({
         style: {
@@ -318,7 +376,7 @@ vfw.map.create_map = function () {
         source: vfw.map.source.wfsMeritRiver,
         minZoom: 8,
         name: 'Merit River Simple',
-        className: 'cluster-layer',
+        // className: 'cluster-layer',
         // visible: false,
         displayInLayerSwitcher: false,
     });
@@ -477,7 +535,7 @@ vfw.map.create_map = function () {
             new ol.layer.Group({
                 openInLayerSwitcher: true,
                 layers: [meritCatchmentLayer, meritRiverLayer, meritCoarseCatchmentLayer,
-                    clusterLayer, ], //meritRiverLayer,vfw.map.source.wfsMeritRiver,
+                    clusterLayer, arealDataLayer, ], //meritRiverLayer,vfw.map.source.wfsMeritRiver,
                 name: 'Datalayers',
             }),
             vfw.map.layer.selectionLayer,
@@ -551,7 +609,7 @@ vfw.map.create_map = function () {
             clusterLayer.getFeatures(evt.pixel).then((features) => {
 
                 vfw.html.loaderOverlayOn();
-                wfsLen = vfw.map.vars.wfsLayerName.length;
+                wfsLen = vfw.var.DATA_LAYER_NAME.length;
                 // TODO: I assume the features are in the first layer, but this might not always be the case
                 clickedFeatures = features[0].getProperties().features;
                 console.log('clickedFeatures: ', clickedFeatures)
@@ -703,7 +761,8 @@ vfw.map.requestDataset = function (dataId) {
  */
 vfw.map.createRiverBasin = function (startID) {
     let catchmentIDsList = [];
-    let featureList = [];
+    let rivFeatureList = [];
+    let catchFeatureList = [];
     // Get all the features from the meritRiverLayer
     let riverFeatures = vfw.map.source.wfsMeritRiver.getFeatures();
     let catchmentFeatures = vfw.map.source.wfsMeritCatchment.getFeatures();
@@ -713,10 +772,10 @@ vfw.map.createRiverBasin = function (startID) {
         vfw.map.vars.styledMerritCatchments[i].setStyle(vfw.map.defaultStyle);
     }
 
-    function colorCatchment(comID) {
-        const feature = catchmentFeatures.find(feature => feature.get('comid') === comID);
-        feature.setStyle(vfw.map.selectStyle);
-        vfw.map.vars.styledMerritCatchments.push(feature);
+    function colorCatchment(catchFeature) {
+        // const feature = catchmentFeatures.find(feature => feature.get('comid') === comID);
+        catchFeature.setStyle(vfw.map.selectStyle);
+        vfw.map.vars.styledMerritCatchments.push(catchFeature);
     }
 
 /** Recursive function to loop through the features and find the one with the desired values
@@ -724,13 +783,16 @@ vfw.map.createRiverBasin = function (startID) {
  * @param {int} riverID - The ID of the river to start creating the basin from.
  */
     function getAllRivers(riverID) {
-        const feature = riverFeatures.find(feature => feature.get('comid') === riverID);
-        if (!feature) return;
+        const rivFeature = riverFeatures.find(feature => feature.get('comid') === riverID);
+        if (!rivFeature) return;
         catchmentIDsList.push(riverID);
-        featureList.push(feature)
-        colorCatchment(riverID);
+        rivFeatureList.push(rivFeature)
+
+        const catchFeature = catchmentFeatures.find(feature => feature.get('comid') === riverID);
+        catchFeatureList.push(catchFeature)
+        // colorCatchment(catchFeature);
         for (let j = 1; j < 5; j++) {
-            const upstreamID = feature.values_['up' + j];
+            const upstreamID = rivFeature.values_['up' + j];
             if (upstreamID !== 0) {
                 getAllRivers(upstreamID);
             } else {
@@ -743,26 +805,20 @@ vfw.map.createRiverBasin = function (startID) {
     vfw.map.vars.selectCatchmentIDs = catchmentIDsList;
 
     /*// TODO: function to union catchments in browser. Not working. Try another time...
+      // Import of JSTS happens in base.html
+      // https://openlayers.org/en/latest/examples/jsts.html
+      // https://github.com/bjornharrtell/jsts
     function unionCatchments(catchmentFeatures) {
         const parser = new jsts.io.OL3Parser();
-        parser.inject(
-          ol.geom.Point,
-          ol.geom.LineString,
-          ol.geom.LinearRing,
-          ol.geom.Polygon,
-          ol.geom.MultiPoint,
-          ol.geom.MultiLineString,
-          ol.geom.MultiPolygon
+        parser.inject(ol.geom.Point, ol.geom.LineString, ol.geom.LinearRing, ol.geom.Polygon, ol.geom.MultiPoint,
+        ol.geom.MultiLineString, ol.geom.MultiPolygon
         );
         let unionFeatures = parser.read(catchmentFeatures[0].getGeometry());
         for (let i = 1; i < catchmentFeatures.length; i++) {
           const feature = catchmentFeatures[i];
           // convert the OpenLayers geometry to a JSTS geometry
           const jstsGeom = parser.read(feature.getGeometry());
-
-          // create a buffer of 40 meters around each line
           unionFeatures = unionFeatures.union(jstsGeom);
-
           // convert back from JSTS and replace the geometry on the feature
           unionFeatures.setGeometry(parser.write(unionFeatures));
         }
@@ -771,12 +827,24 @@ vfw.map.createRiverBasin = function (startID) {
     unionCatchments(catchFeatureList)*/
 
     // vfw.map.vars.catchmentCollection.addFeature({
-    //     geometry: new ol.geom.GeometryCollection(featureList),
+    //     geometry: new ol.geom.GeometryCollection(rivFeatureList),
         // name: 'Selection Catchment'
     // })
     vfw.map.vars.catchmentFeature = new ol.Feature({
-        geometry: new ol.geom.GeometryCollection(featureList),
+        geometry: new ol.geom.GeometryCollection(rivFeatureList),
         name: 'Selection Catchment',
     })
-    vfw.map.source.select.addFeatures(vfw.map.vars.catchmentFeature)
+    // vfw.map.source.select.addFeatures(vfw.map.vars.catchmentFeature)
+    // vfw.map.source.selectionSource.addFeatures(vfw.map.vars.catchmentFeature)
+    vfw.map.source.selectionSource = new ol.source.Vector({features: catchFeatureList,});
+    // vfw.map.source.selectionSource.addFeatures(catchFeatureList)
+    // vfw.map.source.selectionSource = new ol.source.Vector({features: vfw.map.vars.catchmentFeature,});
+
+
+    // vfw.map.source.selectionSource = new ol.source.Vector({
+    //     features: [new ol.Feature({
+    //         geometry: new ol.geom.Polygon([coords]),
+    //     })],
+    // });
+    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
 }

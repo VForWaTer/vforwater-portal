@@ -55,7 +55,8 @@
       vfw.html.resultModal.close()
     }
   };
-  {#window.onclick = (event) => {if (event.target == vfw.sidebar.modal) vfw.sidebar.modal.closeInfoModal()};#}
+  {#window.onclick = (event) => {if (event.target == vfw.html.infoModal) vfw.html.infoModal.close()};#}
+  {#window.onclick = (event) => {if (event.target == vfw.html.resultModal) vfw.html.resultModal.close()};#}
 
   vfw.html.infoModal.close = function() {
     vfw.html.infoModal.style.display = "none";

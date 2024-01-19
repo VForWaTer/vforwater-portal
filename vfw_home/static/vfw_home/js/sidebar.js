@@ -847,9 +847,10 @@ function menuItemListener(link) {
                 .done(function (json) {
                     // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
                     // saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
-                    let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
-                    saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
+                    // let blob = new Blob([json], {type: "text/csv;charset=utf-8"});
+                    // console.log('blob: ', blob)
                     vfw.workspace.modal.openResultModal(json)
+                    // saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName"));
                 })
                 .fail(function (failed) {
                     console.error('Failed to load metadata: ', failed)

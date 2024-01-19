@@ -14,7 +14,7 @@ class EntriesAdminForm(ModelForm):
                   'is_partial', 'uuid', 'citation']
 
 
-class EntriesAdmin(admin.OSMGeoAdmin):
+class EntriesAdmin(admin.GISModelAdmin):
     form = EntriesAdminForm
     list_display = ['id', 'title', 'location', 'geom']
 

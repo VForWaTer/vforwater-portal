@@ -180,3 +180,11 @@ def get_ID_array(terminal_comid):
                        'SELECT comid '
                        'FROM riv_tree;')
 
+
+def get_unified_catchment(id_tuple, outputtype='ewkb'):
+    query_string = (f'SELECT ST_AsEWKB(ST_Union(ARRAY('
+                    f'SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid in {id_tuple}'
+                    f'))) as catchment')
+
+    row = useSQLQuery(query_string)
+    return row

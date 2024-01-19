@@ -228,6 +228,26 @@ def __build_catchment_layer_xml(request, filename, datastore, workspace, srid, s
     pass
 
 
+def __get_selectables_query(selection):
+    ids_without_data = cache.get('ids_without_data')
+    if ids_without_data is None:
+        ids_without_data = check_data_consistency()
+        # cache.set('ids_without_data', ids_without_data, 3*60)
+    if selection is None:
+        selection = []
+
+    selectable_data = tuple(set(selection) - set(ids_without_data))
+    # if selection == []:
+    if len(selectable_data) == 0:
+        where_clause = f'entries.id not in {tuple(ids_without_data)}'
+    elif len(selectable_data) > 1:
+        where_clause = f'entries.id in {selectable_data}'
+    else:
+        where_clause = f'entries.id = {selectable_data[0]}'
+    return where_clause
+
+
+
 # TODO: Query needs 'WHERE' for the IDs of data available for user (isn't this already done in '__build_xml_from_id'?)
 def __build_layer_xml(
     request, filename: str, datastore: str, workspace: str, srid: int, selection, layertype="point"
@@ -264,21 +284,23 @@ def __build_layer_xml(
             'LEFT JOIN locations ON entries.id = locations.id'
         )
         #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
-        ids_without_data = cache.get('ids_without_data')
-        if ids_without_data is None:
-            ids_without_data = check_data_consistency()
-            # cache.set('ids_without_data', ids_without_data, 3*60)
-        if selection is None:
-            selection = []
-
-        selectable_data = tuple(set(selection) - set(ids_without_data))
-
-        if selection == []:
-            query = f'{query} WHERE entries.id not in {tuple(ids_without_data)}'
-        elif len(selectable_data) > 1:
-            query = f'{query} WHERE entries.id in {selectable_data}'
-        else:
-            query = f'{query} WHERE entries.id = {selectable_data[0]}'
+        # ids_without_data = cache.get('ids_without_data')
+        # if ids_without_data is None:
+        #     ids_without_data = check_data_consistency()
+        #     # cache.set('ids_without_data', ids_without_data, 3*60)
+        # if selection is None:
+        #     selection = []
+        #
+        # selectable_data = tuple(set(selection) - set(ids_without_data))
+        #
+        # if selection == []:
+        #     query = f'{query} WHERE entries.id not in {tuple(ids_without_data)}'
+        # elif len(selectable_data) > 1:
+        #     query = f'{query} WHERE entries.id in {selectable_data}'
+        # else:
+        #     query = f'{query} WHERE entries.id = {selectable_data[0]}'
+        #
+        query = f'{query} WHERE {__get_selectables_query(selection)}'
 
         # if not request.user.is_authenticated:
         #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
@@ -292,6 +314,32 @@ def __build_layer_xml(
             ("Embargo", 1, 1, False, "bool"),
         ]  # , ('id', 1, 1, False, 'int')]
 
+
+    elif layertype == "areal_data":
+        keycolumn = ""
+        # keycolumn = "<keyColumn>id</keyColumn>"
+        geometrytype = "MultiPolygon"
+
+        query = (
+            'SELECT ST_GeometryType(locations.geom) as "FeatureType",'
+            'ST_Transform(locations.geom, 4326) ::geometry as "Geometry", '
+            'entries.title as "Beschreibung", '
+            'variables.name as "Datentyp", '
+            'entries.comment as "Kommentar", '
+            'entries.embargo as "Embargo", '
+            'entries.id '
+            'FROM entries LEFT JOIN variables on entries.variable_id = variables.id '
+            'LEFT JOIN locations ON entries.id = locations.id '
+            'WHERE locations.area_sqm > 0'
+        )
+        query = f'{query} AND {__get_selectables_query(selection)}'
+        attribute_list = [
+            ("Geometry", 0, 1, True, geometrytype),
+            ("Beschreibung", 1, 1, False, "string"),
+            ("Datentyp", 1, 1, False, "string"),
+            ("Kommentar", 0, 1, True, "string"),
+            ("Embargo", 1, 1, False, "bool"),
+        ]
     elif layertype == "filtercatchment":
         # simpleConversion = "<simpleConversionEnabled>false</simpleConversionEnabled>"
         geometrytype = "Polygon"
@@ -300,10 +348,13 @@ def __build_layer_xml(
             selectstring += f'(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}),'
 
         if len(selection) > 1:
-            query = f'SELECT ST_Union(ARRAY[{selectstring[:-1]}])'
+            newcomID_array = tuple(*zip(*selection))
+            query = f'SELECT ST_Union(ARRAY[{tuple(*zip(*selection))}])'
+            # query = f'SELECT ST_Union(ARRAY[{selectstring[:-1]}])'
             # query = "SELECT ST_Union(ARRAY[{}]) as catchment".format(selectstring[:-1])
         else:
-            query = selectstring[1:-2]
+            query = 'SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}'
+            # query = selectstring[1:-2]
             # query = "{} as catchment".format(selectstring[1:-2])
 
         attribute_list = [
@@ -334,7 +385,21 @@ def __build_layer_xml(
             ("up2", 0, 1, False, "int"),
             ("up3", 0, 1, False, "int"),
             ("up4", 0, 1, False, "int"),
-            ("geom", 0, 1, False,geometrytype),
+            ("geom", 0, 1, False, geometrytype),
+        ]
+    elif layertype == "merit_river_simple":
+        keycolumn = ""
+        geometrytype = "MultiLine"
+        # query = ('SELECT comid, up1, up2, up3, up4, ST_AsText(ST_Simplify(geom, 0.01), 3) AS geom '
+        query = ('SELECT comid, up1, up2, up3, up4, ST_Simplify(geom, 100) AS geom '
+                 'FROM riv_pfaf_merit_hydro_v07_basins_v01')
+        attribute_list = [
+            ("comid", 0, 1, False, "int"),
+            ("up1", 0, 1, False, "int"),
+            ("up2", 0, 1, False, "int"),
+            ("up3", 0, 1, False, "int"),
+            ("up4", 0, 1, False, "int"),
+            ("geom", 0, 1, False, geometrytype),
         ]
     else:
         print(f'unknown layertype: {layertype}')

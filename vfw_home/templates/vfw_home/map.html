@@ -22,15 +22,17 @@
 {# collect variables from server for startup of map #}
 {{ dataExt|json_script:"dataExt" }}
 {{ data_layer|json_script:"data_layer" }}
-{{ merit_river_layer|json_script:"merit_river_layer" }}
-{{ merit_catchment_layer|json_script:"merit_catchment_layer" }}
-{{ merit_catchment_coarse_layer|json_script:"merit_catchment_coarse_layer" }}
+{{ areal_data_layer|json_script:"areal_data_layer" }}
+{#{{ merit_river_layer|json_script:"merit_river_layer" }}#}
+{#{{ merit_catchment_layer|json_script:"merit_catchment_layer" }}#}
+{#{{ merit_catchment_coarse_layer|json_script:"merit_catchment_coarse_layer" }}#}
     <script>
   vfw.var.DATA_EXT = JSON.parse(document.getElementById('dataExt').textContent);
-  vfw.var.DATA_LAYER = JSON.parse(document.getElementById('data_layer').textContent);
-  vfw.var.MERIT_RIVER_LAYER = JSON.parse(document.getElementById('merit_river_layer').textContent);
-  vfw.var.MERIT_CATCHMENT_LAYER = JSON.parse(document.getElementById('merit_catchment_layer').textContent);
-  vfw.var.MERIT_CATCHMENT_COARSE_LAYER = JSON.parse(document.getElementById('merit_catchment_coarse_layer').textContent);
+  vfw.var.DATA_LAYER_NAME = JSON.parse(document.getElementById('data_layer').textContent);
+  vfw.var.AREAL_DATA_LAYER_NAME = JSON.parse(document.getElementById('areal_data_layer').textContent);
+  {#vfw.var.MERIT_RIVER_LAYER = JSON.parse(document.getElementById('merit_river_layer').textContent);#}
+  {#vfw.var.MERIT_CATCHMENT_LAYER = JSON.parse(document.getElementById('merit_catchment_layer').textContent);#}
+  {#vfw.var.MERIT_CATCHMENT_COARSE_LAYER = JSON.parse(document.getElementById('merit_catchment_coarse_layer').textContent);#}
 </script>
 
   <div class="w3-center" id="closed_drawfilter">
@@ -90,14 +92,14 @@ if (!isStorageSupported(window, "localStorage")) {
     let closst = document.getElementById('draw_close');
     closst.addEventListener('click', function () {
         removeInteractions()
-        // olmap.addInteraction(selectCluster);
+        // vfw.map.olmap.addInteraction(selectCluster);
         closeDrawfilter()
     });
    // add clickEvent to auto-draw catchment button
     let drwcatch = document.getElementById('draw_catchment');
     drwcatch.addEventListener('click', function () {
         removeInteractions();
-        olmap.addInteraction(drawCatchmentOutlet);
+        vfw.map.olmap.addInteraction(drawCatchmentOutlet);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
     });
@@ -105,17 +107,17 @@ if (!isStorageSupported(window, "localStorage")) {
     let drwsqrst = document.getElementById('draw_square');
     drwsqrst.addEventListener('click', function () {
         removeInteractions();
-        olmap.addInteraction(drawSquare);
+        vfw.map.olmap.addInteraction(drawSquare);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
     });
         // add clickEvent to draw polygon button
     let drwst = document.getElementById('draw_polygon');
     drwst.addEventListener('click', function () {
-        // olmap.removeInteraction(modify);
-        // olmap.removeInteraction(drawSquare);
+        // vfw.map.olmap.removeInteraction(modify);
+        // vfw.map.olmap.removeInteraction(drawSquare);
         removeInteractions()
-        olmap.addInteraction(draw);
+        vfw.map.olmap.addInteraction(draw);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
     });
@@ -123,7 +125,7 @@ if (!isStorageSupported(window, "localStorage")) {
     let modst = document.getElementById('modify_polygon');
     modst.addEventListener('click', function () {
         removeInteractions()
-        olmap.addInteraction(modify);
+        vfw.map.olmap.addInteraction(modify);
     });
         /** add clickEvent to remove button */
     let delst = document.getElementById('remove_polygon');

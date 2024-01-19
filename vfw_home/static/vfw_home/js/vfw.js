@@ -411,7 +411,7 @@ function drawOnMapMenu(test) {
     selectedFeatures = select.getFeatures();
     vfw.var.obj.selectedIds.map = null;
     let sketch, listener, polygon;
-    let append_str = vfw.map.vars.wfsLayerName + '.';
+    let append_str = vfw.var.DATA_LAYER_NAME + '.';
     // let features = vfw.map.layer.hidden.getSource().getFeatures();
 
     /**
@@ -427,7 +427,6 @@ function drawOnMapMenu(test) {
     modify.on('modifyend', function (event) {
         sketch = null;
         delaySelectActivate();
-        selectedFeatures.clear();
         vfw.var.obj.selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
         selectionEdgeCoords = polygon;
@@ -1169,6 +1168,7 @@ vfw.html.getQuickSelection = function (selection) {
         })
             .done(function (result) {
                 let json = JSON.parse(result)
+                vfw.map.updateMapSelection(json)
 
                 /** update total Value for available datasets: */
                 $("#quickfilter-form p:first").html(
@@ -1189,7 +1189,6 @@ vfw.html.getQuickSelection = function (selection) {
                 } else {
                     $(".group-store-button").hide();
                 }
-                vfw.map.updateMapSelection(json)
             })
             .fail(function (bug) {
                 console.warn('got a bug in getQuickSelection: ', bug)

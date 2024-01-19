@@ -48,10 +48,9 @@ function reset_filter(){
 
     vfw.var.obj.selectedIds.resetIds()
     // reset draw menu:
-    if (selectedFeatures !== undefined) {selectedFeatures.clear();}
-    olmap.removeInteraction(draw);
-    olmap.removeInteraction(modify);
-    olmap.removeLayer(selectionLayer);
+    vfw.map.olmap.removeInteraction(draw);
+    vfw.map.olmap.removeInteraction(modify);
+    vfw.map.olmap.removeLayer(selectionLayer);
     closeDrawfilter();
     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
     // vfw.map.layer.cluster.changed()  // renamed to clusterLayer
@@ -60,7 +59,7 @@ function reset_filter(){
 /** update objects on map according to filter results */
 vfw.map.updateMapSelection = function (json) {
     vfw.map.control.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
-    vfw.map.vars.wfsLayerName = json['ID_layer'];
+    vfw.var.DATA_LAYER_NAME = json['ID_layer'];
     vfw.var.obj.selectedIds.quickMenu = json['IDs'];
     vfw.map.source.wfsPointSource.refresh();
 }

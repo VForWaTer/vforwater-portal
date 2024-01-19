@@ -1,6 +1,6 @@
 # from typing import Literal
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 
 import numpy as np
 import pandas as pd
@@ -11,6 +11,26 @@ from django.utils import timezone
 
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
 from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups
+
+
+def get_split_groups(IDs):
+    """
+    Retrieves the split datasets based on the given list of IDs.
+
+    :param IDs: (list) A list of IDs representing the split datasets.
+    :return: list: A list of dictionaries where the keys are group IDs and the values are lists of IDs belonging to each group.
+    """
+    split_datasets = (Entries.objects.filter(pk__in=IDs, nmentrygroups__group__type__name='Split dataset')
+                      .values('id', 'nmentrygroups__group_id')
+                      .order_by('nmentrygroups__group_id'))
+    print('split_datasets 1: ', split_datasets)
+
+    # put ids of a all parts of a split dataset in one list (with their group id as key)
+    grouped_dict = defaultdict(list)
+    for i in split_datasets:
+        grouped_dict[i['nmentrygroups__group_id']].append(i['id'])
+
+    return grouped_dict
 
 
 def get_accessible_data(request: object, requested_ids: list) -> (list, list):
@@ -60,7 +80,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     dataset_dict = {}
     error_dict = {}
     group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group', 'dbIDs': [], 'orgIDs': [], 'uuIDs': [],
-                  'group_IDs': [], 'is_split': []}
+                  'group_IDs': [], 'is_split': [], 'split_members': []}
     name_group = {'group_titles': set(), 'var_names': [], 'type_names': [], 'geom_type': [], 'coords': [],
                   'mixed_vars': True}
 
@@ -82,6 +102,19 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
                'group_id', 'entry__location', 'entry__geom', 'group__type__name').filter(pk__in=accessible_ids)  # .distinct()
 
+    # collect split members
+    # print('++++ split_datasets: ', split_datasets)
+    # split_datasets = get_split_groups(accessible_ids)
+    split_datasets_db = (Entries.objects.filter(pk__in=accessible_ids, nmentrygroups__group__type__name='Split dataset')
+                      .values('id', 'nmentrygroups__group_id')
+                      .order_by('nmentrygroups__group_id'))
+    split_datasets = {str(data['id']): data['nmentrygroups__group_id'] for data in split_datasets_db}
+
+    # result = {str(item['nmentrygroups__group_id']): [item['id'] for item in split_datasets if
+    #                                                  item['nmentrygroups__group_id'] == item[
+    #                                                      'nmentrygroups__group_id']]}
+    # print('split_dataset: ', split_datasets)
+
     if len(error_ids) > 0:
         error_dict = {'message': 'no access', 'id': error_ids}
 
@@ -93,12 +126,29 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             dataset_dict[dataset_id]['DBgroupID'].add(dataset['group_id'])
             dataset_dict[dataset_id]['groupTypeName'].add(
                 dataset['groupTypeName'] if 'groupTypeName' in dataset else "")
+            dataset_dict[dataset_id]['split_members'].append(
+                dataset_id if dataset['group__type__name'].find('Split dataset') else '',)
+            # dataset_dict[dataset_id]['split_members'].append(
+            #     split_datasets[dataset['group_id']] if dataset['group__type__name'].find('Split dataset') else None)
         else:
-            dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
+            try:
+                if dataset['group__type__name'].find('Split dataset'):
+                    # print('is a split dataset')
+                    # print("is_split: dataset['group_id']: ", True)
+                    # print("split_group: dataset['group_id']: ", dataset['group_id'])
+                    # print("split_members: dataset['group_id']: ", dataset_id)
+                else:
+                    # print('is not a split dataset: ', False, 0, [])
+
+                dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
                                               'abbr': dataset['entry__variable__symbol'],
                                               'unit': dataset['entry__variable__unit__symbol'],
                                               'is_split': True
                                               if dataset['group__type__name'].find('Split dataset') else None,
+                                              'split_group': dataset['group_id']
+                                              if dataset['group__type__name'].find('Split dataset') else 0,
+                                              'split_members': [dataset_id]
+                                              if dataset['group__type__name'].find('Split dataset') else [],
                                               'type': dataset['entry__datasource__datatype__name'],
                                               'source': 'db',
                                               'dbID': dataset['entry__id'],
@@ -109,12 +159,15 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                               'inputs': [],
                                               'outputs': dataset['entry__datasource__datatype__name'],
                                               'DBgroup': {dataset['group__title']},
-                                              'DBgroupID': {dataset['group_id']},
+                                              'DBgroupID': {dataset['group_id']},  # looks like this is groupID and member ID. Is this helpful?
                                               'groupTypeName': {dataset['group__type__name']},
                                               # 'geom': dataset['entry__geom'].json,
                                               'location': dataset['entry__location'].json
                                               }
                                  })
+            except Exception as e:
+                print('error: ', e)
+            # print(' - - -  -')
         # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
         #  behaviour of '.distinct()' This is done in a seperate loop
         # group_dict['dbIDs'].append(dataset['entry__id'])
@@ -721,6 +774,12 @@ class Button:
 
 
 def has_data(web_ID):
+    """
+    Check if the given web ID has data associated with it.
+
+    :param web_ID: (int) The ID of the web entry.
+    :return: bool: True if data is found for the web ID, False otherwise.
+    """
     data_path = Entries.objects.filter(id=web_ID).values_list('datasource__path', flat=True)[0]
     if data_path is None:
         return False
