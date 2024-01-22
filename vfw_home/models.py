@@ -535,6 +535,8 @@ class Locations(models.Model):
     """
     Access db view
     """
+    id = models.BigIntegerField(primary_key=True, db_column='id')
+    # entry = models.ForeignKey(Entries, on_delete=models.DO_NOTHING)
     st_asewkt = models.CharField()  # TODO: why do I get a list of points for point data?
     point_location = models.CharField()
     geom = models.CharField()

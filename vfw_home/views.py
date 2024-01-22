@@ -97,14 +97,17 @@ class HomeView(TemplateView):
     # if not dataExt:
     data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    # IMPORTANT! Don't use "-" in geoserver names!!!
+    """
+    IMPORTANT! Don't use "-" in geoserver names!!!
+    """
     store = 'metacatalogdev'  # 'marcus'  # 'new_vforwater_gis'
     workspace = 'metacatalogdev'  # 'marcus'  # 'CAOS_update'
     # store = 'play'  # 'new_vforwater_gis'
     # workspace = 'play'  # 'CAOS_update'
     unlocked_embargo = []
 
-    check_geoserver_layers(store, workspace, [merit_river_layer, merit_catchment_layer, merit_catchment_coarse_layer])
+    check_geoserver_layers(store, workspace,
+                           [merit_river_layer, merit_river_ids, merit_catchment_layer, merit_catchment_coarse_layer])
 
     # TODO: Test with users if this makes any sense
     def __set_layer_name(self):
@@ -114,8 +117,10 @@ class HomeView(TemplateView):
         if self.request.user.is_authenticated:
             if self.request.user.is_superuser:
                 self.data_layer = 'admin_layer'
+                self.areal_data_layer = 'admin_areal_layer'
             else:
                 self.data_layer = expressive_layer_name(self.request.user)
+                self.areal_data_layer = expressive_layer_name(f'{self.request.user}_areal')
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs: object):
@@ -142,6 +147,15 @@ class HomeView(TemplateView):
                 #  after restart of django
                 delete_layer(self.data_layer, self.store, self.workspace)
                 create_layer(self.request, self.data_layer, self.store, self.workspace)
+                # get_layer(self.data_layer, self.store, self.workspace)
+
+            if not get_layer(self.areal_data_layer, self.store, self.workspace):
+                create_layer(request=self.request, filename=self.areal_data_layer, datastore=self.store,
+                             workspace=self.workspace, layertype='areal_data')
+            else:
+                delete_layer(self.areal_data_layer, self.store, self.workspace)
+                create_layer(request=self.request, filename=self.areal_data_layer, datastore=self.store,
+                             workspace=self.workspace, layertype='areal_data')
         except:
             self.data_layer = 'Error: Found no geoserver!'
             print('Still no geoserver: ', sys.exc_info()[0])
@@ -150,10 +164,11 @@ class HomeView(TemplateView):
 
         context = quick_filter_defaults(self)
 
-        return {'dataExt': self.data_ext, 'data_layer': self.data_layer,
+        return {'dataExt': self.data_ext, 'data_layer': self.data_layer, 'areal_data_layer': self.areal_data_layer,
                 'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids,
-                'merit_river_layer': self.merit_river_layer[0], 'merit_catchment_layer': self.merit_catchment_layer[0],
-                'merit_catchment_coarse_layer': self.merit_catchment_coarse_layer[0],
+                # 'merit_river_layer': self.merit_river_layer[0], 'merit_catchment_layer': self.merit_catchment_layer[0],
+                # 'merit_river_simple': self.merit_river_ids[0],
+                # 'merit_catchment_coarse_layer': self.merit_catchment_coarse_layer[0],
                 **context}
 
 
@@ -278,18 +293,23 @@ class DatasetDownloadView(TemplateView):
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
 
-            if len(accessible_data) > 0:
-                layer_name = 'XML_{}_{}_{}'.format(request.user, request.user.id, id)
-                # srid = str(Entries.objects.filter(pk=id).values_list('genericgeometrydata__srid', flat=True)[0])
-                srid = 4326
-                # create layer on geoserver to request xml file
-                create_layer(request, layer_name, store, workspace, id)
-                # use GEOSERVER GML
-                url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{2}&outputFormat=' \
-                      'text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:{3}'.format(LOCAL_GEOSERVER,
-                                                                                       workspace, layer_name, srid)
+                opener = urllib.request.build_opener(
+                    urllib.request.HTTPBasicAuthHandler(password_manager),
+                    # urllib.request.HTTPHandler(debuglevel=1),    # Uncomment these two lines to see
+                    # urllib.request.HTTPSHandler(debuglevel=1),   # details of the requests/responses
+                    urllib.request.HTTPCookieProcessor(cookie_jar))
+                urllib.request.install_opener(opener)
+
                 request = urllib.request.Request(url)
                 response = urllib.request.urlopen(request)
+
+                # Print out the result (not a good idea with binary data!)
+
+                body = response.read()
+                # print('loaded xml', body)
+
+            except Exception as e:
+                print('e: ', e)
                 # clean up right after request:
                 delete_layer(layer_name, store, workspace)
             return HttpResponse(response.read().decode('utf-8'))
@@ -975,11 +995,26 @@ class QuickFilterResults(View):
 
         # From here collect data to update map:
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrary zoom location for NO RESULT
+        layertype = "point"
         try:
             if query:
-                data_ext = list(query.aggregate(Extent('location'))['location__extent'])
+                data_ext = None
+                entry_ext = query.aggregate(Extent('location'))['location__extent']
+                if entry_ext:
+                    data_ext = list(entry_ext)
+                else:
+                    layertype = "areal_data"
+                    spatial_ext = query.aggregate(
+                        Extent('datasource__spatial_scale__extent'))['datasource__spatial_scale__extent__extent']
+                    if spatial_ext:
+                        data_ext = list(spatial_ext)
+                    else:
+                        geom_ext = query.aggregate(Extent('geom'))['geom__extent']
+                        if geom_ext:
+                            data_ext = list(geom_ext)
+
         except TypeError as e:
-            print('Selection has no extend')
+            print('Selection has no extend: ', e)
         except Exception as e:
             print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
             logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
@@ -990,7 +1025,12 @@ class QuickFilterResults(View):
             delete_layer(id_layer, HomeView.store, HomeView.workspace)
 
         if IDs:
-            create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs)
+            try:
+                create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs, layertype=layertype)
+            except Exception as e:
+                print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
+                logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
+            # create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs)
             # create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
         else:
             # TODO: Selection with no result has to be handled properly

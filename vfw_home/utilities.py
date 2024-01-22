@@ -1,3 +1,4 @@
+import itertools
 import json
 import logging
 import re
@@ -238,14 +239,17 @@ def check_data_consistency(check_interval=60*60*24):
     :param check_interval: time in seconds until a new check of the database; default is once a day
     :return:
     """
-    datapaths = Entries.objects.values_list('datasource__path', flat=True).distinct()
+    datapaths_in_use = Entries.objects.values_list('datasource__path', flat=True).distinct()
     datapaths = ['timeseries', 'timeseries_1d', 'timeseries_2d', 'geom_timeseries',
                  'generic_geometry_data',
                  'generic_2d_data', 'generic_1d_data']
+    folders = list(itertools.filterfalse(lambda item: not item, set(datapaths_in_use)-set(datapaths)))
+
     all_Entries = Entries.objects.values_list('id', 'datasource__path')
     id_without_datasoure = []
     id_without_data = []
     id_wrong_table = []
+    id_on_disk = []
     all_num = len(all_Entries)
     count = 0
     try:
@@ -254,6 +258,8 @@ def check_data_consistency(check_interval=60*60*24):
             count += 1
             if not i[1]:
                 id_without_datasoure.append(i[0])
+            elif i[1] in folders:
+                id_on_disk.append(i[0])
             else:
                 query_path = {'{0}'.format(i[1]): i[0]}
                 try:
@@ -283,7 +289,10 @@ def check_data_consistency(check_interval=60*60*24):
         print(f'\033[93mWARNING: following IDs have no data: {id_without_data}\033[0m')
     if len(id_wrong_table) > 0:
         print(f'\033[91mERROR: following IDs are associated with the wrong table: {id_wrong_table}\033[0m')
+    if len(id_on_disk) > 0:
+        print(f'\033[93mWARNING: following IDs have data on disk that has to be handled: {id_on_disk}\033[0m')
 
     cache.set('ids_without_data', id_without_data + id_without_datasoure, check_interval)
+    cache.set('ids_data_on_path', id_on_disk, check_interval)
     return id_without_data + id_without_datasoure
 
