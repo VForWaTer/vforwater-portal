@@ -6,6 +6,7 @@ import re
 import sys
 from http.cookiejar import CookieJar
 
+import pandas as pd
 import redis
 import requests
 from django.contrib.gis.db.models.aggregates import Extent
@@ -37,7 +38,7 @@ from wps_gui.models import WpsResults
 from .Fig_obj import FigObject
 from .checks import check_geoserver_layers
 from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
-    __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection, has_data
+    __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection, has_data, get_split_groups
 from .delineator import delineate
 from .forms import QuickFilterForm
 from .data_obj import DataObject
@@ -50,7 +51,7 @@ from django.contrib.gis.geos import Polygon, GEOSGeometry
 from .query_functions import get_bbox_from_data
 # from .filter import QuickFilter
 from .filters import NMPersonsFilter
-from .models import Entries, NmEntrygroups, Entrygroups
+from .models import Entries, NmEntrygroups, Entrygroups, Timeseries_1D, Locations, Variables
 
 import logging
 from pathlib import Path
@@ -89,8 +90,10 @@ class HomeView(TemplateView):
     # data_layer = 'metacatalogdev'  # 'default_layer_prod'
     # data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
     data_layer = 'devel'
+    areal_data_layer = 'areal_devel'
     # data_layer = 'play'
     merit_river_layer = ['merit_river_test', 'merit_river']  # [layername, layertype]
+    merit_river_ids = ['merit_river_simple', 'merit_river_simple']
     merit_catchment_layer = ['merit_catchment', 'merit_catchment']
     merit_catchment_coarse_layer = ['merit_catchment_coarse', 'merit_catchment_coarse']
 
@@ -292,6 +295,7 @@ class DatasetDownloadView(TemplateView):
             accessible_data = get_accessible_data(request, id)
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
+            try:
 
                 opener = urllib.request.build_opener(
                     urllib.request.HTTPBasicAuthHandler(password_manager),
