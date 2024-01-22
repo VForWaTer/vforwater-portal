@@ -917,17 +917,22 @@ class Delineator(View):
 
     @staticmethod
     def get(request, catchout):
+        catchment = {'error': 'Wether catchout nor catchStartID is defined to Delineate a catchment.'}
+        if "catchout=" in catchout:
+            coords = {
+                'lat': [catchout.split("catchout=")[2]],
+                'lng': [catchout.split("catchout=")[1][:-1]],
+            }
+            # validate input data:
+            if not is_coord(coords['lat'][0], 'lat') or not is_coord(coords['lng'][0], 'lon'):
+                logger.error(f'Wrong coordinates from client: ({coords}). Improve coordinate handling on client')
+                return {'Error': 'Error in Coordinates.'}
 
-        coords = {
-            'lat': [catchout.split("catchout=")[2]],
-            'lng': [catchout.split("catchout=")[1][:-1]],
-        }
-        # validate input data:
-        if not is_coord(coords['lat'][0], 'lat') or not is_coord(coords['lng'][0], 'lon'):
-            logger.error(f'Wrong coordinates from client: ({coords}). Improve coordinate handling on client')
-            return {'Error': 'Error in Coordinates.'}
+            catchment = delineate(coords=coords)
 
-        catchment = delineate(coords)
+        elif "catchStartID=" in catchout:
+            start_id = int(catchout.split("catchStartID=")[1])
+            catchment = delineate(terminal_comid=start_id, precise=True)
 
         if 'error' in catchment:
             print('Problems in delineation tool: ', catchment['error'])

@@ -46,34 +46,34 @@ def useSQLQuery(wkbquerystring):
     return row
 
 
-def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
-    """
-    code is based on delineator-1.0 of https://github.com/mheberger/delineator
-    Citation DOI: 10.5281/zenodo.7314287
+def get_start_ID(coords, coordinates, id_range=None):
+
+    # find detail catchment
+    if id_range:
+        level1_catchment = cat_pfaf_MERIT_Hydro_v07_Basins_v01.objects.filter(comid__range=id_range)
+
+        try:
+            catchment = level1_catchment.filter(geom__contains=coordinates)
+        except Exception as e:
+            print('e in catchment.filter: ', e)
+            logger.error(f'unable to filter level1 catchment with coordinates {coordinates}')
+            return {'error': e,
+                    'vfw_message': f'unable to filter level1 catchment with coordinates {coordinates}'}
+
+    if not catchment.exists():
+        wkbquerystring = "SELECT ST_AsText(geom, 9) AS catchment " \
+                         "FROM merit_hydro_vect_level2 WHERE ST_Contains(geom, " \
+                         f"ST_Point({float(coords['lng'][0])}, {float(coords['lat'][0])}, 4326));"
+        row = useSQLQuery(wkbquerystring)
+        logger.error(f'No high resolution catchment at coordinates {coordinates}')
+        return {'error': 'No high resolution catchment at click location.',
+                'wkt': row[0][0]}
+
+    return catchment.values()[0]['comid']
 
 
-    :param coords:
-    :param HIGH_RES: boolean True for "high-resolution" mode or False for "low-resolution."
-    :param LOW_RES_THRESHOLD: integer Threshold for watershed size in km². Above the script revert to low-resolution mode
-    :param precise: boolean True for recalculation of catchment from clickpoint. False starts with the smallest catchment that includes the click point
-    :return:
-    """
-    # code is based on delineator-1.0 of https://github.com/mheberger/delineator
-    # Citation DOI: 10.5281/zenodo.7314287
-
-    # Threshold for watershed size in km² above which the script will revert to low-resolution mode
-    # (check uparea of river table)
-    LOW_RES_THRESHOLD = 10000
-
-    # If the requested watershed outlet is not inside a catchment, how far away
-    # from the point should we look for the nearest catchment (in degrees)
+def get_coarse_catchment_id_range(coordinates):
     search_dist = 0.01
-
-    accuracy = 4  # 4 decimals ~= 10m; 6 decimals ~= 1m
-
-    crs = 'EPSG:4326'
-    coordinates = Point(float(coords['lng'][0]), float(coords['lat'][0]), crs)
-    # coordinates = Point(10.042166, 48.311781, 'EPSG:4326')  # test coordinates for debugging
 
     # find coarse high level catchment for given coordinates
     level2_basin = merit_hydro_vect_level2.objects.filter(geom__contains=coordinates)
@@ -95,66 +95,87 @@ def delineate(coords, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
     # level2_basin.objects.annotate(distance=Distance('point', coordinates)).order_by('distance')
     basin_id = level2_basin.values()[0]['basin']
     # range of ids to restrict search for data:
-    id_range = (basin_id*1000000, (basin_id+1)*1000000-1)
+    return (basin_id * 1000000, (basin_id + 1) * 1000000 - 1)
 
-    # find detail catchment
-    level1_catchment = cat_pfaf_MERIT_Hydro_v07_Basins_v01.objects.filter(comid__range=id_range)
 
-    try:
-        catchment = level1_catchment.filter(geom__contains=coordinates)
-    except Exception as e:
-        print('e in catchment.filter: ', e)
-        logger.error(f'unable to filter level1 catchment with coordinates {coordinates}')
-        return {'error': e,
-                'vfw_message': f'unable to filter level1 catchment with coordinates {coordinates}'}
+def delineate(coords=None, terminal_comid=None, HIGH_RES=True, LOW_RES_THRESHOLD=50000, precise=False):
+    """
+    code is based on delineator-1.0 of https://github.com/mheberger/delineator
+    Citation DOI: 10.5281/zenodo.7314287
 
-    if not catchment.exists():
-        wkbquerystring = "SELECT ST_AsText(geom, 9) AS catchment " \
-                         "FROM merit_hydro_vect_level2 WHERE ST_Contains(geom, " \
-                         f"ST_Point({float(coords['lng'][0])}, {float(coords['lat'][0])}, 4326));"
-        row = useSQLQuery(wkbquerystring)
-        logger.error(f'No high resolution catchment at coordinates {coordinates}')
-        return {'error': 'No high resolution catchment at click location.',
-                'wkt': row[0][0]}
+    :param coords:
+    :param HIGH_RES: boolean True for "high-resolution" mode or False for "low-resolution."
+    :param LOW_RES_THRESHOLD: integer Threshold for watershed size in km². Above the script revert to low-resolution mode
+    :param precise: boolean True for recalculation of catchment from clickpoint. False starts with the smallest catchment that includes the click point
+    :return:
+    """
+    # code is based on delineator-1.0 of https://github.com/mheberger/delineator
+    # Citation DOI: 10.5281/zenodo.7314287
 
-    terminal_comid = catchment.values()[0]['comid']
+    # Threshold for watershed size in km² above which the script will revert to low-resolution mode
+    # (check uparea of river table)
+    LOW_RES_THRESHOLD = 10000
+    accuracy = 5  # 4 decimals ~= 10m; 6 decimals ~= 1m
 
-    try:
-        rivers_of_catchment = riv_pfaf_MERIT_Hydro_v07_Basins_v01.objects.filter(comid__range=id_range)
-        river_comid = rivers_of_catchment.filter(comid=terminal_comid)
-    except Exception as e:
-        print('e in river: ', e)
-        logger.error('Delineation tool has problems to query the river layer "riv_pfaf_MERIT_Hydro_v07_Basins_v01".')
-        return {'error': 'There is a problem with your river layer.'}
+    # If the requested watershed outlet is not inside a catchment, how far away
+    # from the point should we look for the nearest catchment (in degrees)
+    if coords is not None:
+        # coords = {'lat': ['47.458254'], 'lng': ['9.692106']}
+        crs = 'EPSG:4326'
+        coordinates = Point(float(coords['lng'][0]), float(coords['lat'][0]), crs)
+        # coordinates = Point(10.042166, 48.311781, 'EPSG:4326')  # test coordinates for debugging
+        id_range = get_coarse_catchment_id_range(coordinates)
+        terminal_comid = get_start_ID(coords, coordinates, id_range)
+
+    # TODO: seems to be unused. Was this some kind of verification?
+    # try:
+    #     rivers_of_catchment = riv_pfaf_MERIT_Hydro_v07_Basins_v01.objects.filter(comid__range=id_range)
+    #     river_comid = rivers_of_catchment.filter(comid=terminal_comid)
+    # except Exception as e:
+    #     print('e in river: ', e)
+    #     logger.error('Delineation tool has problems to query the river layer "riv_pfaf_MERIT_Hydro_v07_Basins_v01".')
+    #     return {'error': 'There is a problem with your river layer.'}
 
     # starting from the catchment at the clickpoint, search for the connected rivers upstream
     comID_array = get_ID_array(terminal_comid)
+    newcomID_tuple = tuple(*zip(*comID_array))
 
-    # Some simplification of catchment is necessary no to follow corners of every pixel.
-    # Also the delineation is used in the url to allow sharing and bookmarking. Max length of URLs is 4096 chars, so
-    # a the numbers of vertices has to estimated and the complexity has to be lowered.
-    # TODO: max length of url is 4096 chars => max ~165 vertices are allowed => find nice formula to find
-    #  simplification factor
-    # uparea = river_comid.values()[0]['uparea']  # might be used to check which resolution is used
-    # simplification = -0.093 + 0.019 * np.log(int(uparea)) # 0.000232 * (int(uparea)**0.606)
-    simplification = 0.01  # 0.01
-    if len(comID_array) > 500:
-        simplification = 0.05  # 0.01
-    elif len(comID_array) > 3000:
-        simplification = 0.1  # 0.01
-
-    # create raw query. Small difference if the query is only for one catchment, or if several have to be unified
-    newcomID_array = tuple(*zip(*comID_array))
-    if len(newcomID_array) > 1:
-        # union catchments
-        wkbquerystring = 'SELECT ST_AsText(' \
-                         'ST_Simplify(' \
-                         f'ST_Union(ARRAY(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid in {newcomID_array})), ' \
-                         f'{simplification}), ' \
-                         f'{accuracy}) as catchment'
+    if precise:
+        if len(newcomID_tuple) > 1:
+            # union catchments
+            wkbquerystring = 'SELECT ST_AsText(' \
+                             f'ST_Union(ARRAY(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid in ' \
+                             f'{newcomID_tuple})), ' \
+                             f'{accuracy}) as catchment'
+        else:
+            wkbquerystring = f'SELECT ST_AsText(geom, {accuracy}) AS catchment ' \
+                             f'FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid};'
     else:
-        wkbquerystring = f'SELECT ST_AsText(ST_Simplify(geom, {simplification}), {accuracy}) AS catchment ' \
-                         f'FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid};'
+        # Some simplification of catchment is necessary no to follow corners of every pixel.
+        # Also the delineation is used in the url to allow sharing and bookmarking. Max length of URLs is 4096 chars, so
+        # a the numbers of vertices has to estimated and the complexity has to be lowered.
+        # TODO: max length of url is 4096 chars => max ~165 vertices are allowed => find nice formula to find
+        #  simplification factor
+        # uparea = river_comid.values()[0]['uparea']  # might be used to check which resolution is used
+        # simplification = -0.093 + 0.019 * np.log(int(uparea)) # 0.000232 * (int(uparea)**0.606)
+        simplification = 0.01  # 0.01
+        if len(comID_array) > 500:
+            simplification = 0.05  # 0.01
+        elif len(comID_array) > 3000:
+            simplification = 0.1  # 0.01
+
+        # create raw query. Small difference if the query is only for one catchment, or if several have to be unified
+        if len(newcomID_tuple) > 1:
+            # union catchments
+            wkbquerystring = 'SELECT ST_AsText(' \
+                             'ST_Simplify(' \
+                             f'ST_Union(ARRAY(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid in ' \
+                             f'{newcomID_tuple})), ' \
+                             f'{simplification}), ' \
+                             f'{accuracy}) as catchment'
+        else:
+            wkbquerystring = f'SELECT ST_AsText(ST_Simplify(geom, {simplification}), {accuracy}) AS catchment ' \
+                             f'FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid};'
 
     row = useSQLQuery(wkbquerystring)
 
