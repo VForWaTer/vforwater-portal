@@ -58,7 +58,7 @@ menu_objects.js -> vfw.js
 vfw.js -> vfw.js: update #total string
 opt "#total<100": show select all button
 end
-
+end
 
 
 @enduml
