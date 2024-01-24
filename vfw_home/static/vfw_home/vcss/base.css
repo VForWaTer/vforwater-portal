@@ -84,7 +84,7 @@ a.w3-hover-blue{padding: 0px}
 
 /* Style the tab content */
 .tabcontent {
-  display: none;
+  /*display: none;*/
   border: 1px solid #ccc;
   border-top: none;
 }
