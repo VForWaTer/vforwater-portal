@@ -951,6 +951,11 @@ def advanced_filter(request):
 
 
 def quick_filter_defaults(request):
+    """
+    Function to create default html for the quick filter.
+    :param request:
+    :return:
+    """
     total = Entries.objects.exclude(Q(embargo=True) & Q(embargo_end__gte=timezone.now())).count()
 
     quickfilter = QuickFilterForm()  # standard of django is a required attribute for all forms.
@@ -968,6 +973,9 @@ class QuickFilter(View):
 
 
 class QuickFilterResults(View):
+    """
+    When the user selects something on the map or in the quick filter, here the result is produced.
+    """
 
     @staticmethod
     def get(request, selection):
@@ -979,7 +987,7 @@ class QuickFilterResults(View):
         filter_dict = {}
         fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
 
-        for i in QueryDict(selection):
+        for i in QueryDict(selection):  # QueryDict gives the request data as dictionary
             if i in simple_queries:
                 filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
             elif i == 'date':
@@ -1003,8 +1011,10 @@ class QuickFilterResults(View):
         total_results = query.count()
 
         # From here collect data to update map:
+        # (this is only to show the datapoints. For areal data something else is needed)
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrary zoom location for NO RESULT
         layertype = "point"
+        # get the real extent of the data
         try:
             if query:
                 data_ext = None
@@ -1030,12 +1040,19 @@ class QuickFilterResults(View):
 
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
-        if get_layer(id_layer, HomeView.store, HomeView.workspace):
-            delete_layer(id_layer, HomeView.store, HomeView.workspace)
+        areal_id_layer = 'areal_ID_layer' + str(request.user)
+        def delete_geoserver_layer(name):
+            if get_layer(name, HomeView.store, HomeView.workspace):
+                delete_layer(name, HomeView.store, HomeView.workspace)
 
+        delete_geoserver_layer(id_layer)
+        delete_geoserver_layer(areal_id_layer)
+
+        # now create a layer showing the datapoints
         if IDs:
             try:
-                create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs, layertype=layertype)
+                create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs, layertype="point")
+                create_layer(request, areal_id_layer, HomeView.store, HomeView.workspace, IDs, layertype="areal_data")
             except Exception as e:
                 print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
                 logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
