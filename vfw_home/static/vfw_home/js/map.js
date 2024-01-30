@@ -304,6 +304,9 @@ vfw.map.create_map = function () {
         let tabBtn = {'currentTarget': document.getElementById('tableTab')}
         vfw.util.toggleMapTableFilter(tabBtn, 'paginationTable');
         filter_pagination();
+    } else {
+        let tabBtn = {'currentTarget': document.getElementById('defaultMapTab')}
+        vfw.util.toggleMapTableFilter(tabBtn, 'Map');
     }
     /** build the background map **/
     const backgroundLayer = new ol.layer.Tile({
