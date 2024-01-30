@@ -302,7 +302,7 @@ vfw.map.create_map = function () {
     if (vfw.var.DATA_LAYER_NAME.search("Error") !== -1) {
         console.error(vfw.var.DATA_LAYER_NAME)
         let tabBtn = {'currentTarget': document.getElementById('tableTab')}
-        toggleMapTableFilter(tabBtn, 'paginationTable');
+        vfw.util.toggleMapTableFilter(tabBtn, 'paginationTable');
         filter_pagination();
     }
     /** build the background map **/
@@ -386,7 +386,7 @@ vfw.map.create_map = function () {
         source: vfw.map.source.wfsMeritCatchment,
         minZoom: 8,
         name: 'Merit Catchment',
-        className: 'cluster-layer',
+        // className: 'cluster-layer',
         visible: true,
         on: function (e) {
             console.log(e)
@@ -402,7 +402,7 @@ vfw.map.create_map = function () {
         source: vfw.map.source.wfsCoarseMeritCatchment,
         minZoom: 2,
         name: 'coarse Merit Catchment',
-        className: 'cluster-layer',
+        // className: 'cluster-layer',
         visible: false,
     });
 
@@ -624,6 +624,7 @@ vfw.map.create_map = function () {
                 console.log('catchment: ', catchment)
                 if (catchment[0]) {
                     catchmentID = catchment[0].getProperties().comid;
+                    vfw.map.func.getCatchment({'startID': catchmentID})
                     vfw.map.createRiverBasin(catchmentID)
                 }
             })
@@ -830,10 +831,10 @@ vfw.map.createRiverBasin = function (startID) {
     //     geometry: new ol.geom.GeometryCollection(rivFeatureList),
         // name: 'Selection Catchment'
     // })
-    vfw.map.vars.catchmentFeature = new ol.Feature({
+/*    vfw.map.vars.catchmentFeature = new ol.Feature({
         geometry: new ol.geom.GeometryCollection(rivFeatureList),
         name: 'Selection Catchment',
-    })
+    })*/
     // vfw.map.source.select.addFeatures(vfw.map.vars.catchmentFeature)
     // vfw.map.source.selectionSource.addFeatures(vfw.map.vars.catchmentFeature)
     vfw.map.source.selectionSource = new ol.source.Vector({features: catchFeatureList,});

@@ -14,10 +14,10 @@
 {% block content %}
    <!-- Tab links -->
 <div class="tab">
-  <button class="tablinks" id="defaultMapTab" onclick="toggleMapTableFilter(event, 'Map')">{% trans "Map" %}
+  <button class="tablinks" id="defaultMapTab" onclick="vfw.util.toggleMapTableFilter(event, 'Map')">{% trans "Map" %}
   </button>
   <button class="tablinks" id="tableTab"
-          onclick="toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Table" %}
+          onclick="vfw.util.toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Table" %}
   </button>
 </div>
 
@@ -26,7 +26,7 @@
   {% include 'vfw_home/map.html' %}
 </div>
 
-<div id="paginationTable" class="tabcontent">
+<div id="paginationTable" class="tabcontent" style="display: none">
   {% include 'vfw_home/entrieslist.html' %}
 </div>
 

@@ -23,7 +23,6 @@ function dDMFilterFunction(dropDownName, inputName) {
     }
 }
 
-
 // TODO: When you decide to remove the wms map, use showAllPointsOnMap
 function showAllPointsOnMap(){
    $.ajax({
@@ -60,6 +59,8 @@ function reset_filter(){
 vfw.map.updateMapSelection = function (json) {
     vfw.map.control.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
     vfw.var.DATA_LAYER_NAME = json['ID_layer'];
+    vfw.var.AREAL_DATA_LAYER_NAME = json['areal_ID_layer'];
     vfw.var.obj.selectedIds.quickMenu = json['IDs'];
     vfw.map.source.wfsPointSource.refresh();
+    vfw.map.source.wfsArealSource.refresh();
 }

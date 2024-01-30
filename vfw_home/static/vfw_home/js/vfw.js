@@ -3,7 +3,7 @@ let draw, drawSquare, drawCatchmentOutlet, drawCatchmentWKT, modify, selectedFea
  * Global Element (source layer) to drawn on
  */
 // let selectionLayer;
-let activeMap = true;
+vfw.var.ACTIVEMAP = true;
 // TODO: Don't read always from session storage. Do this "onload" and use the following var instead to read
 let sessionStorageData = {};
 vfw.var.obj.bokehImage = false;
@@ -49,7 +49,7 @@ vfw.var.obj.selectedIds = {
      * @param {array} oldIds
      */
     _updateFilterTable: function (oldIds) {
-        if (!activeMap && this.combinedIds !== oldIds) {
+        if (!vfw.var.ACTIVEMAP && this.combinedIds !== oldIds) {
             filter_pagination(1);
         }
     },
@@ -536,7 +536,7 @@ function drawOnMapMenu(test) {
         click_coords[1] = click_coords[1].toFixed(6);
 
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
-        $.when(getCatchment(click_coords)).done(function(catchment) {
+        $.when(vfw.map.func.getCatchment({'coords': click_coords})).done(function(catchment) {
             let catch_format = new ol.format.WKT();
             let catch_feature = catch_format.readFeature(catchment.wkt, {
               dataProjection: 'EPSG:4326',
@@ -957,7 +957,7 @@ vfw.sidebar.workspaceDataset = function (id) {
  * @param {string} tabName
  * @param {boolean} isFilter
  */
-function toggleMapTableFilter(evt, tabName, isFilter = false) {
+vfw.util.toggleMapTableFilter = function (evt, tabName, isFilter = false) {
     // Declare all variables
     let i, tabcontent, tablinks;
     let classNamePrefex = "";
@@ -965,7 +965,7 @@ function toggleMapTableFilter(evt, tabName, isFilter = false) {
     if (isFilter) {
         classNamePrefex = "filter-"
     } else {
-        activeMap = tabName === "Map";
+        vfw.var.ACTIVEMAP = tabName === "Map";
     }
 
     // Get all elements with class="tabcontent" and hide them
@@ -1206,8 +1206,13 @@ vfw.html.getQuickSelection = function (selection) {
  * Get a river catchment / watershed according to the given coords.
  * This might take a while, so tell depending functions to wait!
  */
-function getCatchment(coords) {
-    let url = vfw.url.getFilterURL({'catchout': coords})
+vfw.map.func.getCatchment = function (start_value) {
+    let url = '';
+    if ('startID' in start_value) {
+        url = vfw.url.getFilterURL({'catchStartID': [start_value['startID']]})
+    } else if ('coords'in start_value) {
+        url = vfw.url.getFilterURL({'catchout': start_value['coords']})
+    }
     if (url !== false) {
         return $.ajax({
             url: vfw.var.DEMO_VAR + '/home/delineator/' + url,
