@@ -305,7 +305,17 @@ function resetDraw() {
     map.addInteraction(draw);
 }*/
 
-
+/**
+ * Transforms coordinates for django, writes them in a variable and resets the original coordinates.
+ *
+ * @returns Array
+ */
+ vfw.map.func.getSelectionEdgeCoords = function() {
+    // return  ol.proj.transform(selectionEdgeCoords.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
+    let coords = selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()
+    selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
+    return coords
+}
 /**
  * Menu to draw polygon on map
  *
@@ -427,7 +437,7 @@ function drawOnMapMenu(test) {
         vfw.var.obj.selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
         selectionEdgeCoords = polygon;
-        vfw.html.getQuickSelection({'draw': getEdgeCoords()});
+        vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
     }, this);
 
     /* //////////// SUPPORTING FUNCTIONS */
@@ -458,18 +468,6 @@ function drawOnMapMenu(test) {
         return changes
     }
 
-    /**
-     * Transforms coordinates for django, writes them in a variable and resets the original coordinates.
-     *
-     * @returns Array
-     */
-    function getEdgeCoords() {
-        // return  ol.proj.transform(selectionEdgeCoords.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
-        let coords = selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()
-        selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
-        return coords
-    }
-
     drawSquare.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
         listener = selectStartFun(event)
@@ -490,7 +488,7 @@ function drawOnMapMenu(test) {
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
-        vfw.html.getQuickSelection({'draw': getEdgeCoords()});  // update selection on map
+        vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
         removeInteractions();
         toggleDraw(document.getElementById("draw_square"))
     });
@@ -511,7 +509,7 @@ function drawOnMapMenu(test) {
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
-        vfw.html.getQuickSelection({'draw': getEdgeCoords()});
+        vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
         removeInteractions();
         toggleDraw(document.getElementById("draw_polygon"))
 
@@ -530,31 +528,16 @@ function drawOnMapMenu(test) {
         // selectionLayerSource.clear();
         selectionEdgeCoords = event.feature.getGeometry()
         listener = selectStartFun(event)
-        let click_coords = getEdgeCoords()
+        let click_coords = vfw.map.func.getSelectionEdgeCoords()
         // round coords to a reasonable length (0,000001° ~~ 0,1 m)
         click_coords[0] = click_coords[0].toFixed(6);
         click_coords[1] = click_coords[1].toFixed(6);
 
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
         $.when(vfw.map.func.getCatchment({'coords': click_coords})).done(function(catchment) {
-            let catch_format = new ol.format.WKT();
-            let catch_feature = catch_format.readFeature(catchment.wkt, {
-              dataProjection: 'EPSG:4326',
-              featureProjection: 'EPSG:3857',
-            });
-            let polygon = catch_feature.getGeometry();
-            selectionEdgeCoords = polygon;
-            // TODO: make sure you got 'selectionEdgeCoords' before 'getEdgeCoords()' in 'drawend' runs. => create custom event?
-            // vfw.html.getQuickSelection({'draw': getEdgeCoords()});  // update selection on map
-            // vfw.map.source.selectionSource.clear();
-            vfw.map.source.selectionSource = new ol.source.Vector({features: [catch_feature],});
-            vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
-            // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
-            // selectionLayer.setStyle(new ol.style.Style({
-            //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
-            // }))
+            vfw.map.func.renderCatchment(catchment)
             // vfw.map.olmap.addLayer(selectionLayer)
-            vfw.html.getQuickSelection({'draw': getEdgeCoords()});
+            vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
             // listener = selectStartFun(event)
             vfw.html.loaderOverlayOff();
         })
@@ -1205,8 +1188,12 @@ vfw.html.getQuickSelection = function (selection) {
 /**
  * Get a river catchment / watershed according to the given coords.
  * This might take a while, so tell depending functions to wait!
+ *
+ * Handle creation of River Basin in django instead of geoserver to have more uniform way to access created and
+ * uploaded data.
  */
 vfw.map.func.getCatchment = function (start_value) {
+    vfw.html.loaderOverlayOn();
     let url = '';
     if ('startID' in start_value) {
         url = vfw.url.getFilterURL({'catchStartID': [start_value['startID']]})
@@ -1221,7 +1208,11 @@ vfw.map.func.getCatchment = function (start_value) {
             datatype: 'json',
         })
             .done(function (result) {
-                selectionEdgeCoords = result.wkt;
+                // selectionEdgeCoords = result.wkt;
+                vfw.map.func.renderCatchment(result)
+            // vfw.map.olmap.addLayer(selectionLayer)
+            vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
+                vfw.html.loaderOverlayOff();
                 return result.wkt
             })
             .fail(function (bug) {
@@ -1230,6 +1221,26 @@ vfw.map.func.getCatchment = function (start_value) {
     }
 }
 
+
+vfw.map.func.renderCatchment = function (catchment) {
+    let catch_format = new ol.format.WKT();
+            let catch_feature = catch_format.readFeature(catchment.wkt, {
+              dataProjection: 'EPSG:4326',
+              // featureProjection: 'EPSG:4326',
+              featureProjection: 'EPSG:3857',
+            });
+            let polygon = catch_feature.getGeometry();
+            selectionEdgeCoords = polygon;
+            // TODO: make sure you got 'selectionEdgeCoords' before 'vfw.map.func.getSelectionEdgeCoords()' in 'drawend' runs. => create custom event?
+            // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
+            // vfw.map.source.selectionSource.clear();
+            vfw.map.source.selectionSource = new ol.source.Vector({features: [catch_feature],});
+            vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+            // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
+            // selectionLayer.setStyle(new ol.style.Style({
+            //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
+            // }))
+}
 
 function advanced_filter_query(selection) {
     $.ajax({
