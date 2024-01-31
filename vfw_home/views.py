@@ -161,6 +161,7 @@ class HomeView(TemplateView):
                              workspace=self.workspace, layertype='areal_data')
         except:
             self.data_layer = 'Error: Found no geoserver!'
+            self.areal_data_layer = 'Error: Found no geoserver!'
             print('Still no geoserver: ', sys.exc_info()[0])
 
         self.data_ext = get_bbox_from_data()
@@ -1062,7 +1063,7 @@ class QuickFilterResults(View):
             # TODO: Selection with no result has to be handled properly
             pass
 
-        return JsonResponse({'selection': selection, 'total': total_results,
+        return JsonResponse({'selection': selection, 'total': total_results, 'areal_ID_layer': areal_id_layer,
                              'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
 
 

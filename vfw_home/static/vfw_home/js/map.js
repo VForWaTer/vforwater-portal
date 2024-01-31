@@ -1,4 +1,4 @@
-vfw.map.vars.selectCatchmentIDs = [];
+// vfw.map.vars.selectCatchmentIDs = [];
 vfw.map.vars.hit_cL = {};
 // TODO: Check if clusterlayer has to be global!
 // let dcz = new ol.interaction.DoubleClickZoom();
@@ -263,6 +263,7 @@ vfw.map.layer.openTopo = new ol.layer.Tile({
     visible: false,
     source: vfw.map.source.opentopoSource,
 });
+
 // vfw.map.layer.waterColor = new ol.layer.Tile({
 //     title: "Watercolor",
 //     baseLayer: true,
@@ -288,7 +289,7 @@ const osmLayer = new ol.layer.Tile({
 
 
 /** Fetch V-FOR-WaTer base layer **/
-vfw.map.create_map = function () {
+vfw.map.createMap = function () {
 
     // let basemapControl = {
     //     "Open Street map": vfw.map.source.osmSource,
@@ -595,7 +596,8 @@ vfw.map.create_map = function () {
     /** check what is clicked and open a modal with information about data **/
     function checkMode(evt) {
         console.log('evt: ', evt)
-        let clickedFeatures, ids, cleanedids, wfsLen, catchmentID;
+        let clickedFeatures, clickedArea, ids, cleanedids, dataLayerNameLen, catchmentID;
+        dataLayerNameLen = vfw.var.DATA_LAYER_NAME.length;
         let hasLayer = function (checkLayer) {
             // TODO: There is a lot of looping going on here.
             //  Maybe use getFeatureAtPixel and loop yourself to be able to break the loop again.
@@ -608,15 +610,34 @@ vfw.map.create_map = function () {
         }
 
         // TODO: This code works only on the cluster layer. For other geometries/layers this function must be adjusted!
-        if (hasLayer('Data Clusters')) {
+        if (hasLayer('Areal Data Layer')) {
+            // collect IDs of areal data under click
+            clickedArea = vfw.map.olmap.getFeaturesAtPixel(evt.pixel, {layerFilter: function (layer) {
+                return layer.get('name') === 'Areal Data Layer'}
+            })
+            let areaIds = clickedArea.map(i => parseInt(i.getProperties().id));
+
+            //  Add Point data IDs
+            clickedFeatures = vfw.map.olmap.getFeaturesAtPixel(evt.pixel, {layerFilter: function (layer) {
+                return layer.get('name') === 'Data Clusters'}
+            })
+            ids = areaIds.concat(clickedFeatures[0].values_.features.map(function (i) {
+                return parseInt(i.id_.substr(dataLayerNameLen + 1, 8));
+            }));
+
+            cleanedids = ids.filter(value => {
+                return !Number.isNaN(value);
+            });
+            vfw.map.buildMapModal(cleanedids, 1);
+
+        } else if (hasLayer('Data Clusters')) {
             clusterLayer.getFeatures(evt.pixel).then((features) => {
 
                 vfw.html.loaderOverlayOn();
-                wfsLen = vfw.var.DATA_LAYER_NAME.length;
                 // TODO: I assume the features are in the first layer, but this might not always be the case
                 clickedFeatures = features[0].getProperties().features;
                 console.log('clickedFeatures: ', clickedFeatures)
-                ids = clickedFeatures.map(i => parseInt(i.getId().substr(wfsLen + 1, 8)));
+                ids = clickedFeatures.map(i => parseInt(i.getId().substr(dataLayerNameLen + 1, 8)));
                 cleanedids = ids.filter(value => {
                     return !Number.isNaN(value);
                 });
