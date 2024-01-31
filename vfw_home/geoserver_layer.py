@@ -339,16 +339,16 @@ def __build_layer_xml(
             ("Datentyp", 1, 1, False, "string"),
             ("Kommentar", 0, 1, True, "string"),
             ("Embargo", 1, 1, False, "bool"),
+            ('id', 1, 1, False, 'int')
         ]
     elif layertype == "filtercatchment":
         # simpleConversion = "<simpleConversionEnabled>false</simpleConversionEnabled>"
         geometrytype = "Polygon"
         selectstring = ""
-        for i in selection:
-            selectstring += f'(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}),'
+        # for i in selection:
+        #     selectstring += f'(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}),'
 
         if len(selection) > 1:
-            newcomID_array = tuple(*zip(*selection))
             query = f'SELECT ST_Union(ARRAY[{tuple(*zip(*selection))}])'
             # query = f'SELECT ST_Union(ARRAY[{selectstring[:-1]}])'
             # query = "SELECT ST_Union(ARRAY[{}]) as catchment".format(selectstring[:-1])
