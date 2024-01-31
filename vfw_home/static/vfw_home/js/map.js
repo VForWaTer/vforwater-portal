@@ -510,7 +510,7 @@ vfw.map.createMap = function () {
          * @param {Feature} feature - The feature to select the style for.
          * @return {Style} The selected style for the feature.
          */
-        const color = feature.get('COLOR') || 'rgba(229,113,40,0.98)';
+        const color = feature.get('COLOR') || 'rgba(229,75,40,0.3)';
         selectedCatchmentStyle.getFill().setColor(color);
         return selectedCatchmentStyle;
     }
@@ -618,13 +618,18 @@ vfw.map.createMap = function () {
             let areaIds = clickedArea.map(i => parseInt(i.getProperties().id));
 
             //  Add Point data IDs
-            clickedFeatures = vfw.map.olmap.getFeaturesAtPixel(evt.pixel, {layerFilter: function (layer) {
-                return layer.get('name') === 'Data Clusters'}
-            })
-            ids = areaIds.concat(clickedFeatures[0].values_.features.map(function (i) {
-                return parseInt(i.id_.substr(dataLayerNameLen + 1, 8));
-            }));
-
+            if (hasLayer('Data Clusters')) {
+                clickedFeatures = vfw.map.olmap.getFeaturesAtPixel(evt.pixel, {
+                    layerFilter: function (layer) {
+                        return layer.get('name') === 'Data Clusters'
+                    }
+                })
+                ids = areaIds.concat(clickedFeatures[0].values_.features.map(function (i)
+                    {return parseInt(i.id_.substr(dataLayerNameLen + 1, 8));}
+                ));
+            } else {
+                ids = areaIds;
+            }
             cleanedids = ids.filter(value => {
                 return !Number.isNaN(value);
             });
