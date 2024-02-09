@@ -179,7 +179,11 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
                 }
             })
             .then(function (response) {
-                vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
+                if (vfw.var.obj.selectedIds.quickMenu = []) {
+                    console.log("No data in selection.")
+                } else {
+                    vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
+                }
             })
             .catch(function (error) {
                 console.warn('No result for selected area. Unable to build vector layer with data points.');
@@ -495,7 +499,7 @@ vfw.map.createMap = function () {
 
     const selectedCatchmentStyle = new ol.style.Style({
         fill: new ol.style.Fill({
-            color: 'rgba(229,113,40,0.98)',
+            color: 'rgba(229,113,40,0.8)',
         }),
         stroke: new ol.style.Stroke({
             color: '#9f3700',
@@ -505,7 +509,8 @@ vfw.map.createMap = function () {
 
     vfw.map.selectStyle = function (feature) {
         /**
-         * Returns the selected style for a given feature.
+         * Returns the selected style for a given feature. By writing this used for style of selected Merit Catchment
+         * and areal data layer.
          *
          * @param {Feature} feature - The feature to select the style for.
          * @return {Style} The selected style for the feature.
