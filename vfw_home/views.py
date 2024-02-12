@@ -981,38 +981,48 @@ class QuickFilterResults(View):
     @staticmethod
     def get(request, selection):
 
-        simple_queries = {'variables': 'variable__name__in',
-                          'institution': 'nmpersonsentries__person__organisation_name__in',
-                          'project': 'nmentrygroups__group__type__name__in'}
+        # create query according to selection
+        try:
+            simple_queries = {'variables': 'variable__name__in',
+                              'institution': 'nmpersonsentries__person__organisation_name__in',
+                              'project': 'nmentrygroups__group__type__name__in'}
 
-        filter_dict = {}
-        fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+            filter_dict = {}
+            filter_area = {}
+            filter_area_or = {}
+            fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
 
-        for i in QueryDict(selection):  # QueryDict gives the request data as dictionary
-            if i in simple_queries:
-                filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
-            elif i == 'date':
-                filter_dict['datasource__temporal_scale__observation_end__gte'] = \
-                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[0], "%Y-%m-%d"))
-                filter_dict['datasource__temporal_scale__observation_start__lte'] = \
-                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[1], "%Y-%m-%d"))
-            # elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
-            #     fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
-            elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
-                # TODO: figure out how to avoid the following useless query
-                #  (this exists because in exclude query is always some input needed)
-                fair_query = Q(embargo=True) & Q(embargo=False)
-            elif i == 'draw':
-                values = QueryDict(selection).getlist(i)[0]
-                it = iter([float(item) for item in values.split(',')])
-                poly = Polygon(tuple(zip(it, it)), srid=4326)
-                filter_dict['location__intersects'] = poly
+            for i in QueryDict(selection):  # QueryDict gives the request data as dictionary
+                if i in simple_queries:
+                    filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
+                elif i == 'date':
+                    filter_dict['datasource__temporal_scale__observation_end__gte'] = \
+                        make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[0], "%Y-%m-%d"))
+                    filter_dict['datasource__temporal_scale__observation_start__lte'] = \
+                        make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[1], "%Y-%m-%d"))
+                # elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
+                #     fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+                elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
+                    # TODO: figure out how to avoid the following useless query
+                    #  (this exists because in exclude query is always some input needed)
+                    fair_query = Q(embargo=True) & Q(embargo=False)
+                elif i == 'draw':
+                    values = QueryDict(selection).getlist(i)[0]  # get coordinates of drawing as string
+                    it = iter([float(item) for item in values.split(',')])  # prepare coordinates for use in polygon
+                    poly = Polygon(tuple(zip(it, it)), srid=4326)  # create polygon from coordinates
+                    filter_area['location__intersects'] = poly  # get point data
+                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
+                    # filter_dict['geom__intersects'] = poly  # get areal data
 
-        query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
-        total_results = query.count()
+            query = (Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or))
+                     .exclude(fair_query).only('id'))
+            total_results = query.count()
+        except Exception as e:
+            # print(f'Error in QuickFilterResults. Unable to prepare your selection: {e}')
+            logger.debug(f'Unable to prepare your selection: {e}')
 
         # From here collect data to update map:
-        # (this is only to show the datapoints. For areal data something else is needed)
+        # TODO: this is only to show the datapoints. For areal data something else is needed
         data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrary zoom location for NO RESULT
         layertype = "point"
         # get the real extent of the data
