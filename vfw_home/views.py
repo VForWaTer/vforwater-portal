@@ -32,7 +32,7 @@ from django.contrib import messages
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
-from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
+from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
 from .Fig_obj import FigObject
@@ -143,16 +143,16 @@ class HomeView(TemplateView):
             self.request.session['datasets'] = []
 
         try:
-            if not get_layer(self.data_layer, self.store, self.workspace):
+            if not has_layer(self.data_layer, self.store, self.workspace):
                 create_layer(self.request, self.data_layer, self.store, self.workspace)
             else:
                 # TODO: don't do that in production! That's just for development to make sure geoserver is updated
                 #  after restart of django
                 delete_layer(self.data_layer, self.store, self.workspace)
                 create_layer(self.request, self.data_layer, self.store, self.workspace)
-                # get_layer(self.data_layer, self.store, self.workspace)
+                # has_layer(self.data_layer, self.store, self.workspace)
 
-            if not get_layer(self.areal_data_layer, self.store, self.workspace):
+            if not has_layer(self.areal_data_layer, self.store, self.workspace):
                 create_layer(request=self.request, filename=self.areal_data_layer, datastore=self.store,
                              workspace=self.workspace, layertype='areal_data')
             else:
@@ -918,7 +918,7 @@ class Delineator(View):
 
     @staticmethod
     def get(request, catchout):
-        catchment = {'error': 'Wether catchout nor catchStartID is defined to Delineate a catchment.'}
+        catchment = {'error': 'Neither catchout nor catchStartID is defined to Delineate a catchment.'}
         if "catchout=" in catchout:
             coords = {
                 'lat': [catchout.split("catchout=")[2]],
@@ -1053,7 +1053,7 @@ class QuickFilterResults(View):
         id_layer = 'ID_layer' + str(request.user)
         areal_id_layer = 'areal_ID_layer' + str(request.user)
         def delete_geoserver_layer(name):
-            if get_layer(name, HomeView.store, HomeView.workspace):
+            if has_layer(name, HomeView.store, HomeView.workspace):
                 delete_layer(name, HomeView.store, HomeView.workspace)
 
         delete_geoserver_layer(id_layer)

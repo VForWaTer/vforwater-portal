@@ -131,7 +131,8 @@ def create_layer(request: object, filename: str, datastore: str, workspace: str,
     :param datastore: Name of datastore where to find the layer
     :param workspace: Name of workspace where to store the datastore
     :param srid:  The coordinate reference system according to the EPSG database for the new layer.
-    :param layertype:  String defining the geo object. Default is point.
+    :param layertype:  String defining the geo object. Default is "point". Other are "areal_data", "filtercatchment",
+    "merit_catchment_coarse", "merit_catchment", "merit_river", "merit_river_simple"
     """
     xml = __build_layer_xml(request, filename, datastore, workspace, srid, selection, layertype)
 
@@ -143,26 +144,6 @@ def create_layer(request: object, filename: str, datastore: str, workspace: str,
     if build.status_code != 201:
         logger.warning(f'{build.status_code}: {build.text}')
         print("create layer: ", str(build.status_code) + ": " + build.text)
-
-
-def get_layer(layer_name: str, datastore: str, workspace: str) -> bool:
-    """
-    Load a layer from GeoServer
-
-    :param layer_name: Name of layer for Geoserver.
-    :param datastore: Name of store the layer is stored in.
-    :param workspace: Name of workspace for the store.
-    """
-    url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{layer_name}'
-    # print('SECRET_GEOSERVER: ', SECRET_GEOSERVER)
-
-    build = requests.get(
-        url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
-    )
-    if build.status_code != 200:
-        logger.warning("{}: {}".format(build.status_code, build.text))
-        return False
-    return True
 
 
 def delete_layer(filename: str, datastore: str, workspace: str):
@@ -185,6 +166,27 @@ def delete_layer(filename: str, datastore: str, workspace: str):
     # first delete layer, then feature!
     delete_request(f"{LOCAL_GEOSERVER}/rest/layers/{filename}")
     delete_request(f"{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{filename}")
+
+
+def has_layer(layer_name: str, datastore: str, workspace: str) -> bool:
+    """
+    Load a layer from GeoServer
+
+    :rtype: object
+    :param layer_name: Name of layer for Geoserver.
+    :param datastore: Name of store the layer is stored in.
+    :param workspace: Name of workspace for the store.
+    """
+    url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{layer_name}'
+    # print('SECRET_GEOSERVER: ', SECRET_GEOSERVER)
+
+    build = requests.get(
+        url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
+    )
+    if build.status_code != 200:
+        logger.warning("{}: {}".format(build.status_code, build.text))
+        return False
+    return True
 
 
 def __create_attributes(attributes_list):

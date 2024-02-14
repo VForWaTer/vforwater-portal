@@ -33,7 +33,7 @@ deactivate filter.py
 views.py -> query_functions.py ++: get_bbox_from_data
 views.py <- query_functions.py --
 opt if layer exists delete layer
-    views.py -> geoserver_layer.py ++: get_layer
+    views.py -> geoserver_layer.py ++: has_layer
     return
 
     views.py -> geoserver_layer.py ++: delete_layer

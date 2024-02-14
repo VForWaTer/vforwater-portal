@@ -11,7 +11,7 @@ hide footbox
 ' actor user #lightblue
 [-> vfw.js ++: itemButtonFunction
 vfw.js -> vfw.js: vfw.html.getQuickSelection
-vfw.js -> vfw.js: vfw.url.getFilterURL
+vfw.js -> vfw.js: vfw.url.updateFilterURL
 group ajax
 vfw.js -> views.py ++: QuickFilterResults
 loop selection Dictionary to build django filter (query)

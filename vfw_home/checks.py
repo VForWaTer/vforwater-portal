@@ -1,6 +1,6 @@
 import sys
 
-from vfw_home.geoserver_layer import test_geoserver_env, get_layer, create_layer
+from vfw_home.geoserver_layer import test_geoserver_env, has_layer, create_layer
 
 
 def check_geoserver_layers(store: str, workspace: str, layers: list) -> object:
@@ -25,6 +25,6 @@ def check_geoserver_layers(store: str, workspace: str, layers: list) -> object:
     # check if static layers exist. Build them if not.
     if geoserver_alive:
         for ly in layers:
-            if not get_layer(ly[0], store, workspace):
+            if not has_layer(ly[0], store, workspace):
                 print(f'--- no layer <{ly[0]}> ---')
                 create_layer(request={}, filename=ly[0], datastore=store, workspace=workspace, layertype=ly[1])

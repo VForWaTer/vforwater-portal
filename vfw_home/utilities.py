@@ -236,6 +236,8 @@ def check_data_consistency(check_interval=60*60*24):
     """
     Get all Entries and check if every entry has a datasource associated, and if yes if there is also data
     for the respective ID at the datasource.
+    'check_interval' sets how long the result is cached. This means, the database is checked on every restart of the
+    project.
     :param check_interval: time in seconds until a new check of the database; default is once a day
     :return:
     """

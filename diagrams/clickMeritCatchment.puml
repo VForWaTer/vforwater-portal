@@ -1,0 +1,50 @@
+@startuml
+title click to select a Merit Catchment on the map
+
+hide footbox
+
+
+== click on map ==
+[-> map.js ++: vfw.map.olmap.on('singleclick')
+'note left: click on map
+map.js -> map.js ++: checkmode(evt)
+opt if haslayer 'Areal Data Layer'
+        map.js -> map.js: ...
+    else else
+        map.js -> map.js ++: haslayer('Merit Catchment')
+        map.js -> map.js ++: meritCatchmentLayer.getFeatures().then()
+        opt if has catchment
+            map.js -> map.js: get comid
+            map.js -> vfw.js ++: vfw.map.func.getCatchment({'startID': comid})
+            vfw.js -> vfw.js: vfw.html.loaderOverlayOn
+            opt if startID
+                vfw.js -> vfw.js: url = catchStartID
+            else coords
+                vfw.js -> vfw.js: url = catchout
+            end
+            group ajax
+                vfw.js -> views.py ++: Delineator()
+                opt if catout
+                    views.py -> delineator.py: delineate()
+                else catchStartID
+                    views.py -> delineator.py: delineate()
+                end
+                views.py -> vfw.js --: JsonResponse(catchment)
+            else .done()
+                vfw.js -> vfw.js: vfw.map.func.renderCatchment()
+                vfw.js -> vfw.js ++: vfw.html.getQuickSelection({draw: getSelectionEdgeCoords()})
+                vfw.js -> vfw.js --: vfw.url.updateFilterURL(selection)
+                vfw.js -> vfw.js: vfw.html.loaderOverlayOff
+                return result.wkt
+            end
+        end
+end
+return
+return
+return
+
+
+deactivate menu_objects.js
+
+@enduml
+-----------------------------------------------------------------------
