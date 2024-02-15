@@ -143,18 +143,11 @@ class HomeView(TemplateView):
             self.request.session['datasets'] = []
 
         try:
-            if not has_layer(self.data_layer, self.store, self.workspace):
-                create_layer(self.request, self.data_layer, self.store, self.workspace)
-            else:
-                # TODO: don't do that in production! That's just for development to make sure geoserver is updated
-                #  after restart of django
-                delete_layer(self.data_layer, self.store, self.workspace)
-                create_layer(self.request, self.data_layer, self.store, self.workspace)
-                # has_layer(self.data_layer, self.store, self.workspace)
-
             if not has_layer(self.areal_data_layer, self.store, self.workspace):
                 create_layer(request=self.request, filename=self.areal_data_layer, datastore=self.store,
                              workspace=self.workspace, layertype='areal_data')
+                # TODO: don't do that in production! That's just for development to make sure geoserver is updated
+                #  after restart of django
             else:
                 delete_layer(self.areal_data_layer, self.store, self.workspace)
                 create_layer(request=self.request, filename=self.areal_data_layer, datastore=self.store,
