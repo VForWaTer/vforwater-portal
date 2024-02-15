@@ -91,14 +91,14 @@ if (!isStorageSupported(window, "localStorage")) {
     /** add clickEvent to close button */
     let closst = document.getElementById('draw_close');
     closst.addEventListener('click', function () {
-        removeInteractions()
+        vfw.map.func.removeDrawInteractions()
         // vfw.map.olmap.addInteraction(selectCluster);
-        closeDrawfilter()
+        vfw.map.func.toggleDrawFilter()
     });
    // add clickEvent to auto-draw catchment button
     let drwcatch = document.getElementById('draw_catchment');
     drwcatch.addEventListener('click', function () {
-        removeInteractions();
+        vfw.map.func.removeDrawInteractions();
         vfw.map.olmap.addInteraction(drawCatchmentOutlet);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
@@ -106,7 +106,7 @@ if (!isStorageSupported(window, "localStorage")) {
    // add clickEvent to draw square button
     let drwsqrst = document.getElementById('draw_square');
     drwsqrst.addEventListener('click', function () {
-        removeInteractions();
+        vfw.map.func.removeDrawInteractions();
         vfw.map.olmap.addInteraction(drawSquare);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
@@ -116,7 +116,7 @@ if (!isStorageSupported(window, "localStorage")) {
     drwst.addEventListener('click', function () {
         // vfw.map.olmap.removeInteraction(modify);
         // vfw.map.olmap.removeInteraction(drawSquare);
-        removeInteractions()
+        vfw.map.func.removeDrawInteractions()
         vfw.map.olmap.addInteraction(draw);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
@@ -124,7 +124,7 @@ if (!isStorageSupported(window, "localStorage")) {
     /** add clickEvent to modify button */
     let modst = document.getElementById('modify_polygon');
     modst.addEventListener('click', function () {
-        removeInteractions()
+        vfw.map.func.removeDrawInteractions()
         vfw.map.olmap.addInteraction(modify);
     });
         /** add clickEvent to remove button */

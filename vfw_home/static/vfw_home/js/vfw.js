@@ -323,7 +323,7 @@ function resetDraw() {
  * @param test
  */
 function drawOnMapMenu(test) {
-    openDrawfilter();
+    vfw.map.func.toggleDrawFilter();
     // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // vfw.map.olmap.removeInteraction(selectCluster);
     // let collection = new ol.Collection();
@@ -490,7 +490,7 @@ function drawOnMapMenu(test) {
 
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
         vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
-        removeInteractions();
+        vfw.map.func.removeDrawInteractions();
         toggleDraw(document.getElementById("draw_square"))
     });
 
@@ -512,7 +512,7 @@ function drawOnMapMenu(test) {
 
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
         vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
-        removeInteractions();
+        vfw.map.func.removeDrawInteractions();
         toggleDraw(document.getElementById("draw_polygon"))
 
         /*let extent = draw.getGeometry().getExtent();
@@ -546,11 +546,11 @@ function drawOnMapMenu(test) {
 
     }, this);
     drawCatchmentOutlet.on('drawend', function () {
-        // removeInteractions();
+        // vfw.map.func.removeDrawInteractions();
                 /* remove preloaded layers defined by the url */
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'Selection Layer')
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
-        removeInteractions();
+        vfw.map.func.removeDrawInteractions();
         toggleDraw(document.getElementById("draw_catchment"))
 
     })
@@ -558,9 +558,9 @@ function drawOnMapMenu(test) {
 }
 
 /**
- * Remove interactions from draw menu options (draw, drawSquare and modify).
+ * Remove interactions from draw menu options (draw, drawSquare, modify...).
  */
-function removeInteractions() {
+vfw.map.func.removeDrawInteractions = function () {
     vfw.map.olmap.removeInteraction(draw);
     vfw.map.olmap.removeInteraction(modify);
     vfw.map.olmap.removeInteraction(drawSquare);
@@ -570,22 +570,20 @@ function removeInteractions() {
 /**
  * Toggle between showing and hiding drawfilter
  */
-function openDrawfilter() {
+vfw.map.func.toggleDrawFilter = function () {
     let drawfilter = document.getElementById("drawfilter");
-    let closed_drawfilter = document.getElementById("closed_drawfilter");
-    closed_drawfilter.style.display = "none";
-    drawfilter.style.display = "block";
-    // document.getElementById("toggle_draw").className = 'active'
+    let closedDrawfilter = document.getElementById("closed_drawfilter");
+    if (drawfilter.style.display === "none") {
+        closedDrawfilter.style.display = "none";
+        drawfilter.style.display = "block";
+    } else {
+        closedDrawfilter.style.display = "block";
+        drawfilter.style.display = "none";
+        // TODO: remove only if nothing selected
+        // document.getElementById("toggle_draw").classList.remove('active')
+    }
 }
 
-function closeDrawfilter() {
-    let drawfilter = document.getElementById("drawfilter");
-    let closed_drawfilter = document.getElementById("closed_drawfilter");
-    closed_drawfilter.style.display = "block";
-    drawfilter.style.display = "none";
-    // TODO: remove only if nothing selected
-    // document.getElementById("toggle_draw").classList.remove('active')
-}
 
 /**
  * add toggle function for background of draw and modify button, and remove background by press on delete and close

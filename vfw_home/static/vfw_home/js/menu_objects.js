@@ -50,7 +50,7 @@ function reset_filter(){
     vfw.map.olmap.removeInteraction(draw);
     vfw.map.olmap.removeInteraction(modify);
     vfw.map.olmap.removeLayer(selectionLayer);
-    closeDrawfilter();
+    vfw.map.func.toggleDrawFilter();
     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
     // vfw.map.layer.cluster.changed()  // renamed to clusterLayer
 }
