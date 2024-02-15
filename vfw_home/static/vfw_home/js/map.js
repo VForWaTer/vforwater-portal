@@ -179,11 +179,11 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
                 }
             })
             .then(function (response) {
-                if (vfw.var.obj.selectedIds.quickMenu = []) {
-                    console.log("No data in selection.")
-                } else {
-                    vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
-                }
+                // if (vfw.var.obj.selectedIds.quickMenu = []) {
+                //     console.log("No data in selection.")
+                // } else {
+                vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
+                // }
             })
             .catch(function (error) {
                 console.warn('No result for selected area. Unable to build vector layer with data points.');
@@ -193,13 +193,11 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
     },
     strategy: ol.loadingstrategy.bbox
 });
-/** get areal data from server **/
+/** get areal data (to select from) from server **/
 vfw.map.source.wfsArealSource = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     loader: function (extent) {
-        console.log('layername: ', vfw.var.AREAL_DATA_LAYER_NAME)
-        console.log('url: ', vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.AREAL_DATA_LAYER_NAME + '/'
-            + extent.join(',') + '/3857')
+        console.log('layername: ', vfw.var.AREAL_DATA_LAYER_NAME + extent.join(',') + '/3857')
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.AREAL_DATA_LAYER_NAME + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
@@ -224,7 +222,7 @@ vfw.map.source.wfsArealSource = new ol.source.Vector({
     strategy: ol.loadingstrategy.bbox
 });
 
-/** get areal data from server as TileWMS **/
+/** get areal data (to select from) from server as TileWMS **/
 vfw.map.source.wmsTileArealSource = new ol.source.TileWMS({
           url: 'http://localhost:8888/geoserver/metacatalogdev/wms',
           params: {'FORMAT': 'image/png',
@@ -367,6 +365,7 @@ vfw.map.createMap = function () {
         source: vfw.map.source.wfsArealSource,
         name: 'Areal Data Layer',
         displayInLayerSwitcher: true,
+        visible: false,
     })
     // const arealDataLayer = new ol.layer.Tile({
     //     source: vfw.map.source.wmsTileArealSource
@@ -603,6 +602,13 @@ vfw.map.createMap = function () {
         console.log('evt: ', evt)
         let clickedFeatures, clickedArea, ids, cleanedids, dataLayerNameLen, catchmentID;
         dataLayerNameLen = vfw.var.DATA_LAYER_NAME.length;
+
+         /**
+         * Check if the specified layer is present.
+         *
+         * @param {string} checkLayer - the layer to check if under click position
+         * @return {boolean} - true if layer is under the click position
+         */
         let hasLayer = function (checkLayer) {
             // TODO: There is a lot of looping going on here.
             //  Maybe use getFeatureAtPixel and loop yourself to be able to break the loop again.
@@ -659,7 +665,7 @@ vfw.map.createMap = function () {
                 if (catchment[0]) {
                     catchmentID = catchment[0].getProperties().comid;
                     vfw.map.func.getCatchment({'startID': catchmentID})
-                    vfw.map.createRiverBasin(catchmentID)
+                    // vfw.map.createRiverBasin(catchmentID)
                 }
             })
         }
@@ -837,7 +843,8 @@ vfw.map.createRiverBasin = function (startID) {
     }
 
     getAllRivers(startID)
-    vfw.map.vars.selectCatchmentIDs = catchmentIDsList;
+    // vfw.map.vars.selectCatchmentIDs = catchmentIDsList;
+    console.log('catchmentIDsList: ', catchmentIDsList)
 
     /*// TODO: function to union catchments in browser. Not working. Try another time...
       // Import of JSTS happens in base.html

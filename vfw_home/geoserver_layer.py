@@ -168,9 +168,36 @@ def delete_layer(filename: str, datastore: str, workspace: str):
     delete_request(f"{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{filename}")
 
 
-def has_layer(layer_name: str, datastore: str, workspace: str) -> bool:
+def get_layer(layer_name: str, datastore: str, workspace: str, format: str='json') -> bool:
     """
     Load a layer from GeoServer
+
+    :rtype: object
+    :param layer_name: Name of layer for Geoserver.
+    :param datastore: Name of store the layer is stored in.
+    :param workspace: Name of workspace for the store.
+    :param workspace: Format of result can be 'json' (default) or 'xml', yet.
+    """
+    match format.lower():
+        case 'json':
+            url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{layer_name}.json'
+        case 'xml':
+            url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{layer_name}.xml'
+        case _:
+            raise ValueError("Unexpected parameter value in get_layer()")
+
+    build = requests.get(
+        url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
+    )
+    if build.status_code != 200:
+        logger.warning("{}: {}".format(build.status_code, build.text))
+        return False
+    return True
+
+
+def has_layer(layer_name: str, datastore: str, workspace: str) -> bool:
+    """
+    Load a layer status from GeoServer
 
     :rtype: object
     :param layer_name: Name of layer for Geoserver.
@@ -255,6 +282,7 @@ def __build_layer_xml(
     request, filename: str, datastore: str, workspace: str, srid: int, selection, layertype="point"
 ):
     """
+    Build XML to create a layer through the rest API of Geoserver.
 
     :param request: Might be used some time to connect layers to users
     :param filename: Name of layer for Geoserver.
@@ -271,142 +299,143 @@ def __build_layer_xml(
     keycolumn = ""
 
     # attributes have to be defined according to the selected table columns in the query
-    if layertype == "point":
-        keycolumn = "<keyColumn>id</keyColumn>"
-        geometrytype = "Point"
+    match layertype:
+        case "point":
+            keycolumn = "<keyColumn>id</keyColumn>"
+            geometrytype = "Point"
 
-        query = (
-            'SELECT ST_Transform(locations.point_location, 4326) ::geometry as "Geometry", '
-            'entries.title as "Beschreibung", '
-            'variables.name as "Datentyp", '
-            'entries.comment as "Kommentar", '
-            'entries.embargo as "Embargo", '
-            'entries.id '
-            'FROM entries LEFT JOIN variables on entries.variable_id = variables.id '
-            'LEFT JOIN locations ON entries.id = locations.id'
-        )
-        #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
-        # ids_without_data = cache.get('ids_without_data')
-        # if ids_without_data is None:
-        #     ids_without_data = check_data_consistency()
-        #     # cache.set('ids_without_data', ids_without_data, 3*60)
-        # if selection is None:
-        #     selection = []
-        #
-        # selectable_data = tuple(set(selection) - set(ids_without_data))
-        #
-        # if selection == []:
-        #     query = f'{query} WHERE entries.id not in {tuple(ids_without_data)}'
-        # elif len(selectable_data) > 1:
-        #     query = f'{query} WHERE entries.id in {selectable_data}'
-        # else:
-        #     query = f'{query} WHERE entries.id = {selectable_data[0]}'
-        #
-        query = f'{query} WHERE {__get_selectables_query(selection)}'
+            query = (
+                'SELECT ST_Transform(locations.point_location, 4326) ::geometry as "Geometry", '
+                'entries.title as "Beschreibung", '
+                'variables.name as "Datentyp", '
+                'entries.comment as "Kommentar", '
+                'entries.embargo as "Embargo", '
+                'entries.id '
+                'FROM entries LEFT JOIN variables on entries.variable_id = variables.id '
+                'LEFT JOIN locations ON entries.id = locations.id'
+            )
+            #  ' WHERE tbl_meta.public IS TRUE'  # only for test use on portal
+            # ids_without_data = cache.get('ids_without_data')
+            # if ids_without_data is None:
+            #     ids_without_data = check_data_consistency()
+            #     # cache.set('ids_without_data', ids_without_data, 3*60)
+            # if selection is None:
+            #     selection = []
+            #
+            # selectable_data = tuple(set(selection) - set(ids_without_data))
+            #
+            # if selection == []:
+            #     query = f'{query} WHERE entries.id not in {tuple(ids_without_data)}'
+            # elif len(selectable_data) > 1:
+            #     query = f'{query} WHERE entries.id in {selectable_data}'
+            # else:
+            #     query = f'{query} WHERE entries.id = {selectable_data[0]}'
+            #
+            query = f'{query} WHERE {__get_selectables_query(selection)}'
 
-        # if not request.user.is_authenticated:
-        #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
-        # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
-        attribute_list = [
-            ("Geometry", 0, 1, True, "point"),
-            # ("GroupTypeName", 1, 1, False, "string"),
-            ("Beschreibung", 1, 1, False, "string"),
-            ("Datentyp", 1, 1, False, "string"),
-            ("Kommentar", 0, 1, True, "string"),
-            ("Embargo", 1, 1, False, "bool"),
-        ]  # , ('id', 1, 1, False, 'int')]
+            # if not request.user.is_authenticated:
+            #     query = '{} {}'.format(query, ' WHERE embargo is false')  # only for test use on portal
+            # attributes defined with name: [minOccurs, maxOccurs, nillable, binding]
+            attribute_list = [
+                ("Geometry", 0, 1, True, "point"),
+                # ("GroupTypeName", 1, 1, False, "string"),
+                ("Beschreibung", 1, 1, False, "string"),
+                ("Datentyp", 1, 1, False, "string"),
+                ("Kommentar", 0, 1, True, "string"),
+                ("Embargo", 1, 1, False, "bool"),
+            ]  # , ('id', 1, 1, False, 'int')]
 
 
-    elif layertype == "areal_data":
-        keycolumn = ""
-        # keycolumn = "<keyColumn>id</keyColumn>"
-        geometrytype = "MultiPolygon"
+        case "areal_data":
+            keycolumn = ""
+            # keycolumn = "<keyColumn>id</keyColumn>"
+            geometrytype = "MultiPolygon"
 
-        query = (
-            'SELECT ST_GeometryType(locations.geom) as "FeatureType",'
-            'ST_Transform(locations.geom, 4326) ::geometry as "Geometry", '
-            'entries.title as "Beschreibung", '
-            'variables.name as "Datentyp", '
-            'entries.comment as "Kommentar", '
-            'entries.embargo as "Embargo", '
-            'entries.id '
-            'FROM entries LEFT JOIN variables on entries.variable_id = variables.id '
-            'LEFT JOIN locations ON entries.id = locations.id '
-            'WHERE locations.area_sqm > 0'
-        )
-        query = f'{query} AND {__get_selectables_query(selection)}'
-        attribute_list = [
-            ("Geometry", 0, 1, True, geometrytype),
-            ("Beschreibung", 1, 1, False, "string"),
-            ("Datentyp", 1, 1, False, "string"),
-            ("Kommentar", 0, 1, True, "string"),
-            ("Embargo", 1, 1, False, "bool"),
-            ('id', 1, 1, False, 'int')
-        ]
-    elif layertype == "filtercatchment":
-        # simpleConversion = "<simpleConversionEnabled>false</simpleConversionEnabled>"
-        geometrytype = "Polygon"
-        selectstring = ""
-        # for i in selection:
-        #     selectstring += f'(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}),'
+            query = (
+                'SELECT ST_GeometryType(locations.geom) as "FeatureType",'
+                'ST_Transform(locations.geom, 4326) ::geometry as "Geometry", '
+                'entries.title as "Beschreibung", '
+                'variables.name as "Datentyp", '
+                'entries.comment as "Kommentar", '
+                'entries.embargo as "Embargo", '
+                'entries.id '
+                'FROM entries LEFT JOIN variables on entries.variable_id = variables.id '
+                'LEFT JOIN locations ON entries.id = locations.id '
+                'WHERE locations.area_sqm > 0'
+            )
+            query = f'{query} AND {__get_selectables_query(selection)}'
+            attribute_list = [
+                ("Geometry", 0, 1, True, geometrytype),
+                ("Beschreibung", 1, 1, False, "string"),
+                ("Datentyp", 1, 1, False, "string"),
+                ("Kommentar", 0, 1, True, "string"),
+                ("Embargo", 1, 1, False, "bool"),
+                ('id', 1, 1, False, 'int')
+            ]
+        case "filtercatchment":
+            # simpleConversion = "<simpleConversionEnabled>false</simpleConversionEnabled>"
+            geometrytype = "Polygon"
+            selectstring = ""
+            # for i in selection:
+            #     selectstring += f'(SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}),'
 
-        if len(selection) > 1:
-            query = f'SELECT ST_Union(ARRAY[{tuple(*zip(*selection))}])'
-            # query = f'SELECT ST_Union(ARRAY[{selectstring[:-1]}])'
-            # query = "SELECT ST_Union(ARRAY[{}]) as catchment".format(selectstring[:-1])
-        else:
-            query = 'SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={i}'
-            # query = selectstring[1:-2]
-            # query = "{} as catchment".format(selectstring[1:-2])
+            if len(selection) > 1:
+                query = f'SELECT ST_Union(ARRAY[{tuple(*zip(*selection))}])'
+                # query = f'SELECT ST_Union(ARRAY[{selectstring[:-1]}])'
+                # query = "SELECT ST_Union(ARRAY[{}]) as catchment".format(selectstring[:-1])
+            else:
+                query = f'SELECT geom FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={selection[0]}'
+                # query = selectstring[1:-2]
+                # query = "{} as catchment".format(selectstring[1:-2])
 
-        attribute_list = [
-            ("geom", 0, 1, True, "polygon"),
-        ]
-    elif layertype == "merit_catchment_coarse":
-        keycolumn = "<keyColumn>basin</keyColumn>"
-        geometrytype = "MultiPolygon"
-        query = ('SELECT basin, geom FROM merit_hydro_vect_level2')
-        attribute_list = [
-            ("geom", 0, 1, True, geometrytype),
-        ]
-    elif layertype == "merit_catchment":
-        keycolumn = ""
-        geometrytype = "MultiPolygon"
-        query = ('SELECT geom, comid FROM cat_pfaf_merit_hydro_v07_basins_v01')
-        attribute_list = [
-            ("comid", 0, 1, True, 'int'),
-            ("geom", 0, 1, True, geometrytype),
-        ]
-    elif layertype == "merit_river":
-        keycolumn = ""
-        geometrytype = "MultiLine"
-        query = ('SELECT comid, up1, up2, up3, up4, geom FROM riv_pfaf_merit_hydro_v07_basins_v01 WHERE up1 != 0')
-        attribute_list = [
-            ("comid", 0, 1, False, "int"),
-            ("up1", 0, 1, False, "int"),
-            ("up2", 0, 1, False, "int"),
-            ("up3", 0, 1, False, "int"),
-            ("up4", 0, 1, False, "int"),
-            ("geom", 0, 1, False, geometrytype),
-        ]
-    elif layertype == "merit_river_simple":
-        keycolumn = ""
-        geometrytype = "MultiLine"
-        # query = ('SELECT comid, up1, up2, up3, up4, ST_AsText(ST_Simplify(geom, 0.01), 3) AS geom '
-        query = ('SELECT comid, up1, up2, up3, up4, ST_Simplify(geom, 100) AS geom '
-                 'FROM riv_pfaf_merit_hydro_v07_basins_v01')
-        attribute_list = [
-            ("comid", 0, 1, False, "int"),
-            ("up1", 0, 1, False, "int"),
-            ("up2", 0, 1, False, "int"),
-            ("up3", 0, 1, False, "int"),
-            ("up4", 0, 1, False, "int"),
-            ("geom", 0, 1, False, geometrytype),
-        ]
-    else:
-        print(f'unknown layertype: {layertype}')
-        logger.warning(f"unknown layertype: {layertype}")
-        return
+            attribute_list = [
+                ("geom", 0, 1, True, "polygon"),
+            ]
+        case "merit_catchment_coarse":
+            keycolumn = "<keyColumn>basin</keyColumn>"
+            geometrytype = "MultiPolygon"
+            query = ('SELECT basin, geom FROM merit_hydro_vect_level2')
+            attribute_list = [
+                ("geom", 0, 1, True, geometrytype),
+            ]
+        case "merit_catchment":
+            keycolumn = ""
+            geometrytype = "MultiPolygon"
+            query = ('SELECT geom, comid FROM cat_pfaf_merit_hydro_v07_basins_v01')
+            attribute_list = [
+                ("comid", 0, 1, True, 'int'),
+                ("geom", 0, 1, True, geometrytype),
+            ]
+        case "merit_river":
+            keycolumn = ""
+            geometrytype = "MultiLine"
+            query = ('SELECT comid, up1, up2, up3, up4, geom FROM riv_pfaf_merit_hydro_v07_basins_v01 WHERE up1 != 0')
+            attribute_list = [
+                ("comid", 0, 1, False, "int"),
+                ("up1", 0, 1, False, "int"),
+                ("up2", 0, 1, False, "int"),
+                ("up3", 0, 1, False, "int"),
+                ("up4", 0, 1, False, "int"),
+                ("geom", 0, 1, False, geometrytype),
+            ]
+        case "merit_river_simple":
+            keycolumn = ""
+            geometrytype = "MultiLine"
+            # query = ('SELECT comid, up1, up2, up3, up4, ST_AsText(ST_Simplify(geom, 0.01), 3) AS geom '
+            query = ('SELECT comid, up1, up2, up3, up4, ST_Simplify(geom, 100) AS geom '
+                     'FROM riv_pfaf_merit_hydro_v07_basins_v01')
+            attribute_list = [
+                ("comid", 0, 1, False, "int"),
+                ("up1", 0, 1, False, "int"),
+                ("up2", 0, 1, False, "int"),
+                ("up3", 0, 1, False, "int"),
+                ("up4", 0, 1, False, "int"),
+                ("geom", 0, 1, False, geometrytype),
+            ]
+        case _:
+            print(f'unknown layertype: {layertype}')
+            logger.warning(f"unknown layertype: {layertype}")
+            return
 
     attributes = __create_attributes(attribute_list)
     xml = (

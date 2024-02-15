@@ -104,6 +104,7 @@ def delineate(coords=None, terminal_comid=None, HIGH_RES=True, LOW_RES_THRESHOLD
     Citation DOI: 10.5281/zenodo.7314287
 
     :param coords:
+    :param terminal_comid: The ID of the clicked catchment where all the higher rivers flow in.
     :param HIGH_RES: boolean True for "high-resolution" mode or False for "low-resolution."
     :param LOW_RES_THRESHOLD: integer Threshold for watershed size in km². Above the script revert to low-resolution mode
     :param precise: boolean True for recalculation of catchment from clickpoint. False starts with the smallest catchment that includes the click point

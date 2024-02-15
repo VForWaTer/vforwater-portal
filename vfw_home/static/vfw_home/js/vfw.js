@@ -263,6 +263,7 @@ vfw.map.layer.selectionLayer = new ol.layer.Vector({
 function resetDraw() {
     vfw.html.getQuickSelection({'draw': []})
     vfw.html.getQuickSelection({'catchout': []})
+    vfw.html.getQuickSelection({'catchStartID': []})
     vfw.var.obj.selectedIds.map = null;
     vfw.map.source.selectionSource.clear();
 
@@ -311,9 +312,9 @@ function resetDraw() {
  * @returns Array
  */
  vfw.map.func.getSelectionEdgeCoords = function() {
-    // return  ol.proj.transform(selectionEdgeCoords.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
-    let coords = selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()
-    selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
+    // return  ol.proj.transform(vfw.map.vars.selectionEdgeCoords.getCoordinates(), 'EPSG:3857', 'EPSG:4326');
+    let coords = vfw.map.vars.selectionEdgeCoords.transform('EPSG:3857', 'EPSG:4326').getCoordinates()
+    vfw.map.vars.selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
     return coords
 }
 /**
@@ -436,7 +437,7 @@ function drawOnMapMenu(test) {
         delaySelectActivate();
         vfw.var.obj.selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
-        selectionEdgeCoords = polygon;
+        vfw.map.vars.selectionEdgeCoords = polygon;
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
     }, this);
 
@@ -458,8 +459,7 @@ function drawOnMapMenu(test) {
         try {
             changes = event.feature.getGeometry().on('change', function (event) {
                 // clear features so they deselect when polygon moves away
-                // selectedFeatures.clear();
-                selectionEdgeCoords = event.target;
+                vfw.map.vars.selectionEdgeCoords = event.target;
 
             });
         } catch (e) {
@@ -489,6 +489,7 @@ function drawOnMapMenu(test) {
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
+        vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
         removeInteractions();
         toggleDraw(document.getElementById("draw_square"))
     });
@@ -510,6 +511,7 @@ function drawOnMapMenu(test) {
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
+        vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
         removeInteractions();
         toggleDraw(document.getElementById("draw_polygon"))
 
@@ -526,7 +528,7 @@ function drawOnMapMenu(test) {
         vfw.html.loaderOverlayOn()
         // content.innerHTML = vfw.html.loader
         // selectionLayerSource.clear();
-        selectionEdgeCoords = event.feature.getGeometry()
+        vfw.map.vars.selectionEdgeCoords = event.feature.getGeometry()
         listener = selectStartFun(event)
         let click_coords = vfw.map.func.getSelectionEdgeCoords()
         // round coords to a reasonable length (0,000001° ~~ 0,1 m)
@@ -537,7 +539,7 @@ function drawOnMapMenu(test) {
         $.when(vfw.map.func.getCatchment({'coords': click_coords})).done(function(catchment) {
             vfw.map.func.renderCatchment(catchment)
             // vfw.map.olmap.addLayer(selectionLayer)
-            vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
+            // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
             // listener = selectStartFun(event)
             vfw.html.loaderOverlayOff();
         })
@@ -1096,7 +1098,7 @@ function quick_filter(selection) {
  *
  * @param {string} selection
  */
-vfw.url.getFilterURL = function(selection)  {
+vfw.url.updateFilterURL = function(selection)  {
 
     let nextURL;
     let url = window.location
@@ -1108,7 +1110,7 @@ vfw.url.getFilterURL = function(selection)  {
         let selectedValues = Object.values(selection)[0]
 
         urlParams.delete(selectedKey);
-        if (Symbol.iterator in Object(selectedValues)) {
+        if (Symbol.iterator in Object(selectedValues)) {  // check if Object can be iterated
             for (let value of selectedValues) {
                 urlParams.append(selectedKey, value);
             }
@@ -1132,7 +1134,7 @@ vfw.url.getFilterURL = function(selection)  {
  * @param {string} selection
  */
 vfw.html.getQuickSelection = function (selection) {
-    let url = vfw.url.getFilterURL(selection)
+    let url = vfw.url.updateFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
     if (url !== false) {
@@ -1182,7 +1184,7 @@ vfw.html.getQuickSelection = function (selection) {
 //  1) Don't care about it (actual implementation)
 //  2) Restrict users from moving nodes => clickpoint is enough to share
 //  3) Save click point and diffs (node index, x, y)
-//  4) enable user to store/share/upload geojson of catchment
+//  4) enable user to store/share/upload geojson of catchment (we want that)
 //  5) store changes in database and use/share ids
 //  6) store complete catchment for individual selections and river IDs (+layer) for simple selection (next implementation)
 /**
@@ -1195,10 +1197,13 @@ vfw.html.getQuickSelection = function (selection) {
 vfw.map.func.getCatchment = function (start_value) {
     vfw.html.loaderOverlayOn();
     let url = '';
+    let urlPart = {};
     if ('startID' in start_value) {
-        url = vfw.url.getFilterURL({'catchStartID': [start_value['startID']]})
+        urlPart = {'catchStartID': [start_value['startID']]}
+        url = vfw.url.updateFilterURL(urlPart)
     } else if ('coords'in start_value) {
-        url = vfw.url.getFilterURL({'catchout': start_value['coords']})
+        urlPart = {'catchout': start_value['coords']}
+        url = vfw.url.updateFilterURL(urlPart)
     }
     if (url !== false) {
         return $.ajax({
@@ -1208,38 +1213,47 @@ vfw.map.func.getCatchment = function (start_value) {
             datatype: 'json',
         })
             .done(function (result) {
-                // selectionEdgeCoords = result.wkt;
+                // vfw.map.vars.selectionEdgeCoords = result.wkt;
                 vfw.map.func.renderCatchment(result)
-            // vfw.map.olmap.addLayer(selectionLayer)
-            vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
-                vfw.html.loaderOverlayOff();
+                // vfw.map.olmap.addLayer(selectionLayer)
+                vfw.html.getQuickSelection(urlPart);
+                vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // maybe use this var for an undo funciton in the draw menu
+                // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
                 return result.wkt
             })
             .fail(function (bug) {
                 console.warn('3 got a bug: ', bug)
             })
+            .always(function(){
+                vfw.html.loaderOverlayOff();
+            })
     }
 }
 
 
+/**
+ * Renders the catchment on the map and add it as a 'Selection Layer'.
+ *
+ * @param {Object} catchment - the catchment object to be rendered
+ */
 vfw.map.func.renderCatchment = function (catchment) {
     let catch_format = new ol.format.WKT();
-            let catch_feature = catch_format.readFeature(catchment.wkt, {
-              dataProjection: 'EPSG:4326',
-              // featureProjection: 'EPSG:4326',
-              featureProjection: 'EPSG:3857',
-            });
-            let polygon = catch_feature.getGeometry();
-            selectionEdgeCoords = polygon;
-            // TODO: make sure you got 'selectionEdgeCoords' before 'vfw.map.func.getSelectionEdgeCoords()' in 'drawend' runs. => create custom event?
-            // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
-            // vfw.map.source.selectionSource.clear();
-            vfw.map.source.selectionSource = new ol.source.Vector({features: [catch_feature],});
-            vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
-            // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
-            // selectionLayer.setStyle(new ol.style.Style({
-            //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
-            // }))
+    let catch_feature = catch_format.readFeature(catchment.wkt, {
+      dataProjection: 'EPSG:4326',
+      // featureProjection: 'EPSG:4326',
+      featureProjection: 'EPSG:3857',
+    });
+    vfw.map.vars.selectionEdgeCoords = catch_feature.getGeometry();
+    vfw.map.vars.mapSelect = vfw.map.vars.selectionEdgeCoords[0];
+    // TODO: make sure you got 'vfw.map.vars.selectionEdgeCoords' before 'vfw.map.func.getSelectionEdgeCoords()' in 'drawend' runs. => create custom event?
+    // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
+    // vfw.map.source.selectionSource.clear();
+    vfw.map.source.selectionSource = new ol.source.Vector({features: [catch_feature],});
+    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+    // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
+    // selectionLayer.setStyle(new ol.style.Style({
+    //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
+    // }))
 }
 
 function advanced_filter_query(selection) {

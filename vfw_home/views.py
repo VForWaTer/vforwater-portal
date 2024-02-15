@@ -936,7 +936,8 @@ class Delineator(View):
             catchment = delineate(terminal_comid=start_id, precise=True)
 
         if 'error' in catchment:
-            print('Problems in delineation tool: ', catchment['error'])
+            # print('Problems in delineation tool: ', catchment['error'])
+            logger.error('Problems in delineation tool: ', catchment['error'])
 
         return JsonResponse(catchment)
 
@@ -1013,6 +1014,14 @@ class QuickFilterResults(View):
                     filter_area['location__intersects'] = poly  # get point data
                     filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
                     # filter_dict['geom__intersects'] = poly  # get areal data
+                elif i == 'catchStartID':
+                    catchment = delineate(terminal_comid=QueryDict(selection).getlist(i)[0], precise=True)
+                    poly = GEOSGeometry(catchment['wkt'])
+                    filter_area['location__intersects'] = poly  # get point data
+                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
+                else:
+                    # print('Adapt your filter to ', i)
+                    logger.warning('Adapt your filter to ', i)
 
             query = (Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or))
                      .exclude(fair_query).only('id'))

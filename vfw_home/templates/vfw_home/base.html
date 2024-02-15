@@ -105,6 +105,9 @@
         cache: {},
       },
       vars: {
+        catchments: {},
+        mapSelect: {},  // maybe use this var for an undo funciton in the draw menu
+        selectionEdgeCoords: {},
         wfsLayerName: '',
       },
     },
@@ -370,8 +373,11 @@ onload="vfw.map.create_map(); vfw.sidebar.showData(); vfw.html.getQuickSelection
 
 <!-- 	!PAGE CONTENT! -->
 <div class="w3-main">
+{# TODO: seperate functions in files properly to import only needed functions in app, instead of loading all in base #}
   <script src="{% static 'vfw_home/js/vfw.js' %}" type="text/javascript"></script>
   <script src="{% static 'vfw_home/js/data_obj.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfw_home/js/map.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfw_home/js/menu_objects.js' %}" type="text/javascript"></script>
 
   {# get map in the content block #}
   {% block content %}{% endblock %}
