@@ -36,8 +36,9 @@
   <button class="filter-tablinks" onclick="vfw.map.func.drawOnMapMenu(event)"
   title="{% trans "Click here to select data from drawing"%}">{% trans "Draw" %}</button>
 
-  <label class="filter-tablinks" title="{% trans "Click here to upload a polygon to select data from map"%}">
-    <input type="file"/>{% trans "Upload" %}
+  <label class="filter-tablinks"
+         title="{% trans "Click here to upload a polygon to select data from map. For now only JSON is accepted."%}">
+    <input id="uploaded_file" type="file" onchange="vfw.map.func.handleFileUpload()"/>{% trans "Upload" %}
   </label>
 </div>
 
@@ -56,15 +57,81 @@
 {{ UNBLOCKED_IDS|json_script:"unblockedIds" }}
 <script>
 {#TODO: Do I need this, or can I just use the csrftoken in vfw.js?#}
-//{# csrf_token = '{{ csrf_token }}';#}
-//var jsonMenu = "{{ Filter_Menu|escapejs }}";
-//{#var unblockedIds = "{{ unblocked_ids }}";#}
 vfw.map.UNBLOCKED_IDS = JSON.parse(document.getElementById('unblockedIds').textContent);
 {#vfw.map.UNBLOCKED_IDS = JSON.parse(unblockedIds)#}
 // Get the element with id="defaultMapTab" and click on it
 {#document.getElementById("defaultFilterTab").click();#}
 
 let test = "{{ test|escapejs }}"
+</script>
+
+<script>
+  vfw.map.func.handleFileUpload = function () {
+    const fileInput = document.getElementById('uploaded_file');
+    const file = fileInput.files[0];
+
+    // Now, you can use the `file` object that represents the uploaded file.
+    console.log('__uploaded file: ', file);
+    const fileType = file.type;
+
+    // For instance, to read the file as text (for text or CSV files):
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const fileContent = event.target.result;
+      console.log('fileContent: ', fileContent);
+    };
+    switch (fileType) {
+      case 'application/json':
+        reader.readAsText(file);
+        break;
+      case 'application/x-netcdf':
+        $("#alertDialog").html("Sorry, netcdf isn't implemented yet.")
+          .prop('title', 'Uuuh!').dialog( "open" );
+        break;
+      case 'application/sql':
+        $("#alertDialog").html('A sql file? Are you serious? Do you try to hack me?')
+          .prop('title', 'Seriously?').dialog( "open" );
+        break;
+      case 'application/x-shellscript':
+        $("#alertDialog").html('Did you just try to upload a shell script? What do you think I should do with that?')
+          .prop('title', 'Seriously?').dialog( "open" );
+        break;
+      case 'text/x-python':
+        $("#alertDialog").html('A Python file? What is that supposed to be? An attempt to hack me?')
+          .prop('title', 'Seriously?').dialog( "open" );
+        break;
+      case 'text/javascript':
+        $("#alertDialog").html("Na, thank you. I have enough javascript code. No need for more.")
+          .prop('title', 'Seriously?').dialog( "open" );
+        break;
+      case 'text/markdown':
+        $("#alertDialog").html('Come on! What do you think I should do with a Markdown file?')
+          .prop('title', 'Seriously?').dialog( "open" );
+        break;
+      case 'text/csv':
+        $("#alertDialog").html('Come on! What do you think I should do with a CSV file?')
+          .prop('title', 'Seriously?').dialog( "open" );
+        break;
+      case 'image/svg+xml':
+        $("#alertDialog").html('Cannot use an image.').dialog( "open" );
+        break;
+      case 'image/bmp':
+        $("#alertDialog").html('Cannot use an image.').dialog( "open" );
+        break;
+      case 'image/jpg':
+        $("#alertDialog").html('Uuuh! Is this you? But I must admit, I cannot use an image.').dialog( "open" );
+        break;
+      case 'image/png':
+        $("#alertDialog").html('Cannot use an image.').dialog( "open" );
+        break;
+      default:
+        reader.readAsText(file);
+         alert("Didn't recognize the filetype. Please try another file.");
+    }
+
+    // If it's an image file, you may want to read it as a data URL instead:
+    // reader.readAsDataURL(file);
+  }
 </script>
 
 <script>
