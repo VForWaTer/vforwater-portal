@@ -477,3 +477,31 @@ def __build_layer_xml(
     )
 
     return xml
+
+
+def verify_layer(request, filename, datastore, workspace, layertype="point"):
+    """
+    This method verifies the existence of a layer in Geoserver. If the layer does not exist, it creates it.
+    If the layer already exists, it deletes it and then creates it again.
+
+    To delete and recreate the layer is only for development, to make sure geoserver always uses the most
+    recent data. The production version needs a different implementation of that.
+
+    :param request: The HTTP request object.
+    :param filename: The name of the layer file.
+    :param datastore: The name of the data store.
+    :param workspace: The name of the workspace.
+    :param layertype: The type of the layer (default is "point").
+    :return: None
+    """
+    if not has_layer(layer_name=filename, datastore=datastore, workspace=workspace):
+        create_layer(request=request, filename=filename, datastore=datastore, workspace=workspace,
+                     layertype=layertype)
+        # TODO: don't do that in production! That's just for development to make sure geoserver is updated
+        #  after restart of django
+    else:
+        delete_layer(filename=filename, datastore=datastore, workspace=workspace)
+        create_layer(request=request, filename=filename, datastore=datastore, workspace=workspace,
+                     layertype=layertype)
+        # has_layer(filename, datastore, workspace)
+

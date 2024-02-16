@@ -32,7 +32,7 @@ from django.contrib import messages
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
 
-from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env
+from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
 from .Fig_obj import FigObject
@@ -143,32 +143,9 @@ class HomeView(TemplateView):
             self.request.session['datasets'] = []
 
         try:
-            def verify_layer(request, filename, datastore=self.store, workspace=self.workspace, layertype="point"):
-                """
-                This method verifies the existence of a layer in Geoserver. If the layer does not exist, it creates it.
-                If the layer already exists, it deletes it and then creates it again.
-
-                To delete and recreate the layer is only for development, to make sure geoserver always uses the most
-                recent data. The production version needs a different implementation of that.
-
-                :param request: The HTTP request object.
-                :param filename: The name of the layer file.
-                :param datastore: The name of the data store.
-                :param workspace: The name of the workspace.
-                :param layertype: The type of the layer (default is "point").
-                :return: None
-                """
-                if not has_layer(filename, datastore, workspace):
-                    create_layer(request, filename, datastore, workspace, layertype)
-                    # TODO: don't do that in production! That's just for development to make sure geoserver is updated
-                    #  after restart of django
-                else:
-                    delete_layer(filename, datastore, workspace)
-                    create_layer(request, filename, datastore, workspace, layertype)
-                    # has_layer(filename, datastore, workspace)
-
-            verify_layer(request=self.request, filename=self.data_layer)
-            verify_layer(request=self.request, filename=self.areal_data_layer, layertype='areal_data')
+            verify_layer(request=self.request, datastore=self.store, workspace=self.workspace, filename=self.data_layer)
+            verify_layer(request=self.request, datastore=self.store, workspace=self.workspace,
+                         filename=self.areal_data_layer, layertype='areal_data')
 
         except:
             self.data_layer = 'Error: Found no geoserver!'
