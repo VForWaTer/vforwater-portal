@@ -37,7 +37,7 @@
 
   <div class="w3-center" id="closed_drawfilter">
     {% trans "Open&#32drawing&#32panel&#32and&#32deactivate&#32doubleclick&#32zoom." as Open %}
-    <a href="javascript:void(0)" onclick=drawOnMapMenu(this); id="draw_toggle_plus" class="hover-white" title={{ Open }}
+    <a href="javascript:void(0)" onclick=vfw.map.func.drawOnMapMenu(this); id="draw_toggle_plus" class="hover-white" title={{ Open }}
       ><i class="map_icon fa fa-plus-square-o fa-fw"></i></a>
   </div>
 	<div class="w3-center" id="drawfilter" style="display:none">
@@ -117,9 +117,14 @@ if (!isStorageSupported(window, "localStorage")) {
         // vfw.map.olmap.removeInteraction(modify);
         // vfw.map.olmap.removeInteraction(drawSquare);
         vfw.map.func.removeDrawInteractions()
-        vfw.map.olmap.addInteraction(draw);
-        /* Deactivate select and delete any existing polygons.
-            Only one polygon drawn at a time. */
+      vfw.map.olmap.addInteraction(vfw.map.control.draw);
+      let interbla = vfw.map.olmap.getInteractions();
+      // console.log('has interactions: ', vfw.map.olmap.getInteractions())
+      // for (let i in interbla) {
+//         console.log('i: ', i)
+   //   }
+      /* Deactivate select and delete any existing polygons.
+          Only one polygon drawn at a time. */
     });
     /** add clickEvent to modify button */
     let modst = document.getElementById('modify_polygon');

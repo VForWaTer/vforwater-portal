@@ -33,8 +33,12 @@
   {% comment %}
   <button class="filter-tablinks" onclick="toggleFilter(event, 'advancedFilter'); advanced_filter_query()"
   title="{% trans "Set attributes and click on search to update results"%}">{% trans "Advanced" %}</button>{% endcomment %}
-  <button class="filter-tablinks" onclick="drawOnMapMenu(event)"
-  title="{% trans "Click here to select from drawing"%}">{% trans "Draw" %}</button>
+  <button class="filter-tablinks" onclick="vfw.map.func.drawOnMapMenu(event)"
+  title="{% trans "Click here to select data from drawing"%}">{% trans "Draw" %}</button>
+
+  <label class="filter-tablinks" title="{% trans "Click here to upload a polygon to select data from map"%}">
+    <input type="file"/>{% trans "Upload" %}
+  </label>
 </div>
 
 <div id="quickFilter" class="filter-tabcontent">

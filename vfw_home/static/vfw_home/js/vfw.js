@@ -267,9 +267,9 @@ function resetDraw() {
     vfw.var.obj.selectedIds.map = null;
     vfw.map.source.selectionSource.clear();
 
-    vfw.map.olmap.removeInteraction(draw);
+    vfw.map.olmap.removeInteraction(vfw.map.control.draw);
     vfw.map.olmap.removeInteraction(modify);
-    // removeInteractions()
+    // vfw.map.func.removeDrawInteractions()
     // vfw.map.olmap.removeLayer(selectionLayer);
 
     // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
@@ -279,13 +279,13 @@ function resetDraw() {
 // TODO: seems to be unused
 /*function addInteraction(type) {
     if (type == 'Polygon') {
-        draw = new ol.interaction.Draw({
+        vfw.map.control.draw = new ol.interaction.Draw({
             source: selectionLayerSource,
             type: type,
             stopClick: true
         });
     } else if (type == 'Square') {
-        draw = new ol.interaction.Draw({
+        vfw.map.control.draw = new ol.interaction.Draw({
             source: selectionLayerSource,
             type: 'Circle',
             geometryFunction: ol.interaction.Draw.createBox(),
@@ -293,7 +293,7 @@ function resetDraw() {
         });
     } else if (type == 'Modify') {
         console.log(' ***** in Modify type bla...')
-        draw = new ol.interaction.Modify({
+        vfw.map.control.draw = new ol.interaction.Modify({
             features: collection,
             // the SHIFT key must be pressed to delete vertices, so that new
             // vertices can be drawn at the same position of existing vertices
@@ -303,7 +303,7 @@ function resetDraw() {
             }
         });
     }
-    map.addInteraction(draw);
+    map.addInteraction(vfw.map.control.draw);
 }*/
 
 /**
@@ -318,11 +318,11 @@ function resetDraw() {
     return coords
 }
 /**
- * Menu to draw polygon on map
+ * Menu to draw polygon on map and use it to select data
  *
  * @param test
  */
-function drawOnMapMenu(test) {
+vfw.map.func.drawOnMapMenu = function (test) {
     vfw.map.func.toggleDrawFilter();
     // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // vfw.map.olmap.removeInteraction(selectCluster);
@@ -362,7 +362,7 @@ function drawOnMapMenu(test) {
     // let select = new ol.interaction.Select();
     // vfw.map.olmap.addInteraction(select);
 
-    draw = new ol.interaction.Draw({
+    vfw.map.control.draw = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Polygon',
         stopClick: true,
@@ -494,11 +494,11 @@ function drawOnMapMenu(test) {
         toggleDraw(document.getElementById("draw_square"))
     });
 
-    draw.on('drawstart', function (event) {
+    vfw.map.control.draw.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
         listener = selectStartFun(event)
     }, this);
-    draw.on('drawend', function () {
+    vfw.map.control.draw.on('drawend', function () {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
 
         /* get id of selected features for menu */
@@ -561,14 +561,14 @@ function drawOnMapMenu(test) {
  * Remove interactions from draw menu options (draw, drawSquare, modify...).
  */
 vfw.map.func.removeDrawInteractions = function () {
-    vfw.map.olmap.removeInteraction(draw);
+    vfw.map.olmap.removeInteraction(vfw.map.control.draw);
     vfw.map.olmap.removeInteraction(modify);
     vfw.map.olmap.removeInteraction(drawSquare);
     vfw.map.olmap.removeInteraction(drawCatchmentOutlet);
 }
 
 /**
- * Toggle between showing and hiding drawfilter
+ * Toggle between showing and hiding the draw filter on the map
  */
 vfw.map.func.toggleDrawFilter = function () {
     let drawfilter = document.getElementById("drawfilter");
@@ -586,7 +586,7 @@ vfw.map.func.toggleDrawFilter = function () {
 
 
 /**
- * add toggle function for background of draw and modify button, and remove background by press on delete and close
+ * Add toggle function for background of draw and modify button, and remove background by press on delete and close
  */
 function toggleDraw(self) {
     let siblings = document.getElementsByClassName('draw-hover');
@@ -594,7 +594,7 @@ function toggleDraw(self) {
     let sLen = siblings.length - 1;  // avoid to toggle on the delete button
     if (self.classList.contains('activeM')) {
         self.classList.remove('activeM');
-        draw.finishDrawing();
+        vfw.map.control.draw.finishDrawing();
     } else {
         for (s = 0; s < sLen; s++) {
             if (siblings[s].classList.contains('activeM')) siblings[s].classList.remove('activeM')
