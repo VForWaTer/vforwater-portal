@@ -123,7 +123,7 @@ class HomeView(TemplateView):
                 self.areal_data_layer = 'admin_areal_layer'
             else:
                 self.data_layer = expressive_layer_name(self.request.user)
-                self.areal_data_layer = expressive_layer_name(f'{self.request.user}_areal')
+                self.areal_data_layer = expressive_layer_name(self.request.user) + "_areal"
 
     # Put here everything you need at startup and for refresh of 'Home'
     def get_context_data(self, **kwargs: object):
