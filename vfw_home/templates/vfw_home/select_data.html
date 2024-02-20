@@ -68,38 +68,20 @@ let test = "{{ test|escapejs }}"
 </script>
 
 <script>
+  /**
+   * Load a polygon to select data on the map. The user should be able to store and share his uploads. Has to be logged
+   * in for that.
+   * */
   vfw.map.func.handleFileUpload = function () {
     let uploadType;
     const fileInput = document.getElementById('uploaded_file');
+    // Get the `file` object that represents the uploaded file.
     const file = fileInput.files[0];
 
-    // Now, you can use the `file` object that represents the uploaded file.
-    console.log('__uploaded file: ', file);
-    const fileType = file.type;
-
-    function loadFileAs(uploadType = 'txt', file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const fileContent = event.target.result;
-          resolve(fileContent);
-        };
-        reader.onerror = function(event) {
-          reject(new Error("File could not be read! Code: " + event.target.error));
-        };
-        if (uploadType === 'txt') {
-          reader.readAsText(file);
-        }
-        else if (uploadType === 'data') {
-          reader.readAsDataURL(file);
-        }
-      });
-    }
-
-    switch (fileType) {
+    /** This switch is only to check if the file Type is accepted. Logic how to handle a file comes later */
+    switch (file.type) {
       case 'application/json':
         uploadType = 'txt';
-        {#reader.readAsText(file);#}
         break;
       case 'application/x-netcdf':
         $("#alertDialog").html("Sorry, netcdf isn't implemented yet.")
@@ -142,16 +124,54 @@ let test = "{{ test|escapejs }}"
         $("#alertDialog").html('Cannot use an image.').dialog( "open" );
         return;
       default:
-         alert("Didn't recognize the filetype. Please try another file.");
+        console.warn('Uploaded file is: ', file)
+        alert("Didn't recognize the filetype. Please try another file.");
+        return;
     }
 
+    /** The actual function to load the file. */
+    function loadFileAs(uploadType = 'txt', file) {
+      vfw.html.loaderOverlayOn()
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const fileContent = event.target.result;
+          resolve(fileContent);
+        };
+        reader.onerror = function(event) {
+          reject(new Error("File could not be read! Code: " + event.target.error));
+        };
+        if (uploadType === 'txt') {
+          reader.readAsText(file);
+        }
+        else if (uploadType === 'data') {
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    /** Load and handle the file (put it on the map, use it for selection and store it somewhere) */
     loadFileAs(uploadType, file)
       .then(fileContent => {
-        console.log('File content:', fileContent);
+        const JSONfile = JSON.parse(fileContent);
+        let srid = 'EPSG:4326';
+        if ('crs' in JSONfile) {
+          if ('properties' in JSONfile['crs']) {
+            if ('name' in JSONfile['crs']['properties'] && JSONfile['crs']['properties']['name'].includes("EPSG:") ) {
+              srid = JSONfile['crs']['properties']['name']
+            }
+          }
+        }
+        vfw.map.func.renderCatchment(JSON.parse(fileContent), 'json', srid)
+        vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
+        // TODO: Using the 'draw' key works only for areas with few edges. One has to store the polygon on the server
+        //  and only send an ID for the polygon (This way a polygon can also be shared with others).
+        vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
       })
       .catch(error => {
         console.log('Error:', error);
-      });
+      })
+      .finally(vfw.html.loaderOverlayOff())
 
   }
 </script>
