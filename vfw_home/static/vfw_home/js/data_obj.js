@@ -1,6 +1,12 @@
-/*
-create new object with new vfw.datasets.DataObj(json)
-*/
+/**
+ * Represents a data set of the VFW datasets.
+ * create new object with new vfw.datasets.DataObj(json).
+ *
+ * @class
+ * @memberof vfw.datasets
+ *
+ * @param {object} data - The data that the object should contain.
+ */
 vfw.datasets.DataObj = class {
     orgID = "";
     uuID = "";
@@ -22,7 +28,7 @@ vfw.datasets.DataObj = class {
 
     constructor(data) {
         const defaultParams = {
-            orgID: "",
+            orgID: "",  // used also as ID for buttons and in session storage
             uuID: "",
             workID: "",
             // source: "",
@@ -56,6 +62,10 @@ vfw.datasets.DataObj = class {
 
         Object.assign(this, {...defaultParams, ...data});
 
+        if (!this.orgID) {
+            console.error("Error creating Data Object. An orgID is required to create Data Object.");
+            return
+        }
         // if (Array.isArray(this.inputs) && this.inputs.length) {
         if (this.isResult) {
             this.storeKey = "resultBtn";
@@ -129,7 +139,8 @@ vfw.datasets.DataObj = class {
         console.log('this.orgID: ', this.orgID)
         console.log('this.storeKey: ', this.storeKey)
 
-        delete workspaceData[this.orgID];
+        delete workspaceData[removeData];
+        delete vfw.datasets.dataObjects[removeData];
         sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
     }
@@ -149,7 +160,11 @@ vfw.datasets.DataObj = class {
             sessionStorageData = stored;
         } else {
             let sessionEntry = {};
-            sessionEntry[this.orgID] = data;
+            if (this.orgID) {
+                sessionEntry[this.orgID] = data
+            } else {
+                sessionEntry[this.orgID] = this.name
+            }
             sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
             sessionStorageData = data
         }
@@ -161,28 +176,11 @@ vfw.datasets.DataObj = class {
      * - actually its a more user friendly  dropdown instead of a context menu -
      * **/
     showContextMenu() {
-        console.log('...reached')
         // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
-        console.log('contextMenuActive: ', contextMenuActive)
-        console.log('date: ', this.dateTimeLimits)
-        console.log('start: ', this.start)
-        console.log('end: ', this.end)
         let htmlElements = '<ul ' +
             'class="context-menu__items">' + this._createContextMenu(this.orgID) + '</ul>'
 
-        // let cX = event.clientX;
-        // let cY = event.clientY;
-        // console.log('cx: ', cX)
-        // console.log('cy: ', cY)
-        // vfw.sidebar.positionMenu();
         vfw.sidebar.html.contextModal.open(htmlElements)
-        // vfw.html.contextMenu.innerHTML = htmlElements
-        // vfw.html.infoModal.openInfoModal(htmlElements, true)
-        // vfw.workspace.modal.openResultModal(htmlElements, true)
-        // vfw.html.contextMenu.querySelector(".context-menu-plot").parentNode.style.display = "block";
-        // togglePlotContext(menu, btndata)
-        // vfw.html.toggleMenuOn("", vfw.var.taskItemInContext.dataset, btndata);
-
     }
 
     _buildHtmlGroup() {
@@ -261,7 +259,12 @@ vfw.datasets.DataObj = class {
     _createHtmlName() {
         let vnLen = this.name.length;
         if (vnLen + this.abbr.length + this.unit.length <= 13) {
-            this.htmlName = this.name + '(' + this.abbr + ' in ' + this.unit + ') - ' + this.dbID;
+            if (this.abbr !== "" && this.unit !== "") {
+                this.htmlName = this.name + '(' + this.abbr + ' in ' + this.unit + ') - ' + this.dbID;
+            } else {
+                this.htmlName = this.name + ' - ' + this.dbID;
+            }
+
         } else if (vnLen + this.abbr.length <= 15) {
             this.htmlName = this.name + '(' + this.abbr + ') - ' + this.dbID;
         } else if (vnLen <= 17) {
@@ -378,6 +381,10 @@ vfw.datasets.DataObj = class {
                 this._replaceHtmlButton()
             }
         }
+    }
+
+    _updateGeom(data) {
+        this.geom = data["geom"];
     }
 
 //
