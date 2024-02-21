@@ -90,6 +90,11 @@ vfw.datasets.DataObj = class {
         }
     }
 
+    /**
+     * Retrieves a plot of the represented data from the server and displays it on the page.
+     *
+     * @returns {void}
+     */
     getPlot() {
         console.log('getPlot: ')
         vfw.html.loaderOverlayOn();
@@ -123,21 +128,29 @@ vfw.datasets.DataObj = class {
             })
     }
 
+    /**
+     * Creates the unique ID of an HTML element.
+     *
+     * The ID is composed of three parts: btnPosition, workID, and orgID.
+     *
+     * @return {string} The unique ID of the HTML element.
+     */
     htmlElementID() {
         return this.btnPosition + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
     }
 
+    /**
+     * Removes data from portal and session storage.
+     *
+     * @param {string} [removeData=this.orgID] - The identifier of the data to be removed.
+     * @return {void}
+     */
     removeData(removeData = this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
         document.getElementById(this.htmlElementID()).remove();
 
         /** remove data from session: **/
         let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
-        console.log('______ delete ______')
-        console.log('workspaceData[this.orgID]: ', workspaceData[this.orgID])
-        console.log('workspaceData: ', workspaceData)
-        console.log('this.orgID: ', this.orgID)
-        console.log('this.storeKey: ', this.storeKey)
 
         delete workspaceData[removeData];
         delete vfw.datasets.dataObjects[removeData];
@@ -145,6 +158,12 @@ vfw.datasets.DataObj = class {
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
     }
 
+    /**
+     * Saves data to session storage.
+     * @param {Object} data - The data to be saved.
+     * @param {boolean} [update=false] - Indicates whether to update existing data or not.
+     * @return {void}
+     */
     save(data, update = false) {
         let stored;
         data['inSessionStorage'] = true;
@@ -183,10 +202,21 @@ vfw.datasets.DataObj = class {
         vfw.sidebar.html.contextModal.open(htmlElements)
     }
 
+    /**
+     * Builds the HTML group panel content.
+     *
+     * @returns {string} The HTML code for the group panel.
+     */
     _buildHtmlGroup() {
         let html = `<div class="grouppanel content">${this.group}</div>`
     }
 
+    /**
+     * Create a context menu for the given dataset according to its datatype.
+     *
+     * @param {string} orgID - The ID of the organization.
+     * @return {string} - The HTML elements of the context menu.
+     */
     _createContextMenu(orgID) {
         // let menu = document.querySelector("#context-menu")
         console.log('me: ', orgID)
@@ -232,6 +262,11 @@ vfw.datasets.DataObj = class {
 
     }
 
+    /**
+     * Creates an HTML button element with drag and drop functionality in the sidebar.
+     *
+     * @return {string} - The HTML string of the button element.
+     */
     _createHtmlButton() {
         /** set where to place the button **/
         let dragHtml = "";

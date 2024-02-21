@@ -40,20 +40,20 @@ function showAllPointsOnMap(){
 }
 
 /* button to remove the selection in the filter menu, reset values on items, and show all points on map */
-function reset_filter(){
-    showSelectionOnMap([]);
-    // TODO: store the initial numbers for each item and use it here instead of a new get request
-    getCountFromServer({});
-
-    vfw.var.obj.selectedIds.resetIds()
-    // reset draw menu:
-    vfw.map.olmap.removeInteraction(draw);
-    vfw.map.olmap.removeInteraction(modify);
-    vfw.map.olmap.removeLayer(selectionLayer);
-    vfw.map.func.toggleDrawFilter();
-    // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
-    // vfw.map.layer.cluster.changed()  // renamed to clusterLayer
-}
+// function reset_filter(){
+//     showSelectionOnMap([]);
+//     // TODO: store the initial numbers for each item and use it here instead of a new get request
+//     getCountFromServer({});
+//
+//     vfw.var.obj.selectedIds.resetIds()
+//     // reset draw menu:
+//     vfw.map.olmap.removeInteraction(draw);
+//     vfw.map.olmap.removeInteraction(modify);
+//     vfw.map.olmap.removeLayer(selectionLayer);
+//     vfw.map.func.toggleDrawFilter();
+//     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
+//     // vfw.map.layer.cluster.changed()  // renamed to clusterLayer
+// }
 
 /** update objects on map according to filter results */
 vfw.map.updateMapSelection = function (json) {

@@ -24,16 +24,8 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
         Object.assign(this, {...defaultParams, ...data});
 
         this.storeKey = "dataBtn";
-        this.btnPosition = "sidebtn";
+        this.btnPosition = "workspace";
 
-        this._setTitle();
-        this._createHtmlName();
-        this._setSource();
-        this._placeHtmlButton();
-        this.save(data);
-        if (this.url !== `/home/`) {
-            this._update()
-        }
     }
 
     htmlElementID() {
@@ -57,10 +49,10 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
             `<span class="w3-medium" title="${this.title}">` +
             `<div class="task__content ${this.noData}">${this.htmlName}</div><div class="task__actions"></div>` +
             `</span><span class="data ${this.type}"></span>` +
-            `<a onclick=vfw.datasets.selectObj['${this.orgID}'].removeData('${this.orgID}') ` +
+            `<a onclick=vfw.datasets.selectObjects['${this.orgID}'].removeData('${this.orgID}') ` +
             `class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>` +
             `</a>` +
-            `<a onclick=vfw.datasets.selectObj['${this.orgID}'].showContextMenu('${this.orgID}') ` +
+            `<a onclick=vfw.datasets.selectObjects['${this.orgID}'].showContextMenu('${this.orgID}') ` +
             `class="w3-hover-white w3-right"><i class="fa fa-caret-down fa-fw"></i>` +
             `</a><br></li>`;
     }
@@ -78,12 +70,7 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
     }
 
     _setTitle() {
-        if (this.type == null) {
-            this.noData = "noDataBtn";
-            this.title = "Internal error. No data available for this metadata record.";
-        } else {
-            this.title = `${this.name} (${this.abbr} in ${this.unit})`;
-        }
+        this.title = `${this.name}`;
     }
 
     save(data, update = false) {
@@ -117,8 +104,7 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
         // this.htmlName = this.name + this.dbID;
     }
 
-    removeData(removeData) {  // TODO: removeData var should be taken from this!
-        console.warn('select btn')
+    removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
         document.getElementById(this.htmlElementID()).remove();
 
@@ -126,7 +112,7 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
         let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
 
         delete workspaceData[removeData];
-        delete vfw.datasets.dataObjects[this.orgID];
+        delete vfw.datasets.selectObjects[this.orgID];
         sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
         vfw.map.func.resetDraw();
@@ -191,6 +177,19 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
     _replaceHtmlButton() {
         let thisHtmlButton = document.getElementById(this.htmlElementID())
         $(thisHtmlButton).replaceWith(this._createHtmlButton());
+    }
+
+    update(data) {
+        let properties = {};
+        for (const key of Object.keys(this)) {
+            properties[key] = this[key];
+        }
+        properties['geom'] = data;
+        this.save(properties, true)
+        this._createHtmlName()
+        this._createHtmlButton()
+        this._replaceHtmlButton()
+        // this.geom = data["geom"];
     }
 }
 

@@ -73,7 +73,7 @@ let test = "{{ test|escapejs }}"
    * in for that.
    * */
   vfw.map.func.handleFileUpload = function () {
-    let uploadType;
+    let uploadType, objData;
     const fileInput = document.getElementById('uploaded_file');
     // Get the `file` object that represents the uploaded file.
     const file = fileInput.files[0];
@@ -164,6 +164,19 @@ let test = "{{ test|escapejs }}"
         }
         vfw.map.func.renderCatchment(JSON.parse(fileContent), 'json', srid)
         vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
+
+        /** Data needed to create a Button in the datastore */
+        objData = {"name": "Select Area", "type": "polygon", "geom": vfw.filter.coords, "isGroupMember": false,
+          "orgID": "selectArea"}
+        if ('name' in file) {
+          objData['source'] = file.name;
+        }
+
+        if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
+          vfw.datasets.selectObjects[objData['orgID']].update(objData);
+        } else {
+          vfw.datasets.selectObjects[objData['orgID']] = new vfw.datasets.selectObj(objData);
+        }
         // TODO: Using the 'draw' key works only for areas with few edges. One has to store the polygon on the server
         //  and only send an ID for the polygon (This way a polygon can also be shared with others).
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
