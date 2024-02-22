@@ -224,12 +224,19 @@ vfw.datasets.DataObj = class {
         let htmlElements = ""
         let dropDown = ""
         let itemParams = {
+            "polygon": [
+                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset")]
+            ],
             "timeseries": [
                 ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
                 ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
                 ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
                 ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
-                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset")]
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+            ],
+            "default": [
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ]
         }
 
@@ -245,11 +252,12 @@ vfw.datasets.DataObj = class {
                 `</li>`
         }
 
-        itemParams[this.type].forEach((value) => createMenuItem(...value))
+        if (this.type in itemParams) {
+            itemParams[this.type].forEach((value) => createMenuItem(...value))
+        } else {
+            itemParams["default"].forEach((value) => createMenuItem(...value))
+        }
 
-        // console.log('menu: ', menu)
-        console.log('++++++++++++++++++++++')
-        console.log('htmlElements: ', htmlElements)
         return htmlElements
 
         // function contextMenuElement (dataAction, iconClass, transText, addText="", title) {

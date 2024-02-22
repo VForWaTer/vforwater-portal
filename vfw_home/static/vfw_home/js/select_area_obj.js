@@ -36,6 +36,44 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
         let html = `<div class="grouppanel content">${this.group}</div>`
     }
 
+    /**
+     * Create a context menu for the given dataset according to its datatype.
+     *
+     * @param {string} orgID - The ID of the organization.
+     * @return {string} - The HTML elements of the context menu.
+     */
+    _createContextMenu(orgID) {
+    let htmlElements = ""
+    let itemParams = {
+        "polygon": [
+            ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
+            ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+        ],
+        "default": [
+            ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+        ]
+    }
+
+    /** Build a html button for the context menu
+     *
+     * */
+    function createMenuItem(action, iconClass, name, func) {
+        htmlElements += `<li class="context-menu__item"> ` +
+            `<a class="context-menu__link" data-action=${action} ` +
+            `onclick=vfw.datasets.selectObjects['${orgID}'].${func}('${orgID}') > ` +
+            `<i class="fa ${iconClass}"></i> ${name}</a>` +
+            `</li>`
+    }
+
+    if (this.type in itemParams) {
+        itemParams[this.type].forEach((value) => createMenuItem(...value))
+    } else {
+        itemParams["default"].forEach((value) => createMenuItem(...value))
+    }
+
+    return htmlElements
+}
+
     _createHtmlButton() {
         /** set where to place the button **/
         let dragHtml = "";
