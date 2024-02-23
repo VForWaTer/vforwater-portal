@@ -76,9 +76,12 @@
   const vfw = {
     datasets: {
         dataObjects: {},
+        selectObjects: {},
     },
     draw2d: {},
-    filter: {},
+    filter: {
+      coords: [],
+    },
     html: {
       cssClass: {
       },
@@ -146,7 +149,7 @@
 </script>
 
 <body class="w3-light-grey"
-onload="vfw.map.create_map(); vfw.sidebar.showData(); vfw.html.getQuickSelection(); vfw.filter.updateQuickfilter()">
+onload="vfw.sidebar.showData(); vfw.html.getQuickSelection(); vfw.filter.updateQuickfilter()">
 
 {#<div id="loader-overlay" onclick="off()"></div>#}
 <div id="loader-overlay" onclick="vfw.html.loaderOverlayOff()"  ;>
@@ -376,6 +379,7 @@ onload="vfw.map.create_map(); vfw.sidebar.showData(); vfw.html.getQuickSelection
 {# TODO: seperate functions in files properly to import only needed functions in app, instead of loading all in base #}
   <script src="{% static 'vfw_home/js/vfw.js' %}" type="text/javascript"></script>
   <script src="{% static 'vfw_home/js/data_obj.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfw_home/js/select_area_obj.js' %}" type="text/javascript"></script>
   <script src="{% static 'vfw_home/js/map.js' %}" type="text/javascript"></script>
   <script src="{% static 'vfw_home/js/menu_objects.js' %}" type="text/javascript"></script>
 

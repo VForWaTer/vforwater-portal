@@ -1,27 +1,34 @@
-/*
-create new object with new vfw.datasets.DataObj(json)
-*/
+/**
+ * Represents a data set of the VFW datasets.
+ * create new object with new vfw.datasets.DataObj(json).
+ *
+ * @class
+ * @memberof vfw.datasets
+ *
+ * @param {object} data - The data that the object should contain.
+ */
 vfw.datasets.DataObj = class {
-    orgID;
-    uuID;
-    workID;
-    abbr;
-    name;
-    unit;
-    title;
-    type;
-    start;
-    end;
-    inputs;
-    outputs;
-    location;
-    isGroupMember;
-    group;
-    source;
+    orgID = "";
+    uuID = "";
+    workID = "";
+    abbr = "";
+    name = "";
+    unit = "";
+    title = "";
+    type = "";
+    start = "";
+    end = "";
+    inputs = {};
+    outputs = {};
+    location = {};
+    geom = {};
+    isGroupMember = "";
+    group = "";
+    source = "";
 
     constructor(data) {
         const defaultParams = {
-            orgID: "",
+            orgID: "",  // used also as ID for buttons and in session storage
             uuID: "",
             workID: "",
             // source: "",
@@ -37,6 +44,7 @@ vfw.datasets.DataObj = class {
             inputs: {},
             outputs: {},
             location: {},   // {type: string, coordinates: [lat, lon]
+            geom: {},
             isGroupMember: "",
             group: "",
             groupID: "",
@@ -54,6 +62,10 @@ vfw.datasets.DataObj = class {
 
         Object.assign(this, {...defaultParams, ...data});
 
+        if (!this.orgID) {
+            console.error("Error creating Data Object. An orgID is required to create Data Object.");
+            return
+        }
         // if (Array.isArray(this.inputs) && this.inputs.length) {
         if (this.isResult) {
             this.storeKey = "resultBtn";
@@ -64,33 +76,206 @@ vfw.datasets.DataObj = class {
             // this.btnPosition = "sidebtn";
         }
 
-        this.#setTitle();
-        this.#createHtmlName();
-        this.#setSource();
+        this._setTitle();
+        this._createHtmlName();
+        this._setSource();
         if (this.group.trim().length !== 0) {
             this.isGroupMember = true;
-            this.#buildHtmlGroup()
+            this._buildHtmlGroup()
         }
-        this.#placeHtmlButton();
+        this._placeHtmlButton();
         this.save(data);
         if (this.url !== `/home/`) {
-            this.#update()
+            this._update()
         }
     }
 
+    /**
+     * Retrieves a plot of the represented data from the server and displays it on the page.
+     *
+     * @returns {void}
+     */
+    getPlot() {
+        console.log('getPlot: ')
+        vfw.html.loaderOverlayOn();
+        console.log('this: ', this)
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/previewplot",
+            datatype: 'json',
+            data: {
+                preview: this.orgID,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+                startdate: this.start,
+                enddate: this.end,
+            }, // data sent with post
+        })
+            .done(function (requestResult) {
+                console.log('make a previewplot')
+                console.log('requestResult: ', requestResult)
+                if ('html' in requestResult) {
+                    document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
+                } else {  // plot from bokeh
+                    vfw.var.obj.bokehImage = requestResult;
+                    place_html_with_js("mod_result", requestResult)
+                }
+                vfw.html.resultModal.style.display = "block";
+            })
+            .fail(function (e) {
+                console.error('Fehler: ', e)
+            })
+            .always(function () {
+                vfw.html.loaderOverlayOff();
+            })
+    }
+
+    /**
+     * Creates the unique ID of an HTML element.
+     *
+     * The ID is composed of three parts: btnPosition, workID, and orgID.
+     *
+     * @return {string} The unique ID of the HTML element.
+     */
     htmlElementID() {
         return this.btnPosition + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
     }
 
-    #buildHtmlGroup() {
+    /**
+     * Removes data from portal and session storage.
+     *
+     * @param {string} [removeData=this.orgID] - The identifier of the data to be removed.
+     * @return {void}
+     */
+    removeData(removeData = this.orgID) {  // TODO: removeData var should be taken from this!
+        /** remove data from portal: **/
+        document.getElementById(this.htmlElementID()).remove();
+
+        /** remove data from session: **/
+        let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
+
+        delete workspaceData[removeData];
+        delete vfw.datasets.dataObjects[removeData];
+        sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
+        sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
+    }
+
+    /**
+     * Saves data to session storage.
+     * @param {Object} data - The data to be saved.
+     * @param {boolean} [update=false] - Indicates whether to update existing data or not.
+     * @return {void}
+     */
+    save(data, update = false) {
+        let stored;
+        data['inSessionStorage'] = true;
+        if (sessionStorage.getItem(this.storeKey)) {
+            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
+        }
+        if (sessionStorage.getItem(this.storeKey)) {
+            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
+            if (update || !stored[this.orgID]) {
+                stored[this.orgID] = data;
+            }
+            sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
+            sessionStorageData = stored;
+        } else {
+            let sessionEntry = {};
+            if (this.orgID) {
+                sessionEntry[this.orgID] = data
+            } else {
+                sessionEntry[this.orgID] = this.name
+            }
+            sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
+            sessionStorageData = data
+        }
+    }
+
+    // groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
+
+    /** Several functions to fill and show a context menu
+     * - actually its a more user friendly  dropdown instead of a context menu -
+     * **/
+    showContextMenu() {
+        // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
+        let htmlElements = '<ul ' +
+            'class="context-menu__items">' + this._createContextMenu(this.orgID) + '</ul>'
+
+        vfw.sidebar.html.contextModal.open(htmlElements)
+    }
+
+    /**
+     * Builds the HTML group panel content.
+     *
+     * @returns {string} The HTML code for the group panel.
+     */
+    _buildHtmlGroup() {
         let html = `<div class="grouppanel content">${this.group}</div>`
     }
 
-    #placeHtmlButton() {
-        document.getElementById(this.btnPosition).innerHTML += this.#createHtmlButton();
+    /**
+     * Create a context menu for the given dataset according to its datatype.
+     *
+     * @param {string} orgID - The ID of the organization.
+     * @return {string} - The HTML elements of the context menu.
+     */
+    _createContextMenu(orgID) {
+        // let menu = document.querySelector("#context-menu")
+        console.log('me: ', orgID)
+        // let menu = document.getElementById("context-menu")
+        let htmlElements = ""
+        let dropDown = ""
+        let itemParams = {
+            "polygon": [
+                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset")]
+            ],
+            "timeseries": [
+                ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
+                ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
+                ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
+                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+            ],
+            "default": [
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+            ]
+        }
+
+        /** Build a html button for the context menu
+         *
+         * */
+        function createMenuItem(action, iconClass, name, func) {
+
+            htmlElements += `<li class="context-menu__item"> ` +
+                `<a class="context-menu__link" data-action=${action} ` +
+                `onclick=vfw.datasets.dataObjects['${orgID}'].${func}('${orgID}') > ` +
+                `<i class="fa ${iconClass}"></i> ${name}</a>` +
+                `</li>`
+        }
+
+        if (this.type in itemParams) {
+            itemParams[this.type].forEach((value) => createMenuItem(...value))
+        } else {
+            itemParams["default"].forEach((value) => createMenuItem(...value))
+        }
+
+        return htmlElements
+
+        // function contextMenuElement (dataAction, iconClass, transText, addText="", title) {
+        //     let listElement = '<li className="context-menu__item">' +
+        //         '<a href="#" className="context-menu__link" data-action=${dataAction}>' +
+        //         '<i className="fa ${iconClass}"></i>{% trans " ${transText}" %} ${addText}' +
+        //         '</a>' +
+        //         '</li>'
+        //     $(listElement).on('click', function () { dataAction });
+
     }
 
-    #createHtmlButton() {
+    /**
+     * Creates an HTML button element with drag and drop functionality in the sidebar.
+     *
+     * @return {string} - The HTML string of the button element.
+     */
+    _createHtmlButton() {
         /** set where to place the button **/
         let dragHtml = "";
         if (this.url === '/workspace/') {
@@ -111,57 +296,18 @@ vfw.datasets.DataObj = class {
             `</a><br></li>`;
     }
 
-    #setSource() {
-        if (this.source) {
-            if (this.source.substring(0, 2) === 'db') {
-                this.source = 'db'
-            } else if (this.source.substring(0, 3) === 'wps') {
-                this.source = 'wps'
-            }
-        } else {
-            this.source = ''
-        }
-    }
-
-    #setTitle() {
-        if (this.type == null) {
-            this.noData = "noDataBtn";
-            this.title = "Internal error. No data available for this metadata record.";
-        } else {
-            this.title = `${this.name} (${this.abbr} in ${this.unit})`;
-        }
-    }
-
-    save(data, update = false) {
-        let stored;
-        data['inSessionStorage'] = true;
-        if (sessionStorage.getItem(this.storeKey)) {
-            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-        }
-        if (sessionStorage.getItem(this.storeKey)) {
-            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-            if (update || !stored[this.orgID]) {
-                stored[this.orgID] = data;
-            }
-            sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
-            sessionStorageData = stored;
-        } else {
-            let sessionEntry = {};
-            sessionEntry[this.orgID] = data;
-            sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
-            sessionStorageData = data
-        }
-    }
-
-    // groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
-
     /**
      * Create a name for buttons according to the length of the name string
      */
-    #createHtmlName() {
+    _createHtmlName() {
         let vnLen = this.name.length;
         if (vnLen + this.abbr.length + this.unit.length <= 13) {
-            this.htmlName = this.name + '(' + this.abbr + ' in ' + this.unit + ') - ' + this.dbID;
+            if (this.abbr !== "" && this.unit !== "") {
+                this.htmlName = this.name + '(' + this.abbr + ' in ' + this.unit + ') - ' + this.dbID;
+            } else {
+                this.htmlName = this.name + ' - ' + this.dbID;
+            }
+
         } else if (vnLen + this.abbr.length <= 15) {
             this.htmlName = this.name + '(' + this.abbr + ') - ' + this.dbID;
         } else if (vnLen <= 17) {
@@ -181,19 +327,29 @@ vfw.datasets.DataObj = class {
         this.htmlName = newName;
     }
 
-    removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
-        /** remove data from portal: **/
-        document.getElementById(this.htmlElementID()).remove();
-
-        /** remove data from session: **/
-        let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
-
-        delete workspaceData[this.orgID];
-        sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
-        sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
+    _loadPlot() {
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/previewplot",
+            datatype: 'json',
+            data: {
+                preview: this.id,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+                startdate: this.start,
+                enddate: this.end,
+            }, // data sent with post
+        })
     }
 
-    async #requestData(url, data) {
+    _placeHtmlButton() {
+        document.getElementById(this.btnPosition).innerHTML += this._createHtmlButton();
+    }
+
+    _replaceHtmlButton() {
+        let thisHtmlButton = document.getElementById(this.htmlElementID())
+        $(thisHtmlButton).replaceWith(this._createHtmlButton());
+    }
+
+    async _requestData(url, data) {
         let preloadData = {};
         return new Promise((resolve, reject) => {
                 $.ajax({
@@ -216,7 +372,28 @@ vfw.datasets.DataObj = class {
         )
     }
 
-    async #update() {
+    _setSource() {
+        if (this.source) {
+            if (this.source.substring(0, 2) === 'db') {
+                this.source = 'db'
+            } else if (this.source.substring(0, 3) === 'wps') {
+                this.source = 'wps'
+            }
+        } else {
+            this.source = ''
+        }
+    }
+
+    _setTitle() {
+        if (this.type == null) {
+            this.noData = "noDataBtn";
+            this.title = "Internal error. No data available for this metadata record.";
+        } else {
+            this.title = `${this.name} (${this.abbr} in ${this.unit})`;
+        }
+    }
+
+    async _update() {
         /** ensure datasets without type will not be loaded (because usually they have no actual data) **/
         if (!this.type) return
 
@@ -226,7 +403,7 @@ vfw.datasets.DataObj = class {
                 value_list: [this.orgID.toString(), this.uuID, this.start, this.end],
                 dataset: this.orgID
             };
-            let wpsDBInfo = await this.#requestData("/workspace/dbload", preloadData)
+            let wpsDBInfo = await this._requestData("/workspace/dbload", preloadData)
             if (wpsDBInfo.Error) {
                 console.warn(wpsDBInfo.Error)
                 return
@@ -242,99 +419,45 @@ vfw.datasets.DataObj = class {
                     properties[key] = this[key];
                 }
                 this.save(properties, true)
-                this.#createHtmlName()
-                this.#createHtmlButton()
-                this.#replaceHtmlButton()
+                this._createHtmlName()
+                this._createHtmlButton()
+                this._replaceHtmlButton()
             }
         }
     }
 
-    #replaceHtmlButton() {
-        let thisHtmlButton = document.getElementById(this.htmlElementID())
-        $(thisHtmlButton).replaceWith(this.#createHtmlButton());
+    _updateGeom(data) {
+        this.geom = data["geom"];
     }
 
-    /** Several functions to fill and show a context menu
-     * - actually its a more user friendly  dropdown instead of a context menu -
-     * **/
-    showContextMenu() {
-        console.log('...reached')
-        // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
-        let htmlElements = this.#createContextMenu(this.orgID)
-        vfw.workspace.modal.openResultModal(htmlElements, true)
-
-    }
-
-    getPlot() {
-        console.log('getPlot: ')
-        vfw.html.loaderOverlayOn();
-        $.ajax({
-            url: vfw.var.DEMO_VAR + "/home/previewplot",
-            datatype: 'json',
-            data: {
-                preview: this.orgID,
-                'csrfmiddlewaretoken': vfw.var.csrf_token,
-                startdate: this.start,
-                enddate: this.end,
-            }, // data sent with post
-        })
-        .done(function (requestResult) {
-            if ('html' in requestResult) {
-                document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
-            } else {  // plot from bokeh
-                vfw.var.obj.bokehImage = requestResult;
-                place_html_with_js("mod_result", requestResult)
-            }
-            vfw.html.resultModal.style.display = "block";
-        })
-        .fail(function (e) {
-            console.error('Fehler: ', e)
-        })
-        .always(function () {
-            vfw.html.loaderOverlayOff();
-        })
-    }
-
-    #createContextMenu(orgID) {
-        let htmlElements = ""
-        let itemParams = {
-            "timeseries": [
-                ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
-                ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
-                ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
-                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
-                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset")]
-            ]}
-
-        /** Build a html button for the context menu
-         *
-         * */
-        function createMenuItem(action, iconClass, name, func) {
-
-            htmlElements += `<li class="context-menu__item"> ` +
-                `<a class="context-menu__link" data-action=${action} ` +
-                `onclick=vfw.datasets.dataObjects['${orgID}'].${func}('${orgID}') > ` +
-                `<i class="fa ${iconClass}"></i> ${name}</a>` +
-                `</li>`
-        }
-
-        itemParams[this.type].forEach((value) => createMenuItem(...value))
-
-        return htmlElements
-
-    }
-    #loadPlot() {
-        $.ajax({
-            url: vfw.var.DEMO_VAR + "/home/previewplot",
-            datatype: 'json',
-            data: {
-                preview: this.id,
-                'csrfmiddlewaretoken': vfw.var.csrf_token,
-                startdate: this.start,
-                enddate: this.end,
-                    }, // data sent with post
-            })
-    }
+//
+//         `<nav id="context-menu" className="context-menu">
+//     <ul className="context-menu__items">
+//       <li className="context-menu__item">
+//         <a href="#" className="context-menu__link" data-action="View"><i className="fa fa-eye"></i>{% trans " View metadata" %}</a>
+//       </li>
+//       <li className="context-menu__item">
+//         <a href="#" className="context-menu__link context-menu-plot" data-action="Plot"><i className="fa fa-eye"></i>{% trans " Plot data" %}</a>
+//       </li>
+//       <li className="context-menu__item">
+//         <a href="#" className="context-menu__link" data-action="Downloadcsv"><i className="fa fa-download"></i>{% trans " Download data" %} (.csv)</a>
+//       </li>
+//       <li className="context-menu__item">
+//         <a href="#" className="context-menu__link" data-action="Downloadshp"><i className="fa fa-download"></i>{% trans " Download data" %} (.shp)</a>
+//       </li>
+//       <li className="context-menu__item">
+//         <a href="#" className="context-menu__link" data-action="Downloadxml"><i className="fa fa-download"></i>{% trans " Download metadata" %} (.xml)</a>
+//       </li>
+// {#        TODO: Find data format to download data and metadata as well - maybe extent shp#}
+// {% comment %}      <li className="context-menu__item">
+//         <a href="#" className="context-menu__link" data-action="DownloadDMD"><i className="fa fa-download"></i>{% trans " Download data & metadata" %}</a>
+//       </li>{% endcomment %}
+//       <li className="context-menu__item">
+//         <a href="#" className="context-menu__link" data-action="Remove"><i className="fa fa-eraser"></i>{% trans " Remove dataset" %}</a>
+//       </li>
+//     </ul>
+//   </nav>`
+//     }
 
 }
 

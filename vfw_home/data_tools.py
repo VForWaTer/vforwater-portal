@@ -77,7 +77,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     :param enddate: string
     :return:
     """
-    dataset_dict = {}
+    dataset_dict = {}  # collect here the info for all selected data sets to pass it to the client
     error_dict = {}
     group_dict = {'is_group': False, 'type': 'mixed', 'name': 'group', 'dbIDs': [], 'orgIDs': [], 'uuIDs': [],
                   'group_IDs': [], 'is_split': [], 'split_members': []}
@@ -97,17 +97,18 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
 
     # TDOO: The results are all returned twice. Maybe because of split datasets?
     # Fix this somehow!
-    result_dataset = NmEntrygroups.objects. \
+    result_dataset = (NmEntrygroups.objects. \
         values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
                'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
-               'group_id', 'entry__location', 'entry__geom', 'group__type__name').filter(pk__in=accessible_ids)  # .distinct()
+               'group_id', 'entry__location', 'entry__geom', 'group__type__name',
+               'entry__datasource__spatial_scale__extent').filter(pk__in=accessible_ids))  # .distinct()
 
     # collect split members
     # print('++++ split_datasets: ', split_datasets)
     # split_datasets = get_split_groups(accessible_ids)
-    split_datasets_db = (Entries.objects.filter(pk__in=accessible_ids, nmentrygroups__group__type__name='Split dataset')
-                      .values('id', 'nmentrygroups__group_id')
-                      .order_by('nmentrygroups__group_id'))
+    split_datasets_db = (Entries.objects
+                         .filter(pk__in=accessible_ids, nmentrygroups__group__type__name='Split dataset')
+                         .values('id', 'nmentrygroups__group_id').order_by('nmentrygroups__group_id'))
     split_datasets = {str(data['id']): data['nmentrygroups__group_id'] for data in split_datasets_db}
 
     # result = {str(item['nmentrygroups__group_id']): [item['id'] for item in split_datasets if
@@ -134,11 +135,17 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             try:
                 # if dataset['group__type__name'].find('Split dataset'):
                     # print('is a split dataset')
-                    # print("is_split: dataset['group_id']: ", True)
-                    # print("split_group: dataset['group_id']: ", dataset['group_id'])
-                    # print("split_members: dataset['group_id']: ", dataset_id)
                 # else:
                     # print('is not a split dataset: ', False, 0, [])
+
+                # locations are differently stored in the database, so first get the right value for location
+                data_location = None
+                if dataset['entry__location']:
+                    data_location = dataset['entry__location'].json
+                elif dataset['entry__geom']:
+                    data_location = dataset['entry__geom'].json
+                elif dataset['entry__datasource__spatial_scale__extent']:
+                    data_location = dataset['entry__datasource__spatial_scale__extent'].json
 
                 dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
                                               'abbr': dataset['entry__variable__symbol'],
@@ -162,11 +169,11 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                               'DBgroupID': {dataset['group_id']},  # looks like this is groupID and member ID. Is this helpful?
                                               'groupTypeName': {dataset['group__type__name']},
                                               # 'geom': dataset['entry__geom'].json,
-                                              'location': dataset['entry__location'].json
+                                              'location': data_location
                                               }
                                  })
             except Exception as e:
-                print('error: ', e)
+                print('Unable to create your object: ', e)
             # print(' - - -  -')
         # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
         #  behaviour of '.distinct()' This is done in a seperate loop

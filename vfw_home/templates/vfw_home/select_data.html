@@ -73,7 +73,7 @@ let test = "{{ test|escapejs }}"
    * in for that.
    * */
   vfw.map.func.handleFileUpload = function () {
-    let uploadType;
+    let uploadType, objData;
     const fileInput = document.getElementById('uploaded_file');
     // Get the `file` object that represents the uploaded file.
     const file = fileInput.files[0];
@@ -85,43 +85,43 @@ let test = "{{ test|escapejs }}"
         break;
       case 'application/x-netcdf':
         $("#alertDialog").html("Sorry, netcdf isn't implemented yet.")
-          .prop('title', 'Uuuh!').dialog( "open" );
+          .prop('title', 'Uuuh!').dialog("open");
         return;
       case 'application/sql':
         $("#alertDialog").html('A sql file? Are you serious? Do you try to hack me?')
-          .prop('title', 'Seriously?').dialog( "open" );
+          .prop('title', 'Seriously?').dialog("open");
         return;
       case 'application/x-shellscript':
         $("#alertDialog").html('Did you just try to upload a shell script? What do you think I should do with that?')
-          .prop('title', 'Seriously?').dialog( "open" );
+          .prop('title', 'Seriously?').dialog("open");
         return;
       case 'text/x-python':
         $("#alertDialog").html('A Python file? What is that supposed to be? An attempt to hack me?')
-          .prop('title', 'Seriously?').dialog( "open" );
+          .prop('title', 'Seriously?').dialog("open");
         return;
       case 'text/javascript':
         $("#alertDialog").html("Na, thank you. I have enough javascript code. No need for more.")
-          .prop('title', 'Seriously?').dialog( "open" );
+          .prop('title', 'Seriously?').dialog("open");
         return;
       case 'text/markdown':
         $("#alertDialog").html('Come on! What do you think I should do with a Markdown file?')
-          .prop('title', 'Seriously?').dialog( "open" );
+          .prop('title', 'Seriously?').dialog("open");
         return;
       case 'text/csv':
         $("#alertDialog").html('Come on! What do you think I should do with a CSV file?')
-          .prop('title', 'Seriously?').dialog( "open" );
+          .prop('title', 'Seriously?').dialog("open");
         return;
       case 'image/svg+xml':
-        $("#alertDialog").html('Cannot use an image.').dialog( "open" );
+        $("#alertDialog").html('Cannot use an image.').dialog("open");
         return;
       case 'image/bmp':
-        $("#alertDialog").html('Cannot use an image.').dialog( "open" );
+        $("#alertDialog").html('Cannot use an image.').dialog("open");
         return;
       case 'image/jpg':
-        $("#alertDialog").html('Uuuh! Is this you? But I must admit, I cannot use an image.').dialog( "open" );
+        $("#alertDialog").html('Uuuh! Is this you? But I must admit, I cannot use an image.').dialog("open");
         return;
       case 'image/png':
-        $("#alertDialog").html('Cannot use an image.').dialog( "open" );
+        $("#alertDialog").html('Cannot use an image.').dialog("open");
         return;
       default:
         console.warn('Uploaded file is: ', file)
@@ -157,13 +157,16 @@ let test = "{{ test|escapejs }}"
         let srid = 'EPSG:4326';
         if ('crs' in JSONfile) {
           if ('properties' in JSONfile['crs']) {
-            if ('name' in JSONfile['crs']['properties'] && JSONfile['crs']['properties']['name'].includes("EPSG:") ) {
+            if ('name' in JSONfile['crs']['properties'] && JSONfile['crs']['properties']['name'].includes("EPSG:")) {
               srid = JSONfile['crs']['properties']['name']
             }
           }
         }
         vfw.map.func.renderCatchment(JSON.parse(fileContent), 'json', srid)
         vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
+
+        vfw.sidebar.addSelectStoreButton(file)
+
         // TODO: Using the 'draw' key works only for areas with few edges. One has to store the polygon on the server
         //  and only send an ID for the polygon (This way a polygon can also be shared with others).
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});

@@ -1007,9 +1007,30 @@ class QuickFilterResults(View):
                     poly = GEOSGeometry(catchment['wkt'])
                     filter_area['location__intersects'] = poly  # get point data
                     filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
+                elif i == 'catchout':
+                    # TODO: this shouldn't be send from client to server and not recreated.
+                    #  Better store the catchment in Geoserver and get the catchment from there.
+                    # catchment = list(itertools.chain.from_iterable(json.loads(request.GET.get('coords'))[0]))
+                    coords = json.loads(request.GET.get('coords'))
+                    if coords:
+                        catchment = tuple(tuple(x) for x in coords)
+                        poly = Polygon(catchment, srid=4326)  # create polygon from coordinates
+                    else:
+                        catchment = delineate(coords={'lng': [QueryDict(selection).getlist(i)[0]],
+                                                      'lat': [QueryDict(selection).getlist(i)[1]]}, precise=True)
+                        poly = GEOSGeometry(catchment['wkt'])
+                        # catchment = delineate(terminal_comid=QueryDict(selection).getlist(i)[0], precise=True)
+                        # poly = GEOSGeometry(catchment['wkt'])
+
+                    filter_area['location__intersects'] = poly  # get point data
+                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
+                elif i == 'reset':
+                    pass
                 else:
-                    # print('Adapt your filter to ', i)
-                    logger.warning('Adapt your filter to ', i)
+                    print('selection: ', selection)
+                    print('Adapt your filter to ', i)
+                    # logger.warning('Adapt your filter to ', i)
+            print('A')
 
             query = (Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or))
                      .exclude(fair_query).only('id'))

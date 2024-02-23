@@ -260,15 +260,16 @@ vfw.map.layer.selectionLayer = new ol.layer.Vector({
 /**
  * Reset the draw menu, clear selections in memory and on map
  */
-function resetDraw() {
-    vfw.html.getQuickSelection({'draw': []})
-    vfw.html.getQuickSelection({'catchout': []})
-    vfw.html.getQuickSelection({'catchStartID': []})
+vfw.map.func.resetDraw = function() {
+    vfw.filter.coords = [];
+    vfw.html.getQuickSelection({'draw': []});
+    vfw.html.getQuickSelection({'catchout': []});
+    vfw.html.getQuickSelection({'catchStartID': []});
     vfw.var.obj.selectedIds.map = null;
     vfw.map.source.selectionSource.clear();
 
     vfw.map.olmap.removeInteraction(vfw.map.control.draw);
-    vfw.map.olmap.removeInteraction(modify);
+    vfw.map.olmap.removeInteraction(vfw.map.control.modify);
     // vfw.map.func.removeDrawInteractions()
     // vfw.map.olmap.removeLayer(selectionLayer);
 
@@ -356,25 +357,35 @@ vfw.map.func.drawOnMapMenu = function (test) {
     // });
     // vfw.map.olmap.addLayer(selectionLayer);
 
-    /**
-     * Create and add interactions
-     */
-    // let select = new ol.interaction.Select();
-    // vfw.map.olmap.addInteraction(select);
+//     TODO: a listener is needed to abort drawing, e.g. by pressing ESC
+//     document.addEventListener('keydown', function(event) {
+//     if (event.code === 'Escape' && vfw.map.control.drawSquare) {
+//         // Finish draw interaction on pressing Escape key.
+//         vfw.map.control.drawSquare.abortDrawing_();
+//         vfw.map.control.drawSquare.finishDrawing();
+//     }
+// });
 
+    /**
+     * Create and add interactions - Connect the draw button with the open layers interactions to draw on the map.
+     */
+
+    /** Draw a polygon. */
     vfw.map.control.draw = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Polygon',
         stopClick: true,
     });
-    // draw.setZIndex(-100);
-    drawSquare = new ol.interaction.Draw({
+    /** Draw a Square. */
+    // vfw.map.control.draw.setZIndex(-100);
+    vfw.map.control.drawSquare = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Circle',
         geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
     });
-    drawCatchmentOutlet = new ol.interaction.Draw({
+    /** Click on the map and get the contour line of a catchment from the server. */
+    vfw.map.control.drawCatchmentOutlet = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Point',
     })
@@ -383,7 +394,11 @@ vfw.map.func.drawOnMapMenu = function (test) {
     const select = new ol.interaction.Select({style: overlayStyle,});
     vfw.map.olmap.addInteraction(select)
 
-    modify = new ol.interaction.Modify({
+    /**
+     * Modify an element drawn on the map. Works on the select layer, so works for uploaded layers as well as for layers
+     * from geoserver.
+     */
+    vfw.map.control.modify = new ol.interaction.Modify({
         // features: collection.getFeaturesCollection(),
         features: select.getFeatures(),
         style: overlayStyle,
@@ -426,18 +441,19 @@ vfw.map.func.drawOnMapMenu = function (test) {
      * Point features select/deselect as you move polygon.
      Deactivate select interaction.
      */
-    modify.on('modifystart', function (event) {
+    vfw.map.control.modify.on('modifystart', function (event) {
         sketch = event.features;
         // select.setActive(false);
         listener = selectStartFun(event)
     }, this);
     /* Reactivate select function */
-    modify.on('modifyend', function (event) {
+    vfw.map.control.modify.on('modifyend', function (event) {
         sketch = null;
         delaySelectActivate();
         vfw.var.obj.selectedIds.map = null;
         polygon = event.features.getArray()[0].getGeometry();
         vfw.map.vars.selectionEdgeCoords = polygon;
+        vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
     }, this);
 
@@ -468,11 +484,11 @@ vfw.map.func.drawOnMapMenu = function (test) {
         return changes
     }
 
-    drawSquare.on('drawstart', function (event) {
+    vfw.map.control.drawSquare.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
         listener = selectStartFun(event)
     }, this);
-    drawSquare.on('drawend', function () {
+    vfw.map.control.drawSquare.on('drawend', function () {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
         // vfw.var.obj.selectedIds.map = [];
 
@@ -488,9 +504,11 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
+        vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
         vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
         vfw.map.func.removeDrawInteractions();
+        vfw.sidebar.addSelectStoreButton({'name': 'Square'});
         toggleDraw(document.getElementById("draw_square"))
     });
 
@@ -510,6 +528,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'url_layer')
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
 
+        vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
         vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
         vfw.map.func.removeDrawInteractions();
@@ -517,12 +536,11 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
         /*let extent = draw.getGeometry().getExtent();
         clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
-          selectedFeatures.push(feature);
         });*/
         // ol.observable.unByKey(listener);
     });
 
-    drawCatchmentOutlet.on('drawstart', function (event) {
+    vfw.map.control.drawCatchmentOutlet.on('drawstart', function (event) {
         // start()
         // document.getElementById("mod_prev").classList.add("loader");
         vfw.html.loaderOverlayOn()
@@ -537,7 +555,8 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
         $.when(vfw.map.func.getCatchment({'coords': click_coords})).done(function(catchment) {
-            vfw.map.func.renderCatchment(catchment)
+            vfw.map.func.renderCatchment(catchment, 'wkt')
+            vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
             // vfw.map.olmap.addLayer(selectionLayer)
             // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
             // listener = selectStartFun(event)
@@ -545,7 +564,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         })
 
     }, this);
-    drawCatchmentOutlet.on('drawend', function () {
+    vfw.map.control.drawCatchmentOutlet.on('drawend', function () {
         // vfw.map.func.removeDrawInteractions();
                 /* remove preloaded layers defined by the url */
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'Selection Layer')
@@ -562,9 +581,9 @@ vfw.map.func.drawOnMapMenu = function (test) {
  */
 vfw.map.func.removeDrawInteractions = function () {
     vfw.map.olmap.removeInteraction(vfw.map.control.draw);
-    vfw.map.olmap.removeInteraction(modify);
-    vfw.map.olmap.removeInteraction(drawSquare);
-    vfw.map.olmap.removeInteraction(drawCatchmentOutlet);
+    vfw.map.olmap.removeInteraction(vfw.map.control.modify);
+    vfw.map.olmap.removeInteraction(vfw.map.control.drawSquare);
+    vfw.map.olmap.removeInteraction(vfw.map.control.drawCatchmentOutlet);
 }
 
 /**
@@ -1005,7 +1024,8 @@ vfw.filter.updateQuickfilter = function() {
                         ]).val()  // update slider
                 }
             } else if (urlKey[0] === 'draw') {
-                let coords_list = urlKey[1].split(',').map(Number)
+                // let coords_list = urlKey[1].split(',').map(Number)
+                let coords_list = vfw.filter.coords;
                 let coords_len = coords_list.length;
                 let coords = []
                 for (let i = 0; i < coords_len; i += 2) {
@@ -1097,7 +1117,7 @@ function quick_filter(selection) {
  * @param {string} selection
  */
 vfw.url.updateFilterURL = function(selection)  {
-
+vfw.html.loaderOverlayOn();
     let nextURL;
     let url = window.location
     let urlParams = new URLSearchParams(url.search);
@@ -1132,16 +1152,23 @@ vfw.url.updateFilterURL = function(selection)  {
  * @param {string} selection
  */
 vfw.html.getQuickSelection = function (selection) {
+    let coords = vfw.filter.coords;
     let url = vfw.url.updateFilterURL(selection)
     // url = '/home/quick_filter/2007/'
     // url = '/home/quick_filter'
+    // TODO: This 'if' is there to ensure coords are refreshed when calling function. Might be useless,
+    //  but needs to be tested.
+    if (selection && ('draw' in selection || 'catchout' in selection)) {
+        coords = vfw.filter.coords;
+    }
     if (url !== false) {
         $.ajax({
             url: vfw.var.DEMO_VAR + '/home/quick_filter_args/' + url,
-            // data: {
+            data: {
             //     selection: selection,
-            //     'csrfmiddlewaretoken': csrf_token,
-            // }, // data sent with the post request
+                'coords': JSON.stringify(coords),
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+            }, // data sent with the post request
             type: "GET",
             // datatype: 'json',
             dataType: "text",
@@ -1150,7 +1177,7 @@ vfw.html.getQuickSelection = function (selection) {
                 let json = JSON.parse(result)
                 vfw.map.updateMapSelection(json)
 
-                /** update total Value for available datasets: */
+                /** update total Value for available datasets in HTML code (and color it when no filter result): */
                 $("#quickfilter-form p:first").html(
                     function (i, txt) {
                         return txt.replace(/\d+/, json['total'].toString());
@@ -1173,18 +1200,20 @@ vfw.html.getQuickSelection = function (selection) {
             .fail(function (bug) {
                 console.warn('got a bug in getQuickSelection: ', bug)
             })
+            .always(vfw.html.loaderOverlayOff())
     }
 }
 
 
 // TODO: Usually coordinates are shared in the URL. This is not possible with catchments when they have to many Nodes.
 //  How to handle this?
-//  1) Don't care about it (actual implementation)
+//  1) Don't care about it
 //  2) Restrict users from moving nodes => clickpoint is enough to share
 //  3) Save click point and diffs (node index, x, y)
-//  4) enable user to store/share/upload geojson of catchment (we want that)
+//  4) enable user to store/share/upload geojson of catchment   (we want that)
 //  5) store changes in database and use/share ids
 //  6) store complete catchment for individual selections and river IDs (+layer) for simple selection (next implementation)
+//  7) recreate catchment or send coords of uploaded catchments on every select click   (actual implementation)
 /**
  * Get a river catchment / watershed according to the given coords.
  * This might take a while, so tell depending functions to wait!
@@ -1212,7 +1241,9 @@ vfw.map.func.getCatchment = function (start_value) {
         })
             .done(function (result) {
                 // vfw.map.vars.selectionEdgeCoords = result.wkt;
-                vfw.map.func.renderCatchment(result)
+                vfw.filter.coords = [];
+                vfw.map.func.renderCatchment(result, 'wkt')
+                vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
                 // vfw.map.olmap.addLayer(selectionLayer)
                 vfw.html.getQuickSelection(urlPart);
                 vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // maybe use this var for an undo funciton in the draw menu
@@ -1222,9 +1253,7 @@ vfw.map.func.getCatchment = function (start_value) {
             .fail(function (bug) {
                 console.warn('3 got a bug: ', bug)
             })
-            .always(function(){
-                vfw.html.loaderOverlayOff();
-            })
+            .always(vfw.html.loaderOverlayOff())
     }
 }
 
@@ -1234,12 +1263,26 @@ vfw.map.func.getCatchment = function (start_value) {
  *
  * @param {Object} catchment - the catchment object to be rendered
  */
-vfw.map.func.renderCatchment = function (catchment) {
-    let catch_format = new ol.format.WKT();
-    let catch_feature = catch_format.readFeature(catchment.wkt, {
-      dataProjection: 'EPSG:4326',
+vfw.map.func.renderCatchment = function (catchment, format, dataprojection='EPSG:4326') {
+    let catch_format, dataset;
+    switch (format) {
+        case 'wkt':
+            catch_format = new ol.format.WKT();
+            dataset = catchment.wkt;
+            break;
+        case 'json':
+            catch_format = new ol.format.GeoJSON();
+            dataset = catchment;
+            break;
+        default:
+            console.warn('Something wrong in render Catchment. ')
+            return;
+    }
+
+    let catch_feature = catch_format.readFeature(dataset, {
+      dataProjection: dataprojection,  // projection of your data
       // featureProjection: 'EPSG:4326',
-      featureProjection: 'EPSG:3857',
+      featureProjection: 'EPSG:3857',  // projection used on the map
     });
     vfw.map.vars.selectionEdgeCoords = catch_feature.getGeometry();
     vfw.map.vars.mapSelect = vfw.map.vars.selectionEdgeCoords[0];

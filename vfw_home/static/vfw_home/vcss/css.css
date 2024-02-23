@@ -215,7 +215,7 @@ button-footer {
     /*  !*display: inline-block;*!*/
     /*}*/
 .string, .array, .list, .integer, .positiveInteger, .dateTime,
-.boolean, .float, .html, .plot, .figure, .image, .json {
+.boolean, .float, .html, .plot, .figure, .image, .json, .geometry {
     margin: 5px;
     height: 12px;
     width: 12px;
@@ -308,17 +308,18 @@ button-footer {
 ._2darray{background-color: rgb(255, 50, 150); fill: rgb(255, 50, 150)}
 .idataframe{background-color: rgb(100, 0, 50); fill: rgb(100, 0, 50)}
 .vdataframe{background-color: rgb(150, 0, 80); fill: rgb(150, 0, 80)}
-.time-dataframe{background-color: rgb(190, 120, 10); fill: rgb(190, 120, 10)}
-.vtime-dataframe{background-color: rgb(160, 110, 90); fill: rgb(160, 110, 90)}
+.timedataframe{background-color: rgb(190, 120, 10 ); fill: rgb(190, 120, 10)}
+.vtimedataframe{background-color: rgb(160, 110, 90 ); fill: rgb(160, 110, 90)}
 .html{background-color: rgb(0, 255, 0); fill: rgb(0, 255, 0)}
 .plot{background-color: rgb(76, 191, 82); fill: rgb(76, 191, 82)}
 .figure{background-color: rgb(71, 142, 75); fill: rgb(45, 83, 47)}
-.image{background-color: rgb(50, 80, 51); fill: rgb(58, 113, 61)
-}
+.image{background-color: rgb(50, 80, 51); fill: rgb(58, 113, 61)}
 
+.geometry{background-color: rgb(100, 133, 18); fill: rgb(100, 133, 18);
+    border: 1px solid rgb(153, 208, 15); stroke: rgb(153, 208, 15)}
 .json{background-color: rgb(182, 164, 90); fill: rgb(182, 164, 90);
     border: 1px solid rgb(238, 235, 59); stroke: rgb(238, 235, 59)}
-.string{background-color: rgb(255,255,191); fill: rgb(255,255,191);
+.string{background-color: rgb(255, 255, 191); fill: rgb(255, 255, 191);
     border: 1px solid #ffbf26; stroke: #ffbf26;}
 .boolean{background-color: rgb(50, 74, 147); fill: rgb(50, 74, 147);
     border: 1px solid black; stroke: black}
