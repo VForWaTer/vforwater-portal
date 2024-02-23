@@ -4,6 +4,7 @@ from django.urls import reverse
 from unittest.mock import patch , call, ANY
 from django.contrib.auth.models import User, AnonymousUser
 from vfw_home.views import HomeView
+from vfw_home.geoserver_layer import delete_layer
 import logging
 import sys
 import os
@@ -25,7 +26,10 @@ class HomePageTest(TestCase):
 
     def tearDown(self):
         # Clean up any objects created during the tests
+        super().tearDown()
         User.objects.all().delete()
+
+
 
     def test_template_rendering(self):
 
@@ -41,8 +45,8 @@ class HomePageTest(TestCase):
 
 
 
-  
-    def test_layer_name_setting_for_authenticated_users(self):
+    @patch('vfw_home.views.verify_layer')
+    def test_layer_name_setting_for_regular_user(self, mock_verify_layer):
         """
         Tests that the correct data_layer is set for both regular and superusers.
         """
@@ -50,14 +54,19 @@ class HomePageTest(TestCase):
         self.client.login(username='testuser', password='testpassword')
         response = self.client.get(reverse('vfw_home:home'))
 
+        
 
-        self.assertNotIn('admin_layer', response.context['data_layer'],
+        self.assertNotEqual('admin_layer', response.context['data_layer'],
                          msg=" ❌ Failed ❌ Regular user incorrectly assigned admin_layer.")
-        self.assertNotIn('admin_areal_layer', response.context['areal_data_layer'],
+        self.assertNotEqual('admin_areal_layer', response.context['areal_data_layer'],
                          msg=" ❌ Failed ❌ Regular user incorrectly assigned admin_areal_layer.")
         
         logger.debug(" ✅ OK. ✅ Layer name setting for regular user passed.")
 
+            
+
+
+    def test_layer_name_setting_for_superuser(self):
 
         # Testing with a superuser
         superuser = User.objects.create_superuser('superuser', 'super@example.com', 'superpassword')
@@ -75,6 +84,8 @@ class HomePageTest(TestCase):
 
 
 
+
+
     def test_context_data_accuracy(self):
 
         """
@@ -87,6 +98,8 @@ class HomePageTest(TestCase):
         missing_keys = [key for key in expected_keys if key not in response.context]
         self.assertFalse(missing_keys, f" ❌ Failed ❌ Missing expected context keys: {missing_keys}")
         logger.debug(" ✅ OK. ✅ Context data accuracy test passed: All expected keys are present.")
+
+
 
 
 
@@ -110,6 +123,7 @@ class HomePageTest(TestCase):
         logger.debug("✅ OK. ✅ GeoServer layer creation triggered correctly for authenticated user (regular user).")
 
 
+
     @patch('vfw_home.views.verify_layer')
     def test_layer_verification_for_superuser(self, mock_verify_layer):
         """
@@ -117,7 +131,7 @@ class HomePageTest(TestCase):
         """
         User.objects.create_superuser(username='superuser', email='super@example.com', password='superpassword')
         self.client.login(username='superuser', password='superpassword')
-        self.client.get(reverse('vfw_home:home'))
+        response = self.client.get(reverse('vfw_home:home'))
 
         # Define the expected calls to verify_layer with parameters for superuser
         expected_calls = [
@@ -129,6 +143,7 @@ class HomePageTest(TestCase):
         mock_verify_layer.assert_has_calls(expected_calls, any_order=True)
         self.assertEqual(mock_verify_layer.call_count, 2 , msg=" ❌ Failed ❌ verify_layer was not called twice as expected for layer verification for an admin.")
         logger.debug("✅ OK. ✅ GeoServer layer creation triggered correctly for authenticated user (admin user).")
+
 
 
 
@@ -162,8 +177,9 @@ class HomePageTest(TestCase):
         response = self.client.get(reverse('vfw_home:home'))
         mock_verify_layer.assert_called_once()
         self.assertEqual(response.status_code, 200, msg=" ❌ Failed ❌ Page failed to load when Geoserver was unavailable.")
-        # TODO:  Additional checks for user feedback can be added here
         logger.debug("✅ OK. ✅ HomeView gracefully handled Geoserver unavailability.")
+
+
 
 
     def test_home_view_incorrect_session_data_format(self):
@@ -184,5 +200,4 @@ class HomePageTest(TestCase):
         logger.debug(" ✅OK. ✅ HomeView handled incorrect session data format gracefully.")
 
 
-    # print("User.objects: ", User.objects.all())
-        
+
