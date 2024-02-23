@@ -1,4 +1,4 @@
-FROM python:3.9.7-buster
+FROM python:3.10.13-bookworm
 
 RUN useradd --uid 1003 --create-home --shell /bin/bash vfwportal && mkdir -p /home/vfwportal/vforwater-portal && groupadd --gid 1004 geoapi && usermod -G geoapi vfwportal
 RUN apt-get update && apt-get install -y libproj-dev gdal-bin
