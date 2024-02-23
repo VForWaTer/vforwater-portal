@@ -1154,12 +1154,16 @@ vfw.html.create_input_element = function (input_tool_description, resultData, se
                     if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
                 }
                 break;
+            case 'geometry':
+                console.warn('***** geometry needs something')
+                console.log('item: ', item)
+                break;
             case 'BoundingBoxData':
-                console.error('you have to handle BoundingBoxData properly');
+                console.warn('you have to handle BoundingBoxData properly');
                 if ('defaultValue' in item) inElement.value = item.defaultValue;
                 break;
             default:
-                console.error(' new dataType: ', item.schema)  // item.dataType)
+                console.warn(' new dataType: ', item.schema)  // item.dataType)
         }
         // TODO: is this here the third time I set required = True? Test if necessary
         if (item.minOccurs > 0) {
@@ -1180,11 +1184,24 @@ vfw.html.create_input_element = function (input_tool_description, resultData, se
 vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId = []) {
     // let availableInputs = get_available_inputs();
     // let wpsInfo = vfw.session.get_wpsprocess(service, identifier);
-    let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
-    let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
-    let element = document.getElementById("mod_head");
+
+    /** Collect the data that is available for the tools. If key has no data an empty dict is returned.
+     * @param {string} store - Which key of the Session Storage should be loaded
+     */
+    getStorageOrDict = function (store) {
+        return sessionStorage.getItem(store) ? JSON.parse(sessionStorage.getItem(store)) : {};
+    }
+    let sessionStoreData = getStorageOrDict("dataBtn");
+    let resultData = getStorageOrDict("resultBtn");
+    let workflowData = getStorageOrDict("workflow");
+    // let sessionStoreData = sessionStorage.getItem("dataBtn") ? JSON.parse(sessionStorage.getItem("dataBtn")) : {};
+    // let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    // let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
+
     let newElement = "";
+    let modHeadElement = document.getElementById("mod_head");
+    let modInElement = document.getElementById("mod_in");
+    let modOutElement = document.getElementById("mod_out");
 
     if (!sessionStoreData) sessionStoreData = {}
     if (!resultData) resultData = {}
@@ -1193,21 +1210,20 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     } else {
         workflowData = workflowData[boxId]
     }
-    element.innerHTML = wpsInfo.title;
-    element.dataset.service = service;
-    element.dataset.process = wpsInfo.id;
-    element = document.getElementById("mod_abs");
+    modHeadElement.innerHTML = wpsInfo.title;
+    modHeadElement.dataset.service = service;
+    modHeadElement.dataset.process = wpsInfo.id;
+    modHeadElement = document.getElementById("mod_abs");
     if (wpsInfo.description) {
         newElement = wpsInfo.description;
         // } else {
         //     newElement = ""
     }
-    element.innerHTML = newElement;
+    modHeadElement.innerHTML = newElement;
 
     /** inputs: **/
-    // TODO: Is reuse of element in new context okay? Fix if not.
-    element = document.getElementById("mod_in");
-    element.innerHTML = "";
+    // modInElement = document.getElementById("mod_in");
+    modInElement.innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
 
@@ -1215,14 +1231,12 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
         console.log('entry value: ', entry_value)
         newNode = vfw.html.create_input_element(entry_value, resultData, sessionStoreData);
-        if (typeof (newNode) === 'object') element.appendChild(newNode)
+        if (typeof (newNode) === 'object') modInElement.appendChild(newNode)
     });
 
     // TODO: build one output now. Decide how to handle several outputs
     /** outputs: **/
     document.getElementById("mod_out").innerHTML = "";
-
-    element = document.getElementById("mod_out");
 
     nodeText = document.createElement("p");
     nodeText.appendChild(document.createTextNode(" Name for output in data store: "));
@@ -1231,7 +1245,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     newNode.appendChild(nodeText);
     let outElement = document.createElement("input");
     newNode.appendChild(outElement);
-    if (typeof (newNode) === 'object') element.appendChild(newNode);
+    if (typeof (newNode) === 'object') modOutElement.appendChild(newNode);
     let modal = document.getElementById("workModal");
     // modal.setAttribute("name", invoke_btn_id);
     modal.setAttribute("name", wpsInfo.identifier);

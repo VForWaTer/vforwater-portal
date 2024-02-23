@@ -130,6 +130,28 @@ vfw.sidebar.addGroupaccordionToggle = function () {
 }
 
 /**
+ * Adds a data store button to the sidebar.
+ * @param {object} file - In case of an uploaded geometry one can pass the whole object. Yet used is only file.name
+ */
+vfw.sidebar.addSelectStoreButton = function (file={}) {
+    /** Data needed to create a Button in the datastore */
+        const objData = {
+          "name": "Select Area", "type": "polygon", "geom": vfw.filter.coords, "isGroupMember": false,
+          "orgID": "selectArea"
+        }
+        if ('name' in file) {
+          objData['source'] = file.name;
+        }
+
+        if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
+          vfw.datasets.selectObjects[objData['orgID']].update(objData);
+        } else {
+          vfw.datasets.selectObjects[objData['orgID']] = new vfw.datasets.selectObj(objData);
+        }
+}
+
+// TODO: unused function since we have data objects. Check if this can be deleted
+/**
  * If in workspace is a selection from the Filtermenu, preload it and store the wps ID
  *
  * @param workspaceData
@@ -273,11 +295,11 @@ vfw.sidebar.buildDatastoreButton = function (json) {
     let groupdict = {'names': []};
     let group = false;
     let html = "";
-    // create html elements (single buttons as elements of group buttons as well)
+    /** create html elements (single buttons as elements of group buttons as well) */
     $.each(json, function (dataset, v) {
         let btnName = createBtnName(v['name'], v['abbr'], v['unit'], v['dbID'])
         let title = `${v['name']} (${v['abbr']} in ${v['unit']})`;
-        // check if buttons already exist before creating a new one:
+        /** check if buttons already exist before creating a new one: */
         if (document.getElementById(`sidebtn${dataset}`) === null && !('group' in v)) {
             html += vfw.html.createSidebarBtn(dataset, v, btnName, title)
             /*
@@ -300,9 +322,9 @@ vfw.sidebar.buildDatastoreButton = function (json) {
         }
     });
 
-    // Loop all groups to collect elements
+    /** Loop all groups to collect elements */
     groupdict['names'].forEach(function (groupname) {
-        // bring all group button elements in one html bundle
+        /** bring all group button elements in one html bundle */
         ghtml += '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
             'class="w3-padding task is-data-group" data-sessionStore="dataBtn" ' +
             'data-groupelements=' + groupdict[groupname]['elements'].toString() +
@@ -475,16 +497,16 @@ window.onclick = function(event) {
  * Initialise our application's code.
  */
 vfw.init = function() {
-    contextListener();
-    clickListener();
+    vfw.init.contextListener();
+    vfw.init.clickListener();
     vfw.init.keyupListener();
-    resizeListener();
+    vfw.init.resizeListener();
 }
 
 /**
  * Listens for contextmenu events.
  */
-function contextListener() {
+vfw.init.contextListener = function () {
     document.addEventListener("contextmenu", function (e) {
         vfw.var.taskItemInContext = vfw.sidebar.clickInsideElement(e, taskItemClassName);
         // console.log('vfw.var.taskItemInContext.dataset.sessionstore: ', vfw.var.taskItemInContext.dataset.sessionstore)
@@ -511,7 +533,7 @@ function contextListener() {
 /**
  * Listens for click events.
  */
-function clickListener() {
+vfw.init.clickListener = function () {
     document.addEventListener("click", function (e) {
         let clickeElIsLink = vfw.sidebar.clickInsideElement(e, "context-menu__link");
         if (clickeElIsLink) {
@@ -548,7 +570,7 @@ vfw.init.keyupListener = function () {
 /**
  * Window resize event listener
  */
-function resizeListener() {
+vfw.init.resizeListener = function () {
     window.onresize = function (e) {
         toggleMenuOff();
     };
@@ -753,7 +775,7 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
 }
 
 /**
- * Provide actions for the right click menues for data and result buttons, and load the respective data from the server.
+ * Provide actions for the right click menus for data and result buttons, and load the respective data from the server.
  * Gets accessed on click in right click menu
  *
  * @param {html} link - HTML Element of the clicked link

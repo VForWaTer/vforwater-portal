@@ -6,7 +6,7 @@ hide footbox
 
 == click on Button to open draw menu ==
 [-> map.js ++: vfw.map.source.select
-note left: openDrawfilter()
+note left: vfw.map.func.toggleDrawFilter()
 map.js -> map.js: vfw.map.layer.select(vfw.map.source.select)
 
 map.js -> vfw.map.olmap:
@@ -21,7 +21,7 @@ map.js -> map.js: vfw.map.createRiverBasin(startID)
 
 vfw.js -> vfw.js: vfw.map.source.selectionSource.clear()
 
-vfw.js -> vfw.js_drawOnMapMenu: vfw.map.source.selectionSource
+vfw.js -> vfw.js_vfw.map.func.drawOnMapMenu: vfw.map.source.selectionSource
 
 
 

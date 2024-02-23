@@ -57,10 +57,16 @@ function showAllPointsOnMap(){
 
 /** update objects on map according to filter results */
 vfw.map.updateMapSelection = function (json) {
-    vfw.map.control.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
-    vfw.var.DATA_LAYER_NAME = json['ID_layer'];
-    vfw.var.AREAL_DATA_LAYER_NAME = json['areal_ID_layer'];
-    vfw.var.obj.selectedIds.quickMenu = json['IDs'];
-    vfw.map.source.wfsPointSource.refresh();
-    vfw.map.source.wfsArealSource.refresh();
+    /** the following code makes only sense on /home/. */
+    // TODO: having this in onload of base.html calls the function on every reload no matter if it makes sense.
+    //  Improve where this function is called instead of the following "if (window.location.pathname == `/home/`)".
+    if (window.location.pathname == `/home/`) {
+        vfw.map.control.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
+        vfw.var.DATA_LAYER_NAME = json['ID_layer'];
+        vfw.var.AREAL_DATA_LAYER_NAME = json['areal_ID_layer'];
+        vfw.var.obj.selectedIds.quickMenu = json['IDs'];
+        console.log('update map')
+        vfw.map.source.wfsPointSource.refresh();
+        vfw.map.source.wfsArealSource.refresh();
+    }
 }
