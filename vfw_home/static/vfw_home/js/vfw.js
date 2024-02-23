@@ -269,7 +269,7 @@ vfw.map.func.resetDraw = function() {
     vfw.map.source.selectionSource.clear();
 
     vfw.map.olmap.removeInteraction(vfw.map.control.draw);
-    vfw.map.olmap.removeInteraction(modify);
+    vfw.map.olmap.removeInteraction(vfw.map.control.modify);
     // vfw.map.func.removeDrawInteractions()
     // vfw.map.olmap.removeLayer(selectionLayer);
 
@@ -359,32 +359,33 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
 //     TODO: a listener is needed to abort drawing, e.g. by pressing ESC
 //     document.addEventListener('keydown', function(event) {
-//     if (event.code === 'Escape' && drawSquare) {
+//     if (event.code === 'Escape' && vfw.map.control.drawSquare) {
 //         // Finish draw interaction on pressing Escape key.
-//         drawSquare.abortDrawing_();
-//         drawSquare.finishDrawing();
+//         vfw.map.control.drawSquare.abortDrawing_();
+//         vfw.map.control.drawSquare.finishDrawing();
 //     }
 // });
 
     /**
-     * Create and add interactions
+     * Create and add interactions - Connect the draw button with the open layers interactions to draw on the map.
      */
-    // let select = new ol.interaction.Select();
-    // vfw.map.olmap.addInteraction(select);
 
+    /** Draw a polygon. */
     vfw.map.control.draw = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Polygon',
         stopClick: true,
     });
+    /** Draw a Square. */
     // vfw.map.control.draw.setZIndex(-100);
-    drawSquare = new ol.interaction.Draw({
+    vfw.map.control.drawSquare = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Circle',
         geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
     });
-    drawCatchmentOutlet = new ol.interaction.Draw({
+    /** Click on the map and get the contour line of a catchment from the server. */
+    vfw.map.control.drawCatchmentOutlet = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Point',
     })
@@ -393,7 +394,11 @@ vfw.map.func.drawOnMapMenu = function (test) {
     const select = new ol.interaction.Select({style: overlayStyle,});
     vfw.map.olmap.addInteraction(select)
 
-    modify = new ol.interaction.Modify({
+    /**
+     * Modify an element drawn on the map. Works on the select layer, so works for uploaded layers as well as for layers
+     * from geoserver.
+     */
+    vfw.map.control.modify = new ol.interaction.Modify({
         // features: collection.getFeaturesCollection(),
         features: select.getFeatures(),
         style: overlayStyle,
@@ -436,13 +441,13 @@ vfw.map.func.drawOnMapMenu = function (test) {
      * Point features select/deselect as you move polygon.
      Deactivate select interaction.
      */
-    modify.on('modifystart', function (event) {
+    vfw.map.control.modify.on('modifystart', function (event) {
         sketch = event.features;
         // select.setActive(false);
         listener = selectStartFun(event)
     }, this);
     /* Reactivate select function */
-    modify.on('modifyend', function (event) {
+    vfw.map.control.modify.on('modifyend', function (event) {
         sketch = null;
         delaySelectActivate();
         vfw.var.obj.selectedIds.map = null;
@@ -479,11 +484,11 @@ vfw.map.func.drawOnMapMenu = function (test) {
         return changes
     }
 
-    drawSquare.on('drawstart', function (event) {
+    vfw.map.control.drawSquare.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
         listener = selectStartFun(event)
     }, this);
-    drawSquare.on('drawend', function () {
+    vfw.map.control.drawSquare.on('drawend', function () {
         // TODO: Set zindex in background (<0), and for the hidden layer in foreground e.g. 99
         // vfw.var.obj.selectedIds.map = [];
 
@@ -503,6 +508,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
         vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
         vfw.map.func.removeDrawInteractions();
+        vfw.sidebar.addSelectStoreButton({'name': 'Square'});
         toggleDraw(document.getElementById("draw_square"))
     });
 
@@ -534,7 +540,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // ol.observable.unByKey(listener);
     });
 
-    drawCatchmentOutlet.on('drawstart', function (event) {
+    vfw.map.control.drawCatchmentOutlet.on('drawstart', function (event) {
         // start()
         // document.getElementById("mod_prev").classList.add("loader");
         vfw.html.loaderOverlayOn()
@@ -558,7 +564,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         })
 
     }, this);
-    drawCatchmentOutlet.on('drawend', function () {
+    vfw.map.control.drawCatchmentOutlet.on('drawend', function () {
         // vfw.map.func.removeDrawInteractions();
                 /* remove preloaded layers defined by the url */
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'Selection Layer')
@@ -575,9 +581,9 @@ vfw.map.func.drawOnMapMenu = function (test) {
  */
 vfw.map.func.removeDrawInteractions = function () {
     vfw.map.olmap.removeInteraction(vfw.map.control.draw);
-    vfw.map.olmap.removeInteraction(modify);
-    vfw.map.olmap.removeInteraction(drawSquare);
-    vfw.map.olmap.removeInteraction(drawCatchmentOutlet);
+    vfw.map.olmap.removeInteraction(vfw.map.control.modify);
+    vfw.map.olmap.removeInteraction(vfw.map.control.drawSquare);
+    vfw.map.olmap.removeInteraction(vfw.map.control.drawCatchmentOutlet);
 }
 
 /**
