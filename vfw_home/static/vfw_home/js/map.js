@@ -277,18 +277,37 @@ vfw.map.layer.openTopo = new ol.layer.Tile({
 const osmLayer = new ol.layer.Tile({
     title: "OSM",
     baseLayer: true,
+    // type: 'base',
     visible: false,
     source: new ol.source.OSM(),
 });
 
 // create a Sentinel-2 basemap layer
-// vfw.map.source.sentinel2 = new ol.Layer.WMS({
-//     url: 'https://sgx.geodatenzentrum.de/wms_sen2europe?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2018'
-    // 'https://sgx.geodatenzentrum.de/wms_sen2europe?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:3857&Format=image/png&TIME=2018'
-// })
-// see: http://sg.geodatenzentrum.de/web_bkg_webmap/doc/factories.html
-// see: https://www.ldbv.bayern.de/file/pdf/10544/Diplomarbeit_Wengerter.pdf
-
+// for details how to handle see: http://sg.geodatenzentrum.de/web_bkg_webmap/doc/factories.html
+// license info at https://sgx.geodatenzentrum.de/web_public/gdz/lizenz/eng/Sentinel_Data_Legal_Notice_eng.pdf
+// details about the source at https://gdz.bkg.bund.de/index.php/default/open-data/wms-europamosaik-aus-sentinel-2-daten-wms-sen2europe.html
+vfw.map.source.sentinel2 = new ol.source.TileWMS({
+    name: 'Sentinel-2-Europe',
+    attributions: 'European Union, ' +
+        '<a href="https://mis.bkg.bund.de/trefferanzeige?docuuid=3E02B389-41A9-4AD2-A1AA-FDE5676D3DF5">' +
+        'Contains modified Copernicus Sentinel data (' + new Date().toLocaleString('de-de', {  year: 'numeric' }) + ')' +
+        '</a> ',
+    url: 'https://sgx.geodatenzentrum.de/wms_sen2europe',
+    params: {
+        'LAYERS': 'sentinel2-de:rgb',
+        'VERSION': '1.3.0',
+        'FORMAT': 'image/png',
+        'TIME': '2021',
+        'CRS': 'EPSG:25832',
+    },
+    serverType: 'geoserver'
+})
+vfw.map.layer.sentinel2 = new ol.layer.Tile({
+    title: 'Sentinel-2-Europe',
+    source: vfw.map.source.sentinel2,
+    baseLayer: true,
+    visible: false,
+})
 
 /** Fetch V-FOR-WaTer base layer **/
 vfw.map.createMap = function () {
@@ -537,7 +556,7 @@ vfw.map.createMap = function () {
             // vfw.map.layer.waterColor,
             new ol.layer.Group({
                 title: 'Base layers',  // shown on the map in the menu
-                layers: [osmLayer, vfw.map.layer.openTopo, backgroundLayer,],
+                layers: [osmLayer, vfw.map.layer.openTopo, backgroundLayer, vfw.map.layer.sentinel2],
                 name: 'Maps shown in the background.',
             }),
             new ol.layer.Group({
