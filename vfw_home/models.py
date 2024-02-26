@@ -66,6 +66,7 @@ class Datasources(models.Model):
     temporal_scale = models.ForeignKey('TemporalScales', models.DO_NOTHING, blank=True, null=True)
     spatial_scale = models.ForeignKey('SpatialScales', models.DO_NOTHING, blank=True, null=True)
     data_names = models.TextField(null=True)
+    variable_names = models.TextField(null=True)
 
     class Meta:
         managed = False
