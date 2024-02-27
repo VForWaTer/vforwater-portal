@@ -129,7 +129,6 @@ class Entries(models.Model):
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
     location = models.PointField(srid=4326)
-    geom = models.GeometryField(srid=4326, blank=True, null=True)
     version = models.IntegerField(default=1)
     latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
     is_partial = models.BooleanField(default=False)

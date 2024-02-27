@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
-from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups
+from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups, Locations
 
 
 def get_split_groups(IDs):
@@ -37,6 +37,7 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     """
     Use request object to check if user has read access to a list of data (entries_id). Output is a list with
     accessible data and a second list with inaccessible data.
+    This function is called when the user wants to pass data to the datastore, to create the data object for the client
 
     :param request:
     :param requested_ids:
@@ -90,7 +91,6 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
     # from_var = 'public.tbl_data'
     # where_var = 'tbl_data.meta_id = ' + str(requested_id)
-
     accessible_data = get_accessible_data(request, requested_id)
     error_ids = accessible_data['blocked']
     accessible_ids = accessible_data['open']
@@ -100,11 +100,17 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     result_dataset = (NmEntrygroups.objects. \
         values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
                'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
-               'group_id', 'entry__location', 'entry__geom', 'group__type__name',
+               'group_id', 'group__type__name',
                'entry__datasource__spatial_scale__extent').filter(pk__in=accessible_ids))  # .distinct()
 
+    result_geometries = (Locations.objects.values('id', 'point_location_st_asewkt', 'geom')
+                         .filter(pk__in=accessible_ids))
+    result_geometries_dict = {}
+    for item in result_geometries:
+        result_geometries_dict[f'db{item["id"]}'] = {'point_location_st_asewkt': item['point_location_st_asewkt'],
+                                                      'geom': item['geom']}
+
     # collect split members
-    # print('++++ split_datasets: ', split_datasets)
     # split_datasets = get_split_groups(accessible_ids)
     split_datasets_db = (Entries.objects
                          .filter(pk__in=accessible_ids, nmentrygroups__group__type__name='Split dataset')
@@ -139,13 +145,9 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                     # print('is not a split dataset: ', False, 0, [])
 
                 # locations are differently stored in the database, so first get the right value for location
-                data_location = None
-                if dataset['entry__location']:
-                    data_location = dataset['entry__location'].json
-                elif dataset['entry__geom']:
-                    data_location = dataset['entry__geom'].json
-                elif dataset['entry__datasource__spatial_scale__extent']:
-                    data_location = dataset['entry__datasource__spatial_scale__extent'].json
+                data_location = {}
+                data_location['type'] = result_geometries_dict[dataset_id]['geom'].geom_type
+                data_location['coords'] = result_geometries_dict[dataset_id]['geom'].coords
 
                 dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
                                               'abbr': dataset['entry__variable__symbol'],
@@ -174,7 +176,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                  })
             except Exception as e:
                 print('Unable to create your object: ', e)
-            # print(' - - -  -')
+
         # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
         #  behaviour of '.distinct()' This is done in a seperate loop
         # group_dict['dbIDs'].append(dataset['entry__id'])
@@ -199,9 +201,8 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         name_group['var_names'].append(v['name'])  # #2
         name_group['type_names'].append(v['type'])  # #3
         # name_group['geom'].append(dataset['entry__geom'])  # #4
-        name_group['geom_type'].append(json.loads(v['location'])['type'])  # #4
-        name_group['coords'].append(json.loads(v['location'])['coordinates'])  # #5
-
+        name_group['geom_type'].append(v['location']['type'])  # #4
+        name_group['coords'].append(v['location']['coords'])  # #5
     # Set the name of the group
     if len(accessible_ids) > 1:
         group_dict['is_group'] = True
@@ -234,12 +235,12 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             # dataset_dict[dataset]['members'] = group_dict['type']
 
     else:
+        print('D2')
         # make sure there is no set in the dataset left (set/JSON conflict)
         for dataset_name, dataset in dataset_dict.items():
             for attr, values in dataset_dict[dataset_name].items():
                 if isinstance(values, set):
                     dataset_dict[dataset_name][attr] = list(values)
-
 
     # TODO: Need timestamp in name to see if different selection
     return {'data': dataset_dict, 'error': error_dict, 'group': {group_dict['name']: group_dict}}

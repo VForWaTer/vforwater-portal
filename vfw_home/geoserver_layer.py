@@ -259,6 +259,9 @@ def __build_catchment_layer_xml(request, filename, datastore, workspace, srid, s
 
 def __get_selectables_query(selection):
     ids_without_data = cache.get('ids_without_data')
+    # TODO: In future we should have data for all IDs,
+    #  so hopefully the following "if" only makes sense during development.
+    #  When someday all IDs have data, here this check can (should be) removed.
     if ids_without_data is None:
         ids_without_data = check_data_consistency()
         # cache.set('ids_without_data', ids_without_data, 3*60)
