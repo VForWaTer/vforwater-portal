@@ -85,9 +85,9 @@ vfw.datasets.DataObj = class {
         }
         this._placeHtmlButton();
         this.save(data);
-        if (this.url !== `/home/`) {
+        /*if (this.url !== `/home/`) {
             this._update()
-        }
+        }*/
     }
 
     /**
@@ -394,7 +394,11 @@ vfw.datasets.DataObj = class {
     }
 
     async _update() {
-        /** ensure datasets without type will not be loaded (because usually they have no actual data) **/
+        /**
+         * Ensure datasets without type will not be loaded (because usually they have no actual data)
+         * Function to make data available before the user runs a tool. Was used to improve user experience.
+         * TODO: Not used now, with processes that need only IDs. Maybe usable at a later state again.
+         **/
         if (!this.type) return
 
         if (this.source === 'db') {
