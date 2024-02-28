@@ -91,41 +91,80 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     #     work_query = work_query + 'AND tbl_data.tstamp < ' + str(max_time)
     # from_var = 'public.tbl_data'
     # where_var = 'tbl_data.meta_id = ' + str(requested_id)
+
     accessible_data = get_accessible_data(request, requested_id)
     error_ids = accessible_data['blocked']
     accessible_ids = accessible_data['open']
 
     # TDOO: The results are all returned twice. Maybe because of split datasets?
     # Fix this somehow!
-    result_dataset = (NmEntrygroups.objects. \
-        values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
-               'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'group__title',
-               'group_id', 'group__type__name',
-               'entry__datasource__spatial_scale__extent').filter(pk__in=accessible_ids))  # .distinct()
+    result_dataset_groups = (NmEntrygroups.objects
+                             .values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
+                                     'entry__variable__unit__symbol', 'entry__datasource__datatype__name',
+                                     'group__title', 'group_id', 'group__type__name',
+                                     'entry__datasource__spatial_scale__extent').filter(pk__in=grouped_ids))  # .distinct()
 
+    # not all datasets have a group ID, and datasets without group ID are not in NmEntrygroups, so they have to be
+    # taken from Entries.
+    result_dataset = (Entries.objects
+                      .values('id', 'uuid', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
+                              'datasource__datatype__name', 'datasource__spatial_scale__extent')
+                      .filter(pk__in=groupless_ids))
+
+    # Since the geom column is removed from entries, we have to get the geometry in a separate query
     result_geometries = (Locations.objects.values('id', 'point_location_st_asewkt', 'geom')
                          .filter(pk__in=accessible_ids))
     result_geometries_dict = {}
     for item in result_geometries:
         result_geometries_dict[f'db{item["id"]}'] = {'point_location_st_asewkt': item['point_location_st_asewkt'],
-                                                      'geom': item['geom']}
+                                                     'geom': item['geom']}
 
     # collect split members
     # split_datasets = get_split_groups(accessible_ids)
     split_datasets_db = (Entries.objects
-                         .filter(pk__in=accessible_ids, nmentrygroups__group__type__name='Split dataset')
+                         .filter(pk__in=grouped_ids, nmentrygroups__group__type__name='Split dataset')
                          .values('id', 'nmentrygroups__group_id').order_by('nmentrygroups__group_id'))
     split_datasets = {str(data['id']): data['nmentrygroups__group_id'] for data in split_datasets_db}
-
-    # result = {str(item['nmentrygroups__group_id']): [item['id'] for item in split_datasets if
-    #                                                  item['nmentrygroups__group_id'] == item[
-    #                                                      'nmentrygroups__group_id']]}
-    # print('split_dataset: ', split_datasets)
 
     if len(error_ids) > 0:
         error_dict = {'message': 'no access', 'id': error_ids}
 
+    """ Create Objects for ungrouped datasets """
     for dataset in result_dataset:
+        dataset_id = 'db' + str(dataset['id'])
+        try:
+            # locations are differently stored in the database, so first get the right value for location
+            data_location = {}
+            data_location['type'] = result_geometries_dict[dataset_id]['geom'].geom_type
+            data_location['coords'] = result_geometries_dict[dataset_id]['geom'].coords
+
+            dataset_dict.update({dataset_id: {'name': dataset['variable__name'],
+                                              'abbr': dataset['variable__symbol'],
+                                              'unit': dataset['variable__unit__symbol'],
+                                              'is_split': None,
+                                              'split_group':  0,
+                                              'split_members':  [],
+                                              'type': dataset['datasource__datatype__name'],
+                                              'source': 'db',
+                                              'dbID': dataset['id'],
+                                              'uuID': dataset['uuid'],
+                                              'orgID': dataset_id,
+                                              'start': startdate,
+                                              'end': enddate,
+                                              'inputs': [],
+                                              'outputs': dataset['datasource__datatype__name'],
+                                              'DBgroup': {},
+                                              'DBgroupID': {},
+                                              # looks like this is groupID and member ID. Is this helpful?
+                                              'groupTypeName': {},
+                                              'location': data_location
+                                              }
+                                 })
+        except Exception as e:
+            print('Unable to create your object: ', e)
+
+    """ Create Objects for grouped datasets """
+    for dataset in result_dataset_groups:
         dataset_id = 'db' + str(dataset['entry__id'])
         # tried to use an object to build dataset_dict more easily, but using object is too cumbersome
         if dataset_id in dataset_dict:
@@ -150,34 +189,34 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                 data_location['coords'] = result_geometries_dict[dataset_id]['geom'].coords
 
                 dataset_dict.update({dataset_id: {'name': dataset['entry__variable__name'],
-                                              'abbr': dataset['entry__variable__symbol'],
-                                              'unit': dataset['entry__variable__unit__symbol'],
-                                              'is_split': True
-                                              if dataset['group__type__name'].find('Split dataset') else None,
-                                              'split_group': dataset['group_id']
-                                              if dataset['group__type__name'].find('Split dataset') else 0,
-                                              'split_members': [dataset_id]
-                                              if dataset['group__type__name'].find('Split dataset') else [],
-                                              'type': dataset['entry__datasource__datatype__name'],
-                                              'source': 'db',
-                                              'dbID': dataset['entry__id'],
-                                              'uuID': dataset['entry__uuid'],
-                                              'orgID': dataset_id,
-                                              'start': startdate,
-                                              'end': enddate,
-                                              'inputs': [],
-                                              'outputs': dataset['entry__datasource__datatype__name'],
-                                              'DBgroup': {dataset['group__title']},
-                                              'DBgroupID': {dataset['group_id']},  # looks like this is groupID and member ID. Is this helpful?
-                                              'groupTypeName': {dataset['group__type__name']},
-                                              # 'geom': dataset['entry__geom'].json,
-                                              'location': data_location
-                                              }
-                                 })
+                                                  'abbr': dataset['entry__variable__symbol'],
+                                                  'unit': dataset['entry__variable__unit__symbol'],
+                                                  'is_split': True
+                                                  if dataset['group__type__name'].find('Split dataset') else None,
+                                                  'split_group': dataset['group_id']
+                                                  if dataset['group__type__name'].find('Split dataset') else 0,
+                                                  'split_members': [dataset_id]
+                                                  if dataset['group__type__name'].find('Split dataset') else [],
+                                                  'type': dataset['entry__datasource__datatype__name'],
+                                                  'source': 'db',
+                                                  'dbID': dataset['entry__id'],
+                                                  'uuID': dataset['entry__uuid'],
+                                                  'orgID': dataset_id,
+                                                  'start': startdate,
+                                                  'end': enddate,
+                                                  'inputs': [],
+                                                  'outputs': dataset['entry__datasource__datatype__name'],
+                                                  'DBgroup': {dataset['group__title']},
+                                                  'DBgroupID': {dataset['group_id']},  # looks like this is groupID and member ID. Is this helpful?
+                                                  'groupTypeName': {dataset['group__type__name']},
+                                                  # 'geom': dataset['entry__geom'].json,
+                                                  'location': data_location
+                                                  }
+                                     })
             except Exception as e:
                 print('Unable to create your object: ', e)
 
-        # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
+        # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the unexpected
         #  behaviour of '.distinct()' This is done in a seperate loop
         # group_dict['dbIDs'].append(dataset['entry__id'])
         # group_dict['orgIDs'].append('db' + str(dataset['entry__id']))
@@ -190,7 +229,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         # name_group['geom_type'].append(dataset['entry__location'].geom_type)  # #4
         # name_group['coords'].append(dataset['entry__location'].coords)  # #5
 
-    # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the wrong
+    # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the unexpected
     #  behaviour of '.distinct()' This is done in a seperate loop
     for k, v in dataset_dict.items():
         group_dict['dbIDs'].append(v['dbID'])
@@ -203,11 +242,12 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
         # name_group['geom'].append(dataset['entry__geom'])  # #4
         name_group['geom_type'].append(v['location']['type'])  # #4
         name_group['coords'].append(v['location']['coords'])  # #5
-    # Set the name of the group
-    if len(accessible_ids) > 1:
+
+    """ Set the name of the group """
+    if len(grouped_ids) > 1:
         group_dict['is_group'] = True
 
-        if Counter(name_group['var_names']).most_common(1)[0][1] == len(accessible_ids):
+        if Counter(name_group['var_names']).most_common(1)[0][1] == len(grouped_ids):
             name_group['mixed_vars'] = False
             # if all the fields 'group_titles', 'var_names' or 'type_names' are identical, then use it for groupname
         for attr in name_group.keys():
@@ -218,14 +258,14 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             if attr == 'coords' or attr == 'mixed_vars':
                 continue
 
-            if Counter(name_group[attr]).most_common(1)[0][1] == len(accessible_ids) \
+            if Counter(name_group[attr]).most_common(1)[0][1] == len(grouped_ids) \
                 and name_group[attr][0] is not None:
                 group_dict['name'] += name_group[attr][0] + ' '
                 # if all datasets have the same datatype use this type as group type
                 if attr == 'type_names':
                     group_dict['type'] = name_group[attr][0]
 
-        # Now add the group name to the group members
+        """ Now add the group name to the group members """
         for dataset, values in dataset_dict.items():
             dataset_dict[dataset]['groupTypeName'] = list(dataset_dict[dataset]['groupTypeName'])
             dataset_dict[dataset]['DBgroup'] = list(dataset_dict[dataset]['DBgroup'])
@@ -235,7 +275,6 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             # dataset_dict[dataset]['members'] = group_dict['type']
 
     else:
-        print('D2')
         # make sure there is no set in the dataset left (set/JSON conflict)
         for dataset_name, dataset in dataset_dict.items():
             for attr, values in dataset_dict[dataset_name].items():
