@@ -181,7 +181,8 @@ class EntriesForm(forms.ModelForm):
 
     class Meta:
         model = Entries
-        fields = ('title', 'variable', 'abstract', 'comment', 'geom', 'location', 'version', 'embargo', 'publication',
+        # TODO: A geometry field is needed as well
+        fields = ('title', 'variable', 'abstract', 'comment', 'location', 'version', 'embargo', 'publication',
                   'citation', 'license',
                   # 'embargo_end', 'external_id'
                   )
