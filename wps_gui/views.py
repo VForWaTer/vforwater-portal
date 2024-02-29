@@ -273,7 +273,10 @@ class ProcessView(TemplateView):
         if selected_process['serv'] == 'pygeoapi_vforwater':
             service, endpoint, wps_services = get_endpoint_data(DEBUG)
             apiproc = getProcesses(endpoint)
+            print("selected_process['id']: ", selected_process['id'])
+            print("apiproc.process(selected_process['id']): ", apiproc.process(selected_process['id']))
             process_description = get_process_info(apiproc.process(selected_process['id']))
+            print('process_description: ', process_description)
         else:
             wps = get_wps_service_engine(selected_process["serv"])
             wps_process = wps.describeprocess(selected_process["id"])
@@ -530,11 +533,14 @@ def process_run(request):  # TODO: Check if identical input exists in db before 
         else:
             print('You try to run a process, but I do not know your server.')
 
+        print(f'{endpoint}/processes/{wps_process}/execution')
+        print('inputs: ', input.get("in_dict", ""))
         execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
                                   json={'inputs': input.get("in_dict", ""),
                                         # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
                                         }
                                   )
+        print('Execution: ', execution)
         if execution.status_code == 200:
             all_outputs = handle_geoapiprocess_output(request.user, execution, process_description, input)
         else:
@@ -544,6 +550,7 @@ def process_run(request):  # TODO: Check if identical input exists in db before 
         all_outputs = {'execution_status': 'auth_error'}
         print(f'user is not authenticated. {all_outputs}')
 
+    print('all_outputs: ', all_outputs)
     return JsonResponse(all_outputs)
 
 # # @login_required
@@ -571,6 +578,9 @@ def db_load(request):
     Function to preload data from database, convert it, and store a pickle of the data
     Example for input for wps dbloader:  [('entry_id', '12'), ('uuid', ''), ('start', '1990-10-31T09:06'),
     ('end', datetime.datetime(2018, 12, 31, 0, 0))]
+
+    This function was to make data available before the user runs a tool. Was used to improve user experience.
+    TODO: Not used now, with processes that need only IDs. Maybe usable at a later state again.
     :param request: dict
     :return:
     """
@@ -592,11 +602,6 @@ def db_load(request):
     # format inputs for wps server
     inputs = edit_input(list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""))))
 
-    # lookup_arguments = {'entry_id': orgid[2:]}
-    # if request_dict['start'] != 'None' and request_dict['end'] != 'None':
-    #     lookup_arguments['tstamp__gte'] = request_dict['start']
-    #     lookup_arguments['tstamp__lte'] = request_dict['end']
-
     if request_dict['start'] != 'None':
         date = [make_aware(datetime.datetime.strptime(request_dict['start'], '%Y-%m-%d')),
                 make_aware(datetime.datetime.strptime(request_dict['end'], '%Y-%m-%d'))]
@@ -612,14 +617,11 @@ def db_load(request):
                   "orgid": orgid,
                   "type": output["type"],
                   }
-        # print('*** dataset is already loaded ***')
     except Exception as e:
         save_result = save_dataset(request=request, orgid=orgid, inputs=inputs, wps_process=wps_process, date=date)
         result = save_result['short_info']
-        # print('*** (worked as expected) dataset wasnt loaded: ', e)
 
         # TODO: data is saved, now create metadata
-
     return JsonResponse(result)
 
 

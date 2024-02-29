@@ -858,8 +858,12 @@ def workspace_data(request):
                              'selectedDate': [start_date, end_date]})
 
     except TypeError as e:
-        print('Type Error in vfw_home/views/workspace_data: ', e)
+        # print('Type Error in vfw_home/views/workspace_data: ', e)
         logger.debug('Type Error in vfw_home/views/workspace_data: ', e)
+        raise Http404
+    except FieldError as e:
+        # print('Field Error in vfw_home/views/workspace_data: ', e)
+        logger.debug('Field Error in vfw_home/views/workspace_data: ', e)
         raise Http404
     except Exception as e:
         print('unhandled exception in vfw_home/views/workspace_data(): ', e)
@@ -922,6 +926,16 @@ class Delineator(View):
         elif "catchStartID=" in catchout:
             start_id = int(catchout.split("catchStartID=")[1])
             catchment = delineate(terminal_comid=start_id, precise=True)
+
+                # TODO: catchment should be stored in geoserver. Not working yet. Fix it, change it.
+                # try:
+                #     create_layer(request=request, filename=f'catch_StartID{start_id}', datastore=HomeView.store,
+                #                  workspace=HomeView.workspace, selection=[start_id], layertype="filtercatchment")
+                # except Exception as e:
+                #     print('e: ', e)
+        else:
+            print(f'unknown input for delineator: {catchout}')
+            # logger.error(f'unknown input for delineator: {catchout}')
 
         if 'error' in catchment:
             # print('Problems in delineation tool: ', catchment['error'])
