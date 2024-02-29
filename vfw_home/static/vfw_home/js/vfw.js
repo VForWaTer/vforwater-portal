@@ -871,52 +871,16 @@ vfw.sidebar.workspaceDataset = function (id) {
             }, // data sent with post request
         })
             .done(function (json) {
-                // create an object for each requested dataset
+                let stored = JSON.parse(sessionStorage.getItem("dataBtn"));
+
+                /** create an object for each requested dataset */
                 $.each(json['workspaceData'], function (k) {
-                    vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
+                    /** if object is not already in store, create it / ensure buttons are created only once
+                     * TODO: Is there a need to have different versions of one dataset? */
+                    if (!stored[k]) {
+                        vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
+                    }
                 });
-                return
-                console.log('vfw.datasets.dataObjects: ', vfw.datasets.dataObjects)
-                let stored = {};
-                let storedGroup = {};
-                if (json['error']['message']) {
-                    // TODO: handle errors/data selected but without access
-                    console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')
-                }
-                if (json['group']['is_group']) {
-
-                    if (sessionStorage.getItem("dataGroup")) {
-                        storedGroup = JSON.parse(sessionStorage.getItem("dataGroup"));
-                        $.each(json['group'], function (key, value) {
-                            if (!storedGroup[key]) storedGroup[key] = value;
-                        });
-                        sessionStorage.setItem("dataBtn", JSON.stringify(storedGroup))
-                        sessionStorageData = storedGroup;
-                    } else {
-                        sessionStorage.setItem("dataGroup", JSON.stringify(json['group']));
-                        // sessionStorageData = json['group']
-                    }
-                } else {
-                    if (sessionStorage.getItem("dataBtn")) {
-                        stored = JSON.parse(sessionStorage.getItem("dataBtn"));
-                        $.each(json['workspaceData'], function (key, value) {
-                            if (!stored[key]) stored[key] = value;
-                        });
-                        sessionStorage.setItem("dataBtn", JSON.stringify(stored))
-                        sessionStorageData = stored;
-                    } else {
-                        sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
-                        sessionStorageData = json['workspaceData']
-
-                        $.each(json['workspaceData2'], function (k) {
-                            let dataset = new StoreData(json['workspaceData2'][k])
-                            //dataset.save(json['workspaceData2'][k])
-                            sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
-                        });
-                    }
-                }
-                // build buttons
-                vfw.sidebar.buildDatastoreButton(json['workspaceData']);
             }) // function in sidebar.js
             .fail(function (json) {
                 console.log('fail json: ', json)

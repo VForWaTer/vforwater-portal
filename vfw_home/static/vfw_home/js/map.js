@@ -600,6 +600,13 @@ vfw.map.createMap = function () {
         stroke: new ol.style.Stroke({
             color: '#9f3700',
             width: 2
+        }),
+        image: vfw.map.style.calcImageCircle(30, vfw.colors.blue3, vfw.colors.blue4),
+        text: new ol.style.Text({
+            font: '12px helvetica,sans-serif',
+            fill: new ol.style.Fill({
+                color: 'black'
+            })
         })
     });
 
@@ -694,7 +701,7 @@ vfw.map.createMap = function () {
      * or select by catchment when clicked within a catchment **/
     vfw.map.olmap.on('singleclick', checkMode);
 
-    /** check what is clicked and open a modal with information about data **/
+    /** check what is clicked, if clicked on dataset open a modal with information about data **/
     function checkMode(evt) {
         console.log('evt: ', evt)
         let clickedFeatures, clickedArea, ids, cleanedids, dataLayerNameLen, catchmentID;
