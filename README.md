@@ -4,7 +4,8 @@ Vforwater-portal is open source virtual research environment written in django f
 # Installation notes
 
 For installation instructions please look at install_notes.txt.
-There are no special dependencies on the LINUX distribution. We tested the installation on Fedora 29, Centos 7, and RHEL 7.
+There are no special dependencies on the LINUX distribution. We tested the installation on Fedora 39, Centos 7, and RHEL 7.
+At least Python 3.10 is needed.
 Code is still under development and comes with no guarantees.
 
 # Dependencies

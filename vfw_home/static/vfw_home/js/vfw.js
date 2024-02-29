@@ -223,7 +223,7 @@ vfw.html.createSidebarBtn = function (storeID, btnData, btnName, title) {
     }
     let elementID = "sidebtn" + storeID;
     return '<li ' + drag_html + ' class="w3-padding task" data-sessionstore="dataBtn" ' +
-        'data-orgid="' + btnData['orgID'] + '"' +
+        'data-orgid="' + btnData['orgID'] + '" ' +
         'data-id="' + btnData['source'] + btnData['dbID'] + '" btnName="' + btnName + '" onmouseover="" ' +
         'data-btnName="' + btnName + '" style="cursor:pointer;" id="' + elementID + '">' +
         '<span class="w3-medium" title="' + title + '">' +
@@ -871,6 +871,7 @@ vfw.sidebar.workspaceDataset = function (id) {
             }, // data sent with post request
         })
             .done(function (json) {
+                // create an object for each requested dataset
                 $.each(json['workspaceData'], function (k) {
                     vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
                 });

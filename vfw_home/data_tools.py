@@ -95,6 +95,8 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     accessible_data = get_accessible_data(request, requested_id)
     error_ids = accessible_data['blocked']
     accessible_ids = accessible_data['open']
+    grouped_ids = list(NmEntrygroups.objects.values_list('entry__id', flat=True).filter(pk__in=accessible_ids))
+    groupless_ids = list(set(grouped_ids).symmetric_difference(set(accessible_ids)))
 
     # TDOO: The results are all returned twice. Maybe because of split datasets?
     # Fix this somehow!

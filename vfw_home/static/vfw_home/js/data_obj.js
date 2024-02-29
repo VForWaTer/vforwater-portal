@@ -219,12 +219,10 @@ vfw.datasets.DataObj = class {
      */
     _createContextMenu(orgID) {
         // let menu = document.querySelector("#context-menu")
-        console.log('me: ', orgID)
         // let menu = document.getElementById("context-menu")
         let htmlElements = ""
-        let dropDown = ""
         let itemParams = {
-            "polygon": [
+            "geometry": [
                 ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset")]
             ],

@@ -144,23 +144,27 @@ def get_dataset(s_id: int) -> object:
     :param s_id: ID in metacatalob
     :return:
     """
-    entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+    try:
+        entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
 
-    # build string of values for django query
-    type_values = {'generic_1d_data': ['index', 'value', 'precision'],
-                   'generic_2d_data': ['index', 'value1', 'value2', 'precision1', 'precision2'],
-                   'generic_geometry_data': ['index', 'geom', 'srid'],
-                   'geom_timeseries': ['tstamp', 'geom', 'srid'],
-                   'timeseries_1d': ['tstamp', 'value', 'precision'],
-                   'timeseries_2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
-    db_values = type_values[entry_type]
+        # build string of values for django query
+        type_values = {'generic_1d_data': ['index', 'value', 'precision'],
+                       'generic_2d_data': ['index', 'value1', 'value2', 'precision1', 'precision2'],
+                       'generic_geometry_data': ['index', 'geom', 'srid'],
+                       'geom_timeseries': ['tstamp', 'geom', 'srid'],
+                       'timeseries_1d': ['tstamp', 'value', 'precision'],
+                       'timeseries_2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
+        db_values = type_values[entry_type]
 
-    query_values = []
-    for value in db_values:
-        query_values.append('{}__{}'.format(entry_type, value))
+        query_values = []
+        for value in db_values:
+            query_values.append('{}__{}'.format(entry_type, value))
 
-    query_filter = {entry_type: s_id}
-    return Entries.objects.filter(**query_filter).values_list(*query_values)
+        query_filter = {entry_type: s_id}
+        return Entries.objects.filter(**query_filter).values_list(*query_values)
+    except Exception as e:
+        # print('Unable to get_dataset in utitlites.py: ', e)
+        logger.debug(f"Unable to get_dataset: {e}")
 
 
 def get_paginatorpage(page, paginator):

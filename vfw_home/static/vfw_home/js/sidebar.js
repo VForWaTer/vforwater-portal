@@ -135,19 +135,18 @@ vfw.sidebar.addGroupaccordionToggle = function () {
  */
 vfw.sidebar.addSelectStoreButton = function (file={}) {
     /** Data needed to create a Button in the datastore */
-        const objData = {
-          "name": "Select Area", "type": "polygon", "geom": vfw.filter.coords, "isGroupMember": false,
-          "orgID": "selectArea"
-        }
-        if ('name' in file) {
-          objData['source'] = file.name;
-        }
-
-        if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
-          vfw.datasets.selectObjects[objData['orgID']].update(objData);
-        } else {
-          vfw.datasets.selectObjects[objData['orgID']] = new vfw.datasets.selectObj(objData);
-        }
+    const objData = {
+        "name": "Select Area", "type": "geometry", "geom": vfw.filter.coords, "isGroupMember": false,
+        "orgID": "selectArea"
+    }
+    if ('name' in file) {
+        objData['source'] = file.name;
+    }
+    if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
+        vfw.datasets.selectObjects[objData['orgID']].update(objData);
+    } else {
+        vfw.datasets.selectObjects[objData['orgID']] = new vfw.datasets.selectObj(objData);
+    }
 }
 
 // TODO: unused function since we have data objects. Check if this can be deleted
@@ -250,6 +249,7 @@ vfw.sidebar.preloadDatastoreButton = function (workspaceData) {
     // }
 }
 
+// TODO: unused function since we have data objects. Check if this can be deleted
 vfw.session.updateDatastoreButton = function (wpsDBInfo) {
     let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     // let workspaceData = sessionStorageData
@@ -285,6 +285,7 @@ vfw.session.updateDatastoreButton = function (wpsDBInfo) {
     sessionStorageData = workspaceData
 }
 
+// TODO: unused function since we have data objects. Check if this can be deleted
 /**
  * build buttons in workspace and store selection in clients sessionStorage
  * @param {object} json

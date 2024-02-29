@@ -1074,6 +1074,8 @@ class QuickFilterResults(View):
                         geom_ext = query.aggregate(Extent('geom'))['geom__extent']
                         if geom_ext:
                             data_ext = list(geom_ext)
+            else:
+                print('*** NO QUERY ***')
 
         except TypeError as e:
             print('Selection has no extend: ', e)

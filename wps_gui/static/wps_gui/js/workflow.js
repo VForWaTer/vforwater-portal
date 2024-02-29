@@ -31,7 +31,7 @@ vfw.draw2d.Box = class {
         this._connectable_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
             'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
             'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image',
-            'string', 'boolean', 'float', 'integer', 'positiveInteger', 'dateTime', 'list']
+            'string', 'boolean', 'float', 'integer', 'positiveInteger', 'dateTime', 'list', 'geometry']
     }
 
     /**
@@ -101,7 +101,7 @@ vfw.draw2d.Box = class {
             height: boxHeight,
             // resizable: true,
             radius: 5,
-            bgColor: '#D9EFFD',
+            bgColor: vfw.colors.blue1,
             stroke: 0,
             cssClass: 'box-' + this._boxtype,
         })

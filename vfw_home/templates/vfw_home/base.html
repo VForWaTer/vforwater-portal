@@ -32,8 +32,8 @@
   <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
   <!-- Openlayers -->
   {#  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/ol.css' %}"> #}
-  <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v9.0.0/dist/ol.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.0.0/ol.css">
 
 {#    <script src="{% static 'vfw_home/js/ol.js' %}" type="text/javascript"></script>#}
 {#  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v6.14.1/ol.css">#}
@@ -62,18 +62,13 @@
 {#Cookie window 2/2#}
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
 <script>
-  window.cookieconsent.initialise({
-    "palette": {
-      "popup": {
-        "background": "#d9effd"
-      },
-      "button": {
-        "background": "#00baee"
-      }
-    },
-    "position": "bottom-right"
-  });
   const vfw = {
+    colors: {
+      blue1: "#D9EFFD",
+      blue2: "#AADDF9",
+      blue3: "#00BAEE",
+      blue4: "#004978",
+    },
     datasets: {
         dataObjects: {},
         selectObjects: {},
@@ -134,6 +129,17 @@
       workflow: {},
     },
   }
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": {
+        "background": vfw.colors.blue1
+      },
+      "button": {
+        "background": vfw.colors.blue3
+      }
+    },
+    "position": "bottom-right"
+  });
   </script>
 {#TODO: This is the safe way to pass vars from python to json. Make sure only this method is used. #}
 {{ MAP_SERVER|json_script:"mapserver-var" }}
