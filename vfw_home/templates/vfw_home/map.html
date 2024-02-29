@@ -99,7 +99,7 @@ if (!isStorageSupported(window, "localStorage")) {
     let drwcatch = document.getElementById('draw_catchment');
     drwcatch.addEventListener('click', function () {
         vfw.map.func.removeDrawInteractions();
-        vfw.map.olmap.addInteraction(drawCatchmentOutlet);
+        vfw.map.olmap.addInteraction(vfw.map.control.drawCatchmentOutlet);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
     });
@@ -107,7 +107,7 @@ if (!isStorageSupported(window, "localStorage")) {
     let drwsqrst = document.getElementById('draw_square');
     drwsqrst.addEventListener('click', function () {
         vfw.map.func.removeDrawInteractions();
-        vfw.map.olmap.addInteraction(drawSquare);
+        vfw.map.olmap.addInteraction(vfw.map.control.drawSquare);
         /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
     });
@@ -115,7 +115,7 @@ if (!isStorageSupported(window, "localStorage")) {
     let drwst = document.getElementById('draw_polygon');
     drwst.addEventListener('click', function () {
         // vfw.map.olmap.removeInteraction(modify);
-        // vfw.map.olmap.removeInteraction(drawSquare);
+        // vfw.map.olmap.removeInteraction(vfw.map.control.drawSquare);
         vfw.map.func.removeDrawInteractions()
       vfw.map.olmap.addInteraction(vfw.map.control.draw);
       let interbla = vfw.map.olmap.getInteractions();

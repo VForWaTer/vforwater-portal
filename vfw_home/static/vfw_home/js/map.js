@@ -3,22 +3,33 @@ vfw.map.vars.hit_cL = {};
 // TODO: Check if clusterlayer has to be global!
 // let dcz = new ol.interaction.DoubleClickZoom();
 
+/**
+ * Calculates a circular image style for the map marker.
+ *
+ * @param {number} size - The radius of the circle in pixels.
+ * @param {string} strokeColor - The stroke Color of the image to be used.
+ * @param {string} fillColor - The fill Color of the image to be used.
+ * @return {object} - The map marker style with the circular image.
+ */
+vfw.map.style.calcImageCircle = function(size, strokeColor=vfw.colors.blue3, fillColor=vfw.colors.blue2) {
+    return new ol.style.Circle({
+        radius: Math.round(8 + 1.3 * Math.log(size)),
+        stroke: new ol.style.Stroke({
+            color: strokeColor,
+            width: 0.5
+        }),
+        fill: new ol.style.Fill({
+            color: fillColor
+        })
+    })
+}
 /** build style for cluster **/
 vfw.map.style.clusterData = function (feature) {
-    let size = feature.get('features').length;
+    const size = feature.get('features').length;
     let style = vfw.map.style.cache[size];
     if (!style) {
         style = vfw.map.style.cache[size] = new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: Math.round(8 + 1.3 * Math.log(size)),
-                stroke: new ol.style.Stroke({
-                    color: '#00BAEE',
-                    width: 0.5
-                }),
-                fill: new ol.style.Fill({
-                    color: '#AADDF9'
-                })
-            }),
+            image: vfw.map.style.calcImageCircle(size),
             text: new ol.style.Text({
                 text: size.toString(),
                 font: '12px helvetica,sans-serif',

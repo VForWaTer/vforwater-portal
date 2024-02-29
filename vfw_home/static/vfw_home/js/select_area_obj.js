@@ -12,7 +12,7 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
             name: "",
             unit: "",
             title: "",
-            type: "polygon",   // datatype for combining datasets in workspace
+            type: "geometry",   // datatype for combining datasets in workspace
             location: {},   // {type: string, coordinates: [lat, lon]
             source: "", //this.setSource(),
             sessionStorage: "",

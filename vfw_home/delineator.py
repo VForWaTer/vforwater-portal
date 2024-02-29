@@ -152,7 +152,7 @@ def delineate(coords=None, terminal_comid=None, HIGH_RES=True, LOW_RES_THRESHOLD
             wkbquerystring = f'SELECT ST_AsText(geom, {accuracy}) AS catchment ' \
                              f'FROM cat_pfaf_merit_hydro_v07_basins_v01 WHERE comid={terminal_comid};'
     else:
-        # Some simplification of catchment is necessary no to follow corners of every pixel.
+        # Some simplification of catchment might be necessary no to follow corners of every pixel.
         # Also the delineation is used in the url to allow sharing and bookmarking. Max length of URLs is 4096 chars, so
         # a the numbers of vertices has to estimated and the complexity has to be lowered.
         # TODO: max length of url is 4096 chars => max ~165 vertices are allowed => find nice formula to find

@@ -530,17 +530,17 @@ class Variables(models.Model):
 """
 *** End of Database description. Next block is for Database views ***
 """
-
 class Locations(models.Model):
     """
     Access db view
     """
     id = models.BigIntegerField(primary_key=True, db_column='id')
     # entry = models.ForeignKey(Entries, on_delete=models.DO_NOTHING)
-    st_asewkt = models.CharField()  # TODO: why do I get a list of points for point data?
-    point_location = models.CharField()
-    geom = models.CharField()
+    # st_asewkt = models.CharField()  # TODO: why do I get a list of points for point data?
+    point_location = models.PointField(blank=True, null=True)
+    geom = models.GeometryField(blank=True, null=True)
     area_sqm = models.DecimalField(max_digits=999, decimal_places=999)
+    point_location_st_asewkt = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False

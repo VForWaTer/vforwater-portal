@@ -1155,7 +1155,12 @@ vfw.html.create_input_element = function (input_tool_description, resultData, se
                 }
                 break;
             case 'geometry':
-                console.warn('***** geometry needs something')
+                inElement.type = "text";
+                if ('defaultValue' in item) {
+                    console.warn('***** default geometry not implemented yet')
+                    if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
+                }
+                if ("minOccurs" in item) inElement.min = item.schema.minimum;
                 console.log('item: ', item)
                 break;
             case 'BoundingBoxData':
@@ -1265,8 +1270,8 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
  * @param {object} sessionStoreData
  */
 vfw.workspace.modal.set_textfield_opt = function (item, resultData, sessionStoreData) {
+    const type = item.dataType;
     let inDatalist = "";
-    let type = item.dataType;
     inDatalist = document.createElement("DATALIST");
     inDatalist.setAttribute("id", 'mod_in_el_' + item.title + '_list');  // item.identifier + '_list');
     let optElement = "";

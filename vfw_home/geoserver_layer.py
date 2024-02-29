@@ -143,7 +143,7 @@ def create_layer(request: object, filename: str, datastore: str, workspace: str,
     )
     if build.status_code != 201:
         logger.warning(f'{build.status_code}: {build.text}')
-        print("create layer: ", str(build.status_code) + ": " + build.text)
+        # print("create layer: ", str(build.status_code) + ": " + build.text)
 
 
 def delete_layer(filename: str, datastore: str, workspace: str):
