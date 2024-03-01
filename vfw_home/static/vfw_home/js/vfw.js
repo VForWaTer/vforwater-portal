@@ -871,19 +871,19 @@ vfw.sidebar.workspaceDataset = function (id) {
             }, // data sent with post request
         })
             .done(function (json) {
-                let stored = JSON.parse(sessionStorage.getItem("dataBtn"));
+                let stored = JSON.parse(sessionStorage.getItem("dataBtn")) || {};
 
                 /** create an object for each requested dataset */
                 $.each(json['workspaceData'], function (k) {
                     /** if object is not already in store, create it / ensure buttons are created only once
-                     * TODO: Is there a need to have different versions of one dataset? */
-                    if (!stored[k]) {
+                     * TODO: Discuss if there might be a need to have different versions of one dataset? */
+                    if (!(k in stored)) {
                         vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
                     }
                 });
             }) // function in sidebar.js
             .fail(function (json) {
-                console.log('fail json: ', json)
+                console.warn('failed to get data for workspace: ', json)
             })
     }
 }
