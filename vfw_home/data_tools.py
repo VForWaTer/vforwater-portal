@@ -122,7 +122,6 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                                      'geom': item['geom']}
 
     # collect split members
-    # split_datasets = get_split_groups(accessible_ids)
     split_datasets_db = (Entries.objects
                          .filter(pk__in=grouped_ids, nmentrygroups__group__type__name='Split dataset')
                          .values('id', 'nmentrygroups__group_id').order_by('nmentrygroups__group_id'))
@@ -180,11 +179,6 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             #     split_datasets[dataset['group_id']] if dataset['group__type__name'].find('Split dataset') else None)
         else:
             try:
-                # if dataset['group__type__name'].find('Split dataset'):
-                    # print('is a split dataset')
-                # else:
-                    # print('is not a split dataset: ', False, 0, [])
-
                 # locations are differently stored in the database, so first get the right value for location
                 data_location = {}
                 data_location['type'] = result_geometries_dict[dataset_id]['geom'].geom_type
@@ -217,19 +211,6 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                      })
             except Exception as e:
                 print('Unable to create your object: ', e)
-
-        # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the unexpected
-        #  behaviour of '.distinct()' This is done in a seperate loop
-        # group_dict['dbIDs'].append(dataset['entry__id'])
-        # group_dict['orgIDs'].append('db' + str(dataset['entry__id']))
-        # group_dict['uuIDs'].append(dataset['entry__uuid'])
-        # # summarize possible attributes to name a group
-        # name_group['group_titles'].append(dataset['group__title'])  # #1
-        # name_group['var_names'].append(dataset['entry__variable__name'])  # #2
-        # name_group['type_names'].append(dataset['entry__datasource__datatype__name'])  # #3
-        # # name_group['geom'].append(dataset['entry__geom'])  # #4
-        # name_group['geom_type'].append(dataset['entry__location'].geom_type)  # #4
-        # name_group['coords'].append(dataset['entry__location'].coords)  # #5
 
     # TODO: This should be done in the same loop together with dataset_dict.update(), but because of the unexpected
     #  behaviour of '.distinct()' This is done in a seperate loop
@@ -273,7 +254,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
             dataset_dict[dataset]['DBgroup'] = list(dataset_dict[dataset]['DBgroup'])
             dataset_dict[dataset]['DBgroupID'] = list(dataset_dict[dataset]['DBgroupID'])
             dataset_dict[dataset]['group'] = group_dict['name']
-            dataset_dict[dataset]['type'] = group_dict['type']
+            # dataset_dict[dataset]['type'] = group_dict['type']  # Each element has its own type, don't use the group type
             # dataset_dict[dataset]['members'] = group_dict['type']
 
     else:
