@@ -364,7 +364,7 @@ vfw.sidebar.buildDatastoreButton = function (json) {
 
 vfw.session.removeGroupData = function (removeData) {
     /** remove button from portal **/
-    let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
+    const storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (i) {
         if (storedData[i].group === removeData) {
             // vfw.session.removeSingleData(i);
@@ -377,18 +377,10 @@ vfw.session.removeGroupData = function (removeData) {
 
 vfw.session.removeAllDatasets = function () {
     /** remove button from portal **/
-    let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
+    const storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (key, value) {
-        vfw.datasets.dataObjects[key].removeData(key)
-        /*
-        if ("name" in value) {
-            // vfw.session.removeSingleData(key);
-            // document.getElementById("id" + key).remove()
-        }*/
+        if (vfw.datasets.dataObjects[key]) vfw.datasets.dataObjects[key].removeData(key)
     });
-    /** remove button from session **/
-    // sessionStorage.removeItem("dataBtn");
-    // sessionStorageData = {};
 }
 
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
