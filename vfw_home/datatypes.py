@@ -3,6 +3,6 @@ datatypes = ['varray', 'iarray', 'array', 'vtimeseries', 'timeseries',
              'time-dataframe', 'vtime-dataframe',
              # outdated values:
              'ts-aggregate', 'ts-pickle', 'ts-merge', 'aggregate',
-             'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle'
+             'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle', 'geometry'
              ]
 basicdatatypes = ['string', 'boolean', 'float', 'integer', 'number', 'json']
