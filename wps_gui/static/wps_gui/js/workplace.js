@@ -327,10 +327,8 @@ vfw.workspace.checkPattern = function (checkElement) {
         dDInput = dropDInputs[i].selectedOptions;
         stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value];
         if (stored.type == "geometry") {
-            let polygon = new ol.geom.Polygon(stored['geom']);
             let geoJsonFormat = new ol.format.GeoJSON();
-            polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
-            let geoJsonPolygon = geoJsonFormat.writeGeometry(polygon)
+            let geoJsonPolygon = geoJsonFormat.writeGeometry(new ol.geom.Polygon(stored['geom']))
             if (!vfw.util.isValidGeoJson(JSON.parse(geoJsonPolygon))) {
                 console.warn("Not a valid GeoJSON")
                 return false
