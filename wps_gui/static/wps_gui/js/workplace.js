@@ -283,7 +283,6 @@ vfw.workspace.drop_on_click = function (ev) {
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
 vfw.workspace.is_required = function (checkElement) {
-    console.log('checkElement: ', checkElement)
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -318,8 +317,29 @@ vfw.workspace.is_required = function (checkElement) {
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
 vfw.workspace.checkPattern = function (checkElement) {
-    /** check if an Element of a wps is required **/
-    console.warn('TODO: Add pattern check where necessary.')
+    /** TODO: check if an Element of a wps is required **/
+    const inModal = document.getElementById('mod_in');
+    const dropDInputs = inModal.getElementsByTagName('select');
+    // const inputInputs = inModal.getElementsByTagName('input');
+    let dDInput, stored;
+    /** first loop over each dropdown in input, then over values in dropdown **/
+    for (let i = 0; i < dropDInputs.length; i++) {
+        dDInput = dropDInputs[i].selectedOptions;
+        stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value];
+        if (stored.type == "geometry") {
+            let polygon = new ol.geom.Polygon(stored['geom']);
+            let geoJsonFormat = new ol.format.GeoJSON();
+            polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
+            let geoJsonPolygon = geoJsonFormat.writeGeometry(polygon)
+            if (!vfw.util.isValidGeoJson(JSON.parse(geoJsonPolygon))) {
+                console.warn("Not a valid GeoJSON")
+                return false
+            } else if (!vfw.util.isValidPolygon(JSON.parse(geoJsonPolygon))) {
+                console.warn("Not a valid Polygon")
+                return false
+            }
+        }
+    }
     return true
 }
 
@@ -944,7 +964,6 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
         }
         // aptGroupedData[i] = groupedData[i]
     }
-
     // for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
     // for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
     boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length + Object.keys(aptGroupedData).length;
@@ -1251,7 +1270,6 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
 
     // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
     Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
-        console.log('entry value: ', entry_value)
         newNode = vfw.html.create_input_element(entry_value, resultData, sessionStoreData);
         if (typeof (newNode) === 'object') modInElement.appendChild(newNode)
     });

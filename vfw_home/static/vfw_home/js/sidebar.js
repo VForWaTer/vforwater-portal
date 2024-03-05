@@ -142,6 +142,7 @@ vfw.sidebar.addSelectStoreButton = function (file={}) {
     if ('name' in file) {
         objData['source'] = file.name;
     }
+    /** overwrite and update the last select layer or create a new one */
     if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
         vfw.datasets.selectObjects[objData['orgID']].update(objData);
     } else {

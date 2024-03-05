@@ -1455,39 +1455,33 @@ function dragover_handler(ev) {
  * @returns {boolean} - True if the object is a valid GeoJSON, false otherwise.
  */
 vfw.util.isValidGeoJson = function (geojson) {
-    if (!geojson || typeof geojson.type === "undefined" || !geojson.type || !geojson.coordinates) {
-      return false;
+    if (!geojson.type || typeof geojson.type === "undefined" || !geojson.coordinates) {
+        return false;
     }
 
-    if (Array.isArray(geojson.coordinates)) {
-        var isValid = true;
+    if (Array.isArray(geojson.coordinates) && Array.isArray(geojson.coordinates[0])) {
+        let isValid = true;
 
-        geojson.coordinates.forEach(coordinate => {
-            if (!Array.isArray(coordinate) ||
-                coordinate.length < 2 ||
-                typeof coordinate[0] !== "number" ||
-                typeof coordinate[1] !== "number") {
+        geojson.coordinates[0].forEach(coordinate => {
+            if (!Array.isArray(coordinate) || coordinate.length < 2 || typeof coordinate[0] !== "number"
+                || typeof coordinate[1] !== "number") {
                 isValid = false;
                 return;
             }
         });
-
         return isValid;
     }
 
     if (Array.isArray(geojson.geometries) || Array.isArray(geojson.features)) {
-      var isValid = true;
-
-      (geojson.geometries || geojson.features).forEach(entry => {
-          if (!isValidGeoJson(entry)) {
-              isValid = false;
-              return;
-          }
-      });
-
-      return isValid;
+        let isValid = true;
+        (geojson.geometries || geojson.features).forEach(entry => {
+            if (!isValidGeoJson(entry)) {
+                isValid = false;
+                return;
+            }
+        });
+        return isValid;
     }
-
     return false;
 }
 
@@ -1500,7 +1494,7 @@ vfw.util.isValidGeoJson = function (geojson) {
  * @returns {boolean} - True if the polygon is valid, false otherwise.
  */
 vfw.util.isValidPolygon = function (geojson) {
-    if (!geojson || geojson.type !== "Polygon" || !Array.isArray(geojson.coordinates)) {
+    if (geojson.type !== "Polygon" || !Array.isArray(geojson.coordinates)) {
         return false;
     }
 
@@ -1525,6 +1519,5 @@ vfw.util.isValidPolygon = function (geojson) {
             console.log("The last point was missing and was automatically added to form a valid Polygon");
         }
     }
-
     return true;
 }
