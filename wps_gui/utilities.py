@@ -756,12 +756,16 @@ def prepare_inputs(request, request_input):
         value = ''
         if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if basicdatatype and already stored as file. (if not a basicdatatype look for data in db???)
             value = ast.literal_eval(WpsResults.objects
-                                      .get(id=int(request_input['value_list'][i][3:])).outputs)['folder']
-        elif val in datatypes and request_input['value_list'][i][0:2] == 'db':  # if basicdatatype and not stored as file
+                                     .get(id=int(request_input['value_list'][i][3:])).outputs)['folder']
+        elif val in datatypes and request_input['value_list'][i][0:2] == 'db':
+            # TODO: db loader and saving of prepared data not needed anymore, as mirko uses only IDs yet
             orgid = request_input['value_list'][i]
             result = save_dataset(request=request, orgid=request_input['value_list'][i],
                                   inputs=[('entry_id', str(orgid)), ('uuid', '')], wps_process="dbloader")
             value = result['path']
+
+        elif val in datatypes and isinstance(request_input['value_list'][i], int):
+            request_input['value_list'][i]
 
         elif isinstance(request_input['value_list'][i], list):  # if there is a grouped dataset do:
             value = []
@@ -770,6 +774,7 @@ def prepare_inputs(request, request_input):
                 if element[0:3] == 'wps':  # check if element is already loaded. If not do so.
                     ids.append(element[3:])
                 else:  # if element is not on disc load it and write to db
+                    # TODO: db loader and saving of prepared data not needed anymore, as mirko uses only IDs yet
                     result = save_dataset(request=request, orgid=element,
                                           inputs=[('entry_id', element), ('uuid', '')], wps_process="dbloader")
                     value.append(result['path'])

@@ -721,11 +721,6 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
     for (let i = 0; i < loopLength; i++) {
 
         htmlElement = document.getElementById('mod_in_el_' + btnKeys[i]);
-        // if (typeof btnValues[i] === 'string') {
-        //     btnDict[btnKeys[i]] = btnValues[i];
-        // } else {
-        //     btnDict[btnKeys[i]] = btnValues[i];
-        // }
         if (htmlElement.type == "checkbox") {
             htmlElement.checked = btnValues[i];
         } else if (htmlElement.type == "select-one") {

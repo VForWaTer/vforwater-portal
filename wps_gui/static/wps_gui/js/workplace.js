@@ -126,6 +126,7 @@ vfw.session.load_wpsprocess = function (service, identifier) {
         })
         .fail(function (e) {
             console.error('Failed: ', e)
+            // return e
         });
     return processdata
 }
@@ -146,7 +147,6 @@ vfw.session.get_wpsprocess = function (service, identifier) {
     } else {
         // vfw.html.popup.classList.add(popActive);
         vfw.html.loaderOverlayOn()
-        // positionPopup(vfw.html.popup);
         $.when(vfw.session.load_wpsprocess(service, identifier))
             .done(
                 function (json) {
@@ -351,12 +351,15 @@ vfw.workspace.modal.prepData = function () {
         typeList = [];
         inIdList = [];
 
-        /** if many dropdowns **/
+        /** if many inputs in dropdown **/
         if (dDInput.length > 1) {
             for (let j = 0; j < dDInput.length; j++) {
                 // valueList.push(dDInput[j].value)
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[j].value]
-                valueList.push(stored['source'] + stored['dbID'])
+                // TODO: take care how to handle the input. For now input comes only from db so the ID is directly add.
+                //  Find solution for data sources that are not in the Entries table (i.e. results)
+                valueList.push(parseInt(stored['dbID']))
+                // valueList.push(stored['source'] + stored['dbID'])
                 typeList.push(stored['type']);
                 inIdList.push(dDInput[j].value);
             }
@@ -366,12 +369,24 @@ vfw.workspace.modal.prepData = function () {
             inId.push(inIdList);
             indict[dropDInputs[i].name] = valueList;
 
-        /** else if one dropdown **/
+        /** else if one input element in dropdown **/
         } else {
+            // TODO: Create a objects for tools and get there the info if selection should be in an array
             // if (dDInput[0].value.substring(0, 2) == 'db') {
             if (dDInput[0].value.split(",").length == 1) {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
-                inValue.push(stored['source'] + stored['dbID']);
+                if (stored.type !== "geometry") {
+                    // TODO: take care how to handle the input. For now input comes only from db so the ID is directly add.
+                    //  Find solution for data sources that are not in the Entries table (i.e. results)
+                    let intValue = dropDInputs[i].multiple ? [parseInt(stored['dbID'])] : parseInt(stored['dbID']);
+                    inValue.push(intValue);
+                    // inValue.push(stored['source'] + stored['dbID']);
+                } else {
+                    let polygon = new ol.geom.Polygon(stored['geom']);
+                    let geoJsonFormat = new ol.format.GeoJSON();
+                    polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
+                    inValue.push(geoJsonFormat.writeGeometry(polygon));
+                }
                 inType.push(stored['type']);
                 indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
             } else {
@@ -381,7 +396,10 @@ vfw.workspace.modal.prepData = function () {
                 // Try to get wps ID for data
                 for (let dataset of dDInput[0].value.split(",")) {
                     stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dataset]
-                    groupInValues.push(stored['source'] + stored['dbID'])
+                    // TODO: take care how to handle the input. For now input comes only from db so the ID is directly add.
+                    //  Find solution for data sources that are not in the Entries table (i.e. results)
+                    groupInValues.push(parseInt(stored['dbID']))
+                    // groupInValues.push(stored['source'] + stored['dbID'])
                     groupInTypes.push(stored['type']);
                 }
                 inValue.push(groupInValues)
@@ -883,6 +901,7 @@ vfw.workspace.modal.build_checkbox = function (item, entry_name, newNode, option
     newNode.appendChild(inElement);
     newNode.appendChild(nodeText);
 }
+
 
 /**
  * Function is called when the input should be a dataset and builds a dropdown menu for the workspace modal.

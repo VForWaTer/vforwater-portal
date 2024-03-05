@@ -197,8 +197,11 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
                 // }
             })
             .catch(function (error) {
-                console.warn('No result for selected area. Unable to build vector layer with data points.');
-                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                if (vfw.var.obj.selectedIds.mapIds) {
+                    console.error('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                } else {
+                    console.warn('No result for selected area. Unable to build vector layer with data points.');
+                }
                 // vfw.map.source.wfsPointSource.removeLoadedExtent(extent);  // TODO: why was this there? test before delete!
             })
     },

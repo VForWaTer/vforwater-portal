@@ -1,5 +1,5 @@
 Bokeh               ==3.3.2
-django              ==4.2.10
+django              ==4.2.11
 django_crontab      ==0.7.1
 django-cors-headers==4.3.1
 django-filter==23.5

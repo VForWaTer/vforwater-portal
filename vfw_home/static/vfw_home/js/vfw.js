@@ -1447,3 +1447,84 @@ function dragstart_handler(ev) {
 function dragover_handler(ev) {
     ev.preventDefault();
 }
+
+/**
+ * Very basic check if the given object is a valid GeoJSON.
+ *
+ * @param {Object} geojson - The geometry to be checked.
+ * @returns {boolean} - True if the object is a valid GeoJSON, false otherwise.
+ */
+vfw.util.isValidGeoJson = function (geojson) {
+    if (!geojson || typeof geojson.type === "undefined" || !geojson.type || !geojson.coordinates) {
+      return false;
+    }
+
+    if (Array.isArray(geojson.coordinates)) {
+        var isValid = true;
+
+        geojson.coordinates.forEach(coordinate => {
+            if (!Array.isArray(coordinate) ||
+                coordinate.length < 2 ||
+                typeof coordinate[0] !== "number" ||
+                typeof coordinate[1] !== "number") {
+                isValid = false;
+                return;
+            }
+        });
+
+        return isValid;
+    }
+
+    if (Array.isArray(geojson.geometries) || Array.isArray(geojson.features)) {
+      var isValid = true;
+
+      (geojson.geometries || geojson.features).forEach(entry => {
+          if (!isValidGeoJson(entry)) {
+              isValid = false;
+              return;
+          }
+      });
+
+      return isValid;
+    }
+
+    return false;
+}
+
+
+/**
+ * Checks whether a given polygon is valid or not.
+ * TODO: This function is not extensive, though it should be enough to check an upload. Do a complete check in Python!
+ *
+ * @param {Array} geojson - The polygon to be validated.
+ * @returns {boolean} - True if the polygon is valid, false otherwise.
+ */
+vfw.util.isValidPolygon = function (geojson) {
+    if (!geojson || geojson.type !== "Polygon" || !Array.isArray(geojson.coordinates)) {
+        return false;
+    }
+
+    for (let ring of geojson.coordinates) {
+        if (!Array.isArray(ring) || ring.length < 3) {
+            // Each ring of a polygon should have at least 3 points (excluding the repeated point) to be valid.
+            return false;
+        }
+
+        let firstPoint = ring[0];
+        let lastPoint = ring[ring.length - 1];
+
+        for (let point of ring) {
+            if (!Array.isArray(point) || point.length < 2 || typeof point[0] !== "number" || typeof point[1] !== "number") {
+                return false;
+            }
+        }
+
+        // Check if first and last point of ring are the same to form a closed loop, if not add the first point to the end
+        if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1]) {
+            ring.push(firstPoint);
+            console.log("The last point was missing and was automatically added to form a valid Polygon");
+        }
+    }
+
+    return true;
+}
