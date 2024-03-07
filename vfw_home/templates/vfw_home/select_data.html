@@ -133,19 +133,18 @@ let test = "{{ test|escapejs }}"
     function loadFileAs(uploadType = 'txt', file) {
       vfw.html.loaderOverlayOn()
       return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = function(event) {
+        const fileReader = new FileReader();
+        fileReader.onload = function (event) {
           const fileContent = event.target.result;
           resolve(fileContent);
         };
-        reader.onerror = function(event) {
+        fileReader.onerror = function (event) {
           reject(new Error("File could not be read! Code: " + event.target.error));
         };
         if (uploadType === 'txt') {
-          reader.readAsText(file);
-        }
-        else if (uploadType === 'data') {
-          reader.readAsDataURL(file);
+          fileReader.readAsText(file);
+        } else if (uploadType === 'data') {
+          fileReader.readAsDataURL(file);
         }
       });
     }
@@ -176,6 +175,8 @@ let test = "{{ test|escapejs }}"
       })
       .finally(vfw.html.loaderOverlayOff())
 
+    /** reset the value of fileInput to enable load of the same file again */
+    fileInput.value = null;
   }
 </script>
 

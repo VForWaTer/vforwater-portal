@@ -362,6 +362,7 @@ def add_required(inputs):
 from owslib.ogcapi import Collections
 from owslib.util import Authentication
 
+
 class ogcCollections(Collections):
     """Abstraction for OGC API - Processes"""
 
@@ -584,7 +585,6 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
     return all_outputs
 
 
-
 def handle_geoapiprocess_output_old(execution, process_description, inputs):
     """
 
@@ -688,7 +688,6 @@ def handle_geoapiprocess_output_old(execution, process_description, inputs):
     def singleoutput2db():
         pass
 
-
     for output_k, output_v in execution.json().items():
         # single_output["data"] = output_v
 
@@ -756,23 +755,32 @@ def prepare_inputs(request, request_input):
         value = ''
         if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if basicdatatype and already stored as file. (if not a basicdatatype look for data in db???)
             value = ast.literal_eval(WpsResults.objects
-                                      .get(id=int(request_input['value_list'][i][3:])).outputs)['folder']
-        elif val in datatypes and request_input['value_list'][i][0:2] == 'db':  # if basicdatatype and not stored as file
+                                     .get(id=int(request_input['value_list'][i][3:])).outputs)['folder']
+        elif val in datatypes and request_input['value_list'][i][0:2] == 'db':
+            # TODO: db loader and saving of prepared data not needed anymore, as mirko uses only IDs yet
             orgid = request_input['value_list'][i]
             result = save_dataset(request=request, orgid=request_input['value_list'][i],
                                   inputs=[('entry_id', str(orgid)), ('uuid', '')], wps_process="dbloader")
             value = result['path']
 
+        elif val in datatypes and isinstance(request_input['value_list'][i], int):
+            request_input['value_list'][i]
+
         elif isinstance(request_input['value_list'][i], list):  # if there is a grouped dataset do:
             value = []
             ids = []
             for element in request_input['value_list'][i]:
-                if element[0:3] == 'wps':  # check if element is already loaded. If not do so.
+                # check if element is a result a simple input or an entries ID.
+                if isinstance(element, str) and len(element) > 2 and element[0:3] == 'wps':
                     ids.append(element[3:])
+                elif val[i] in datatypes:
+                    value.append(element)
                 else:  # if element is not on disc load it and write to db
-                    result = save_dataset(request=request, orgid=element,
-                                          inputs=[('entry_id', element), ('uuid', '')], wps_process="dbloader")
-                    value.append(result['path'])
+                    # TODO: db loader and saving of prepared data not needed anymore, as mirko uses only IDs yet
+                    # result = save_dataset(request=request, orgid=element,
+                    #                       inputs=[('entry_id', element), ('uuid', '')], wps_process="dbloader")
+                    # value.append(result['path'])
+                    value.append(element)
             # ids = list(map(lambda list_val: int(list_val[3:]), request_input['value_list'][i]))
             # value = []
             for j in WpsResults.objects.filter(id__in=ids):

@@ -1044,7 +1044,6 @@ class QuickFilterResults(View):
                     print('selection: ', selection)
                     print('Adapt your filter to ', i)
                     # logger.warning('Adapt your filter to ', i)
-            print('A')
 
             query = (Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or))
                      .exclude(fair_query).only('id'))

@@ -871,55 +871,19 @@ vfw.sidebar.workspaceDataset = function (id) {
             }, // data sent with post request
         })
             .done(function (json) {
-                // create an object for each requested dataset
+                let stored = JSON.parse(sessionStorage.getItem("dataBtn")) || {};
+
+                /** create an object for each requested dataset */
                 $.each(json['workspaceData'], function (k) {
-                    vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
+                    /** if object is not already in store, create it / ensure buttons are created only once
+                     * TODO: Discuss if there might be a need to have different versions of one dataset? */
+                    if (!(k in stored)) {
+                        vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(json['workspaceData'][k]);
+                    }
                 });
-                return
-                console.log('vfw.datasets.dataObjects: ', vfw.datasets.dataObjects)
-                let stored = {};
-                let storedGroup = {};
-                if (json['error']['message']) {
-                    // TODO: handle errors/data selected but without access
-                    console.warn('Some of the data you requested shouldn\'t be available to request. Implement fix!')
-                }
-                if (json['group']['is_group']) {
-
-                    if (sessionStorage.getItem("dataGroup")) {
-                        storedGroup = JSON.parse(sessionStorage.getItem("dataGroup"));
-                        $.each(json['group'], function (key, value) {
-                            if (!storedGroup[key]) storedGroup[key] = value;
-                        });
-                        sessionStorage.setItem("dataBtn", JSON.stringify(storedGroup))
-                        sessionStorageData = storedGroup;
-                    } else {
-                        sessionStorage.setItem("dataGroup", JSON.stringify(json['group']));
-                        // sessionStorageData = json['group']
-                    }
-                } else {
-                    if (sessionStorage.getItem("dataBtn")) {
-                        stored = JSON.parse(sessionStorage.getItem("dataBtn"));
-                        $.each(json['workspaceData'], function (key, value) {
-                            if (!stored[key]) stored[key] = value;
-                        });
-                        sessionStorage.setItem("dataBtn", JSON.stringify(stored))
-                        sessionStorageData = stored;
-                    } else {
-                        sessionStorage.setItem("dataBtn", JSON.stringify(json['workspaceData']));
-                        sessionStorageData = json['workspaceData']
-
-                        $.each(json['workspaceData2'], function (k) {
-                            let dataset = new StoreData(json['workspaceData2'][k])
-                            //dataset.save(json['workspaceData2'][k])
-                            sessionStorage.setItem("data", JSON.stringify({[dataset.data.webID]: dataset.data}))
-                        });
-                    }
-                }
-                // build buttons
-                vfw.sidebar.buildDatastoreButton(json['workspaceData']);
             }) // function in sidebar.js
             .fail(function (json) {
-                console.log('fail json: ', json)
+                console.warn('failed to get data for workspace: ', json)
             })
     }
 }
@@ -1482,4 +1446,78 @@ function dragstart_handler(ev) {
  */
 function dragover_handler(ev) {
     ev.preventDefault();
+}
+
+/**
+ * Very basic check if the given object is a valid GeoJSON.
+ *
+ * @param {Object} geojson - The geometry to be checked.
+ * @returns {boolean} - True if the object is a valid GeoJSON, false otherwise.
+ */
+vfw.util.isValidGeoJson = function (geojson) {
+    if (!geojson.type || typeof geojson.type === "undefined" || !geojson.coordinates) {
+        return false;
+    }
+
+    if (Array.isArray(geojson.coordinates) && Array.isArray(geojson.coordinates[0])) {
+        let isValid = true;
+
+        geojson.coordinates[0].forEach(coordinate => {
+            if (!Array.isArray(coordinate) || coordinate.length < 2 || typeof coordinate[0] !== "number"
+                || typeof coordinate[1] !== "number") {
+                isValid = false;
+                return;
+            }
+        });
+        return isValid;
+    }
+
+    if (Array.isArray(geojson.geometries) || Array.isArray(geojson.features)) {
+        let isValid = true;
+        (geojson.geometries || geojson.features).forEach(entry => {
+            if (!isValidGeoJson(entry)) {
+                isValid = false;
+                return;
+            }
+        });
+        return isValid;
+    }
+    return false;
+}
+
+
+/**
+ * Checks whether a given polygon is valid or not.
+ * TODO: This function is not extensive, though it should be enough to check an upload. Do a complete check in Python!
+ *
+ * @param {Array} geojson - The polygon to be validated.
+ * @returns {boolean} - True if the polygon is valid, false otherwise.
+ */
+vfw.util.isValidPolygon = function (geojson) {
+    if (geojson.type !== "Polygon" || !Array.isArray(geojson.coordinates)) {
+        return false;
+    }
+
+    for (let ring of geojson.coordinates) {
+        if (!Array.isArray(ring) || ring.length < 3) {
+            // Each ring of a polygon should have at least 3 points (excluding the repeated point) to be valid.
+            return false;
+        }
+
+        let firstPoint = ring[0];
+        let lastPoint = ring[ring.length - 1];
+
+        for (let point of ring) {
+            if (!Array.isArray(point) || point.length < 2 || typeof point[0] !== "number" || typeof point[1] !== "number") {
+                return false;
+            }
+        }
+
+        // Check if first and last point of ring are the same to form a closed loop, if not add the first point to the end
+        if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1]) {
+            ring.push(firstPoint);
+            console.log("The last point was missing and was automatically added to form a valid Polygon");
+        }
+    }
+    return true;
 }

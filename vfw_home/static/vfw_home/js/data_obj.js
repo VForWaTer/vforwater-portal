@@ -169,9 +169,6 @@ vfw.datasets.DataObj = class {
         data['inSessionStorage'] = true;
         if (sessionStorage.getItem(this.storeKey)) {
             stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-        }
-        if (sessionStorage.getItem(this.storeKey)) {
-            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
             if (update || !stored[this.orgID]) {
                 stored[this.orgID] = data;
             }
@@ -285,7 +282,7 @@ vfw.datasets.DataObj = class {
             `data-btnName="${this.htmlName}" style="cursor:pointer;" id="${this.htmlElementID()}">` +
             `<span class="w3-medium" title="${this.title}">` +
             `<div class="task__content ${this.noData}">${this.htmlName}</div><div class="task__actions"></div>` +
-            `</span><span class="data ${this.type}"></span>` +
+            `</span><span class="data ${this.type}" title="Type: ${this.type}"></span>` +
             `<a onclick=vfw.datasets.dataObjects['${this.orgID}'].removeData('${this.orgID}') ` +
             `class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>` +
             `</a>` +

@@ -142,6 +142,7 @@ vfw.sidebar.addSelectStoreButton = function (file={}) {
     if ('name' in file) {
         objData['source'] = file.name;
     }
+    /** overwrite and update the last select layer or create a new one */
     if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
         vfw.datasets.selectObjects[objData['orgID']].update(objData);
     } else {
@@ -364,7 +365,7 @@ vfw.sidebar.buildDatastoreButton = function (json) {
 
 vfw.session.removeGroupData = function (removeData) {
     /** remove button from portal **/
-    let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
+    const storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (i) {
         if (storedData[i].group === removeData) {
             // vfw.session.removeSingleData(i);
@@ -377,18 +378,10 @@ vfw.session.removeGroupData = function (removeData) {
 
 vfw.session.removeAllDatasets = function () {
     /** remove button from portal **/
-    let storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
+    const storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (key, value) {
-        vfw.datasets.dataObjects[key].removeData(key)
-        /*
-        if ("name" in value) {
-            // vfw.session.removeSingleData(key);
-            // document.getElementById("id" + key).remove()
-        }*/
+        if (vfw.datasets.dataObjects[key]) vfw.datasets.dataObjects[key].removeData(key)
     });
-    /** remove button from session **/
-    // sessionStorage.removeItem("dataBtn");
-    // sessionStorageData = {};
 }
 
 // code for context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
@@ -729,11 +722,6 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
     for (let i = 0; i < loopLength; i++) {
 
         htmlElement = document.getElementById('mod_in_el_' + btnKeys[i]);
-        // if (typeof btnValues[i] === 'string') {
-        //     btnDict[btnKeys[i]] = btnValues[i];
-        // } else {
-        //     btnDict[btnKeys[i]] = btnValues[i];
-        // }
         if (htmlElement.type == "checkbox") {
             htmlElement.checked = btnValues[i];
         } else if (htmlElement.type == "select-one") {

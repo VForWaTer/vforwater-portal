@@ -126,6 +126,7 @@ vfw.session.load_wpsprocess = function (service, identifier) {
         })
         .fail(function (e) {
             console.error('Failed: ', e)
+            // return e
         });
     return processdata
 }
@@ -146,7 +147,6 @@ vfw.session.get_wpsprocess = function (service, identifier) {
     } else {
         // vfw.html.popup.classList.add(popActive);
         vfw.html.loaderOverlayOn()
-        // positionPopup(vfw.html.popup);
         $.when(vfw.session.load_wpsprocess(service, identifier))
             .done(
                 function (json) {
@@ -283,7 +283,6 @@ vfw.workspace.drop_on_click = function (ev) {
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
 vfw.workspace.is_required = function (checkElement) {
-    console.log('checkElement: ', checkElement)
     var passed = true;
     let requiredList = checkElement.querySelectorAll("[required]");
     let loopLength = requiredList.length;
@@ -318,8 +317,27 @@ vfw.workspace.is_required = function (checkElement) {
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
 vfw.workspace.checkPattern = function (checkElement) {
-    /** check if an Element of a wps is required **/
-    console.warn('TODO: Add pattern check where necessary.')
+    /** TODO: check if an Element of a wps is required **/
+    const inModal = document.getElementById('mod_in');
+    const dropDInputs = inModal.getElementsByTagName('select');
+    // const inputInputs = inModal.getElementsByTagName('input');
+    let dDInput, stored;
+    /** first loop over each dropdown in input, then over values in dropdown **/
+    for (let i = 0; i < dropDInputs.length; i++) {
+        dDInput = dropDInputs[i].selectedOptions;
+        stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value];
+        if (stored.type == "geometry") {
+            let geoJsonFormat = new ol.format.GeoJSON();
+            let geoJsonPolygon = geoJsonFormat.writeGeometry(new ol.geom.Polygon(stored['geom']))
+            if (!vfw.util.isValidGeoJson(JSON.parse(geoJsonPolygon))) {
+                console.warn("Not a valid GeoJSON")
+                return false
+            } else if (!vfw.util.isValidPolygon(JSON.parse(geoJsonPolygon))) {
+                console.warn("Not a valid Polygon")
+                return false
+            }
+        }
+    }
     return true
 }
 
@@ -330,15 +348,15 @@ vfw.workspace.checkPattern = function (checkElement) {
  */
 vfw.workspace.modal.prepData = function () {
     /** collect inputs **/
+    const inModal = document.getElementById('mod_in');
+    const dropDInputs = inModal.getElementsByTagName('select');
+    const inputInputs = inModal.getElementsByTagName('input');
     var inKey = [];
     var inValue = [];
     let indict = {};  // pywps needed a set. For geoapi processes we can use a dict. TODO: delete set if not needed.
     var inType = [];
     var inId = [];
     let dDInput = 0;
-    let inModal = document.getElementById('mod_in');
-    let inputInputs = inModal.getElementsByTagName('input');
-    let dropDInputs = inModal.getElementsByTagName('select');
     let valueList = [];
     let typeList = [];
     let inIdList = [];
@@ -347,13 +365,19 @@ vfw.workspace.modal.prepData = function () {
     /** first loop over each dropdown in input, then over values in dropdown **/
     for (let i = 0; i < dropDInputs.length; i++) {
         dDInput = dropDInputs[i].selectedOptions;
+        valueList = [];
+        typeList = [];
+        inIdList = [];
 
-        /** if many dropdowns **/
+        /** if many inputs in dropdown **/
         if (dDInput.length > 1) {
             for (let j = 0; j < dDInput.length; j++) {
                 // valueList.push(dDInput[j].value)
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[j].value]
-                valueList.push(stored['source'] + stored['dbID'])
+                // TODO: take care how to handle the input. For now input comes only from db so the ID is directly add.
+                //  Find solution for data sources that are not in the Entries table (i.e. results)
+                valueList.push(parseInt(stored['dbID']))
+                // valueList.push(stored['source'] + stored['dbID'])
                 typeList.push(stored['type']);
                 inIdList.push(dDInput[j].value);
             }
@@ -363,12 +387,24 @@ vfw.workspace.modal.prepData = function () {
             inId.push(inIdList);
             indict[dropDInputs[i].name] = valueList;
 
-        /** else if one dropdown **/
+        /** else if one input element in dropdown **/
         } else {
+            // TODO: Create a objects for tools and get there the info if selection should be in an array
             // if (dDInput[0].value.substring(0, 2) == 'db') {
             if (dDInput[0].value.split(",").length == 1) {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
-                inValue.push(stored['source'] + stored['dbID']);
+                if (stored.type !== "geometry") {
+                    // TODO: take care how to handle the input. For now input comes only from db so the ID is directly add.
+                    //  Find solution for data sources that are not in the Entries table (i.e. results)
+                    let intValue = dropDInputs[i].multiple ? [parseInt(stored['dbID'])] : parseInt(stored['dbID']);
+                    inValue.push(intValue);
+                    // inValue.push(stored['source'] + stored['dbID']);
+                } else {
+                    let polygon = new ol.geom.Polygon(stored['geom']);
+                    let geoJsonFormat = new ol.format.GeoJSON();
+                    polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
+                    inValue.push(geoJsonFormat.writeGeometry(polygon));
+                }
                 inType.push(stored['type']);
                 indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
             } else {
@@ -378,7 +414,10 @@ vfw.workspace.modal.prepData = function () {
                 // Try to get wps ID for data
                 for (let dataset of dDInput[0].value.split(",")) {
                     stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dataset]
-                    groupInValues.push(stored['source'] + stored['dbID'])
+                    // TODO: take care how to handle the input. For now input comes only from db so the ID is directly add.
+                    //  Find solution for data sources that are not in the Entries table (i.e. results)
+                    groupInValues.push(parseInt(stored['dbID']))
+                    // groupInValues.push(stored['source'] + stored['dbID'])
                     groupInTypes.push(stored['type']);
                 }
                 inValue.push(groupInValues)
@@ -881,34 +920,38 @@ vfw.workspace.modal.build_checkbox = function (item, entry_name, newNode, option
     newNode.appendChild(nodeText);
 }
 
+
 /**
- * Function is called when the input should be a dataset.
+ * Function is called when the input should be a dataset and builds a dropdown menu for the workspace modal.
  *
  * @param {json} item - description of wps input.
  * @param {HTMLParagraphElement} newNode
- * @param {number} countDropDowns
+ * @param {number} countDropDowns - count all dropdowns in tool for naming and accessing the different menues
  */
 vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
+
+    const sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    const groupedData = JSON.parse(sessionStorage.getItem("dataGroup"));
     let htmlSelect = document.createElement("SELECT");
-    let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
-    let groupedData = JSON.parse(sessionStorage.getItem("dataGroup"));
     let boxLen = 0;
     let aptStoreData = {};
     let aptResultData = {};
     let aptGroupedData = {};
-    let acceptedDataTypes = DATATYPE.accepts([item.datatype])  // TODO: Whats wrong in this Class?
+    let acceptedDataTypes = DATATYPE.accepts([item.dataType])  // TODO: Whats wrong in this Class?
     // let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
 
     htmlSelect.id = item.identifier;
 
     for (let i in sessionStoreData) {
         if (acceptedDataTypes.has(sessionStoreData[i].type)) {
-        }
-        if (sessionStoreData[i].hasOwnProperty('group')) {
-            aptGroupedData[i] = sessionStoreData[i];
-        } else {
             aptStoreData[i] = sessionStoreData[i];
+        }
+        // TODO: groups are not properly handled yet
+        if (sessionStoreData[i].hasOwnProperty('group')) {
+            // aptGroupedData[i] = sessionStoreData[i];
+        } else {
+            // aptStoreData[i] = sessionStoreData[i];
         }
     }
     for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
@@ -917,16 +960,15 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
             // aptGroupedData[i] = groupedData[i]
             // aptGroupedData[i] = groupedData[i]
         }
-        aptGroupedData[i] = groupedData[i]
+        // aptGroupedData[i] = groupedData[i]
     }
-
     // for (let i in sessionStoreData) if (item.keywords[0] == sessionStoreData[i].type) aptStoreData[i] = sessionStoreData[i];
     // for (let i in resultData) if (item.keywords[0] == resultData[i].type) aptResultData[i] = resultData[i]
     boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length + Object.keys(aptGroupedData).length;
     // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???
-    if (item.minOccurs > 1) htmlSelect.required = true;
+    if (item.minOccurs >= 1) htmlSelect.required = true;
 
-    /** check if input data is available; only build dropdown if there is data to select from **/
+    /** check if input data is available; only build dropdown if there is data to select from (boxlen > 0) **/
     if (boxLen == 0) {
         htmlSelect = document.createElement("DIV");
         if (item.defaultValue) {
@@ -937,7 +979,7 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     } else {
         htmlSelect.size = (boxLen > 3) ? "5" : (boxLen + 2).toString();
         htmlSelect.name = item.identifier;
-        if (aptGroupedData !== null) {
+        if (aptGroupedData !== null && Object.keys(aptGroupedData).length) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Data groups";
             optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptGroupedData);
@@ -955,7 +997,7 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
             optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptResultData);
             htmlSelect.appendChild(optionGroup);
         }
-        if (item.maxOccurs > 1 || item.minOccurs > 1) {
+        if (!item.maxOccurs == 1 || item.minOccurs > 1) {
             htmlSelect.multiple = true;
         }
         /** If more then one option is needed to select, show a second box with selection **/
@@ -992,17 +1034,19 @@ vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup
         }
         return value;
             // opt.setAttribute('data-datatype', selectables[singleData].type);
-        }
+    }
 
     Object.keys(selectables).forEach(function (singleData) {
         opt = document.createElement("OPTION");
         groupName = ''
 
         // Check if a Button for a group, or a single button is needed
-        if (!selectables[singleData].hasOwnProperty('group') &&  // is no group
+        if (
+            // TODO: group needs to be implemented, to seperate one could start with the following line
+            // !selectables[singleData].hasOwnProperty('group') &&  // is no group
             selectables[singleData].abbr && selectables[singleData].unit) {  // but has unit and abbriviation
             opt.innerText = `${singleData} ${selectables[singleData].name} (${selectables[singleData].abbr}
-            in ${selectables[singleData].unit})`;
+            in ${selectables[singleData].unit})`;  // create String
             opt.value = chooseDataID(selectables, singleData);
         } else if (selectables[singleData].hasOwnProperty('group') &&  // is group
             !groups.has(selectables[singleData]['group'])) {  // but seen the first time
@@ -1154,15 +1198,6 @@ vfw.html.create_input_element = function (input_tool_description, resultData, se
                     if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
                 }
                 break;
-            case 'geometry':
-                inElement.type = "text";
-                if ('defaultValue' in item) {
-                    console.warn('***** default geometry not implemented yet')
-                    if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
-                }
-                if ("minOccurs" in item) inElement.min = item.schema.minimum;
-                console.log('item: ', item)
-                break;
             case 'BoundingBoxData':
                 console.warn('you have to handle BoundingBoxData properly');
                 if ('defaultValue' in item) inElement.value = item.defaultValue;
@@ -1178,7 +1213,6 @@ vfw.html.create_input_element = function (input_tool_description, resultData, se
     }
     return newNode;
 }
-
 
 /**
  * Build modal (popup) for a selected wps tool.
@@ -1234,7 +1268,6 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
 
     // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
     Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
-        console.log('entry value: ', entry_value)
         newNode = vfw.html.create_input_element(entry_value, resultData, sessionStoreData);
         if (typeof (newNode) === 'object') modInElement.appendChild(newNode)
     });
