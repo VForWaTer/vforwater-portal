@@ -1,12 +1,20 @@
 # Pipeline
 stages:
-    - test
     - build
+    - test
     - push
 
+# building docker image
+vfwportal-Tests-build:
+    stage: build
+    script:
+        # build docker container using buildah
+        - /usr/bin/buildah build-using-dockerfile -f Dockerfile -t vfwportal:$CI_COMMIT_SHA
+    only:
+        - Tests
 
 # Test stage
-vfwportal-demo-test:
+vfwportal-Tests-test:
     stage: test
     script:
         - echo "Running tests"
