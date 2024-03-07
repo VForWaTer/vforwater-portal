@@ -1,7 +1,18 @@
 # Pipeline
 stages:
+    - test
     - build
     - push
+
+
+# Test stage
+vfwportal-demo-test:
+    stage: test
+    script:
+        - echo "Running tests"
+        - python manage.py test
+    only:
+        - Tests 
 
 # building docker image
 vfwportal-demo-build:
