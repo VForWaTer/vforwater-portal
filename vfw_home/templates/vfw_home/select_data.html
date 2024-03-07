@@ -37,8 +37,8 @@
   title="{% trans "Click here to select data from drawing"%}">{% trans "Draw" %}</button>
 
   <label class="filter-tablinks"
-         title="{% trans "Click here to upload a polygon to select data from map. For now only JSON is accepted."%}">
-    <input id="uploaded_file" type="file" onchange="vfw.map.func.handleFileUpload()"/>{% trans "Upload" %}
+         title="{% trans "Click here to upload a polygon to select data from map. For now only JSON is accepted." %}">
+    <input id="uploaded_file" type="file" multiple onchange="vfw.map.func.handleFileUpload()"/>{% trans "Upload" %}
   </label>
 {#  <progress id="uploadProgress" value="0" max="100" style="width:100%"></progress>#}
 
@@ -76,105 +76,122 @@ let test = "{{ test|escapejs }}"
     let uploadType, objData;
     const fileInput = document.getElementById('uploaded_file');
     // Get the `file` object that represents the uploaded file.
-    const file = fileInput.files[0];
+    // const file = fileInput.files[0];
+    for (let file of fileInput.files) {
 
-    /** This switch is only to check if the file Type is accepted. Logic how to handle a file comes later */
-    switch (file.type) {
-      case 'application/json':
-        uploadType = 'txt';
-        break;
-      case 'application/x-netcdf':
-        $("#alertDialog").html("Sorry, netcdf isn't implemented yet.")
-          .prop('title', 'Uuuh!').dialog("open");
-        return;
-      case 'application/sql':
-        $("#alertDialog").html('A sql file? Are you serious? Do you try to hack me?')
-          .prop('title', 'Seriously?').dialog("open");
-        return;
-      case 'application/x-shellscript':
-        $("#alertDialog").html('Did you just try to upload a shell script? What do you think I should do with that?')
-          .prop('title', 'Seriously?').dialog("open");
-        return;
-      case 'text/x-python':
-        $("#alertDialog").html('A Python file? What is that supposed to be? An attempt to hack me?')
-          .prop('title', 'Seriously?').dialog("open");
-        return;
-      case 'text/javascript':
-        $("#alertDialog").html("Na, thank you. I have enough javascript code. No need for more.")
-          .prop('title', 'Seriously?').dialog("open");
-        return;
-      case 'text/markdown':
-        $("#alertDialog").html('Come on! What do you think I should do with a Markdown file?')
-          .prop('title', 'Seriously?').dialog("open");
-        return;
-      case 'text/csv':
-        $("#alertDialog").html('Come on! What do you think I should do with a CSV file?')
-          .prop('title', 'Seriously?').dialog("open");
-        return;
-      case 'image/svg+xml':
-        $("#alertDialog").html('Cannot use an image.').dialog("open");
-        return;
-      case 'image/bmp':
-        $("#alertDialog").html('Cannot use an image.').dialog("open");
-        return;
-      case 'image/jpg':
-        $("#alertDialog").html('Uuuh! Is this you? But I must admit, I cannot use an image.').dialog("open");
-        return;
-      case 'image/png':
-        $("#alertDialog").html('Cannot use an image.').dialog("open");
-        return;
-      default:
-        console.warn('Uploaded file is: ', file)
-        alert("Didn't recognize the filetype. Please try another file.");
-        return;
-    }
+      /** This switch is only to check if the file Type is accepted. Logic how to handle a file comes later */
+      switch (file.type) {
+        case 'application/json':
+          uploadType = 'txt';
+          break;
+        case 'application/x-netcdf':
+          $("#alertDialog").html("Sorry, netcdf isn't implemented yet.")
+            .prop('title', 'Uuuh!').dialog("open");
+          return;
+        case 'application/sql':
+          $("#alertDialog").html('A sql file? Are you serious? Do you try to hack me?')
+            .prop('title', 'Seriously?').dialog("open");
+          return;
+        case 'application/x-shellscript':
+          $("#alertDialog").html('Did you just try to upload a shell script? What do you think I should do with that?')
+            .prop('title', 'Seriously?').dialog("open");
+          return;
+        case 'text/x-python':
+          $("#alertDialog").html('A Python file? What is that supposed to be? An attempt to hack me?')
+            .prop('title', 'Seriously?').dialog("open");
+          return;
+        case 'text/javascript':
+          $("#alertDialog").html("Na, thank you. I have enough javascript code. No need for more.")
+            .prop('title', 'Seriously?').dialog("open");
+          return;
+        case 'text/markdown':
+          $("#alertDialog").html('Come on! What do you think I should do with a Markdown file?')
+            .prop('title', 'Seriously?').dialog("open");
+          return;
+        case 'text/csv':
+          $("#alertDialog").html('Come on! What do you think I should do with a CSV file?')
+            .prop('title', 'Seriously?').dialog("open");
+          return;
+        case 'image/svg+xml':
+          $("#alertDialog").html('Cannot use an image.').dialog("open");
+          return;
+        case 'image/bmp':
+          $("#alertDialog").html('Cannot use an image.').dialog("open");
+          return;
+        case 'image/jpg':
+          $("#alertDialog").html('Uuuh! Is this you? But I must admit, I cannot use an image.').dialog("open");
+          return;
+        case 'image/png':
+          $("#alertDialog").html('Cannot use an image.').dialog("open");
+          return;
+        default:
+          console.warn('Uploaded file is: ', file)
+          alert("Didn't recognize the filetype. Please try another file.");
+          return;
+      }
 
-    /** The actual function to load the file. */
-    function loadFileAs(uploadType = 'txt', file) {
-      vfw.html.loaderOverlayOn()
-      return new Promise((resolve, reject) => {
-        const fileReader = new FileReader();
-        fileReader.onload = function (event) {
-          const fileContent = event.target.result;
-          resolve(fileContent);
-        };
-        fileReader.onerror = function (event) {
-          reject(new Error("File could not be read! Code: " + event.target.error));
-        };
-        if (uploadType === 'txt') {
-          fileReader.readAsText(file);
-        } else if (uploadType === 'data') {
-          fileReader.readAsDataURL(file);
-        }
-      });
-    }
+      /** The actual function to load the file. */
+      function loadFileAs(uploadType = 'txt', file) {
+        vfw.html.loaderOverlayOn()
+        console.log(' - loadFileAs')
+        return new Promise((resolve, reject) => {
+          const fileReader = new FileReader();
+          fileReader.onload = function (event) {
+            const fileContent = event.target.result;
+            resolve(fileContent);
+          };
+          fileReader.onerror = function (event) {
+            reject(new Error("File could not be read! Code: " + event.target.error));
+          };
+          if (uploadType === 'txt') {
+            fileReader.readAsText(file);
+          } else if (uploadType === 'data') {
+            fileReader.readAsDataURL(file);
+          }
+        });
+      }
 
-    /** Load and handle the file (put it on the map, use it for selection and store it somewhere) */
-    loadFileAs(uploadType, file)
-      .then(fileContent => {
-        const JSONfile = JSON.parse(fileContent);
-        let srid = 'EPSG:4326';
-        if ('crs' in JSONfile) {
-          if ('properties' in JSONfile['crs']) {
-            if ('name' in JSONfile['crs']['properties'] && JSONfile['crs']['properties']['name'].includes("EPSG:")) {
-              srid = JSONfile['crs']['properties']['name']
+      /** Load and handle the file (put it on the map, use it for selection and store it somewhere) */
+      loadFileAs(uploadType, file)
+        .then(fileContent => {
+          const JSONfile = JSON.parse(fileContent);
+          let srid = 'EPSG:4326';
+          let newObj = {};
+          if ('crs' in JSONfile) {
+            if ('properties' in JSONfile['crs']) {
+              if ('name' in JSONfile['crs']['properties'] && JSONfile['crs']['properties']['name'].includes("EPSG:")) {
+                srid = JSONfile['crs']['properties']['name']
+              }
             }
           }
-        }
-        vfw.map.func.renderCatchment(JSON.parse(fileContent), 'json', srid)
-        vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
+          vfw.map.func.renderCatchment(JSON.parse(fileContent), 'json', srid)
+          vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
 
-        vfw.sidebar.addSelectStoreButton(file)
+          const objData = {
+            "name": "Select Area", "type": "geometry", "geom": vfw.filter.coords, "isGroupMember": false,
+            "orgID": "selectArea"
+          }
+          if ('name' in file) {
+            objData['name'] = file.name;
+          } else {
+            objData['name'] = "user upload";
+          }
+          objData['source'] = "userUpload";
 
-        // TODO: Using the 'draw' key works only for areas with few edges. One has to store the polygon on the server
-        //  and only send an ID for the polygon (This way a polygon can also be shared with others).
-        vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
-      })
-      .catch(error => {
-        console.log('Error:', error);
-      })
-      .finally(vfw.html.loaderOverlayOff())
+          newObj = new vfw.datasets.selectObj(objData);
+          console.log('newObj: ', newObj)
+          vfw.datasets.selectObjects[newObj['orgID']] = newObj;
+          {#vfw.sidebar.addSelectStoreButton(file)#}
 
+          // TODO: Using the 'draw' key works only for areas with few edges. One has to store the polygon on the server
+          //  and only send an ID for the polygon (This way a polygon can also be shared with others).
+          vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
+        })
+        .catch(error => {
+          console.log('Error:', error);
+        })
+        .finally(vfw.html.loaderOverlayOff())
+    }
     /** reset the value of fileInput to enable load of the same file again */
     fileInput.value = null;
   }

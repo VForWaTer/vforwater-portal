@@ -1,12 +1,27 @@
 /*
 create new object with new vfw.datasets.DataObj(json)
 */
-vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
+vfw.datasets.selectObj = class {
+    orgID = "";
+    uuID = "";
+    workID = "";
+    abbr = "";
+    name = "";
+    unit = "";
+    title = "";
+    type = "";
+    start = "";
+    end = "";
+    inputs = {};
+    outputs = {};
+    location = {};
+    geom = {};
+    isGroupMember = "";
+    group = "";
+    source = "";
 
     constructor(data) {
-        super(data);
         const defaultParams = {
-            orgID: "",
             // source: "",
             abbr: "",
             name: "",
@@ -17,6 +32,7 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
             source: "", //this.setSource(),
             sessionStorage: "",
         };
+        if (!this.orgID) this.orgID = this.name;
         this.htmlName = "";  // run createHtmlName to fill this
         this.title = "";
         this.url = window.location.pathname;
@@ -25,11 +41,41 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
 
         this.storeKey = "dataBtn";
         this.btnPosition = "workspace";
+        this._adaptOrgID();
 
+        this._setTitle();
+        this._createHtmlName();
+        this._setSource();
+        if (this.group.trim().length !== 0) {
+            this.isGroupMember = true;
+            this._buildHtmlGroup()
+        }
+        this._placeHtmlButton();
+        this.save(data);
+    }
+
+     /**
+     * Generate a new ID by appending a number to the given ID,
+     * if the given name already exists in the result button list in the sessionStorage.
+     */
+    _adaptOrgID() {
+        let existingObj = {};
+        let newID = this.orgID;
+        if (sessionStorage.getItem(this.storeKey)) {
+            existingObj = JSON.parse(sessionStorage.getItem(this.storeKey));
+            if (Object.keys(existingObj).includes(newID)) {
+                var i = 0;
+                while (Object.keys(existingObj).includes(newID)) {
+                    newID = `${this.orgID}.${i++}`;
+                }
+            }
+        }
+        this.orgID = newID;
+        return newID;
     }
 
     htmlElementID() {
-        return this.btnPosition + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
+        return this.btnLocation + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
     }
 
     _buildHtmlGroup() {
@@ -95,65 +141,19 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
             `</a><br></li>`;
     }
 
-    _setSource() {
-        if (this.source) {
-            if (this.source.substring(0, 2) === 'db') {
-                this.source = 'db'
-            } else if (this.source.substring(0, 3) === 'wps') {
-                this.source = 'wps'
-            }
-        } else {
-            this.source = ''
-        }
-    }
-
-    _setTitle() {
-        this.title = `${this.name}`;
-    }
-
-    save(data, update = false) {
-        let stored;
-        data['inSessionStorage'] = true;
-        if (sessionStorage.getItem(this.storeKey)) {
-            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-        }
-        if (sessionStorage.getItem(this.storeKey)) {
-            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-            if (update || !stored[this.orgID]) {
-                stored[this.orgID] = data;
-            }
-            sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
-            sessionStorageData = stored;
-        } else {
-            let sessionEntry = {};
-            sessionEntry[this.orgID] = data;
-            sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
-            sessionStorageData = data
-        }
-    }
-
-    // groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
-
     /**
      * Create a name for buttons according to the length of the name string
      */
     _createHtmlName() {
-        this.htmlName = this.name;
-        // this.htmlName = this.name + this.dbID;
+        const nameLength = 21;
+        const vnLen = this.name.length;
+        if (vnLen <= nameLength) this.htmlName = this.name
+        else if (vnLen > nameLength) this.htmlName = this.name.substring(0, nameLength)
     }
 
-    removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
-        /** remove data from portal: **/
-        document.getElementById(this.htmlElementID()).remove();
-
-        /** remove data from session: **/
-        let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
-
-        delete workspaceData[removeData];
-        delete vfw.datasets.selectObjects[this.orgID];
-        sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
-        sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
-        vfw.map.func.resetDraw();
+    _replaceHtmlButton() {
+        let thisHtmlButton = document.getElementById(this.htmlElementID())
+        $(thisHtmlButton).replaceWith(this._createHtmlButton());
     }
 
     async _requestData(url, data) {
@@ -177,6 +177,26 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
                     });
             }
         )
+    }
+
+    _placeHtmlButton() {
+        document.getElementById(this.btnPosition).innerHTML += this._createHtmlButton();
+    }
+
+    _setSource() {
+        if (this.source) {
+            if (this.source.substring(0, 2) === 'db') {
+                this.source = 'db'
+            } else if (this.source.substring(0, 3) === 'wps') {
+                this.source = 'wps'
+            }
+        } else {
+            this.source = ''
+        }
+    }
+
+    _setTitle() {
+        this.title = `${this.name}`;
     }
 
     async _update() {
@@ -212,9 +232,44 @@ vfw.datasets.selectObj = class extends vfw.datasets.DataObj {
         }
     }
 
-    _replaceHtmlButton() {
-        let thisHtmlButton = document.getElementById(this.htmlElementID())
-        $(thisHtmlButton).replaceWith(this._createHtmlButton());
+    // groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
+
+    removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
+        /** remove data from portal: **/
+        document.getElementById(this.htmlElementID()).remove();
+
+        /** remove data from session: **/
+        let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
+
+        delete workspaceData[removeData];
+        delete vfw.datasets.selectObjects[this.orgID];
+        sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
+        sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
+        vfw.map.func.resetDraw();
+    }
+
+    save(data, update = false) {
+        console.log('+  ++ ++ i do the save')
+        let stored;
+        // let newID = this._adaptOrgID()
+        let newID = this.orgID
+        data['inSessionStorage'] = true;
+        if (sessionStorage.getItem(this.storeKey)) {
+            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
+        }
+        if (sessionStorage.getItem(this.storeKey)) {
+            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
+            if (update || !stored[newID]) {
+                stored[newID] = data;
+            }
+            sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
+            sessionStorageData = stored;
+        } else {
+            let sessionEntry = {};
+            sessionEntry[newID] = data;
+            sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
+            sessionStorageData = data
+        }
     }
 
     update(data) {
