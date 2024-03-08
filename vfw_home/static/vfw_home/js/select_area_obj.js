@@ -1,5 +1,6 @@
-/*
-create new object with new vfw.datasets.DataObj(json)
+/**
+create new object with new vfw.datasets.selectObj(json)
+The object is mainly copied from data_obj.js, and many functions can be carefully removed.
 */
 vfw.datasets.selectObj = class {
     orgID = "";
@@ -58,6 +59,96 @@ vfw.datasets.selectObj = class {
      * Generate a new ID by appending a number to the given ID,
      * if the given name already exists in the result button list in the sessionStorage.
      */
+
+    download(element=this.orgID) {  // TODO: removeData var should be taken from this!
+        /** remove data from session: **/
+        const workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
+        const gjson = {
+            "crs": {
+                "type": "name",
+                "properties": {"name": "EPSG:4326"}
+            },
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": workspaceData[element]['geom']
+            }
+        }
+        const jsonBlob = new Blob([JSON.stringify(gjson)], {type: 'application/json'});
+        const url = URL.createObjectURL(jsonBlob);
+        const link = document.createElement('a');
+        link.href = url;
+
+        // if the element name has the ending '.json' use it, else add '.json' to the name
+        link.download = workspaceData[element]['name'].slice(-5) === '.json' ? workspaceData[element]['name'] :
+            workspaceData[element]['name'] + '.json';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    htmlElementID() {
+        return this.btnLocation + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
+    }
+
+    removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
+        /** remove data from portal: **/
+        document.getElementById(this.htmlElementID()).remove();
+
+        /** remove data from session: **/
+        let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
+
+        delete workspaceData[removeData];
+        delete vfw.datasets.selectObjects[this.orgID];
+        sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
+        sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
+        vfw.map.func.resetDraw();
+    }
+
+    save(data, update = false) {
+        let stored;
+        // let newID = this._adaptOrgID()
+        let newID = this.orgID
+        data['inSessionStorage'] = true;
+        if (sessionStorage.getItem(this.storeKey)) {
+            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
+            if (update || !stored[newID]) {
+                stored[newID] = data;
+            }
+            sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
+            sessionStorageData = stored;
+        } else {
+            let sessionEntry = {};
+            sessionEntry[newID] = data;
+            sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
+            sessionStorageData = data
+        }
+    }
+
+    /** Several functions to fill and show a context menu
+     * - actually its a more user friendly  dropdown instead of a context menu -
+     * **/
+    showContextMenu() {
+        // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
+        let htmlElements = `<ul class="context-menu__items">${this._createContextMenu(this.orgID)}</ul>`
+
+        vfw.sidebar.html.contextModal.open(htmlElements)
+    }
+
+    update(data) {
+        let properties = {};
+        for (const key of Object.keys(this)) {
+            properties[key] = this[key];
+        }
+        properties['geom'] = data;
+        this.save(properties, true)
+        this._createHtmlName()
+        this._createHtmlButton()
+        this._replaceHtmlButton()
+        // this.geom = data["geom"];
+    }
+
     _adaptOrgID() {
         let existingObj = {};
         let newID = this.orgID;
@@ -66,16 +157,12 @@ vfw.datasets.selectObj = class {
             if (Object.keys(existingObj).includes(newID)) {
                 var i = 0;
                 while (Object.keys(existingObj).includes(newID)) {
-                    newID = `${this.orgID}.${i++}`;
+                    newID = `${this.orgID}_${i++}`;
                 }
             }
         }
         this.orgID = newID;
         return newID;
-    }
-
-    htmlElementID() {
-        return this.btnLocation + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
     }
 
     _buildHtmlGroup() {
@@ -90,9 +177,12 @@ vfw.datasets.selectObj = class {
      */
     _createContextMenu(orgID) {
     let htmlElements = ""
-    let itemParams = {
-        "polygon": [
-            ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
+
+    const itemParams = {
+        // set parameters: action, iconClass, name, func
+        "geometry": [
+            ["UseAsFilter", "fa-filter", gettext("Use as filter"), "filterData"],
+            ["DownloadGJson", "fa-download", gettext("Download data"), "download"],
             ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
         ],
         "default": [
@@ -151,6 +241,10 @@ vfw.datasets.selectObj = class {
         else if (vnLen > nameLength) this.htmlName = this.name.substring(0, nameLength)
     }
 
+    _placeHtmlButton() {
+        document.getElementById(this.btnPosition).innerHTML += this._createHtmlButton();
+    }
+
     _replaceHtmlButton() {
         let thisHtmlButton = document.getElementById(this.htmlElementID())
         $(thisHtmlButton).replaceWith(this._createHtmlButton());
@@ -177,10 +271,6 @@ vfw.datasets.selectObj = class {
                     });
             }
         )
-    }
-
-    _placeHtmlButton() {
-        document.getElementById(this.btnPosition).innerHTML += this._createHtmlButton();
     }
 
     _setSource() {
@@ -233,56 +323,5 @@ vfw.datasets.selectObj = class {
     }
 
     // groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
-
-    removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
-        /** remove data from portal: **/
-        document.getElementById(this.htmlElementID()).remove();
-
-        /** remove data from session: **/
-        let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
-
-        delete workspaceData[removeData];
-        delete vfw.datasets.selectObjects[this.orgID];
-        sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
-        sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
-        vfw.map.func.resetDraw();
-    }
-
-    save(data, update = false) {
-        console.log('+  ++ ++ i do the save')
-        let stored;
-        // let newID = this._adaptOrgID()
-        let newID = this.orgID
-        data['inSessionStorage'] = true;
-        if (sessionStorage.getItem(this.storeKey)) {
-            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-        }
-        if (sessionStorage.getItem(this.storeKey)) {
-            stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-            if (update || !stored[newID]) {
-                stored[newID] = data;
-            }
-            sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
-            sessionStorageData = stored;
-        } else {
-            let sessionEntry = {};
-            sessionEntry[newID] = data;
-            sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
-            sessionStorageData = data
-        }
-    }
-
-    update(data) {
-        let properties = {};
-        for (const key of Object.keys(this)) {
-            properties[key] = this[key];
-        }
-        properties['geom'] = data;
-        this.save(properties, true)
-        this._createHtmlName()
-        this._createHtmlButton()
-        this._replaceHtmlButton()
-        // this.geom = data["geom"];
-    }
 }
 
