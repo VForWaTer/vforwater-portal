@@ -20,6 +20,7 @@ vfw.datasets.selectObj = class {
     isGroupMember = "";
     group = "";
     source = "";
+    gjson = "";
 
     constructor(data) {
         const defaultParams = {
@@ -53,17 +54,7 @@ vfw.datasets.selectObj = class {
         }
         this._placeHtmlButton();
         this.save(data);
-    }
-
-     /**
-     * Generate a new ID by appending a number to the given ID,
-     * if the given name already exists in the result button list in the sessionStorage.
-     */
-
-    download(element=this.orgID) {  // TODO: removeData var should be taken from this!
-        /** remove data from session: **/
-        const workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
-        const gjson = {
+        this.gjson = {
             "crs": {
                 "type": "name",
                 "properties": {"name": "EPSG:4326"}
@@ -71,10 +62,15 @@ vfw.datasets.selectObj = class {
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
-                "coordinates": workspaceData[element]['geom']
+                "coordinates": data["geom"]
             }
-        }
-        const jsonBlob = new Blob([JSON.stringify(gjson)], {type: 'application/json'});
+        };
+    }
+
+    download(element=this.orgID) {  // TODO: removeData var should be taken from this!
+        /** remove data from session: **/
+        const workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
+        const jsonBlob = new Blob([JSON.stringify(this.gjson)], {type: 'application/json'});
         const url = URL.createObjectURL(jsonBlob);
         const link = document.createElement('a');
         link.href = url;
@@ -86,6 +82,11 @@ vfw.datasets.selectObj = class {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    filterData(element=this.orgID) {  // TODO: removeData var should be taken from this!
+        vfw.map.func.renderCatchment(this.gjson, 'json')
+        vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
     }
 
     htmlElementID() {
@@ -136,6 +137,10 @@ vfw.datasets.selectObj = class {
         vfw.sidebar.html.contextModal.open(htmlElements)
     }
 
+    /**
+     * Update the html and geometry data of an object.
+     * @param {Object} data - The updated data to be applied.
+     */
     update(data) {
         let properties = {};
         for (const key of Object.keys(this)) {
@@ -149,6 +154,10 @@ vfw.datasets.selectObj = class {
         // this.geom = data["geom"];
     }
 
+       /**
+     * Generate a new ID by appending a number to the given ID,
+     * if the given name already exists in the result button list in the sessionStorage.
+     */
     _adaptOrgID() {
         let existingObj = {};
         let newID = this.orgID;
@@ -179,7 +188,7 @@ vfw.datasets.selectObj = class {
     let htmlElements = ""
 
     const itemParams = {
-        // set parameters: action, iconClass, name, func
+        // set parameters: action, iconClass, name, function
         "geometry": [
             ["UseAsFilter", "fa-filter", gettext("Use as filter"), "filterData"],
             ["DownloadGJson", "fa-download", gettext("Download data"), "download"],
