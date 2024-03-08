@@ -4,13 +4,16 @@ stages:
     - test
     - push
 
-
 # Test stage
 test-docker:
     stage: test
+    image: docker:latest
+    services:
+      - docker:dind
     script:
         - echo "test docker"
-        - docker run hello-world
+        - docker run --rm hello-world
+        - docker rmi hello-world
     only:
         - Tests 
 
