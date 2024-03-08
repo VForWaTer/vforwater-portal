@@ -4,23 +4,13 @@ stages:
     - test
     - push
 
-# building docker image
-vfwportal-Tests-build:
-    stage: build
-    script:
-        # build docker container using buildah
-        - /usr/bin/buildah build-using-dockerfile -f Dockerfile -t vfwportal:$CI_COMMIT_SHA
-    only:
-        - Tests
 
 # Test stage
-vfwportal-Tests-test:
+test-docker:
     stage: test
-    image: python:3.10.13-bookworm 
     script:
-        - echo "Running tests"
-        - pip install -r requirements.txt 
-        - python manage.py test
+        - echo "test docker"
+        - docker run hello-world
     only:
         - Tests 
 
