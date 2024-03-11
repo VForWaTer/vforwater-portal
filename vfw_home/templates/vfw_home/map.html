@@ -46,26 +46,26 @@
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32square.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_square %}
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32polygon.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_poly %}
     {% trans "Edit&#32drawing" as Edit %}
-    {% trans "Store&#32drawing" as Store %}
+    {% trans "Store&#32drawing&#32and&#32make&#32it&#32reusable&#32on&#32the&#32map&#32and&#32in&#32the&#32workspace&#32for&#32this&#32session." as Store %}
     {% trans "Remove&#32drawing" as Remove %}
 {#    {% trans "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom." as Exit %}#}
     {% trans "Close&#32drawing&#32panel&#32and&#32reactivate&#32doubleclick&#32zoom." as Close %}
-    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_close" class="hover-white" title={{ Close }}>
-      <i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_catchment" class="draw-hover" title={{ Draw_catchment }}
-      value="Catchment"><i class="map_icon fa fa-hand-pointer-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_square" class="draw-hover" title={{ Draw_square }}
-      value="Square"><i class="map_icon fa fa-square-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_polygon" class="draw-hover" title={{ Draw_poly }}
-      value="Polygon"><i class="map_icon fa fa-pencil fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggleDraw(this); id="modify_polygon" class="draw-hover" title={{ Edit }}>
-      <i class="map_icon fa fa-edit fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggleDraw(this); id="store_polygon" class="draw-hover" title={{ Store }}>
-      <i class="map_icon fa fa-bookmark-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_close" class="hover-white"
+       title={{ Close }}><i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_catchment" class="draw-hover"
+       title={{ Draw_catchment }} value="Catchment"><i class="map_icon fa fa-hand-pointer-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_square" class="draw-hover"
+       title={{ Draw_square }} value="Square"><i class="map_icon fa fa-square-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_polygon" class="draw-hover"
+       title={{ Draw_poly }} value="Polygon"><i class="map_icon fa fa-pencil fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="modify_polygon" class="draw-hover"
+       title={{ Edit }}><i class="map_icon fa fa-edit fa-fw"></i></a>
+    <a href="javascript:void(0)" id="store_polygon" class="draw-hover"
+       title={{ Store }}><i class="map_icon fa fa-shopping-cart fa-fw"></i></a>
     {#		  <a href="javascript:void(0)" id="select_polygon" class="draw-hover" title="Select Drawing"><i class="fa fa-hand-pointer-o fa-fw"></i></a>#}
-    <a href="javascript:void(0)" onclick=toggleDraw(this); id="remove_polygon" class="draw-hover" title={{ Remove }}>
-      <i class="map_icon fa fa-trash fa-fw"></i></a>
-{#    <a href="javascript:void(0)" onclick=toggleDraw(this); id="draw_close" class="w3-hover-white" title={{ Exit }}><i class="map_icon fa fa-remove fa-fw"></i></a>#}
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="remove_polygon" class="draw-hover"
+       title={{ Remove }}><i class="map_icon fa fa-trash fa-fw"></i></a>
+{#    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_close" class="w3-hover-white" title={{ Exit }}><i class="map_icon fa fa-remove fa-fw"></i></a>#}
 {#            </dl>#}
 	</div>
 		{# <input type="button" onclick="toggleLayer(vectorLayer)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp; #}
@@ -94,7 +94,7 @@ if (!isStorageSupported(window, "localStorage")) {
  /**
   * Adds event listeners to the menu buttons in the VFW application map. Only used on load of page.
   */
-vfw.map.menuButtonsListen = function () {
+vfw.map.html.menuButtonsListeners = function () {
   /** add clickEvent to close button */
   let closst = document.getElementById('draw_close');
   closst.addEventListener('click', function () {
@@ -132,8 +132,9 @@ vfw.map.menuButtonsListen = function () {
   });
   /** add clickEvent to modify button */
   let storst = document.getElementById('store_polygon');
-  modst.addEventListener('click', function () {
+  storst.addEventListener('click', function () {
     vfw.map.func.removeDrawInteractions()
+    vfw.sidebar.addSelectStoreButton({'name': 'Map drawing'});
     {#vfw.map.olmap.addInteraction(modify);#}
   });
   /** add clickEvent to remove button */
@@ -142,5 +143,5 @@ vfw.map.menuButtonsListen = function () {
     vfw.map.func.resetDraw();
   });
 }
-vfw.map.menuButtonsListen();
+vfw.map.html.menuButtonsListeners();
 </script>

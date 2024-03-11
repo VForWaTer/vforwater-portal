@@ -188,7 +188,7 @@ const DATATYPE = new class AbstractType {
  */
 function createBtnName(name, abbr, unit, dbID) {
     let btnName;
-    let vnLen = name.length;
+    const vnLen = name.length;
     if (vnLen + abbr.length + unit.length <= 13) {
         btnName = name + '(' + abbr + ' in ' + unit + ') - ' + dbID;
     } else if (vnLen + abbr.length <= 15) {
@@ -221,7 +221,7 @@ vfw.html.createSidebarBtn = function (storeID, btnData, btnName, title) {
     if (window.location.pathname == '/workspace/') {
         drag_html = 'draggable="true" ondragstart="dragstart_handler(event)"'
     }
-    let elementID = "sidebtn" + storeID;
+    const elementID = "sidebtn" + storeID;
     return '<li ' + drag_html + ' class="w3-padding task" data-sessionstore="dataBtn" ' +
         'data-orgid="' + btnData['orgID'] + '" ' +
         'data-id="' + btnData['source'] + btnData['dbID'] + '" btnName="' + btnName + '" onmouseover="" ' +
@@ -398,7 +398,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
      * Modify an element drawn on the map. Works on the select layer, so works for uploaded layers as well as for layers
      * from geoserver.
      */
-    vfw.map.control.modify = new ol.interaction.Modify({
+    vfw.map.control.modify = new ol.interaction.Modify({ // TODO: Modify has to be fixed!
         // features: collection.getFeaturesCollection(),
         features: select.getFeatures(),
         style: overlayStyle,
@@ -434,7 +434,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
     vfw.var.obj.selectedIds.map = null;
     let sketch, listener, polygon;
-    let append_str = vfw.var.DATA_LAYER_NAME + '.';
+    // let append_str = vfw.var.DATA_LAYER_NAME + '.';
     // let features = vfw.map.layer.hidden.getSource().getFeatures();
 
     /**
@@ -508,8 +508,8 @@ vfw.map.func.drawOnMapMenu = function (test) {
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
         vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
         vfw.map.func.removeDrawInteractions();
-        vfw.sidebar.addSelectStoreButton({'name': 'Square'});
-        toggleDraw(document.getElementById("draw_square"))
+        // vfw.sidebar.addSelectStoreButton({'name': 'Square'});
+        vfw.map.func.toggleDrawBackground(document.getElementById("draw_square"))
     });
 
     vfw.map.control.draw.on('drawstart', function (event) {
@@ -532,7 +532,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
         vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
         vfw.map.func.removeDrawInteractions();
-        toggleDraw(document.getElementById("draw_polygon"))
+        vfw.map.func.toggleDrawBackground(document.getElementById("draw_polygon"))
 
         /*let extent = draw.getGeometry().getExtent();
         clusterLayer.forEachFeatureIntersectingExtent(extent, function(feature) {
@@ -556,7 +556,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
         $.when(vfw.map.func.getCatchment({'coords': click_coords})).done(function(catchment) {
             vfw.map.func.renderCatchment(catchment, 'wkt')
-            vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
+            // vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
             // vfw.map.olmap.addLayer(selectionLayer)
             // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
             // listener = selectStartFun(event)
@@ -570,7 +570,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // vfw.map.olmap.getLayers().getArray().filter(layer => layer.get('name') === 'Selection Layer')
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
         vfw.map.func.removeDrawInteractions();
-        toggleDraw(document.getElementById("draw_catchment"))
+        vfw.map.func.toggleDrawBackground(document.getElementById("draw_catchment"))
 
     })
 
@@ -599,18 +599,18 @@ vfw.map.func.toggleDrawFilter = function () {
         closedDrawfilter.style.display = "block";
         drawfilter.style.display = "none";
         // TODO: remove only if nothing selected
-        // document.getElementById("toggle_draw").classList.remove('active')
+        document.getElementById("toggle_draw").classList.remove('activeM')
     }
 }
 
 
 /**
- * Add toggle function for background of draw and modify button, and remove background by press on delete and close
+ * Toggle function for background of draw and modify button, and remove background by press on delete and close
  */
-function toggleDraw(self) {
+vfw.map.func.toggleDrawBackground = function (self) {
     let siblings = document.getElementsByClassName('draw-hover');
     let s;
-    let sLen = siblings.length - 1;  // avoid to toggle on the delete button
+    const sLen = siblings.length - 1;  // avoid to toggle on the delete button
     if (self.classList.contains('activeM')) {
         self.classList.remove('activeM');
         vfw.map.control.draw.finishDrawing();
@@ -654,9 +654,9 @@ function search_open() {
 vfw.util.getCookie = function(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
-        let cookies = document.cookie.split(';');
-        let nLen = name.length;
-        let cLen = cookies.length;
+        const cookies = document.cookie.split(';');
+        const nLen = name.length;
+        const cLen = cookies.length;
         for (let i = 0; i < cLen; i++) {
             let cookie = jQuery.trim(cookies[i]);
             // Does this cookie string begin with the name we want?
@@ -688,9 +688,9 @@ vfw.html.loaderOverlayOff = function () {
 vfw.html.moreInfoModal = function (id) {
     vfw.html.loaderOverlayOn();
     let pdata;
-    let urlParams = new URLSearchParams(window.location.search);
     let startdate, enddate;
-    let date = urlParams.getAll('date');
+    const urlParams = new URLSearchParams(window.location.search);
+    const date = urlParams.getAll('date');
 
     if ($.isEmptyObject(date)) {
         startdate = 'None'
@@ -836,8 +836,8 @@ vfw.sidebar.collectWorkspaceDatasets = function () {
 
 vfw.url.getDateFromURL = function () {
     let startdate, enddate;
-    let urlParams = new URLSearchParams(window.location.search);
-    let date = urlParams.getAll('date');
+    const urlParams = new URLSearchParams(window.location.search);
+    const date = urlParams.getAll('date');
 
     if ($.isEmptyObject(date)) {
         startdate = 'None'
@@ -958,8 +958,8 @@ vfw.util.toggleMapTableFilter = function (evt, tabName, isFilter = false) {
  */
 vfw.filter.updateQuickfilter = function() {
 
-    let url = window.location
-    let urlParams = new URLSearchParams(url.search);
+    const url = window.location
+    const urlParams = new URLSearchParams(url.search);
     let urlKey, long_search_id, ajax_element;
     let date = 0;
     let selector_string = "";
@@ -990,8 +990,8 @@ vfw.filter.updateQuickfilter = function() {
                 }
             } else if (urlKey[0] === 'draw') {
                 // let coords_list = urlKey[1].split(',').map(Number)
-                let coords_list = vfw.filter.coords;
-                let coords_len = coords_list.length;
+                const coords_list = vfw.filter.coords;
+                const coords_len = coords_list.length;
                 let coords = []
                 for (let i = 0; i < coords_len; i += 2) {
                     coords.push(ol.proj.fromLonLat([coords_list[i], coords_list[i + 1]]))
@@ -1082,10 +1082,10 @@ function quick_filter(selection) {
  * @param {string} selection
  */
 vfw.url.updateFilterURL = function(selection)  {
-vfw.html.loaderOverlayOn();
-    let nextURL;
-    let url = window.location
+    vfw.html.loaderOverlayOn();
+    const url = window.location
     let urlParams = new URLSearchParams(url.search);
+    let nextURL;
 
     let urlPath = url.origin + url.pathname;
     if (selection) {
@@ -1208,7 +1208,7 @@ vfw.map.func.getCatchment = function (start_value) {
                 // vfw.map.vars.selectionEdgeCoords = result.wkt;
                 vfw.filter.coords = [];
                 vfw.map.func.renderCatchment(result, 'wkt')
-                vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
+                // vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
                 // vfw.map.olmap.addLayer(selectionLayer)
                 vfw.html.getQuickSelection(urlPart);
                 vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // maybe use this var for an undo funciton in the draw menu
@@ -1224,7 +1224,7 @@ vfw.map.func.getCatchment = function (start_value) {
 
 
 /**
- * Renders the catchment on the map and add it as a 'Selection Layer'.
+ * Renders the catchment on the map and add it as a 'Selection Layer' (and filters accordingly).
  *
  * @param {Object} catchment - the catchment object to be rendered
  */

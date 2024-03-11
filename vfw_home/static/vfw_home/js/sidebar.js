@@ -1,10 +1,9 @@
 /** Toggle between showing and hiding the sidenav, and add overlay effect **/
 vfw.sidebar.w3_Open = function () {
     // Get the Sidenav
-    var mySidenav = document.getElementById("mySidenav");
-
+    let mySidenav = document.getElementById("mySidenav");
     // Get the DIV with overlay effect
-    var overlayBg = document.getElementById("myOverlay");
+    let overlayBg = document.getElementById("myOverlay");
 
     if (mySidenav.style.display === "block") {
         mySidenav.style.display = "none";
@@ -17,9 +16,8 @@ vfw.sidebar.w3_Open = function () {
 
 /** Close the sidenav with the close button **/
 vfw.sidebar.w3_Close = function () {
-    var mySidenav = document.getElementById("mySidenav");
-
-    var overlayBg = document.getElementById("myOverlay");
+    let mySidenav = document.getElementById("mySidenav");
+    let overlayBg = document.getElementById("myOverlay");
 
     mySidenav.style.display = "none";
     overlayBg.style.display = "none";
@@ -28,10 +26,9 @@ vfw.sidebar.w3_Close = function () {
 /** Toggle between showing and hiding the sidemenu, and add overlay effect **/
 vfw.sidebar.sidemenuOpen = function () {
     // Get the Sidemenu
-    var mySidemenu = document.getElementById("mySidemenu");
-
+    let mySidemenu = document.getElementById("mySidemenu");
     // Get the DIV with overlay effect
-    var overlaymenu = document.getElementById("mySidemenuOverlay");
+    let overlaymenu = document.getElementById("mySidemenuOverlay");
 
     if (mySidemenu.style.display === "block") {
         mySidemenu.style.display = "none";
@@ -63,21 +60,16 @@ vfw.sidebar.showData = function () {
      * When called from outside 'Home' check if data is
      * already pickled. If not pickle it. **/
         // (TODO: Should be monitored if a lot of data gets pickled but never used!)
-    let workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    const workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (workspaceData) {  // && "value" in workspaceData) {
         $.each(workspaceData, function (k) {
             vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(workspaceData[k]);
                     // console.log('vfw.datasets.dataObjects[k].test(): ', vfw.datasets.dataObjects[k].test())
             });
         return
-        vfw.sidebar.buildDatastoreButton(workspaceData);
-        if (window.location.pathname !== '/home/') {
-            // check if datasets are pickled and update buttons
-            vfw.sidebar.preloadDatastoreButton(workspaceData);
-        }
     }
     if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
-        let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+        const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
         let groups = {};
         if (resultData) {
             let html = "";
@@ -325,7 +317,7 @@ vfw.init.contextListener = function () {
  */
 vfw.init.clickListener = function () {
     document.addEventListener("click", function (e) {
-        let clickeElIsLink = vfw.sidebar.clickInsideElement(e, "context-menu__link");
+        const clickeElIsLink = vfw.sidebar.clickInsideElement(e, "context-menu__link");
         if (clickeElIsLink) {
             e.preventDefault();
             menuItemListener(clickeElIsLink);
