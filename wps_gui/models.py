@@ -2,8 +2,37 @@ from datetime import datetime
 
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+# from author_manage.models import
 
-# Create your models here.
+
+class GeoAPIResults(models.Model):
+    """
+    Store data of creation in case datasets get an update.
+    Last access time to be able to remove datasets not used for ages
+    """
+    PROCESS_STATES = [('STARTED', 'Process just started'),
+                      ('PENDING', 'Process is still running'),
+                      ('FINISHED', 'Process ended successfully'),
+                      ('ERROR', 'Process had an error'),
+                      ]
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
+    creation = models.DateTimeField(null=True)  # creation date
+    access = models.DateTimeField(blank=True, null=True)  # date of last access, relevant for cleaning
+    open = models.BooleanField()  # free to use for everyone?
+    outputs = models.JSONField(blank=True, max_length=2048)  # TODO: Use jsonField instead of CharField
+    name = models.JSONField(max_length=255)  # name of the process
+    inputs = models.CharField(max_length=4096)  # TODO: Use jsonField instead of CharField
+    status = models.CharField(max_length=8, choices=PROCESS_STATES, default='STARTED')
+
+    def __str__(self):
+        return f'{self.creation} - {self.name} - {self.status}'
+
+    class Meta:
+        managed = True
+        db_table = 'wps_gui_geoapiresults'
+
+
 class WebProcessingService(models.Model):
     """
     ORM for Web Processing Services settings.
@@ -27,6 +56,7 @@ class WpsResults(models.Model):
     Store data of creation in case datasets get an update.
     Last access time to be able to remove datasets not used for ages
     """
+    # owner = models.CharField(max_length=64)
     creation = models.DateTimeField(blank=True, null=True)
     access = models.DateTimeField(blank=True, null=True)
     open = models.BooleanField()
