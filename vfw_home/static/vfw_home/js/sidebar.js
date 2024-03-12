@@ -122,25 +122,26 @@ vfw.sidebar.addGroupaccordionToggle = function () {
  * Adds a data store button to the sidebar. Used when user uploads a dataset or presses save button in draw menu.
  * @param {object} file - In case of an uploaded geometry one can pass the whole object. Yet used is only file.name
  */
-vfw.sidebar.addSelectStoreButton = function (file={}) {
+vfw.sidebar.addSelectStoreButton = function (file={}, source="userUpload") {
     /** Data needed to create a Button in the datastore */
     const objData = {
         "name": "Select Area", "type": "geometry", "geom": vfw.filter.coords, "isGroupMember": false,
         "orgID": "selectArea"
     }
-    if ('name' in file) {
-        objData['name'] = file.name;
-    } else {
-        objData['name'] = "user upload";
-    }
-    objData['source'] = "userUpload";
+    objData['name'] = 'name' in file ? file.name : "user upload";
+    objData['source'] = source;
 
-    /** Use the latest upload for filtering */ // TODO: should not be done here
+    /** Use the latest upload for filtering */ // TODO: We don't update, we store all => new ID
     if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
-        vfw.datasets.selectObjects[objData['orgID']].update(objData);
-    } else {
-        vfw.datasets.selectObjects[objData['orgID']] = new vfw.datasets.selectObj(objData);
+        let newID = objData['orgID'];
+        let i = 0;
+        while (vfw.datasets.selectObjects.hasOwnProperty(newID)) {
+            newID = `${objData['orgID']}_${i++}`;
+        }
+        objData.orgID = newID;
+        objData.name = `${objData.name} (${i})`;
     }
+    vfw.datasets.selectObjects[objData['orgID']] = new vfw.datasets.selectObj(objData);
 }
 
 
@@ -819,6 +820,7 @@ function menuItemListener(link) {
             break;
         default:
             console.error('Error! There is no function defined for "' + link.getAttribute("data-action") + '".')
+            vfw.html.loaderOverlayOff();
 
     }
     // popText.classList.add(popInActive);
