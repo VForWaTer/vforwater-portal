@@ -8,7 +8,6 @@ app_name = 'vfw_home'
 
 urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
-    path('watts_login', views.LoginView.as_view(), name='watts_login'),
     path('help', views.HelpView.as_view(), name='help'),
     path('logout', views.LogoutView.as_view(), name='logout'),
     # re_path(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$',
