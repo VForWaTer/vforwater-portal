@@ -546,8 +546,11 @@ def handle_wps_output(execution, wps_process, inputs):
     return all_outputs
 
 
-# @login_required
-def process_run(request):  # TODO: Check if identical input exists in db before starting the process again
+# from requests_futures.sessions import FuturesSession
+
+
+@login_required(login_url="/oidc/authenticate/")
+def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
     # if request.user.is_authenticated:
     if True:
         process_description = ""
