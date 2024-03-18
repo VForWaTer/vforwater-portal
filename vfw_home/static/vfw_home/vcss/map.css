@@ -60,7 +60,7 @@ padding: 2px;
     /*display: block;*/
 }
 
-#draw_polygon, #modify_polygon, #draw_square, #remove_polygon, #draw_catchment {
+#draw_polygon, #modify_polygon, #draw_square, #remove_polygon, #draw_catchment, #store_polygon {
     width: 6px;
     height: 6px;
     /*background:rgba(0, 60, 136, .55);*/

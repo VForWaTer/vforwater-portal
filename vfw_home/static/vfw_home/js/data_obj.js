@@ -193,8 +193,7 @@ vfw.datasets.DataObj = class {
      * **/
     showContextMenu() {
         // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
-        let htmlElements = '<ul ' +
-            'class="context-menu__items">' + this._createContextMenu(this.orgID) + '</ul>'
+        let htmlElements = `<ul class="context-menu__items">${this._createContextMenu(this.orgID)}</ul>`
 
         vfw.sidebar.html.contextModal.open(htmlElements)
     }
