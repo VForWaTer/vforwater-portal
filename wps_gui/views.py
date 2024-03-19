@@ -93,7 +93,8 @@ def home(request):
             logger.error(sys.exc_info()[0])
             print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}')
             context = {
-                "wps_services": translation.gettext("At the moment the processes are not available. We apologize for the inconvenience."),
+                "wps_services": translation.gettext(
+                    "At the moment the processes are not available. We apologize for the inconvenience."),
                 "processes": "",
                 "service": "Error",
             }
@@ -618,6 +619,9 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         db_data['status'] = 'ERROR'
         newEntry = create_geoapi_db_entry(db_data, user_queryset)
 
+    # add the database id to the dataset. Needed to enable request of state from client to django
+    if not hasattr(db_data, 'id'):
+        db_data['id'] = newEntry['id']
     result = db_data
 
     if newEntry['error']:
@@ -626,6 +630,85 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         result = {'error': 'true'}
 
     return JsonResponse(result)
+
+
+def get_url_json(url):
+    """
+    Retrieve the state update of a process from the provided URL. URL should be from DB column GeoAPIresults.
+    It sends a GET request to the specified URL and returns the JSON response from the API.
+
+    Example usage:
+    ```
+    response = get_url_json('http://example.com/api/process/state')
+    print(response)
+    ```
+    :param url: The URL of the API endpoint to check the state of a process.
+    :return: The JSON response from the API indicating the state of the process.
+    """
+    try:
+        response = requests.get(url)
+    except Exception as e:
+        logger.error(f'Error checking state of process: {e}')
+        print(f'Error checking state of process: {e}')
+        response = {'error': 'Got no update from PyGeoAPI'}
+    return response.json()
+
+
+def process_state(request):
+    """
+    Check the state of a process in GeoAPI.
+
+    :param request: A request object that includes a process ID.
+    :return: A JSON response containing the process state or an error message.
+    """
+    # check if request includes a process id
+    try:
+        process_id = int(request.GET['processid'])
+    except Exception as e:
+        print('Got no ID to check process state: ', e)
+        logger.error(f'Got no ID to check process state: {e}')
+        return JsonResponse({'error': 'Got no ID to check process state.'})
+
+    # get element from database
+    try:
+        entry = GeoAPIResults.objects.get(id=process_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': f"Cannot check state of Process. Entry {process_id} seems not to exist"})
+
+    # check if user has access to this dataset. If yes get state from GeoAPI
+    if entry.open or request.user.id == entry.owner_id:
+        url = entry.outputs['path']
+        update = get_url_json(f'{url}?f=json')
+    else:
+        return JsonResponse({'error': 'No Access'})
+
+    # check status. If successful update database and send update
+    if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
+        result_url = f'{url}/results?f=json'
+        result = get_url_json(result_url)
+        entry.outputs['results'] = [{'path': result_url, 'json': result}]
+
+        entry.status = "FINISHED"
+        entry.access = timezone.now().isoformat()
+        try:
+            entry.save()
+
+        except ValueError as e:
+            print(f"ValueError while trying to update DB: {e}")
+            logger.error(f'ValueError while trying to update DB: {e}')
+
+        except Exception as e:
+            print(f"Unexpected error while trying to update DB: {e}")
+            logger.error(f'Unexpected error while trying to update DB: {e}')
+
+    else:
+        logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+
+    response_dict = {'status': entry.status,
+                     'results': [{'path': result_url, 'json': result}]
+                     }
+    return JsonResponse(response_dict)
 
 
 # # @login_required
