@@ -40,21 +40,7 @@
         {% endblock %}
     </div>
 
-    <hr style="margin-bottom:0px;">
-
-    <div class="w3-container w3-light-turquoise">
-        <b title="{% trans "Area to make the datasets you have selected available for further use." %}">{% trans "Data store" %}</b>
-    </div>
-    <ul class="w3-ul w3-card-4 w3-white" id="workspace">
-        <b class="w3-btn-group">
-            <input class="w3-btn w3-blue w3-right" type="submit"
-                   onclick="vfw.session.removeAllDatasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
-                   title="{% trans "Remove all datasets from data store" %}">
-        </b>
-    </ul>
-    <hr>
-{#    <hr style="margin-bottom:75%;">#}
-
+  <hr style="margin-bottom:0px;">
     <div class="w3-container w3-light-turquoise">
         <b title={% trans "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available." %}>{% trans "Result store" %}</b>
     </div>
@@ -63,6 +49,17 @@
             <input class="w3-btn w3-blue w3-right" type="submit"
                    onclick="vfw.session.removeAllResults()" value="{% trans "Remove all results" %}" data-toggle="tooltip"
                    title="{% trans "Remove all results from result store" %}">
+        </b>
+    </ul>
+<hr>
+    <div class="w3-container w3-light-turquoise">
+        <b title="{% trans "Area to make the datasets you have selected available for further use." %}">{% trans "Data store" %}</b>
+    </div>
+    <ul class="w3-ul w3-card-4 w3-white" id="workspace">
+        <b class="w3-btn-group">
+            <input class="w3-btn w3-blue w3-right" type="submit"
+                   onclick="vfw.session.removeAllDatasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
+                   title="{% trans "Remove all datasets from data store" %}">
         </b>
     </ul>
     {#<div id="w3popup" class="w3popup">#}
@@ -148,6 +145,8 @@
         </li>
     </ul>
 </nav>
+
+{% include 'vfw_home/context_modal.html' %}
 
 {% block loader_popup %}
   {% include 'vfw_home/loader_popup.html' %}  {# used to show results in result store#}

@@ -2,52 +2,49 @@
 create new object with new vfw.datasets.selectObj(json)
 The object is mainly copied from data_obj.js, and many functions can be carefully removed.
 */
-vfw.datasets.selectObj = class {
+vfw.datasets.resultObj = class {
+
+    storedTool = "";
+    htmlName = "";
+    id = "";
+    btnData = {};
     orgID = "";
-    uuID = "";
-    workID = "";
-    abbr = "";
-    name = "";
-    unit = "";
+    url = window.location.pathname;
     title = "";
+
+    dbID = "";
+    inputs = "";
+    input_keys = "";
+    input_values = "";
+    name = "";
     type = "";
-    start = "";
-    end = "";
-    inputs = {};
-    outputs = {};
-    location = {};
-    geom = {};
-    isGroupMember = "";
+    outputs = "";
+    wps = "";
+    status = "";
+    dropBtn = "";
     group = "";
-    source = "";
-    gjson = "";
-    url = "";
+    sessionStorage = "";
 
     constructor(data) {
         const defaultParams = {
             // source: "",
-            abbr: "",
-            name: "",
-            unit: "",
-            title: "",
-            type: "geometry",   // datatype for combining datasets in workspace
-            location: {},   // {type: string, coordinates: [lat, lon]
-            source: "", //this.setSource(),
-            sessionStorage: "",
-        };
-        if (!this.orgID) this.orgID = this.name;
-        this.htmlName = "";  // run createHtmlName to fill this
-        this.title = "";
-        this.url = window.location.pathname;
+            // type: "geometry",   // datatype for combining datasets in workspace
+            source: "wps", //this.setSource(),
+            storeKey: "resultBtn",
+            btnPosition: "workspace_results"  // ID of html element to add the button
+            }
 
         Object.assign(this, {...defaultParams, ...data});
+        console.log('this: ', this)
+        this._createHtmlName();
+        console.log('this. name : ', this.name)
+        console.log('this. orgID : ', this.orgID)
 
-        this.storeKey = "dataBtn";
-        this.btnPosition = "workspace";
+        // this.storeKey = "resultBtn";
+        // this.btnPosition = "workspace";
         this._adaptOrgID();
 
         this._setTitle();
-        this._createHtmlName();
         this._setSource();
         if (this.group.trim().length !== 0) {
             this.isGroupMember = true;
@@ -55,17 +52,6 @@ vfw.datasets.selectObj = class {
         }
         this._placeHtmlButton();
         this.save(data);
-        this.gjson = {
-            "crs": {
-                "type": "name",
-                "properties": {"name": "EPSG:4326"}
-            },
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": data["geom"]
-            }
-        };
     }
 
     download(element=this.orgID) {  // TODO: removeData var should be taken from this!
@@ -97,15 +83,15 @@ vfw.datasets.selectObj = class {
     removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
         document.getElementById(this.htmlElementID()).remove();
+        console.log('removeData: ', removeData)
 
         /** remove data from session: **/
         let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
 
         delete workspaceData[removeData];
-        delete vfw.datasets.selectObjects[this.orgID];
+        delete vfw.datasets.resultObjects[this.orgID];
         sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
-        if (this.url === "home") vfw.map.func.resetDraw();
     }
 
     save(data, update = false) {
@@ -134,6 +120,7 @@ vfw.datasets.selectObj = class {
     showContextMenu() {
         // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
         let htmlElements = `<ul class="context-menu__items">${this._createContextMenu(this.orgID)}</ul>`
+        console.log('htmlElements: ', htmlElements)
 
         vfw.sidebar.html.contextModal.open(htmlElements)
     }
@@ -157,7 +144,7 @@ vfw.datasets.selectObj = class {
 
        /**
      * Generate a new ID by appending a number to the given ID,
-     * if the given name already exists in the result button list in the sessionStorage.
+     * if the given name already exists in the result button list of the sessionStorage.
      */
     _adaptOrgID() {
         let existingObj = {};
@@ -204,9 +191,10 @@ vfw.datasets.selectObj = class {
      *
      * */
     function createMenuItem(action, iconClass, name, func) {
+        console.log('++++++++++++ create menu item - should orgID be this.orgID?')
         htmlElements += `<li class="context-menu__item"> ` +
             `<a class="context-menu__link" data-action=${action} ` +
-            `onclick=vfw.datasets.selectObjects['${orgID}'].${func}('${orgID}') > ` +
+            `onclick=vfw.datasets.resultObjects['${orgID}'].${func}('${orgID}') > ` +
             `<i class="fa ${iconClass}"></i> ${name}</a>` +
             `</li>`
     }
@@ -222,6 +210,10 @@ vfw.datasets.selectObj = class {
 
     _createHtmlButton() {
         /** set where to place the button **/
+        console.log('this orgid in create button: ', this.orgID)
+        console.log(`ajax orgid in create button: "${this.orgID}"`)
+        // console.log('vfw.datasets.resultObj: ', vfw.datasets.resultObj)
+        // console.log('vfw.datasets.resultObj[this.orgID]: ', vfw.datasets.resultObj[this.orgID])
         let dragHtml = "";
         if (this.url === '/workspace/') {
             dragHtml = 'draggable="true" ondragstart="dragstart_handler(event)"'
@@ -233,10 +225,10 @@ vfw.datasets.selectObj = class {
             `<span class="w3-medium" title="${this.title}">` +
             `<div class="task__content ${this.noData}">${this.htmlName}</div><div class="task__actions"></div>` +
             `</span><span class="data ${this.type}"></span>` +
-            `<a onclick=vfw.datasets.selectObjects['${this.orgID}'].removeData('${this.orgID}') ` +
+            `<a onclick=vfw.datasets.resultObjects['${this.orgID}'].removeData('${this.orgID}') ` +
             `class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>` +
             `</a>` +
-            `<a onclick=vfw.datasets.selectObjects['${this.orgID}'].showContextMenu('${this.orgID}') ` +
+            `<a onclick=vfw.datasets.resultObjects['${this.orgID}'].showContextMenu('${this.orgID}') ` +
             `class="w3-hover-white w3-right"><i class="fa fa-caret-down fa-fw"></i>` +
             `</a><br></li>`;
     }
@@ -246,6 +238,7 @@ vfw.datasets.selectObj = class {
      */
     _createHtmlName() {
         const nameLength = 21;
+        console.log('this.name: ', this.name)
         const vnLen = this.name.length;
         if (vnLen <= nameLength) this.htmlName = this.name
         else if (vnLen > nameLength) this.htmlName = this.name.substring(0, nameLength)

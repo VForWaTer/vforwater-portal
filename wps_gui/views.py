@@ -42,6 +42,7 @@ from pathlib import Path
 import jsonpickle
 import requests
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, JsonResponse
@@ -57,12 +58,12 @@ from vfw_home.datatypes import basicdatatypes, datatypes
 from vfw_home.models import Entries, Datatypes, EntrygroupTypes, Datasources, Timeseries_1D
 from vfw_home.utilities import entry_has_data
 from vfw_home.views import get_accessible_data, get_dataset
-from wps_gui.models import WpsResults, WebProcessingService, WpsDescription
+from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
     get_wps_service_engine,
     list_wps_service_engines,
     abstract_is_link, get_endpoint_data, get_process_basics, get_process_info, handle_geoapiprocess_output,
-    prepare_inputs, save_dataset,
+    prepare_inputs, save_dataset, create_geoapi_db_entry,
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -551,39 +552,81 @@ def handle_wps_output(execution, wps_process, inputs):
 
 @login_required(login_url="/oidc/authenticate/")
 def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
+    user_id = None
+    try:
+        user_id = request.user.id
+        user_queryset = User.objects.get(id=user_id)
+    except User.DoesNotExist as e:
+        print('User does not exist when running a process: ', e)
+        user_queryset = None
+
     # if request.user.is_authenticated:
-    if True:
-        process_description = ""
-        # request_input = json.loads(request.GET.get('processrun'))
-        input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
-        wps_process = input.get("id", "")
+    process_description = ""
+    # request_input = json.loads(request.GET.get('processrun'))
+    input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
+    wps_process = input.get("id", "")
 
-        if input['serv'] == 'pygeoapi_vforwater':
-            service, endpoint, wps_services = get_endpoint_data(DEBUG)
-            apiproc = getProcesses(endpoint)
-            process_description = get_process_info(apiproc.process(wps_process))
-        else:
-            print('You try to run a process, but I do not know your server.')
-
-        print(f'{endpoint}/processes/{wps_process}/execution')
-        print('inputs: ', input.get("in_dict", ""))
-        execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
-                                  json={'inputs': input.get("in_dict", ""),
-                                        # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
-                                        }
-                                  )
-        print('Execution: ', execution)
-        if execution.status_code == 200:
-            all_outputs = handle_geoapiprocess_output(request.user, execution, process_description, input)
-        else:
-            all_outputs = {'execution_status': f'error: {execution.reason}'}
-            print(f'Error in process - caught in process_run function: {all_outputs}')
+    if input['serv'] == 'pygeoapi_vforwater':
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        apiproc = getProcesses(endpoint)
+        process_description = get_process_info(apiproc.process(wps_process))
     else:
-        all_outputs = {'execution_status': 'auth_error'}
-        print(f'user is not authenticated. {all_outputs}')
+        logger.error(f'Cannot run process. Server "{input['serv']}" is unknown.')
+        # print('You try to run a process, but I do not know your server.')
 
-    print('all_outputs: ', all_outputs)
-    return JsonResponse(all_outputs)
+    try:
+        execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
+                              json={
+                                  "mode": "async",
+                                  # TODO: old setting from PyGeoAPI 0.13. Change for newer version
+                                  'inputs': {**input.get("in_dict", ""),
+                                             'User-Info':  # plant the username in last moment
+                                                 f'userID{user_id}_'}
+                                      # input.get("in_dict", ""),
+                                  # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
+                              },
+                              headers={'Content-Type': 'application/json',
+                                       # "Prefer": "respond-async"  # TODO: Use this for PyGeoAPI 0.16 and newer
+                                       }
+                              )
+    except Exception as e:
+        print('e: ', e)
+        logger.error(f'Cannot Execute process: {e}.')
+
+    db_data = {'inputs': input.get("in_dict", ""),
+               'name': wps_process,
+               'open': False if user_id else True,
+               'outputs': {'path': execution.headers['Location'],
+                           'jobMeta_path': f"{execution.headers['Location']}?f=json",
+                           'results': ""
+                           # 'results': f"{execution.headers['Location']}/results?f=json"
+                           },
+               # 'user': user_id,
+               }
+
+    if execution.status_code == 201:  # if request is created
+        # Save the job url for later use
+        db_data['status'] = 'CREATED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    elif execution.status_code == 202:  # if request is accepted
+        db_data['status'] = 'ACCEPTED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    elif execution.status_code == 200:  # if done
+        db_data['status'] = 'FINISHED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    else:
+        db_data['status'] = 'ERROR'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+
+    result = db_data
+
+    if newEntry['error']:
+        logger.error(f'Error creating database entry for process result: {newEntry['error']}')
+        print(f'Error creating database entry for process result: {newEntry['error']}')
+        result = {'error': 'true'}
+
+    return JsonResponse(result)
+
 
 # # @login_required
 # def process_run(request):
@@ -605,6 +648,7 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
 #     return JsonResponse(all_outputs)
 
 
+# TODO: Not used now, with processes that need only IDs. Maybe usable at a later state again.
 def db_load(request):
     """
     Function to preload data from database, convert it, and store a pickle of the data
@@ -612,7 +656,6 @@ def db_load(request):
     ('end', datetime.datetime(2018, 12, 31, 0, 0))]
 
     This function was to make data available before the user runs a tool. Was used to improve user experience.
-    TODO: Not used now, with processes that need only IDs. Maybe usable at a later state again.
     :param request: dict
     :return:
     """

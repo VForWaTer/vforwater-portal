@@ -41,9 +41,8 @@ vfw.sidebar.sidemenuOpen = function () {
 
 /** Close the sidemenu with the close button **/
 vfw.sidebar.sidemenuClose = function () {
-    var mySidemenu = document.getElementById("mySidemenu");
-
-    var overlaymenu = document.getElementById("mySidemenuOverlay");
+    let mySidemenu = document.getElementById("mySidemenu");
+    let overlaymenu = document.getElementById("mySidemenuOverlay");
 
     mySidemenu.style.display = "none";
     overlaymenu.style.display = "none";
@@ -484,7 +483,7 @@ vfw.workspace.modal.setInPortValue = function (btnKey, btnValues) {
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    let htmlelement = vfw.html.create_input_element(btnValues, resultData, sessionStoreData)
+    let htmlelement = vfw.html.createInputElement(btnValues, resultData, sessionStoreData)
 }
 
 
@@ -559,6 +558,8 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
  * @param {html} link - HTML Element of the clicked link
  */
 function menuItemListener(link) {
+    if (!vfw.var.taskItemInContext) return;
+
     let wpsToOpen = "";
     let service = {};
     let id = vfw.var.taskItemInContext.getAttribute("data-id");
@@ -680,7 +681,8 @@ function menuItemListener(link) {
             break;
         case "Remove":
             // vfw.session.removeSingleData(id);
-            vfw.datasets.dataObjects[id].removeData(id)
+            if (id in vfw.datasets.dataObjects) vfw.datasets.dataObjects[id].removeData(id);
+            else console.warn('Remove is not correctly implemented.')
             // vfw.html.popup.classList.remove(popActive);
             vfw.html.loaderOverlayOff();
             break;

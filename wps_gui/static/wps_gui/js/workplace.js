@@ -580,10 +580,24 @@ vfw.workspace.modal.runProcess = function () {
                         += vfw.workspace.buildResultGroupButton(groupName, members);
                     vfw.sidebar.addGroupaccordionToggle()
                 }
-            } else if (json.execution_status == "Exception") {
+            }
+            else if (json.status == 'ERROR') {
                 console.error('error in wps process')
                 vfw.workspace.modal.setColor("firebrick");
-                // alert('Error: Failed to execute your request.');
+            } else if (json.status == 'CREATED' || json.status == 'ACCEPTED') {
+                vfw.workspace.modal.setColor("orange");
+                if (!json['orgID']) {
+                    // create an id for the new object
+                    const urlParts = json.outputs.path.split("/");
+                    json['orgID'] = json.name + '_' + urlParts[urlParts.length -1];
+                }
+
+                // create object
+                vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json);
+
+            } else if (json.status == 'FINISHED') {
+                alert('Finished neeeds implementation (Short running porcess)')
+                vfw.workspace.modal.setColor("green");
             } else if (json.execution_status == "error in wps process") {
                 vfw.workspace.modal.setColor("firebrick");
                 console.error('Error in wps process: ', json.error)
@@ -625,7 +639,7 @@ function run_wps(input_dict) {
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
     // '2020-10-31T14:10'
-    // fetch(GEO_SERVER + '/wfs/' + vfw.map.vars.wfsLayerName + '/' + extent.join(',') + '/3857',
+    // fetch(GEO_SERVER + '/wfs/' + vfw.var.DATA_LAYER_NAME + '/' + extent.join(',') + '/3857',
     //             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
     //             // credentials: 'same-origin'}
     //             )
@@ -1080,7 +1094,7 @@ vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup
     return optionGroup
 }
 
-vfw.html.create_input_element = function (input_tool_description, resultData, sessionStoreData) {
+vfw.html.createInputElement = function (input_tool_description, resultData, sessionStoreData) {
     let inElement = "", newNode = "", nodeText = "";
     let item = input_tool_description[1];
     let entry_name = input_tool_description[0];
@@ -1238,9 +1252,9 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     // let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
 
     let newElement = "";
-    let modHeadElement = document.getElementById("mod_head");
     let modInElement = document.getElementById("mod_in");
     let modOutElement = document.getElementById("mod_out");
+    let modFootElement = document.getElementById("modal-footer");
 
     if (!sessionStoreData) sessionStoreData = {}
     if (!resultData) resultData = {}
@@ -1249,16 +1263,9 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     } else {
         workflowData = workflowData[boxId]
     }
-    modHeadElement.innerHTML = wpsInfo.title;
-    modHeadElement.dataset.service = service;
-    modHeadElement.dataset.process = wpsInfo.id;
-    modHeadElement = document.getElementById("mod_abs");
-    if (wpsInfo.description) {
-        newElement = wpsInfo.description;
-        // } else {
-        //     newElement = ""
-    }
-    modHeadElement.innerHTML = newElement;
+
+    /** create the heading of the modal */
+    vfw.workspace.modal.setHead(wpsInfo, service)
 
     /** inputs: **/
     // modInElement = document.getElementById("mod_in");
@@ -1268,7 +1275,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
 
     // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
     Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
-        newNode = vfw.html.create_input_element(entry_value, resultData, sessionStoreData);
+        newNode = vfw.html.createInputElement(entry_value, resultData, sessionStoreData);
         if (typeof (newNode) === 'object') modInElement.appendChild(newNode)
     });
 
@@ -1289,6 +1296,11 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     modal.setAttribute("name", wpsInfo.identifier);
     modal.style.display = "block";
     let currentModal = new vfw.workspace.modalObj(wpsInfo.identifier, outElementIdList);
+
+    let batchBtn = modFootElement.getElementsByClassName("work_modal-createbatch")[0]
+    batchBtn.addEventListener("click", function (evt) {
+        vfw.workspace.modal.openBatchprocess('modal', wpsInfo, service);
+    });
     // TODO: get right name for sessionstorage
     // sessionStorage.setItem("currentModal", JSON.stringify(currentModal));
     // console.log('+++: ', JSON.stringify(vfw.workspace.modalObj))

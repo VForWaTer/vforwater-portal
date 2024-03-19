@@ -87,6 +87,10 @@ iframe {
     float: left;
 }
 
+.modal-btn-left {
+    float: left;
+}
+
 .modal-header {
     padding: 2px 12px;
     background-color: rgb(239, 251, 251);
