@@ -83,7 +83,6 @@ vfw.datasets.resultObj = class {
     removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
         document.getElementById(this.htmlElementID()).remove();
-        console.log('removeData: ', removeData)
 
         /** remove data from session: **/
         let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
@@ -92,6 +91,13 @@ vfw.datasets.resultObj = class {
         delete vfw.datasets.resultObjects[this.orgID];
         sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
+    }
+
+    refresh() {  // TODO: removeData var should be taken from this!
+        /** remove data from portal: **/
+        // console.log('refreshData: ', refreshData)
+        console.log('refreshData  this.orgID:  ', this.orgID)
+
     }
 
     save(data, update = false) {
@@ -210,13 +216,16 @@ vfw.datasets.resultObj = class {
 
     _createHtmlButton() {
         /** set where to place the button **/
-        console.log('this orgid in create button: ', this.orgID)
-        console.log(`ajax orgid in create button: "${this.orgID}"`)
-        // console.log('vfw.datasets.resultObj: ', vfw.datasets.resultObj)
-        // console.log('vfw.datasets.resultObj[this.orgID]: ', vfw.datasets.resultObj[this.orgID])
         let dragHtml = "";
+        let stateIndicator = "";
         if (this.url === '/workspace/') {
             dragHtml = 'draggable="true" ondragstart="dragstart_handler(event)"'
+        }
+        if (this.status === "ACCEPTED" || this.status === "CREATED") {  // add refresh button if not finished
+            stateIndicator = `<a onclick=vfw.datasets.resultObjects[\'${this.orgID}\'].refresh() ` +
+                `class="w3-hover-white"><i class="process-state fa fa-refresh process-${this.status}"></i>`
+        } else {
+            stateIndicator = `<i class="process-state process-${this.status}"></i>`
         }
         return `<li ` + dragHtml + ` class="w3-padding task" data-sessionstore=${this.storeKey} ` +
             `data-orgid="${this.orgID}"` +
@@ -224,7 +233,7 @@ vfw.datasets.resultObj = class {
             `data-btnName="${this.htmlName}" style="cursor:pointer;" id="${this.htmlElementID()}">` +
             `<span class="w3-medium" title="${this.title}">` +
             `<div class="task__content ${this.noData}">${this.htmlName}</div><div class="task__actions"></div>` +
-            `</span><span class="data ${this.type}"></span>` +
+            `</span><span class="data ${this.type}"></span>${stateIndicator}` +
             `<a onclick=vfw.datasets.resultObjects['${this.orgID}'].removeData('${this.orgID}') ` +
             `class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>` +
             `</a>` +
