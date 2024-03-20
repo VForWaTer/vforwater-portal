@@ -57,6 +57,69 @@ vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs = nu
 }
 
 /**
+ * Set the head content of a modal in the workspace modal. Add Title and abstract form the tool.
+ *
+ * @param {object} wpsInfo - The content as JSON to set the head of the modal.
+ * @param {string} service - Might be needed later for running the process.
+ */
+vfw.workspace.modal.setHead = function (wpsInfo, service) {
+    let modHeadElement = document.getElementById("mod_head");
+    modHeadElement.innerHTML = wpsInfo.title;
+    modHeadElement.dataset.service = service;
+    modHeadElement.dataset.process = wpsInfo.id;
+    modHeadElement = document.getElementById("mod_abs");
+    if (wpsInfo.description) {
+        newElement = wpsInfo.description;
+    }
+    modHeadElement.innerHTML = newElement;
+}
+
+/**
+ * Load metadata of a wps process if not available.
+ * The in- and outputs (and so on) of a tool are used from the normal tool if available.
+ * TODO: also a batch job should be stored somehow to make it available. Maybe through a grouping (button) of the results?
+ * @param {string} origin - depending on the source the sources to fill the input fields are different
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ **/
+vfw.workspace.modal.openBatchprocess = function (origin='modal', wpsInfo={}, service="",
+                                                  identifier="", inputs = null, boxId=[]) {
+    if (wpsInfo === {}) wpsInfo = vfw.session.get_wpsprocess(service, identifier)
+    // const modal_values = vfw.session.get_workflow();
+
+    let sessionStoreData = getStorageOrDict("dataBtn");
+    let resultData = getStorageOrDict("resultBtn");
+    let workflowData = getStorageOrDict("workflow");
+
+    let newElement = "";
+    let modInElement = document.getElementById("mod_in");
+    let modOutElement = document.getElementById("mod_out");
+    let modFootElement = document.getElementById("modal-footer");
+
+    if (!sessionStoreData) sessionStoreData = {}
+    if (!resultData) resultData = {}
+    if (!workflowData) {
+        workflowData = {}
+    } else {
+        workflowData = workflowData[boxId]
+    }
+
+    /** create the heading of the modal */
+    vfw.workspace.modal.setHead(wpsInfo, service)
+    Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
+        newNode = vfw.html.createBatchInputElement(entry_value, resultData, sessionStoreData);
+        if (typeof (newNode) === 'object') modInElement.appendChild(newNode)
+    });
+}
+
+vfw.html.createBatchInputElement = function (entry_value, resultData, sessionStoreData) {
+    console.log('batch input')
+    console.log('entry_value: ', entry_value)
+    console.log('resultData: ', resultData)
+    console.log('sessionStoreData: ', sessionStoreData)
+}
+
+/**
  * Modal to change data of a port.
  *
  * @param {string} service - wps service as stored in database
@@ -851,7 +914,8 @@ vfw.session.removeAllResults = function () {
     /** remove button from portal **/
     $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key, value) {
         groupSet.add(value.group)
-        vfw.session.removeSingleResult(key);
+        const delete_id = 'htmlElementID' in value ? value['htmlElementID'] : key;
+        vfw.session.removeSingleResult(delete_id);
     });
 
     /** remove result data from session **/
@@ -1428,15 +1492,16 @@ vfw.workspace.workflow.prep_wps_workflow = function (workflow, processChain) {
             value_list: workflow[i].input_values,
         }
     }
-/*    let goal = {
-        id: "flowdurationcurve"
-        inId_list: (3) ['db494', '', '']
-        in_type_list: (3) ['timeseries', 'boolean', 'boolean']
-        key_list: (3) ['ts-pickle', 'non-exceeding', 'log']
-        outputName: "flowdurationcurve_"
-        serv: "PyWPS_vforwater"
-        value_list: (3) ['wps1047', false, true]
-    }*/
+    /*    let goal = {
+            id: "flowdurationcurve"
+            inId_list: (3) ['db494', '', '']
+            in_type_list: (3) ['timeseries', 'boolean', 'boolean']
+            key_list: (3) ['ts-pickle', 'non-exceeding', 'log']
+            outputName: "flowdurationcurve_"
+            serv: "PyWPS_vforwater"
+            value_list: (3) ['wps1047', false, true]
+        }*/
+
     return preppedWorkflow;
 }
 

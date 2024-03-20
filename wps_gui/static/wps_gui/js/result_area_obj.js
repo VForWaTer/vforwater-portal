@@ -24,6 +24,8 @@ vfw.datasets.resultObj = class {
     dropBtn = "";
     group = "";
     sessionStorage = "";
+    btnPosition = "";
+    htmlElementID = "";
 
     constructor(data) {
         const defaultParams = {
@@ -39,6 +41,7 @@ vfw.datasets.resultObj = class {
         this._createHtmlName();
         console.log('this. name : ', this.name)
         console.log('this. orgID : ', this.orgID)
+        this.htmlElementID = this.btnPosition + this.orgID;
 
         // this.storeKey = "resultBtn";
         // this.btnPosition = "workspace";
@@ -51,7 +54,7 @@ vfw.datasets.resultObj = class {
             this._buildHtmlGroup()
         }
         this._placeHtmlButton();
-        this.save(data);
+        this.save();
     }
 
     download(element=this.orgID) {  // TODO: removeData var should be taken from this!
@@ -76,13 +79,9 @@ vfw.datasets.resultObj = class {
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
     }
 
-    htmlElementID() {
-        return this.btnLocation + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
-    }
-
     removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
-        document.getElementById(this.htmlElementID()).remove();
+        document.getElementById(this.htmlElementID).remove();
 
         /** remove data from session: **/
         let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
@@ -93,16 +92,35 @@ vfw.datasets.resultObj = class {
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
     }
 
+    /**
+     * Send request to django if there is an update on the process.
+     * If yes, update object (with sessionstorage and html)
+     */
     refresh() {  // TODO: removeData var should be taken from this!
-        /** remove data from portal: **/
-        // console.log('refreshData: ', refreshData)
-        console.log('refreshData  this.orgID:  ', this.orgID)
+
+        $.ajax({
+            url: vfw.var.DEMO_VAR + '/workspace/processstate',
+            data: {'processid': this.id,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+            }
+        })
+            .done(result => {
+                if (result.status !== this.status) {
+                    this.status = result.status;
+                    this.update(result);
+                }
+            })
+            .fail(error => {
+                console.warn('failed getting data from server: ', error)
+        })
 
     }
 
-    save(data, update = false) {
+    /** save info to build object in session Storage
+     * @param {Object} data - The data to be stored. Default is the whole object.
+     * **/
+    save(data = this, update = false) {
         let stored;
-        // let newID = this._adaptOrgID()
         let newID = this.orgID
         data['inSessionStorage'] = true;
         if (sessionStorage.getItem(this.storeKey)) {
@@ -118,6 +136,11 @@ vfw.datasets.resultObj = class {
             sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
             sessionStorageData = data
         }
+    }
+
+    load() {
+        console.log('this.storeKey: ', this.storeKey)
+        return sessionStorage.getItem(this.storeKey);
     }
 
     /** Several functions to fill and show a context menu
@@ -136,7 +159,7 @@ vfw.datasets.resultObj = class {
      * @param {Object} data - The updated data to be applied.
      */
     update(data) {
-        let properties = {};
+        let properties = {}; //= this.load();
         for (const key of Object.keys(this)) {
             properties[key] = this[key];
         }
@@ -229,8 +252,8 @@ vfw.datasets.resultObj = class {
         }
         return `<li ` + dragHtml + ` class="w3-padding task" data-sessionstore=${this.storeKey} ` +
             `data-orgid="${this.orgID}"` +
-            `data-id="${this.orgID}" btnName="${this.htmlName}" onmouseover="" ` +  // TODO: remove btnName - might be used when dropped i dropzone
-            `data-btnName="${this.htmlName}" style="cursor:pointer;" id="${this.htmlElementID()}">` +
+            `data-id="${this.orgID}" btnName="${this.htmlName}" onmouseover="" ` +  // TODO: remove btnName - but might be used when dropped in dropzone...
+            `data-btnName="${this.htmlName}" style="cursor:pointer;" id="${this.htmlElementID}">` +
             `<span class="w3-medium" title="${this.title}">` +
             `<div class="task__content ${this.noData}">${this.htmlName}</div><div class="task__actions"></div>` +
             `</span><span class="data ${this.type}"></span>${stateIndicator}` +
@@ -258,7 +281,7 @@ vfw.datasets.resultObj = class {
     }
 
     _replaceHtmlButton() {
-        let thisHtmlButton = document.getElementById(this.htmlElementID())
+        let thisHtmlButton = document.getElementById(this.htmlElementID)
         $(thisHtmlButton).replaceWith(this._createHtmlButton());
     }
 
@@ -301,6 +324,7 @@ vfw.datasets.resultObj = class {
         this.title = `${this.name}`;
     }
 
+    // TODO: not used, keep to improve actually used update function
     async _update() {
         /** ensure datasets without type will not be loaded (because usually they have no actual data) **/
         if (!this.type) return

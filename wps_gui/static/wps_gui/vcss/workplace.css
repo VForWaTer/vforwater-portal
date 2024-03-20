@@ -122,6 +122,26 @@ p.modal-datainfo {
     color: darkblue;
 }
 
+.process-state {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    /*background: red;*/
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.process-ERROR {
+    background: firebrick;
+}
+.process-CREATED, .process-ACCEPTED {
+    background: orange;
+}
+.process-FINISHED, .process-successful {
+    background: green;
+}
+
 /*
 rect {
   resize: both;

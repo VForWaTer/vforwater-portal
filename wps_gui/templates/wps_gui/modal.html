@@ -29,7 +29,10 @@
                  title="{% trans "Place tool in Dropzone. If tool already exists only change values." %}">Drop
       </span-drop>
       <span-r class="work_modal-run modal-btn">Run</span-r>
-      <span-out class="work_modal-output" style="display: none">{%  trans "View result" %}</span-out>
+      <span-createbatch class="work_modal-createbatch modal-btn modal-btn-left"
+                        title="{% trans "Create a batch job for this tool." %}">Create Batch Job
+      </span-createbatch>
+      <span-out class="work_modal-output" style="display: none">{% trans "View result" %}</span-out>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
       <h3></h3>
     </div>
@@ -88,20 +91,21 @@
 </template>
 
 <script>
-  // Get the modal
+  /** Get the modal */
   vfw.html.workModal = document.getElementById("workModal");
-  {#let modal = document.getElementById("workModal");#}
-  // Get the <span> element that closes the modal
+  /** Get the <span> elements that add actions to the modal */
   vfw.html.workModal.close = document.getElementsByClassName("work_close")[0];
   vfw.html.workModal.cancel = document.getElementsByClassName("work_modal-cancel")[0];
   vfw.html.workModal.drop = document.getElementsByClassName("work_modal-drop")[0];
   vfw.html.workModal.run = document.getElementsByClassName("work_modal-run")[0];
 
-  // When the user clicks on <span> (x), close the modal
+  /** Add click functions to the html elements */
+  /** When the user clicks on <span> (x), close the modal */
   vfw.html.workModal.close.onclick = () => closeModal();
+
   vfw.html.workModal.run.onclick = () => {
-    {#vfw.html.workModal.style.display = "none";#}
-    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal)) vfw.workspace.modal.runProcess()
+    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal))
+      vfw.workspace.modal.runProcess()
   };
   vfw.html.workModal.drop.onclick = (event) => {
     console.log('onclick __________')
@@ -124,10 +128,7 @@
         modal_value = JSON.parse(modal_value)
         tool_id = modal_value['id'];
         service = modal_value['service'];
-        console.log('tool_id: ', tool_id)
-      console.log('service: ', service)
         let toolbox = canvas.getFigure(tool_id)
-        console.log('G')
         event.state = 'change';
         event.id = tool_id;
         toolbox.state = 'change';
@@ -147,44 +148,41 @@
          * Then check if tool (one if the changes) is connected with other elements to drop and get ports **/
         for (let i in modal_data.in_type_list) {
           console.log('i: ', i)
-            if (vfw.var.DATATYPES.includes(modal_data.in_type_list[i]) && modal_data.inId_list[i]) {
-              if (modal_data.inId_list[i] != active_tool.input_ids[i]) {
-                metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modal_data.inId_list[i]]
+          if (vfw.var.DATATYPES.includes(modal_data.in_type_list[i]) && modal_data.inId_list[i]) {
+            if (modal_data.inId_list[i] != active_tool.input_ids[i]) {
+              metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modal_data.inId_list[i]]
               console.log('metadata: ', metadata)
-                coords = vfw.workspace.get_drop_coords();
-                console.log('A')
-                newbox = vfw.workspace.drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
-                console.log('B')
-                console.log('newbox: ', newbox)
-                change_values = {
-                  'target': {
-                    'index': i,
-                    'boxid': tool_id,
-                    'orgid': modal_data.id,
-                    'value': modal_data.value_list[i],
-                  },
-                  'source': {
-                    'index': i,
-                    {#'boxid': newbox.boxID,#}
-                    'boxid': newbox.boxID,
-                    'orgid': modal_data.inId_list[i],
-                    'value': modal_data.id,
-                  }
+              coords = vfw.workspace.get_drop_coords();
+              newbox = vfw.workspace.drop_handler(metadata, coords['x'] - 40, coords['y'] - 40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
+              console.log('newbox: ', newbox)
+              change_values = {
+                'target': {
+                  'index': i,
+                  'boxid': tool_id,
+                  'orgid': modal_data.id,
+                  'value': modal_data.value_list[i],
+                },
+                'source': {
+                  'index': i,
+                  {#'boxid': newbox.boxID,#}
+                  'boxid': newbox.boxID,
+                  'orgid': modal_data.inId_list[i],
+                  'value': modal_data.id,
                 }
-                event.target.index = i;
               }
-                // console.log("'sidebtn' + modalData.inId_list[i]: ", 'sidebtn' + modalData.inId_list[i])
-                // console.log('tool_id: ', tool_id)
-                {#tool_id = newbox.boxID;#}
-                {#databox = newbox.box;#}
-                {#dataport = databox.getOutputPort(0);#}
-                // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
-                {#toolport = toolbox.getInputPort(parseInt(i));#}
-                // add_connection(dataport, toolport);
-               else if (active_tool.input_values[i] != modal_data.value_list[i]) {
-                 console.log('C')
+              event.target.index = i;
+            }
+              // console.log("'sidebtn' + modalData.inId_list[i]: ", 'sidebtn' + modalData.inId_list[i])
+              // console.log('tool_id: ', tool_id)
+              {#tool_id = newbox.boxID;#}
+              {#databox = newbox.box;#}
+              {#dataport = databox.getOutputPort(0);#}
+              // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
+              {#toolport = toolbox.getInputPort(parseInt(i));#}
+            // add_connection(dataport, toolport);
+            else if (active_tool.input_values[i] != modal_data.value_list[i]) {
 
-                change_values = {
+              change_values = {
                 'target': {
                   'index': i,
                   'boxid': tool_id,
@@ -199,10 +197,10 @@
                   'value': modal_data.value_list[i],
                 }
               }
-              }
-          console.log('not in type list')
+            }
+            console.log('not in type list')
           }
-        change_values['state'] = 'change';
+          change_values['state'] = 'change';
           console.log('--- Lets update with: ', change_values)
           vfw.workspace.workflow.update(change_values)
         }

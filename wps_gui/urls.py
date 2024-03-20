@@ -15,7 +15,8 @@ urlpatterns = [
     path('processview', views.ProcessView.as_view(), name='processview'),
     # path('dbload', views.db_load, name='dbload'),
     path('processrun', views.process_run, name='processrun'),
-    path('workflowrun', views.workflow_run, name='workflowrun'),
+    path('processstate', views.process_state, name='processstate'),
     path('updatetools', views.update_tools, name='updatetools'),
+    path('workflowrun', views.workflow_run, name='workflowrun'),
     # url(r'^(?P<service>\w+)/', include(service_urls)),
 ]
