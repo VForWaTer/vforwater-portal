@@ -1,5 +1,5 @@
 /**
-create new object with new vfw.datasets.selectObj(json)
+create new object with new vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json)
 The object is mainly copied from data_obj.js, and many functions can be carefully removed.
 */
 vfw.datasets.resultObj = class {
@@ -207,8 +207,7 @@ vfw.datasets.resultObj = class {
     const itemParams = {
         // set parameters: action, iconClass, name, function
         "geometry": [
-            ["UseAsFilter", "fa-filter", gettext("Use as filter"), "filterData"],
-            ["DownloadGJson", "fa-download", gettext("Download data"), "download"],
+            ["DownloadJSON", "fa-download", gettext("Download data"), "download"],
             ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
         ],
         "default": [
@@ -220,7 +219,6 @@ vfw.datasets.resultObj = class {
      *
      * */
     function createMenuItem(action, iconClass, name, func) {
-        console.log('++++++++++++ create menu item - should orgID be this.orgID?')
         htmlElements += `<li class="context-menu__item"> ` +
             `<a class="context-menu__link" data-action=${action} ` +
             `onclick=vfw.datasets.resultObjects['${orgID}'].${func}('${orgID}') > ` +
@@ -265,9 +263,7 @@ vfw.datasets.resultObj = class {
             `</a><br></li>`;
     }
 
-    /**
-     * Create a name for buttons according to the length of the name string
-     */
+    /** Create a name for buttons according to the length of the name string */
     _createHtmlName() {
         const nameLength = 21;
         console.log('this.name: ', this.name)

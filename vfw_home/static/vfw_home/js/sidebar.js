@@ -55,15 +55,19 @@ vfw.sidebar.sidemenuClose = function () {
  */
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 vfw.sidebar.showData = function () {
-    /** Initiate creation of data Button in data and result store.
-     * When called from outside 'Home' check if data is
-     * already pickled. If not pickle it. **/
+    /** Initiate creation of data Button in data and result store.  **/
         // (TODO: Should be monitored if a lot of data gets pickled but never used!)
-    const workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    if (workspaceData) {  // && "value" in workspaceData) {
-        $.each(workspaceData, function (k) {
-            vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(workspaceData[k]);
-                    // console.log('vfw.datasets.dataObjects[k].test(): ', vfw.datasets.dataObjects[k].test())
+        // console.log('~~~ Start creating page content ~~~~')
+    const dataStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    const resultStoreData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    if (dataStoreData) {  // && "value" in workspaceData) {
+        $.each(dataStoreData, function (k) {
+            vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
+            });
+    }
+    if (resultStoreData) {  // && "value" in workspaceData) {
+        $.each(resultStoreData, function (k) {
+            vfw.datasets.resultObjects[k] = new vfw.datasets.resultObj(resultStoreData[k]);
             });
         return
     }
