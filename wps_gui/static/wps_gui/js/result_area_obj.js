@@ -45,7 +45,6 @@ vfw.datasets.resultObj = class {
 
         // this.storeKey = "resultBtn";
         // this.btnPosition = "workspace";
-        this._adaptOrgID();
 
         this._setTitle();
         this._setSource();
@@ -169,26 +168,6 @@ vfw.datasets.resultObj = class {
         this._createHtmlButton()
         this._replaceHtmlButton()
         // this.geom = data["geom"];
-    }
-
-       /**
-     * Generate a new ID by appending a number to the given ID,
-     * if the given name already exists in the result button list of the sessionStorage.
-     */
-    _adaptOrgID() {
-        let existingObj = {};
-        let newID = this.orgID;
-        if (sessionStorage.getItem(this.storeKey)) {
-            existingObj = JSON.parse(sessionStorage.getItem(this.storeKey));
-            if (Object.keys(existingObj).includes(newID)) {
-                var i = 0;
-                while (Object.keys(existingObj).includes(newID)) {
-                    newID = `${this.orgID}_${i++}`;
-                }
-            }
-        }
-        this.orgID = newID;
-        return newID;
     }
 
     _buildHtmlGroup() {
