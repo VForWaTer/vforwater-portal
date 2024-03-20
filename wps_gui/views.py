@@ -654,6 +654,48 @@ def get_url_json(url):
     return response.json()
 
 
+def delete_result(request):
+    """
+    Delete a specific result entry from the GeoAPIResults model based on the provided process ID.
+    Deletion works only if request user and DB entry owner are the same. (TODO: later we want ownership to be shared. Who can delete then?)
+
+    First retrieve the user record based on the user ID from the request object.
+    Next, retrieve the GeoAPIResults entry based on the owner_id (user) and the process_id from the request object.
+
+    If the user does not exist or the entry cannot be found, an exception is send to the server.
+    If entry is found, the method deletes it. A deletion result with the number of deleted rows is send to the client.
+
+    :param request: HttpRequest object containing the request data id.
+    :return: JsonResponse sending done if deletion worked, else some error message.
+
+    """
+    try:
+        process_id = int(request.GET['processid'])
+        user_queryset = User.objects.get(id=request.user.id)
+
+    except User.DoesNotExist as e:
+        print('User does not exist when running a process: ', e)
+        user_queryset = None
+
+    except Exception as e:
+        print('Got no ID to delete process: ', e)
+        logger.error(f'Got no ID to delete process: {e}')
+        return JsonResponse({'error': 'Got no ID to delete process.'})
+
+    try:
+        entry = GeoAPIResults.objects.filter(owner_id=user_queryset).get(id=process_id)
+        deletion_report = entry.delete()
+    except Exception as e:
+        print('Unable to delete dataset: ', e)
+        logger.error(f'Unable to delete dataset: {e}')
+        return JsonResponse({'error': 'Unable to delete dataset.'})
+
+    if deletion_report[0] == 0:
+        return JsonResponse({'error': 'Nothing was deleted.'})
+    else:
+        return JsonResponse({'done': deletion_report[0]})
+
+
 def process_state(request):
     """
     Check the state of a process in GeoAPI.

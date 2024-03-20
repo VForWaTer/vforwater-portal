@@ -73,11 +73,7 @@ vfw.datasets.resultObj = class {
         document.body.removeChild(link);
     }
 
-    filterData(element=this.orgID) {  // TODO: removeData var should be taken from this!
-        vfw.map.func.renderCatchment(this.gjson, 'json')
-        vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
-    }
-
+    /** remove data from webpage and from session, but user data is relaoded when user refreshes page **/
     removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
         document.getElementById(this.htmlElementID).remove();
@@ -89,6 +85,23 @@ vfw.datasets.resultObj = class {
         delete vfw.datasets.resultObjects[this.orgID];
         sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
+    }
+
+    /** remove data from webpage, session and DB. TODO: remove data from geoapi db and disk **/
+    deleteFromDB() {
+        $.ajax({
+            url: vfw.var.DEMO_VAR + '/workspace/deleteresult',
+            data: {'processid': this.id,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+            }
+        })
+            .done(result => {
+                console.log('+++ result: ', result)
+                if ('done' in result) this.removeData(this.orgID);
+            })
+            .fail(error => {
+                console.warn('failed to remove data from server: ', error)
+        })
     }
 
     /**
@@ -187,10 +200,13 @@ vfw.datasets.resultObj = class {
         // set parameters: action, iconClass, name, function
         "geometry": [
             ["DownloadJSON", "fa-download", gettext("Download data"), "download"],
-            ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+            ["RemoveDataSet", "fa-trash", gettext("Remove in Browser"), "removeData"],
+            ["DeleteDataSet", "fa-eraser", gettext("Remove from Server"), "deleteFromDB"]
         ],
         "default": [
-            ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+            ["RefreshDataSet", "fa-refresh", gettext("Update result"), "refresh"],
+            ["RemoveDataSet", "fa-trash", gettext("Remove in Browser"), "removeData"],
+            ["DeleteDataSet", "fa-eraser", gettext("Remove from Server"), "deleteFromDB"]
         ]
     }
 
