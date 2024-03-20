@@ -63,12 +63,15 @@ vfw.sidebar.showData = function () {
     if (dataStoreData) {  // && "value" in workspaceData) {
         $.each(dataStoreData, function (k) {
             vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
-            });
+        });
     }
     if (resultStoreData) {  // && "value" in workspaceData) {
         $.each(resultStoreData, function (k) {
             vfw.datasets.resultObjects[k] = new vfw.datasets.resultObj(resultStoreData[k]);
-            });
+            if (vfw.datasets.resultObjects[k]['status'] == "ACCEPTED"
+                || vfw.datasets.resultObjects[k]['status'] == "CREATED")
+                vfw.datasets.resultObjects[k].refresh()
+        });
         return
     }
     if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
