@@ -128,8 +128,9 @@ vfw.datasets.resultObj = class {
 
     }
 
-    /** save info to build object in session Storage
+    /** save info of object in session Storage
      * @param {Object} data - The data to be stored. Default is the whole object.
+     * @param {boolean} update - Set if an object is updated (true) or a new was created (default=false).
      * **/
     save(data = this, update = false) {
         let stored;
@@ -150,6 +151,14 @@ vfw.datasets.resultObj = class {
         }
     }
 
+    showAsTable() {
+        console.warn('Needs implementation.')
+
+    }
+
+    /** Retrieves the value from the session storage associated with the storekey.
+     * @returns {string | null} The stored value, or null if no value is found.
+     */
     load() {
         console.log('this.storeKey: ', this.storeKey)
         return sessionStorage.getItem(this.storeKey);
@@ -193,22 +202,31 @@ vfw.datasets.resultObj = class {
      * @param {string} orgID - The ID of the organization.
      * @return {string} - The HTML elements of the context menu.
      */
-    _createContextMenu(orgID) {
-    let htmlElements = ""
+    _createContextMenu(orgID = this.orgID) {
+        let htmlElements = "";
+        let loggedInParams = [];
 
-    const itemParams = {
-        // set parameters: action, iconClass, name, function
-        "geometry": [
-            ["DownloadJSON", "fa-download", gettext("Download data"), "download"],
-            ["RemoveDataSet", "fa-trash", gettext("Remove in Browser"), "removeData"],
-            ["DeleteDataSet", "fa-eraser", gettext("Remove from Server"), "deleteFromDB"]
-        ],
-        "default": [
-            ["RefreshDataSet", "fa-refresh", gettext("Update result"), "refresh"],
-            ["RemoveDataSet", "fa-trash", gettext("Remove in Browser"), "removeData"],
-            ["DeleteDataSet", "fa-eraser", gettext("Remove from Server"), "deleteFromDB"]
-        ]
-    }
+        if (vfw.var.USER_IS_AUTHENTICATED) {
+            loggedInParams = [
+                ["RemoveDataSet", "fa-trash", gettext("Remove from store"), "removeData"],
+                ["DeleteDataSet", "fa-eraser", gettext("Delete completely"), "deleteFromDB"]
+            ]
+        } else {
+            loggedInParams = [["DeleteDataSet", "fa-eraser", gettext("Delete result"), "deleteFromDB"]]
+        }
+        const itemParams = {
+            // set parameters: action, iconClass, name, function
+            "FINISHED": [
+                ["ShowResult", "fa-table", gettext("Show result as table"), "showAsTable"],
+                ["DownloadJSON", "fa-download", gettext("Download result"), "download"],
+            ].concat(loggedInParams),
+            "ERROR": [
+                // ["DeleteDataSet", "fa-eraser", gettext("Delete completely"), "deleteFromDB"]  // TODO: Is this in DB?
+            ].concat(loggedInParams),
+            "default": [
+                ["RefreshDataSet", "fa-refresh", gettext("Refresh result"), "refresh"],
+            ].concat(loggedInParams)
+        }
 
     /** Build a html button for the context menu
      *
@@ -221,8 +239,8 @@ vfw.datasets.resultObj = class {
             `</li>`
     }
 
-    if (this.type in itemParams) {
-        itemParams[this.type].forEach((value) => createMenuItem(...value))
+    if (this.status === "FINISHED" || this.status === "ERROR") {
+        itemParams[this.status].forEach((value) => createMenuItem(...value))
     } else {
         itemParams["default"].forEach((value) => createMenuItem(...value))
     }
