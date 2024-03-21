@@ -119,6 +119,7 @@ vfw.datasets.resultObj = class {
             .done(result => {
                 if (result.status !== this.status) {
                     this.status = result.status;
+                    this.outputs.results = result.results;
                     this.update(result);
                 }
             })
@@ -151,17 +152,32 @@ vfw.datasets.resultObj = class {
         }
     }
 
+    /**
+     * Displays the results as a table in a modal dialog.
+     *
+     * @description This method loads the results and displays them as a table in a modal dialog.
+     * First checks if the "resultModalObject" exists in the "vfw.var.obj", if not
+     * creates a new instance of "vfw.html.resultModalObj" and assigns it to "vfw.var.obj.resultModalObject".
+     * Then, it iterates over the results, appends them in the html variable, and adds it to the "resultModalObject".
+     */
     showAsTable() {
-        console.warn('Needs implementation.')
-
+        // TODO: The following seems to slow down upload of page. Is because of object? Or where it is created? Test!
+        if (!Object.prototype.hasOwnProperty(vfw.var.obj, 'resultModalObject'))
+            vfw.var.obj.resultModalObject = new vfw.html.resultModalObj();
+        let html = "";
+        const results = this.load().outputs.results;
+        results.forEach(function (item, index) {
+           html += item.html
+        });
+        vfw.var.obj.resultModalObject.addContent(html);
+        vfw.var.obj.resultModalObject.open()
     }
 
-    /** Retrieves the value from the session storage associated with the storekey.
+    /** Retrieves the value from the session storage as JSON, associated with the storekey.
      * @returns {string | null} The stored value, or null if no value is found.
      */
     load() {
-        console.log('this.storeKey: ', this.storeKey)
-        return sessionStorage.getItem(this.storeKey);
+        return JSON.parse(sessionStorage.getItem(this.storeKey))[this.orgID];
     }
 
     /** Several functions to fill and show a context menu
@@ -197,7 +213,7 @@ vfw.datasets.resultObj = class {
     }
 
     /**
-     * Create a context menu for the given dataset according to its datatype.
+     * Create a context menu for the given dataset according to its datatype, processing state and if user is logged in.
      *
      * @param {string} orgID - The ID of the organization.
      * @return {string} - The HTML elements of the context menu.
@@ -206,6 +222,7 @@ vfw.datasets.resultObj = class {
         let htmlElements = "";
         let loggedInParams = [];
 
+        // standard parameters used in any case, but different if user is logged in or not.
         if (vfw.var.USER_IS_AUTHENTICATED) {
             loggedInParams = [
                 ["RemoveDataSet", "fa-trash", gettext("Remove from store"), "removeData"],
@@ -214,8 +231,10 @@ vfw.datasets.resultObj = class {
         } else {
             loggedInParams = [["DeleteDataSet", "fa-eraser", gettext("Delete result"), "deleteFromDB"]]
         }
+
+        // parameters specific for processing state
         const itemParams = {
-            // set parameters: action, iconClass, name, function
+            /** set parameters: action (still used?), iconClass, name in html, function to call */
             "FINISHED": [
                 ["ShowResult", "fa-table", gettext("Show result as table"), "showAsTable"],
                 ["DownloadJSON", "fa-download", gettext("Download result"), "download"],
@@ -228,9 +247,7 @@ vfw.datasets.resultObj = class {
             ].concat(loggedInParams)
         }
 
-    /** Build a html button for the context menu
-     *
-     * */
+    /** Build a html button for the context menu */
     function createMenuItem(action, iconClass, name, func) {
         htmlElements += `<li class="context-menu__item"> ` +
             `<a class="context-menu__link" data-action=${action} ` +
@@ -239,6 +256,7 @@ vfw.datasets.resultObj = class {
             `</li>`
     }
 
+    /**  */
     if (this.status === "FINISHED" || this.status === "ERROR") {
         itemParams[this.status].forEach((value) => createMenuItem(...value))
     } else {

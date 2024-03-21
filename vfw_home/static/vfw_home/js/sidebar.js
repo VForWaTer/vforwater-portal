@@ -56,8 +56,6 @@ vfw.sidebar.sidemenuClose = function () {
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 vfw.sidebar.showData = function () {
     /** Initiate creation of data Button in data and result store.  **/
-        // (TODO: Should be monitored if a lot of data gets pickled but never used!)
-        // console.log('~~~ Start creating page content ~~~~')
     const dataStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
     const resultStoreData = JSON.parse(sessionStorage.getItem("resultBtn"));
     if (dataStoreData) {  // && "value" in workspaceData) {
@@ -65,48 +63,49 @@ vfw.sidebar.showData = function () {
             vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
         });
     }
+    /** collect results data from session storage, create objects from it and check status if not finished or error */
     if (resultStoreData) {  // && "value" in workspaceData) {
         $.each(resultStoreData, function (k) {
             vfw.datasets.resultObjects[k] = new vfw.datasets.resultObj(resultStoreData[k]);
-            if (vfw.datasets.resultObjects[k]['status'] == "ACCEPTED"
-                || vfw.datasets.resultObjects[k]['status'] == "CREATED")
+            if (vfw.datasets.resultObjects[k]['status'] === "ACCEPTED"
+                || vfw.datasets.resultObjects[k]['status'] === "CREATED")
                 vfw.datasets.resultObjects[k].refresh()
         });
-        return
     }
-    if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
-        const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
-        let groups = {};
-        if (resultData) {
-            let html = "";
-            let ghtml = "";
-            let mhtml = "";
-            $.each(resultData, function (btnName, value) {
-                if (!value.group) {
-                    html += vfw.workspace.buildResultStoreButton(btnName, value);
-                } else {
-                    if (!(value.group in groups)) {
-                        groups[value.group] = [];
-                    }
-                    groups[value.group].push([btnName, value])
-                }
-            });
-            $.each(groups, function (groupname, members) {
-                mhtml = "";
-                ghtml = "";
-                members.forEach(function (singlemember) {
-                    return mhtml += vfw.workspace.buildResultStoreButton(singlemember[0], singlemember[1]);
-                })
-                html += vfw.workspace.buildResultGroupButton(groupname, members)
-                // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
-                // html += ghtml
-            })
-            // ghtml += build_resultgroup_button(value.group)
-            document.getElementById("workspace_results").innerHTML += html;
-
-            vfw.sidebar.addGroupaccordionToggle()
-        }
-    }
+    // (TODO: Old version. Maybe reuse later to group data
+    // if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
+    //     const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    //     let groups = {};
+    //     if (resultData) {
+    //         let html = "";
+    //         let ghtml = "";
+    //         let mhtml = "";
+    //         $.each(resultData, function (btnName, value) {
+    //             if (!value.group) {
+    //                 html += vfw.workspace.buildResultStoreButton(btnName, value);
+    //             } else {
+    //                 if (!(value.group in groups)) {
+    //                     groups[value.group] = [];
+    //                 }
+    //                 groups[value.group].push([btnName, value])
+    //             }
+    //         });
+    //         $.each(groups, function (groupname, members) {
+    //             mhtml = "";
+    //             ghtml = "";
+    //             members.forEach(function (singlemember) {
+    //                 return mhtml += vfw.workspace.buildResultStoreButton(singlemember[0], singlemember[1]);
+    //             })
+    //             html += vfw.workspace.buildResultGroupButton(groupname, members)
+    //             // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
+    //             // html += ghtml
+    //         })
+    //         // ghtml += build_resultgroup_button(value.group)
+    //         document.getElementById("workspace_results").innerHTML += html;
+    //
+    //         vfw.sidebar.addGroupaccordionToggle()
+    //     }
+    // }
 }
 
 /**
@@ -802,7 +801,7 @@ function menuItemListener(link) {
                         } else {  // plot from bokeh
                             // sessionStorage['Bokeh'] = 'true';
                             vfw.var.obj.bokehImage = requestResult;
-                            place_html_with_js("mod_result", requestResult)
+                            vfw.html.place_html_with_js("mod_result", requestResult)
                         }
                         // popClose.classList.remove('w3-hide');
                         vfw.html.resultModal.style.display = "block";

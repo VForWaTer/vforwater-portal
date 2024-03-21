@@ -51,6 +51,7 @@ from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import translation, timezone
+from json2html import json2html
 
 from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR
 from vfw_home.data_obj import DataObject
@@ -698,7 +699,7 @@ def delete_result(request):
 
 def process_state(request):
     """
-    Check the state of a process in GeoAPI.
+    Check the state of a process in GeoAPI and store updates in DB.
 
     :param request: A request object that includes a process ID.
     :return: A JSON response containing the process state or an error message.
@@ -748,7 +749,7 @@ def process_state(request):
         print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
 
     response_dict = {'status': entry.status,
-                     'results': [{'path': result_url, 'json': result}]
+                     'results': [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
                      }
     return JsonResponse(response_dict)
 
