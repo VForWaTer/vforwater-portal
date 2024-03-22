@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 /**
 create new object with new vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json)
 The object is mainly copied from data_obj.js, and many functions can be carefully removed.
@@ -128,6 +135,15 @@ vfw.datasets.resultObj = class {
         })
 
     }
+    /**
+     * Send request to django if there is an update on the process.
+     * If yes, update object (with sessionstorage and html)
+     */
+    reopen() {
+        const service = "pygeoapi_vforwater"  // TODO: Change this when we have more then 1 GeoAPI Server!!!
+        vfw.workspace.modal.open_wpsprocess(service,
+            this.title, [Object.keys(this.inputs), Object.values(this.inputs)]);
+    }
 
     /** save info of object in session Storage
      * @param {Object} data - The data to be stored. Default is the whole object.
@@ -222,15 +238,17 @@ vfw.datasets.resultObj = class {
         let htmlElements = "";
         let loggedInParams = [];
 
-        // standard parameters used in any case, but different if user is logged in or not.
+        // standard (default) parameters that are used in any case
+        const defaultParams = [
+            ["DeleteDataSet", "fa-eraser", gettext("Delete result"), "deleteFromDB"],
+            ["ReOpenProcess", "fa-window-maximize", gettext("Reopen Tool"), "reopen"]
+        ]
+        // little difference if user is logged in or not.
         if (vfw.var.USER_IS_AUTHENTICATED) {
             loggedInParams = [
                 ["RemoveDataSet", "fa-trash", gettext("Remove from store"), "removeData"],
-                ["DeleteDataSet", "fa-eraser", gettext("Delete completely"), "deleteFromDB"]
-            ]
-        } else {
-            loggedInParams = [["DeleteDataSet", "fa-eraser", gettext("Delete result"), "deleteFromDB"]]
-        }
+            ].concat(defaultParams)
+        } else {loggedInParams = [].concat(defaultParams)}
 
         // parameters specific for processing state
         const itemParams = {
@@ -239,10 +257,10 @@ vfw.datasets.resultObj = class {
                 ["ShowResult", "fa-table", gettext("Show result as table"), "showAsTable"],
                 ["DownloadJSON", "fa-download", gettext("Download result"), "download"],
             ].concat(loggedInParams),
-            "ERROR": [
-                // ["DeleteDataSet", "fa-eraser", gettext("Delete completely"), "deleteFromDB"]  // TODO: Is this in DB?
+            "ERROR": [  // TODO: How to delete from GeoAPI DB?
+                // ["DeleteDataSet", "fa-eraser", gettext("Delete completely"), "deleteFromDB"]
             ].concat(loggedInParams),
-            "default": [
+            "CREATED": [  // only accessed if none of the others!
                 ["RefreshDataSet", "fa-refresh", gettext("Refresh result"), "refresh"],
             ].concat(loggedInParams)
         }
@@ -260,7 +278,7 @@ vfw.datasets.resultObj = class {
     if (this.status === "FINISHED" || this.status === "ERROR") {
         itemParams[this.status].forEach((value) => createMenuItem(...value))
     } else {
-        itemParams["default"].forEach((value) => createMenuItem(...value))
+        itemParams["CREATED"].forEach((value) => createMenuItem(...value))
     }
 
     return htmlElements
