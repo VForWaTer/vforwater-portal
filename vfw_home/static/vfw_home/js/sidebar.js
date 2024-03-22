@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 /** Toggle between showing and hiding the sidenav, and add overlay effect **/
 vfw.sidebar.w3_Open = function () {
     // Get the Sidenav
@@ -57,13 +64,14 @@ vfw.sidebar.sidemenuClose = function () {
 vfw.sidebar.showData = function () {
     /** Initiate creation of data Button in data and result store.  **/
     const dataStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    const resultStoreData = JSON.parse(sessionStorage.getItem("resultBtn"));
     if (dataStoreData) {  // && "value" in workspaceData) {
         $.each(dataStoreData, function (k) {
             vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
         });
     }
-    /** collect results data from session storage, create objects from it and check status if not finished or error */
+    const resultStoreData =
+        JSON.parse(sessionStorage.getItem("resultBtn")) ? window.location.pathname === '/workspace/' : null
+    /** collect  results data from session storage, create objects from it and check status if not finished or error */
     if (resultStoreData) {  // && "value" in workspaceData) {
         $.each(resultStoreData, function (k) {
             vfw.datasets.resultObjects[k] = new vfw.datasets.resultObj(resultStoreData[k]);
@@ -135,6 +143,7 @@ vfw.sidebar.addSelectStoreButton = function (file={}, source="userUpload") {
     }
     objData['name'] = 'name' in file ? file.name : "user upload";
     objData['source'] = source;
+    console.log('objData: ', objData)
 
     /** Use the latest upload for filtering */ // TODO: We don't update, we store all => new ID
     if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
@@ -148,7 +157,6 @@ vfw.sidebar.addSelectStoreButton = function (file={}, source="userUpload") {
     }
     vfw.datasets.selectObjects[objData['orgID']] = new vfw.datasets.selectObj(objData);
 }
-
 
 
 /** Remove data / elements from workspace **/
