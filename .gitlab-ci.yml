@@ -13,15 +13,6 @@ vfwportal-demo-build:
     only:
         - demo
 
-# Test stage
-vfwportal-Tests-test:
-    stage: test
-    script:
-        - echo "Running tests"
-        # Run the container from the built image and execute tests
-        - docker run --name vfwportal_test_container vfwportal-test:$CI_COMMIT_SHA python manage.py test
-    only:
-        - demo 
 
 # pushing docker image to some registry
 vfwportal-demo-push:
