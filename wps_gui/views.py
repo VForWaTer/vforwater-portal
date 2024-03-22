@@ -573,7 +573,7 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         apiproc = getProcesses(endpoint)
         process_description = get_process_info(apiproc.process(wps_process))
     else:
-        logger.error(f'Cannot run process. Server "{input['serv']}" is unknown.')
+        logger.error(f'Cannot run process. Server "{input["serv"]}" is unknown.')
         # print('You try to run a process, but I do not know your server.')
 
     try:
@@ -626,8 +626,8 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
     result = db_data
 
     if newEntry['error']:
-        logger.error(f'Error creating database entry for process result: {newEntry['error']}')
-        print(f'Error creating database entry for process result: {newEntry['error']}')
+        logger.error(f'Error creating database entry for process result: {newEntry["error"]}')
+        print(f'Error creating database entry for process result: {newEntry["error"]}')
         result = {'error': 'true'}
 
     return JsonResponse(result)
