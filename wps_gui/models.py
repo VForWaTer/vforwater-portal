@@ -1,4 +1,31 @@
-from datetime import datetime
+# =================================================================
+#
+# Authors: Marcus Strobl <marcus.strobl@kit.edu>
+#
+# Copyright (c) 2024 Marcus Strobl
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# =================================================================
 
 from django.db import models
 from django.utils import timezone
@@ -11,19 +38,21 @@ class GeoAPIResults(models.Model):
     Store data of creation in case datasets get an update.
     Last access time to be able to remove datasets not used for ages
     """
-    PROCESS_STATES = [('STARTED', 'Process just started'),
+    PROCESS_STATES = [('CREATED', 'Process just created'),
+                      ('ACCEPTED', 'Process just accepted'),
+                      ('STARTED', 'Process just started'),
                       ('PENDING', 'Process is still running'),
                       ('FINISHED', 'Process ended successfully'),
                       ('ERROR', 'Process had an error'),
                       ]
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True)
-    creation = models.DateTimeField(null=True)  # creation date
     access = models.DateTimeField(blank=True, null=True)  # date of last access, relevant for cleaning
+    creation = models.DateTimeField(default=timezone.now)  # creation date
+    inputs = models.JSONField(max_length=4096)  # TODO: Use jsonField instead of CharField
+    name = models.CharField(max_length=255)  # name of the process
     open = models.BooleanField()  # free to use for everyone?
     outputs = models.JSONField(blank=True, max_length=2048)  # TODO: Use jsonField instead of CharField
-    name = models.JSONField(max_length=255)  # name of the process
-    inputs = models.CharField(max_length=4096)  # TODO: Use jsonField instead of CharField
-    status = models.CharField(max_length=8, choices=PROCESS_STATES, default='STARTED')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    status = models.CharField(max_length=8, choices=PROCESS_STATES, default='CREATED')
 
     def __str__(self):
         return f'{self.creation} - {self.name} - {self.status}'

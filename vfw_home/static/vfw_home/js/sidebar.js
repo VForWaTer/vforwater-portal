@@ -41,9 +41,8 @@ vfw.sidebar.sidemenuOpen = function () {
 
 /** Close the sidemenu with the close button **/
 vfw.sidebar.sidemenuClose = function () {
-    var mySidemenu = document.getElementById("mySidemenu");
-
-    var overlaymenu = document.getElementById("mySidemenuOverlay");
+    let mySidemenu = document.getElementById("mySidemenu");
+    let overlaymenu = document.getElementById("mySidemenuOverlay");
 
     mySidemenu.style.display = "none";
     overlaymenu.style.display = "none";
@@ -56,51 +55,57 @@ vfw.sidebar.sidemenuClose = function () {
  */
 // TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
 vfw.sidebar.showData = function () {
-    /** Initiate creation of data Button in data and result store.
-     * When called from outside 'Home' check if data is
-     * already pickled. If not pickle it. **/
-        // (TODO: Should be monitored if a lot of data gets pickled but never used!)
-    const workspaceData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    if (workspaceData) {  // && "value" in workspaceData) {
-        $.each(workspaceData, function (k) {
-            vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(workspaceData[k]);
-                    // console.log('vfw.datasets.dataObjects[k].test(): ', vfw.datasets.dataObjects[k].test())
-            });
-        return
+    /** Initiate creation of data Button in data and result store.  **/
+    const dataStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    const resultStoreData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    if (dataStoreData) {  // && "value" in workspaceData) {
+        $.each(dataStoreData, function (k) {
+            vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
+        });
     }
-    if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
-        const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
-        let groups = {};
-        if (resultData) {
-            let html = "";
-            let ghtml = "";
-            let mhtml = "";
-            $.each(resultData, function (btnName, value) {
-                if (!value.group) {
-                    html += vfw.workspace.buildResultStoreButton(btnName, value);
-                } else {
-                    if (!(value.group in groups)) {
-                        groups[value.group] = [];
-                    }
-                    groups[value.group].push([btnName, value])
-                }
-            });
-            $.each(groups, function (groupname, members) {
-                mhtml = "";
-                ghtml = "";
-                members.forEach(function (singlemember) {
-                    return mhtml += vfw.workspace.buildResultStoreButton(singlemember[0], singlemember[1]);
-                })
-                html += vfw.workspace.buildResultGroupButton(groupname, members)
-                // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
-                // html += ghtml
-            })
-            // ghtml += build_resultgroup_button(value.group)
-            document.getElementById("workspace_results").innerHTML += html;
-
-            vfw.sidebar.addGroupaccordionToggle()
-        }
+    /** collect results data from session storage, create objects from it and check status if not finished or error */
+    if (resultStoreData) {  // && "value" in workspaceData) {
+        $.each(resultStoreData, function (k) {
+            vfw.datasets.resultObjects[k] = new vfw.datasets.resultObj(resultStoreData[k]);
+            if (vfw.datasets.resultObjects[k]['status'] === "ACCEPTED"
+                || vfw.datasets.resultObjects[k]['status'] === "CREATED")
+                vfw.datasets.resultObjects[k].refresh()
+        });
     }
+    // (TODO: Old version. Maybe reuse later to group data
+    // if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
+    //     const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    //     let groups = {};
+    //     if (resultData) {
+    //         let html = "";
+    //         let ghtml = "";
+    //         let mhtml = "";
+    //         $.each(resultData, function (btnName, value) {
+    //             if (!value.group) {
+    //                 html += vfw.workspace.buildResultStoreButton(btnName, value);
+    //             } else {
+    //                 if (!(value.group in groups)) {
+    //                     groups[value.group] = [];
+    //                 }
+    //                 groups[value.group].push([btnName, value])
+    //             }
+    //         });
+    //         $.each(groups, function (groupname, members) {
+    //             mhtml = "";
+    //             ghtml = "";
+    //             members.forEach(function (singlemember) {
+    //                 return mhtml += vfw.workspace.buildResultStoreButton(singlemember[0], singlemember[1]);
+    //             })
+    //             html += vfw.workspace.buildResultGroupButton(groupname, members)
+    //             // ghtml += '<div class="grouppanel">' + mhtml + '</div>'
+    //             // html += ghtml
+    //         })
+    //         // ghtml += build_resultgroup_button(value.group)
+    //         document.getElementById("workspace_results").innerHTML += html;
+    //
+    //         vfw.sidebar.addGroupaccordionToggle()
+    //     }
+    // }
 }
 
 /**
@@ -484,7 +489,7 @@ vfw.workspace.modal.setInPortValue = function (btnKey, btnValues) {
     let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
     let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    let htmlelement = vfw.html.create_input_element(btnValues, resultData, sessionStoreData)
+    let htmlelement = vfw.html.createInputElement(btnValues, resultData, sessionStoreData)
 }
 
 
@@ -559,6 +564,8 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
  * @param {html} link - HTML Element of the clicked link
  */
 function menuItemListener(link) {
+    if (!vfw.var.taskItemInContext) return;
+
     let wpsToOpen = "";
     let service = {};
     let id = vfw.var.taskItemInContext.getAttribute("data-id");
@@ -680,7 +687,8 @@ function menuItemListener(link) {
             break;
         case "Remove":
             // vfw.session.removeSingleData(id);
-            vfw.datasets.dataObjects[id].removeData(id)
+            if (id in vfw.datasets.dataObjects) vfw.datasets.dataObjects[id].removeData(id);
+            else console.warn('Remove is not correctly implemented.')
             // vfw.html.popup.classList.remove(popActive);
             vfw.html.loaderOverlayOff();
             break;
@@ -793,7 +801,7 @@ function menuItemListener(link) {
                         } else {  // plot from bokeh
                             // sessionStorage['Bokeh'] = 'true';
                             vfw.var.obj.bokehImage = requestResult;
-                            place_html_with_js("mod_result", requestResult)
+                            vfw.html.place_html_with_js("mod_result", requestResult)
                         }
                         // popClose.classList.remove('w3-hide');
                         vfw.html.resultModal.style.display = "block";

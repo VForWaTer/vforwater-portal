@@ -1411,11 +1411,11 @@ class SidebarButtonWPS extends SidebarButton {
 }
 
 /**
- *
- * @param {string} divID
- * @param {*} data
+ * Place Bokeh html code in a given html element (defiened with its ID)
+ * @param {string} divID - element to add code into it
+ * @param {string} data - Html code to add
  */
-function place_html_with_js(divID, data) {
+vfw.html.place_html_with_js = function (divID, data, ) {
     document.getElementById(divID).innerHTML = data.div; // add plot
     vfw.util.bokehResultScript = document.createElement('script');
     vfw.util.bokehResultScript.type = 'text/javascript';

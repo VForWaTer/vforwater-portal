@@ -21,6 +21,7 @@ vfw.datasets.selectObj = class {
     group = "";
     source = "";
     gjson = "";
+    url = "";
 
     constructor(data) {
         const defaultParams = {
@@ -104,7 +105,7 @@ vfw.datasets.selectObj = class {
         delete vfw.datasets.selectObjects[this.orgID];
         sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData))
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
-        vfw.map.func.resetDraw();
+        if (this.url === "home") vfw.map.func.resetDraw();
     }
 
     save(data, update = false) {

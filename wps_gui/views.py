@@ -42,6 +42,7 @@ from pathlib import Path
 import jsonpickle
 import requests
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, JsonResponse
@@ -50,6 +51,7 @@ from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import translation, timezone
+from json2html import json2html
 
 from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR
 from vfw_home.data_obj import DataObject
@@ -57,12 +59,12 @@ from vfw_home.datatypes import basicdatatypes, datatypes
 from vfw_home.models import Entries, Datatypes, EntrygroupTypes, Datasources, Timeseries_1D
 from vfw_home.utilities import entry_has_data
 from vfw_home.views import get_accessible_data, get_dataset
-from wps_gui.models import WpsResults, WebProcessingService, WpsDescription
+from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
     get_wps_service_engine,
     list_wps_service_engines,
     abstract_is_link, get_endpoint_data, get_process_basics, get_process_info, handle_geoapiprocess_output,
-    prepare_inputs, save_dataset,
+    prepare_inputs, save_dataset, create_geoapi_db_entry,
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -76,33 +78,54 @@ logger = logging.getLogger(__name__)
 
 # from heron_wps.forms import InputForm
 
+"""
+Not every Tool we have should be available for everyone. E.g. because they are in development.
+The following dict defines who can see which tools.
+default is accessible for everyone the rest only for admins or on devel environments.
+"""
+TOOLDICT = {
+    "default": ["vforwater_loader", "dataset_profiler"],
+    "short_running_debug": ["hello-world"],
+    "short_running": [],  # available for any user, also if not logged in
+}
+
+
 def home(request):
     ogcapi_proc = {}
+    message = ""
 
     service, endpoint, wps_services = get_endpoint_data(DEBUG)
 
     if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
         try:
             apiproc = getProcesses(endpoint)
+            # load process description according to user and devel state
             for process in apiproc.processes():
-                ogcapi_proc[process['id']] = {}
-                ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                if DEBUG and request.user.is_superuser:  # in debug mode or for superusers show all tools
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                elif DEBUG and process['id'] in TOOLDICT['short_running_debug']:
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+
+                elif request.user.id and process['id'] in TOOLDICT['default']:  # if logged in show more tools
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                elif process['id'] in TOOLDICT['short_running']:
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                    message = translation.gettext("You have to log in to see more Tools.")
 
         except Exception as e:
             logger.error(sys.exc_info()[0])
             print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}')
             context = {
-                "wps_services": translation.gettext("At the moment the processes are not available. We apologize for the inconvenience."),
+                "wps_services": translation.gettext(
+                    "At the moment the processes are not available. We apologize for the inconvenience."),
                 "processes": "",
                 "service": "Error",
             }
             return render(request, "wps_gui/home.html", context)
 
         # Remove process that should not be visible for users
-        if "dbloader" in ogcapi_proc:
-            del ogcapi_proc["dbloader"]
-        if "datareader" in ogcapi_proc:
-            del ogcapi_proc["datareader"]
+        # workflow is kind of a helper process. It is called when several process are connected to call the workflow.
+        # So the user should call this implicitly by creating a workflow and shouldn't be shown in the list of tools.
         if "workflow" in ogcapi_proc:
             del ogcapi_proc["workflow"]
 
@@ -110,6 +133,7 @@ def home(request):
             "wps_services": wps_services,
             "processes": ogcapi_proc,
             "service": service,
+            "message": message,
         }
 
         return render(request, "wps_gui/home.html", context)
@@ -477,10 +501,7 @@ def handle_wps_output(execution, wps_process, inputs):
                 if output.dataType not in basicdatatypes:
                     matchObj = re.search("[^:]+$", output.dataType)
                     output.dataType = matchObj.group()
-                    print(
-                        'No keywords or type (TypeError: {}). Using "{}" as DataType.'.format(
-                            e, output.dataType
-                        )
+                    print(f'No keywords or type (TypeError: {e}). Using <{output.dataType}> as DataType.'
                     )
                 single_output["type"] = output.dataType
             except KeyError as e:
@@ -551,39 +572,207 @@ def handle_wps_output(execution, wps_process, inputs):
 
 @login_required(login_url="/oidc/authenticate/")
 def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
+    user_id = None
+    try:
+        user_id = request.user.id
+        user_queryset = User.objects.get(id=user_id)
+    except User.DoesNotExist as e:
+        # print('User does not exist when running a process: ', e)
+        logger.error('User does not exist when running a process: ', e)
+        user_queryset = None
+
     # if request.user.is_authenticated:
-    if True:
-        process_description = ""
-        # request_input = json.loads(request.GET.get('processrun'))
-        input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
-        wps_process = input.get("id", "")
+    process_description = ""
+    # request_input = json.loads(request.GET.get('processrun'))
+    input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
+    wps_process = input.get("id", "")
 
-        if input['serv'] == 'pygeoapi_vforwater':
-            service, endpoint, wps_services = get_endpoint_data(DEBUG)
-            apiproc = getProcesses(endpoint)
-            process_description = get_process_info(apiproc.process(wps_process))
-        else:
-            print('You try to run a process, but I do not know your server.')
-
-        print(f'{endpoint}/processes/{wps_process}/execution')
-        print('inputs: ', input.get("in_dict", ""))
-        execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
-                                  json={'inputs': input.get("in_dict", ""),
-                                        # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
-                                        }
-                                  )
-        print('Execution: ', execution)
-        if execution.status_code == 200:
-            all_outputs = handle_geoapiprocess_output(request.user, execution, process_description, input)
-        else:
-            all_outputs = {'execution_status': f'error: {execution.reason}'}
-            print(f'Error in process - caught in process_run function: {all_outputs}')
+    if input['serv'] == 'pygeoapi_vforwater':
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        apiproc = getProcesses(endpoint)
+        process_description = get_process_info(apiproc.process(wps_process))
     else:
-        all_outputs = {'execution_status': 'auth_error'}
-        print(f'user is not authenticated. {all_outputs}')
+        logger.error(f'Cannot run process. Server "{input["serv"]}" is unknown.')
+        # print('You try to run a process, but I do not know your server.')
 
-    print('all_outputs: ', all_outputs)
-    return JsonResponse(all_outputs)
+    try:
+        execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
+                              json={
+                                  "mode": "async",
+                                  # TODO: old setting from PyGeoAPI 0.13. Change for newer version
+                                  'inputs': {**input.get("in_dict", ""),
+                                             'User-Info':  # plant the username in last moment
+                                                 f'userID{user_id}_'}
+                                      # input.get("in_dict", ""),
+                                  # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
+                              },
+                              headers={'Content-Type': 'application/json',
+                                       # "Prefer": "respond-async"  # TODO: Use this for PyGeoAPI 0.16 and newer
+                                       }
+                              )
+    except Exception as e:
+        print('e: ', e)
+        logger.error(f'Cannot Execute process: {e}.')
+
+    db_data = {'inputs': input.get("in_dict", ""),
+               'name': wps_process,
+               'open': False if user_id else True,
+               'outputs': {'path': execution.headers['Location'],
+                           'jobMeta_path': f"{execution.headers['Location']}?f=json",
+                           'results': ""
+                           # 'results': f"{execution.headers['Location']}/results?f=json"
+                           },
+               # 'user': user_id,
+               }
+
+    if execution.status_code == 201:  # if request is created
+        # Save the job url for later use
+        db_data['status'] = 'CREATED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    elif execution.status_code == 202:  # if request is accepted
+        db_data['status'] = 'ACCEPTED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    elif execution.status_code == 200:  # if done
+        db_data['status'] = 'FINISHED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    else:
+        db_data['status'] = 'ERROR'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+
+    # add the database id to the dataset. Needed to enable request of state from client to django
+    if not hasattr(db_data, 'id'):
+        db_data['id'] = newEntry['id']
+    result = db_data
+
+    if newEntry['error']:
+        logger.error(f'Error creating database entry for process result: {newEntry["error"]}')
+        print(f'Error creating database entry for process result: {newEntry["error"]}')
+        result = {'error': 'true'}
+
+    return JsonResponse(result)
+
+
+def get_url_json(url):
+    """
+    Retrieve the state update of a process from the provided URL. URL should be from DB column GeoAPIresults.
+    It sends a GET request to the specified URL and returns the JSON response from the API.
+
+    Example usage:
+    ```
+    response = get_url_json('http://example.com/api/process/state')
+    print(response)
+    ```
+    :param url: The URL of the API endpoint to check the state of a process.
+    :return: The JSON response from the API indicating the state of the process.
+    """
+    try:
+        response = requests.get(url)
+    except Exception as e:
+        logger.error(f'Error checking state of process: {e}')
+        print(f'Error checking state of process: {e}')
+        response = {'error': 'Got no update from PyGeoAPI'}
+    return response.json()
+
+
+def delete_result(request):
+    """
+    Delete a specific result entry from the GeoAPIResults model based on the provided process ID.
+    Deletion works only if request user and DB entry owner are the same. (TODO: later we want ownership to be shared. Who can delete then?)
+
+    First retrieve the user record based on the user ID from the request object.
+    Next, retrieve the GeoAPIResults entry based on the owner_id (user) and the process_id from the request object.
+
+    If the user does not exist or the entry cannot be found, an exception is send to the server.
+    If entry is found, the method deletes it. A deletion result with the number of deleted rows is send to the client.
+
+    :param request: HttpRequest object containing the request data id.
+    :return: JsonResponse sending done if deletion worked, else some error message.
+
+    """
+    try:
+        process_id = int(request.GET['processid'])
+        user_queryset = User.objects.get(id=request.user.id)
+
+    except User.DoesNotExist as e:
+        print('User does not exist when running a process: ', e)
+        user_queryset = None
+
+    except Exception as e:
+        print('Got no ID to delete process: ', e)
+        logger.error(f'Got no ID to delete process: {e}')
+        return JsonResponse({'error': 'Got no ID to delete process.'})
+
+    try:
+        entry = GeoAPIResults.objects.filter(owner_id=user_queryset).get(id=process_id)
+        deletion_report = entry.delete()
+    except Exception as e:
+        print('Unable to delete dataset: ', e)
+        logger.error(f'Unable to delete dataset: {e}')
+        return JsonResponse({'error': 'Unable to delete dataset.'})
+
+    if deletion_report[0] == 0:
+        return JsonResponse({'error': 'Nothing was deleted.'})
+    else:
+        return JsonResponse({'done': deletion_report[0]})
+
+
+def process_state(request):
+    """
+    Check the state of a process in GeoAPI and store updates in DB.
+
+    :param request: A request object that includes a process ID.
+    :return: A JSON response containing the process state or an error message.
+    """
+    # check if request includes a process id
+    try:
+        process_id = int(request.GET['processid'])
+    except Exception as e:
+        print('Got no ID to check process state: ', e)
+        logger.error(f'Got no ID to check process state: {e}')
+        return JsonResponse({'error': 'Got no ID to check process state.'})
+
+    # get element from database
+    try:
+        entry = GeoAPIResults.objects.get(id=process_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': f"Cannot check state of Process. Entry {process_id} seems not to exist"})
+
+    # check if user has access to this dataset. If yes get state from GeoAPI
+    if entry.open or request.user.id == entry.owner_id:
+        url = entry.outputs['path']
+        update = get_url_json(f'{url}?f=json')
+    else:
+        return JsonResponse({'error': 'No Access'})
+
+    # check status. If successful update database and send update
+    if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
+        result_url = f'{url}/results?f=json'
+        result = get_url_json(result_url)
+        entry.outputs['results'] = [{'path': result_url, 'json': result}]
+
+        entry.status = "FINISHED"
+        entry.access = timezone.now().isoformat()
+        try:
+            entry.save()
+
+        except ValueError as e:
+            print(f"ValueError while trying to update DB: {e}")
+            logger.error(f'ValueError while trying to update DB: {e}')
+
+        except Exception as e:
+            print(f"Unexpected error while trying to update DB: {e}")
+            logger.error(f'Unexpected error while trying to update DB: {e}')
+
+    else:
+        logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        # style is the combination of 'status', 'message' and 'progress'
+
+    response_dict = {'status': entry.status,
+                     'results': [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
+                     }
+    return JsonResponse(response_dict)
+
 
 # # @login_required
 # def process_run(request):
@@ -605,6 +794,7 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
 #     return JsonResponse(all_outputs)
 
 
+# TODO: Not used now, with processes that need only IDs. Maybe usable at a later state again.
 def db_load(request):
     """
     Function to preload data from database, convert it, and store a pickle of the data
@@ -612,7 +802,6 @@ def db_load(request):
     ('end', datetime.datetime(2018, 12, 31, 0, 0))]
 
     This function was to make data available before the user runs a tool. Was used to improve user experience.
-    TODO: Not used now, with processes that need only IDs. Maybe usable at a later state again.
     :param request: dict
     :return:
     """

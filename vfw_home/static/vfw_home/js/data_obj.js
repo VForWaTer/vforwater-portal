@@ -116,7 +116,7 @@ vfw.datasets.DataObj = class {
                     document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
                 } else {  // plot from bokeh
                     vfw.var.obj.bokehImage = requestResult;
-                    place_html_with_js("mod_result", requestResult)
+                    vfw.html.place_html_with_js("mod_result", requestResult)
                 }
                 vfw.html.resultModal.style.display = "block";
             })

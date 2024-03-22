@@ -1,3 +1,32 @@
+# =================================================================
+#
+# Authors: Marcus Strobl <marcus.strobl@kit.edu>
+#
+# Copyright (c) 2024 Marcus Strobl
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# =================================================================
+
 import ast
 import datetime
 import json
@@ -12,7 +41,7 @@ from owslib.wps import WebProcessingService
 
 from vfw_home.data_obj import DataObject
 from vfw_home.datatypes import datatypes
-from .models import WebProcessingService as WpsModel
+from .models import WebProcessingService as WpsModel, GeoAPIResults
 from .models import WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
 from heron.settings import VFW_SERVER, VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR
@@ -392,6 +421,33 @@ class ogcCollections(Collections):
         return self._request(path=path)
 
 
+def create_geoapi_db_entry(db_data: object, user=None, error=False) -> object:
+    """
+    Create a database entry.
+    :param db_data: dict of input identifier of wps and respective value (e.g. a path)
+    :param user: user object to create foreign key
+    """
+    lookup = {
+        'inputs': db_data['inputs'],
+        'name': db_data['name'],
+        'open': db_data['open'],
+        'outputs': db_data['outputs'],
+        'status': db_data['status'],
+    }  # , access=timezone.now())
+    if user is not None:
+        lookup['owner'] = user
+
+    try:
+        obj, created = GeoAPIResults.objects.get_or_create(**lookup)
+    except Exception as e:
+        print('Cannot create GeoAPIResult: ', e)
+
+    if created:
+        return {'id': obj.id, 'obj': obj, 'created': created, 'error': error}
+    else:
+        return {'error': error, 'obj': obj}
+
+
 def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> object:
     """
     Create a database entry.
@@ -425,7 +481,7 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
     :return:
     """
     result = execution.json()
-    report_path = result['dir'] + '/report'
+    report_html = ""
 
     def load_report(report_path, result_type):
         if result_type == 'json':
