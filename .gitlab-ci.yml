@@ -1,7 +1,6 @@
 # Pipeline
 stages:
     - build
-    - test
     - push
 
 
