@@ -78,17 +78,39 @@ logger = logging.getLogger(__name__)
 
 # from heron_wps.forms import InputForm
 
+"""
+Not every Tool we have should be available for everyone. E.g. because they are in development.
+The following dict defines who can see which tools.
+default is accessible for everyone the rest only for admins or on devel environments.
+"""
+TOOLDICT = {
+    "default": ["vforwater_loader", "dataset_profiler"],
+    "short_running_debug": ["hello-world"],
+    "short_running": [],  # available for any user, also if not logged in
+}
+
+
 def home(request):
     ogcapi_proc = {}
+    message = ""
 
     service, endpoint, wps_services = get_endpoint_data(DEBUG)
 
     if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
         try:
             apiproc = getProcesses(endpoint)
+            # load process description according to user and devel state
             for process in apiproc.processes():
-                ogcapi_proc[process['id']] = {}
-                ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                if DEBUG and request.user.is_superuser:  # in debug mode or for superusers show all tools
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                elif DEBUG and process['id'] in TOOLDICT['short_running_debug']:
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+
+                elif request.user.id and process['id'] in TOOLDICT['default']:  # if logged in show more tools
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                elif process['id'] in TOOLDICT['short_running']:
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                    message = translation.gettext("You have to log in to see more Tools.")
 
         except Exception as e:
             logger.error(sys.exc_info()[0])
@@ -102,10 +124,8 @@ def home(request):
             return render(request, "wps_gui/home.html", context)
 
         # Remove process that should not be visible for users
-        if "dbloader" in ogcapi_proc:
-            del ogcapi_proc["dbloader"]
-        if "datareader" in ogcapi_proc:
-            del ogcapi_proc["datareader"]
+        # workflow is kind of a helper process. It is called when several process are connected to call the workflow.
+        # So the user should call this implicitly by creating a workflow and shouldn't be shown in the list of tools.
         if "workflow" in ogcapi_proc:
             del ogcapi_proc["workflow"]
 
@@ -113,6 +133,7 @@ def home(request):
             "wps_services": wps_services,
             "processes": ogcapi_proc,
             "service": service,
+            "message": message,
         }
 
         return render(request, "wps_gui/home.html", context)
@@ -480,10 +501,7 @@ def handle_wps_output(execution, wps_process, inputs):
                 if output.dataType not in basicdatatypes:
                     matchObj = re.search("[^:]+$", output.dataType)
                     output.dataType = matchObj.group()
-                    print(
-                        'No keywords or type (TypeError: {}). Using "{}" as DataType.'.format(
-                            e, output.dataType
-                        )
+                    print(f'No keywords or type (TypeError: {e}). Using <{output.dataType}> as DataType.'
                     )
                 single_output["type"] = output.dataType
             except KeyError as e:
@@ -559,7 +577,8 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         user_id = request.user.id
         user_queryset = User.objects.get(id=user_id)
     except User.DoesNotExist as e:
-        print('User does not exist when running a process: ', e)
+        # print('User does not exist when running a process: ', e)
+        logger.error('User does not exist when running a process: ', e)
         user_queryset = None
 
     # if request.user.is_authenticated:
@@ -747,6 +766,7 @@ def process_state(request):
     else:
         logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
         print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        # style is the combination of 'status', 'message' and 'progress'
 
     response_dict = {'status': entry.status,
                      'results': [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
