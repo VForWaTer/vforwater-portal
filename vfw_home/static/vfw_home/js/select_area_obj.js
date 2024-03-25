@@ -64,7 +64,8 @@ vfw.datasets.selectObj = class {
             "geometry": {
                 "type": "Polygon",
                 "coordinates": data["geom"]
-            }
+            },
+            "properties": {"name": this.name},
         };
     }
 
