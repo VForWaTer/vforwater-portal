@@ -513,7 +513,7 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
     // }
     let htmlElement = {};
     let workmodal = document.getElementById('workModal');
-    // let datastore = JSON.parse(sessionStorage['dataBtn']);
+    let datastore = JSON.parse(sessionStorage['dataBtn']);
     let resultstore = JSON.parse(sessionStorage['resultBtn']);
 
     // loop values of result to insert them in the respective field

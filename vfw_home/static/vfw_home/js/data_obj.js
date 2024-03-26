@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 /**
  * Represents a data set of the VFW datasets.
  * create new object with new vfw.datasets.DataObj(json).
@@ -295,7 +302,9 @@ vfw.datasets.DataObj = class {
      */
     _createHtmlName() {
         let vnLen = this.name.length;
-        if (vnLen + this.abbr.length + this.unit.length <= 13) {
+        if (this.source === "userUpload") {
+            this.htmlName = this.name.slice(0, 17);
+        } else if (vnLen + this.abbr.length + this.unit.length <= 13) {
             if (this.abbr !== "" && this.unit !== "") {
                 this.htmlName = this.name + '(' + this.abbr + ' in ' + this.unit + ') - ' + this.dbID;
             } else {
