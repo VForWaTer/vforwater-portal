@@ -958,8 +958,7 @@ vfw.util.toggleMapTableFilter = function (evt, tabName, isFilter = false) {
  */
 vfw.filter.updateQuickfilter = function() {
 
-    const url = window.location
-    const urlParams = new URLSearchParams(url.search);
+    const urlParams = new URLSearchParams(window.location.search);
     let urlKey, long_search_id, ajax_element;
     let date = 0;
     let selector_string = "";
@@ -990,7 +989,8 @@ vfw.filter.updateQuickfilter = function() {
                 }
             } else if (urlKey[0] === 'draw') {
                 // let coords_list = urlKey[1].split(',').map(Number)
-                const coords_list = vfw.filter.coords;
+                const coords_list = vfw.filter.coords.length > 0 ? vfw.filter.coords :
+                    urlParams.get('draw').split(",").map(Number);
                 const coords_len = coords_list.length;
                 let coords = []
                 for (let i = 0; i < coords_len; i += 2) {
