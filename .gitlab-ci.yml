@@ -3,6 +3,7 @@ stages:
     - build
     - push
 
+
 # building docker image
 vfwportal-demo-build:
     stage: build
@@ -11,6 +12,7 @@ vfwportal-demo-build:
         - /usr/bin/buildah build-using-dockerfile -f Dockerfile -t vfwportal:$CI_COMMIT_SHA
     only:
         - demo
+
 
 # pushing docker image to some registry
 vfwportal-demo-push:
