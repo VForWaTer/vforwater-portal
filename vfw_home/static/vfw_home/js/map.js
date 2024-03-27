@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 // vfw.map.vars.selectCatchmentIDs = [];
 vfw.map.vars.hit_cL = {};
 // TODO: Check if clusterlayer has to be global!
@@ -90,7 +97,7 @@ vfw.map.source.wfsMeritCatchment = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
     loader: function (extent) {
-        let layerName = 'merit_catch_test'
+        const layerName = 'merit_catchment';  // 'merit_catch_test';
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
@@ -119,7 +126,7 @@ vfw.map.source.wfsCoarseMeritCatchment = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
     loader: function (extent) {
-        let layerName = 'merit_catch_test_v2'
+        const layerName = 'merit_catchment_coarse';  // 'merit_catch_test_v2';
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
             + extent.join(',') + '/3857',
         )
@@ -201,6 +208,7 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
                     console.error('Error in building vector vfw.map.source.wfsPointSource: ', error);
                 } else {
                     console.warn('No result for selected area. Unable to build vector layer with data points.');
+                //     TODO: If geoserver is not available, create layer through django
                 }
                 // vfw.map.source.wfsPointSource.removeLoadedExtent(extent);  // TODO: why was this there? test before delete!
             })
