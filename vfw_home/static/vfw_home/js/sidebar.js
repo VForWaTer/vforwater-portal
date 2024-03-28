@@ -69,7 +69,7 @@ vfw.sidebar.showData = function () {
             if (!(dataStoreData[k].hasOwnProperty('type') && dataStoreData[k]['type'] === 'geometry')) {
                 vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
             } else {
-                vfw.datasets.dataObjects[k] = new vfw.datasets.selectObj(dataStoreData[k]);
+                vfw.datasets.selectObjects[k] = new vfw.datasets.selectObj(dataStoreData[k]);
             }
         });
     }
@@ -198,6 +198,7 @@ vfw.session.removeAllDatasets = function () {
     const storedData = JSON.parse(sessionStorage.getItem("dataBtn"))
     $.each(storedData, function (key, value) {
         if (vfw.datasets.dataObjects[key]) vfw.datasets.dataObjects[key].removeData(key)
+        else if (vfw.datasets.selectObjects[key]) vfw.datasets.selectObjects[key].removeData(key)
     });
 }
 
