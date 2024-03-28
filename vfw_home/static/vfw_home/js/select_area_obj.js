@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 /**
 create new object with new vfw.datasets.selectObj(json)
 The object is mainly copied from data_obj.js, and many functions can be carefully removed.

@@ -1,4 +1,11 @@
 let draw, drawSquare, drawCatchmentOutlet, drawCatchmentWKT, modify, selectedFeatures, selectionEdgeCoords, selectionLayerSource;
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 /**
  * Global Element (source layer) to drawn on
  */
@@ -319,7 +326,7 @@ vfw.map.func.resetDraw = function() {
     return coords
 }
 /**
- * Menu to draw polygon on map and use it to select data
+ * Open menu to draw polygon on map and use the polygon to select data
  *
  * @param test
  */
@@ -327,35 +334,6 @@ vfw.map.func.drawOnMapMenu = function (test) {
     vfw.map.func.toggleDrawFilter();
     // dcz.setActive(false);  // no doubleclick zoom when draw filter is opened
     // vfw.map.olmap.removeInteraction(selectCluster);
-    // let collection = new ol.Collection();
-
- /*   /!**
-     * Element (layer) to be included on map
-     *!/
-    selectionLayerSource = new ol.source.Vector({
-        wrapX: false,
-        features: collection,
-        useSpatialIndex: false,
-        zindex: -100
-    });*/
-
-    // create source layer
-    // selectionLayer = new ol.layer.Vector({
-    //     source: vfw.map.source.selectionSource,
-    //     style: new ol.style.Style({
-    //         // fill: new ol.style.Fill({
-    //         //     color: 'rgba(255, 255, 255, 0.2)'
-    //         // }),
-    //         stroke: new ol.style.Stroke({
-    //             color: '#ff0040',
-    //             width: 1
-    //         }),
-    //     }),
-    //     // zindex: -100,
-    //     updateWhileAnimating: true, // optional, for instant visual feedback
-    //     updateWhileInteracting: true // optional, for instant visual feedback
-    // });
-    // vfw.map.olmap.addLayer(selectionLayer);
 
 //     TODO: a listener is needed to abort drawing, e.g. by pressing ESC
 //     document.addEventListener('keydown', function(event) {
@@ -370,13 +348,13 @@ vfw.map.func.drawOnMapMenu = function (test) {
      * Create and add interactions - Connect the draw button with the open layers interactions to draw on the map.
      */
 
-    /** Draw a polygon. */
+    /** Interaction to draw a polygon. */
     vfw.map.control.draw = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Polygon',
         stopClick: true,
     });
-    /** Draw a Square. */
+    /** Interaction for drawing a Square. */
     // vfw.map.control.draw.setZIndex(-100);
     vfw.map.control.drawSquare = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
@@ -384,7 +362,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         geometryFunction: ol.interaction.Draw.createBox(),
         stopClick: true
     });
-    /** Click on the map and get the contour line of a catchment from the server. */
+    /** Interaction to click on the map and get the contour line of a catchment from the server. */
     vfw.map.control.drawCatchmentOutlet = new ol.interaction.Draw({
         source: vfw.map.source.selectionSource,
         type: 'Point',
@@ -476,7 +454,6 @@ vfw.map.func.drawOnMapMenu = function (test) {
             changes = event.feature.getGeometry().on('change', function (event) {
                 // clear features so they deselect when polygon moves away
                 vfw.map.vars.selectionEdgeCoords = event.target;
-
             });
         } catch (e) {
             changes = {}
@@ -506,7 +483,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
         vfw.filter.coords = vfw.map.func.getSelectionEdgeCoords();
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
-        vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for a undo button
+        vfw.map.vars.mapSelect = vfw.map.func.getSelectionEdgeCoords()[0][0];  // store selection in var. Might be useful for an undo button
         vfw.map.func.removeDrawInteractions();
         // vfw.sidebar.addSelectStoreButton({'name': 'Square'});
         vfw.map.func.toggleDrawBackground(document.getElementById("draw_square"))
@@ -554,15 +531,19 @@ vfw.map.func.drawOnMapMenu = function (test) {
         click_coords[1] = click_coords[1].toFixed(6);
 
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
-        $.when(vfw.map.func.getCatchment({'coords': click_coords})).done(function(catchment) {
-            vfw.map.func.renderCatchment(catchment, 'wkt')
-            // vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
-            // vfw.map.olmap.addLayer(selectionLayer)
-            // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
-            // listener = selectStartFun(event)
-            vfw.html.loaderOverlayOff();
-        })
-
+        $.when(vfw.map.func.getCatchment({'coords': click_coords}))
+            .done(catchment => {
+                vfw.map.func.renderCatchment(catchment, 'wkt')
+                // vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
+                // vfw.map.olmap.addLayer(selectionLayer)
+                // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
+                // listener = selectStartFun(event)
+                vfw.html.loaderOverlayOff();
+            })
+            .fail(error => {
+                console.warn('Unable to create Catchment from Outlet: ', error);
+                vfw.html.loaderOverlayOff();
+            })
     }, this);
     vfw.map.control.drawCatchmentOutlet.on('drawend', function () {
         // vfw.map.func.removeDrawInteractions();
@@ -571,9 +552,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         //     .forEach(layer => vfw.map.olmap.removeLayer(layer));
         vfw.map.func.removeDrawInteractions();
         vfw.map.func.toggleDrawBackground(document.getElementById("draw_catchment"))
-
     })
-
 }
 
 /**
@@ -954,7 +933,7 @@ vfw.util.toggleMapTableFilter = function (evt, tabName, isFilter = false) {
 
 
 /**
- * Update quickfilter onload() according to the given URL
+ * Update options in the quickfilter and on the map according to the given URL, during onload()
  */
 vfw.filter.updateQuickfilter = function() {
 

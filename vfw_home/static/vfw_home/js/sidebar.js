@@ -66,7 +66,11 @@ vfw.sidebar.showData = function () {
     const dataStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
     if (dataStoreData) {  // && "value" in workspaceData) {
         $.each(dataStoreData, function (k) {
-            vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
+            if (!(dataStoreData[k].hasOwnProperty('type') && dataStoreData[k]['type'] === 'geometry')) {
+                vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k]);
+            } else {
+                vfw.datasets.dataObjects[k] = new vfw.datasets.selectObj(dataStoreData[k]);
+            }
         });
     }
     const resultStoreData =
@@ -145,7 +149,8 @@ vfw.sidebar.addSelectStoreButton = function (file={}, source="userUpload") {
     objData['source'] = source;
     console.log('objData: ', objData)
 
-    /** Use the latest upload for filtering */ // TODO: We don't update, we store all => new ID
+    /** Use the latest upload for filtering, If ID exists already loop sessionStore and change ID until we found a
+     * new ID */ // TODO: We don't update, we store all => new ID
     if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
         let newID = objData['orgID'];
         let i = 0;

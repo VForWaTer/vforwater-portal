@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 // This function builds the whole menu structure. For interaction with Server the menus have a short class in the style:
 // First top menu (Parent): P1
 // First child: C1
