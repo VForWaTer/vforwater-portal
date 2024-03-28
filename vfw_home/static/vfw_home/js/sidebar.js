@@ -143,14 +143,14 @@ vfw.sidebar.addSelectStoreButton = function (file={}, source="userUpload") {
     /** Data needed to create a Button in the datastore */
     const objData = {
         "name": "Select Area", "type": "geometry", "geom": vfw.filter.coords, "isGroupMember": false,
-        "orgID": "selectArea"
+        "orgID": "selectArea" + Math.floor(Math.random() * 1000000).toString()
     }
     objData['name'] = 'name' in file ? file.name : "user upload";
     objData['source'] = source;
     console.log('objData: ', objData)
 
     /** Use the latest upload for filtering, If ID exists already loop sessionStore and change ID until we found a
-     * new ID */ // TODO: We don't update, we store all => new ID
+     * new ID */ // TODO: We don't update, we store all => new ID (in case the random generator gave two time the same number)
     if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
         let newID = objData['orgID'];
         let i = 0;

@@ -51,7 +51,7 @@ vfw.datasets.selectObj = class {
 
         this.storeKey = "dataBtn";
         this.btnPosition = "workspace";
-        this._adaptOrgID();
+        // this._adaptOrgID();  // TODO: remove this function. A object shouldn't manipulate its orgID
 
         this._setTitle();
         this._createHtmlName();
@@ -123,14 +123,18 @@ vfw.datasets.selectObj = class {
         data['inSessionStorage'] = true;
         if (sessionStorage.getItem(this.storeKey)) {
             stored = JSON.parse(sessionStorage.getItem(this.storeKey));
-            if (update || !stored[newID]) {
-                stored[newID] = data;
+            if (update || !stored[this.orgID]) {
+                stored[this.orgID] = data;
             }
             sessionStorage.setItem(this.storeKey, JSON.stringify(stored))
             sessionStorageData = stored;
         } else {
             let sessionEntry = {};
-            sessionEntry[newID] = data;
+            if (this.orgID) {
+                sessionEntry[this.orgID] = data;
+            } else {
+                sessionEntry[this.orgID] = this.name;
+            }
             sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
             sessionStorageData = data
         }
