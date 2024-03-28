@@ -1,6 +1,7 @@
 @startuml
 title Draw on the Map for a selection
-
+participant sidebar.js
+participant select_area_obj.js
 hide footbox
 
 
@@ -50,18 +51,30 @@ menu_objects.js -> menu_objects.js: update QuickMenu obj
 menu_objects.js -> menu_objects.js: refresh data on map
 return
 vfw.js -> vfw.js: update sum in menu
-vfw.js -> vfw.js: create store button if sum(results)<100
+vfw.js -> vfw.js: create "store all" button if sum(results)<100
 return (back to 'drawend')
 vfw.js -> vfw.js: vfw.map.func.getSelectionEdgeCoords()[0][0]
 vfw.js -> vfw.js: vfw.map.func.removeDrawInteractions()
-note right: remove interaction for draw, modify, drawSquare, drawCatchmentOuthlet
+note right: remove interaction for draw, modify, drawSquare, drawCatchmentOutlet
 vfw.js -> vfw.js: vfw.map.func.toggleDrawBackground()
 deactivate
 deactivate
 deactivate
 
-
-
+== click on Button to store drawing ==
+map.html -> vfw.js ++: vfw.map.func.removeDrawInteractions()
+note right: remove interaction for draw, modify, drawSquare, drawCatchmentOutlet
+return
+map.html -> sidebar.js ++: vfw.sidebar.addSelectStoreButton()
+opt if vfw.datasets.selectObjects.hasOwnProperty('orgID')
+    sidebar.js -> sidebar.js ++: newID = orgID
+    loop
+    sidebar.js -> sidebar.js: until vfw.sidebar.hasOwnProperty(newID) = false
+    end
+    sidebar.js -> select_area_obj.js: until vfw.sidebar.hasOwnProperty(newID) = false
+end
+sidebar.js -> sidebar.js: selectObjects['orgID'] = new selectObj(objData);
+deactivate
 
 
 @enduml
