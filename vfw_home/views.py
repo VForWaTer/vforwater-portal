@@ -10,6 +10,7 @@ import pandas as pd
 import redis
 import requests
 from django.contrib.gis.db.models.aggregates import Extent
+from django.core.cache import cache
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q, Count, Exists, OuterRef, Sum
@@ -37,8 +38,7 @@ from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test
 from wps_gui.models import WpsResults
 from .Fig_obj import FigObject
 from .checks import check_geoserver_layers
-from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
-    __get_axis_limits, __reduce_dataset, get_accessible_data, collect_selection, has_data, get_split_groups
+from .data_tools import DataTypes, get_accessible_data, collect_selection, has_data, get_split_groups
 from .delineator import delineate
 from .forms import QuickFilterForm
 from .data_obj import DataObject
@@ -560,6 +560,7 @@ def previewplot(request):
     cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
+
         try:
             # bla = Entries.objects.filter(pk=webID[2:]).values_list('datasource__data_names',
             #                                                        'datasource__path',
@@ -580,9 +581,12 @@ def previewplot(request):
                         print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
             else:
                 if has_data(entriesID):
-                    t0 = time()
-                    dataset = DataObject(webID, date)
-                    t1 = time()
+                    if entriesID in cache.get('ids_data_on_path'):
+                        dataset = DataObject(webID, date)
+                    else:
+                        print('One must handle data on path/ check if raster (= has spatial resolution) => '
+                              'plot raster image, if netCDF => datacube')
+                        return JsonResponse({'error': f'Plot for entries ID {webID} has to be implemented.'})
                 else:
                     print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
                     return JsonResponse({'error': f'No Data for dataset with entries ID {webID}'})
@@ -659,14 +663,8 @@ def short_info_pagination(request):
             # error_ids = accessible_data['blocked']
             accessible_ids = accessible_data['open']
 
-            split_datasets = (Entries.objects.filter(pk__in=datasets, nmentrygroups__group__type__name='Split dataset')
-                              .values('id', 'nmentrygroups__group_id')
-                              .order_by('nmentrygroups__group_id'))
-
-            # put ids of a all parts of a split dataset in one list (with their group id as key)
-            grouped_dict = defaultdict(list)
-            for i in split_datasets:
-                grouped_dict[i['nmentrygroups__group_id']].append(i['id'])
+            # get groupmembers of split data
+            grouped_dict = get_split_groups(datasets)
 
             # create a dict with indices and ids of datasets in entries_list, for a quick change of values
             entries_id_map = {d['id']: idx for idx, d in enumerate(entries_list)}
@@ -762,11 +760,12 @@ def show_info(request):
                     nm_prefix + 'group__title', nm_prefix + 'group_id']
 
         try:
+            # For a list of datasets use this
             if ids[0] == '[':
                 string_list = ids[1:-1].split(",")
                 ids = list(map(int, string_list))
                 db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
-            else:
+            else:  # For one dataset use this
                 db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
         except Exception as e:
             print('Error in views.show_info.collect_data: ', e)

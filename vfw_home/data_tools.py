@@ -1,9 +1,10 @@
 # from typing import Literal
 import json
 from collections import Counter, defaultdict
-
+import logging
 import numpy as np
 import pandas as pd
+from django.core.cache import cache
 from django.core.exceptions import EmptyResultSet, FieldError
 from django.db import connections
 from django.db.models import Q
@@ -12,6 +13,7 @@ from django.utils import timezone
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
 from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups, Locations
 
+logger = logging.getLogger(__name__)
 
 def get_split_groups(IDs):
     """
@@ -369,6 +371,9 @@ class DataTypes:
         return data
 
 
+# TODO: not needed anymore. Use the cached values instead:
+#  cache.get('ids_without_data')
+#  cache.get('ids_data_on_path')
 def has_data(web_ID):
     """
     Check if the given web ID has data associated with it.
@@ -376,11 +381,18 @@ def has_data(web_ID):
     :param web_ID: (int) The ID of the web entry.
     :return: bool: True if data is found for the web ID, False otherwise.
     """
+    return web_ID not in cache.get('ids_without_data')
+
+    # TODO: Following code can be removed. Think about removing function.
     data_path = Entries.objects.filter(id=web_ID).values_list('datasource__path', flat=True)[0]
     if data_path is None:
         return False
     query_path = {'{0}'.format(data_path): web_ID}
 
     # TODO: Think about reusing the following queryset instead of creating it several times per plot
-    data = Entries.objects.filter(**query_path).first()
+    try:
+        data = Entries.objects.filter(**query_path).first()
+    except FieldError as e:
+        print('\033[33mhome.data_tools.has_data: Field das not exist:\033[0m ', e)
+        logger.debug('Field Error in has_data: ', e)
     return data is not None
