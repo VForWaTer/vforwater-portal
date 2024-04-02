@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
 {% load static %}
 <!--  ol.css is OpenLayers which is to render geo data in a webbrowser -->
 {% load i18n %}
@@ -134,7 +141,20 @@ vfw.map.html.menuButtonsListeners = function () {
   let storst = document.getElementById('store_polygon');
   storst.addEventListener('click', function () {
     vfw.map.func.removeDrawInteractions()
-    vfw.sidebar.addSelectStoreButton({'name': 'Map drawing'});
+    const name = 'Map drawing';
+    // find used names
+    let usedNames = new Set();
+    for (const [key, value] of Object.entries(vfw.datasets.selectObjects)) {
+      usedNames.add(value.name)
+    }
+    // find unique name
+    let i = 1;
+    let newName = name;
+    while (usedNames.has(newName)) {
+      newName = name + " " + i.toString();
+      i += 1;
+    }
+    vfw.sidebar.addSelectStoreButton({'name': newName});
     {#vfw.map.olmap.addInteraction(modify);#}
   });
   /** add clickEvent to remove button */
