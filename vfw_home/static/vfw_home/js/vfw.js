@@ -577,8 +577,6 @@ vfw.map.func.toggleDrawFilter = function () {
     } else {
         closedDrawfilter.style.display = "block";
         drawfilter.style.display = "none";
-        // TODO: remove only if nothing selected
-        document.getElementById("toggle_draw").classList.remove('activeM')
     }
 }
 
