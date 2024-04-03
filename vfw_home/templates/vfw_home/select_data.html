@@ -172,6 +172,8 @@ let test = "{{ test|escapejs }}"
           }
           if ('name' in file) {
             objData['name'] = file.name;
+          } else if ('properties' in file && 'name' in file.properties) {
+            objData['name'] = file.properties.name;
           } else {
             objData['name'] = "user upload";
           }
