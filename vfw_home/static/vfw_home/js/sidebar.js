@@ -73,8 +73,14 @@ vfw.sidebar.showData = function () {
             }
         });
     }
-    const resultStoreData =
-        JSON.parse(sessionStorage.getItem("resultBtn")) ? window.location.pathname === '/workspace/' : null
+
+    /** build result objects only on /workspace/ */
+    let resultStoreData;
+    if (window.location.pathname === '/workspace/') {
+        resultStoreData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    } else {
+        resultStoreData = null;
+    }
     /** collect  results data from session storage, create objects from it and check status if not finished or error */
     if (resultStoreData) {  // && "value" in workspaceData) {
         $.each(resultStoreData, function (k) {
