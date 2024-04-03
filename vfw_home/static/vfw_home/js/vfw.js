@@ -1,4 +1,3 @@
-let draw, drawSquare, drawCatchmentOutlet, drawCatchmentWKT, modify, selectedFeatures, selectionEdgeCoords, selectionLayerSource;
 /*
  * Project Name: V-FOR-WaTer
  * Author: Marcus Strobl
@@ -379,6 +378,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
     vfw.map.control.modify = new ol.interaction.Modify({ // TODO: Modify has to be fixed!
         // features: collection.getFeaturesCollection(),
         features: select.getFeatures(),
+        pixelTolerance: 20,  // default is 10
         style: overlayStyle,
         insertVertexCondition: function () {
             // prevent new vertices to be added to the polygons
