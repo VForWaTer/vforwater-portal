@@ -1,10 +1,3 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
 from uuid import uuid4
@@ -26,20 +19,13 @@ from django.utils.translation import gettext, gettext_lazy
 #  https://simpleisbetterthancomplex.com/tips/2016/10/17/django-tip-18-translations.html
 
 
-# class DjangoMigrations(models.Model):
-#     """
-#
-#     """
-#     app = models.CharField(max_length=255)
-#     name = models.CharField(max_length=255)
-#     applied = models.DateTimeField()
-#
-#     class Meta:
-#         managed = True
-#         db_table = 'django_migrations'
-
 ### New Database Schemata for vfw 2.0
 ### from metacatalog 2.0
+"""
+More information about the meaning of the tables and entries can be found at the code of metacatalog at
+https://github.com/VForWaTer/metacatalog/tree/a9da92f23659ef7c3c3845cfecf470bc28ed93f8/metacatalog/models
+(https://github.com/VForWaTer/metacatalog/models)
+"""
 
 
 class DatasourceTypes(models.Model):
@@ -101,6 +87,8 @@ class Details(models.Model):
     value = models.TextField()
     description = models.TextField(blank=True, null=True)
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
+    rawvalue = models.JSONField(db_column='raw_value')
+    title = models.CharField()
 
     class Meta:
         managed = False
@@ -310,10 +298,14 @@ class Licenses(models.Model):
 
 
 class Logs(models.Model):
+    """
+    Only used from metacatalog. Keeping an eye on that might help to keep track of changes on the database.
+    """
     tstamp = models.DateTimeField()
     code = models.IntegerField()
     description = models.TextField()
     migration_head = models.IntegerField(blank=True, null=True)
+    code_name = models.CharField(max_length=20)
 
     class Meta:
         managed = False
@@ -385,6 +377,7 @@ class Persons(models.Model):
     organisation_name = models.CharField(max_length=1024, blank=True, null=True)
     organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
+    # uuid = models.CharField(max_length=36)
 
     full_name = f'{first_name} {last_name}'
 
@@ -406,6 +399,7 @@ class SpatialScales(models.Model):
     resolution = models.IntegerField()
     extent = models.PolygonField()
     support = models.DecimalField(max_digits=999, decimal_places=999)
+    dimension_names = models.CharField(null=True, max_length=128)
 
     class Meta:
         managed = False
@@ -420,6 +414,7 @@ class TemporalScales(models.Model):
     observation_start = models.DateTimeField()
     observation_end = models.DateTimeField()
     support = models.DecimalField(max_digits=999, decimal_places=999)
+    dimension_names = models.CharField(null=True, max_length=128)
 
     class Meta:
         managed = False
@@ -513,6 +508,7 @@ class Variables(models.Model):
     symbol = models.CharField(max_length=12)
     unit = models.ForeignKey(Units, models.DO_NOTHING)
     keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
+    column_names = models.CharField(max_length=128)
 
     class Meta:
         managed = False
@@ -591,8 +587,6 @@ class AdvancedFilter(BasicFilter):
 #         managed = False
 #         db_table = 'entries'
 #
-
-
 # Delineate Watershed Data models
 
 class merit_hydro_vect_level2(models.Model):
