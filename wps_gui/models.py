@@ -47,10 +47,10 @@ class GeoAPIResults(models.Model):
                       ]
     access = models.DateTimeField(blank=True, null=True)  # date of last access, relevant for cleaning
     creation = models.DateTimeField(default=timezone.now)  # creation date
-    inputs = models.JSONField(max_length=4096)  # TODO: Use jsonField instead of CharField
+    inputs = models.JSONField(max_length=4096)
     name = models.CharField(max_length=255)  # name of the process
     open = models.BooleanField()  # free to use for everyone?
-    outputs = models.JSONField(blank=True, max_length=2048)  # TODO: Use jsonField instead of CharField
+    outputs = models.JSONField(blank=True, max_length=2048)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     status = models.CharField(max_length=8, choices=PROCESS_STATES, default='CREATED')
 

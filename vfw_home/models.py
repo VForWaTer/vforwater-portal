@@ -87,7 +87,7 @@ class Details(models.Model):
     value = models.TextField()
     description = models.TextField(blank=True, null=True)
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
-    rawvalue = models.JSONField(db_column='raw_value')
+    # raw_value = models.JSONField()  # TODO: This lines reveals a bug. Try to catch it...
     title = models.CharField()
 
     class Meta:
