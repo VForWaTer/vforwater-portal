@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 // TODO: box_types aren't used anymore, though one has to make sure there is no problem now with 2darray
 // vfw.var.box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
 //     'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
@@ -385,19 +392,21 @@ vfw.workspace.checkPattern = function (checkElement) {
     const dropDInputs = inModal.getElementsByTagName('select');
     // const inputInputs = inModal.getElementsByTagName('input');
     let dDInput, stored;
-    /** first loop over each dropdown in input, then over values in dropdown **/
+    /** first loop over each dropdown in input, then over values in dropdown (if something is selected) **/
     for (let i = 0; i < dropDInputs.length; i++) {
         dDInput = dropDInputs[i].selectedOptions;
-        stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value];
-        if (stored.type == "geometry") {
-            let geoJsonFormat = new ol.format.GeoJSON();
-            let geoJsonPolygon = geoJsonFormat.writeGeometry(new ol.geom.Polygon(stored['geom']))
-            if (!vfw.util.isValidGeoJson(JSON.parse(geoJsonPolygon))) {
-                console.warn("Not a valid GeoJSON")
-                return false
-            } else if (!vfw.util.isValidPolygon(JSON.parse(geoJsonPolygon))) {
-                console.warn("Not a valid Polygon")
-                return false
+        if (dDInput.length > 0) {
+            stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value];
+            if (stored.type == "geometry") {
+                let geoJsonFormat = new ol.format.GeoJSON();
+                let geoJsonPolygon = geoJsonFormat.writeGeometry(new ol.geom.Polygon(stored['geom']))
+                if (!vfw.util.isValidGeoJson(JSON.parse(geoJsonPolygon))) {
+                    console.warn("Not a valid GeoJSON")
+                    return false
+                } else if (!vfw.util.isValidPolygon(JSON.parse(geoJsonPolygon))) {
+                    console.warn("Not a valid Polygon")
+                    return false
+                }
             }
         }
     }
@@ -451,7 +460,7 @@ vfw.workspace.modal.prepData = function () {
             indict[dropDInputs[i].name] = valueList;
 
         /** else if one input element in dropdown **/
-        } else {
+        } else if (dDInput.length == 1) {
             // TODO: Create a objects for tools and get there the info if selection should be in an array
             // if (dDInput[0].value.substring(0, 2) == 'db') {
             if (dDInput[0].value.split(",").length == 1) {
@@ -466,7 +475,12 @@ vfw.workspace.modal.prepData = function () {
                     let polygon = new ol.geom.Polygon(stored['geom']);
                     let geoJsonFormat = new ol.format.GeoJSON();
                     polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
-                    inValue.push(geoJsonFormat.writeGeometry(polygon));
+                    const geoJsonPolygon = {
+                        "type": "Feature",
+                        "geometry":geoJsonFormat.writeGeometry(polygon),
+                        "properties": {"name":stored['name'],"orgID":stored['orgID']}
+                    };
+                    inValue.push(geoJsonPolygon);
                 }
                 inType.push(stored['type']);
                 indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
@@ -892,6 +906,7 @@ vfw.workspace.buildResultGroupButton = function (groupname, members) {
     return ghtml
 }
 
+/** Remove element from html and update session Storage */
 vfw.session.removeSingleResult = function (removeData) {
     document.getElementById(removeData).remove();
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
@@ -909,6 +924,7 @@ vfw.session.removeGroupResult = function (removeData) {
     document.getElementById(removeData).remove();
 }
 
+/** Loop over all datasets of the element to select from and remove each individually */
 vfw.session.removeAllResults = function () {
     let groupSet = new Set();
     /** remove button from portal **/
@@ -1019,10 +1035,11 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     let acceptedDataTypes = DATATYPE.accepts([item.dataType])  // TODO: Whats wrong in this Class?
     // let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
 
-    htmlSelect.id = item.identifier;
+    // htmlSelect.id = item.identifier;
+    htmlSelect.id = 'mod_in_el_' + item.identifier;  // item.id
 
     for (let i in sessionStoreData) {
-        if (acceptedDataTypes.has(sessionStoreData[i].type)) {
+        if (acceptedDataTypes.has(sessionStoreData[i].type)) {  // TODO: shouldn't this be 'hasOwnProperty'?
             aptStoreData[i] = sessionStoreData[i];
         }
         // TODO: groups are not properly handled yet
@@ -1034,7 +1051,7 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     }
     for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
     for (let i in groupedData) {
-        if (acceptedDataTypes.has(groupedData[i].type)) {
+        if (acceptedDataTypes.has(groupedData[i].type)) {  // TODO: shouldn't this be 'hasOwnProperty'?
             // aptGroupedData[i] = groupedData[i]
             // aptGroupedData[i] = groupedData[i]
         }
@@ -1158,6 +1175,7 @@ vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup
     return optionGroup
 }
 
+/** Create an input element according to the expected type of the inputdata */
 vfw.html.createInputElement = function (input_tool_description, resultData, sessionStoreData) {
     let inElement = "", newNode = "", nodeText = "";
     let item = input_tool_description[1];
@@ -1337,6 +1355,7 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
 
+    /** Loop over input parameters and create an appropriate input element for each */
     // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
     Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
         newNode = vfw.html.createInputElement(entry_value, resultData, sessionStoreData);
