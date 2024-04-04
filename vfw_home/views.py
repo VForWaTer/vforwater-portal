@@ -51,10 +51,11 @@ from django.contrib.gis.geos import Polygon, GEOSGeometry
 from .query_functions import get_bbox_from_data
 # from .filter import QuickFilter
 from .filters import NMPersonsFilter
-from .models import Entries, NmEntrygroups, Entrygroups, Timeseries_1D, Locations, Variables
+from .models import Entries, NmEntrygroups, Entrygroups, Timeseries_1D, Locations, Variables, TemporalScales
 
 import logging
 from pathlib import Path
+from datetime import timedelta
 
 # for debugging:
 from time import time
@@ -737,6 +738,69 @@ def show_info(request):
     :return:
     """
 
+    def parse_iso8601_duration(duration_str):
+        """
+        Parse an ISO 8601 duration string into a timedelta object.
+
+        :param duration_str: A string representing a duration in ISO 8601 format.
+        :type duration_str: str
+        :return: A timedelta object representing the parsed duration.
+        :rtype: timedelta
+
+        The function removes the 'P' prefix and splits the string into date and time parts. 
+
+        Example:
+
+        >>> parse_iso8601_duration('P3DT1H5M6S')
+        output : 3 days, 1:05:06
+           
+        """
+        # Remove the 'P' and split into date and time parts
+        duration_str = duration_str[1:]
+        date_time_split = duration_str.split('T')
+        days, hours, minutes, seconds = 0, 0, 0, 0
+
+        print("date time split: " , date_time_split)
+        # If there's a date component, parse it
+        if date_time_split[0]:
+            date_part = date_time_split[0]
+            days += int(date_part[:-1]) if date_part.endswith('D') else 0
+
+        # If there's a time component, parse it
+        if len(date_time_split) > 1:
+            time_part = date_time_split[1]
+            hours += int(time_part.split('H')[0]) if 'H' in time_part else 0
+            minutes += int(time_part.split('H')[-1].split('M')[0]) if 'M' in time_part else 0
+            seconds += int(time_part.split('M')[-1].split('S')[0]) if 'S' in time_part else 0
+
+        return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+   
+
+    def format_duration_to_detailed_str(duration):
+        """
+        Format a duration object into a detailed string.
+
+        :param duration: A datetime.timedelta object representing the duration.
+        :type duration: datetime.timedelta
+
+        :return: A string representation of the duration in the format "days day(s), hours hour(s), minutes minute(s), seconds second(s)".
+        :rtype: str
+
+        If the duration has no days (Similarly for hours, minutes, seconds) , it will not be included in the string.
+        """
+        parts = []
+        days = duration.days
+        seconds = duration.seconds
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        # return f"{days} day(s), {hours} hour(s), {minutes} minute(s), {seconds} second(s)"
+        if days: parts.append(f"{days} day{'s' if days > 1 else ''}")
+        if hours: parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
+        if minutes: parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
+        if seconds: parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
+
+        return ", ".join(parts) if parts else "0 seconds"
+
     def collect_data(ids):
         """
         Called when clicked on more to see metadata of single dataset.
@@ -757,6 +821,8 @@ def show_info(request):
                     prefix + 'embargo', prefix + 'embargo_end',
                     prefix + 'datasource__temporal_scale__observation_start',
                     prefix + 'datasource__temporal_scale__observation_end',
+                    prefix + 'datasource__spatial_scale__resolution',
+                    prefix + 'datasource__temporal_scale__resolution',
                     nm_prefix + 'group__title', nm_prefix + 'group_id']
 
         try:
@@ -781,9 +847,11 @@ def show_info(request):
         else:
             group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
                 .values_list('entry_id', flat=True)
-
+        
+        variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
         table = {'id': ids, 'uuid': db_info[0][prefix + 'uuid'],
-                 translation.gettext('Name'): translation.gettext(db_info[0][prefix + 'variable__name'])}
+                 translation.gettext('Name'): variable_name }
+
 
         table[translation.gettext('Commercial use allowed')] = \
             human_readable_bool(db_info[0][prefix + 'license__commercial_use'])
@@ -793,11 +861,23 @@ def show_info(request):
             if db_info[0][prefix + 'abstract'] else '-'
         table['has_embargo'] = str(
             has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
-
         table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
             if db_info[0][nm_prefix + 'group__title'] else '-'
         table['group_entry_ids'] = list(group_entry_ids)
 
+        if db_info[0][prefix + 'datasource__spatial_scale__resolution'] is not None :
+        #     spatial_resolution_unit_symbol = Variables.objects.filter(name=variable_name).first().unit.symbol 
+            table[translation.gettext('Spatial Resolution')] = str(db_info[0][prefix + 'datasource__spatial_scale__resolution']) + " " + "m"
+
+        if db_info[0][prefix + 'datasource__temporal_scale__resolution'] is not None :
+            parsed_date = parse_iso8601_duration(db_info[0][prefix + 'datasource__temporal_scale__resolution'])
+            print("Temporal Scale string :", format_duration_to_detailed_str(parsed_date))
+            table[translation.gettext('Temporal Resolution')] = format_duration_to_detailed_str(parsed_date)
+
+        print("table 8: ", db_info[0][prefix + 'datasource__temporal_scale__observation_start'])
+        table[translation.gettext('Observation Start')] = db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_start'] else '-'
+        table[translation.gettext('Observation End')] = db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_end'] else '-'
+        
         return JsonResponse({'table': table, 'warning': warning})
 
     webID = request.GET.get('show_info')
