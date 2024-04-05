@@ -608,7 +608,7 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
                                   # TODO: old setting from PyGeoAPI 0.13. Change for newer version
                                   'inputs': {**input.get("in_dict", ""),
                                              'User-Info':  # plant the username in last moment
-                                                 f'userID{user_id}_'}
+                                                 f'user{user_id}_{request.user.username}'}
                                       # input.get("in_dict", ""),
                                   # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
                               },
