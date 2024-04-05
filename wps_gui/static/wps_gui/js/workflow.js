@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 vfw.draw2d.Box = class {
     /**
      * Box class to be added (dropped) on a draw2d.Canvas Element.

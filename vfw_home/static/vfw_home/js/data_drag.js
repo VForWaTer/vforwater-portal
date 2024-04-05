@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 $(function() {
 		    var clientFrameWindow = $('#wpstool').get(0).contentWindow;
             var test = document.getElementById("wpstool");
