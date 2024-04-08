@@ -474,7 +474,8 @@ vfw.workspace.modal.prepData = function () {
                 } else {
                     let polygon = new ol.geom.Polygon(stored['geom']);
                     let geoJsonFormat = new ol.format.GeoJSON();
-                    polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
+                    // TODO: Stop transforming EPSG:4326 as EPSG:3857 to EPSG:4236. TODO: Make sure which coordinates are given and transform only when needed.
+                    // polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
                     const geoJsonPolygon = {
                         "type": "Feature",
                         "geometry":geoJsonFormat.writeGeometry(polygon),
