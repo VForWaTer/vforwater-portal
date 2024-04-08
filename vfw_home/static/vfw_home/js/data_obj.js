@@ -165,6 +165,28 @@ vfw.datasets.DataObj = class {
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
     }
 
+
+    Downloadcsv = function() {
+        const obj = this; // Reference to the DataObj instance
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/datasetdownload",
+            datatype: 'json', // Assuming the response is plain text CSV
+            data: {
+                csv: obj.orgID, // Assuming orgID is what identifies the dataset for download
+            },
+        })
+        .done(function(csvData) {
+            const blob = new Blob([csvData], {type: "text/csv;charset=utf-8"});
+            saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName") + ".csv"); // Assuming 'name' is a property you want to use for the filename
+        })
+        .fail(function(error) {
+            console.error('Download failed', error);
+        })
+        .always(function() {
+            vfw.html.loaderOverlayOff();
+        });
+    };
+
     /**
      * Saves data to session storage.
      * @param {Object} data - The data to be saved.
@@ -232,7 +254,7 @@ vfw.datasets.DataObj = class {
             "timeseries": [
                 ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
                 ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
-                ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
+                ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)", "Downloadcsv"],
                 ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ],

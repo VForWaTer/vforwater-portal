@@ -226,7 +226,10 @@ class DatasetDownloadView(TemplateView):
 
         if 'csv' in request.GET:
             # if 'download_data' in request.GET:
-            s_id = json.loads(request.GET.get('csv'))
+            s_id =  request.GET.get('csv')
+
+            # s_id =  json.loads(json.dumps(request.GET.get('csv')))
+            # s_id = json.loads(request.GET.get('csv'))
             accessible_data = get_accessible_data(request, s_id)
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
