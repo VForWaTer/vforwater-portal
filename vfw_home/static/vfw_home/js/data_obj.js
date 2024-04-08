@@ -33,7 +33,7 @@ vfw.datasets.DataObj = class {
     group = "";
     source = "";
 
-    constructor(data) {
+    constructor(data, newElement=true) {
         const defaultParams = {
             orgID: "",  // used also as ID for buttons and in session storage
             uuID: "",
@@ -91,7 +91,9 @@ vfw.datasets.DataObj = class {
             this._buildHtmlGroup()
         }
         this._placeHtmlButton();
-        this.save(data);
+        if (newElement) {
+            this.save(data);
+        }
         /*if (this.url !== `/home/`) {
             this._update()
         }*/
@@ -194,6 +196,7 @@ vfw.datasets.DataObj = class {
      * @return {void}
      */
     save(data, update = false) {
+        console.log('+++++++++ nooooo i save')
         let stored;
         data['inSessionStorage'] = true;
         if (sessionStorage.getItem(this.storeKey)) {
@@ -206,9 +209,9 @@ vfw.datasets.DataObj = class {
         } else {
             let sessionEntry = {};
             if (this.orgID) {
-                sessionEntry[this.orgID] = data
+                sessionEntry[this.orgID] = data;
             } else {
-                sessionEntry[this.orgID] = this.name
+                sessionEntry[this.orgID] = this.name;
             }
             sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
             sessionStorageData = data
@@ -458,7 +461,6 @@ vfw.datasets.DataObj = class {
     _updateGeom(data) {
         this.geom = data["geom"];
     }
-
 //
 //         `<nav id="context-menu" className="context-menu">
 //     <ul className="context-menu__items">
@@ -487,6 +489,4 @@ vfw.datasets.DataObj = class {
 //     </ul>
 //   </nav>`
 //     }
-
 }
-

@@ -1,4 +1,3 @@
-let draw, drawSquare, drawCatchmentOutlet, drawCatchmentWKT, modify, selectedFeatures, selectionEdgeCoords, selectionLayerSource;
 /*
  * Project Name: V-FOR-WaTer
  * Author: Marcus Strobl
@@ -379,6 +378,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
     vfw.map.control.modify = new ol.interaction.Modify({ // TODO: Modify has to be fixed!
         // features: collection.getFeaturesCollection(),
         features: select.getFeatures(),
+        pixelTolerance: 25,  // default is 10
         style: overlayStyle,
         insertVertexCondition: function () {
             // prevent new vertices to be added to the polygons
@@ -577,8 +577,6 @@ vfw.map.func.toggleDrawFilter = function () {
     } else {
         closedDrawfilter.style.display = "block";
         drawfilter.style.display = "none";
-        // TODO: remove only if nothing selected
-        document.getElementById("toggle_draw").classList.remove('activeM')
     }
 }
 
@@ -1062,6 +1060,7 @@ function quick_filter(selection) {
  */
 vfw.url.updateFilterURL = function(selection)  {
     vfw.html.loaderOverlayOn();
+    const drawKeys = ['draw', 'catchout', 'catchStartID']
     const url = window.location
     let urlParams = new URLSearchParams(url.search);
     let nextURL;
@@ -1071,6 +1070,14 @@ vfw.url.updateFilterURL = function(selection)  {
         let selectedKey = Object.keys(selection)[0]
         let selectedValues = Object.values(selection)[0]
 
+        // if one wants to use another drawing method then already given in the url, remove the old url params
+        if (drawKeys.includes(selectedKey)) {
+            drawKeys
+                .filter(item => item !== selectedKey)
+                .forEach(item => urlParams.delete(item))
+        }
+
+        // add new parameter to URL
         urlParams.delete(selectedKey);
         if (Symbol.iterator in Object(selectedValues)) {  // check if Object can be iterated
             for (let value of selectedValues) {
@@ -1176,6 +1183,7 @@ vfw.map.func.getCatchment = function (start_value) {
         urlPart = {'catchout': start_value['coords']}
         url = vfw.url.updateFilterURL(urlPart)
     }
+
     if (url !== false) {
         return $.ajax({
             url: vfw.var.DEMO_VAR + '/home/delineator/' + url,

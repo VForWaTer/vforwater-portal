@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
 {% load static %}
 <!--  ol.css is OpenLayers which is to render geo data in a webbrowser -->
 {% load i18n %}
@@ -128,13 +135,24 @@ vfw.map.html.menuButtonsListeners = function () {
   let modst = document.getElementById('modify_polygon');
   modst.addEventListener('click', function () {
     vfw.map.func.removeDrawInteractions()
-    vfw.map.olmap.addInteraction(modify);
+    vfw.map.olmap.addInteraction(vfw.map.control.modify);
   });
-  /** add clickEvent to modify button */
+  /** add clickEvent to "store in data store" button */
   let storst = document.getElementById('store_polygon');
   storst.addEventListener('click', function () {
     vfw.map.func.removeDrawInteractions()
-    vfw.sidebar.addSelectStoreButton({'name': 'Map drawing'});
+    const baseName = 'Map drawing';
+    // find used names for map drawings
+    let usedNames = new Set();
+    for (const [key, value] of Object.entries(vfw.datasets.selectObjects)) {
+      usedNames.add(value.name)
+    }
+    // loop used names until finding a new (unique) name
+    let newName = baseName;
+    for (let i = 1; usedNames.has(newName); i++) {
+      newName = `${baseName} ${i}`;
+    }
+    vfw.sidebar.addSelectStoreButton({'name': newName});
     {#vfw.map.olmap.addInteraction(modify);#}
   });
   /** add clickEvent to remove button */

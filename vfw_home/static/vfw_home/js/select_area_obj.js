@@ -30,7 +30,7 @@ vfw.datasets.selectObj = class {
     gjson = "";
     url = "";
 
-    constructor(data) {
+    constructor(data, newElement=true) {
         const defaultParams = {
             // source: "",
             abbr: "",
@@ -61,7 +61,9 @@ vfw.datasets.selectObj = class {
             this._buildHtmlGroup()
         }
         this._placeHtmlButton();
-        this.save(data);
+        if (newElement) {
+            this.save(data);
+        }
         this.gjson = {
             "crs": {
                 "type": "name",

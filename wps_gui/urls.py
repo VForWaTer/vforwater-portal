@@ -14,6 +14,7 @@ urlpatterns = [
     re_path(r'^$', views.home, name='home'),
     path('processview', views.ProcessView.as_view(), name='processview'),
     # path('dbload', views.db_load, name='dbload'),
+    path('deleteresult', views.delete_result, name='deleteresult'),
     path('processrun', views.process_run, name='processrun'),
     path('processstate', views.process_state, name='processstate'),
     path('updatetools', views.update_tools, name='updatetools'),

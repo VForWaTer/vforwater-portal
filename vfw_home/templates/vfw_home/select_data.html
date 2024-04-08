@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
 {% load static %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -172,6 +179,8 @@ let test = "{{ test|escapejs }}"
           }
           if ('name' in file) {
             objData['name'] = file.name;
+          } else if ('properties' in file && 'name' in file.properties) {
+            objData['name'] = file.properties.name;
           } else {
             objData['name'] = "user upload";
           }

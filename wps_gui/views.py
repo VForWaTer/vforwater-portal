@@ -1,6 +1,7 @@
 # =================================================================
 #
 # Authors: Marcus Strobl <marcus.strobl@kit.edu>
+# Contributors:
 #
 # Copyright (c) 2024 Marcus Strobl
 #
@@ -584,7 +585,12 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
     # if request.user.is_authenticated:
     process_description = ""
     # request_input = json.loads(request.GET.get('processrun'))
-    input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
+    try:
+        input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
+    except Exception as e:
+        # print(f'Problems preparing inputs in wps_gui.views.process_run: {e}')
+        logger.error(f'Problems preparing inputs {e}')
+
     wps_process = input.get("id", "")
 
     if input['serv'] == 'pygeoapi_vforwater':
@@ -602,7 +608,7 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
                                   # TODO: old setting from PyGeoAPI 0.13. Change for newer version
                                   'inputs': {**input.get("in_dict", ""),
                                              'User-Info':  # plant the username in last moment
-                                                 f'userID{user_id}_'}
+                                                 f'user{user_id}_{request.user.username}'}
                                       # input.get("in_dict", ""),
                                   # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
                               },
@@ -660,7 +666,6 @@ def get_url_json(url):
     Example usage:
     ```
     response = get_url_json('http://example.com/api/process/state')
-    print(response)
     ```
     :param url: The URL of the API endpoint to check the state of a process.
     :return: The JSON response from the API indicating the state of the process.
@@ -762,7 +767,11 @@ def process_state(request):
         except Exception as e:
             print(f"Unexpected error while trying to update DB: {e}")
             logger.error(f'Unexpected error while trying to update DB: {e}')
-
+    elif (update['status'] == "failed" and update['message'] == 'InvalidParameterValue: Error updating job'
+          and update['progress'] < 10):
+        logger.error(f'Process failed immediately: {update}')
+        # print(f'Process failed immediately: {update}')
+        return JsonResponse({'status': entry.status, 'error': 'Invalid Parameter Value'})
     else:
         logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
         print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')

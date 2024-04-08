@@ -809,10 +809,10 @@ def prepare_inputs(request, request_input):
     for i, val in enumerate(request_input['in_type_list']):
 
         value = ''
-        if val in datatypes and request_input['value_list'][i][0:3] == 'wps':  # if basicdatatype and already stored as file. (if not a basicdatatype look for data in db???)
+        if val in datatypes and str(request_input['value_list'][i])[0:3] == 'wps':  # if basicdatatype and already stored as file. (if not a basicdatatype look for data in db???)
             value = ast.literal_eval(WpsResults.objects
                                      .get(id=int(request_input['value_list'][i][3:])).outputs)['folder']
-        elif val in datatypes and request_input['value_list'][i][0:2] == 'db':
+        elif val in datatypes and str(request_input['value_list'][i])[0:2] == 'db':
             # TODO: db loader and saving of prepared data not needed anymore, as mirko uses only IDs yet
             orgid = request_input['value_list'][i]
             result = save_dataset(request=request, orgid=request_input['value_list'][i],
