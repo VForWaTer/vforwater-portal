@@ -169,17 +169,19 @@ vfw.datasets.DataObj = class {
 
 
     Downloadcsv = function() {
-        const obj = this; // Reference to the DataObj instance
+        const obj = this; 
         $.ajax({
             url: vfw.var.DEMO_VAR + "/home/datasetdownload",
-            datatype: 'json', // Assuming the response is plain text CSV
+            datatype: 'json', 
             data: {
-                csv: obj.orgID, // Assuming orgID is what identifies the dataset for download
+                csv: obj.orgID, 
             },
         })
         .done(function(csvData) {
             const blob = new Blob([csvData], {type: "text/csv;charset=utf-8"});
-            saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName") + ".csv"); // Assuming 'name' is a property you want to use for the filename
+            saveAs(blob, vfw.datasets.dataObjects[obj.orgID].name  + ".csv"); 
+            // saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName")  + ".csv"); 
+
         })
         .fail(function(error) {
             console.error('Download failed', error);
