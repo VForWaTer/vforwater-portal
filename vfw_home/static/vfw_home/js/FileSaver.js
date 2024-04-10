@@ -34,10 +34,26 @@ var saveAs = saveAs
 		, can_use_save_link = "download" in save_link
 		, click = function(node) {
 			var event = doc.createEvent("MouseEvents");
-			event.initMouseEvent(
-				"click", true, false, view, 0, 0, 0, 0, 0
-				, false, false, false, false, 0, null
-			);
+			// event.initMouseEvent(
+			// 	"click", true, false, view, 0, 0, 0, 0, 0
+			// 	, false, false, false, false, 0, null
+			// );
+			var event = new MouseEvent("click", {
+				bubbles: true, 
+				cancelable: false, 
+				view: window, 
+				detail: 0, 
+				screenX: 0, 
+				screenY: 0, 
+				clientX: 0, 
+				clientY: 0, 
+				ctrlKey: false, 
+				altKey: false, 
+				shiftKey: false, 
+				metaKey: false, 
+				button: 0, 
+				relatedTarget: null 
+			});
 			node.dispatchEvent(event);
 		}
 		, webkit_req_fs = view.webkitRequestFileSystem
