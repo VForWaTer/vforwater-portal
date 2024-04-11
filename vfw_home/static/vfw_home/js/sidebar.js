@@ -525,24 +525,30 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
     // }
     let htmlElement = {};
     let workmodal = document.getElementById('workModal');
-    let datastore = JSON.parse(sessionStorage['dataBtn']);
-    let resultstore = JSON.parse(sessionStorage['resultBtn']);
+    const datastore = JSON.parse(sessionStorage['dataBtn']);
+    const resultstore = JSON.parse(sessionStorage['resultBtn']);
 
     // loop values of result to insert them in the respective field
     let loopLength = 0;
     if (btnValues) {
         loopLength = btnValues.length
     }
+    /** loop all elements that had an input selected and get the respective html*/
     for (let i = 0; i < loopLength; i++) {
 
         htmlElement = document.getElementById('mod_in_el_' + btnKeys[i]);
-        if (htmlElement.type == "checkbox") {
+        let resultstore_selection;
+        if (htmlElement.type === "checkbox") {  // for checkbox simply use the boolean
             htmlElement.checked = btnValues[i];
-        } else if (htmlElement.type == "select-one") {
-            let resultstore_selection;
-            // name/id stored in result is not given in modal, so loop datastore for the right name/id
+        } else if (htmlElement.type === "select-one") {
+            // id used to store in session Storage is not given in selection, so loop datastore for the right element
             for (let j in datastore) {
-                if ((resultstore[j].source + resultstore[j].dbID) == btnValues[i]) {
+                if (resultstore[j]) {  // TODO: Fix this to connect result to tools
+                    if ((resultstore[j].source + resultstore[j].dbID) == btnValues[i]) {
+                        resultstore_selection = j;
+                        break;
+                    }
+                } else if (btnValues[i]['properties']['name']) {
                     resultstore_selection = j;
                     break;
                 }
@@ -552,6 +558,17 @@ vfw.workspace.modal.setProcessValues = function (btnKeys, btnValues) {  // TODO:
                 if (htmlElement.options[key].value == resultstore_selection) {
                     htmlElement.options[key].selected = 'true';
                     break;
+                }
+            }
+        } else if (htmlElement.type === "select-multiple") {
+            // id used to store in session Storage is not given in selection, so loop datastore for the right element
+            for (let j of btnValues[i]) {
+                if ('db'+j in datastore || j in resultstore) {
+                    let option = htmlElement.querySelector('option[value="db' + j + '"]');
+                    option.setAttribute('selected', 'true');
+                } else {
+                    // TODO: Figure out how to handle the use of data that is neither in the result nor in the data store
+                    console.warn('The selection might not be available anymore. ')
                 }
             }
         } else {
