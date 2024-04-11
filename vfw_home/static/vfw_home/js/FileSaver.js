@@ -33,12 +33,12 @@ var saveAs = saveAs
 		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
 		, can_use_save_link = "download" in save_link
 		, click = function(node) {
-			var event = doc.createEvent("MouseEvents");
+			// var event = doc.createEvent("MouseEvents");
 			// event.initMouseEvent(
 			// 	"click", true, false, view, 0, 0, 0, 0, 0
 			// 	, false, false, false, false, 0, null
 			// );
-			var event = new MouseEvent("click", {
+			let event = new MouseEvent("click", {
 				bubbles: true, 
 				cancelable: false, 
 				view: window, 
