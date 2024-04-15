@@ -5,6 +5,9 @@
       "name": "EPSG:3857"
     }
   },
+  "properties": {
+    "name": "example3857"
+  },
   "type": "Feature",
   "geometry": {
     "type": "Polygon",
