@@ -103,12 +103,15 @@ let test = "{{ test|escapejs }}"
       });
     }
 
-    // Get the `file` object that represents the uploaded file.
+    /** Get the `file` object that represents the uploaded file, and handle the upload. */
     for (let file of fileInput.files) {
 
       /** This switch is only to check if the file Type is accepted. Logic how to handle a file comes later */
       switch (file.type) {
         case 'application/json':
+          uploadType = 'txt';
+          break;
+        case 'application/geojson':
           uploadType = 'txt';
           break;
         case 'application/x-netcdf':
