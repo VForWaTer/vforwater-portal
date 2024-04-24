@@ -29,6 +29,7 @@ from django.utils import translation, timezone
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
+from django.core.serializers import serialize
 
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
@@ -51,7 +52,7 @@ from django.contrib.gis.geos import Polygon, GEOSGeometry
 from .query_functions import get_bbox_from_data
 # from .filter import QuickFilter
 from .filters import NMPersonsFilter
-from .models import Entries, NmEntrygroups, Entrygroups, Timeseries_1D, Locations, Variables, TemporalScales
+from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
 import logging
 from pathlib import Path
@@ -252,6 +253,19 @@ class DatasetDownloadView(TemplateView):
                 writer = csv.writer(pseudo_buffer)
                 response = StreamingHttpResponse((writer.writerow(row) for row in rows), content_type="text/csv")
                 response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            return response
+
+        if 'geojson' in request.GET:
+            s_id =  request.GET.get('geojson')
+
+            accessible_data = get_accessible_data(request, s_id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
+
+            geojson_data = serialize("geojson", Locations.objects.filter(id = accessible_data[0]) , geometry_field="point_location", fields=["name"])
+
+            response = HttpResponse(json.dumps(geojson_data), content_type="application/json")
+            response['Content-Disposition'] = 'attachment; filename="somefilename.geojson"'
             return response
 
         if 'shp' in request.GET:

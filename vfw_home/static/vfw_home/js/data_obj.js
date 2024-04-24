@@ -191,6 +191,28 @@ vfw.datasets.DataObj = class {
         });
     };
 
+
+    DownloadGeoJSON = function() {
+        const obj = this; 
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/datasetdownload", 
+            datatype: 'json', 
+            data: {
+                geojson: obj.orgID, 
+            },
+        })
+        .done(function(geojsonData) {
+            const blob = new Blob([JSON.stringify(geojsonData)], {type: "application/json"});
+            saveAs(blob, vfw.datasets.dataObjects[obj.orgID].name  + ".geojson"); 
+        })
+        .fail(function(error) {
+            console.error('Download failed', error);
+        })
+        .always(function() {
+            vfw.html.loaderOverlayOff();
+        });
+    };
+
     /**
      * Saves data to session storage.
      * @param {Object} data - The data to be saved.
@@ -260,6 +282,7 @@ vfw.datasets.DataObj = class {
                 ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
                 ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
                 ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)", "Downloadcsv"],
+                ["DownloadGeoJSON", "fa-download", gettext("Download data") + " (.geojson)", "DownloadGeoJSON"],
                 ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ],

@@ -38,11 +38,15 @@ import re
 import subprocess
 import sys
 import time
+import os 
+import zipfile
 from pathlib import Path
+from io import BytesIO
 
 import jsonpickle
 import requests
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
@@ -1155,3 +1159,39 @@ def get_process_metadata(sessiondata, describedprocess, identifier):
             #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
 
     return sessiondata
+
+
+@method_decorator(login_required(login_url="/login/"), name='dispatch')
+class ToolResultsDownload(TemplateView):
+    """
+    View to handle the download of tool results as a zip file.
+    Requires user to be authenticated.
+    """
+
+    def get(self, request):
+        if 'zip' in request.GET and 'path' in request.GET:
+            directory_path = request.GET['path']
+            if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+                logging.error(f"Requested path does not exist or is not a directory: {directory_path}")
+                return HttpResponse(status=404)
+
+            zip_filename = "geo_data.zip"
+            response = HttpResponse(content_type='application/zip')
+            response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+            buffer = BytesIO()
+
+            with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for root, _, files in os.walk(directory_path):
+                    for file in files:
+                        if not file.endswith((".zip", ".log")):
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.relpath(file_path, start=directory_path)
+                            zip_file.write(file_path, arcname=arcname)
+
+            buffer.seek(0)
+            response.write(buffer.read())
+            return response
+        else:
+            logging.error("Missing required query parameters.")
+            return HttpResponse(status=400)
+        

@@ -80,6 +80,41 @@ vfw.datasets.resultObj = class {
         document.body.removeChild(link);
     }
 
+
+    downloadzip = function() {
+
+    const orgID = this.orgID;  
+    const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
+    const path = resultData.dir;
+    const directoryName = path.split("/").pop();
+
+    $.ajax({
+        url: "/workspace/resultdownload",  
+        type: 'GET',
+        data: { zip: orgID, path: path },
+        xhrFields: {
+            responseType: 'blob'  // Important for handling binary data
+        },
+        success: function(blob) {
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = directoryName + ".zip";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        },
+        error: function(error) {
+            console.error('Download failed:', error);
+            alert('Failed to download the file. Please try again.');  
+        },
+        complete: function() {
+            console.log("Download attempt completed.");  
+        }
+    });
+}
+
+
     /** remove data from webpage and from session, but user data is relaoded when user refreshes page **/
     removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from portal: **/
@@ -256,6 +291,8 @@ vfw.datasets.resultObj = class {
             "FINISHED": [
                 ["ShowResult", "fa-table", gettext("Show result as table"), "showAsTable"],
                 ["DownloadJSON", "fa-download", gettext("Download result"), "download"],
+                ["DownloadZIP", "fa-download", gettext("Download result (.zip)"), "downloadzip"],
+
             ].concat(loggedInParams),
             "ERROR": [  // TODO: How to delete from GeoAPI DB?
                 // ["DeleteDataSet", "fa-eraser", gettext("Delete completely"), "deleteFromDB"]
