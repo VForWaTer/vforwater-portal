@@ -145,13 +145,14 @@ def get_dataset(s_id: int) -> object:
     :return:
     """
     try:
-        entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__datatype__name', flat=True)[0]
+        entry_type = Entries.objects.filter(pk=s_id).values_list('datasource__path', flat=True)[0]
 
         # build string of values for django query
         type_values = {'generic_1d_data': ['index', 'value', 'precision'],
                        'generic_2d_data': ['index', 'value1', 'value2', 'precision1', 'precision2'],
                        'generic_geometry_data': ['index', 'geom', 'srid'],
                        'geom_timeseries': ['tstamp', 'geom', 'srid'],
+                        'timeseries': ['tstamp', 'data', 'precision'],
                        'timeseries_1d': ['tstamp', 'value', 'precision'],
                        'timeseries_2d': ['tstamp', 'value1', 'value2', 'precision1', 'precision2']}
         db_values = type_values[entry_type]

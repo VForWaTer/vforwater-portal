@@ -16,6 +16,7 @@ urlpatterns = [
     # path('dbload', views.db_load, name='dbload'),
     path('deleteresult', views.delete_result, name='deleteresult'),
     path('processrun', views.process_run, name='processrun'),
+    path('resultdownload', views.ToolResultsDownload.as_view(), name='resultdownload'),
     path('processstate', views.process_state, name='processstate'),
     path('updatetools', views.update_tools, name='updatetools'),
     path('workflowrun', views.workflow_run, name='workflowrun'),

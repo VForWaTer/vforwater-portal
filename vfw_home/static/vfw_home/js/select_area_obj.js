@@ -95,6 +95,28 @@ vfw.datasets.selectObj = class {
         document.body.removeChild(link);
     }
 
+    downloadGeoJSON(element=this.orgID) {
+        const workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
+        
+        const geoJSONData = this.gjson; 
+        const jsonBlob = new Blob([JSON.stringify(geoJSONData)], {type: 'application/geo+json'});
+        
+        // Create a URL for the blob
+        const url = URL.createObjectURL(jsonBlob);
+        
+        // Create a temporary link element and trigger the download
+        const link = document.createElement('a');
+        link.href = url;
+        
+        const filename = workspaceData[element] && workspaceData[element]['name'] ? workspaceData[element]['name'] : 'download';
+        link.download = filename.endsWith('.geojson') ? filename : `${filename}.geojson`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+
     filterData(element=this.orgID) {  // TODO: removeData var should be taken from this!
         vfw.map.func.renderCatchment(this.gjson, 'json')
         vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
@@ -206,7 +228,8 @@ vfw.datasets.selectObj = class {
         // set parameters: action, iconClass, name, function
         "geometry": [
             ["UseAsFilter", "fa-filter", gettext("Use as filter"), "filterData"],
-            ["DownloadGJson", "fa-download", gettext("Download data"), "download"],
+            // ["DownloadGJson", "fa-download", gettext("Download data") + " (.json)", "download"],
+            ["DownloadGEOJson", "fa-download", gettext("Download data") + " (.geojson)", "downloadGeoJSON"],
             ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
         ],
         "default": [
