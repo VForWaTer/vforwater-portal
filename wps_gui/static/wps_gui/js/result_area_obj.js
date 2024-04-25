@@ -83,13 +83,13 @@ vfw.datasets.resultObj = class {
 
     downloadzip = function() {
 
-    const orgID = this.orgID;  
+    const orgID = this.orgID;
     const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
     const path = resultData.dir;
     const directoryName = path.split("/").pop();
 
     $.ajax({
-        url: "/workspace/resultdownload",  
+        url: "/workspace/resultdownload",
         type: 'GET',
         data: { zip: orgID, path: path },
         xhrFields: {
@@ -106,10 +106,10 @@ vfw.datasets.resultObj = class {
         },
         error: function(error) {
             console.error('Download failed:', error);
-            alert('Failed to download the file. Please try again.');  
+            alert('Failed to download the file. Please try again.');
         },
         complete: function() {
-            console.log("Download attempt completed.");  
+            console.log("Download attempt completed.");
         }
     });
 }
@@ -163,9 +163,14 @@ vfw.datasets.resultObj = class {
                     this.status = result.status;
                     this.outputs.results = result.results;
                     this.update(result);
+                } else if (result.hasOwnProperty('error')) {
+                    this.status = "ERROR"
+                    this.update(result);
                 }
             })
             .fail(error => {
+                this.status = result.status;
+                this.update(result);
                 console.warn('failed getting data from server: ', error)
         })
 

@@ -333,6 +333,18 @@ def get_process_info(apiprocess):
     }
 
 
+def get_user_results(user_id):
+    try:
+        results = list(GeoAPIResults.objects.filter(owner_id=user_id).values(
+            "id", "inputs", "outputs", "name", "open", "status"))
+    except GeoAPIResults.DoesNotExist:
+        logger.error('Cannot get user results. There is an issue with the GeoAPIResults model.')
+        results = []
+
+    return results
+
+
+
 def geoapi_output2wps_processoutput(outputs):
     """
     Change input object as needed for the dropbox in the workspace.

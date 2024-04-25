@@ -18,11 +18,8 @@ License: MIT License
     </style>
 </head>
 
-<script>
-    {#const SERVER = "{{ VFW_SERVER }}";#}
-    {#const MAP_SERVER = "{{ MAP_SERVER }}";#}
-    {#const DEMO_VAR = "{{ DEMO_VAR }}"#}
-</script>
+<!-- Make old results of the user, found in the database, available for the result store button. (used in showData) -->
+{{ results|json_script:"resultsList-var" }}
 
 <body onload="vfw.sidebar.showData(), vfw.workspace.workflow.draw_workflow()">
 <!-- TODO: check if still in use. If not delete that parm -->

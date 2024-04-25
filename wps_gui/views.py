@@ -33,7 +33,7 @@ import datetime
 import itertools
 import json
 import time
-import os 
+import os
 import zipfile
 from pathlib import Path
 from io import BytesIO
@@ -86,6 +86,11 @@ def home(request):
     ogcapi_proc = {}
     message = ""
 
+    if request.user:
+        results = get_user_results(request.user.id)
+    else:
+        results = []
+
     service, endpoint, wps_services = get_endpoint_data(DEBUG)
 
     if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
@@ -118,14 +123,15 @@ def home(request):
         # Remove process that should not be visible for users
         # workflow is kind of a helper process. It is called when several process are connected to call the workflow.
         # So the user should call this implicitly by creating a workflow and shouldn't be shown in the list of tools.
-        if "workflow" in ogcapi_proc:
-            del ogcapi_proc["workflow"]
+        # if "workflow" in ogcapi_proc:
+        #     del ogcapi_proc["workflow"]
 
         context = {
             "wps_services": wps_services,
             "processes": ogcapi_proc,
             "service": service,
             "message": message,
+            "results": results
         }
 
         return render(request, "wps_gui/home.html", context)
