@@ -534,6 +534,13 @@ vfw.workspace.modal.prepData = function () {
                 inId.push('');
                 indict[inputInputs[i].name] = false;
             }
+        } else if (inputInputs[i].type == "datetime-local") {
+            const datetime = dayjs.tz(inputInputs[i].value, 'Europe/Berlin');
+            inKey.push(inputInputs[i].name);
+            inValue.push(datetime.format());
+            inType.push('');
+            inId.push('');
+            indict[inputInputs[i].name] = datetime.format();
         } else {
             inKey.push(inputInputs[i].name);
             inValue.push(inputInputs[i].value);
@@ -663,7 +670,8 @@ vfw.workspace.modal.runProcess = function () {
             else if (json.status == 'ERROR') {
                 console.error('error in wps process')
                 vfw.workspace.modal.setColor("firebrick");
-            } else if (json.status == 'CREATED' || json.status == 'ACCEPTED') {
+            }
+            else if (json.status == 'CREATED' || json.status == 'ACCEPTED') {
                 vfw.workspace.modal.setColor("orange");
                 if (!json['orgID']) {
                     // create an id for the new object
@@ -674,14 +682,17 @@ vfw.workspace.modal.runProcess = function () {
                 // create object
                 vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json);
 
-            } else if (json.status == 'FINISHED') {
+            }
+            else if (json.status == 'FINISHED') {
                 alert('Finished neeeds implementation (Short running porcess)')
                 vfw.workspace.modal.setColor("green");
-            } else if (json.execution_status == "error in wps process") {
+            }
+            else if (json.execution_status == "error in wps process") {
                 vfw.workspace.modal.setColor("firebrick");
                 console.error('Error in wps process: ', json.error)
                 // alert('Error: Failed to execute your request.');
-            } else if (json.execution_status == "auth_error") {
+            }
+            else if (json.execution_status == "auth_error") {
                 vfw.workspace.modal.setColor("firebrick");
                 /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
@@ -1137,16 +1148,17 @@ vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup
         opt = document.createElement("OPTION");
         groupName = ''
 
-        // Check if a Button for a group, or a single button is needed
-        if (
-            // TODO: group needs to be implemented, to seperate one could start with the following line
+        /** Check if a Button for a group, or a single button is needed */
+        if (selectables[singleData].abbr && selectables[singleData].unit)
+            // TODO: group needs to be implemented. To seperate one could start with the following line
             // !selectables[singleData].hasOwnProperty('group') &&  // is no group
-            selectables[singleData].abbr && selectables[singleData].unit) {  // but has unit and abbriviation
+            {  // but has unit and abbriviation
             opt.innerText = `${singleData} ${selectables[singleData].name} (${selectables[singleData].abbr}
             in ${selectables[singleData].unit})`;  // create String
             opt.value = chooseDataID(selectables, singleData);
         } else if (selectables[singleData].hasOwnProperty('group') &&  // is group
             !groups.has(selectables[singleData]['group'])) {  // but seen the first time
+
             groupName = selectables[singleData]['group']
             // Here the group element is build
             groups.add(groupName)
@@ -1156,10 +1168,14 @@ vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup
             optGroupDict[groupName]['value'] = [chooseDataID(selectables, singleData)];
             return
         } else if (!groups.has(selectables[singleData]['group'])) {  // is no group
-            opt.innerText = `${singleData}`;
+
+            opt.innerText = `${selectables[singleData]['name']}`;
+            // opt.innerText = `${singleData}`;
             opt.value = chooseDataID(selectables, singleData);
+            opt.name = selectables[singleData]['name']
         } else if (selectables[singleData].hasOwnProperty('group') &&  // is group,
             groups.has(selectables[singleData]['group'])) {  // but seen before, so add more values to an existing button
+
             optGroupDict[selectables[singleData]['group']]['value'].push(chooseDataID(selectables, singleData))
             return
         } else {
@@ -1201,6 +1217,7 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
         titleText = " " + item.title + ": "
     }
 
+    /** check attributes/'keywords' from the process that are used to define which input element is used */
     // if (item.minOccurs === 1) inElement.required = true;
     nodeText = document.createTextNode(titleText);
     newNode.appendChild(nodeText);

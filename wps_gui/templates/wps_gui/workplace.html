@@ -104,6 +104,14 @@ License: MIT License
 
   <link rel="stylesheet" type="text/css" href="{% static 'wps_gui/vcss/workplace.css' %}">
   <script src="{% static 'wps_gui/js/draw2d.js' %}" type="text/javascript"></script>
+
+<!-- the following four script lines are only to convert datetimes to timezone aware datetimes. 
+TODO: Maybe better to do this in the server instead of in workplace.js -->
+  <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
+  <script src="https://unpkg.com/dayjs/plugin/utc.js"></script> 
+  <script src="https://unpkg.com/dayjs/plugin/timezone.js"></script> 
+  <script>dayjs.extend(window.dayjs_plugin_utc);dayjs.extend(window.dayjs_plugin_timezone);</script>
+
   <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>
   <script src="{% static 'wps_gui/js/workflow.js' %}" type="text/javascript"></script>
   <script src="{% static 'wps_gui/js/result_area_obj.js' %}" type="text/javascript"></script>
