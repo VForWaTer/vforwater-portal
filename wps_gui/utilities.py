@@ -1,7 +1,7 @@
 # =================================================================
 #
 # Authors: Marcus Strobl <marcus.strobl@kit.edu>
-# Contributors:
+# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>
 #
 # Copyright (c) 2024 Marcus Strobl
 #
@@ -1012,6 +1012,23 @@ def process_to_json(wps_process):
     # for j in wps_description['dataInputs']:
     #     print('j: ', j)
     return wps_description
+
+
+def run_pygeoapi_process(endpoint, wps_process, input, user_id, username):
+    return requests.post(f'{endpoint}/processes/{wps_process}/execution',
+                         json={
+                             "mode": "async",
+                             # TODO: old setting from PyGeoAPI 0.13. Change for newer version
+                             'inputs': {**input.get("in_dict", ""),
+                                        'User-Info':  # plant the username in last moment
+                                             f'user{user_id}_{username}'}
+                                      # input.get("in_dict", ""),
+                                  # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
+                              },
+                              headers={'Content-Type': 'application/json',
+                                       # "Prefer": "respond-async"  # TODO: Use this for PyGeoAPI 0.16 and newer
+                                       }
+                              )
 
 
 def save_dataset(request, orgid, inputs, wps_process, date=None):

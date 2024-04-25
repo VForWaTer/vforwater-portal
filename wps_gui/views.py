@@ -56,7 +56,7 @@ from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, Geo
 from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
     prepare_inputs, create_geoapi_db_entry, has_result_error, process_to_json, get_url_json, edit_input,
-    handle_wps_output,
+    handle_wps_output, get_user_results, run_pygeoapi_process
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -73,11 +73,11 @@ logger = logging.getLogger(__name__)
 """
 Not every Tool we have should be available for everyone. E.g. because they are in development.
 The following dict defines who can see which tools.
-default is accessible for everyone the rest only for admins or on devel environments.
+default is accessible for everyone after log-in, the rest only for admins or on devel environments.
 """
 TOOLDICT = {
     "default": ["vforwater_loader", "dataset_profiler"],
-    "short_running_debug": ["hello-world"],
+    "short_running_debug": ["hello-world"],  # available for any user in debug mode
     "short_running": [],  # available for any user, also if not logged in
 }
 
@@ -390,10 +390,11 @@ def delete_result(request):
     """
     try:
         process_id = int(request.GET['processid'])
-        user_queryset = User.objects.get(id=request.user.id)
-
+        user_id = request.user.id
+        user_queryset = User.objects.get(id=user_id)
     except User.DoesNotExist as e:
         print('User does not exist when running a process: ', e)
+        user_id = None
         user_queryset = None
 
     except Exception as e:
