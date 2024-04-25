@@ -1,7 +1,7 @@
 # =================================================================
 #
 # Authors: Marcus Strobl <marcus.strobl@kit.edu>
-# Contributors:
+# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>
 #
 # Copyright (c) 2024 Marcus Strobl
 #
@@ -286,6 +286,7 @@ class ProcessView(TemplateView):
 @login_required(login_url="/oidc/authenticate/")
 def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
     user_id = None
+
     try:
         user_id = request.user.id
         user_queryset = User.objects.get(id=user_id)
@@ -298,7 +299,12 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
     process_description = ""
     # request_input = json.loads(request.GET.get('processrun'))
     try:
-        input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
+        if request.GET.get('processrun'):
+            request_inputs = request.GET.get('processrun')
+        else:
+            request_inputs = request.POST.get('processrun')
+
+        input = prepare_inputs(request=request, request_input=json.loads(request_inputs))
     except Exception as e:
         # print(f'Problems preparing inputs in wps_gui.views.process_run: {e}')
         logger.error(f'Problems preparing inputs {e}')
@@ -745,4 +751,4 @@ class ToolResultsDownload(TemplateView):
         else:
             logging.error("Missing required query parameters.")
             return HttpResponse(status=400)
-        
+

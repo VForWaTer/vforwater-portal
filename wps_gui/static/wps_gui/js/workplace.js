@@ -589,6 +589,7 @@ vfw.workspace.modal.runProcess = function () {
 
     $.ajax({
         url: vfw.var.DEMO_VAR + "/workspace/processrun",
+        type: 'POST',
         data: {
             processrun: JSON.stringify(modal_input),
             'csrfmiddlewaretoken': vfw.var.csrf_token,
