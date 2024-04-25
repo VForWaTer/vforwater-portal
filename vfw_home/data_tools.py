@@ -9,6 +9,7 @@ from django.core.exceptions import EmptyResultSet, FieldError
 from django.db import connections
 from django.db.models import Q
 from django.utils import timezone
+from django.http import HttpRequest
 
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
 from vfw_home.models import Entries, Timeseries, Timeseries_1D, NmEntrygroups, Locations
@@ -34,8 +35,9 @@ def get_split_groups(IDs):
 
     return grouped_dict
 
+def get_accessible_data(request: HttpRequest, requested_ids: list) -> (list, list):
 
-def get_accessible_data(request: object, requested_ids: list) -> (list, list):
+# def get_accessible_data(request: object, requested_ids: list) -> (list, list):
     """
     Use request object to check if user has read access to a list of data (entries_id). Output is a list with
     accessible data and a second list with inaccessible data.
@@ -50,7 +52,9 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
             requested_ids = [requested_ids]
         elif isinstance(requested_ids, str):
             try:
-                requested_ids = [int(requested_ids)]
+                requested_ids = [int(r_id) for r_id in requested_ids[2:].split(',')]
+
+                # requested_ids = [int(requested_ids)]
             except ValueError as e:
                 requested_ids = [int(r_id) for r_id in requested_ids[1:-1].split(',')]
         elif isinstance(requested_ids, list) and isinstance(requested_ids[0], str):
@@ -58,9 +62,9 @@ def get_accessible_data(request: object, requested_ids: list) -> (list, list):
 
         # first get datasets that are open for everyone and without embargo or expired embargo
         accessible_data = list(Entries.objects.values_list('id', flat=True)
-                               .filter(pk__in=requested_ids)
-                               .filter(Q(embargo=False) |
-                                       Q(embargo=True, embargo_end__lt=timezone.now())))
+                                                .filter(pk__in=requested_ids)
+                                                .filter(Q(embargo=False) |
+                                                        Q(embargo=True, embargo_end__lt=timezone.now())))
 
         # check if the user wanted more and is authenticated. If yes check if user has access and get the rest
         if len(requested_ids) > len(accessible_data) and request.user.is_authenticated:

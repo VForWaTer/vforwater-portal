@@ -167,6 +167,52 @@ vfw.datasets.DataObj = class {
         sessionStorageData = workspaceData  // is this already in use somewhere? Then add it also in Result Buttons
     }
 
+
+    Downloadcsv = function() {
+        const obj = this; 
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/datasetdownload",
+            datatype: 'json', 
+            data: {
+                csv: obj.orgID, 
+            },
+        })
+        .done(function(csvData) {
+            const blob = new Blob([csvData], {type: "text/csv;charset=utf-8"});
+            saveAs(blob, vfw.datasets.dataObjects[obj.orgID].name  + ".csv"); 
+            // saveAs(blob, vfw.var.taskItemInContext.getAttribute("btnName")  + ".csv"); 
+
+        })
+        .fail(function(error) {
+            console.error('Download failed', error);
+        })
+        .always(function() {
+            vfw.html.loaderOverlayOff();
+        });
+    };
+
+
+    DownloadGeoJSON = function() {
+        const obj = this; 
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/datasetdownload", 
+            datatype: 'json', 
+            data: {
+                geojson: obj.orgID, 
+            },
+        })
+        .done(function(geojsonData) {
+            const blob = new Blob([JSON.stringify(geojsonData)], {type: "application/json"});
+            saveAs(blob, vfw.datasets.dataObjects[obj.orgID].name  + ".geojson"); 
+        })
+        .fail(function(error) {
+            console.error('Download failed', error);
+        })
+        .always(function() {
+            vfw.html.loaderOverlayOff();
+        });
+    };
+
     /**
      * Saves data to session storage.
      * @param {Object} data - The data to be saved.
@@ -235,7 +281,8 @@ vfw.datasets.DataObj = class {
             "timeseries": [
                 ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
                 ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
-                ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)"],
+                ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)", "Downloadcsv"],
+                ["DownloadGeoJSON", "fa-download", gettext("Download data") + " (.geojson)", "DownloadGeoJSON"],
                 ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ],
