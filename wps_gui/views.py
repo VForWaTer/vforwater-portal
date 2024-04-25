@@ -444,7 +444,10 @@ def process_state(request):
         return JsonResponse({'error': 'No Access'})
 
     # check status. If successful update database and send update
-    if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
+    # if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
+    if ((update['status'] == "successful" or update['status'] == "completed") and update['message'] == 'Job complete'
+        and update['progress'] == 100):
+
         result_url = f'{url}/results?f=json'
         result = get_url_json(result_url)
         if result["container_status"] and result["container_status"] == 'failed':
