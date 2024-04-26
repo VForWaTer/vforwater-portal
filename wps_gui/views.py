@@ -429,7 +429,7 @@ def delete_result(request):
 
         # TODO: this report isn't used yet, but might be of interest in future
         deletion_report = {'status': {'server': execution.status_code},
-                           'report': get_url_json(f'{execution.headers['Location']}/results?f=json'),
+                           'report': get_url_json(f'{execution.headers["Location"]}/results?f=json'),
                            'error': ''}
     except Exception as e:
         logger.error(f'Unable to delete dataset: {e}')
