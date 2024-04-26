@@ -483,12 +483,20 @@ def process_state(request):
 
     # check status. If successful update database and send update
     # if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
+    # TODO: Yes, the following is way too complicated. Check the tools, find a standard and simplify all of this!!!
     if ((update['status'] == "successful" or update['status'] == "completed") and update['message'] == 'Job complete'
         and update['progress'] == 100):
 
         result_url = f'{url}/results?f=json'
         result = get_url_json(result_url)
         if result["container_status"] and result["container_status"] == 'failed':
+            entry.status = "FINISHED"
+            entry.access = timezone.now().isoformat()
+        elif result["container_status"] and result["container_status"] == 'exited':
+            entry.status = "FINISHED"
+            entry.access = timezone.now().isoformat()
+        elif ((result["error"] and result["error"] == 'none') and
+              (result["geoapi_status"] and result["completed"] == 'none')):
             entry.status = "FINISHED"
             entry.access = timezone.now().isoformat()
         else:

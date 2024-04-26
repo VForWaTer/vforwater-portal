@@ -168,8 +168,10 @@ vfw.datasets.resultObj = class {
                 }
             })
             .fail(error => {
-                this.status = result.status;
-                this.update(result);
+                // console.log('error: ', error)
+                // console.log('result error: ', result)
+                this.status = error.status;
+                this.update(error);
                 console.warn('failed getting data from server: ', error)
         })
 
