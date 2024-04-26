@@ -32,8 +32,10 @@
 import datetime
 import itertools
 import json
+import sys
 import time
 import os
+import urllib
 import zipfile
 from pathlib import Path
 from io import BytesIO
@@ -283,7 +285,7 @@ class ProcessView(TemplateView):
 # from requests_futures.sessions import FuturesSession
 
 
-@login_required(login_url="/oidc/authenticate/")
+# @login_required(login_url="/oidc/authenticate/")  # TODO: This results in an error related to CORS. Find another solution
 def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
     user_id = None
 
@@ -404,22 +406,51 @@ def delete_result(request):
         user_queryset = None
 
     except Exception as e:
-        print('Got no ID to delete process: ', e)
         logger.error(f'Got no ID to delete process: {e}')
         return JsonResponse({'error': 'Got no ID to delete process.'})
 
     try:
         entry = GeoAPIResults.objects.filter(owner_id=user_queryset).get(id=process_id)
-        deletion_report = entry.delete()
     except Exception as e:
-        print('Unable to delete dataset: ', e)
-        logger.error(f'Unable to delete dataset: {e}')
-        return JsonResponse({'error': 'Unable to delete dataset.'})
+        logger.error(f'Unable to delete not existing dataset: {e}')
+        return JsonResponse({'error': 'Deletion of dataset did not work.',
+                             'report': {'status': {'server': 'failed', 'db': 'failed'},
+                                        'error': f'Unable to delete dataset. {e}'},
+                             'message': 'delete'})
 
-    if deletion_report[0] == 0:
-        return JsonResponse({'error': 'Nothing was deleted.'})
+    try:
+        # TODO: is it a good solution to have a tool to delete results? Think about how to delete directly from django
+        tinydb_entry_name = f"{entry.name}-{urllib.parse.urlparse(entry.outputs['path']).path.replace('/jobs/', '')}"
+        input = {'in_dict': {'input_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
+                             'output_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
+                             'job_list': [tinydb_entry_name]}}
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        execution = run_pygeoapi_process(endpoint, 'result_remover', input, user_id, request.user.username)
+
+        # TODO: this report isn't used yet, but might be of interest in future
+        deletion_report = {'status': {'server': execution.status_code},
+                           'report': get_url_json(f'{execution.headers['Location']}/results?f=json'),
+                           'error': ''}
+    except Exception as e:
+        logger.error(f'Unable to delete dataset: {e}')
+        deletion_report = {'status': {'server': 'failed'},
+                           'error': f'Unable to delete dataset. {e}'}
+
+    try:
+        entry.delete()
+        deletion_report['status']['db'] = 'done'
+    except Exception as e:
+        logger.error(f'Unable to delete result from db: {e}')
+        deletion_report['status']['db'] = 'failed'
+        deletion_report['error'] = f"{deletion_report['error']}; Delete from DB failed with {e}"
+
+    if deletion_report['status'] == '201':
+        return JsonResponse({'report': deletion_report,
+                             'message': 'delete'})
     else:
-        return JsonResponse({'done': deletion_report[0]})
+        return JsonResponse({'error': 'Deletion of folders did not work.',
+                             'report': deletion_report,
+                             'message': 'delete'})
 
 
 def process_state(request):

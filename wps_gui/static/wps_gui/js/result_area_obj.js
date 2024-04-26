@@ -1,7 +1,7 @@
 /*
  * Project Name: V-FOR-WaTer
  * Author: Marcus Strobl
- * Contributors:
+ * Contributors: Safa Bouguezzi
  * License: MIT License
  */
 
@@ -44,10 +44,7 @@ vfw.datasets.resultObj = class {
             }
 
         Object.assign(this, {...defaultParams, ...data});
-        console.log('this: ', this)
         this._createHtmlName();
-        console.log('this. name : ', this.name)
-        console.log('this. orgID : ', this.orgID)
         this.htmlElementID = this.btnPosition + this.orgID;
 
         // this.storeKey = "resultBtn";
@@ -139,10 +136,12 @@ vfw.datasets.resultObj = class {
         })
             .done(result => {
                 console.log('+++ result: ', result)
-                if ('done' in result) this.removeData(this.orgID);
+                if ('done' in result) this.removeData(this.orgID)
+                else if ('message' in result && result['message'] == 'delete') this.removeData(this.orgID)
             })
             .fail(error => {
                 console.warn('failed to remove data from server: ', error)
+                this.removeData(this.orgID);
         })
     }
 
@@ -280,13 +279,13 @@ vfw.datasets.resultObj = class {
 
         // standard (default) parameters that are used in any case
         const defaultParams = [
-            ["DeleteDataSet", "fa-eraser", gettext("Delete result"), "deleteFromDB"],
+            ["DeleteDataSet", "fa-eraser", gettext("Remove completely"), "deleteFromDB"],
             ["ReOpenProcess", "fa-window-maximize", gettext("Reopen Tool"), "reopen"]
         ]
         // little difference if user is logged in or not.
         if (vfw.var.USER_IS_AUTHENTICATED) {
             loggedInParams = [
-                ["RemoveDataSet", "fa-trash", gettext("Remove from store"), "removeData"],
+                ["RemoveDataSet", "fa-trash", gettext("Remove in browser"), "removeData"],
             ].concat(defaultParams)
         } else {loggedInParams = [].concat(defaultParams)}
 
