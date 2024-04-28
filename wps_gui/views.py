@@ -39,6 +39,7 @@ import urllib
 import zipfile
 from pathlib import Path
 from io import BytesIO
+from urllib.parse import urlparse
 
 import jsonpickle
 import requests
@@ -340,19 +341,18 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         print('e: ', e)
         logger.error(f'Cannot Execute process: {e}.')
 
-    print('endpoint: ', endpoint)
-    logger.info('endpoint: ', endpoint)
-    print('execution.headers: ', execution.headers)
-    logger.info('execution.headers: ', execution.headers)
-    print('execution.headers[Location]: ', execution.headers['Location'])
-    logger.info('execution.headers[Location]: ', execution.headers['Location'])
-
+    job_path = urlparse(execution.headers['Location']).path
+    # TODO: absolute path is bad design, is a problem when accessing data from diffrent machines. Better: store
+    #  only path and create endpoint + path when needed.
     db_data = {'inputs': input.get("in_dict", ""),
                'name': wps_process,
                'open': False if user_id else True,
-               'outputs': {'path': execution.headers['Location'],
-                           'jobMeta_path': f"{execution.headers['Location']}?f=json",
-                           'results': ""
+               'outputs': {
+                   'path': endpoint + job_path,
+                   # 'path': execution.headers['Location'],
+                   'jobMeta_path': f"{endpoint + job_path}?f=json",
+                   # 'jobMeta_path': f"{execution.headers['Location']}?f=json",
+                   'results': ""
                            # 'results': f"{execution.headers['Location']}/results?f=json"
                            },
                # 'user': user_id,
@@ -484,13 +484,8 @@ def process_state(request):
     # check if user has access to this dataset. If yes get state from GeoAPI
     if entry.open or request.user.id == entry.owner_id:
         url = entry.outputs['path']
-        print('entry: ', entry)
-        logger.debug(f'entry: {entry}')
-        print('url: ', url)
-        logger.debug(f'url: {url}')
+        logger.info(f'try to get process state from url: {url}')
         update = get_url_json(f'{url}?f=json')
-        print('update: ', update)
-        logger.debug(f'update: {update}')
 
     else:
         return JsonResponse({'error': 'No Access'})

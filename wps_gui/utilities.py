@@ -556,11 +556,7 @@ def get_url_json(url):
     :return: The JSON response from the API indicating the state of the process.
     """
     try:
-        print('url: ', url)
-        logger.info('url: ', url)
         response = requests.get(url)
-        print('response: ', response)
-        logger.info('response: ', response)
         return response.json()
     except Exception as e:
         logger.error(f'Error checking state of process: {e}')
