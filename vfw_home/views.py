@@ -1078,7 +1078,7 @@ class QuickFilterResults(View):
     """
 
     @staticmethod
-    def get(request, selection):
+    def post(request, selection):
 
         # create query according to selection
         try:
@@ -1121,7 +1121,7 @@ class QuickFilterResults(View):
                     # TODO: this shouldn't be send from client to server and not recreated.
                     #  Better store the catchment in Geoserver and get the catchment from there.
                     # catchment = list(itertools.chain.from_iterable(json.loads(request.GET.get('coords'))[0]))
-                    coords = json.loads(request.GET.get('coords'))
+                    coords = json.loads(request.POST.get('coords'))
                     if coords:
                         catchment = tuple(tuple(x) for x in coords)
                         poly = Polygon(catchment, srid=4326)  # create polygon from coordinates

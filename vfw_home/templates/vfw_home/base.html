@@ -5,7 +5,7 @@ Contributors: Marcus Strobl
 License: MIT License
 -->
 
-<!doctype html>
+<!DOCTYPE html>
 {% load static %}<!DOCTYPE html>
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -40,8 +40,8 @@ License: MIT License
   <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
   <!-- Openlayers -->
   {#  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/ol.css' %}"> #}
-  <script src="https://cdn.jsdelivr.net/npm/ol@v9.0.0/dist/ol.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.0.0/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v9.1.0/dist/ol.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.1.0/ol.css">
 
 {#    <script src="{% static 'vfw_home/js/ol.js' %}" type="text/javascript"></script>#}
 {#  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v6.14.1/ol.css">#}
@@ -152,7 +152,7 @@ License: MIT License
     "position": "bottom-right"
   });
   </script>
-{#TODO: This is the safe way to pass vars from python to json. Make sure only this method is used. #}
+{#TODO: This is the recommended [safe(?)] way to pass vars from python to json. Make sure only this method is used. #}
 {{ BASE_DATATYPES|json_script:"base-datatypes-var" }}
 {{ DEMO_VAR|json_script:"demo-var" }}
 {{ EXT_DATATYPES|json_script:"ext-datatypes-var" }}

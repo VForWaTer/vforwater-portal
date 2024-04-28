@@ -47,56 +47,6 @@ License: MIT License
 
 </div>
 
-
-{# Template to build a second dropdown for selection of multiple valuies in dropdown #}
-{# Unused? TODO: Delete it! #}
-<template id="twoDropDown">
-  <span>
-  <div class="divTable">
-    <div class="tblRow">
-      <div id="tDD_left_cell" class="tblCell">
-      </div>
-      <div class="tblCell">
-        <div class="divTable">
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons allIn" onclick=
-                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
-                      'allIn')"><b>>></b></button>
-            </div>
-          </div>
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons oneIn" onclick=
-                      "DropdownToDropdown(this.parentNode.parentNode.parentNode.parentNode.parentNode,
-                      'oneIn')"><b>></b></button>
-            </div>
-          </div>
-        </div>
-        <div class="divTable">
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons allOut" onclick=
-                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
-                      'allOut')"><b><<</b></button>
-            </div>
-          </div>
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons oneOut" onclick=
-                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
-                      'oneOut')"><b><</b></button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="tDD_right_cell" class="tblCell">
-      </div>
-    </div>
-  </div>
-    </span>
-</template>
-
 <script>
   /** Get the modal */
   vfw.html.workModal = document.getElementById("workModal");
