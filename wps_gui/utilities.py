@@ -335,8 +335,8 @@ def get_process_info(apiprocess):
 
 def get_user_results(user_id):
     try:
-        results = list(GeoAPIResults.objects.filter(owner_id=user_id).values(
-            "id", "inputs", "outputs", "name", "open", "status"))
+        results = list(GeoAPIResults.objects.filter(owner_id=user_id).exclude(owner_id__isnull=True).
+                       values("id", "inputs", "outputs", "name", "open", "status"))
     except GeoAPIResults.DoesNotExist:
         logger.error('Cannot get user results. There is an issue with the GeoAPIResults model.')
         results = []
