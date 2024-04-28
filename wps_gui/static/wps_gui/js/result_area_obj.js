@@ -149,8 +149,8 @@ vfw.datasets.resultObj = class {
      * Send request to django if there is an update on the process.
      * If yes, update object (with sessionstorage and html)
      */
-    refresh() {  // TODO: removeData var should be taken from this!
-        vfw.html.loaderOverlayOn()
+    refresh(element) {  // TODO: removeData var should be taken from this!
+        element.classList.add('rotate');
 
         $.ajax({
             url: vfw.var.DEMO_VAR + '/workspace/processstate',
@@ -175,7 +175,7 @@ vfw.datasets.resultObj = class {
                 this.update(error);
                 console.warn('failed getting data from server: ', error)
             })
-            .always(vfw.html.loaderOverlayOff())
+            .always(bla => element.classList.remove('rotate'))
 
     }
     /**
@@ -337,7 +337,7 @@ vfw.datasets.resultObj = class {
             dragHtml = 'draggable="true" ondragstart="dragstart_handler(event)"'
         }
         if (this.status === "ACCEPTED" || this.status === "CREATED") {  // add refresh button if not finished
-            stateIndicator = `<a onclick=vfw.datasets.resultObjects[\'${this.orgID}\'].refresh() ` +
+            stateIndicator = `<a onclick=vfw.datasets.resultObjects[\'${this.orgID}\'].refresh(this) ` +
                 `class="w3-hover-white"><i class="process-state fa fa-refresh process-${this.status}"></i>`
         } else {
             stateIndicator = `<i class="process-state process-${this.status}"></i>`
