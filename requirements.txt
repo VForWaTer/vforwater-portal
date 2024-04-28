@@ -23,7 +23,7 @@ wheel   # needed for pyzip
 pyzip       ==0.2.0
 redis       ==3.5.3
 requests    ==2.31.0
-mozilla-django-oidc ==2.0.0
+mozilla-django-oidc ==4.0.1
 bridget     ==0.2.4
 python-decouple     ==3.6
 
