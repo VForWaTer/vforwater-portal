@@ -551,11 +551,11 @@ def get_url_json(url):
     """
     try:
         response = requests.get(url)
+        return response.json()
     except Exception as e:
         logger.error(f'Error checking state of process: {e}')
         print(f'Error checking state of process: {e}')
-        response = {'error': 'Got no update from PyGeoAPI'}
-    return response.json()
+        return {'error': 'Got no update from PyGeoAPI'}
 
 
 def handle_geoapiprocess_output(user, execution, process_description, inputs):

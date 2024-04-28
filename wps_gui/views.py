@@ -477,7 +477,14 @@ def process_state(request):
     # check if user has access to this dataset. If yes get state from GeoAPI
     if entry.open or request.user.id == entry.owner_id:
         url = entry.outputs['path']
+        print('entry: ', entry)
+        logger.debug(f'entry: {entry}')
+        print('url: ', url)
+        logger.debug(f'url: {url}')
         update = get_url_json(f'{url}?f=json')
+        print('update: ', update)
+        logger.debug(f'update: {update}')
+
     else:
         return JsonResponse({'error': 'No Access'})
 
