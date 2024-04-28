@@ -39,7 +39,7 @@ import urllib
 import zipfile
 from pathlib import Path
 from io import BytesIO
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import jsonpickle
 import requests
@@ -348,9 +348,9 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
                'name': wps_process,
                'open': False if user_id else True,
                'outputs': {
-                   'path': endpoint + job_path,
+                   'path': urljoin(endpoint, job_path),
                    # 'path': execution.headers['Location'],
-                   'jobMeta_path': f"{endpoint + job_path}?f=json",
+                   'jobMeta_path': f"{urljoin(endpoint, job_path)}?f=json",
                    # 'jobMeta_path': f"{execution.headers['Location']}?f=json",
                    'results': ""
                            # 'results': f"{execution.headers['Location']}/results?f=json"
