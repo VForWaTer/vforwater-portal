@@ -150,6 +150,7 @@ vfw.datasets.resultObj = class {
      * If yes, update object (with sessionstorage and html)
      */
     refresh() {  // TODO: removeData var should be taken from this!
+        vfw.html.loaderOverlayOn()
 
         $.ajax({
             url: vfw.var.DEMO_VAR + '/workspace/processstate',
@@ -173,7 +174,8 @@ vfw.datasets.resultObj = class {
                 this.status = error.status;
                 this.update(error);
                 console.warn('failed getting data from server: ', error)
-        })
+            })
+            .always(vfw.html.loaderOverlayOff())
 
     }
     /**

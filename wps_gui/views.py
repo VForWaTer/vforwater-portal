@@ -521,14 +521,21 @@ def process_state(request):
         logger.error(f'Process failed immediately: {update}')
         # print(f'Process failed immediately: {update}')
         return JsonResponse({'status': entry.status, 'error': 'Invalid Parameter Value'})
+    elif update['status'] == "accepted":
+        return JsonResponse({'status': entry.status})
     else:
         logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
-        print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        # print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
         # style is the combination of 'status', 'message' and 'progress'
 
-    response_dict = {'status': entry.status,
+    try:
+        response_dict = {'status': entry.status,
                      'results': [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
                      }
+    except Exception as e:
+        # print(f"Unexpected error while trying to refresh client: {e}")
+        logger.error(f"Unexpected error while trying to refresh client: {e}")
+
     return JsonResponse(response_dict)
 
 
