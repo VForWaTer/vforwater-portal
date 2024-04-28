@@ -340,6 +340,13 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         print('e: ', e)
         logger.error(f'Cannot Execute process: {e}.')
 
+    print('endpoint: ', endpoint)
+    logger.info('endpoint: ', endpoint)
+    print('execution.headers: ', execution.headers)
+    logger.info('execution.headers: ', execution.headers)
+    print('execution.headers[Location]: ', execution.headers['Location'])
+    logger.info('execution.headers[Location]: ', execution.headers['Location'])
+
     db_data = {'inputs': input.get("in_dict", ""),
                'name': wps_process,
                'open': False if user_id else True,

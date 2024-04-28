@@ -264,6 +264,12 @@ def find_wps_service_engines():
 
 
 def get_endpoint_data(devel=False):
+    """
+    Use this funciton to get the correct endpoint (URL) for the geoapi, depending if in development (has endpoint in
+    settings) or for production/demo (database)
+    :param devel:
+    :return: service, endpoint, wps_services
+    """
     try:
         wps_services = list(WpsModel.objects.values_list("name", flat=True))
         wps_services_url = list(WpsModel.objects.values_list('endpoint', flat=True))
@@ -550,7 +556,11 @@ def get_url_json(url):
     :return: The JSON response from the API indicating the state of the process.
     """
     try:
+        print('url: ', url)
+        logger.info('url: ', url)
         response = requests.get(url)
+        print('response: ', response)
+        logger.info('response: ', response)
         return response.json()
     except Exception as e:
         logger.error(f'Error checking state of process: {e}')
