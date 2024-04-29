@@ -599,7 +599,7 @@ def previewplot(request):
                         print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
             else:
                 if has_data(entriesID):
-                    if entriesID in cache.get('ids_data_on_path'):
+                    if int(entriesID)  not in cache.get('ids_data_on_path')  :
                         dataset = DataObject(webID, date)
                     else:
                         print('One must handle data on path/ check if raster (= has spatial resolution) => '
