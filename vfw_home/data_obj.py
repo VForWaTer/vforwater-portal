@@ -284,7 +284,7 @@ class DataObject:
         if self.length == 0:  # if not qs.exists():
             print('Data_obj.db_data_length: Problems with query_path: ', self.__general_data_qs__)
             logger.debug(f'Problems with query_path, {self.__general_data_qs__}')
-            raise EmptyResultSet(f'Got no data in data_tools.is_data_short for id={self.ID}')
+            raise EmptyResultSet(f'Problems with query_path for id={self.ID}, {self.__general_data_qs__}')
 
         if self.length > self.__row_limit__:
             self.full = False

@@ -60,7 +60,7 @@ vfw.sidebar.sidemenuClose = function () {
  * Button information is stored in an HTML object with Id 'workdata'
  * it is stored as a string, so the following function transforms this string back to a dictionary
  */
-// TODO: workdata is maybe not needed anymore? Try to store information in sessionStorage
+// TODO: workdata is maybe not existing anymore? Try to store information in sessionStorage, if already done => delete!
 vfw.sidebar.showData = function () {
     /** Initiate creation of data Button in data and result store.  **/
     const dataStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
@@ -75,13 +75,24 @@ vfw.sidebar.showData = function () {
     }
 
     /** build result objects only on /workspace/ */
-    let resultStoreData;
+    let resultStoreData = null;
     if (window.location.pathname === '/workspace/') {
         resultStoreData = JSON.parse(sessionStorage.getItem("resultBtn"));
-    } else {
-        resultStoreData = null;
+
+        /** load former results and create object for elements that are not already in session Storage */
+        let db_results_list = JSON.parse(document.getElementById('resultsList-var').textContent);
+        for (let i in db_results_list) {
+            if (!db_results_list[i]['orgID']) {
+                // create an id for the new object
+                const urlParts = db_results_list[i].outputs.path.split("/");
+                db_results_list[i]['orgID'] = db_results_list[i].name + '_' + urlParts[urlParts.length -1];
+            }
+            if (!resultStoreData || (resultStoreData && !(db_results_list[i]['orgID'] in resultStoreData))) {
+                vfw.datasets.resultObjects[db_results_list[i]['orgID']] = new vfw.datasets.resultObj(db_results_list[i]);
+            }
+        }
     }
-    /** collect  results data from session storage, create objects from it and check status if not finished or error */
+    /** use results data already loaded from session storage, create objects from it and check status if not finished or error */
     if (resultStoreData) {  // && "value" in workspaceData) {
         $.each(resultStoreData, function (k) {
             vfw.datasets.resultObjects[k] = new vfw.datasets.resultObj(resultStoreData[k]);
@@ -90,6 +101,7 @@ vfw.sidebar.showData = function () {
                 vfw.datasets.resultObjects[k].refresh()
         });
     }
+
     // (TODO: Old version. Maybe reuse later to group data
     // if (document.getElementById("workspace_results")) {  // check if user is on a page with workspace to built buttons
     //     const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));

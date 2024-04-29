@@ -1120,7 +1120,7 @@ vfw.html.getQuickSelection = function (selection) {
                 'coords': JSON.stringify(coords),
                 'csrfmiddlewaretoken': vfw.var.csrf_token,
             }, // data sent with the post request
-            type: "GET",
+            type: "POST",
             // datatype: 'json',
             dataType: "text",
         })

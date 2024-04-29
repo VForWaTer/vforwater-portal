@@ -109,7 +109,7 @@ def expressive_layer_name(user: object) -> str:
     if user.first_name and user.last_name:
         namestring += (user.first_name + "_" + user.last_name)
     else:
-        namestring += user.username.translate({ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`=+"})
+        namestring += user.username.translate({ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?|`=+\\"})
 
     return namestring + "_layer"
 

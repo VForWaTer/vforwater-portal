@@ -55,7 +55,7 @@ from vfw_home.views import get_accessible_data
 from .models import WebProcessingService as WpsModel, GeoAPIResults
 from .models import WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
-from heron.settings import VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR
+from heron.settings import VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR, DEBUG
 # import polars as pl
 import logging
 logger = logging.getLogger(__name__)
@@ -264,6 +264,12 @@ def find_wps_service_engines():
 
 
 def get_endpoint_data(devel=False):
+    """
+    Use this funciton to get the correct endpoint (URL) for the geoapi, depending if in development (has endpoint in
+    settings) or for production/demo (database)
+    :param devel:
+    :return: service, endpoint, wps_services
+    """
     try:
         wps_services = list(WpsModel.objects.values_list("name", flat=True))
         wps_services_url = list(WpsModel.objects.values_list('endpoint', flat=True))
@@ -335,8 +341,8 @@ def get_process_info(apiprocess):
 
 def get_user_results(user_id):
     try:
-        results = list(GeoAPIResults.objects.filter(owner_id=user_id).values(
-            "id", "inputs", "outputs", "name", "open", "status"))
+        results = list(GeoAPIResults.objects.filter(owner_id=user_id).exclude(owner_id__isnull=True).
+                       values("id", "inputs", "outputs", "name", "open", "status"))
     except GeoAPIResults.DoesNotExist:
         logger.error('Cannot get user results. There is an issue with the GeoAPIResults model.')
         results = []
@@ -551,11 +557,11 @@ def get_url_json(url):
     """
     try:
         response = requests.get(url)
+        return response.json()
     except Exception as e:
         logger.error(f'Error checking state of process: {e}')
         print(f'Error checking state of process: {e}')
-        response = {'error': 'Got no update from PyGeoAPI'}
-    return response.json()
+        return {'error': 'Got no update from PyGeoAPI'}
 
 
 def handle_geoapiprocess_output(user, execution, process_description, inputs):
@@ -731,6 +737,22 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
     return all_outputs
 
 
+def url_join(endpoint, path):
+    """
+    Make sure concatination of path and result doesn't result in two slashes or no slashes at all.
+    :param endpoint: string
+    :param path: string
+    :return: string
+    """
+    if endpoint[-1] == "/" and path[0] == "/":
+        url = f'{endpoint}{path[1:]}'
+    elif endpoint[-1] != "/" and path[0] != "/":
+        url = f'{endpoint}/{path}'
+    else:
+        url = f'{endpoint}{path}'
+    return url
+
+
 def handle_wps_output(execution, wps_process, inputs):
     """
 
@@ -879,7 +901,9 @@ def prepare_inputs(request, request_input):
             orgid = request_input['value_list'][i]
             result = save_dataset(request=request, orgid=request_input['value_list'][i],
                                   inputs=[('entry_id', str(orgid)), ('uuid', '')], wps_process="dbloader")
-            value = result['path']
+            service, endpoint, wps_services = get_endpoint_data(DEBUG)
+            value = url_join(endpoint, result['path'])
+            # value = result['path']
 
         elif val in datatypes and isinstance(request_input['value_list'][i], int):
             request_input['value_list'][i]

@@ -1,7 +1,7 @@
 /*
  * Project Name: V-FOR-WaTer
  * Author: Marcus Strobl
- * Contributors:
+ * Contributors: Safa Bouguezzi
  * License: MIT License
  */
 
@@ -44,10 +44,7 @@ vfw.datasets.resultObj = class {
             }
 
         Object.assign(this, {...defaultParams, ...data});
-        console.log('this: ', this)
         this._createHtmlName();
-        console.log('this. name : ', this.name)
-        console.log('this. orgID : ', this.orgID)
         this.htmlElementID = this.btnPosition + this.orgID;
 
         // this.storeKey = "resultBtn";
@@ -82,37 +79,38 @@ vfw.datasets.resultObj = class {
 
 
     downloadzip = function() {
+        /** download results from server in one zip file **/
 
-    const orgID = this.orgID;
-    const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
-    const path = resultData.dir;
-    const directoryName = path.split("/").pop();
+        const orgID = this.orgID;
+        const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
+        const path = resultData.dir;
+        const directoryName = path.split("/").pop();
 
-    $.ajax({
-        url: "/workspace/resultdownload",
-        type: 'GET',
-        data: { zip: orgID, path: path },
-        xhrFields: {
-            responseType: 'blob'  // Important for handling binary data
-        },
-        success: function(blob) {
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = downloadUrl;
-            a.download = directoryName + ".zip";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        },
-        error: function(error) {
-            console.error('Download failed:', error);
-            alert('Failed to download the file. Please try again.');
-        },
-        complete: function() {
-            console.log("Download attempt completed.");
-        }
-    });
-}
+        $.ajax({
+            url: "/workspace/resultdownload",
+            type: 'GET',
+            data: { zip: orgID, path: path },
+            xhrFields: {
+                responseType: 'blob'  // Important for handling binary data
+            },
+            success: function(blob) {
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = directoryName + ".zip";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            },
+            error: function(error) {
+                console.error('Download failed:', error);
+                alert('Failed to download the file. Please try again.');
+            },
+            complete: function() {
+                console.log("Download attempt completed.");
+            }
+        });
+    }
 
 
     /** remove data from webpage and from session, but user data is relaoded when user refreshes page **/
@@ -139,10 +137,12 @@ vfw.datasets.resultObj = class {
         })
             .done(result => {
                 console.log('+++ result: ', result)
-                if ('done' in result) this.removeData(this.orgID);
+                if ('done' in result) this.removeData(this.orgID)
+                else if ('message' in result && result['message'] == 'delete') this.removeData(this.orgID)
             })
             .fail(error => {
                 console.warn('failed to remove data from server: ', error)
+                this.removeData(this.orgID);
         })
     }
 
@@ -150,7 +150,8 @@ vfw.datasets.resultObj = class {
      * Send request to django if there is an update on the process.
      * If yes, update object (with sessionstorage and html)
      */
-    refresh() {  // TODO: removeData var should be taken from this!
+    refresh(element) {  // TODO: removeData var should be taken from this!
+        element.classList.add('rotate');
 
         $.ajax({
             url: vfw.var.DEMO_VAR + '/workspace/processstate',
@@ -169,10 +170,13 @@ vfw.datasets.resultObj = class {
                 }
             })
             .fail(error => {
-                this.status = result.status;
-                this.update(result);
+                // console.log('error: ', error)
+                // console.log('result error: ', result)
+                this.status = error.status;
+                this.update(error);
                 console.warn('failed getting data from server: ', error)
-        })
+            })
+            .always(bla => element.classList.remove('rotate'))
 
     }
     /**
@@ -280,13 +284,13 @@ vfw.datasets.resultObj = class {
 
         // standard (default) parameters that are used in any case
         const defaultParams = [
-            ["DeleteDataSet", "fa-eraser", gettext("Delete result"), "deleteFromDB"],
+            ["DeleteDataSet", "fa-eraser", gettext("Remove completely"), "deleteFromDB"],
             ["ReOpenProcess", "fa-window-maximize", gettext("Reopen Tool"), "reopen"]
         ]
         // little difference if user is logged in or not.
         if (vfw.var.USER_IS_AUTHENTICATED) {
             loggedInParams = [
-                ["RemoveDataSet", "fa-trash", gettext("Remove from store"), "removeData"],
+                ["RemoveDataSet", "fa-trash", gettext("Remove in browser"), "removeData"],
             ].concat(defaultParams)
         } else {loggedInParams = [].concat(defaultParams)}
 
@@ -334,7 +338,7 @@ vfw.datasets.resultObj = class {
             dragHtml = 'draggable="true" ondragstart="dragstart_handler(event)"'
         }
         if (this.status === "ACCEPTED" || this.status === "CREATED") {  // add refresh button if not finished
-            stateIndicator = `<a onclick=vfw.datasets.resultObjects[\'${this.orgID}\'].refresh() ` +
+            stateIndicator = `<a onclick=vfw.datasets.resultObjects[\'${this.orgID}\'].refresh(this) ` +
                 `class="w3-hover-white"><i class="process-state fa fa-refresh process-${this.status}"></i>`
         } else {
             stateIndicator = `<i class="process-state process-${this.status}"></i>`

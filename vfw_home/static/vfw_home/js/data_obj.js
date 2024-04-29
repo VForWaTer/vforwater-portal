@@ -1,7 +1,7 @@
 /*
  * Project Name: V-FOR-WaTer
  * Author: Marcus Strobl
- * Contributors:
+ * Contributors: Safa Bouguezzi
  * License: MIT License
  */
 
@@ -169,7 +169,8 @@ vfw.datasets.DataObj = class {
 
 
     Downloadcsv = function() {
-        const obj = this; 
+        vfw.html.loaderOverlayOn();
+        const obj = this;
         $.ajax({
             url: vfw.var.DEMO_VAR + "/home/datasetdownload",
             datatype: 'json', 

@@ -87,6 +87,20 @@ a.w3-hover-blue{padding: 0px}
   transition: 0.3s;
 }
 
+/* rotate an element that has the rotate class */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.rotate {
+    animation: rotate 1s linear;
+    transform-origin: center;
+}
+
 /* Change background color of buttons on hover */
 .tab button:hover {
   background-color: #ddd;

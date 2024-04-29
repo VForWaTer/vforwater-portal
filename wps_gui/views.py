@@ -32,11 +32,14 @@
 import datetime
 import itertools
 import json
+import sys
 import time
 import os
+import urllib
 import zipfile
 from pathlib import Path
 from io import BytesIO
+from urllib.parse import urlparse
 
 import jsonpickle
 import requests
@@ -56,7 +59,7 @@ from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, Geo
 from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
     prepare_inputs, create_geoapi_db_entry, has_result_error, process_to_json, get_url_json, edit_input,
-    handle_wps_output, get_user_results, run_pygeoapi_process
+    handle_wps_output, get_user_results, run_pygeoapi_process, url_join
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -283,7 +286,7 @@ class ProcessView(TemplateView):
 # from requests_futures.sessions import FuturesSession
 
 
-@login_required(login_url="/oidc/authenticate/")
+# @login_required(login_url="/oidc/authenticate/")  # TODO: This results in an error related to CORS. Find another solution
 def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
     user_id = None
 
@@ -338,12 +341,19 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         print('e: ', e)
         logger.error(f'Cannot Execute process: {e}.')
 
+    job_path = urlparse(execution.headers['Location']).path
+    # TODO: absolute path is bad design, is a problem when accessing data from different machines. Better: store
+    #  only path and create endpoint + path when needed.
     db_data = {'inputs': input.get("in_dict", ""),
                'name': wps_process,
                'open': False if user_id else True,
-               'outputs': {'path': execution.headers['Location'],
-                           'jobMeta_path': f"{execution.headers['Location']}?f=json",
-                           'results': ""
+               'outputs': {
+                   'path': job_path,
+                   # 'path': urljoin(endpoint, job_path),
+                   # 'path': execution.headers['Location'],
+                   'jobMeta_path': f"{job_path}?f=json",
+                   # 'jobMeta_path': f"{execution.headers['Location']}?f=json",
+                   'results': ""
                            # 'results': f"{execution.headers['Location']}/results?f=json"
                            },
                # 'user': user_id,
@@ -404,22 +414,52 @@ def delete_result(request):
         user_queryset = None
 
     except Exception as e:
-        print('Got no ID to delete process: ', e)
         logger.error(f'Got no ID to delete process: {e}')
         return JsonResponse({'error': 'Got no ID to delete process.'})
 
     try:
         entry = GeoAPIResults.objects.filter(owner_id=user_queryset).get(id=process_id)
-        deletion_report = entry.delete()
     except Exception as e:
-        print('Unable to delete dataset: ', e)
-        logger.error(f'Unable to delete dataset: {e}')
-        return JsonResponse({'error': 'Unable to delete dataset.'})
+        logger.error(f'Unable to delete not existing dataset: {e}')
+        return JsonResponse({'error': 'Deletion of dataset did not work.',
+                             'report': {'status': {'server': 'failed', 'db': 'failed'},
+                                        'error': f'Unable to delete dataset. {e}'},
+                             'message': 'delete'})
 
-    if deletion_report[0] == 0:
-        return JsonResponse({'error': 'Nothing was deleted.'})
+    try:
+        # TODO: is it a good solution to have a tool to delete results? Think about how to delete directly from django
+        tinydb_entry_name = f"{entry.name}-{entry.outputs['path'].replace('/jobs/', '')}"
+        # tinydb_entry_name = f"{entry.name}-{urllib.parse.urlparse(entry.outputs['path']).path.replace('/jobs/', '')}"
+        input = {'in_dict': {'input_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
+                             'output_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
+                             'job_list': [tinydb_entry_name]}}
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        execution = run_pygeoapi_process(endpoint, 'result_remover', input, user_id, request.user.username)
+
+        # TODO: this report isn't used yet, but might be of interest in future
+        deletion_report = {'status': {'server': execution.status_code},
+                           'report': get_url_json(f'{execution.headers["Location"]}/results?f=json'),
+                           'error': ''}
+    except Exception as e:
+        logger.error(f'Unable to delete dataset: {e}')
+        deletion_report = {'status': {'server': 'failed'},
+                           'error': f'Unable to delete dataset. {e}'}
+
+    try:
+        entry.delete()
+        deletion_report['status']['db'] = 'done'
+    except Exception as e:
+        logger.error(f'Unable to delete result from db: {e}')
+        deletion_report['status']['db'] = 'failed'
+        deletion_report['error'] = f"{deletion_report['error']}; Delete from DB failed with {e}"
+
+    if deletion_report['status'] == '201':
+        return JsonResponse({'report': deletion_report,
+                             'message': 'delete'})
     else:
-        return JsonResponse({'done': deletion_report[0]})
+        return JsonResponse({'error': 'Deletion of folders did not work.',
+                             'report': deletion_report,
+                             'message': 'delete'})
 
 
 def process_state(request):
@@ -440,24 +480,36 @@ def process_state(request):
     # get element from database
     try:
         entry = GeoAPIResults.objects.get(id=process_id)
-    except ObjectDoesNotExist:
+    except ObjectDoesNotExist as e:
+        # print(f"Cannot check state of Process. Entry {process_id} seems not to exist: ", e)
         return JsonResponse({'error': f"Cannot check state of Process. Entry {process_id} seems not to exist"})
 
     # check if user has access to this dataset. If yes get state from GeoAPI
     if entry.open or request.user.id == entry.owner_id:
-        url = entry.outputs['path']
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        url = url_join(endpoint, entry.outputs['path'])
+        # print(f'try to get process state from url: {url}')
+        logger.info(f'try to get process state from url: {url}')
         update = get_url_json(f'{url}?f=json')
     else:
         return JsonResponse({'error': 'No Access'})
 
     # check status. If successful update database and send update
     # if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
+    # TODO: Yes, the following is way too complicated. Check the tools, find a standard and simplify all of this!!!
     if ((update['status'] == "successful" or update['status'] == "completed") and update['message'] == 'Job complete'
         and update['progress'] == 100):
 
         result_url = f'{url}/results?f=json'
         result = get_url_json(result_url)
         if result["container_status"] and result["container_status"] == 'failed':
+            entry.status = "FINISHED"
+            entry.access = timezone.now().isoformat()
+        elif result["container_status"] and result["container_status"] == 'exited':
+            entry.status = "FINISHED"
+            entry.access = timezone.now().isoformat()
+        elif ((result["error"] and result["error"] == 'none') and
+              (result["geoapi_status"] and result["completed"] == 'none')):
             entry.status = "FINISHED"
             entry.access = timezone.now().isoformat()
         else:
@@ -482,14 +534,21 @@ def process_state(request):
         logger.error(f'Process failed immediately: {update}')
         # print(f'Process failed immediately: {update}')
         return JsonResponse({'status': entry.status, 'error': 'Invalid Parameter Value'})
+    elif update['status'] == "accepted":
+        return JsonResponse({'status': entry.status})
     else:
         logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
-        print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        # print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
         # style is the combination of 'status', 'message' and 'progress'
 
-    response_dict = {'status': entry.status,
+    try:
+        response_dict = {'status': entry.status,
                      'results': [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
                      }
+    except Exception as e:
+        # print(f"Unexpected error while trying to refresh client: {e}")
+        logger.error(f"Unexpected error while trying to refresh client: {e}")
+
     return JsonResponse(response_dict)
 
 

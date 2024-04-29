@@ -52,8 +52,11 @@
  * @param {string, list} inputs - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
  **/
 vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs = null) {
-    let modal_values = vfw.session.get_workflow();
-    let json = vfw.session.get_wpsprocess(service, identifier);
+    // if (!vfw.obj.workModal) vfw.obj.workModal = new vfw.html.workModalObj();
+    // vfw.obj.workModal(html, is_simple)
+    const modal_values = vfw.session.get_workflow();
+    const json = vfw.session.get_wpsprocess(service, identifier);
+    // vfw.obj.workModal.build(json, service)
     vfw.workspace.modal.build_modal(json, service)
     /** Fill the tool with selection made to receive this result button */
     if (typeof inputs === 'string') {
@@ -604,6 +607,7 @@ vfw.workspace.modal.runProcess = function () {
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
             vfw.html.loaderOverlayOff()
+            /** Handle result according to the success/status of the process */
             if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
                 let btnName = '';
                 let btnData = {};
@@ -1247,7 +1251,7 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
     } else if ('keywords' in item && item.keywords.includes('pattern')) {
         vfw.workspace.modal.build_regexText(item, entry_name, newNode)
     // } else if ('keywords' in item) {  // don't use this for geoapi;
-    } else if (vfw.var.EXT_DATATYPES.includes(item.dataType)) {  // don't use this for geoapi;
+    } else if (vfw.var.EXT_DATATYPES.includes(item.dataType)) {
         countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
 
         /** Set input element according to dataType */
