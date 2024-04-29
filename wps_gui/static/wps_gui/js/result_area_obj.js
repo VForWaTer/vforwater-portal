@@ -151,7 +151,11 @@ vfw.datasets.resultObj = class {
      * If yes, update object (with sessionstorage and html)
      */
     refresh(element) {  // TODO: removeData var should be taken from this!
-        element.classList.add('rotate');
+        if (element !== null && typeof element === 'object' && !Array.isArray(element)) {
+            element.classList.add('rotate');
+        } else {
+            vfw.html.loaderOverlayOn();
+        }
 
         $.ajax({
             url: vfw.var.DEMO_VAR + '/workspace/processstate',
@@ -176,7 +180,13 @@ vfw.datasets.resultObj = class {
                 this.update(error);
                 console.warn('failed getting data from server: ', error)
             })
-            .always(bla => element.classList.remove('rotate'))
+            .always(bla => {
+                if (element !== null && typeof element === 'object' && !Array.isArray(element)) {
+                    element.classList.remove('rotate');
+                } else {
+                    vfw.html.loaderOverlayOff();
+                }
+            })
 
     }
     /**
