@@ -607,6 +607,7 @@ vfw.workspace.modal.runProcess = function () {
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
             vfw.html.loaderOverlayOff()
+            /** Handle result according to the success/status of the process */
             if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
                 let btnName = '';
                 let btnData = {};

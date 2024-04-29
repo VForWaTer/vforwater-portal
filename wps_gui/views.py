@@ -39,7 +39,7 @@ import urllib
 import zipfile
 from pathlib import Path
 from io import BytesIO
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 
 import jsonpickle
 import requests
@@ -59,7 +59,7 @@ from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, Geo
 from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
     prepare_inputs, create_geoapi_db_entry, has_result_error, process_to_json, get_url_json, edit_input,
-    handle_wps_output, get_user_results, run_pygeoapi_process
+    handle_wps_output, get_user_results, run_pygeoapi_process, url_join
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -342,15 +342,16 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         logger.error(f'Cannot Execute process: {e}.')
 
     job_path = urlparse(execution.headers['Location']).path
-    # TODO: absolute path is bad design, is a problem when accessing data from diffrent machines. Better: store
+    # TODO: absolute path is bad design, is a problem when accessing data from different machines. Better: store
     #  only path and create endpoint + path when needed.
     db_data = {'inputs': input.get("in_dict", ""),
                'name': wps_process,
                'open': False if user_id else True,
                'outputs': {
-                   'path': urljoin(endpoint, job_path),
+                   'path': job_path,
+                   # 'path': urljoin(endpoint, job_path),
                    # 'path': execution.headers['Location'],
-                   'jobMeta_path': f"{urljoin(endpoint, job_path)}?f=json",
+                   'jobMeta_path': f"{job_path}?f=json",
                    # 'jobMeta_path': f"{execution.headers['Location']}?f=json",
                    'results': ""
                            # 'results': f"{execution.headers['Location']}/results?f=json"
@@ -427,7 +428,8 @@ def delete_result(request):
 
     try:
         # TODO: is it a good solution to have a tool to delete results? Think about how to delete directly from django
-        tinydb_entry_name = f"{entry.name}-{urllib.parse.urlparse(entry.outputs['path']).path.replace('/jobs/', '')}"
+        tinydb_entry_name = f"{entry.name}-{entry.outputs['path'].replace('/jobs/', '')}"
+        # tinydb_entry_name = f"{entry.name}-{urllib.parse.urlparse(entry.outputs['path']).path.replace('/jobs/', '')}"
         input = {'in_dict': {'input_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
                              'output_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
                              'job_list': [tinydb_entry_name]}}
@@ -478,15 +480,17 @@ def process_state(request):
     # get element from database
     try:
         entry = GeoAPIResults.objects.get(id=process_id)
-    except ObjectDoesNotExist:
+    except ObjectDoesNotExist as e:
+        # print(f"Cannot check state of Process. Entry {process_id} seems not to exist: ", e)
         return JsonResponse({'error': f"Cannot check state of Process. Entry {process_id} seems not to exist"})
 
     # check if user has access to this dataset. If yes get state from GeoAPI
     if entry.open or request.user.id == entry.owner_id:
-        url = entry.outputs['path']
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        url = url_join(endpoint, entry.outputs['path'])
+        # print(f'try to get process state from url: {url}')
         logger.info(f'try to get process state from url: {url}')
         update = get_url_json(f'{url}?f=json')
-
     else:
         return JsonResponse({'error': 'No Access'})
 

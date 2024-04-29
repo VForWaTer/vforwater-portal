@@ -79,37 +79,38 @@ vfw.datasets.resultObj = class {
 
 
     downloadzip = function() {
+        /** download results from server in one zip file **/
 
-    const orgID = this.orgID;
-    const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
-    const path = resultData.dir;
-    const directoryName = path.split("/").pop();
+        const orgID = this.orgID;
+        const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
+        const path = resultData.dir;
+        const directoryName = path.split("/").pop();
 
-    $.ajax({
-        url: "/workspace/resultdownload",
-        type: 'GET',
-        data: { zip: orgID, path: path },
-        xhrFields: {
-            responseType: 'blob'  // Important for handling binary data
-        },
-        success: function(blob) {
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = downloadUrl;
-            a.download = directoryName + ".zip";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        },
-        error: function(error) {
-            console.error('Download failed:', error);
-            alert('Failed to download the file. Please try again.');
-        },
-        complete: function() {
-            console.log("Download attempt completed.");
-        }
-    });
-}
+        $.ajax({
+            url: "/workspace/resultdownload",
+            type: 'GET',
+            data: { zip: orgID, path: path },
+            xhrFields: {
+                responseType: 'blob'  // Important for handling binary data
+            },
+            success: function(blob) {
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = directoryName + ".zip";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            },
+            error: function(error) {
+                console.error('Download failed:', error);
+                alert('Failed to download the file. Please try again.');
+            },
+            complete: function() {
+                console.log("Download attempt completed.");
+            }
+        });
+    }
 
 
     /** remove data from webpage and from session, but user data is relaoded when user refreshes page **/

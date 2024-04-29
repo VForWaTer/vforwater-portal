@@ -55,7 +55,7 @@ from vfw_home.views import get_accessible_data
 from .models import WebProcessingService as WpsModel, GeoAPIResults
 from .models import WpsResults
 from owslib.ogcapi.processes import Processes as ogcProcesses
-from heron.settings import VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR
+from heron.settings import VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR, DEBUG
 # import polars as pl
 import logging
 logger = logging.getLogger(__name__)
@@ -737,6 +737,22 @@ def handle_geoapiprocess_output(user, execution, process_description, inputs):
     return all_outputs
 
 
+def url_join(endpoint, path):
+    """
+    Make sure concatination of path and result doesn't result in two slashes or no slashes at all.
+    :param endpoint: string
+    :param path: string
+    :return: string
+    """
+    if endpoint[-1] == "/" and path[0] == "/":
+        url = f'{endpoint}{path[1:]}'
+    elif endpoint[-1] != "/" and path[0] != "/":
+        url = f'{endpoint}/{path}'
+    else:
+        url = f'{endpoint}{path}'
+    return url
+
+
 def handle_wps_output(execution, wps_process, inputs):
     """
 
@@ -885,7 +901,9 @@ def prepare_inputs(request, request_input):
             orgid = request_input['value_list'][i]
             result = save_dataset(request=request, orgid=request_input['value_list'][i],
                                   inputs=[('entry_id', str(orgid)), ('uuid', '')], wps_process="dbloader")
-            value = result['path']
+            service, endpoint, wps_services = get_endpoint_data(DEBUG)
+            value = url_join(endpoint, result['path'])
+            # value = result['path']
 
         elif val in datatypes and isinstance(request_input['value_list'][i], int):
             request_input['value_list'][i]
