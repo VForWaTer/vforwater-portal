@@ -785,6 +785,7 @@ class ToolResultsDownload(TemplateView):
     """
 
     def get(self, request):
+        logger.debug('------------------------ get download -------------------------')
         if 'zip' in request.GET and 'path' in request.GET:
             directory_path = request.GET['path']
             logger.info(f'directory_path: {directory_path}')
