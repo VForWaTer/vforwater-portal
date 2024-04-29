@@ -54,7 +54,7 @@ from django.views.generic import TemplateView
 from django.utils import translation, timezone
 from json2html import json2html
 
-from heron.settings import DEBUG
+from heron.settings import DEBUG, GEOAPI_DATA_PATH, PROCESSES_DATA
 from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
@@ -786,11 +786,26 @@ class ToolResultsDownload(TemplateView):
 
     def get(self, request):
         logger.debug('------------------------ get download -------------------------')
+        print('------------------------ get download -------------------------')
         if 'zip' in request.GET and 'path' in request.GET:
             directory_path = request.GET['path']
+            # service, endpoint, wps_services = get_endpoint_data(DEBUG)
+            print("request.GET['path']: ", request.GET['path'])
+            # print('endpoint: ', endpoint)
+            # directory_path = url_join(endpoint, request.GET['path'])
+            print('directory_path: ', directory_path)
             logger.info(f'directory_path: {directory_path}')
+            if directory_path.startswith(GEOAPI_DATA_PATH):
+                directory_path = directory_path.replace(GEOAPI_DATA_PATH, PROCESSES_DATA, 1)
+
             if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
                 logging.error(f"Requested path does not exist or is not a directory: {directory_path}")
+                logging.error(f"You might want to check if path from geoapi container is correct (GEOAPI_DATA_PATH = {directory_path})")
+                logging.error(f"You might want to check if path from django container is correct (PROCESSES_DATA = {PROCESSES_DATA})")
+                print(f"You might want to check if path from geoapi container is correct (GEOAPI_DATA_PATH = {directory_path})")
+                print(f"You might want to check if path from django container is correct (PROCESSES_DATA = {PROCESSES_DATA})")
+
+                print(f"Requested path does not exist or is not a directory: {directory_path}")
                 return HttpResponse(status=404)
 
             zip_filename = "geo_data.zip"
