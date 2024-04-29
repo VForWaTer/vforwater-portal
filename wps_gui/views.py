@@ -787,6 +787,7 @@ class ToolResultsDownload(TemplateView):
     def get(self, request):
         if 'zip' in request.GET and 'path' in request.GET:
             directory_path = request.GET['path']
+            logger.info(f'directory_path: {directory_path}')
             if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
                 logging.error(f"Requested path does not exist or is not a directory: {directory_path}")
                 return HttpResponse(status=404)
