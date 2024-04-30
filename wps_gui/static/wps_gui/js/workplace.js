@@ -622,6 +622,8 @@ vfw.workspace.modal.runProcess = function () {
                 // if there is an html available for a result show it directly as result
                 if ('report_html' in json) {
                     btnData['report_html'] = json.report_html;
+                     // let iframe = '<iframe srcdoc="' + json.report_html + '"></iframe>'
+                    // vfw.workspace.modal.openResultModal(iframe)
                     vfw.workspace.modal.openResultModal(json.report_html)
                     // vfw.html.loaderOverlayOff();
                 }

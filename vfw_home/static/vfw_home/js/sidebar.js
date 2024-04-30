@@ -353,6 +353,8 @@ vfw.init.contextListener = function () {
 /**
  * Listens for click events.
  */
+// TODO: the context menu has its own funcitons now. This function is still used, in that case change code to object
+//  functions, and remove this clickListener and menuItemListener.
 vfw.init.clickListener = function () {
     document.addEventListener("click", function (e) {
         const clickeElIsLink = vfw.sidebar.clickInsideElement(e, "context-menu__link");

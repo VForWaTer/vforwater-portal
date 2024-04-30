@@ -99,6 +99,9 @@ vfw.datasets.selectObj = class {
         const workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
 
         const geoJSONData = this.gjson;
+        // TODO: If the geometry is empty, we add the geometry from the map that is used for filtering in the moment
+        //  of the download => bad idea! Better: when creating the select_area_object, wait for the geometry until it
+        //  is correctly added to the object, and then finish creating the object.
         if (geoJSONData.geometry.coordinates.length == 0) {
             geoJSONData.geometry.coordinates =
                 vfw.map.source.selectionSource.getFeatures()[0].getGeometry().getCoordinates();
