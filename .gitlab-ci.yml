@@ -20,7 +20,7 @@ vfwportal-demo-test:
     stage: test
     script:
         # call unit tests
-        - /usr/bin/podman -v /etc/vforwater/vfwportal-demo/settings-test.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro run localhost:5000/demo/vfwportal:$CI_COMMIT_SHA /usr/local/bin/python manage.py test  
+        - /usr/bin/podman run -v /etc/vforwater/vfwportal-demo/settings-test.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro  localhost:5000/demo/vfwportal:$CI_COMMIT_SHA /usr/local/bin/python manage.py test  
     only:
         - demo
 
