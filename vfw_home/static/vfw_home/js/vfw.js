@@ -563,6 +563,7 @@ vfw.map.func.removeDrawInteractions = function () {
     vfw.map.olmap.removeInteraction(vfw.map.control.modify);
     vfw.map.olmap.removeInteraction(vfw.map.control.drawSquare);
     vfw.map.olmap.removeInteraction(vfw.map.control.drawCatchmentOutlet);
+    // vfw.map.olmap.removeInteraction(vfw.map.control.selectCatch);  // TODO: This gives conflicts with the other select options. Find another way to solve that you cannot deselect the clicked catchment
 }
 
 /**
