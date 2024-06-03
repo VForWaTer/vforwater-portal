@@ -32,7 +32,7 @@ from django.contrib import messages
 from django.core.serializers import serialize
 
 from author_manage.views import MyResourcesView
-from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
+from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR, DATABASES
 
 from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
@@ -105,8 +105,15 @@ class HomeView(TemplateView):
     """
     IMPORTANT! Don't use "-" in geoserver names!!!
     """
-    store = 'metacatalogdev'  # 'marcus'  # 'new_vforwater_gis'
-    workspace = 'metacatalogdev'  # 'marcus'  # 'CAOS_update'
+    def clean_database_name(name):
+    # Remove all non-alphanumeric characters
+        return re.sub(r'\W+', '', name)
+    
+
+    Database_Name = clean_database_name(settings.DATABASES['default']['NAME'])   #''.join(settings.DATABASES['default']['NAME'].split('-'))
+
+    store = Database_Name #'metacatalogdev'  # 'marcus'  # 'new_vforwater_gis'
+    workspace = Database_Name # 'metacatalogdev'  # 'marcus'  # 'CAOS_update'
     # store = 'play'  # 'new_vforwater_gis'
     # workspace = 'play'  # 'CAOS_update'
     unlocked_embargo = []
@@ -148,7 +155,7 @@ class HomeView(TemplateView):
             verify_layer(request=self.request, datastore=self.store, workspace=self.workspace, filename=self.data_layer)
             verify_layer(request=self.request, datastore=self.store, workspace=self.workspace,
                          filename=self.areal_data_layer, layertype='areal_data')
-
+            # print("data_layer :" , self.data_layer )
         except:
             self.data_layer = 'Error: Found no geoserver!'
             self.areal_data_layer = 'Error: Found no geoserver!'
