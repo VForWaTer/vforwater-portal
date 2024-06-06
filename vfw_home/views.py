@@ -42,7 +42,7 @@ from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils.timezone import make_aware
-from pyzip import PyZip
+#from pyzip import PyZip
 
 import matplotlib as mpl
 import urllib
@@ -64,12 +64,12 @@ from heron.settings import LOCAL_GEOSERVER, DEMO_VAR
 from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
-from .Fig_obj import FigObject
+from .Figure.Fig_obj import FigObject
 from .checks import check_geoserver_layers
-from .data_tools import DataTypes, get_accessible_data, collect_selection, has_data, get_split_groups
+from .Figure.data_tools import DataTypes, get_accessible_data, collect_selection, has_data, get_split_groups
 from .delineator import delineate
-from .forms import QuickFilterForm
-from .data_obj import DataObject
+from .Forms.forms import QuickFilterForm
+from .Figure.data_obj import DataObject
 from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
     get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency
 
