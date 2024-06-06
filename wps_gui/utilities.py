@@ -49,8 +49,8 @@ from owslib.ogcapi import Collections
 from owslib.util import Authentication
 from owslib.wps import WebProcessingService
 
-from vfw_home.data_obj import DataObject
-from vfw_home.datatypes import basicdatatypes, datatypes
+from vfw_home.Figure.data_obj import DataObject
+from vfw_home.Figure.datatypes import basicdatatypes, datatypes
 from vfw_home.views import get_accessible_data
 from .models import WebProcessingService as WpsModel, GeoAPIResults
 from .models import WpsResults

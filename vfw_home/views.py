@@ -61,24 +61,24 @@ from django.core.serializers import serialize
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR
 
-from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
+from .Geoserver.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
 from .Figure.Fig_obj import FigObject
-from .checks import check_geoserver_layers
+from .Geoserver.checks import check_geoserver_layers
 from .Figure.data_tools import DataTypes, get_accessible_data, collect_selection, has_data, get_split_groups
-from .delineator import delineate
+from .utilities.delineator import delineate
 from .Forms.forms import QuickFilterForm
 from .Figure.data_obj import DataObject
-from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
+from .utilities.utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
     get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency
 
 mpl.use('Agg')
 
 from django.contrib.gis.geos import Polygon, GEOSGeometry
-from .query_functions import get_bbox_from_data
+from .utilities.query_functions import get_bbox_from_data
 # from .filter import QuickFilter
-from .filters import NMPersonsFilter
+from .utilities.filters import NMPersonsFilter
 from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
 import logging
