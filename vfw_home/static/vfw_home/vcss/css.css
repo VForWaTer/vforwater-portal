@@ -36,35 +36,37 @@ iframe {
 }
 
 
- /* Style the buttons that are used to open and close the accordion panel */
+/* Style the buttons that are used to open and close the accordion panel */
 .groupaccordion {
-  background-color: #eee;
-  color: #444;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  text-align: left;
-  border: none;
-  outline: none;
-  transition: 0.4s;
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.4s;
 }
+
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
 .active, .groupaccordion:hover {
-  background-color: #ccc;
+    background-color: #ccc;
 }
+
 /* Style the accordion panel. Note: hidden by default */
 .grouppanel {
-  padding: 0 18px;
-  background-color: white;
-  display: none;
-  overflow: hidden;
+    padding: 0 18px;
+    background-color: white;
+    display: none;
+    overflow: hidden;
 }
 
 
 /* !**
 * Styling of modal.
 **! */
-.modal-back{
+.modal-back {
     color: black;
     float: right;
     font-size: 20px;
@@ -74,20 +76,20 @@ iframe {
 
 .modal-back:hover, .modal-back:focus,
 .work_modal-output:hover, .work_modal-output:focus,
-.modal-btn:hover, modal-btn:focus{
+.modal-btn:hover, modal-btn:focus {
     color: #000;
     text-decoration: none;
     cursor: pointer;
 }
 
-.modal-btn, .work_modal-output{
+.modal-btn, .work_modal-output {
     color: white;
     float: right;
     font-size: 20px;
-    padding-top:2px;
+    padding-top: 2px;
     padding-bottom: 2px;
     padding-left: 12px;
-  /*font-weight: bold;*/
+    /*font-weight: bold;*/
 }
 
 .work_modal-output {
@@ -123,7 +125,7 @@ iframe {
 
 
 .result_modal-header, .work_modal-header,
-.result_modal-footer, .work_modal-footer{
+.result_modal-footer, .work_modal-footer {
     height: 38px;
     padding: 2px 12px;
     background-color: dodgerblue;
@@ -133,6 +135,7 @@ iframe {
 button-header {
     display: block;
 }
+
 button-footer {
     display: flex;
     position: relative;
@@ -152,6 +155,7 @@ button-footer {
 #infoModal {
 
 }
+
 #resultModal-content {
     height: fit-content;
     width: 700px;
@@ -196,35 +200,35 @@ button-footer {
 * End styling of modal.
 **! */
 
-    /*styles for Toolbox buttons*/
-    /*!**
-     * Reset button styles.
-     * It takes a bit of work to achieve a neutral look.
-     *!
-    button {
-      padding: 0;
-      border: none;
-      font: inherit;
-      color: inherit;
-      background-color: transparent;
-      !* show a hand cursor on hover; some argue that we
-      should keep the default arrow cursor for buttons *!
-      cursor: pointer;
-    }*/
-    /**
-     * Styling of markers for the datatype on buttons
-    Types from wps io:
-    NUMPY_TYPES = ['array', '2darray', 'ndarray']
-    SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
-    DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
-    SPECIALS = ['raster']
-    */
-    /*.process {*/
-    /*  !*height: auto;*!*/
-    /*  !*width: 350px;*!*/
-    /*  !*background-color: blue;*!*/
-    /*  !*display: inline-block;*!*/
-    /*}*/
+/*styles for Toolbox buttons*/
+/*!**
+ * Reset button styles.
+ * It takes a bit of work to achieve a neutral look.
+ *!
+button {
+  padding: 0;
+  border: none;
+  font: inherit;
+  color: inherit;
+  background-color: transparent;
+  !* show a hand cursor on hover; some argue that we
+  should keep the default arrow cursor for buttons *!
+  cursor: pointer;
+}*/
+/**
+ * Styling of markers for the datatype on buttons
+Types from wps io:
+NUMPY_TYPES = ['array', '2darray', 'ndarray']
+SERIES_TYPES = ['iarray', 'varray', 'timeseries', 'vtimeseries']
+DF_TYPES = ['idataframe', 'vdataframe', 'time-dataframe', 'vtime-dataframe']
+SPECIALS = ['raster']
+*/
+/*.process {*/
+/*  !*height: auto;*!*/
+/*  !*width: 350px;*!*/
+/*  !*background-color: blue;*!*/
+/*  !*display: inline-block;*!*/
+/*}*/
 .string, .array, .list, .integer, .positiveInteger, .dateTime,
 .boolean, .float, .html, .plot, .figure, .image, .json, .geometry {
     margin: 5px;
@@ -234,9 +238,9 @@ button-footer {
     /*font-weight: bold;
     font-size: 9pt;
     color: black;*/
-  /*display: inline-block;*/
-  /*  display: flex;*/
-  /*align-items: center;*/
+    /*display: inline-block;*/
+    /*  display: flex;*/
+    /*align-items: center;*/
 }
 
 /*hirachy:*/
@@ -269,10 +273,6 @@ button-footer {
     border-radius: 50%;
 }
 
-.noDataBtn {
-    text-decoration: line-through;
-}
-
 /*.array:hover, .iarray:hover, .varray:hover, .timeseries:hover, .vtimeseries:hover,
 .ndarray:hover, .raster:hover, .vraster:hover, ._2darray:hover, .idataframe:hover, .vdataframe:hover,
 .time-dataframe:hover, .vtime-dataframe:hover,
@@ -291,12 +291,14 @@ button-footer {
     width: 6px;
     border-radius: 0 6px 6px 0;
 }
+
 .right-hemisphere {
     margin: 5px;
     height: 12px;
     width: 6px;
     border-radius: 6px 0 0 6px;
 }
+
 /*.array::before{content: "A";}
 .timeseries::before{content: "T";}
 .ts-array::before{content: "TA";}
@@ -351,92 +353,97 @@ button-footer {
 
 /* Create a "toggle switch" (on/off button) from a checkbox
 (source: https://www.w3schools.com/howto/howto_css_switch.asp) */
- /* The switch - the box around the slider */
+/* The switch - the box around the slider */
 .toggleswitch {
-  position: relative;
-  display: inline-block;
-  width: 30px;
-  height: 17px;
-  vertical-align: text-bottom;
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 17px;
+    vertical-align: text-bottom;
 }
 
 /* Hide default HTML checkbox */
 .toggleswitch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 /* The slider */
 .toggleslider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .3s;
-  transition: .3s;
-  border-radius: 17px;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .3s;
+    transition: .3s;
+    border-radius: 17px;
 }
 
 .toggleslider:before {
-  position: absolute;
-  content: "";
-  height: 13px;
-  width: 13px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  -webkit-transition: .3s;
-  transition: .3s;
-  border-radius: 50%;
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .3s;
+    transition: .3s;
+    border-radius: 50%;
 }
 
 input:checked + .toggleslider {
-  background-color: #2196F3;
+    background-color: #2196F3;
 }
 
 input:focus + .toggleslider {
-  box-shadow: 0 0 1px #2196F3;
+    box-shadow: 0 0 1px #2196F3;
 }
 
 input:checked + .toggleslider:before {
-  -webkit-transform: translateX(13px);
-  -ms-transform: translateX(13px);
-  transform: translateX(13px);
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
 }
 
 
 .pagination {
-  display: inline-block;
+    display: inline-block;
 }
+
 .pagination div {
-  position: center;
+    position: center;
 }
+
 .pagination a {
-  float: left;
-  padding: 8px 16px;
-  text-decoration: none;
-  border: none;
-  color: black;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  cursor: pointer;
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    border: none;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
 }
+
 .pagination a:hover {
-  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
 }
+
 .pagination .disabled {
-  opacity: 0.4;
-  cursor: default;
+    opacity: 0.4;
+    cursor: default;
 }
+
 .pagination .active {
-  /*opacity: 0.6;*/
-  cursor: default;
-  background-color: dodgerblue;
+    /*opacity: 0.6;*/
+    cursor: default;
+    background-color: dodgerblue;
     color: white;
 }

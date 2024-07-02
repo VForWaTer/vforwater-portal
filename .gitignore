@@ -3,6 +3,7 @@
 heron/secret.txt
 heron/secret_geoserver.txt
 heron/settings.py
+heron/test_settings.py
 
 
 # Project / IDE files

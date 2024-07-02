@@ -142,8 +142,8 @@ def create_layer(request: object, filename: str, datastore: str, workspace: str,
         url, auth=eval(SECRET_GEOSERVER), data=xml, headers={"Content-type": "text/xml"}
     )
     if build.status_code != 201:
-        logger.warning(f'{build.status_code}: {build.text}')
-        # print("create layer: ", str(build.status_code) + ": " + build.text)
+        # logger.warning(f'{build.status_code}: {build.text}')
+        print("create layer: ", str(build.status_code) + ": " + build.text)
 
 
 def delete_layer(filename: str, datastore: str, workspace: str):
@@ -161,7 +161,8 @@ def delete_layer(filename: str, datastore: str, workspace: str):
             headers={"Content-type": "application/json", "Accept": "application/json"},
         )
         if build.status_code != 200:
-            logger.warning(f"{build.status_code}: {build.text}")
+            print("delete layer: ", str(build.status_code) + ": " + build.text)
+            # logger.warning(f"{build.status_code}: {build.text}")
 
     # first delete layer, then feature!
     delete_request(f"{LOCAL_GEOSERVER}/rest/layers/{filename}")
@@ -190,6 +191,7 @@ def get_layer(layer_name: str, datastore: str, workspace: str, format: str='json
         url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
     )
     if build.status_code != 200:
+        print(f'error getting layer {build.status_code} {build.text}')
         logger.warning("{}: {}".format(build.status_code, build.text))
         return False
     return True
@@ -211,6 +213,7 @@ def has_layer(layer_name: str, datastore: str, workspace: str) -> bool:
         url, auth=eval(SECRET_GEOSERVER), headers={"Accept": "application/xml"}
     )
     if build.status_code != 200:
+        print(f'error finding layer {build.status_code} {build.text}')
         logger.warning("{}: {}".format(build.status_code, build.text))
         return False
     return True

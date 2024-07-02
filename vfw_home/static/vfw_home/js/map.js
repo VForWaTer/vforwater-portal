@@ -635,7 +635,10 @@ vfw.map.createMap = function () {
     }
 
     const selectCatch = new ol.interaction.Select({
+    // vfw.map.control.selectCatch = new ol.interaction.Select({
         // wrapX: false,
+        // source: vfw.map.source.selectionSource,
+        // type: 'Polygon',
         style: vfw.map.selectStyle
     })
     // TODO: modifyCatch is needed to allow modifications of the vector layer. Not sure if we want that
@@ -707,6 +710,7 @@ vfw.map.createMap = function () {
         ],
         view: mapView//dataview
     });
+    // vfw.map.olmap.addInteraction(vfw.map.control.selectCatch)
 
     /** get information about your data in a popup when you click on a data point in the map,
      * or select by catchment when clicked within a catchment **/

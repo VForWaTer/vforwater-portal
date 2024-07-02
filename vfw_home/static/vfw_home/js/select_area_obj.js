@@ -97,20 +97,28 @@ vfw.datasets.selectObj = class {
 
     downloadGeoJSON(element=this.orgID) {
         const workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
-        
-        const geoJSONData = this.gjson; 
+
+        const geoJSONData = this.gjson;
+        // TODO: If the geometry is empty, we add the geometry from the map that is used for filtering in the moment
+        //  of the download => bad idea! Better: when creating the select_area_object, wait for the geometry until it
+        //  is correctly added to the object, and then finish creating the object.
+        if (geoJSONData.geometry.coordinates.length == 0) {
+            geoJSONData.geometry.coordinates =
+                vfw.map.source.selectionSource.getFeatures()[0].getGeometry().getCoordinates();
+            geoJSONData.crs.properties['name'] = 'EPSG:3857';
+        }
         const jsonBlob = new Blob([JSON.stringify(geoJSONData)], {type: 'application/geo+json'});
-        
+
         // Create a URL for the blob
         const url = URL.createObjectURL(jsonBlob);
-        
+
         // Create a temporary link element and trigger the download
         const link = document.createElement('a');
         link.href = url;
-        
+
         const filename = workspaceData[element] && workspaceData[element]['name'] ? workspaceData[element]['name'] : 'download';
         link.download = filename.endsWith('.geojson') ? filename : `${filename}.geojson`;
-        
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

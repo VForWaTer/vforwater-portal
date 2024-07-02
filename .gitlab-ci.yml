@@ -2,6 +2,8 @@
 stages:
     - build
     - push
+    - test
+    - tag_for_deploy
 
 
 # building docker image
@@ -14,14 +16,29 @@ vfwportal-demo-build:
         - demo
 
 
+vfwportal-demo-test:
+    stage: test
+    script:
+        # call unit tests
+        - /usr/bin/podman run -v /etc/vforwater/vfwportal-demo-test/settings.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro  localhost:5000/demo/vfwportal:$CI_COMMIT_SHA /usr/local/bin/python manage.py test  
+    only:
+        - demo
+
+vforwater-demo-tag_for_deploy:
+    stage: tag_for_deploy
+    script:
+        - echo "pushing vfwportal:latest"
+        - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal
+    only:
+        - demo
+
 # pushing docker image to some registry
 vfwportal-demo-push:
     stage: push
     script:
         - echo "pushing vfwportal:$CI_COMMIT_SHA"
         - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal:$CI_COMMIT_SHA
-        - echo "pushing vfwportal:latest"
-        - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/demo/vfwportal
+        
     only:
         - demo
 
