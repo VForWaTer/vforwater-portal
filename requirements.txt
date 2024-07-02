@@ -28,3 +28,5 @@ bridget     ==0.2.4
 python-decouple     ==3.6
 
 django-debug-toolbar==4.3.0
+pytest == 7.0.0
+pytest-django == 4.8.0

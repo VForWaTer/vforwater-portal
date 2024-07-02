@@ -478,11 +478,8 @@ class HelpView(TemplateView):
         f.close()
         return render(request, 'home/help.html', {'context': context})
 
-
 class ToggleLanguageView(View):
-    """
-
-    """
+    """ """
 
     @staticmethod
     def post(request):
@@ -496,23 +493,31 @@ class ToggleLanguageView(View):
         :rtype:
         """
         lang = translation.get_language()
-        logger.debug(f'current language: {lang}')
-        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),
-                                                                            translation.check_for_language('en-us'),
-                                                                            translation.check_for_language('en-gb')))
-        if lang == 'en-gb' or lang == 'en-us':
-            translation.activate('de')
-            request.session[translation.LANGUAGE_SESSION_KEY] = 'de'
-        else:
-            translation.activate('en-gb')
-            if hasattr(request, 'session'):
-                request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
-        logger.debug(f'new language: {translation.get_language()}')
-        logger.debug(f'translation test: {translation.gettext("help")}')
-        response = redirect(DEMO_VAR + '/')
-        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request.session[translation.LANGUAGE_SESSION_KEY])
-        return response
+        logger.debug(f"current language: {lang}")
+        logger.debug(
+            "check_for_language: de {}, en-us {}, en-gb {}".format(
+                translation.check_for_language("de"),
+                translation.check_for_language("en-us"),
+                translation.check_for_language("en-gb"),
+            )
+        )
+        if lang == "en-gb" or lang == "en-us":
+            translation.activate("de")
+            # request.session[translation.LANGUAGE_SESSION_KEY] = "de"
+            request.session[settings.LANGUAGE_COOKIE_NAME] = "de"
 
+        else:
+            translation.activate("en-gb")
+            if hasattr(request, "session"):
+                request.session[settings.LANGUAGE_COOKIE_NAME] = "en-gb"
+        logger.debug(f"new language: {translation.get_language()}")
+        logger.debug(f'translation test: {translation.gettext("help")}')
+        response = redirect(DEMO_VAR + "/")
+        response.set_cookie(
+            settings.LANGUAGE_COOKIE_NAME,
+            request.session[settings.LANGUAGE_COOKIE_NAME],
+        )
+        return response
 
 class FailedLoginView(View):
     """
