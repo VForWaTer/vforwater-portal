@@ -31,6 +31,7 @@
 import csv
 import datetime
 import json
+import re
 import sys
 from http.cookiejar import CookieJar
 
