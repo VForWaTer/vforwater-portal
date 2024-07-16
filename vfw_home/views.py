@@ -1182,130 +1182,201 @@ class QuickFilterResults(View):
 
         # create query according to selection
         try:
-            simple_queries = {'variables': 'variable__name__in',
-                              'institution': 'nmpersonsentries__person__organisation_name__in',
-                              'project': 'nmentrygroups__group__type__name__in'}
+            
+            selection_query = QueryDict(selection)
+            simple_queries = {
+                'variables': 'variable__name__in',
+                'institution': 'nmpersonsentries__person__organisation_name__in',
+                'project': 'nmentrygroups__group__type__name__in'
+            }
 
-            filter_dict = {}
-            filter_area = {}
-            filter_area_or = {}
-            fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
-
-            for i in QueryDict(selection):  # QueryDict gives the request data as dictionary
-                if i in simple_queries:
-                    filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
-                elif i == 'date':
-                    filter_dict['datasource__temporal_scale__observation_end__gte'] = \
-                        make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[0], "%Y-%m-%d"))
-                    filter_dict['datasource__temporal_scale__observation_start__lte'] = \
-                        make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[1], "%Y-%m-%d"))
-                # elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
-                #     fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
-                elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
-                    # TODO: figure out how to avoid the following useless query
-                    #  (this exists because in exclude query is always some input needed)
-                    fair_query = Q(embargo=True) & Q(embargo=False)
-                elif i == 'draw':
-                    values = QueryDict(selection).getlist(i)[0]  # get coordinates of drawing as string
-                    it = iter([float(item) for item in values.split(',')])  # prepare coordinates for use in polygon
-                    poly = Polygon(tuple(zip(it, it)), srid=4326)  # create polygon from coordinates
-                    filter_area['location__intersects'] = poly  # get point data
-                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
-                    # filter_dict['geom__intersects'] = poly  # get areal data
-                elif i == 'catchStartID':
-                    catchment = delineate(terminal_comid=QueryDict(selection).getlist(i)[0], precise=True)
-                    poly = GEOSGeometry(catchment['wkt'])
-                    filter_area['location__intersects'] = poly  # get point data
-                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
-                elif i == 'catchout':
-                    # TODO: this shouldn't be send from client to server and not recreated.
-                    #  Better store the catchment in Geoserver and get the catchment from there.
-                    # catchment = list(itertools.chain.from_iterable(json.loads(request.GET.get('coords'))[0]))
-                    coords = json.loads(request.POST.get('coords'))
-                    if coords:
-                        catchment = tuple(tuple(x) for x in coords)
-                        poly = Polygon(catchment, srid=4326)  # create polygon from coordinates
-                    else:
-                        catchment = delineate(coords={'lng': [QueryDict(selection).getlist(i)[0]],
-                                                      'lat': [QueryDict(selection).getlist(i)[1]]}, precise=True)
-                        poly = GEOSGeometry(catchment['wkt'])
-                        # catchment = delineate(terminal_comid=QueryDict(selection).getlist(i)[0], precise=True)
-                        # poly = GEOSGeometry(catchment['wkt'])
-
-                    filter_area['location__intersects'] = poly  # get point data
-                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
-                elif i == 'reset':
-                    pass
-                else:
-                    print('selection: ', selection)
-                    print('Adapt your filter to ', i)
-                    # logger.warning('Adapt your filter to ', i)
-
-            query = (Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or))
-                     .exclude(fair_query).only('id'))
+            filter_dict, filter_area, filter_area_or, fair_query = QuickFilterResults.initialize_filters()
+            
+            
+            for key in selection_query:
+                QuickFilterResults.handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query , filter_area, filter_area_or )
+            
+            query = QuickFilterResults.build_query(filter_dict, filter_area, filter_area_or, fair_query)
+            #print(query)
+            
             total_results = query.count()
+            
+
+            data_ext, layertype = QuickFilterResults.get_data_extent(query)
+            
+            response_data = QuickFilterResults.prepare_response_data(request, query, total_results, data_ext, layertype)
+            
+            #print('response_data 1 : ', response_data)
+
+            
+
+
         except Exception as e:
-            # print(f'Error in QuickFilterResults. Unable to prepare your selection: {e}')
+            
             logger.debug(f'Unable to prepare your selection: {e}')
+            response_data = QuickFilterResults.prepare_error_response(selection)
+            print('response_data 2 : ', e)
 
-        # From here collect data to update map:
-        # TODO: this is only to show the datapoints. For areal data something else is needed
-        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrary zoom location for NO RESULT
+        #print(response_data)
+        return JsonResponse(response_data)
+
+
+    @staticmethod
+    def initialize_filters():
+        filter_dict = {}
+        filter_area = {}
+        filter_area_or = {}
+        fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+        return filter_dict, filter_area, filter_area_or, fair_query
+
+
+    @staticmethod
+    def add_fair_filters(key, selection_query, fair_query ):
+        if selection_query.getlist(key) == ['false']:
+            fair_query = Q(embargo=True) & Q(embargo=False)
+
+
+
+    @staticmethod
+    def add_date_filters(selection_query, filter_dict):
+        date_end = make_aware(datetime.datetime.strptime(selection_query.getlist('date')[0], "%Y-%m-%d"))
+        date_start = make_aware(datetime.datetime.strptime(selection_query.getlist('date')[1], "%Y-%m-%d"))
+
+        filter_dict['datasource__temporal_scale__observation_end__gte'] = date_end
+
+        filter_dict['datasource__temporal_scale__observation_start__lte'] = date_start
+
+    @staticmethod
+    def add_draw_filters(key, selection_query, filter_area, filter_area_or  ):
+        values = selection_query.getlist(key)[0] 
+        coordinates = iter([float(item) for item in values.split(',')])  
+        poly = Polygon(tuple(zip(coordinates, coordinates)), srid=4326)  
+        filter_area['location__intersects'] = poly  
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly 
+
+    @staticmethod
+    def add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or):
+
+        catchment = delineate(terminal_comid=selection_query.getlist(key)[0], precise=True)
+        poly = GEOSGeometry(catchment['wkt'])
+        filter_area['location__intersects'] = poly
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
+
+    @staticmethod
+    def add_catchout_filters(key, selection_query, filter_area, filter_area_or):
+        coords = json.loads(request.POST.get('coords'))
+        if coords:
+            catchment = tuple(tuple(x) for x in coords)
+            poly = Polygon(catchment, srid=4326)  
+        else:
+            catchment = delineate(coords={'lng': [selection_query.getlist(key)[0]],
+                                                'lat': [selection_query.getlist(key)[1]]}, precise=True)
+            poly = GEOSGeometry(catchment['wkt'])
+        filter_area['location__intersects'] = poly  #
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly 
+
+
+
+                    
+    @staticmethod
+    def handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query , filter_area, filter_area_or ):
+
+        
+        if key in simple_queries:        
+            filter_dict[simple_queries[key]] = selection_query.getlist(key)
+        elif key == 'date':
+            QuickFilterResults.add_date_filters(selection_query, filter_dict)
+        elif key == 'is_FAIR':
+            QuickFilterResults.add_fair_filters(key, selection_query, fair_query)
+        elif key == 'draw':
+            QuickFilterResults.add_draw_filters(key, selection_query, filter_area, filter_area_or)
+        elif key == 'catchStartID':
+            QuickFilterResults.add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or)
+        elif key == 'catchout':
+            QuickFilterResults.add_catchout_filters(key, selection_query, filter_area, filter_area_or)
+
+        
+
+
+    @staticmethod
+    def build_query(filter_dict, filter_area, filter_area_or, fair_query):
+        return Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or)).exclude(fair_query).only('id')
+
+
+    @staticmethod
+    def get_data_extent(query):
+        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]
         layertype = "point"
-        # get the real extent of the data
-        try:
-            if query:
-                data_ext = None
-                entry_ext = query.aggregate(Extent('location'))['location__extent']
-                if entry_ext:
-                    data_ext = list(entry_ext)
-                else:
-                    layertype = "areal_data"
-                    spatial_ext = query.aggregate(
-                        Extent('datasource__spatial_scale__extent'))['datasource__spatial_scale__extent__extent']
-                    if spatial_ext:
-                        data_ext = list(spatial_ext)
-                    else:
-                        geom_ext = query.aggregate(Extent('geom'))['geom__extent']
-                        if geom_ext:
-                            data_ext = list(geom_ext)
-            else:
-                print('*** NO QUERY ***')
+        if query:
+            data_ext = QuickFilterResults.calculate_extent(query, layertype)
+        return data_ext, layertype
 
-        except TypeError as e:
-            print('Selection has no extend: ', e)
-        except Exception as e:
-            print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
-            logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
+    @staticmethod
+    def calculate_extent(query, layertype):
+        data_ext = None
+        entry_ext = query.aggregate(Extent('location'))['location__extent']
+        if entry_ext:
+            data_ext = list(entry_ext)
+        else:
+            layertype = "areal_data"
+            spatial_ext = query.aggregate(
+                Extent('datasource__spatial_scale__extent'))['datasource__spatial_scale__extent__extent']
+            if spatial_ext:
+                data_ext = list(spatial_ext)
+            else:
+                geom_ext = query.aggregate(Extent('geom'))['geom__extent']
+                if geom_ext:
+                    data_ext = list(geom_ext)
+
+        #print(data_ext)
+        return data_ext
+
+    @staticmethod
+    def prepare_response_data(request, query, total_results, data_ext, layertype):
+        #print(request.user)
 
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
         areal_id_layer = 'areal_ID_layer' + str(request.user)
-        def delete_geoserver_layer(name):
-            if has_layer(name, HomeView.STORE, HomeView.WORKSPACE):
-                delete_layer(name, HomeView.STORE, HomeView.WORKSPACE)
+        QuickFilterResults.delete_geoserver_layer(id_layer)
+        QuickFilterResults.delete_geoserver_layer(areal_id_layer)
+        #print(IDs, id_layer,areal_id_layer  )
 
-        delete_geoserver_layer(id_layer)
-        delete_geoserver_layer(areal_id_layer)
-
-        # now create a layer showing the datapoints
         if IDs:
             try:
                 create_layer(request, id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="point")
                 create_layer(request, areal_id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="areal_data")
             except Exception as e:
-                print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
-                logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
-            # create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs)
-            # create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
-        else:
-            # TODO: Selection with no result has to be handled properly
-            pass
+                logger.debug(f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}')
+        
+        
+        return {
+            'selection': request.POST.get('selection', ''),
+            'total': total_results,
+            'areal_ID_layer': areal_id_layer,
+            'ID_layer': id_layer,
+            'dataExt': data_ext,
+            'IDs': IDs
+        }
 
-        return JsonResponse({'selection': selection, 'total': total_results, 'areal_ID_layer': areal_id_layer,
-                             'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
+    @staticmethod
+    def prepare_error_response(selection):
+        return {
+            'selection': selection,
+            'total': 0,
+            'areal_ID_layer': '',
+            'ID_layer': '',
+            'dataExt': [7.574234, 47.581351, 10.351323, 49.625873],
+            'IDs': []
+        }
+
+    @staticmethod
+    def delete_geoserver_layer(name):
+        if has_layer(name, HomeView.STORE, HomeView.WORKSPACE):
+            delete_layer(name, HomeView.STORE, HomeView.WORKSPACE)
 
 
+   
 def error_404_view(request, exception):
     # data = {"name": "Some Error"}
     # return render(request,'vfw_home/404.html', data)
@@ -1335,23 +1406,3 @@ class DownloadView(View):
         else:
             error_404_view(request, 'not available')
 
-# Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map
-# # def Eddytestdata(request):
-# #     print('________________________- here: ', request)
-# #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.asc', 'rb'))
-# #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.tif', 'rb'))
-# def Eddytestdata(request):
-#     #     # url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
-#     #     #       'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
-#     #     #                                                         srid, bbox, srid)
-#     #     url = '{0}/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330' \
-#     #           '&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832' \
-#     #           '&format=application/openlayers'.format(LOCAL_GEOSERVER)
-#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-#     # url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011930&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011630&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-#
-#     request_url = urllib.request.Request(url)
-#     response = urllib.request.urlopen(request_url)
-#     print('response: ', response)
-#     return HttpResponse(response.read().decode('utf-8'))
