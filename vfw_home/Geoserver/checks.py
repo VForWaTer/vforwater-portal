@@ -1,6 +1,6 @@
 import sys
 
-from vfw_home.geoserver_layer import test_geoserver_env, has_layer, create_layer
+from .geoserver_layer import test_geoserver_env, has_layer, create_layer
 
 
 def check_geoserver_layers(store: str, workspace: str, layers: list) -> object:

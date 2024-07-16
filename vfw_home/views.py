@@ -1,7 +1,7 @@
 # =================================================================
 #
 # Authors: Marcus Strobl <marcus.strobl@kit.edu>
-# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>
+# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>, Kaoutar Boussaoud <kaoutar.boussaourd@kit.edu>
 #
 # Copyright (c) 2024 Marcus Strobl
 #
@@ -43,7 +43,7 @@ from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils.timezone import make_aware
-from pyzip import PyZip
+#from pyzip import PyZip
 
 import matplotlib as mpl
 import urllib
@@ -62,24 +62,24 @@ from django.core.serializers import serialize
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR, DATABASES
 
-from vfw_home.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
+from .Geoserver.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
 # from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
 from wps_gui.models import WpsResults
-from .Fig_obj import FigObject
-from .checks import check_geoserver_layers
-from .data_tools import DataTypes, get_accessible_data, collect_selection, has_data, get_split_groups
-from .delineator import delineate
-from .forms import QuickFilterForm
-from .data_obj import DataObject
-from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
+from .Figure.Fig_obj import FigObject
+from .Geoserver.checks import check_geoserver_layers
+from .Figure.data_tools import DataTypes, get_accessible_data, collect_selection, has_data, get_split_groups
+from .utilities.delineator import delineate
+from .Forms.forms import QuickFilterForm
+from .Figure.data_obj import DataObject
+from .utilities.utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
     get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency
 
 mpl.use('Agg')
 
 from django.contrib.gis.geos import Polygon, GEOSGeometry
-from .query_functions import get_bbox_from_data
+from .utilities.query_functions import get_bbox_from_data
 # from .filter import QuickFilter
-from .filters import NMPersonsFilter
+from .utilities.filters import NMPersonsFilter
 from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
 import logging
@@ -95,12 +95,8 @@ from time import time
 logger = logging.getLogger(__name__)
 
 check_data_consistency()
-# class WorkflowView(TemplateView):
-#     """
-#     Template View for plain workflow HTML Template.
-#     Template so far does only contain iframe in content Block, that embeds wps_workflow app
-#     """
-#     template_name = "vfw_home/workflow.html"
+
+
 
 """
 # IMPORTANT:
@@ -109,98 +105,75 @@ check_data_consistency()
 # every time they open a browser.
 """
 
+
 class HomeView(TemplateView):
     """
-    Template View to bring the necessary variables for the startup to the template
+    Template View to bring the necessary variables for the startup to the template.
     """
     template_name = 'vfw_home/home.html'
-
-    # Before you make migrations
-    # QuickFilter.items(requests)
-    # data_layer = 'metacatalogdev'  # 'default_layer_prod'
-    # data_layer = 'metacatalogdevnew'  # 'default_layer_prod'
-    data_layer = 'devel'
-    areal_data_layer = 'areal_devel'
-    # data_layer = 'play'
-    merit_river_layer = ['merit_river_test', 'merit_river']  # [layername, layertype]
-    merit_river_ids = ['merit_river_simple', 'merit_river_simple']
-    merit_catchment_layer = ['merit_catchment', 'merit_catchment']
-    merit_catchment_coarse_layer = ['merit_catchment_coarse', 'merit_catchment_coarse']
-
-    # if not dataExt:
-    data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
-
-    """
-    IMPORTANT! Don't use "-" in geoserver names!!!
-    """
-    def clean_database_name(name):
-    # Remove all non-alphanumeric characters
-        return re.sub(r'\W+', '', name)
     
+    # Configuration for data layers and workspace
+    DATA_LAYER = 'devel'
+    AREAL_DATA_LAYER = 'areal_devel'
+    MERIT_RIVER_LAYER = ['merit_river_test', 'merit_river']
+    MERIT_RIVER_IDS = ['merit_river_simple', 'merit_river_simple']
+    MERIT_CATCHMENT_LAYER = ['merit_catchment', 'merit_catchment']
+    MERIT_CATCHMENT_COARSE_LAYER = ['merit_catchment_coarse', 'merit_catchment_coarse']
+    DATA_EXT = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+    STORE = 'metacatalogdev'
+    WORKSPACE = 'metacatalogdev'
+    UNLOCKED_EMBARGO = []
 
-    Database_Name = clean_database_name(settings.DATABASES['default']['NAME'])   #''.join(settings.DATABASES['default']['NAME'].split('-'))
+    check_geoserver_layers(STORE, WORKSPACE,
+                           [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
 
-    store = Database_Name #'metacatalogdev'  # 'marcus'  # 'new_vforwater_gis'
-    workspace = Database_Name # 'metacatalogdev'  # 'marcus'  # 'CAOS_update'
-    # store = 'play'  # 'new_vforwater_gis'
-    # workspace = 'play'  # 'CAOS_update'
-    unlocked_embargo = []
-
-    check_geoserver_layers(store, workspace,
-                           [merit_river_layer, merit_river_ids, merit_catchment_layer, merit_catchment_coarse_layer])
-
-    # TODO: Test with users if this makes any sense
     def __set_layer_name(self):
         """
         Set name for layer in geoserver according to username or as admin_layer.
         """
         if self.request.user.is_authenticated:
             if self.request.user.is_superuser:
-                self.data_layer = 'admin_layer'
-                self.areal_data_layer = 'admin_areal_layer'
+                self.DATA_LAYER = 'admin_layer'
+                self.AREAL_DATA_LAYER = 'admin_areal_layer'
             else:
-                self.data_layer = expressive_layer_name(self.request.user)
-                self.areal_data_layer = expressive_layer_name(self.request.user) + "_areal"
+                self.DATA_LAYER = expressive_layer_name(self.request.user)
+                self.AREAL_DATA_LAYER = f"{expressive_layer_name(self.request.user)}_areal"
 
-    # Put here everything you need at startup and for refresh of 'Home'
-    def get_context_data(self, **kwargs: object):
+    def get_context_data(self, **kwargs):
         """
         Collect data needed for startup of V-FOR-WaTer Portal home.
-
-        :param kwargs:
-        :return:
         """
         self.__set_layer_name()
-        # get_dataset(self, **kwargs)
 
         try:
-            unblocked_ids = self.request.session['datasets']
+            unblocked_ids = self.request.session.get('datasets', [])
+            if not unblocked_ids:
+                self.request.session['datasets'] = []
         except KeyError:
             unblocked_ids = []
             self.request.session['datasets'] = []
 
         try:
-            verify_layer(request=self.request, datastore=self.store, workspace=self.workspace, filename=self.data_layer)
-            verify_layer(request=self.request, datastore=self.store, workspace=self.workspace,
-                         filename=self.areal_data_layer, layertype='areal_data')
-            # print("data_layer :" , self.data_layer )
-        except:
-            self.data_layer = 'Error: Found no geoserver!'
-            self.areal_data_layer = 'Error: Found no geoserver!'
-            print('Still no geoserver: ', sys.exc_info()[0])
+            verify_layer(self.request, self.DATA_LAYER, self.STORE, self.WORKSPACE)
+            verify_layer(self.request, self.AREAL_DATA_LAYER, self.STORE, self.WORKSPACE,  layertype='areal_data')
+        except Exception as e:
+            self.DATA_LAYER = 'Error: Found no geoserver!'
+            self.AREAL_DATA_LAYER = 'Error: Found no geoserver!'
+            print(f'Still no geoserver: {e}')
 
-        self.data_ext = get_bbox_from_data()
-
+        self.DATA_EXT = get_bbox_from_data()
         context = quick_filter_defaults(self)
+       
 
-        return {'dataExt': self.data_ext, 'data_layer': self.data_layer, 'areal_data_layer': self.areal_data_layer,
-                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids,
-                # 'merit_river_layer': self.merit_river_layer[0], 'merit_catchment_layer': self.merit_catchment_layer[0],
-                # 'merit_river_simple': self.merit_river_ids[0],
-                # 'merit_catchment_coarse_layer': self.merit_catchment_coarse_layer[0],
-                **context}
-
-
+        return {
+            'dataExt': self.DATA_EXT,
+            'data_layer': self.DATA_LAYER,
+            'areal_data_layer': self.AREAL_DATA_LAYER,
+            'messages': messages.get_messages(self.request),
+            'unblocked_ids': unblocked_ids,
+            **context
+        }
+        
 class TestView(View):
 
     def get(self, request):
@@ -233,8 +206,9 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-        store = HomeView.store  # 'new_vforwater_gis'
-        workspace = HomeView.workspace  # 'CAOS_update'
+        print('i m here too')
+        store = HomeView.STORE  # 'new_vforwater_gis'
+        workspace = HomeView.WORKSPACE  # 'CAOS_update'
         test_geoserver_env(store, workspace)
 
         # def get_metadata(m_id):
@@ -405,36 +379,30 @@ class LoginView(View):
         return super().dispatch(request, *args, **kwargs)
 
 
+
 class LogoutView(View):
-    """
-
-    """
-
-    def logout(self, request):
+    def logout_user(self, request):
         """
-
-        :param request:
-        :type request:
-        :return:
-        :rtype:
+        Logs out the user and clears their session.
+        
+        :param request: The HTTP request object
+        :type request: HttpRequest
         """
-        print('logout view: ', self)
-        print('logut request: ', request)
         logger.debug(f'{request.user.username} logged out')
         logout(request)
 
     def post(self, request):
         """
-
-        :param request:
-        :type request:
-        :return:
-        :rtype:
+        Handles POST requests to log out the user.
+        
+        :param request: The HTTP request object
+        :type request: HttpRequest
+        :return: A redirect to the home page
+        :rtype: HttpResponseRedirect
         """
-        print('post view: ', self)
-        print('post request: ', request)
-        self.logout(request)
+        self.logout_user(request)
         return redirect('vfw_home:home')
+
 
 
 class DevLoginView(TemplateView):
@@ -520,16 +488,23 @@ class ToggleLanguageView(View):
         )
         return response
 
+
+
 class FailedLoginView(View):
     """
-    View for failed logins
+    View for handling failed login attempts.
     """
-
     @staticmethod
-    def get(request):
-        print('failed login view get')
-        for i in request:
-            print('request: ', i)
+    def get(self, request):
+        """
+        Handles GET requests and displays a login failed message.
+        
+        :param request: The HTTP request object
+        :type request: HttpRequest
+        :return: A redirect to the home page
+        :rtype: HttpResponseRedirect
+        """
+
         messages.warning(request, 'Login failed.')
         return redirect('vfw_home:home')
 
@@ -556,7 +531,7 @@ class GeoserverView(View):
         """
         # wfsLayerName = 'new_ID_as_identifier_update'
         # wfsLayerName = layer
-        work_space_name = HomeView.workspace  # 'CAOS_update'
+        work_space_name = HomeView.WORKSPACE  # 'CAOS_update'
         # url = LOCAL_GEOSERVER + '/' + work_space_name + '/ows?service=' + service + \
         #       '&version=1.0.0&request=GetFeature&typeName=' + work_space_name + ':' + layer + \
         #       '&outputFormat=application%2Fjson&srsname=EPSG:' + srid + '&bbox=' + bbox + ',EPSG:' + srid
@@ -687,103 +662,133 @@ def previewplot(request):
     return JsonResponse(img)
 
 
-def short_info_pagination(request):
+
+
+
+class ShortInfoPaginationView(View):
     """
-    Requested from map.js buildMapModal, show only little metadata and give access to more details
-    :param request:
-    :return:
+    View to return only a little metadata and give access to more details.
     """
-    try:
-        accessible_ids = []
-        naive_today = timezone.make_naive(timezone.now())
-        datasets = json.loads(request.GET.get('datasets'))
-        if type(datasets) is str:
+
+    def get(self, request):
+        try:
+            datasets, field, field_name = self.get_initial_data(request)
+            entries_list = self.get_entries_list(datasets, field)
+            accessible_ids = self.get_accessible_ids(request, datasets)
+
+            if datasets:
+                entries_list = self.process_grouped_entries(datasets, entries_list)
+            
+            current_page = self.paginate_entries(request, entries_list, 5)
+            entries = self.build_entries_dict(current_page, field_name, accessible_ids)
+            
+            return render(request, 'vfw_home/mapmodal_entrieslist.html', {
+                'entries_page': entries,
+                'data_sets': datasets,
+                'current_page': current_page
+            })
+
+        except TypeError:
+            logger.debug('Short info Pagination failed.')
+            raise Http404
+
+        except Exception as e:
+            logger.debug(f'Exception while getting short info pagination: {e}')
+            raise Http404
+
+    def get_initial_data(self, request):
+        """
+        Retrieve initial data from request.
+        """
+        datasets = json.loads(request.GET.get('datasets', '[]'))
+        if isinstance(datasets, str):
             datasets = [int(datasets)]
+        
+        field = [
+            'title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end'
+        ]
+        field_name = {
+            'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
+            'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'
+        }
+        
+        return datasets, field, field_name
 
-        field = ['title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end']
-        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
-                      'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'}
-
-        # field = ['entry__title', 'entry__id', 'entry__uuid', 'entry__variable__name',
-        #          'entry__embargo', 'entry__embargo_end', 'group__type__name']
-        # field_name = {'entry__title': 'Title', 'entry__variable__name': 'Variable name',
-        #               'entry__id': 'ID', 'entry__uuid': 'UUID',
-        #               'entry__embargo': 'Embargo', 'entry__has_access': 'has_access',
-        #               'entry__embargo_end': 'embargo_end', 'group__type__name': 'Group name',
-        #               'entries': 'entries'}
-
+    def get_entries_list(self, datasets, field):
+        """
+        Retrieve the list of entries based on the provided datasets and fields.
+        """
         if datasets:
-            entries_list = list(Entries.objects.values(*field).filter(pk__in=datasets) \
-                .order_by('variable__name', 'title', 'id'))
+            return list(Entries.objects.values(*field).filter(pk__in=datasets).order_by('variable__name', 'title', 'id'))
+        return list(Entries.objects.values(*field).order_by('variable__name', 'title', 'id'))
 
-
+    def get_accessible_ids(self, request, datasets):
+        """
+        Get the accessible dataset IDs for the user.
+        """
+        if datasets:
             accessible_data = get_accessible_data(request, datasets)
-            # error_ids = accessible_data['blocked']
-            accessible_ids = accessible_data['open']
+            return accessible_data.get('open', [])
+        return []
 
-            # get groupmembers of split data
-            grouped_dict = get_split_groups(datasets)
+    def process_grouped_entries(self, datasets, entries_list):
+        """
+        Process grouped entries by handling split data.
+        """
+        grouped_dict = get_split_groups(datasets)
+        entries_id_map = {d['id']: idx for idx, d in enumerate(entries_list)}
 
-            # create a dict with indices and ids of datasets in entries_list, for a quick change of values
-            entries_id_map = {d['id']: idx for idx, d in enumerate(entries_list)}
+        append_dict, delete_list = self.build_append_delete_dicts(grouped_dict)
+        delete_indices = [entries_id_map[i] for i in delete_list]
 
-            # the first dataset from the split_ids, defined in append_dict,  will get all necessary info,
-            # the values in the delete dict can be deleted
-            append_dict = {}
-            delete_list = []
-            for k, v in grouped_dict.items():
-                append_dict[v[0]] = v[1:]
-                delete_list.extend(v[1:])
+        for target, split_list in append_dict.items():
+            for dataset in split_list:
+                for k, v in entries_list[entries_id_map[target]].items():
+                    if v != entries_list[entries_id_map[dataset]][k]:
+                        entries_list[entries_id_map[target]][k] = [entries_list[entries_id_map[target]][k], entries_list[entries_id_map[dataset]][k]]
+        
+        for delete_id in sorted(delete_indices, reverse=True):
+            entries_list.remove(entries_list[delete_id])
+        
+        return entries_list
 
-            # get the indices for the elements to delete:
-            delete_indices = []
-            for i in delete_list:
-                delete_indices.append(entries_id_map[i])
+    def build_append_delete_dicts(self, grouped_dict):
+        """
+        Build dictionaries for appending and deleting grouped entries.
+        """
+        append_dict = {}
+        delete_list = []
+        for k, v in grouped_dict.items():
+            append_dict[v[0]] = v[1:]
+            delete_list.extend(v[1:])
+        return append_dict, delete_list
 
-            # now extend datasets according to the append_dict
-            for target, split_list in append_dict.items():
-                for dataset in split_list:
-                    for k, v in entries_list[entries_id_map[target]].items():
-                        if v != entries_list[entries_id_map[dataset]][k]:
-                            entries_list[entries_id_map[target]][k] = [entries_list[entries_id_map[target]][k], entries_list[entries_id_map[dataset]][k]]
+    def paginate_entries(self, request, entries_list, per_page):
+        """
+        Paginate the entries list.
+        """
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(entries_list, per_page)
+        return paginator.get_page(page_number)
 
-            # next remove the additional split datasets:
-            for delete_id in sorted(delete_indices, reverse=True):
-                entries_list.remove(entries_list[delete_id])
-
-        else:
-            entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
-
-        # build pagination for entries
-        current_page = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
-
+    def build_entries_dict(self, current_page, field_name, accessible_ids):
+        """
+        Build a dictionary of entries for the current page.
+        """
+        naive_today = timezone.make_naive(timezone.now())
         newdict = defaultdict(list)
+
         for d in current_page:
             for key, val in d.items():
                 if key != 'embargo_end':
                     newdict[translation.gettext(field_name[key])].append(val)
                 else:
-                    # if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
                     if not has_pending_embargo(d['embargo'], val) or d['id'] in accessible_ids:
                         newdict['has_access'].append({'access': True, 'ssid': d['id']})
                     else:
                         newdict['has_access'].append({'access': False, 'ssid': d['id']})
-
-        entries = dict(newdict.items())
-
-        return render(request, 'vfw_home/mapmodal_entrieslist.html', {'entries_page': entries,
-                                                                      'data_sets': datasets,
-                                                                      'current_page': current_page})
-
-    except TypeError:
-        print('Short info Pagination failed.')
-        logger.debug('Short info Pagination failed.')
-        raise Http404
-
-    except Exception as e:
-        print('Exception while getting short info pagination: ', e)
-        logger.debug('Exception while getting short info pagination: ', e)
-
+        
+        return dict(newdict.items())
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
 # TODO: Handle this with an http request (response, not request?)!
@@ -1006,40 +1011,78 @@ def workspace_data(request):
         logger.debug('unhandled exception in vfw_home/views/workspace_data(): ', e)
 
 
-def entries_pagination(request):
-    """
-    Return result in several pages (5 datasets per page) instead of hundreds of results on one page.
 
-    :param request: list of integers
-    :type request: object
-    :return: dict with 'entries, ownData, accessible_ids' to render entrieslist.html
+
+
+class EntriesPaginationView(View):
     """
-    accessible_ids = []
-    datasets = json.loads(request.GET.get('datasets', 1))
-    field = {'id', 'uuid', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
-             'variable__unit__symbol', 'variable__keyword__value',
-             'datasource__datatype__name', 'datasource__temporal_scale__resolution',
-             'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',
-             'datasource__spatial_scale__extent', 'license__short_title', 'license__title'}
-    if datasets and len(datasets) > 0:
-        entries_list = Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
+    View to return result in several pages (5 datasets per page) instead of hundreds of results on one page.
+    """
+
+    def get(self, request):
+        """
+        Handles GET requests to paginate entries.
+
+        :param request: HTTP request object
+        :return: HttpResponse with rendered 'entrieslist.html' template
+        """
+        datasets = json.loads(request.GET.get('datasets', '[]'))
+        field = {
+            'id', 'uuid', 'embargo', 'title', 'version', 'citation', 'abstract',
+            'variable__name', 'variable__symbol', 'variable__unit__symbol',
+            'variable__keyword__value', 'datasource__datatype__name',
+            'datasource__temporal_scale__resolution', 'datasource__temporal_scale__observation_start',
+            'datasource__temporal_scale__observation_end', 'datasource__spatial_scale__extent',
+            'license__short_title', 'license__title'
+        }
+
+        entries_list = self.get_entries_list(datasets, field)
+        accessible_ids = self.get_accessible_ids(request, datasets) if datasets else []
+
+        owndata = request.session.get('datasets', None)
+        entriespage = self.paginate_entries(request, entries_list, 5)
+
+        return render(request, 'vfw_home/entrieslist.html', {
+            'entries': entriespage,
+            'ownData': owndata,
+            'accessible_ids': accessible_ids
+        })
+
+    def get_entries_list(self, datasets, field):
+        """
+        Retrieve the list of entries based on the provided datasets and fields.
+
+        :param datasets: List of dataset IDs
+        :param field: Set of fields to retrieve
+        :return: QuerySet of entries
+        """
+        if datasets:
+            return Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
+        return Entries.objects.values(*field).order_by('title')
+
+    def get_accessible_ids(self, request, datasets):
+        """
+        Get the accessible dataset IDs for the user.
+
+        :param request: HTTP request object
+        :param datasets: List of dataset IDs
+        :return: List of accessible dataset IDs
+        """
         accessible_data = get_accessible_data(request, datasets)
-        # error_ids = accessible_data['blocked']
-        accessible_ids = accessible_data['open']
-    elif datasets and len(datasets) == 0:
-        entries_list = []
-    else:
-        entries_list = Entries.objects.values(*field).order_by('title')
-    try:
-        owndata = request.session['datasets']
-    except KeyError:
-        owndata = None
+        return accessible_data.get('open', [])
 
-    entriespage = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
+    def paginate_entries(self, request, entries_list, per_page):
+        """
+        Paginate the entries list.
 
-    return render(request, 'vfw_home/entrieslist.html', {'entries': entriespage,
-                                                         'ownData': owndata,
-                                                         'accessible_ids': accessible_ids})
+        :param request: HTTP request object
+        :param entries_list: List of entries to paginate
+        :param per_page: Number of entries per page
+        :return: Page object with paginated entries
+        """
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(entries_list, per_page)
+        return paginator.get_page(page_number)
 
 
 class Delineator(View):
@@ -1080,14 +1123,31 @@ class Delineator(View):
         return JsonResponse(catchment)
 
 
-def advanced_filter(request):
-    # selection = NmPersonsEntries.objects.all().distinct('entry_id')
-    selection = Entries.objects.all().distinct('entry_id')
-    advfilter = NMPersonsFilter(request.GET, queryset=selection)
-    selection = advfilter.qs
 
-    context = {'advFilter': advfilter, 'selection': selection}
-    return render(request, 'vfw_home/advanced_filter.html', context)
+
+
+
+class AdvancedFilterView(View):
+    """
+    View to handle advanced filtering of entries.
+    """
+    
+    def get(self, request):
+        # Initial query to get all entries with distinct entry_id
+        selection = Entries.objects.all().distinct('entry_id')
+        
+        # Apply the advanced filter based on GET parameters
+        advfilter = NMPersonsFilter(request.GET, queryset=selection)
+        selection = advfilter.qs
+        
+        # Prepare context data for the template
+        context = {
+            'advFilter': advfilter,
+            'selection': selection
+        }
+        
+        # Render the template with the context data
+        return render(request, 'vfw_home/advanced_filter.html', context)
 
 
 def quick_filter_defaults(request):
@@ -1122,130 +1182,201 @@ class QuickFilterResults(View):
 
         # create query according to selection
         try:
-            simple_queries = {'variables': 'variable__name__in',
-                              'institution': 'nmpersonsentries__person__organisation_name__in',
-                              'project': 'nmentrygroups__group__type__name__in'}
+            
+            selection_query = QueryDict(selection)
+            simple_queries = {
+                'variables': 'variable__name__in',
+                'institution': 'nmpersonsentries__person__organisation_name__in',
+                'project': 'nmentrygroups__group__type__name__in'
+            }
 
-            filter_dict = {}
-            filter_area = {}
-            filter_area_or = {}
-            fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
-
-            for i in QueryDict(selection):  # QueryDict gives the request data as dictionary
-                if i in simple_queries:
-                    filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
-                elif i == 'date':
-                    filter_dict['datasource__temporal_scale__observation_end__gte'] = \
-                        make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[0], "%Y-%m-%d"))
-                    filter_dict['datasource__temporal_scale__observation_start__lte'] = \
-                        make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[1], "%Y-%m-%d"))
-                # elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['true']:
-                #     fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
-                elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
-                    # TODO: figure out how to avoid the following useless query
-                    #  (this exists because in exclude query is always some input needed)
-                    fair_query = Q(embargo=True) & Q(embargo=False)
-                elif i == 'draw':
-                    values = QueryDict(selection).getlist(i)[0]  # get coordinates of drawing as string
-                    it = iter([float(item) for item in values.split(',')])  # prepare coordinates for use in polygon
-                    poly = Polygon(tuple(zip(it, it)), srid=4326)  # create polygon from coordinates
-                    filter_area['location__intersects'] = poly  # get point data
-                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
-                    # filter_dict['geom__intersects'] = poly  # get areal data
-                elif i == 'catchStartID':
-                    catchment = delineate(terminal_comid=QueryDict(selection).getlist(i)[0], precise=True)
-                    poly = GEOSGeometry(catchment['wkt'])
-                    filter_area['location__intersects'] = poly  # get point data
-                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
-                elif i == 'catchout':
-                    # TODO: this shouldn't be send from client to server and not recreated.
-                    #  Better store the catchment in Geoserver and get the catchment from there.
-                    # catchment = list(itertools.chain.from_iterable(json.loads(request.GET.get('coords'))[0]))
-                    coords = json.loads(request.POST.get('coords'))
-                    if coords:
-                        catchment = tuple(tuple(x) for x in coords)
-                        poly = Polygon(catchment, srid=4326)  # create polygon from coordinates
-                    else:
-                        catchment = delineate(coords={'lng': [QueryDict(selection).getlist(i)[0]],
-                                                      'lat': [QueryDict(selection).getlist(i)[1]]}, precise=True)
-                        poly = GEOSGeometry(catchment['wkt'])
-                        # catchment = delineate(terminal_comid=QueryDict(selection).getlist(i)[0], precise=True)
-                        # poly = GEOSGeometry(catchment['wkt'])
-
-                    filter_area['location__intersects'] = poly  # get point data
-                    filter_area_or['datasource__spatial_scale__extent__intersects'] = poly  # get areal data
-                elif i == 'reset':
-                    pass
-                else:
-                    print('selection: ', selection)
-                    print('Adapt your filter to ', i)
-                    # logger.warning('Adapt your filter to ', i)
-
-            query = (Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or))
-                     .exclude(fair_query).only('id'))
+            filter_dict, filter_area, filter_area_or, fair_query = QuickFilterResults.initialize_filters()
+            
+            
+            for key in selection_query:
+                QuickFilterResults.handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query , filter_area, filter_area_or )
+            
+            query = QuickFilterResults.build_query(filter_dict, filter_area, filter_area_or, fair_query)
+            #print(query)
+            
             total_results = query.count()
+            
+
+            data_ext, layertype = QuickFilterResults.get_data_extent(query)
+            
+            response_data = QuickFilterResults.prepare_response_data(request, query, total_results, data_ext, layertype)
+            
+            #print('response_data 1 : ', response_data)
+
+            
+
+
         except Exception as e:
-            # print(f'Error in QuickFilterResults. Unable to prepare your selection: {e}')
+            
             logger.debug(f'Unable to prepare your selection: {e}')
+            response_data = QuickFilterResults.prepare_error_response(selection)
+            print('response_data 2 : ', e)
 
-        # From here collect data to update map:
-        # TODO: this is only to show the datapoints. For areal data something else is needed
-        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrary zoom location for NO RESULT
+        #print(response_data)
+        return JsonResponse(response_data)
+
+
+    @staticmethod
+    def initialize_filters():
+        filter_dict = {}
+        filter_area = {}
+        filter_area_or = {}
+        fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+        return filter_dict, filter_area, filter_area_or, fair_query
+
+
+    @staticmethod
+    def add_fair_filters(key, selection_query, fair_query ):
+        if selection_query.getlist(key) == ['false']:
+            fair_query = Q(embargo=True) & Q(embargo=False)
+
+
+
+    @staticmethod
+    def add_date_filters(selection_query, filter_dict):
+        date_end = make_aware(datetime.datetime.strptime(selection_query.getlist('date')[0], "%Y-%m-%d"))
+        date_start = make_aware(datetime.datetime.strptime(selection_query.getlist('date')[1], "%Y-%m-%d"))
+
+        filter_dict['datasource__temporal_scale__observation_end__gte'] = date_end
+
+        filter_dict['datasource__temporal_scale__observation_start__lte'] = date_start
+
+    @staticmethod
+    def add_draw_filters(key, selection_query, filter_area, filter_area_or  ):
+        values = selection_query.getlist(key)[0] 
+        coordinates = iter([float(item) for item in values.split(',')])  
+        poly = Polygon(tuple(zip(coordinates, coordinates)), srid=4326)  
+        filter_area['location__intersects'] = poly  
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly 
+
+    @staticmethod
+    def add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or):
+
+        catchment = delineate(terminal_comid=selection_query.getlist(key)[0], precise=True)
+        poly = GEOSGeometry(catchment['wkt'])
+        filter_area['location__intersects'] = poly
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
+
+    @staticmethod
+    def add_catchout_filters(key, selection_query, filter_area, filter_area_or):
+        coords = json.loads(request.POST.get('coords'))
+        if coords:
+            catchment = tuple(tuple(x) for x in coords)
+            poly = Polygon(catchment, srid=4326)  
+        else:
+            catchment = delineate(coords={'lng': [selection_query.getlist(key)[0]],
+                                                'lat': [selection_query.getlist(key)[1]]}, precise=True)
+            poly = GEOSGeometry(catchment['wkt'])
+        filter_area['location__intersects'] = poly  #
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly 
+
+
+
+                    
+    @staticmethod
+    def handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query , filter_area, filter_area_or ):
+
+        
+        if key in simple_queries:        
+            filter_dict[simple_queries[key]] = selection_query.getlist(key)
+        elif key == 'date':
+            QuickFilterResults.add_date_filters(selection_query, filter_dict)
+        elif key == 'is_FAIR':
+            QuickFilterResults.add_fair_filters(key, selection_query, fair_query)
+        elif key == 'draw':
+            QuickFilterResults.add_draw_filters(key, selection_query, filter_area, filter_area_or)
+        elif key == 'catchStartID':
+            QuickFilterResults.add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or)
+        elif key == 'catchout':
+            QuickFilterResults.add_catchout_filters(key, selection_query, filter_area, filter_area_or)
+
+        
+
+
+    @staticmethod
+    def build_query(filter_dict, filter_area, filter_area_or, fair_query):
+        return Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or)).exclude(fair_query).only('id')
+
+
+    @staticmethod
+    def get_data_extent(query):
+        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]
         layertype = "point"
-        # get the real extent of the data
-        try:
-            if query:
-                data_ext = None
-                entry_ext = query.aggregate(Extent('location'))['location__extent']
-                if entry_ext:
-                    data_ext = list(entry_ext)
-                else:
-                    layertype = "areal_data"
-                    spatial_ext = query.aggregate(
-                        Extent('datasource__spatial_scale__extent'))['datasource__spatial_scale__extent__extent']
-                    if spatial_ext:
-                        data_ext = list(spatial_ext)
-                    else:
-                        geom_ext = query.aggregate(Extent('geom'))['geom__extent']
-                        if geom_ext:
-                            data_ext = list(geom_ext)
-            else:
-                print('*** NO QUERY ***')
+        if query:
+            data_ext = QuickFilterResults.calculate_extent(query, layertype)
+        return data_ext, layertype
 
-        except TypeError as e:
-            print('Selection has no extend: ', e)
-        except Exception as e:
-            print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
-            logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
+    @staticmethod
+    def calculate_extent(query, layertype):
+        data_ext = None
+        entry_ext = query.aggregate(Extent('location'))['location__extent']
+        if entry_ext:
+            data_ext = list(entry_ext)
+        else:
+            layertype = "areal_data"
+            spatial_ext = query.aggregate(
+                Extent('datasource__spatial_scale__extent'))['datasource__spatial_scale__extent__extent']
+            if spatial_ext:
+                data_ext = list(spatial_ext)
+            else:
+                geom_ext = query.aggregate(Extent('geom'))['geom__extent']
+                if geom_ext:
+                    data_ext = list(geom_ext)
+
+        #print(data_ext)
+        return data_ext
+
+    @staticmethod
+    def prepare_response_data(request, query, total_results, data_ext, layertype):
+        #print(request.user)
 
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
         areal_id_layer = 'areal_ID_layer' + str(request.user)
-        def delete_geoserver_layer(name):
-            if has_layer(name, HomeView.store, HomeView.workspace):
-                delete_layer(name, HomeView.store, HomeView.workspace)
+        QuickFilterResults.delete_geoserver_layer(id_layer)
+        QuickFilterResults.delete_geoserver_layer(areal_id_layer)
+        #print(IDs, id_layer,areal_id_layer  )
 
-        delete_geoserver_layer(id_layer)
-        delete_geoserver_layer(areal_id_layer)
-
-        # now create a layer showing the datapoints
         if IDs:
             try:
-                create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs, layertype="point")
-                create_layer(request, areal_id_layer, HomeView.store, HomeView.workspace, IDs, layertype="areal_data")
+                create_layer(request, id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="point")
+                create_layer(request, areal_id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="areal_data")
             except Exception as e:
-                print('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
-                logger.debug('unhandled exception in vfw_home/views/QuickFilterResults(): ', e)
-            # create_layer(request, id_layer, HomeView.store, HomeView.workspace, IDs)
-            # create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
-        else:
-            # TODO: Selection with no result has to be handled properly
-            pass
+                logger.debug(f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}')
+        
+        
+        return {
+            'selection': request.POST.get('selection', ''),
+            'total': total_results,
+            'areal_ID_layer': areal_id_layer,
+            'ID_layer': id_layer,
+            'dataExt': data_ext,
+            'IDs': IDs
+        }
 
-        return JsonResponse({'selection': selection, 'total': total_results, 'areal_ID_layer': areal_id_layer,
-                             'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
+    @staticmethod
+    def prepare_error_response(selection):
+        return {
+            'selection': selection,
+            'total': 0,
+            'areal_ID_layer': '',
+            'ID_layer': '',
+            'dataExt': [7.574234, 47.581351, 10.351323, 49.625873],
+            'IDs': []
+        }
+
+    @staticmethod
+    def delete_geoserver_layer(name):
+        if has_layer(name, HomeView.STORE, HomeView.WORKSPACE):
+            delete_layer(name, HomeView.STORE, HomeView.WORKSPACE)
 
 
+   
 def error_404_view(request, exception):
     # data = {"name": "Some Error"}
     # return render(request,'vfw_home/404.html', data)
@@ -1275,23 +1406,3 @@ class DownloadView(View):
         else:
             error_404_view(request, 'not available')
 
-# Attempt to load a 1-band rasterimage 'Testlayer' from disc and render it as map
-# # def Eddytestdata(request):
-# #     print('________________________- here: ', request)
-# #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.asc', 'rb'))
-# #     return FileResponse(open('/home/marcus/Nextcloud/BRIDGET/EC/Graswang_2014/Graswang_footprint_0012330.tif', 'rb'))
-# def Eddytestdata(request):
-#     #     # url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
-#     #     #       'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
-#     #     #                                                         srid, bbox, srid)
-#     #     url = '{0}/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330' \
-#     #           '&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832' \
-#     #           '&format=application/openlayers'.format(LOCAL_GEOSERVER)
-#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0012330&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-#     # url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011930&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-#     url = 'http://localhost:8080/geoserver/NewRaster/wms?service=WMS&version=1.1.0&request=GetMap&layers=NewRaster:Graswang_footprint_0011630&styles=&bbox=652081.14,5269701.79,653681.14,5270869.79&width=768&height=560&srs=EPSG:25832&format=application/openlayers'
-#
-#     request_url = urllib.request.Request(url)
-#     response = urllib.request.urlopen(request_url)
-#     print('response: ', response)
-#     return HttpResponse(response.read().decode('utf-8'))

@@ -7,7 +7,7 @@ import requests
 from django.core.cache import cache
 
 from heron.settings import LOCAL_GEOSERVER, SECRET_GEOSERVER, DATABASES
-from vfw_home.utilities import check_data_consistency
+from ..utilities.utilities import check_data_consistency
 
 """
 

@@ -7,8 +7,8 @@ from django.utils.translation import gettext
 import pandas as pd
 
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
-from vfw_home.plot_obj import XYTimeseriesPlot, DirectionPlot
-from vfw_home.data_obj import DataObject
+from .plot_obj import XYTimeseriesPlot, DirectionPlot
+from .data_obj import DataObject
 import logging
 
 logger = logging.getLogger(__name__)

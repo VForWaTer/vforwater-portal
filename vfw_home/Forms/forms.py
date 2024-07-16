@@ -6,8 +6,9 @@ from django.db.models import Q
 from django.utils import timezone
 
 from author_manage.views import MyResourcesView
-from vfw_home.fields import DateRangeSliderField, DateRangeSliderDatePickerField
+from .fields import DateRangeSliderField, DateRangeSliderDatePickerField
 from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
+from .widgets import DateRangeSlider
 
 
 # Filter:
@@ -25,7 +26,7 @@ from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Detail
 # - filter nach Projekt
 # - finde alle Versionen (checkmark)
 # - volltextsuche (sobald ich da ein konzept für metacatalog habe.)
-from vfw_home.widgets import DateRangeSlider
+
 
 
 class AdvancedFilterForm(forms.Form):

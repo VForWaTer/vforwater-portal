@@ -207,6 +207,7 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
                 if (vfw.var.obj.selectedIds.mapIds) {
                     console.error('Error in building vector vfw.map.source.wfsPointSource: ', error);
                 } else {
+                    console.log(error)
                     console.warn('No result for selected area. Unable to build vector layer with data points.');
                 //     TODO: If geoserver is not available, create layer through django
                 }

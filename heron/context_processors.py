@@ -1,5 +1,5 @@
 from django.conf import settings
-from vfw_home.datatypes import datatypes, basicdatatypes
+from vfw_home.Figure.datatypes import datatypes, basicdatatypes
 
 
 # TODO: document

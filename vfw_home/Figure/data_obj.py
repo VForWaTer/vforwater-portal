@@ -8,7 +8,7 @@ from django.core.exceptions import EmptyResultSet
 from django.http import Http404
 
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
-from vfw_home.data_tools import DB_load_directiondata
+from .data_tools import DB_load_directiondata
 from vfw_home.models import Entries, NmEntrygroups
 
 logger = logging.getLogger(__name__)
