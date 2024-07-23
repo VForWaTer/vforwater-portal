@@ -4,7 +4,7 @@ from django.urls import reverse
 from unittest.mock import patch , call, ANY
 from django.contrib.auth.models import User, AnonymousUser
 from vfw_home.views import HomeView
-from vfw_home.geoserver_layer import delete_layer
+from vfw_home.Geoserver.geoserver_layer import delete_layer
 import logging
 import sys
 import os
