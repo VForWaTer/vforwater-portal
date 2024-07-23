@@ -154,8 +154,8 @@ class HomeView(TemplateView):
             self.request.session['datasets'] = []
 
         try:
-            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.data_layer)
-            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.areal_data_layer, layertype='areal_data')
+            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.DATA_LAYER)
+            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.AREAL_DATA_LAYER, layertype='areal_data')
         except Exception as e:
             self.DATA_LAYER = 'Error: Found no geoserver!'
             self.AREAL_DATA_LAYER = 'Error: Found no geoserver!'
