@@ -29,9 +29,9 @@ def test_template_rendering(client):
     assert "vfw_home/home.html" in [t.name for t in response.templates], " ❌ Failed ❌ Home page did not use the expected template."
 
 # @pytest.mark.xfail(reason="fixture 'mock_verify_layer' not found")
-@patch("vfw_home.geoserver_layer.verify_layer")
+@patch("vfw_home.views.verify_layer")
 @pytest.mark.django_db
-def test_layer_name_setting_for_regular_user(client_with_user, mock_verify_layer):
+def test_layer_name_setting_for_regular_user(mock_verify_layer, client_with_user):
     response = client_with_user.get(reverse("vfw_home:home"))
     assert "admin_layer" not in response.context["data_layer"], " ❌ Failed ❌ Regular user incorrectly assigned admin_layer."
     assert "admin_areal_layer" not in response.context["areal_data_layer"], " ❌ Failed ❌ Regular user incorrectly assigned admin_areal_layer."
@@ -148,9 +148,9 @@ def test_session_data_for_datasets(client):
     assert response.context["unblocked_ids"] == ["dataset1", "dataset2"], "❌ Failed ❌ The view did not correctly utilize session data for 'unblocked_ids'."
 
 # @pytest.mark.xfail(reason="fixture 'mock_verify_layer' not found")
-@patch("vfw_home.geoserver_layer.verify_layer")
+@patch("vfw_home.views.verify_layer")
 @pytest.mark.django_db
-def test_home_view_geoserver_unavailable(client, mock_verify_layer):
+def test_home_view_geoserver_unavailable(mock_verify_layer, client):
     mock_verify_layer.side_effect = Exception("Geoserver unavailable")
     response = client.get(reverse("vfw_home:home"))
     mock_verify_layer.assert_called_once()
