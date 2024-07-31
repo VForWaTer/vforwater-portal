@@ -8,6 +8,7 @@ from django.core.cache import cache
 
 from heron.settings import LOCAL_GEOSERVER, SECRET_GEOSERVER, DATABASES
 from ..utilities.utilities import check_data_consistency
+from django.conf import settings
 
 """
 
@@ -134,6 +135,11 @@ def create_layer(request: object, filename: str, datastore: str, workspace: str,
     :param layertype:  String defining the geo object. Default is "point". Other are "areal_data", "filtercatchment",
     "merit_catchment_coarse", "merit_catchment", "merit_river", "merit_river_simple"
     """
+    # datastore =  settings.DATABASES['default']['NAME']
+    # workspace =  settings.DATABASES['default']['NAME']
+    print(" datastore  in create_layer in geoserver_layer file: ", datastore)
+    print(" workspace  in create_layer in geoserver_layer file: ", workspace)
+
     xml = __build_layer_xml(request, filename, datastore, workspace, srid, selection, layertype)
 
     url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes'
@@ -154,6 +160,8 @@ def delete_layer(filename: str, datastore: str, workspace: str):
     :param datastore: Name of store the layer is stored in.
     :param workspace: Name of workspace for the store.
     """
+    # datastore =  settings.DATABASES['default']['NAME']
+    # workspace =  settings.DATABASES['default']['NAME']
     def delete_request(url):
         build = requests.delete(
             url,
@@ -179,6 +187,7 @@ def get_layer(layer_name: str, datastore: str, workspace: str, format: str='json
     :param workspace: Name of workspace for the store.
     :param workspace: Format of result can be 'json' (default) or 'xml', yet.
     """
+
     match format.lower():
         case 'json':
             url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{layer_name}.json'
@@ -206,6 +215,8 @@ def has_layer(layer_name: str, datastore: str, workspace: str) -> bool:
     :param datastore: Name of store the layer is stored in.
     :param workspace: Name of workspace for the store.
     """
+    # datastore =  settings.DATABASES['default']['NAME']
+    # workspace =  settings.DATABASES['default']['NAME']
     url = f'{LOCAL_GEOSERVER}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{layer_name}'
     # print('SECRET_GEOSERVER: ', SECRET_GEOSERVER)
 
@@ -500,12 +511,22 @@ def verify_layer(request, filename, datastore, workspace, layertype="point"):
     :param layertype: The type of the layer (default is "point").
     :return: None
     """
+    # datastore =  settings.DATABASES['default']['NAME']
+    # workspace =  settings.DATABASES['default']['NAME']
+    print("verify_layer called with:", request, filename, datastore, workspace, layertype)
+
     if not has_layer(layer_name=filename, datastore=datastore, workspace=workspace):
+        print(f"Creating layer: {filename}")
+        print(f"datastore: {datastore} , workspace: {workspace}")
+
         create_layer(request=request, filename=filename, datastore=datastore, workspace=workspace,
                      layertype=layertype)
         # TODO: don't do that in production! That's just for development to make sure geoserver is updated
         #  after restart of django
     else:
+        print(f"Deleting and recreating layer: {filename}")
+        print(f"datastore: {datastore} , workspace: {workspace}")
+
         delete_layer(filename=filename, datastore=datastore, workspace=workspace)
         create_layer(request=request, filename=filename, datastore=datastore, workspace=workspace,
                      layertype=layertype)
