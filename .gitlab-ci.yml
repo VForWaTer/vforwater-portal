@@ -20,8 +20,10 @@ vfwportal-demo-test:
     stage: test
     script:
         # call unit tests
-        # - /usr/bin/podman run -v /etc/vforwater/vfwportal-demo/settings.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro -v /etc/vforwater/vfwportal-demo/test_settings.py:/home/vfwportal/vforwater-portal/heron/test_settings.py:ro localhost:5000/demo/vfwportal:$CI_COMMIT_SHA /bin/bash -c "export DJANGO_SETTINGS_MODULE=heron.test_settings && /usr/local/bin/pytest -v -s"
-        - /usr/bin/podman run -v /etc/vforwater/vfwportal-demo-test/settings.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro -v /etc/vforwater/vfwportal-demo-test/test_settings.py:/home/vfwportal/vforwater-portal/heron/test_settings.py:ro localhost:5000/demo/vfwportal:$CI_COMMIT_SHA /bin/bash -c "export DJANGO_SETTINGS_MODULE=heron.test_settings && /usr/local/bin/pytest -v -s"
+        - /usr/bin/podman run -v /etc/vforwater/vfwportal-demo-test/settings.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro \
+        -v /etc/vforwater/vfwportal-demo-test/test_settings.py:/home/vfwportal/vforwater-portal/heron/test_settings.py:ro \
+        localhost:5000/demo/vfwportal:$CI_COMMIT_SHA \
+        /bin/bash -c "/usr/local/bin/pytest -v -s"
 
     only:
         - demo
