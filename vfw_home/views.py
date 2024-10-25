@@ -394,8 +394,13 @@ class LogoutView(View):
         :param request: The HTTP request object
         :type request: HttpRequest
         """
-        logger.debug(f'{request.user.username} logged out')
+        username = request.user.username
+        # print(f'Logging out: {username}')  # Debug print
+        # print(f'Logging out: (auth status: {request.user.is_authenticated})')  # Debug print
+
         logout(request)
+        logger.debug(f'{username} logged out (auth status: {request.user.is_authenticated})')
+
 
     def post(self, request):
         """
