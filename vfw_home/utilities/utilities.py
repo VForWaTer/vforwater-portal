@@ -40,6 +40,7 @@ from django.core.cache import cache
 from django.core.exceptions import FieldError
 from django.core.paginator import PageNotAnInteger, EmptyPage
 from django.utils import translation, timezone
+from django.conf import settings
 
 from heron.settings import DATA_DIR
 from vfw_home.models import Entries
@@ -339,3 +340,8 @@ def check_data_consistency(check_interval=60*60*24):
     cache.set('ids_data_on_path', id_on_disk, check_interval)
     return id_without_data + id_without_datasoure
 
+
+def clean_database_name(name = settings.DATABASES['default']['NAME']):
+    
+# Remove all non-alphanumeric characters
+    return re.sub(r'\W+', '', name)
