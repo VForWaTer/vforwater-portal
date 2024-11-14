@@ -72,7 +72,7 @@ from .utilities.delineator import delineate
 from .Forms.forms import QuickFilterForm
 from .Figure.data_obj import DataObject
 from .utilities.utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
-    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency
+    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency, clean_database_name
 
 mpl.use('Agg')
 
@@ -120,12 +120,13 @@ class HomeView(TemplateView):
     MERIT_CATCHMENT_LAYER = ['merit_catchment', 'merit_catchment']
     MERIT_CATCHMENT_COARSE_LAYER = ['merit_catchment_coarse', 'merit_catchment_coarse']
     DATA_EXT = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
-    STORE = 'metacatalogdev'
-    WORKSPACE = 'metacatalogdev'
+    STORE = clean_database_name(settings.DATABASES['default']['NAME']) 
+    WORKSPACE = clean_database_name(settings.DATABASES['default']['NAME']) 
     UNLOCKED_EMBARGO = []
 
     check_geoserver_layers(STORE, WORKSPACE,
                            [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
+
 
     def __set_layer_name(self):
         """
@@ -154,8 +155,8 @@ class HomeView(TemplateView):
             self.request.session['datasets'] = []
 
         try:
-            verify_layer(self.request, self.DATA_LAYER, self.STORE, self.WORKSPACE)
-            verify_layer(self.request, self.AREAL_DATA_LAYER, self.STORE, self.WORKSPACE,  layertype='areal_data')
+            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.DATA_LAYER)
+            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.AREAL_DATA_LAYER, layertype='areal_data')
         except Exception as e:
             self.DATA_LAYER = 'Error: Found no geoserver!'
             self.AREAL_DATA_LAYER = 'Error: Found no geoserver!'
