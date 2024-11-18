@@ -308,3 +308,23 @@ class TestGeoserverView:
         with pytest.raises(self.URLError) as e:
             self.GeoserverView.as_view()(request, 'wfs', 'sample_layer', 'invalid_bbox', 4326)
         print(f"Test Case - Invalid Bbox Format: Raised URLError as expected with message '{e.value}'")
+
+
+    # Test case 3: Unsupported SRID
+    def test_geoserver_view_unsupported_srid(self, mock_urlopen):
+        """
+        Test the GeoserverView with an unsupported SRID.
+        
+        This test ensures that the view raises an URLError if an unsupported SRID is provided.
+        """
+   
+        mock_urlopen.side_effect = self.URLError("Unsupported SRID")
+
+        url = GEOSERVER_URL_TEMPLATE.format(
+            service='wfs', layer='sample_layer', bbox='-976.82,530.56,2741.65,702.43', srid=1234
+        )
+        request = RequestFactory().get(url)
+        
+        with pytest.raises(self.URLError) as e:
+            self.GeoserverView.as_view()(request, 'wfs', 'sample_layer', '-976.82,530.56,2741.65,702.43', 1234)
+        print(f"Test Case - Unsupported SRID: Raised URLError as expected with message '{e.value}'")
