@@ -143,31 +143,6 @@ def test_home_view_incorrect_session_data_format(client):
 def rf():
     return RequestFactory()
 
-# @pytest.fixture
-# def user(db):
-#     from django.contrib.auth.models import User
-#     return User.objects.create_user(username='testuser', email='test@example.com', password='testpassword')
-
-# ** TODO: fix this tests  
-
-# def test_post_redirects_to_watts_backend(client, settings):
-#     with override_settings(AUTHENTICATION_BACKENDS=['watts_rsp.auth.WattsBackend']):
-#         response = client.post(reverse('vfw_home:login'))
-#         assert response.status_code == 200 
-#         assert response.url == reverse('vfw_home:watts_rsp:login_init')
-
-# def test_post_redirects_to_default_django_login(client, settings):
-#     with override_settings(AUTHENTICATION_BACKENDS=[], DEBUG=True):
-#         response = client.post(reverse('vfw_home:home/login'))
-#         assert response.status_code == 302 
-#         assert response.url == reverse('vfw_home:login')
-
-# def test_post_raises_http404(client, settings):
-#     with override_settings(AUTHENTICATION_BACKENDS=[], DEBUG=False):
-#         with pytest.raises(Http404):
-#             client.post(reverse('vfw_home:login'))
-
-# end TODO
 
 @patch('vfw_home.views.logger')
 def test_dispatch_logs_message_for_authenticated_user(mock_logger, rf, user, django_db_blocker):
