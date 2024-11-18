@@ -65,6 +65,12 @@ def is_coord(testString, latlon):
         return True
 
 
+
+
+def clean_database_name(name):
+        """ Remove all non-alphanumeric characters """
+        return re.sub(r'\W+', '', name)
+
 # TODO: added embargo end in def get_accessible_data query. Check if the following function is still needed.
 
 def has_pending_embargo(embargo, embargo_end):
