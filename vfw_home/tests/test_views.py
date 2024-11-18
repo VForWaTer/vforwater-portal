@@ -371,3 +371,27 @@ class TestGeoserverView:
         print(f"Test Case - Unsupported Service Type: Raised URLError as expected with message '{e.value}'")
 
 
+
+# Mock the `test_geoserver_env` function to prevent database or external server calls.
+@pytest.mark.django_db
+@patch('vfw_home.views.test_geoserver_env')
+@patch('vfw_home.views.get_accessible_data')
+@patch('vfw_home.views.get_dataset')
+def test_csv_download(mock_get_dataset, mock_get_accessible_data, mock_test_geoserver_env):
+    from django.http import StreamingHttpResponse
+    from vfw_home.views import DatasetDownloadView
+    mock_test_geoserver_env.return_value = None  # Prevents it from calling actual Geoserver or DB
+    mock_get_accessible_data.return_value = {'open': [1], 'blocked': []}
+    mock_get_dataset.return_value = [['header1', 'header2'], ['data1', 'data2']]
+
+    request = RequestFactory().get(reverse('vfw_home:datasetdownload') + '?csv=1')
+    response = DatasetDownloadView.as_view()(request)
+
+    assert isinstance(response, StreamingHttpResponse)
+    assert response.status_code == 200
+    assert response['Content-Disposition'] == 'attachment; filename="somefilename.csv"'
+
+    # Access the streaming content and check for expected CSV output
+    content = b''.join(response.streaming_content)
+    assert b'header1,header2\r\n' in content
+    assert b'data1,data2\r\n' in content
