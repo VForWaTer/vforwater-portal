@@ -125,9 +125,10 @@ class HomeView(TemplateView):
     WORKSPACE = Database_Name
 
     UNLOCKED_EMBARGO = []
+    if not getattr(settings, 'TEST_MODE', False):  # Only run in non-test mode
 
-    check_geoserver_layers(STORE, WORKSPACE,
-                           [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
+        check_geoserver_layers(STORE, WORKSPACE,
+                            [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
 
 
     def __set_layer_name(self):
