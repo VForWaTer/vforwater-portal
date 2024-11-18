@@ -9,6 +9,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from datetime import datetime
+from vfw_home.models import Entries, Persons, NmPersonsEntries
+import logging
 # from django.core.mail.message import EmailMessage
 # import logging
 # from django.template.loader import render_to_string
@@ -19,7 +21,6 @@ from datetime import datetime
 # from vfw_home.models import TblMeta
 # from pandas.tests.arithmetic.conftest import id_func
 
-from vfw_home.models import Entries, Persons, NmPersonsEntries
 
 
 class CustomUser(User):  # == Reader in Resource
@@ -100,10 +101,9 @@ class Profile(models.Model):
 
 def __assign_data(user_obj, user_profile):
     """
-
-    :param user_obj:
-    :param person_obj:
-    :param user_profile:
+    Associate the user with data entries in metacatalog based on matching Persons.
+    :param user_obj: User object to be associated.
+    :param user_profile: Profile object associated with the User.
     """
     lookup = dict.fromkeys(['author', 'custodian', 'distributor', 'originator', 'owner', 'pointOfContact',
                             'principalInvestigator', 'resourceProvider', 'editor', 'rightsHolder'], 'owner')
@@ -115,42 +115,51 @@ def __assign_data(user_obj, user_profile):
     first_name = user_obj.first_name
 
     try:
-        person_obj = Persons.objects.filter(first_name=first_name, last_name=last_name)
-        matching_persons = person_obj.values_list('pk', flat=True)
-        for idx, person in enumerate(matching_persons):
-            if Profile.objects.filter(metacatalogPerson_id=person).exists():
-                print('\033[91mAsk user if (s)he is the same as already linked with!\033[0m')
-            else:
-                # associate user with entry person in profile:
-                user_profile.metacatalogPerson = person_obj[idx]
-                user_profile.save()
+        # Retrieve all matching Person objects
+        person_matches = Persons.objects.filter(first_name=first_name, last_name=last_name)
+        if person_matches.exists():
+            if person_matches.count() > 1:
+                # Log a warning when multiple matches are found and choose the first match
+                logger.warning(f"Multiple persons found for user '{user_obj}'. Associating with the first match.")
+            
+            # Use the first matching person by default
+            person_obj = person_matches.first()
+            
+            # Check if this person is already linked with another profile
+            if Profile.objects.filter(metacatalogPerson=person_obj).exists():
+                logger.warning(f"The person '{person_obj}' is already linked to another profile.")
 
-        # set roles in author_manage for data of this person and create resources:
-        role_list = person_obj.values_list('nmpersonsentries__relationship_type__name', flat=True)
-        entry_list = person_obj.values_list('nmpersonsentries__entry_id', flat=True)
-        datatype_list = person_obj.values_list('nmpersonsentries__entry__datasource__datatype__name', flat=True)
-        for idx, role in enumerate(role_list):
-            user_role = lookup[role]
-            new_resource, created = Resource.objects.get_or_create(type=datatype_list[idx], link='/',
-                                                                   dataEntry_id=entry_list[idx])
-            if user_role == 'owner':
-                new_resource.owners.add(user_obj.id)
-            elif user_role == 'maintainer':
-                new_resource.maintainers.add(user_obj.id)
-            elif user_role == 'reader':
-                new_resource.readers.add(user_obj.id)
-            else:
-                print('\033[91mError in author_manage models: Unexpected user role!\033[0m')
-            new_resource.save()
-        # TODO: Implement something to ask user if (s)he is the user from person_obj!
-        #  Test with several users with same name.
-        print('\033[91mImplement something to ask user if (s)he is the user from person_obj!\033[0m')
-    except:
-        # no user to connect with
-        print('No user to connect entries with auth in metacatalog.')
-        pass
+            # Associate the user profile with this Person
+            user_profile.metacatalogPerson = person_obj
+            user_profile.save()
 
+            # Set roles in author_manage for data entries of this person
+            role_list = person_obj.nmpersonsentries_set.values_list('relationship_type__name', flat=True)
+            entry_list = person_obj.nmpersonsentries_set.values_list('entry_id', flat=True)
+            datatype_list = person_obj.nmpersonsentries_set.values_list('entry__datasource__datatype__name', flat=True)
+
+            for idx, role in enumerate(role_list):
+                user_role = lookup.get(role, 'reader')
+                new_resource, created = Resource.objects.get_or_create(
+                    type=datatype_list[idx], link='/', dataEntry_id=entry_list[idx]
+                )
+                # Assign role-based permissions to the user on the resource
+                if user_role == 'owner':
+                    new_resource.owners.add(user_obj)
+                elif user_role == 'maintainer':
+                    new_resource.maintainers.add(user_obj)
+                else:  # reader by default
+                    new_resource.readers.add(user_obj)
+                new_resource.save()
+
+        else:
+            logger.info(f"No persons found in metacatalog matching user '{user_obj}'.")
+    
+    except Exception as e:
+        logger.error(f"Failed to assign data for user '{user_obj}': {e}")
+    
     finally:
+        # Mark the profile's association as checked
         user_profile.checkedAssociation = True
         user_profile.save()
 
