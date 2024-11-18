@@ -203,8 +203,8 @@ def test_logout_unauthenticated_user(client):
     assert response.status_code == 302
     assert response.url == reverse('vfw_home:home')
 
-# 3. Test Case: Logging Message for Logged Out User
 
+# 3. Test Case: Logging Message for Logged Out User
 
 def add_session_to_request(request):
     """Helper function to add session to the request."""
@@ -247,3 +247,64 @@ def test_logout_logging(mock_logger, rf):
 
     # Assert expected log message
     mock_logger.debug.assert_called_with('testuser logged out (auth status: False)')
+
+
+
+# Base URL template for the Geoserver view
+GEOSERVER_URL_TEMPLATE = '/geoserver/{service}/{layer}/{bbox}/{srid}'
+
+@pytest.mark.django_db
+@patch('urllib.request.urlopen')
+class TestGeoserverView:
+    @classmethod
+    def setup_class(cls):
+        from urllib.error import URLError
+        from vfw_home.views import GeoserverView
+        cls.GeoserverView = GeoserverView
+        cls.URLError = URLError
+
+    # Test case 1: Basic Valid Request
+    def test_geoserver_view_basic_valid_request(self, mock_urlopen):
+        """
+        Test a basic, valid request to the GeoserverView. 
+        
+        This test verifies that the view correctly builds the URL, 
+        sends a request, and returns the expected JSON data for valid input parameters.
+        """
+  
+        mock_response = MagicMock()
+        mock_response.read.return_value = b'{"success": true, "data": "sample layer data"}'
+        mock_urlopen.return_value = mock_response
+
+        url = GEOSERVER_URL_TEMPLATE.format(
+            service='wfs', layer='sample_layer', bbox='-976.82,530.56,2741.65,702.43', srid=4326
+        )
+        request = RequestFactory().get(url)
+        
+        response = self.GeoserverView.as_view()(request, 'wfs', 'sample_layer', '-976.82,530.56,2741.65,702.43', 4326)
+
+        assert response.status_code == 200
+        assert "success" in response.content.decode('utf-8')
+        assert "sample layer data" in response.content.decode('utf-8')
+        print("Test Case - Basic Valid Request: Passed")
+
+
+
+    # Test case 2: Invalid Bbox Format
+    def test_geoserver_view_invalid_bbox(self, mock_urlopen):
+        """
+        Test the GeoserverView with an invalid bbox format.
+        
+        This test checks if the view properly raises an URLError for invalid bbox format.
+        """
+
+        mock_urlopen.side_effect = self.URLError("Invalid bbox format")
+
+        url = GEOSERVER_URL_TEMPLATE.format(
+            service='wfs', layer='sample_layer', bbox='invalid_bbox', srid=4326
+        )
+        request = RequestFactory().get(url)
+        
+        with pytest.raises(self.URLError) as e:
+            self.GeoserverView.as_view()(request, 'wfs', 'sample_layer', 'invalid_bbox', 4326)
+        print(f"Test Case - Invalid Bbox Format: Raised URLError as expected with message '{e.value}'")
