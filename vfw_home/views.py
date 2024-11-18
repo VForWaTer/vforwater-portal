@@ -120,12 +120,15 @@ class HomeView(TemplateView):
     MERIT_CATCHMENT_LAYER = ['merit_catchment', 'merit_catchment']
     MERIT_CATCHMENT_COARSE_LAYER = ['merit_catchment_coarse', 'merit_catchment_coarse']
     DATA_EXT = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+
     STORE = Database_Name
     WORKSPACE = Database_Name
+
     UNLOCKED_EMBARGO = []
 
     check_geoserver_layers(STORE, WORKSPACE,
                            [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
+
 
     def __set_layer_name(self):
         """
@@ -162,6 +165,7 @@ class HomeView(TemplateView):
             # verify_layer(self.request, self.DATA_LAYER, self.STORE, self.WORKSPACE) 
             print(f"Calling verify_layer with {self.AREAL_DATA_LAYER}")
             # verify_layer(self.request, self.AREAL_DATA_LAYER, self.STORE, self.WORKSPACE,  layertype='areal_data')
+
         except Exception as e:
             self.DATA_LAYER = 'Error: Found no geoserver!'
             self.AREAL_DATA_LAYER = 'Error: Found no geoserver!'
