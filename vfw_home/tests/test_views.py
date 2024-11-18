@@ -34,6 +34,9 @@ def client_with_superuser(client, superuser):
     client.login(username="superuser", password="superpassword")
     return client
 
+
+@override_settings(TEST_MODE=True)
+# Mock to simulate geoserver layer and environment check without real connections
 @pytest.mark.django_db
 def test_template_rendering(client):
     client.logout()  # Ensure the test starts with an anonymous user.
