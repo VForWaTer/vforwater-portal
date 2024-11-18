@@ -348,3 +348,26 @@ class TestGeoserverView:
         with pytest.raises(self.URLError) as e:
             self.GeoserverView.as_view()(request, 'wfs', 'sample_layer', '-976.82,530.56,2741.65,702.43', 4326)
         print(f"Test Case - Geoserver Down: Raised URLError as expected with message '{e.value}'")
+
+
+
+    # Test case 5: Unsupported Service Type
+    def test_geoserver_view_invalid_service_type(self, mock_urlopen):
+        """
+        Test the GeoserverView with an unsupported service type.
+        
+        This test ensures that an unsupported service type raises an URLError, as expected.
+        """
+
+        mock_urlopen.side_effect = self.URLError("Unsupported service type")
+
+        url = GEOSERVER_URL_TEMPLATE.format(
+            service='xyz', layer='sample_layer', bbox='-976.82,530.56,2741.65,702.43', srid=4326
+        )
+        request = RequestFactory().get(url)
+        
+        with pytest.raises(self.URLError) as e:
+            self.GeoserverView.as_view()(request, 'xyz', 'sample_layer', '-976.82,530.56,2741.65,702.43', 4326)
+        print(f"Test Case - Unsupported Service Type: Raised URLError as expected with message '{e.value}'")
+
+
