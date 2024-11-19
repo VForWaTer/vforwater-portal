@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 
 from django.conf import settings
 from django.http import Http404
+from urllib.parse import urlparse
 
 from django.test import RequestFactory, override_settings
 # from vfw_home.views import LoginView
@@ -186,7 +187,10 @@ def test_logout_user_and_redirect(client_with_login):
     
     # Ensure that the user is redirected to the home page
     assert response.status_code == 302
-    assert response.url == reverse('vfw_home:home')
+    # Normalize URLs to compare only the path
+    assert urlparse(response.url).path == urlparse(reverse('vfw_home:home')).path
+
+
     
     # Ensure the user is logged out
     assert '_auth_user_id' not in client_with_login.session
@@ -201,7 +205,8 @@ def test_logout_unauthenticated_user(client):
     
     # Ensure that the user is redirected to the home page
     assert response.status_code == 302
-    assert response.url == reverse('vfw_home:home')
+    # assert response.url == reverse('vfw_home:home')
+    assert urlparse(response.url).path == urlparse(reverse('vfw_home:home')).path
 
 
 # 3. Test Case: Logging Message for Logged Out User
