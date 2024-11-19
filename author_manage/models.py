@@ -22,6 +22,7 @@ import logging
 # from pandas.tests.arithmetic.conftest import id_func
 
 
+logger = logging.getLogger(__name__)
 
 class CustomUser(User):  # == Reader in Resource
     class Meta:
