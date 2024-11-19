@@ -45,3 +45,27 @@ def test_assign_data_single_matching_person():
         # No warning logs should be present for single match
         mock_logger.warning.assert_not_called()
 
+
+@pytest.mark.django_db
+def test_assign_data_multiple_matching_persons():
+    # Create a test user and multiple matching Person entries
+    user = User.objects.create(username='testuser', first_name='Multiple', last_name='User')
+    person1 = Persons.objects.create(first_name='Multiple', last_name='User')
+    person2 = Persons.objects.create(first_name='Multiple', last_name='User')  # Second matching person
+    profile = Profile.objects.create(user=user)
+
+    # Call the __assign_data function
+    with patch("author_manage.models.logger") as mock_logger:
+        __assign_data(user, profile)
+
+        # Ensure profile is associated with the first person match and checkedAssociation is True
+        profile.refresh_from_db()
+        assert profile.checkedAssociation is True
+        assert profile.metacatalogPerson == person1  # Should associate with the first match by default
+
+        # Verify that a warning was logged for multiple matches
+        mock_logger.warning.assert_called_once_with(
+            f"Multiple persons found for user '{user}'. Associating with the first match."
+        )
+
+
