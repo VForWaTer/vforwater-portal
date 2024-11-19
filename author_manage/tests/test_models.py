@@ -54,7 +54,6 @@ def test_assign_data_multiple_matching_persons():
     person2 = Persons.objects.create(first_name='Multiple', last_name='User')  # Second matching person
     profile = Profile.objects.create(user=user)
 
-    # Call the __assign_data function
     with patch("author_manage.models.logger") as mock_logger:
         __assign_data(user, profile)
 
@@ -69,3 +68,21 @@ def test_assign_data_multiple_matching_persons():
         )
 
 
+@pytest.mark.django_db
+def test_assign_data_existing_association():
+    # Create a test user and matching Person entry with an existing Profile
+    user = User.objects.create(username='testuser', first_name='Associated', last_name='User')
+    person = Persons.objects.create(first_name='Associated', last_name='User')
+    existing_profile = Profile.objects.create(user=user, metacatalogPerson=person, checkedAssociation=True)
+
+    # Call the __assign_data function on an already-associated profile
+    with patch("author_manage.models.logger") as mock_logger:
+        __assign_data(user, existing_profile)
+
+        # Ensure profile remains associated and checkedAssociation is True
+        existing_profile.refresh_from_db()
+        assert existing_profile.checkedAssociation is True
+        assert existing_profile.metacatalogPerson == person  # Association remains intact
+
+        # Expect a warning log that the person is already linked
+        mock_logger.warning.assert_called_once_with(f"The person '{person}' is already linked to another profile.")
