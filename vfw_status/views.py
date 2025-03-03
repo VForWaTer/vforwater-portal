@@ -43,7 +43,7 @@ def home(request):
 
         return checked_service
 
-    # local 'services'
+    
     services['DEBUG is off'] = {'runs': not DEBUG,
                                 'url': 'Make sure DEBUG is only on when needed'}
     db_connection = django.db.connection.ensure_connection()

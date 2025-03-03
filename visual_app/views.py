@@ -17,14 +17,6 @@ def home(request):
     plot.line(x, y, line_width=2)
 
     script, div = components(plot)
-    # print(script)
-    # print(div)
-    # return render('visual_app/home.html', {'scipt': script, 'div': div})
+   
     return render(request, 'visual_app/home.html', {'script': script, 'div': div})
 
-# def home(request):
-#     """
-#     Dummy page for Heron Visualisation tool.
-#     """
-#     return render(request, 'visual_app/home.html')
-#
