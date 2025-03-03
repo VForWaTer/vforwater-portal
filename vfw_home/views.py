@@ -125,9 +125,10 @@ class HomeView(TemplateView):
     WORKSPACE = Database_Name
 
     UNLOCKED_EMBARGO = []
+    if not getattr(settings, 'TEST_MODE', False):  # Only run in non-test mode
 
-    check_geoserver_layers(STORE, WORKSPACE,
-                           [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
+        check_geoserver_layers(STORE, WORKSPACE,
+                            [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
 
 
     def __set_layer_name(self):
@@ -416,8 +417,13 @@ class LogoutView(View):
         :param request: The HTTP request object
         :type request: HttpRequest
         """
-        logger.debug(f'{request.user.username} logged out')
+        username = request.user.username
+        # print(f'Logging out: {username}')  # Debug print
+        # print(f'Logging out: (auth status: {request.user.is_authenticated})')  # Debug print
+
         logout(request)
+        logger.debug(f'{username} logged out (auth status: {request.user.is_authenticated})')
+
 
     def post(self, request):
         """
