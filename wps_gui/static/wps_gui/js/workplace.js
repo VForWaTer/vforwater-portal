@@ -526,7 +526,9 @@ vfw.workspace.modal.prepData = function () {
             }
         } else if (inputInputs[i].type == "checkbox") {
             inKey.push(inputInputs[i].name);
+            console("default fo checkbox", inputInputs[i])
             if (inputInputs[i].checked == true) {
+                console("default fo checkbox if checked", inputInputs[i])
                 inValue.push(true);
                 inType.push('boolean');
                 inId.push('');
@@ -1276,7 +1278,14 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
                 break;
             case 'boolean':
                 inElement.type = "checkbox";
-                if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;  // TODO!
+
+                if ("default" in item.schema && item.schema.default === true) {
+                    inElement.checked = true;
+                }
+                // Fallback for older schema 
+                else if ('defaultValue' in item && item.defaultValue === true) {
+                    inElement.checked = true;
+                }
                 break;
             case 'dateTime':
                 inElement.type = "datetime-local";
