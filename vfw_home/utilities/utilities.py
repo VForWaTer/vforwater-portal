@@ -58,6 +58,25 @@ regex_patterns = {
             r'^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')
 }
 
+
+
+
+
+
+def raise_logging_exception(message, endpoint, additional_message):
+
+    if endpoint:
+        logger.error(f'An error occurred while processing on endpoint : {endpoint}') 
+    if message and endpoint:
+        logger.error(f"Exception Caught in endpoint {endpoint}: {type(message).__name__} - {message}")
+    else:
+        logger.error(f"Exception Caught : {type(message).__name__} - {message}")
+    if additional_message:
+        logger.error(f'Details : {additional_message}')
+
+
+
+
 def is_coord(testString, latlon):
     if not regex_patterns[latlon].match(testString):
         raise ValueError()
@@ -162,9 +181,13 @@ def get_cache(cache_obj: dict) -> tuple:
     img = None
     try:
         img = cache_obj['redis'].get(cache_obj['name'])
+
     except Exception as err:
+
         cache_obj['use_redis'] = False
-        logger.debug("Cannot connect to redis: {}".format(err))
+        additional_message = f"Cannot connect to redis: {err}"
+        raise_logging_exception(err, None, additional_message)
+        
 
     if cache_obj['use_redis']:
         if img is None:
@@ -201,8 +224,10 @@ def get_dataset(s_id: int) -> object:
         query_filter = {entry_type: s_id}
         return Entries.objects.filter(**query_filter).values_list(*query_values)
     except Exception as e:
-        # print('Unable to get_dataset in utitlites.py: ', e)
+        
         logger.debug(f"Unable to get_dataset: {e}")
+        additional_message = f"Unable to get_dataset: {e}"
+        raise_logging_exception(err, None, additional_message)
 
 
 def get_paginatorpage(page, paginator):
@@ -309,10 +334,11 @@ def check_data_consistency(check_interval=60*60*24):
                 try:
                     test = Entries.objects.filter(**query_path).exists()
                 except FieldError as e:
-                    print(f"\033[91mError: Got a new source for data storage (path: entry_ID {query_path})"
-                          f" in vfw_home/utilities/check_data_consistency: {e}.\033[0m")
-                    # logger.debug(f"Got a new source for data storage (path: entry_ID {query_path}): {e}")
 
+                    additional_message = (f"\033[91mError: Got a new source for data storage (path: entry_ID {query_path})"
+                          f" in vfw_home/utilities/check_data_consistency: {e}.\033[0m")
+                    raise_logging_exception(err, None, additional_message)
+                   
                 if int(count/200) == count/200:
                     print(f'Check data consistency, did {i[0], test} - {str(int(int(count)/int(all_num)*100))}%')
                 # print(Entries.objects.filter(timeseries__pk=i[0]).exists())
@@ -325,7 +351,7 @@ def check_data_consistency(check_interval=60*60*24):
                         if inner_test:
                             id_wrong_table.append((i[0], dp))
     except Exception as e:
-        print('e: ', e)
+        raise_logging_exception(err, None, None)
 
     if len(id_without_datasoure) > 0:
         print(f'\033[93mWARNING: following IDs have no data source: {id_without_datasoure}\033[0m')
@@ -345,3 +371,9 @@ def clean_database_name(name = settings.DATABASES['default']['NAME']):
     
 # Remove all non-alphanumeric characters
     return re.sub(r'\W+', '', name)
+
+
+
+
+
+

@@ -72,7 +72,7 @@ from .utilities.delineator import delineate
 from .Forms.forms import QuickFilterForm
 from .Figure.data_obj import DataObject
 from .utilities.utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
-    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency, clean_database_name
+    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency, clean_database_name, raise_logging_exception, logger
 
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from .utilities.query_functions import get_bbox_from_data
@@ -80,7 +80,7 @@ from .utilities.query_functions import get_bbox_from_data
 from .utilities.filters import NMPersonsFilter
 from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
-import logging
+
 from pathlib import Path
 from datetime import timedelta
 
@@ -92,7 +92,7 @@ mpl.use('Agg')
 """
 
 """
-logger = logging.getLogger(__name__)
+
 
 check_data_consistency()
 
@@ -104,6 +104,7 @@ check_data_consistency()
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
 """
+
 
 
 class HomeView(TemplateView):
@@ -148,12 +149,15 @@ class HomeView(TemplateView):
         Collect data needed for startup of V-FOR-WaTer Portal home.
         """
         self.__set_layer_name()
+        endpoint = self.request.path
 
         try:
             unblocked_ids = self.request.session.get('datasets', [])
             if not unblocked_ids:
                 self.request.session['datasets'] = []
-        except KeyError:
+        except Exception as e:
+
+            raise_logging_exception(e, endpoint, None)
             unblocked_ids = []
             self.request.session['datasets'] = []
 
@@ -168,6 +172,7 @@ class HomeView(TemplateView):
             # verify_layer(self.request, self.AREAL_DATA_LAYER, self.STORE, self.WORKSPACE,  layertype='areal_data')
 
         except Exception as e:
+            raise_logging_exception(e, endpoint, None)
             self.DATA_LAYER = 'Error: Found no geoserver!'
             self.AREAL_DATA_LAYER = 'Error: Found no geoserver!'
             print(f'Still no geoserver: {e}')
@@ -205,7 +210,7 @@ class Echo:
 
 
 class DatasetDownloadView(TemplateView):
-   """
+    """
     Handles dataset downloads in various formats (CSV, GeoJSON, Shapefile, XML).
     """
 
@@ -236,10 +241,12 @@ class DatasetDownloadView(TemplateView):
                 try:
                     return handler(request, store, workspace)
                 except Exception as e:
-                    logger.error(f"Error processing {fmt} request on endpoint {endpoint}: {e}")
+                    additional_message = f"Error processing {fmt} request on endpoint {endpoint}: {e}"
+                    raise_logging_exception(e, endpoint, additional_message)
                     return HttpResponseServerError(f"An error occurred while processing your request: {e}")
 
-        logger.error(f"Unsupported or missing file format on endpoint {endpoint}.")
+        additional_message = f"Unsupported or missing file format on endpoint {endpoint}."
+        raise_logging_exception(e, endpoint, additional_message)
         return HttpResponseBadRequest("Unsupported or missing file format.")
 
        
@@ -252,8 +259,13 @@ class DatasetDownloadView(TemplateView):
         data = accessible_data.get('open', [])
 
         if not data:
-            logger.error(f"No accessible data found for CSV request with dataset ID {s_id}.")
-            raise ValueError("No accessible data found.")
+            try:
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
+            except Exception as e:
+                additional_message = f"No accessible data found for CSV request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
+
+     
 
         rows = get_dataset(data[0])
         pseudo_buffer = Echo()
@@ -275,8 +287,11 @@ class DatasetDownloadView(TemplateView):
         data = accessible_data.get('open', [])
 
         if not data:
-            logger.error(f"No accessible data found for CSV request with dataset ID {s_id}.")
-            raise ValueError("No accessible data found.")
+            try:
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
+            except Exception as e:
+                additional_message = f"No accessible data found for geojson request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
 
 
         geojson_data = serialize("geojson", Locations.objects.filter(id = data[0]) , geometry_field="point_location", fields=["name"])
@@ -294,8 +309,11 @@ class DatasetDownloadView(TemplateView):
         data = accessible_data.get('open', [])
 
         if not data:
-            logger.error(f"No accessible data found for CSV request with dataset ID {s_id}.")
-            raise ValueError("No accessible data found.")
+            try:
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
+            except Exception as e:
+                additional_message = f"No accessible data found for ShapeFile request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
 
 
         layer_name = f'shp_{request.user}_{request.user.id}_{s_id}'
@@ -314,11 +332,13 @@ class DatasetDownloadView(TemplateView):
 
             try:
                 del pzfile['wfsrequest.txt']
-            except KeyError:
+            except Exception as e:
+                raise_logging_exception(e, endpoint, None)
                 pass
 
         except Exception as e:
-            logger.error(f"Error fetching Shapefile from GeoServer for dataset ID {s_id}: {e}")
+            additional_message = f"Error fetching Shapefile from GeoServer for dataset ID {s_id}: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
             raise
 
         finally:
@@ -334,8 +354,11 @@ class DatasetDownloadView(TemplateView):
         data = accessible_data.get('open', [])
 
         if not data:
-            logger.error(f"No accessible data found for CSV request with dataset ID {s_id}.")
-            raise ValueError("No accessible data found.")
+            try:
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
+            except Exception as e:
+                additional_message = f"No accessible data found for xml request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
 
         try:
 
@@ -355,7 +378,8 @@ class DatasetDownloadView(TemplateView):
 
         except Exception as e:
 
-            logger.error(f"Error fetching XML for dataset ID {s_id}: {e}")
+            additional_message = f"Error fetching XML for dataset ID {s_id}: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
             delete_layer(layer_name, store, workspace)
             raise
             
@@ -487,6 +511,7 @@ class ToggleLanguageView(View):
         :param request: Django HttpRequest object
         :return: HttpResponseRedirect to the homepage
         """
+        endpoint = request.path
         try:
             current_language = translation.get_language()
             logger.debug(f"Current language: {current_language}")
@@ -510,7 +535,8 @@ class ToggleLanguageView(View):
             return response
 
         except Exception as e:
-            logger.exception("Error while toggling language")
+            additional_message = "Error while toggling language"
+            raise_logging_exception(e, endpoint, additional_message)
             return redirect(f"{DEMO_VAR}/")
 
 
@@ -574,6 +600,9 @@ class PreviewPlotView(View):
     """
 
     def get(self, request, *args, **kwargs):
+
+        endpoint = request.path
+
         try:
             # Step 1: Process webID
             webID = request.GET.get('preview')
@@ -595,11 +624,13 @@ class PreviewPlotView(View):
                         'No plot available. <br/>First access to this dataset is needed.')})
 
             else:
-                logger.error(f"Invalid 'parts' structure: {parts}")
+                additional_message = f"Invalid 'parts' structure: {parts}"
+                raise_logging_exception(None, endpoint, additional_message)
                 return JsonResponse({'error': "Invalid 'parts' structure parsed from 'webID'."})
 
         except Exception as e:
-            logger.exception("Error during processing of 'webID'.")
+            additional_message = "Error during processing of 'webID'."
+            raise_logging_exception(e, endpoint, additional_message)
             return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"})
 
 
@@ -615,14 +646,16 @@ class PreviewPlotView(View):
             try:
                 dataset = self._get_dataset(webID, entriesID, date)
             except Exception as e:
-                logger.exception("Error while constructing the dataset.")
+                additional_message = "Error while constructing the dataset."
+                raise_logging_exception(e, endpoint, additional_message)
                 raise Http404
 
             try:
                 plot = FigObject(dataset, plot_size)
                 img = plot.get_plot()
             except Exception as e:
-                logger.exception("Error while generating the plot.")
+                additional_message = "Error while generating the plot."
+                raise_logging_exception(e, endpoint, additional_message)
                 raise Http404
 
         return JsonResponse(img)
@@ -722,6 +755,9 @@ class ShortInfoPaginationView(View):
     """
 
     def get(self, request):
+
+        endpoint = request.path
+
         try:
             datasets, field, field_name = self.get_initial_data(request)
             entries_list = self.get_entries_list(datasets, field)
@@ -739,12 +775,9 @@ class ShortInfoPaginationView(View):
                 'current_page': current_page
             })
 
-        except TypeError:
-            logger.debug('Short info Pagination failed.')
-            raise Http404
-
         except Exception as e:
-            logger.debug(f'Exception while getting short info pagination: {e}')
+            additional_message = f'Exception while getting short info pagination: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
             raise Http404
 
     def get_initial_data(self, request):
@@ -852,6 +885,8 @@ class ShowInfoView(View):
     """
 
     def get(self, request, *args, **kwargs):
+
+        endpoint = request.path
         webID = request.GET.get('show_info')
         if not webID:
             logger.error("No 'show_info' parameter provided.")
@@ -865,9 +900,13 @@ class ShowInfoView(View):
             ids = webID
 
         try:
+
             return self.collect_data(ids)
-        except TypeError as e:
-            logger.exception(f"TypeError while processing webID {webID}: {e}")
+
+        except Exception as e:
+
+            additional_message =  f'Error while processing webID {webID}: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
             raise Http404
 
 
@@ -920,9 +959,12 @@ class ShowInfoView(View):
                 db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
             else: 
                 db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+                
         except Exception as e:
-            print('Error in views.show_info.collect_data: ', e)
-            logger.debug('Error in views.show_info.collect_data: ', e)
+
+            additional_message =  f'Error in views.show_info.collect_data: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
+            raise Http404
 
 
         if not db_info.exists():
@@ -1051,6 +1093,8 @@ class WorkspaceData(View):
 
     def get(self, request):
 
+        endpoint =request.path
+
         try:
             
             start_date = request.get('startDate')
@@ -1062,17 +1106,11 @@ class WorkspaceData(View):
             return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group'],
                                 'selectedDate': [start_date, end_date]})
 
-        except TypeError as e:
-            
-            logger.debug('Type Error in vfw_home/views/workspace_data: ', e)
-            raise Http404
-        except FieldError as e:
-            
-            logger.debug('Field Error in vfw_home/views/workspace_data: ', e)
-            raise Http404
         except Exception as e:
-            print('unhandled exception in vfw_home/views/workspace_data(): ', e)
-            logger.debug('unhandled exception in vfw_home/views/workspace_data(): ', e)
+            additional_message =  f'Error in vfw_home/views/workspace_data: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
+            raise Http404
+            
 
 
 
@@ -1154,27 +1192,35 @@ class EntriesPaginationView(View):
 class Delineator(View):
     @staticmethod
     def get(request, catchout):
+
+        endpoint = request.path
         try:
             if "catchout=" in catchout:
-                catchment = Delineator._handle_coordinates(catchout)
+                catchment = Delineator._handle_coordinates(catchout, endpoint)
             elif "catchStartID=" in catchout:
-                catchment = Delineator._handle_start_id(catchout)
+                catchment = Delineator._handle_start_id(catchout, endpoint)
             else:
-                logger.error(f"Unknown input for delineator: {catchout}")
-                return JsonResponse({'error': 'Unknown input for delineator.'}, status=400)
+                raise ValueError(f"Unknown input for delineator: {catchout}")
+                
 
             if 'error' in catchment:
-                logger.error(f"Problems in delineation tool: {catchment['error']}")
-                return JsonResponse(catchment, status=500)
+                raise ValueError(f"Problems in delineation tool: {catchment['error']}")
+               
 
             return JsonResponse(catchment)
 
+        except ValueError as e :
+            
+            raise_logging_exception(e, endpoint, None)
+            return JsonResponse({'error': str(e)}, status=400)
+
         except Exception as e:
-            logger.exception("Unhandled error in Delineator view.")
+            additional_message =  "Unhandled error in Delineator view."
+            raise_logging_exception(e, endpoint, additional_message)
             return JsonResponse({'error': 'Unhandled server error.'}, status=500)
 
     @staticmethod
-    def _handle_coordinates(catchout):
+    def _handle_coordinates(catchout, endpoint):
         try:
             parts = catchout.split("catchout=")
             lng, lat = parts[1][:-1], parts[2]
@@ -1182,21 +1228,33 @@ class Delineator(View):
 
             # Validate coordinates
             if not is_coord(lat, 'lat') or not is_coord(lng, 'lon'):
-                logger.error(f"Invalid coordinates from client: {coords}")
-                return {'error': 'Invalid coordinates provided.'}
+                raise ValueError(f"Invalid coordinates from client: {coords}")
+                
 
             return delineate(coords=coords)
-        except IndexError as e:
-            logger.error(f"Error parsing coordinates: {e}")
+
+        except ValueError as e:
+            raise_logging_exception(e, endpoint, None)
+            return {'error': 'Invalid coordinates provided.'}
+
+      
+        except Exception as e:
+            additional_message =  f"Error parsing coordinates: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
             return {'error': 'Malformed coordinates input.'}
 
     @staticmethod
-    def _handle_start_id(catchout):
+    def _handle_start_id(catchout, endpoint):
+
         try:
+
             start_id = int(catchout.split("catchStartID=")[1])
             return delineate(terminal_comid=start_id, precise=True)
+
         except ValueError as e:
-            logger.error(f"Error parsing start ID: {e}")
+
+            additional_message = f"Error parsing start ID: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
             return {'error': 'Invalid start ID provided.'}
 
 
@@ -1254,6 +1312,8 @@ class QuickFilterResults(View):
     @staticmethod
     def post(request, selection):
 
+        endpoint = request.path
+
         try:
             
             selection_query = QueryDict(selection)
@@ -1281,8 +1341,9 @@ class QuickFilterResults(View):
             
 
         except Exception as e:
-            
-            logger.debug(f'Unable to prepare your selection: {e}')
+
+            additional_message = f'Unable to prepare your selection: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
             response_data = QuickFilterResults.prepare_error_response(selection)
             print('response_data 2 : ', e)
 
@@ -1397,21 +1458,23 @@ class QuickFilterResults(View):
 
     @staticmethod
     def prepare_response_data(request, query, total_results, data_ext, layertype):
-        #print(request.user)
+
+        endpoint = request.path
 
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
         areal_id_layer = 'areal_ID_layer' + str(request.user)
         QuickFilterResults.delete_geoserver_layer(id_layer)
         QuickFilterResults.delete_geoserver_layer(areal_id_layer)
-        #print(IDs, id_layer,areal_id_layer  )
 
         if IDs:
             try:
                 create_layer(request, id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="point")
                 create_layer(request, areal_id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="areal_data")
             except Exception as e:
-                logger.debug(f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}')
+
+                additional_message = f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}'
+                raise_logging_exception(e, endpoint, additional_message)
         
         
         return {
@@ -1442,8 +1505,7 @@ class QuickFilterResults(View):
 
    
 def error_404_view(request, exception):
-    # data = {"name": "Some Error"}
-    # return render(request,'vfw_home/404.html', data)
+   
     return render(request, 'vfw_home/404.html')
 
 
@@ -1455,18 +1517,28 @@ class DownloadView(View):
     @staticmethod
     def get(request, name):
 
-        if name == 'vfwVM':
-            file_path = '/data/VBox_VFORWaTer.zip'
-            # file_path = '/home/marcus/tmp/customs.shp'
-            if Path(file_path).exists():
-                with open(file_path, 'rb') as fh:
-                    response = FileResponse(open(file_path, 'rb'))
-                    print('response: ', response)
-                    return response
+        endpoint = request.path
+
+        try :
+
+            if name == 'vfwVM':
+                file_path = '/data/VBox_VFORWaTer.zip'
+                
+                if Path(file_path).exists():
+                    with open(file_path, 'rb') as fh:
+                        response = FileResponse(open(file_path, 'rb'))
+                    
+                        return response
+                else:
+                    
+                    raise ValueError(f'no file at: {file_path}')   
             else:
-                print('no file at: ', file_path)
-                error_404_view(request, 'not available')
-            # raise Http404
-        else:
-            error_404_view(request, 'not available')
+                raise ValueError(f"Invalid file request: {name}")
+        
+        except Exception as error_message:
+
+            raise_logging_exception(error_message, endpoint, None)
+
+            raise Http404(error_message)
+
 
