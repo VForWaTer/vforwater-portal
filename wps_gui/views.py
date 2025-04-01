@@ -79,7 +79,7 @@ The following dict defines who can see which tools.
 default is accessible for everyone after log-in, the rest only for admins or on devel environments.
 """
 TOOLDICT = {
-    "default": ["vforwater_loader", "dataset_profiler", "variogram"],
+    "default": ["vforwater_loader", "dataset_profiler", "variogram", "whiteboxgis_tool"],
     "short_running_debug": ["hello-world"],  # available for any user in debug mode
     "short_running": [],  # available for any user, also if not logged in
 }
