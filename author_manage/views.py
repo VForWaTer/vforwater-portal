@@ -139,6 +139,7 @@ class MyResourcesView(generic.ListView):
         @return:
         @rtype:
         """
+        # point = forms.PointField(widget=CustomOSMWidget(attrs={'map_width': 600, 'map_height': 300}))
         owner_set = Resource.objects.filter(owners=self.request.user)
         maintainer_set = Resource.objects.filter(maintainers=self.request.user)
         reader_set = Resource.objects.filter(readers=self.request.user)

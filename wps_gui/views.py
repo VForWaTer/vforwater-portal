@@ -1,39 +1,65 @@
+# =================================================================
+#
+# Authors: Marcus Strobl <marcus.strobl@kit.edu>
+# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>
+#
+# Copyright (c) 2024 Marcus Strobl
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# =================================================================
+
 # from inspect import getmembers
-import ast
 import datetime
 import itertools
 import json
-import numbers
-import re
-import subprocess
 import sys
 import time
+import os
+import urllib
+import zipfile
 from pathlib import Path
+from io import BytesIO
+from urllib.parse import urlparse
 
 import jsonpickle
 import requests
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, JsonResponse
-from django.http.response import Http404
 from django.shortcuts import render
-from django.utils.timezone import make_aware
 from django.views.generic import TemplateView
 from django.utils import translation, timezone
+from json2html import json2html
 
-from heron.settings import VFW_SERVER, HOST_NAME, DEBUG, PROCESSES_IN_DIR
-from vfw_home.data_obj import DataObject
-from vfw_home.datatypes import basicdatatypes, datatypes
-from vfw_home.models import Entries, Datatypes, EntrygroupTypes, Datasources, Timeseries_1D
-from vfw_home.utilities import entry_has_data
-from vfw_home.views import get_accessible_data, get_dataset
-from wps_gui.models import WpsResults, WebProcessingService, WpsDescription
+from heron.settings import DEBUG  #, GEOAPI_DATA_PATH, PROCESSES_DATA
+from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
-    get_wps_service_engine,
-    list_wps_service_engines,
-    abstract_is_link, get_endpoint_data, get_process_basics, get_process_info, handle_geoapiprocess_output,
-    prepare_inputs, save_dataset,
+    get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
+    prepare_inputs, create_geoapi_db_entry, has_result_error, process_to_json, get_url_json, edit_input,
+    handle_wps_output, get_user_results, run_pygeoapi_process, url_join
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -47,40 +73,68 @@ logger = logging.getLogger(__name__)
 
 # from heron_wps.forms import InputForm
 
+"""
+Not every Tool we have should be available for everyone. E.g. because they are in development.
+The following dict defines who can see which tools.
+default is accessible for everyone after log-in, the rest only for admins or on devel environments.
+"""
+TOOLDICT = {
+    "default": ["vforwater_loader", "dataset_profiler", "variogram", "tool_whiteboxgis"],
+    "short_running_debug": ["hello-world"],  # available for any user in debug mode
+    "short_running": [],  # available for any user, also if not logged in
+}
+
+
 def home(request):
     ogcapi_proc = {}
+    message = ""
+
+    if request.user:
+        results = get_user_results(request.user.id)
+    else:
+        results = []
 
     service, endpoint, wps_services = get_endpoint_data(DEBUG)
 
     if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
         try:
             apiproc = getProcesses(endpoint)
+            # load process description according to user and devel state
             for process in apiproc.processes():
-                ogcapi_proc[process['id']] = {}
-                ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                if DEBUG and request.user.is_superuser:  # in debug mode or for superusers show all tools
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                elif DEBUG and process['id'] in TOOLDICT['short_running_debug']:
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+
+                elif request.user.id and process['id'] in TOOLDICT['default']:  # if logged in show more tools
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                elif process['id'] in TOOLDICT['short_running']:
+                    ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
+                    message = translation.gettext("You have to log in to see more Tools.")
 
         except Exception as e:
             logger.error(sys.exc_info()[0])
             print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}')
             context = {
-                "wps_services": translation.gettext("At the moment the processes are not available. We apologize for the inconvenience."),
+                "wps_services": translation.gettext(
+                    "At the moment the processes are not available. We apologize for the inconvenience."),
                 "processes": "",
                 "service": "Error",
             }
             return render(request, "wps_gui/home.html", context)
 
         # Remove process that should not be visible for users
-        if "dbloader" in ogcapi_proc:
-            del ogcapi_proc["dbloader"]
-        if "datareader" in ogcapi_proc:
-            del ogcapi_proc["datareader"]
-        if "workflow" in ogcapi_proc:
-            del ogcapi_proc["workflow"]
+        # workflow is kind of a helper process. It is called when several process are connected to call the workflow.
+        # So the user should call this implicitly by creating a workflow and shouldn't be shown in the list of tools.
+        # if "workflow" in ogcapi_proc:
+        #     del ogcapi_proc["workflow"]
 
         context = {
             "wps_services": wps_services,
             "processes": ogcapi_proc,
             "service": service,
+            "message": message,
+            "results": results
         }
 
         return render(request, "wps_gui/home.html", context)
@@ -191,63 +245,6 @@ def home(request):
 #     blala = p.communicate(input=input_text)[0]
 #     return blala
 
-# TODO: consider also storing the type of the output to the outputs
-# TODO: This way a result might get calculated, but used is a older stored value, right? Rethink this!
-def get_or_create_wpsdb_entry(service: str, wps_process: str, input: tuple):
-    """
-    Get or create a database entry.
-    :param service: name of the wps service
-    :param wps_process: identifier of the wps process
-    """
-    db_result, created = WpsResults.objects.get_or_create(
-        open=True,
-        wps=wps_process,
-        inputs={input[0]: input[1]},
-        defaults={"creation": timezone.now(), "access": timezone.now()},
-    )
-    result = {"wps_id": db_result.id}
-    if not created:
-        db_result.access = timezone.now()
-        db_result.save()
-    else:
-        wps = get_wps_service_engine(service)
-        execution = wps.execute(wps_process, [input])
-        execution_status = execution.status
-        wpsError = {}
-        if "Exception" in execution_status:
-            result = {"Error": "dbload did not work. Please check log file"}
-            db_result.delete()
-            logger.error(
-                "Got no result from wps for %s: %s",
-                (service, wps_process, input),
-                execution_status,
-            )
-        elif execution_status == "ProcessSucceeded" and wpsError["error"] == "False":
-            # if execution_status == "ProcessSucceeded" and not execution.processOutputs[1].data[0]:
-            db_result.outputs = execution.processOutputs[0].data
-            db_result.save()
-        else:
-            db_result.delete()
-            result = {"Error": "dbload did not work. Please check log file"}
-            logger.error(
-                "get_or create wps execution_status for %s: %s",
-                (service, wps_process, input),
-                execution_status,
-            )
-        # else:
-        #     try:
-        #         wpsError['error'] = execution.processOutputs[1].data[0]
-        #         print('+ im try 2')
-        #     except ObjectDoesNotExist:
-        #         print('+ im except')
-        #         wpsError['error'] = 'True'
-        #         wpsError['text'] = 'Something strange (Error?) in wps.'
-        #         print('+ im except 2')
-        #         logger.error('Something strange (Error?) in wps for %s: %s',
-        #                      (service, wps_process, input), execution_status)
-
-    return result
-
 
 def create_wpsdb_entry(wps_process: str, invalue: list, outputs):
     """
@@ -273,7 +270,10 @@ class ProcessView(TemplateView):
         if selected_process['serv'] == 'pygeoapi_vforwater':
             service, endpoint, wps_services = get_endpoint_data(DEBUG)
             apiproc = getProcesses(endpoint)
+            print("selected_process['id']: ", selected_process['id'])
+            print("apiproc.process(selected_process['id']): ", apiproc.process(selected_process['id']))
             process_description = get_process_info(apiproc.process(selected_process['id']))
+            print('process_description: ', process_description)
         else:
             wps = get_wps_service_engine(selected_process["serv"])
             wps_process = wps.describeprocess(selected_process["id"])
@@ -283,268 +283,274 @@ class ProcessView(TemplateView):
         return JsonResponse(process_description)
 
 
-def process_to_json(wps_process):
-    # TODO: use of jsonpickle only to simplify readability of wps_process.
-    #  Shouldn't be necessary to use jsonpickle for that. Please improve!
-    # simply serialize wps to json
-    whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
-
-    # convert to dict to remove unwanted keys and empty values
-    whole_wpsprocess = json.loads(whole_wpsprocess_json)
-    whole_wpsprocess.pop("_root", None)
-    wps_description = {}
-    for a in whole_wpsprocess:
-        if isinstance(whole_wpsprocess[a], list):
-            list_values = []
-            for b in whole_wpsprocess[a]:
-                if isinstance(b, dict):
-                    innerdict = {}
-                    for k, v in b.items():
-                        # TODO: ugly hack because keywords are still not implemented in pywps. Use
-                        #  allow_values with first value '_keywords' instead
-                        if k == "allowedValues" and v != [] and v[0] == "_keywords":
-                            innerdict["keywords"] = v[1:]
-                        elif k == "version":
-                            innerdict["version"] = v
-                        elif k == "processVersion":
-                            innerdict["processVersion"] = v
-                        elif (
-                            k == "abstract" and v is not None
-                        ):  # and not v == [] and v[0] == '_keywords':
-                            try:
-                                for abst in json.loads(v):
-                                    if abst == "keywords":
-                                        innerdict[abst] = json.loads(v)[abst]
-                                    else:
-                                        innerdict["abstract"] = v
-                            except ValueError:
-                                innerdict["abstract"] = v
-                        elif v is not None and v != []:
-                            if isinstance(v, str) and re.search("(?<=/#)\w+", v):
-                                match = re.search("(?<=/#)\w+", v)
-                                innerdict[k] = match.group(0)
-                            else:
-                                innerdict[k] = v
-
-                    # TODO: The following 'if' can be removed when there is a 'required' flag to use in pywps/owslib
-                    if (
-                        "minOccurs" in innerdict
-                        and innerdict["minOccurs"] > 0
-                        and innerdict["dataType"] != "boolean"
-                    ):
-                        innerdict["required"] = True
-
-                    list_values.append(innerdict)
-                elif b is not None and b != []:
-                    list_values.append(b)
-
-                # print('__list_values[0]: ', list_values[0])
-                # print('list_values[]["minOccours"]: ', list_values[0]['minOccours'])
-            wps_description[a] = list_values
-        elif not whole_wpsprocess[a] is None and whole_wpsprocess[a] != []:
-            # from docutils.writers.html4css1 import Writer, HTMLTranslator
-            # from docutils import core
-            # class HTMLFragmentTranslator(HTMLTranslator):
-            #     def __init__(self, document):
-            #         HTMLTranslator.__init__(self, document)
-            #         self.head_prefix = ['', '', '', '', '']
-            #         self.body_prefix = []
-            #         self.body_suffix = []
-            #         self.stylesheet = []
-            #     def astext(self):
-            #         return ''.join(self.body)
-            # html_fragment_writer = Writer()
-            # html_fragment_writer.translator_class = HTMLFragmentTranslator
-            # print("reST_to_html(v): ", core.publish_string(whole_wpsprocess[a], writer=html_fragment_writer))
-
-            # import simplicity
-            # print('rst_to_json: ', simplicity.rst_to_json(whole_wpsprocess[a]))
-
-            # import docutils.core  # not tested yet
-            # docutils.core.publish_file(v, destination_path="output.json",
-            # result = open("output.json").read()
-            # innerdict['abstract'] = result
-
-            import docutils.core
-            # print('+ +  +: ', docutils.core.publish_parts(whole_wpsprocess[a], writer_name="html"))
-
-            # parts = core.publish_parts(source = whole_wpsprocess[a], writer_name = 'html')
-            # print(parts['body_pre_docinfo'] + parts['fragment'])
-
-            # print('pandoc: ', use_pandoc(whole_wpsprocess[a]))
-
-            wps_description[a] = whole_wpsprocess[a]
-
-    # print('wps_description: ', wps_description)
-    # for i in wps_description:
-    #     print('i: ', i)
-    #     print('wps_description[i]: ', wps_description[i])
-    #
-    # for j in wps_description['dataInputs']:
-    #     print('j: ', j)
-    return wps_description
+# from requests_futures.sessions import FuturesSession
 
 
-def handle_wps_output(execution, wps_process, inputs):
-    """
+# @login_required(login_url="/oidc/authenticate/")  # TODO: This results in an error related to CORS. Find another solution
+def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
+    user_id = None
 
-    :param execution: owslib.wps.output object
-    :type execution: object
-    :param wps_process: name of the process
-    :type wps_process: string
-    :param inputs: {'key_list': [], 'value_list': [], 'dataset': ''}
-    :type inputs: dict
-    :return:
-    """
-    # order output for database
-    all_outputs = {
-        "execution_status": execution.status,
-        "version": execution.version,
-        "verbose": execution.verbose,
-        "timeout": execution.timeout,
-        "percentCompleted": execution.percentCompleted,
-        "errors": execution.percentCompleted,
-        "creationTime: ": execution.creationTime,
-        # 'process': execution.process,
-        "result": {},
-    }
-    path = ""
+    try:
+        user_id = request.user.id
+        user_queryset = User.objects.get(id=user_id)
+    except User.DoesNotExist as e:
+        # print('User does not exist when running a process: ', e)
+        logger.error('User does not exist when running a process: ', e)
+        user_queryset = None
 
-    if execution.errors != []:
-        return all_outputs
-
-    # iterate through list of outputs
-    for output in execution.processOutputs:
-
-        if output.identifier == "error":
-            error_dict = {}
-            error = False
-            error_dict["error"] = output.data[0] == "True"
-            # error_dict = json.loads(output.data[0])
-            all_outputs["error"] = error_dict
-
-            if error_dict["error"] is not False:
-                print("error in wps process: ", error_dict)
-                all_outputs = {
-                    "execution_status": "error in wps process",
-                    "error": error_dict["message"],
-                }
-                break
-
-        # if no error build output for a result button in portal:
-        else:
-            single_output = {}
-
-            # get datatype
-            try:
-                keywords = json.loads(output.abstract)["keywords"][0]
-                single_output["type"] = keywords
-                if "pickle" in keywords:
-                    path = eval(output.data[0])[0]  # get first value of string tuple
-            except TypeError as e:
-                if output.dataType not in basicdatatypes:
-                    matchObj = re.search("[^:]+$", output.dataType)
-                    output.dataType = matchObj.group()
-                    print(
-                        'No keywords or type (TypeError: {}). Using "{}" as DataType.'.format(
-                            e, output.dataType
-                        )
-                    )
-                single_output["type"] = output.dataType
-            except KeyError as e:
-                print("this is a key error: ", e)
-
-            # get data
-            if output.data:
-                # if output.identifier == 'fig':
-                # if output.dataType == 'string':
-                if output.dataType in ["string", "integer"]:
-                    single_output["data"] = output.data[0]
-                else:
-                    single_output['data'] = eval(output.data[0])[0]
-
-            # TODO: Decide how to handle errors from WPS (show nothing, everything and user can check what is okay?)
-            if (
-                output.data and len(single_output["data"]) < 300
-            ):  # random number, typical pathlength < 260 chars
-                db_output_data = output.data[0]
-            elif path != "":
-                try:
-                    file_name = path[:-4] + single_output["type"] + path[-4:]
-                    text_file = open(file_name, "w")
-                    text_file.write(eval(output.data[0])[0])
-                    text_file.close()
-                    db_output_data = file_name
-                    single_output["data"] = eval(output.data[0])[0]
-                except Exception as e:
-                    print("Warning: no file was created for long string")
-                    print(e)
-            else:
-                db_output_data = ""
-
-            if db_output_data != "":
-                db_output = [output.identifier, single_output["type"], db_output_data]
-                # create db entry
-                wpsid = create_wpsdb_entry(wps_process, inputs, db_output)
-
-                single_output["wpsID"] = wpsid
-                single_output["dropBtn"] = {
-                    "orgid": wpsid,
-                    "type": "data",
-                    "name": "",
-                    "inputs": [],
-                    "outputs": [single_output["type"]],
-                }
-            else:
-                print("*** no output to write to db ***")
-                single_output["error"] = "no output to write to db"
-
-            all_outputs["result"][output.identifier] = single_output
-            # TODO: Have to handle bytes result
-            # if type(output.data[0]) is bytes:
-            #     if len(output.data[0]) > 30:
-            #         substring = str(output.data[0][:30])
-            #         if "xml" in substring:
-            #             print('XML as input not implemented yet. Got: ', output.data[0])
-            #             logger.error('XML as input not implemented yet.')
-            #             # tree = ET.fromstring(output.data[0])
-            #             # for child in tree:
-            #             #     print(child.tag, child.attrib)
-            #             del outputs_for_db[-1]
-    return all_outputs
-
-
-# @login_required
-def process_run(request):  # TODO: Check if identical input exists in db before starting the process again
     # if request.user.is_authenticated:
-    if True:
-        process_description = ""
-        # request_input = json.loads(request.GET.get('processrun'))
-        input = prepare_inputs(request=request, request_input=json.loads(request.GET.get('processrun')))
-        wps_process = input.get("id", "")
-
-        if input['serv'] == 'pygeoapi_vforwater':
-            service, endpoint, wps_services = get_endpoint_data(DEBUG)
-            apiproc = getProcesses(endpoint)
-            process_description = get_process_info(apiproc.process(wps_process))
+    process_description = ""
+    # request_input = json.loads(request.GET.get('processrun'))
+    try:
+        if request.GET.get('processrun'):
+            request_inputs = request.GET.get('processrun')
         else:
-            print('You try to run a process, but I do not know your server.')
+            request_inputs = request.POST.get('processrun')
 
-        execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
-                                  json={'inputs': input.get("in_dict", ""),
-                                        # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
-                                        }
-                                  )
-        if execution.status_code == 200:
-            all_outputs = handle_geoapiprocess_output(request.user, execution, process_description, input)
-        else:
-            all_outputs = {'execution_status': f'error: {execution.reason}'}
-            print(f'Error in process - caught in process_run function: {all_outputs}')
+        input = prepare_inputs(request=request, request_input=json.loads(request_inputs))
+    except Exception as e:
+        # print(f'Problems preparing inputs in wps_gui.views.process_run: {e}')
+        logger.error(f'Problems preparing inputs {e}')
+
+    wps_process = input.get("id", "")
+
+    if input['serv'] == 'pygeoapi_vforwater':
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        apiproc = getProcesses(endpoint)
+        process_description = get_process_info(apiproc.process(wps_process))
     else:
-        all_outputs = {'execution_status': 'auth_error'}
-        print(f'user is not authenticated. {all_outputs}')
+        logger.error(f'Cannot run process. Server "{input["serv"]}" is unknown.')
+        # print('You try to run a process, but I do not know your server.')
 
-    return JsonResponse(all_outputs)
+    try:
+        execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
+                              json={
+                                  "mode": "async",
+                                  # TODO: old setting from PyGeoAPI 0.13. Change for newer version
+                                  'inputs': {**input.get("in_dict", ""),
+                                             'User-Info':  # plant the username in last moment
+                                                 f'user{user_id}_{request.user.username}'}
+                                      # input.get("in_dict", ""),
+                                  # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
+                              },
+                              headers={'Content-Type': 'application/json',
+                                       # "Prefer": "respond-async"  # TODO: Use this for PyGeoAPI 0.16 and newer
+                                       }
+                              )
+    except Exception as e:
+        print('e: ', e)
+        logger.error(f'Cannot Execute process: {e}.')
+
+    job_path = urlparse(execution.headers['Location']).path
+    # TODO: absolute path is bad design, is a problem when accessing data from different machines. Better: store
+    #  only path and create endpoint + path when needed.
+    db_data = {'inputs': input.get("in_dict", ""),
+               'name': wps_process,
+               'open': False if user_id else True,
+               'outputs': {
+                   'path': job_path,
+                   # 'path': urljoin(endpoint, job_path),
+                   # 'path': execution.headers['Location'],
+                   'jobMeta_path': f"{job_path}?f=json",
+                   # 'jobMeta_path': f"{execution.headers['Location']}?f=json",
+                   'results': ""
+                           # 'results': f"{execution.headers['Location']}/results?f=json"
+                           },
+               # 'user': user_id,
+               }
+
+    if execution.status_code == 201:  # if request is created
+        # Save the job url for later use
+        db_data['status'] = 'CREATED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    elif execution.status_code == 202:  # if request is accepted
+        db_data['status'] = 'ACCEPTED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    elif execution.status_code == 200:  # if done
+        if has_result_error(db_data):
+            db_data['status'] = 'ERROR'
+        else:
+            db_data['status'] = 'FINISHED'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+    else:
+        db_data['status'] = 'ERROR'
+        newEntry = create_geoapi_db_entry(db_data, user_queryset)
+
+    # add the database id to the dataset. Needed to enable request of state from client to django
+    if not hasattr(db_data, 'id'):
+        db_data['id'] = newEntry['id']
+    result = db_data
+
+    if newEntry['error']:
+        logger.error(f'Error creating database entry for process result: {newEntry["error"]}')
+        print(f'Error creating database entry for process result: {newEntry["error"]}')
+        result = {'error': 'true'}
+
+    return JsonResponse(result)
+
+
+def delete_result(request):
+    """
+    Delete a specific result entry from the GeoAPIResults model based on the provided process ID.
+    Deletion works only if request user and DB entry owner are the same. (TODO: later we want ownership to be shared. Who can delete then?)
+
+    First retrieve the user record based on the user ID from the request object.
+    Next, retrieve the GeoAPIResults entry based on the owner_id (user) and the process_id from the request object.
+
+    If the user does not exist or the entry cannot be found, an exception is send to the server.
+    If entry is found, the method deletes it. A deletion result with the number of deleted rows is send to the client.
+
+    :param request: HttpRequest object containing the request data id.
+    :return: JsonResponse sending done if deletion worked, else some error message.
+
+    """
+    try:
+        process_id = int(request.GET['processid'])
+        user_id = request.user.id
+        user_queryset = User.objects.get(id=user_id)
+    except User.DoesNotExist as e:
+        print('User does not exist when running a process: ', e)
+        user_id = None
+        user_queryset = None
+
+    except Exception as e:
+        logger.error(f'Got no ID to delete process: {e}')
+        return JsonResponse({'error': 'Got no ID to delete process.'})
+
+    try:
+        entry = GeoAPIResults.objects.filter(owner_id=user_queryset).get(id=process_id)
+    except Exception as e:
+        logger.error(f'Unable to delete not existing dataset: {e}')
+        return JsonResponse({'error': 'Deletion of dataset did not work.',
+                             'report': {'status': {'server': 'failed', 'db': 'failed'},
+                                        'error': f'Unable to delete dataset. {e}'},
+                             'message': 'delete'})
+
+    try:
+        # TODO: is it a good solution to have a tool to delete results? Think about how to delete directly from django
+        tinydb_entry_name = f"{entry.name}-{entry.outputs['path'].replace('/jobs/', '')}"
+        # tinydb_entry_name = f"{entry.name}-{urllib.parse.urlparse(entry.outputs['path']).path.replace('/jobs/', '')}"
+        input = {'in_dict': {'input_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
+                             'output_folders': [entry.outputs['results'][0]['json']['dir'].split("out", 1)[1]],
+                             'job_list': [tinydb_entry_name]}}
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        execution = run_pygeoapi_process(endpoint, 'result_remover', input, user_id, request.user.username)
+
+        # TODO: this report isn't used yet, but might be of interest in future
+        deletion_report = {'status': {'server': execution.status_code},
+                           'report': get_url_json(f'{execution.headers["Location"]}/results?f=json'),
+                           'error': ''}
+    except Exception as e:
+        logger.error(f'Unable to delete dataset: {e}')
+        deletion_report = {'status': {'server': 'failed'},
+                           'error': f'Unable to delete dataset. {e}'}
+
+    try:
+        entry.delete()
+        deletion_report['status']['db'] = 'done'
+    except Exception as e:
+        logger.error(f'Unable to delete result from db: {e}')
+        deletion_report['status']['db'] = 'failed'
+        deletion_report['error'] = f"{deletion_report['error']}; Delete from DB failed with {e}"
+
+    if deletion_report['status'] == '201':
+        return JsonResponse({'report': deletion_report,
+                             'message': 'delete'})
+    else:
+        return JsonResponse({'error': 'Deletion of folders did not work.',
+                             'report': deletion_report,
+                             'message': 'delete'})
+
+
+def process_state(request):
+    """
+    Check the state of a process in GeoAPI and store updates in DB.
+
+    :param request: A request object that includes a process ID.
+    :return: A JSON response containing the process state or an error message.
+    """
+    # check if request includes a process id
+    try:
+        process_id = int(request.GET['processid'])
+    except Exception as e:
+        print('Got no ID to check process state: ', e)
+        logger.error(f'Got no ID to check process state: {e}')
+        return JsonResponse({'error': 'Got no ID to check process state.'})
+
+    # get element from database
+    try:
+        entry = GeoAPIResults.objects.get(id=process_id)
+    except ObjectDoesNotExist as e:
+        # print(f"Cannot check state of Process. Entry {process_id} seems not to exist: ", e)
+        return JsonResponse({'error': f"Cannot check state of Process. Entry {process_id} seems not to exist"})
+
+    # check if user has access to this dataset. If yes get state from GeoAPI
+    if entry.open or request.user.id == entry.owner_id:
+        service, endpoint, wps_services = get_endpoint_data(DEBUG)
+        url = url_join(endpoint, entry.outputs['path'])
+        # print(f'try to get process state from url: {url}')
+        logger.info(f'try to get process state from url: {url}')
+        update = get_url_json(f'{url}?f=json')
+    else:
+        return JsonResponse({'error': 'No Access'})
+
+    # check status. If successful update database and send update
+    # if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
+    # TODO: Yes, the following is way too complicated. Check the tools, find a standard and simplify all of this!!!
+    if ((update['status'] == "successful" or update['status'] == "completed") and update['message'] == 'Job complete'
+        and update['progress'] == 100):
+
+        result_url = f'{url}/results?f=json'
+        result = get_url_json(result_url)
+        if result["container_status"] and result["container_status"] == 'failed':
+            entry.status = "FINISHED"
+            entry.access = timezone.now().isoformat()
+        elif result["container_status"] and result["container_status"] == 'exited':
+            entry.status = "FINISHED"
+            entry.access = timezone.now().isoformat()
+        elif ((result["error"] and result["error"] == 'none') and
+              (result["geoapi_status"] and result["completed"] == 'none')):
+            entry.status = "FINISHED"
+            entry.access = timezone.now().isoformat()
+        else:
+            entry.status = "ERROR"
+            entry.access = timezone.now().isoformat()
+            # print(f'Process failed but container was able to finish: {update}')
+            logger.error(f'Process failed but container was able to finish: {update}')
+
+        entry.outputs['results'] = [{'path': result_url, 'json': result}]
+        try:
+            entry.save()
+
+        except ValueError as e:
+            print(f"ValueError while trying to update DB: {e}")
+            logger.error(f'ValueError while trying to update DB: {e}')
+
+        except Exception as e:
+            print(f"Unexpected error while trying to update DB: {e}")
+            logger.error(f'Unexpected error while trying to update DB: {e}')
+    elif (update['status'] == "failed" and update['message'] == 'InvalidParameterValue: Error updating job'
+          and update['progress'] < 10):
+        logger.error(f'Process failed immediately: {update}')
+        # print(f'Process failed immediately: {update}')
+        return JsonResponse({'status': entry.status, 'error': 'Invalid Parameter Value'})
+    elif update['status'] == "accepted":
+        return JsonResponse({'status': entry.status})
+    else:
+        logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        # print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
+        # style is the combination of 'status', 'message' and 'progress'
+
+    try:
+        response_dict = {'status': entry.status,
+                     'results': [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
+                     }
+    except Exception as e:
+        # print(f"Unexpected error while trying to refresh client: {e}")
+        logger.error(f"Unexpected error while trying to refresh client: {e}")
+
+    return JsonResponse(response_dict)
+
 
 # # @login_required
 # def process_run(request):
@@ -565,120 +571,9 @@ def process_run(request):  # TODO: Check if identical input exists in db before 
 #
 #     return JsonResponse(all_outputs)
 
-
-def db_load(request):
-    """
-    Function to preload data from database, convert it, and store a pickle of the data
-    Example for input for wps dbloader:  [('entry_id', '12'), ('uuid', ''), ('start', '1990-10-31T09:06'),
-    ('end', datetime.datetime(2018, 12, 31, 0, 0))]
-    :param request: dict
-    :return:
-    """
-    wps_process = "dbloader"
-    request_input = json.loads(request.GET.get("dbload"))
-    request_dict = dict(zip(request_input['key_list'], request_input['value_list']))
-    orgid = request_input.get("dataset")
-
-    # check if user has access to dataset
-    accessible_data = get_accessible_data(request, orgid[2:])
-    accessible_data = accessible_data["open"]
-    if len(accessible_data) < 1:
-        return JsonResponse({"Error": "No accessible dataset."})
-    elif len(accessible_data) > 1:
-        return JsonResponse(
-            {"Error": "You have to adjust function for list of datasets."}
-        )
-
-    # format inputs for wps server
-    inputs = edit_input(list(zip(request_input.get("key_list", ""), request_input.get("value_list", ""))))
-
-    # lookup_arguments = {'entry_id': orgid[2:]}
-    # if request_dict['start'] != 'None' and request_dict['end'] != 'None':
-    #     lookup_arguments['tstamp__gte'] = request_dict['start']
-    #     lookup_arguments['tstamp__lte'] = request_dict['end']
-
-    if request_dict['start'] != 'None':
-        date = [make_aware(datetime.datetime.strptime(request_dict['start'], '%Y-%m-%d')),
-                make_aware(datetime.datetime.strptime(request_dict['end'], '%Y-%m-%d'))]
-    else:
-        date = None
-
-    # Try to read path from database. If not available load in except block from db and store (meta-)data o disk.
-    try:
-        preloaded_data = WpsResults.objects.get(wps=wps_process, inputs=inputs)
-        output = ast.literal_eval(preloaded_data.outputs)
-        result = {"id": "wps" + str(preloaded_data.id),
-                  "inputs": inputs,
-                  "orgid": orgid,
-                  "type": output["type"],
-                  }
-        # print('*** dataset is already loaded ***')
-    except Exception as e:
-        save_result = save_dataset(request=request, orgid=orgid, inputs=inputs, wps_process=wps_process, date=date)
-        result = save_result['short_info']
-        # print('*** (worked as expected) dataset wasnt loaded: ', e)
-
-        # TODO: data is saved, now create metadata
-
-    return JsonResponse(result)
-
-
-def edit_input(inputs):
-    """
-
-    :param inputs:
-    :return: list of tuples, each tuple a pair of wps_input_identifier and its value
-    """
-
-    def filepath(fid):
-        pass
-
-    wps_input = []
-    for key_value in inputs:
-        if key_value[1] is None and not (
-            key_value[0] == "start" or key_value[0] == "end"
-        ):
-            wps_input.append((key_value[0], key_value[2]))
-        elif isinstance(key_value[1], list):
-            for value, type_value in zip(key_value[1], key_value[2]):
-                if type_value in datatypes:
-                    # new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[2])
-                    # wps_input.append(new_pair)
-                    if value[0:3] == 'wps':
-                        ast.literal_eval(WpsResults.objects.get(id=value[3:]).outputs)['path']
-                        wps_input.append((key_value[0],
-                                          ast.literal_eval(WpsResults.objects.get(id=value[3:]).outputs)['path']))
-                    else:
-                        wps_input.append((key_value[0],
-                                          ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[0]))
-        elif isinstance(key_value[1], bool) or isinstance(key_value[1], numbers.Number):
-            wps_input.append((key_value[0], str(key_value[1])))
-        elif key_value[1][0:2] == "db" and key_value[1][2:].isdecimal():
-            wps_input.append((key_value[0], key_value[1][2:]))
-        elif key_value[1][0:3] == 'wps' and key_value[1][3:].isdecimal():
-            wps_input.append((key_value[0],
-                              ast.literal_eval(WpsResults.objects.get(id=key_value[1][3:]).outputs)['path']))
-        elif key_value[0] == 'start' or key_value[0] == 'end':
-            if key_value[1] != 'None':
-                wps_input.append((key_value[0], make_aware(
-                    value=datetime.datetime.strptime(key_value[1], '%Y-%m-%d')).strftime("%Y-%m-%dT%H:%M:%S")
-                                  ))
-        # elif key_value[1] is None:
-        #     print('Yes! It is None!')
-        else:
-            wps_input.append((key_value[0], key_value[1]))
-    return wps_input
-
-
 # def date_to_datetime(date_string):
 #
 # return datetime_string
-
-
-def load_data_local(inputs):
-
-    return
-
 
 #
 # def process(request, service, identifier):
@@ -882,45 +777,48 @@ def update_tools(request, updateinterval=5):
     return JsonResponse({"wps": updatedwps})
 
 
-def get_process_metadata(sessiondata, describedprocess, identifier):
-    sessiondata[identifier]["processin"] = []
-    sessiondata[identifier]["processout"] = []
+@method_decorator(login_required(login_url="/login/"), name='dispatch')
+class ToolResultsDownload(TemplateView):
+    """
+    View to handle the download of tool results as a zip file.
+    Requires user to be authenticated.
+    """
 
-    for i in describedprocess.dataInputs:
-        if i.allowedValues == [] or not i.allowedValues[0] == "_keywords":
-            if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
-                # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
-                keywords = ast.literal_eval(i.abstract[: 1 + i.abstract.find("}", 10)])[
-                    "keywords"
-                ]
-                sessiondata[identifier]["processin"].append(keywords)
-            else:
-                sessiondata[identifier]["processin"].append(i.dataType)
+    def get(self, request):
+        if 'zip' in request.GET and 'path' in request.GET:
+            directory_path = request.GET['path']
+            print('directory_path: ', directory_path)
+            logger.info(f'directory_path: {directory_path}')
+            # if directory_path.startswith(GEOAPI_DATA_PATH):
+            #     directory_path = directory_path.replace(GEOAPI_DATA_PATH, PROCESSES_DATA, 1)
 
-        # if i.allowedValues == [] and isinstance(i.dataType, str):
-        #     wps.processes[loopCount].processin.append('string')
-        # elif i.allowedValues == [] and not isinstance(i.dataType, str):
-        #     wps.processes[loopCount].processin.append(i.dataType)
-        elif i.allowedValues[0] == "_keywords":
-            if i.allowedValues[1] == "pattern":
-                patternList = i.allowedValues[1:]
-                patternList.insert(0, i.dataType)
-                sessiondata[identifier]["processin"].append(patternList)
-            else:
-                sessiondata[identifier]["processin"].append(i.allowedValues[1:])
+            if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+                logging.error(f"Requested path does not exist or is not a directory: {directory_path}")
+                # logging.error(f"You might want to check if path from geoapi container is correct (GEOAPI_DATA_PATH = {GEOAPI_DATA_PATH})")
+                # logging.error(f"You might want to check if path from django container is correct (PROCESSES_DATA = {PROCESSES_DATA})")
+                # print(f"You might want to check if path from geoapi container is correct (GEOAPI_DATA_PATH = {GEOAPI_DATA_PATH})")
+                # print(f"You might want to check if path from django container is correct (PROCESSES_DATA = {PROCESSES_DATA})")
 
-    for i in describedprocess.processOutputs:
-        if "error" not in i.identifier:
-            if i.abstract is not None:
-                if "keywords" in json.loads(i.abstract):
-                    sessiondata[identifier]["processout"].append(
-                        json.loads(i.abstract)["keywords"]
-                    )
-            elif isinstance(i.dataType, str) or isinstance(i.dataType, float):
-                sessiondata[identifier]["processout"].append(i.dataType)
-            # elif isinstance(i.dataType, float):
-            #     wps.processes[loopCount].processout.append('float')
-            # elif i.metadata[0] == '_keywords':
-            #     wps.processes[loopCount].processout.append(i.allowedValues[1:])
+                print(f"Requested path does not exist or is not a directory: {directory_path}")
+                return HttpResponse(status=404)
 
-    return sessiondata
+            zip_filename = "geo_data.zip"
+            response = HttpResponse(content_type='application/zip')
+            response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+            buffer = BytesIO()
+
+            with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for root, _, files in os.walk(directory_path):
+                    for file in files:
+                        if not file.endswith((".zip", ".log")):
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.relpath(file_path, start=directory_path)
+                            zip_file.write(file_path, arcname=arcname)
+
+            buffer.seek(0)
+            response.write(buffer.read())
+            return response
+        else:
+            logging.error("Missing required query parameters.")
+            return HttpResponse(status=400)
+

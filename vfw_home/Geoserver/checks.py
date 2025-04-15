@@ -1,15 +1,15 @@
 import sys
 
-from vfw_home.geoserver_layer import test_geoserver_env, get_layer, create_layer
+from .geoserver_layer import test_geoserver_env, has_layer, create_layer
 
 
 def check_geoserver_layers(store: str, workspace: str, layers: list) -> object:
     """
     Check that geoserver is running and has the needed stores, workspace, and layers
 
-    :param store:
-    :param workspace:
-    :param layers:
+    :param store: str
+    :param workspace: str
+    :param layers: list
     """
     geoserver_alive = False
     try:
@@ -25,6 +25,6 @@ def check_geoserver_layers(store: str, workspace: str, layers: list) -> object:
     # check if static layers exist. Build them if not.
     if geoserver_alive:
         for ly in layers:
-            if not get_layer(ly[0], store, workspace):
+            if not has_layer(ly[0], store, workspace):
                 print(f'--- no layer <{ly[0]}> ---')
                 create_layer(request={}, filename=ly[0], datastore=store, workspace=workspace, layertype=ly[1])

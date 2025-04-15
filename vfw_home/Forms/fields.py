@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy
 
 from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider, AutocompleteCharWidget, \
     DateRangeSliderDatePicker
-from .utilities import regex_patterns
+from ..utilities.utilities import regex_patterns
 
 class SliderField(forms.DateTimeField):
     def __init__(self, *args, **kwargs):

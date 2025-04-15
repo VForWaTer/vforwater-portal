@@ -1,25 +1,42 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
+// vfw.map.vars.selectCatchmentIDs = [];
 vfw.map.vars.hit_cL = {};
-let olmap;
 // TODO: Check if clusterlayer has to be global!
-//let selectCluster;
 // let dcz = new ol.interaction.DoubleClickZoom();
 
+/**
+ * Calculates a circular image style for the map marker.
+ *
+ * @param {number} size - The radius of the circle in pixels.
+ * @param {string} strokeColor - The stroke Color of the image to be used.
+ * @param {string} fillColor - The fill Color of the image to be used.
+ * @return {object} - The map marker style with the circular image.
+ */
+vfw.map.style.calcImageCircle = function(size, strokeColor=vfw.colors.blue3, fillColor=vfw.colors.blue2) {
+    return new ol.style.Circle({
+        radius: Math.round(8 + 1.3 * Math.log(size)),
+        stroke: new ol.style.Stroke({
+            color: strokeColor,
+            width: 0.5
+        }),
+        fill: new ol.style.Fill({
+            color: fillColor
+        })
+    })
+}
 /** build style for cluster **/
-vfw.map.style.clusterStyle = function (feature) {
-    let size = feature.get('features').length;
+vfw.map.style.clusterData = function (feature) {
+    const size = feature.get('features').length;
     let style = vfw.map.style.cache[size];
     if (!style) {
         style = vfw.map.style.cache[size] = new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: Math.round(8 + 1.3 * Math.log(size)),
-                stroke: new ol.style.Stroke({
-                    color: '#00BAEE',
-                    width: 0.5
-                }),
-                fill: new ol.style.Fill({
-                    color: '#AADDF9'
-                })
-            }),
+            image: vfw.map.style.calcImageCircle(size),
             text: new ol.style.Text({
                 text: size.toString(),
                 font: '12px helvetica,sans-serif',
@@ -31,6 +48,16 @@ vfw.map.style.clusterStyle = function (feature) {
     }
     return [style];
 }
+/** build style for merrit catchments **/
+vfw.map.style.merritCatchment = new ol.style.Style({
+    fill: new ol.style.Fill({
+        color: 'rgba(255,255,255,0)',
+    }),
+    stroke: new ol.style.Stroke({
+        color: 'rgba(44,51,180,0.89)',
+        width: 2
+    })
+})
 
 /**
  * Whan clicked on a dataset o the map, then get a modal (pop up) with some information about the datasets
@@ -70,7 +97,7 @@ vfw.map.source.wfsMeritCatchment = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
     loader: function (extent) {
-        let layerName = 'merit_catch_test'
+        const layerName = 'merit_catchment';  // 'merit_catch_test';
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
@@ -99,7 +126,7 @@ vfw.map.source.wfsCoarseMeritCatchment = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
     loader: function (extent) {
-        let layerName = 'merit_catch_test_v2'
+        const layerName = 'merit_catchment_coarse';  // 'merit_catch_test_v2';
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
             + extent.join(',') + '/3857',
         )
@@ -120,45 +147,13 @@ vfw.map.source.wfsCoarseMeritCatchment = new ol.source.Vector({
     },
     strategy: ol.loadingstrategy.bbox
 });
-/** get rivers from server **/
-// vfw.map.source.wfsMeritRiver = new ol.source.VectorTile({
-//       source: new ol.source.VectorTile({
-//         tilePixelRatio: 1, // oversampling when > 1
-//         tileGrid: ol.tilegrid.createXYZ({maxZoom: 19}),
-//         format: new ol.format.MVT(),
-//         url: vfw.var.DEMO_VAR + '/home/geoserver/gwc/service/tms/1.0.0/metacatalogdev:merit_river_test@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf'
-//       })
-    /*format: new ol.format.GeoJSON(),
-    loader: function (extent) {
-        let url = vfw.var.DEMO_VAR + '/home/geoserver/gwc/service/tms/1.0.0/merit_river_test@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf'
-        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
-            + extent.join(',') + '/3857',
-            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
-            // credentials: 'same-origin'}
-        )
-            .then(function (response) {
-                if (response.ok) {
-                    return response.text();
-                } else {
-                    return Promise.reject(response);
-                }
-            })
-            .then(function (response) {
-                vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
-            })
-            .catch(function (error) {
-                console.warn('No result for selected area. Unable to build vector layer.');
-                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
-                vfw.map.source.wfsPointSource.removeLoadedExtent(extent);
-            })
-    },
-    strategy: ol.loadingstrategy.bbox*/
-// });
+
+/** get simplified merit rivers from server. Only used to select upstream catchment, not for visualisation **/
 vfw.map.source.wfsMeritRiver = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     // format: new ol.format.MVT(),  // TODO: MVT is supposed to be faster than JSON. Figur how to use it.
     loader: function (extent) {
-        let layerName = 'merit_river_test'
+        let layerName = 'merit_river_simple'
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + layerName + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
@@ -182,11 +177,14 @@ vfw.map.source.wfsMeritRiver = new ol.source.Vector({
     },
     strategy: ol.loadingstrategy.bbox
 });
+
 /** get data points from server **/
 vfw.map.source.wfsPointSource = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     loader: function (extent) {
-        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.map.vars.wfsLayerName + '/'
+        console.log('data: ', vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.DATA_LAYER_NAME + '/'
+            + extent.join(',') + '/3857')
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.DATA_LAYER_NAME + '/'
             + extent.join(',') + '/3857',
             // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
             // credentials: 'same-origin'}
@@ -199,16 +197,65 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
                 }
             })
             .then(function (response) {
+                // if (vfw.var.obj.selectedIds.quickMenu = []) {
+                //     console.log("No data in selection.")
+                // } else {
                 vfw.map.source.wfsPointSource.addFeatures(vfw.map.source.wfsPointSource.getFormat().readFeatures(response));
+                // }
             })
             .catch(function (error) {
-                console.warn('No result for selected area. Unable to build vector layer with data points.');
-                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
-                vfw.map.source.wfsPointSource.removeLoadedExtent(extent);
+                if (vfw.var.obj.selectedIds.mapIds) {
+                    console.error('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                } else {
+                    console.log(error)
+                    console.warn('No result for selected area. Unable to build vector layer with data points.');
+                //     TODO: If geoserver is not available, create layer through django
+                }
+                // vfw.map.source.wfsPointSource.removeLoadedExtent(extent);  // TODO: why was this there? test before delete!
             })
     },
     strategy: ol.loadingstrategy.bbox
 });
+/** get areal data (to select from) from server **/
+vfw.map.source.wfsArealSource = new ol.source.Vector({
+    format: new ol.format.GeoJSON(),
+    loader: function (extent) {
+        console.log('layername: ', vfw.var.AREAL_DATA_LAYER_NAME + extent.join(',') + '/3857')
+        fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.AREAL_DATA_LAYER_NAME + '/'
+            + extent.join(',') + '/3857',
+            // {body: {'csrfmiddlewaretoken': csrf_token},  body is only for post!
+            // credentials: 'same-origin'}
+        )
+            .then(function (response) {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    return Promise.reject(response);
+                }
+            })
+            .then(function (response) {
+                vfw.map.source.wfsArealSource.addFeatures(vfw.map.source.wfsArealSource.getFormat().readFeatures(response));
+            })
+            .catch(function (error) {
+                console.warn('No result for selected area. Unable to build vector layer with data points.');
+                // console.log('Error in building vector vfw.map.source.wfsPointSource: ', error);
+                vfw.map.source.wfsArealSource.removeLoadedExtent(extent);
+            })
+    },
+    strategy: ol.loadingstrategy.bbox
+});
+
+/** get areal data (to select from) from server as TileWMS **/
+vfw.map.source.wmsTileArealSource = new ol.source.TileWMS({
+          url: 'http://localhost:8888/geoserver/metacatalogdev/wms',
+          params: {'FORMAT': 'image/png',
+                   tiled: true,
+                "STYLES": '',
+                "LAYERS": 'metacatalogdev:marcus_areal_devel',
+                "exceptions": 'application/vnd.ogc.se_inimage',
+             tilesOrigin: 10.093123972656114 + "," + 50.400550842285156
+          }
+        });
 /** get the different background maps **/
 // Create vfw style map
 vfw.map.source.vfwSource = new ol.source.XYZ({
@@ -241,6 +288,7 @@ vfw.map.layer.openTopo = new ol.layer.Tile({
     visible: false,
     source: vfw.map.source.opentopoSource,
 });
+
 // vfw.map.layer.waterColor = new ol.layer.Tile({
 //     title: "Watercolor",
 //     baseLayer: true,
@@ -252,21 +300,110 @@ vfw.map.layer.openTopo = new ol.layer.Tile({
 const osmLayer = new ol.layer.Tile({
     title: "OSM",
     baseLayer: true,
+    // type: 'base',
     visible: false,
     source: new ol.source.OSM(),
 });
 
-// create a Sentinel-2 basemap layer
-// vfw.map.source.sentinel2 = new ol.Layer.WMS({
-//     url: 'https://sgx.geodatenzentrum.de/wms_sen2europe?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2018'
-    // 'https://sgx.geodatenzentrum.de/wms_sen2europe?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:3857&Format=image/png&TIME=2018'
-// })
-// see: http://sg.geodatenzentrum.de/web_bkg_webmap/doc/factories.html
-// see: https://www.ldbv.bayern.de/file/pdf/10544/Diplomarbeit_Wengerter.pdf
+/** create a Sentinel-2 basemap layer
+* for details how to handle see: http://sg.geodatenzentrum.de/web_bkg_webmap/doc/factories.html
+* license info at https://sgx.geodatenzentrum.de/web_public/gdz/lizenz/eng/Sentinel_Data_Legal_Notice_eng.pdf
+* details about the source at https://gdz.bkg.bund.de/index.php/default/open-data/wms-europamosaik-aus-sentinel-2-daten-wms-sen2europe.html
+*/
+vfw.map.source.sentinel2 = new ol.source.TileWMS({
+    name: 'Sentinel-2-Europe',
+    attributions: 'European Union, ' +
+        '<a href="https://mis.bkg.bund.de/trefferanzeige?docuuid=3E02B389-41A9-4AD2-A1AA-FDE5676D3DF5">' +
+        'Contains modified Copernicus Sentinel data (' + new Date().toLocaleString('de-de', {  year: 'numeric' }) + ')' +
+        '</a> ',
+    url: 'https://sgx.geodatenzentrum.de/wms_sen2europe',
+    params: {
+        'LAYERS': 'sentinel2-de:rgb',
+        'VERSION': '1.3.0',
+        'FORMAT': 'image/png',
+        'TIME': '2021',
+        'CRS': 'EPSG:25832',
+    },
+    serverType: 'geoserver'
+})
+vfw.map.layer.sentinel2 = new ol.layer.Tile({
+    title: 'Sentinel-2-Europe',
+    source: vfw.map.source.sentinel2,
+    baseLayer: true,
+    visible: false,
+})
 
+/**
+ * create a TopPlusOpen basemap layer as wmts from XYZ
+ * This data can be accessed as wms or WMTS (Web Map Tile Service)  in different ways. As an example the following code
+ * shows three possibilities (TileWMS, XYZ, WMTS).
+ * Details about the source at
+ * https://gdz.bkg.bund.de/index.php/default/open-data/topplusopen-webkarten-topplusopen-webkarten.html
+ */
+// vfw.map.source.TopPlusOpen = new ol.source.XYZ({
+//     name: 'TopPlusOpen-Webkarten',
+//     attributions: 'Kartendarstellung: <a href="https://www.bkg.bund.de">&copy; Bundesamt für Kartographie und Geodäsie ' +
+//         '(' + new Date().toLocaleString('de-de', {  year: 'numeric' }) + '), </a>' +
+//         '<a href="https://sgx.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf ">Datenquellen</a> ',
+//     url: 'https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{z}/{y}/{x}.png\'',
+// })
+/**
+ * Creates a WMTS tile grid for the TopPlusOpen basemap layer.
+ */
+vfw.map.func.createWmtsTileGrid = function()  {
+    const projection = ol.proj.get('EPSG:3857');
+    const projectionExtent = projection.getExtent();
+    const size = ol.extent.getWidth(projectionExtent) / 256;
+    let resolutions = new Array(19);
+    let matrixIds = new Array(19);
+    for (let z = 0; z < 19; ++z) {
+        resolutions[z] = size / Math.pow(2, z);
+        matrixIds[z] = z;
+    }
+    return new ol.tilegrid.WMTS({
+        origin: ol.extent.getTopLeft(projectionExtent),
+        resolutions: resolutions,
+        matrixIds: matrixIds,
+    });
+}
+vfw.map.source.TopPlusOpen = new ol.source.WMTS({
+    name: 'TopPlusOpen-Webkarten',
+    attributions: 'Kartendarstellung: <a href="https://www.bkg.bund.de">&copy; Bundesamt für Kartographie und ' +
+        'Geodäsie (' + new Date().toLocaleString('de-de', {  year: 'numeric' }) + '), </a>' +
+        '<a href="https://sgx.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf ">Datenquellen</a> ',
+    url: 'https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/{TileMatrix}/{TileRow}/' +
+        '{TileCol}.png',
+    tileGrid: vfw.map.func.createWmtsTileGrid(),
+    requestEncoding: 'REST',
+    projection: 'EPSG:3857',
+    format: 'image/png',
+    layer: 'web',
+    style: 'default',
+})
+/** create a TopPlusOpen basemap layer as Tile WMS */
+// vfw.map.source.TopPlusOpen = new ol.source.TileWMS({
+//     name: 'TopPlusOpen-Webkarten',
+//     attributions: 'Kartendarstellung: <a href="https://www.bkg.bund.de">&copy; Bundesamt für Kartographie und Geodäsie ' +
+//         '(' + new Date().toLocaleString('de-de', {  year: 'numeric' }) + '), </a>' +
+//         '<a href="https://sgx.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf ">Datenquellen</a> ',
+//     url: 'https://sgx.geodatenzentrum.de/wms_topplus_open',
+//     params: {
+//         'LAYERS': 'web',
+//         'VERSION': '1.3.0',
+//         'FORMAT': 'image/png',
+//         'CRS': 'EPSG:3857',
+//     },
+//     serverType: 'geoserver'
+// })
+vfw.map.layer.TopPlusOpen = new ol.layer.Tile({
+    title: 'TopPlusOpen-Webmaps',
+    source: vfw.map.source.TopPlusOpen,
+    baseLayer: true,
+    visible: false,
+})
 
 /** Fetch V-FOR-WaTer base layer **/
-vfw.map.create_map = function () {
+vfw.map.createMap = function () {
 
     // let basemapControl = {
     //     "Open Street map": vfw.map.source.osmSource,
@@ -276,19 +413,24 @@ vfw.map.create_map = function () {
 
     let dataExt = ol.proj.transformExtent(vfw.var.DATA_EXT, 'EPSG:4326', 'EPSG:3857'); // bbox of available data (extent, source, destination)
 
-    vfw.map.vars.wfsLayerName = vfw.var.DATA_LAYER;
-    if (vfw.map.vars.wfsLayerName.search("Error") !== -1) {
-        console.error(vfw.map.vars.wfsLayerName)
+    // vfw.var.DATA_LAYER_NAME = vfw.var.DATA_LAYER_NAME;
+    if (vfw.var.DATA_LAYER_NAME.search("Error") !== -1) {
+        console.error(vfw.var.DATA_LAYER_NAME)
         let tabBtn = {'currentTarget': document.getElementById('tableTab')}
-        toggleMapTableFilter(tabBtn, 'paginationTable');
+        vfw.util.toggleMapTableFilter(tabBtn, 'paginationTable');
         filter_pagination();
+    } else {
+        let tabBtn = {'currentTarget': document.getElementById('defaultMapTab')}
+        vfw.util.toggleMapTableFilter(tabBtn, 'Map');
     }
     /** build the background map **/
     const backgroundLayer = new ol.layer.Tile({
-        name: 'Default Map',
+        name: 'V-FOR-WaTer style',
         preload: Infinity,
         baseLayer: true,
         visible: true,
+        // minResolution: 100,
+        maxZoom: 20,
         source: vfw.map.source.vfwSource,
     });
     /** get OSM/OTM in case local map is not loading: **/
@@ -305,9 +447,6 @@ vfw.map.create_map = function () {
     mapView.animate({duration: 5000}, {easing: 'elastic'});
 
 
-    // TODO: Bei Gelegenheit mal sentinel Daten einführen
-    //     url = https://sgx.geodatenzentrum.de/wms_sentinel2_de?service=wms&version=1.3.0&request=GetMap&Layers=sentinel2-de:rgb&STYLES=&CRS=EPSG:25832&bbox=500000,5700000,550000,5750000&width=500&Height=500&Format=image/png&TIME=2019
-
     /** Make (animated) cluster layer from data points **/
     const clusterLayer = new ol.layer.AnimatedCluster({
         name: 'Data Clusters',
@@ -319,40 +458,57 @@ vfw.map.create_map = function () {
         }),
         animationDuration: 0,
         /** Cluster style  **/
-        style: vfw.map.style.clusterStyle
+        style: vfw.map.style.clusterData
     });
-    vfw.map.layer.hidden = new ol.layer.VectorImage({
-        className: 'hidden-layer',
-        source: vfw.map.source.wfsPointSource,
-    });
+    // vfw.map.layer.hidden = new ol.layer.VectorImage({
+    //     className: 'hidden-layer',
+    //     source: vfw.map.source.wfsPointSource,
+    // });
 
-    /** create a separate layer for merit Rivers **/
+    const arealDataLayer = new ol.layer.Vector({  // TODO: not working
+        style: {
+            'stroke-color': 'rgba(13,188,194,0.65)',
+            'stroke-width': 5,
+            'fill-color': 'rgba(13,188,194,0.02)',
+        },
+        source: vfw.map.source.wfsArealSource,
+        name: 'Areal Data Layer',
+        displayInLayerSwitcher: true,
+        visible: false,
+    })
+    // const arealDataLayer = new ol.layer.Tile({
+    //     source: vfw.map.source.wmsTileArealSource
+    // })
+    /** create a separate layer for merit Rivers. This layer is not visible and hidden in the menu on the map **/
     const meritRiverLayer = new ol.layer.Vector({
         style: {
             // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
-            'stroke-color': 'rgba(98,165,241,0.89)',
-            'stroke-width': 2,
+            'stroke-color': 'rgba(98,165,241,0)',
+            // 'stroke-width': 20,
+            // 'fill-color': 'rgba(170,200,234,0.9)',
+            // 'opacity': 0.8,
+            // 'fill-opacity': 0.1
         },
         source: vfw.map.source.wfsMeritRiver,
-        minZoom: 7,
-        name: 'Merit River',
-        className: 'cluster-layer',
-        visible: false,
+        minZoom: 8,
+        name: 'Merit River Simple',
+        // className: 'cluster-layer',
+        // visible: false,
+        displayInLayerSwitcher: false,
     });
-    /** create a separate layer for merit Rivers **/
+    /** create a separate layer for merit Catchments **/
     const meritCatchmentLayer = new ol.layer.Vector({
-        style: {
-            // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
-            'stroke-color': 'rgba(44,51,180,0.89)',
-            'stroke-width': 2,
-        },
+        style: vfw.map.style.merritCatchment,
         source: vfw.map.source.wfsMeritCatchment,
         minZoom: 8,
         name: 'Merit Catchment',
-        className: 'cluster-layer',
-        visible: false,
+        // className: 'cluster-layer',
+        visible: true,
+        on: function (e) {
+            console.log(e)
+        },
     });
-/** create a separate layer for merit Rivers **/
+    /** create a separate layer for coarse merit Catchments **/
     const meritCoarseCatchmentLayer = new ol.layer.Vector({
         style: {
             // 'fill-color': ['string', ['get', 'COLOR'], '#eee'],
@@ -362,7 +518,7 @@ vfw.map.create_map = function () {
         source: vfw.map.source.wfsCoarseMeritCatchment,
         minZoom: 2,
         name: 'coarse Merit Catchment',
-        className: 'cluster-layer',
+        // className: 'cluster-layer',
         visible: false,
     });
 
@@ -449,21 +605,75 @@ vfw.map.create_map = function () {
         }
     }
 
+    const selectedCatchmentStyle = new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(229,113,40,0.8)',
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#9f3700',
+            width: 2
+        }),
+        image: vfw.map.style.calcImageCircle(30, vfw.colors.blue3, vfw.colors.blue4),
+        text: new ol.style.Text({
+            font: '12px helvetica,sans-serif',
+            fill: new ol.style.Fill({
+                color: 'black'
+            })
+        })
+    });
+
+    vfw.map.selectStyle = function (feature) {
+        /**
+         * Returns the selected style for a given feature. By writing this used for style of selected Merit Catchment
+         * and areal data layer.
+         *
+         * @param {Feature} feature - The feature to select the style for.
+         * @return {Style} The selected style for the feature.
+         */
+        const color = feature.get('COLOR') || 'rgba(229,75,40,0.3)';
+        selectedCatchmentStyle.getFill().setColor(color);
+        return selectedCatchmentStyle;
+    }
+
+    const selectCatch = new ol.interaction.Select({
+    // vfw.map.control.selectCatch = new ol.interaction.Select({
+        // wrapX: false,
+        // source: vfw.map.source.selectionSource,
+        // type: 'Polygon',
+        style: vfw.map.selectStyle
+    })
+    // TODO: modifyCatch is needed to allow modifications of the vector layer. Not sure if we want that
+    // const modifyCatch = new ol.interaction.Modify({
+    //     features: selectCatch.getFeatures(),
+    // })
+
     /** Initialise map **/
     let map_tar = document.getElementById("map");
-    olmap = new ol.Map({
+    vfw.map.olmap = new ol.Map({
         // renderer: 'canvas',
         target: map_tar,
         layers: [
             // vfw.map.layer.waterColor,
-            osmLayer, vfw.map.layer.openTopo,
-            backgroundLayer,
-            meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer,
-            clusterLayer,
+            new ol.layer.Group({
+                title: 'Base layers',  // shown on the map in the menu
+                layers: [vfw.map.layer.TopPlusOpen, osmLayer, vfw.map.layer.openTopo, backgroundLayer, vfw.map.layer.sentinel2],
+                name: 'Maps shown in the background.',
+            }),
+            new ol.layer.Group({
+                openInLayerSwitcher: true,
+                layers: [meritCatchmentLayer, meritRiverLayer, meritCoarseCatchmentLayer,
+                    clusterLayer, arealDataLayer, ], //meritRiverLayer,vfw.map.source.wfsMeritRiver,
+                name: 'Datalayers',
+            }),
+            vfw.map.layer.selectionLayer,
+            // meritRiverLayer, meritCatchmentLayer, meritCoarseCatchmentLayer,
+            // clusterLayer,
         ],
         // layers: [mapLayer, testPointLayer, testlayer, clusterLayerNew],  // Eddy footprint testlayer
         // interactions: ol.interaction.defaults({doubleClickZoom: false}).extend([dcz]),
         // interactions: ol.interaction.defaults().extend([featureselect, featuremodify]),
+        // interactions: ol.interaction.defaults.defaults().extend([selectCatch, modifyCatch]),
+        interactions: ol.interaction.defaults.defaults().extend([selectCatch]),
 
         controls: [
             new ol.control.Zoom({
@@ -482,36 +692,106 @@ vfw.map.create_map = function () {
             new ol.control.ScaleLine(),
             new DrawControls(),
             vfw.map.control.zoomToExt,
-            new ol.control.LayerPopup(),
-            // new ol.control.LayerSwitcher(),
+            // new ol.control.LayerPopup({
+            //    title: 'Legende',
+            //    tipLabel: 'Legende',
+            //    label: 'layers'
+            // }),
+            //  new ol.control.LayerShop({
+            new ol.control.LayerSwitcher({
+                label: 'layers',
+                fold: 'open',
+                collapsed: false,
+
+                // reverse: true,
+                tipLabel: 'Legend',
+                title: 'Lllayers',
+                name: 'nLllayers',
+            }),
         ],
         view: mapView//dataview
     });
+    // vfw.map.olmap.addInteraction(vfw.map.control.selectCatch)
 
-    /** get information about your data in a popup when you click on a data point in the map **/
-    olmap.on('singleclick', checkMode);
+    /** get information about your data in a popup when you click on a data point in the map,
+     * or select by catchment when clicked within a catchment **/
+    vfw.map.olmap.on('singleclick', checkMode);
 
-    /** check what is clicked and open a modal with information about data **/
+    /** check what is clicked, if clicked on dataset open a modal with information about data **/
     function checkMode(evt) {
-        let clickedFeatures, ids, cleanedids, wfsLen;
+        console.log('evt: ', evt)
+        let clickedFeatures, clickedArea, ids, cleanedids, dataLayerNameLen, catchmentID;
+        dataLayerNameLen = vfw.var.DATA_LAYER_NAME.length;
+
+         /**
+         * Check if the specified layer is present.
+         *
+         * @param {string} checkLayer - the layer to check if under click position
+         * @return {boolean} - true if layer is under the click position
+         */
+        let hasLayer = function (checkLayer) {
+            // TODO: There is a lot of looping going on here.
+            //  Maybe use getFeatureAtPixel and loop yourself to be able to break the loop again.
+            return vfw.map.olmap.hasFeatureAtPixel(evt.pixel,
+                {
+                    layerFilter: function (layer) {
+                        return layer.get('name') === checkLayer;
+                    }
+                })
+        }
+
         // TODO: This code works only on the cluster layer. For other geometries/layers this function must be adjusted!
-        clusterLayer.getFeatures(evt.pixel).then((features) => {
-            if (features[0]) {
+        if (hasLayer('Areal Data Layer')) {
+            // collect IDs of areal data under click
+            clickedArea = vfw.map.olmap.getFeaturesAtPixel(evt.pixel, {layerFilter: function (layer) {
+                return layer.get('name') === 'Areal Data Layer'}
+            })
+            let areaIds = clickedArea.map(i => parseInt(i.getProperties().id));
+
+            //  Add Point data IDs
+            if (hasLayer('Data Clusters')) {
+                clickedFeatures = vfw.map.olmap.getFeaturesAtPixel(evt.pixel, {
+                    layerFilter: function (layer) {
+                        return layer.get('name') === 'Data Clusters'
+                    }
+                })
+                ids = areaIds.concat(clickedFeatures[0].values_.features.map(function (i)
+                    {return parseInt(i.id_.substr(dataLayerNameLen + 1, 8));}
+                ));
+            } else {
+                ids = areaIds;
+            }
+            cleanedids = ids.filter(value => {
+                return !Number.isNaN(value);
+            });
+            vfw.map.buildMapModal(cleanedids, 1);
+
+        } else if (hasLayer('Data Clusters')) {
+            clusterLayer.getFeatures(evt.pixel).then((features) => {
+
                 vfw.html.loaderOverlayOn();
-                wfsLen = vfw.map.vars.wfsLayerName.length;
-                // clickedFeatures = olmap.getFeaturesAtPixel(evt.pixel)[0].getProperties().features;
+                // TODO: I assume the features are in the first layer, but this might not always be the case
                 clickedFeatures = features[0].getProperties().features;
-                ids = clickedFeatures.map(i => parseInt(i.getId().substr(wfsLen + 1, 8)));
+                console.log('clickedFeatures: ', clickedFeatures)
+                ids = clickedFeatures.map(i => parseInt(i.getId().substr(dataLayerNameLen + 1, 8)));
                 cleanedids = ids.filter(value => {
                     return !Number.isNaN(value);
                 });
                 vfw.map.buildMapModal(cleanedids, 1);
-            }
-        })
+            })
+        } else if (hasLayer('Merit Catchment')) {
+            meritCatchmentLayer.getFeatures(evt.pixel).then((catchment) => {
+                console.log('catchment: ', catchment)
+                if (catchment[0]) {
+                    catchmentID = catchment[0].getProperties().comid;
+                    vfw.map.func.getCatchment({'startID': catchmentID})
+                    // vfw.map.createRiverBasin(catchmentID)
+                }
+            })
+        }
     }
 
     /** select data with doubleclick **/
-    //olmap.on('doubleclick', selectDataset);
     // TODO: Cluster gives error when click on sketched polygon. Not used yet anyways, so uncommented until usefull
     /*    selectCluster = new ol.interaction.SelectCluster(
             {	// Point radius: to calculate distance between the features
@@ -550,15 +830,15 @@ vfw.map.create_map = function () {
                     }
                 }
             });
-        olmap.addInteraction(selectCluster);*/
+        vfw.map.olmap.addInteraction(selectCluster);*/
 
     /** change cursor to pointer when hover over data **/
-    olmap.on('pointermove', function (evt) {
+    vfw.map.olmap.on('pointermove', function (evt) {
         if (evt.dragging) {
             return;
         }
         clusterLayer.getFeatures(evt.pixel).then((features) => {
-            olmap.getTargetElement().style.cursor = features[0] ? 'pointer' : '';
+            vfw.map.olmap.getTargetElement().style.cursor = features[0] ? 'pointer' : '';
         })
     });
 
@@ -630,7 +910,103 @@ vfw.map.storeGroupBtn = function (ssids, embargo) {
     }
 }
 
-
+vfw.map.vars.styledMerritCatchments = [];
 vfw.map.requestDataset = function (dataId) {
     console.warn('Noch nicht implementiert.')
+}
+
+/**
+ * Creates the contour of a river basin based on the provided startID.
+ *
+ * @param {int} startID - The ID of the river to start creating the basin from.
+ */
+vfw.map.createRiverBasin = function (startID) {
+    let catchmentIDsList = [];
+    let rivFeatureList = [];
+    let catchFeatureList = [];
+    // Get all the features from the meritRiverLayer
+    let riverFeatures = vfw.map.source.wfsMeritRiver.getFeatures();
+    let catchmentFeatures = vfw.map.source.wfsMeritCatchment.getFeatures();
+
+    //first reset style of previously selected catchments
+    for (let i in vfw.map.vars.styledMerritCatchments) {
+        vfw.map.vars.styledMerritCatchments[i].setStyle(vfw.map.defaultStyle);
+    }
+
+    function colorCatchment(catchFeature) {
+        // const feature = catchmentFeatures.find(feature => feature.get('comid') === comID);
+        catchFeature.setStyle(vfw.map.selectStyle);
+        vfw.map.vars.styledMerritCatchments.push(catchFeature);
+    }
+
+/** Recursive function to loop through the features and find the one with the desired values
+ *
+ * @param {int} riverID - The ID of the river to start creating the basin from.
+ */
+    function getAllRivers(riverID) {
+        const rivFeature = riverFeatures.find(feature => feature.get('comid') === riverID);
+        if (!rivFeature) return;
+        catchmentIDsList.push(riverID);
+        rivFeatureList.push(rivFeature)
+
+        const catchFeature = catchmentFeatures.find(feature => feature.get('comid') === riverID);
+        catchFeatureList.push(catchFeature)
+        // colorCatchment(catchFeature);
+        for (let j = 1; j < 5; j++) {
+            const upstreamID = rivFeature.values_['up' + j];
+            if (upstreamID !== 0) {
+                getAllRivers(upstreamID);
+            } else {
+                break;
+            }
+        }
+    }
+
+    getAllRivers(startID)
+    // vfw.map.vars.selectCatchmentIDs = catchmentIDsList;
+    console.log('catchmentIDsList: ', catchmentIDsList)
+
+    /*// TODO: function to union catchments in browser. Not working. Try another time...
+      // Import of JSTS happens in base.html
+      // https://openlayers.org/en/latest/examples/jsts.html
+      // https://github.com/bjornharrtell/jsts
+    function unionCatchments(catchmentFeatures) {
+        const parser = new jsts.io.OL3Parser();
+        parser.inject(ol.geom.Point, ol.geom.LineString, ol.geom.LinearRing, ol.geom.Polygon, ol.geom.MultiPoint,
+        ol.geom.MultiLineString, ol.geom.MultiPolygon
+        );
+        let unionFeatures = parser.read(catchmentFeatures[0].getGeometry());
+        for (let i = 1; i < catchmentFeatures.length; i++) {
+          const feature = catchmentFeatures[i];
+          // convert the OpenLayers geometry to a JSTS geometry
+          const jstsGeom = parser.read(feature.getGeometry());
+          unionFeatures = unionFeatures.union(jstsGeom);
+          // convert back from JSTS and replace the geometry on the feature
+          unionFeatures.setGeometry(parser.write(unionFeatures));
+        }
+        return unionFeatures
+    }
+    unionCatchments(catchFeatureList)*/
+
+    // vfw.map.vars.catchmentCollection.addFeature({
+    //     geometry: new ol.geom.GeometryCollection(rivFeatureList),
+        // name: 'Selection Catchment'
+    // })
+/*    vfw.map.vars.catchmentFeature = new ol.Feature({
+        geometry: new ol.geom.GeometryCollection(rivFeatureList),
+        name: 'Selection Catchment',
+    })*/
+    // vfw.map.source.select.addFeatures(vfw.map.vars.catchmentFeature)
+    // vfw.map.source.selectionSource.addFeatures(vfw.map.vars.catchmentFeature)
+    vfw.map.source.selectionSource = new ol.source.Vector({features: catchFeatureList,});
+    // vfw.map.source.selectionSource.addFeatures(catchFeatureList)
+    // vfw.map.source.selectionSource = new ol.source.Vector({features: vfw.map.vars.catchmentFeature,});
+
+
+    // vfw.map.source.selectionSource = new ol.source.Vector({
+    //     features: [new ol.Feature({
+    //         geometry: new ol.geom.Polygon([coords]),
+    //     })],
+    // });
+    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
 }

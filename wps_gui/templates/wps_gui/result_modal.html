@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors: 
+License: MIT License
+-->
+
 {#<!DOCTYPE html>#}
 {#<html lang="en">#}
 <meta charset="UTF-8">
@@ -7,37 +14,39 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% load static %}
+{% load settings_tags %}
 
 <head>
   <meta charset="UTF-8">
-{#  <script src="{% static 'visual_app/js/bokeh-2.4.3.min.js' %}" type="text/javascript"></script>#}
-{#    <script src="{% static 'visual_app/js/bokeh-widgets-2.4.3.min.js' %}" type="text/javascript"></script>#}
+  {#  <script src="{% static 'visual_app/js/bokeh-2.4.3.min.js' %}" type="text/javascript"></script>#}
+  {#    <script src="{% static 'visual_app/js/bokeh-widgets-2.4.3.min.js' %}" type="text/javascript"></script>#}
   {#  <script src="{% static 'visual_app/js/bokeh-tables-2.2.1.min.js' %}" type="text/javascript"></script>#}
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.0.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.3.0.min.js" crossorigin="anonymous"></script>
-{#    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.1.min.js"></script>#}
+  <script src="{% get_setting 'BOKEH_SCRIPT_URL' %}" crossorigin="anonymous"></script>
+  <script src="{% get_setting 'BOKEH_WIDGETS_URL' %}" crossorigin="anonymous"></script>
+  {#    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.1.min.js"></script>#}
 </head>
 <body>
 <div id="resultModal" class="w3-modal" style="z-index: 10">
 
   <!-- Modal content -->
   <div id="resultModal-content" class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">
-{#  <div class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">#}
+    {#  <div class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">#}
     <div class="result_modal-header" id="result_modal-header" style="margin-left: -10px; margin-right: -10px;">
-      <i class="fa fa-close fa-lg close" title="{% trans "Close window" %}" style="cursor: pointer; position: relative; top: 7px;"></i>
+      <i class="fa fa-close fa-lg close" title="{% trans "Close window" %}"
+         style="cursor: pointer; position: relative; top: 7px;"></i>
       <i class="fa fa-expand fa-lg togglefullscreen" title="{% trans "Toggle fullscreen" %}"
          style="cursor: pointer; position: relative; top: 8px; left: 4px;"></i>
       <h3 id="result_mod_head"></h3>
     </div>
-{#    <table>#}
-{#      <tr>#}
-{#        <td><p id="mod_dat_inf" class="modal-datainfo"></p></td>#}
-{#        <td>#}
-          <p id="mod_result" class="modal-result"></p>
-{#        </td>#}
-        {#                <td><p id="mod_prev" class="modal-preview">{{ div | safe }}</p></td>#}
-{#      </tr>#}
-{#    </table>#}
+    {#    <table>#}
+    {#      <tr>#}
+    {#        <td><p id="mod_dat_inf" class="modal-datainfo"></p></td>#}
+    {#        <td>#}
+    <p id="mod_result" class="modal-result"></p>
+    {#        </td>#}
+    {#                <td><p id="mod_prev" class="modal-preview">{{ div | safe }}</p></td>#}
+    {#      </tr>#}
+    {#    </table>#}
     <div class="result_modal-footer" id="result_modal-footer" style="margin-left: -10px; margin-right: -10px;">
       <span-b class="result_modal-close modal-btn">{% trans "Close" %}</span-b>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
@@ -78,15 +87,15 @@
   }
 
   vfw.html.toggle_Modal_size = function () {
-    if (vfw.html.resultModalToggleSizeBtn.classList.contains('fa-expand')){
-      document.getElementById("resultModal-content").style.width = window.innerWidth.toString()+"px";
+    if (vfw.html.resultModalToggleSizeBtn.classList.contains('fa-expand')) {
+      document.getElementById("resultModal-content").style.width = window.innerWidth.toString() + "px";
       vfw.html.resultModalToggleSizeBtn.classList.remove('fa-expand');
       vfw.html.resultModalToggleSizeBtn.classList.add('fa-compress');
     } else {
       vfw.html.reset_Modal("resultModal-content", vfw.html.resultModalToggleSizeBtn)
     }
-    place_html_with_js("mod_result", vfw.var.obj.bokehImage)
-    {#place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
+    vfw.html.place_html_with_js("mod_result", vfw.var.obj.bokehImage)
+    {#vfw.html.place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
   }
 
   vfw.html.reset_Modal = function (modalID, toggleElement) {
@@ -96,3 +105,71 @@
   }
 </script>
 
+<script>
+  vfw.html.resultModalObj = class {
+    constructor() {
+      // Get the modal
+      this.modal = document.getElementById("resultModal");
+      // Get the <span> element that closes the modal (When the user clicks on <span> (x), close the modal)
+      this.closeBtn = document.getElementsByClassName("close")[0];
+      this.modalClose = document.getElementsByClassName("result_modal-close")[0];
+      this.modalToggleSizeBtn = document.getElementsByClassName("togglefullscreen")[0];
+      this.content = document.getElementById("resultModal-content");
+      this._resultHTML = document.getElementById("mod_result");
+
+      this._bindEvents();
+    }
+
+    _bindEvents() {
+      this.closeBtn.onclick = () => this.close();
+      this.modalClose.onclick = () => this.close();
+      this.modalToggleSizeBtn.onclick = () => this.toggle_Modal_size();
+    }
+    
+    addContent(html) {
+      this._resultHTML.innerHTML = html;
+    }
+
+    close() {
+      this.modal.style.display = "none";
+      {#document.getElementById("resultModal-content").style.width = "initial";#}
+      this.reset_Modal("resultModal-content", this.modalToggleSizeBtn)
+      if (this.modalToggleSizeBtn.style.display === "none") {
+        this.modalToggleSizeBtn.style.display = "block";
+      }
+      if (vfw.var.obj.bokehImage) {
+        vfw.util.bokehResultScript.parentNode.removeChild(vfw.util.bokehResultScript);
+        vfw.var.obj.bokehImage = false;
+      }
+    }
+    
+    open(inputs) {
+      this.modal.style.display = "block";
+      // if (typeof inputs === 'string') {
+      //   vfw.workspace.modal.setProcessValues(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+      // } else if (Array.isArray(inputs)) {
+      //   vfw.workspace.modal.setProcessValues(inputs[0], inputs[1])
+      // }
+    }
+
+    toggle_Modal_size() {
+      if (this.modalToggleSizeBtn.classList.contains('fa-expand')) {
+        this.content.style.width = window.innerWidth.toString() + "px";
+        this.modalToggleSizeBtn.classList.remove('fa-expand');
+        this.modalToggleSizeBtn.classList.add('fa-compress');
+      } else {
+        this.reset_Modal("resultModal-content", this.modalToggleSizeBtn)
+      }
+      vfw.html.place_html_with_js("mod_result", vfw.var.obj.bokehImage)
+      {#vfw.html.place_html_with_js("mod_result", JSON.parse(sessionStorage['Bokeh']))#}
+    }
+
+    reset_Modal(modalID, toggleElement) {
+      document.getElementById(modalID).style.width = "700px";
+      toggleElement.classList.remove('fa-compress');
+      toggleElement.classList.add('fa-expand');
+    }
+
+
+  }
+</script>

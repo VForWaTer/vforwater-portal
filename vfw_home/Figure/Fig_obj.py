@@ -4,9 +4,11 @@ from bokeh.layouts import column
 from bokeh.palettes import brewer
 from bokeh.plotting import figure
 from django.utils.translation import gettext
+import pandas as pd
 
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
-from vfw_home.plot_obj import XYTimeseriesPlot, DirectionPlot
+from .plot_obj import XYTimeseriesPlot, DirectionPlot
+from .data_obj import DataObject
 import logging
 
 logger = logging.getLogger(__name__)
@@ -106,7 +108,41 @@ class FigObject:
                 self.x_axis_label = "Time"
                 self.__set_mainplot__()
 
-            XYTimeseriesPlot(self.dataObj, self.mainplot, style)
+            # Assume self.data is a list of DataObjects
+            print("self.data :", self.data)
+            if type(self.data) == DataObject:
+                XYTimeseriesPlot(self.dataObj, self.mainplot, style)
+            else :
+                try:
+                    # Combine DataFrames from each DataObject in the list
+                    dataframes = [data_obj.dataframe for data_obj in self.data]  # Extract the dataframes
+                    combined_dataframe = pd.concat(dataframes, ignore_index=True)
+                    # combined_dataframe.sort_values(by='tstamp', ascending=True, inplace=True)
+                    combined_dataframe = combined_dataframe.tail(MAX_SIZE_PREVIEW_PLOT)
+                    # nan_indices = combined_dataframe['value'].index[combined_dataframe['value'].isna()]
+                    self.dataObj.dataframe = combined_dataframe
+                    print("self.dataObj.dataframe from fig_obj:", self.dataObj.dataframe)
+                except Exception as e:
+                    print(f"Error combining dataframes: {e}")
+
+                try:
+                    # Determine the oldest time in the combined data.
+                    min_timestamp = combined_dataframe['tstamp'].min()
+                    # Ensure there is missing data to process.
+                    combined_missing_data = pd.concat(
+                        [obj.missing_data for obj in self.data if isinstance(obj.missing_data, pd.DataFrame)],
+                        ignore_index=True
+                    )
+                    filtered_missing_data = combined_missing_data[combined_missing_data['tstamp'] >= min_timestamp]
+                    self.dataObj.missing_data = filtered_missing_data
+                    print("Filtered combined_missing_data:", filtered_missing_data)
+                except Exception as e:
+                    print(f"Error processing missing data: {e}")
+
+                try:
+                    XYTimeseriesPlot(self.dataObj, self.mainplot, style)
+                except Exception as e:
+                    print(f"Error plotting time series: {e}")
 
             # mainplot = plot.get_mainplot()
             # show(column(self.mainplot, sizing_mode="scale_both"))  # test if plot is working at all

@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 // This function builds the whole menu structure. For interaction with Server the menus have a short class in the style:
 // First top menu (Parent): P1
 // First child: C1
@@ -23,7 +30,6 @@ function dDMFilterFunction(dropDownName, inputName) {
     }
 }
 
-
 // TODO: When you decide to remove the wms map, use showAllPointsOnMap
 function showAllPointsOnMap(){
    $.ajax({
@@ -41,26 +47,33 @@ function showAllPointsOnMap(){
 }
 
 /* button to remove the selection in the filter menu, reset values on items, and show all points on map */
-function reset_filter(){
-    showSelectionOnMap([]);
-    // TODO: store the initial numbers for each item and use it here instead of a new get request
-    getCountFromServer({});
-
-    vfw.var.obj.selectedIds.resetIds()
-    // reset draw menu:
-    if (selectedFeatures !== undefined) {selectedFeatures.clear();}
-    olmap.removeInteraction(draw);
-    olmap.removeInteraction(modify);
-    olmap.removeLayer(selectionLayer);
-    closeDrawfilter();
-    // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
-    // vfw.map.layer.cluster.changed()  // renamed to clusterLayer
-}
+// function reset_filter(){
+//     showSelectionOnMap([]);
+//     // TODO: store the initial numbers for each item and use it here instead of a new get request
+//     getCountFromServer({});
+//
+//     vfw.var.obj.selectedIds.resetIds()
+//     // reset draw menu:
+//     vfw.map.olmap.removeInteraction(draw);
+//     vfw.map.olmap.removeInteraction(modify);
+//     vfw.map.olmap.removeLayer(selectionLayer);
+//     vfw.map.func.toggleDrawFilter();
+//     // resetDraw();  TODO: There is a function for the last five commands. Why is this not working?
+//     // vfw.map.layer.cluster.changed()  // renamed to clusterLayer
+// }
 
 /** update objects on map according to filter results */
 vfw.map.updateMapSelection = function (json) {
-    vfw.map.control.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
-    vfw.map.vars.wfsLayerName = json['ID_layer'];
-    vfw.var.obj.selectedIds.quickMenu = json['IDs'];
-    vfw.map.source.wfsPointSource.refresh();
+    /** the following code makes only sense on /home/. */
+    // TODO: having this in onload of base.html calls the function on every reload no matter if it makes sense.
+    //  Improve where this function is called instead of the following "if (window.location.pathname == `/home/`)".
+    if (window.location.pathname == `/home/`) {
+        vfw.map.control.zoomToExt.extent = ol.proj.transformExtent(json['dataExt'], 'EPSG:4326', 'EPSG:3857');
+        vfw.var.DATA_LAYER_NAME = json['ID_layer'];
+        vfw.var.AREAL_DATA_LAYER_NAME = json['areal_ID_layer'];
+        vfw.var.obj.selectedIds.quickMenu = json['IDs'];
+        console.log('update map')
+        vfw.map.source.wfsPointSource.refresh();
+        vfw.map.source.wfsArealSource.refresh();
+    }
 }

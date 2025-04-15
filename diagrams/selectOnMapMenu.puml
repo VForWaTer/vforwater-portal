@@ -1,0 +1,42 @@
+@startuml
+title draw layer interactions on the map
+
+hide footbox
+
+
+== click on Button to open draw menu ==
+[-> map.js ++: vfw.map.source.select
+note left: vfw.map.func.toggleDrawFilter()
+map.js -> map.js: vfw.map.layer.select(vfw.map.source.select)
+
+map.js -> vfw.map.olmap:
+map.js <- vfw.map.olmap: layers: vfw.map.layer.select, vfw.map.layer.selectionLayer
+map.js <- vfw.map.olmap: ol.interaction.defaults.defaults().extend([selectCatch])
+
+map.js -> map.js: vfw.map.createRiverBasin(startID)
+
+
+[-> vfw.js: vfw.map.source.selectionSource
+[-> vfw.js: vfw.map.layer.selectionLayer
+
+vfw.js -> vfw.js: vfw.map.source.selectionSource.clear()
+
+vfw.js -> vfw.js_vfw.map.func.drawOnMapMenu: vfw.map.source.selectionSource
+
+
+
+
+views.py <- filter.py --: ""result (counts)""
+menu_objects.js <- views.py --: ""JSON (counts)""
+menu_objects.js -> menu_objects.js ++: _updateCounts(json)
+loop
+    loop
+        menu_objects.js -> menu_objects.js: update html \ndis-/enable buttons
+    end
+end
+deactivate menu_objects.js
+
+
+
+@enduml
+-----------------------------------------------------------------------

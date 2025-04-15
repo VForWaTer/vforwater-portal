@@ -12,9 +12,6 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-from django.utils.translation import ugettext
-
 ##PATH_INFO = '/'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

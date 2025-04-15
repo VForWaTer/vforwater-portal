@@ -1,4 +1,7 @@
 @startuml
+
+participant vfw.js
+participant menu_objects.js
 title Make a selection online in the menu
 
 hide footbox
@@ -6,81 +9,56 @@ hide footbox
 
 == click on option in menu ==
 ' actor user #lightblue
-[-> menu_objects.js ++: itemButtonFunction
-menu_objects.js -> menu_objects.js: checkSiblings
-' checkSiblings checks what is clicked
-menu_objects.js -> menu_objects.js ++: showSelectionOnMap
+[-> vfw.js ++: itemButtonFunction
+vfw.js -> vfw.js: vfw.html.getQuickSelection
+vfw.js -> vfw.js: vfw.url.updateFilterURL
 group ajax
-menu_objects.js -> views.py ++: **ajax**\nfilter_selection_map
-views.py -> views.py ++: MenuView.collect_selection
-views.py -> filter.py ++: build_id_list
-loop parents in selection
-    loop childs in selection
-        opt draw: pass
-        else bool
-            filter.py -> filter.py: build_path_value_pair
-        else else
-            filter.py -> filter.py: build_path_value_pair
+vfw.js -> views.py ++: QuickFilterResults
+loop selection Dictionary to build django filter (query)
+    opt simple_query: get values
+    else date: get start and end date
+    else if_FAIR: get only available data
+    else draw: get data intersecting the polygon
+    end
+end
+views.py -> views.py: create query
+opt has query
+    views.py -> views.py: get entry extent
+    opt use entry extent
+    else get spatial extent
+        opt use spatial extent
+        else get geometry extent
+            opt use geometry extent
+            end
         end
     end
 end
-views.py <- filter.py : ""filtered ids""
-deactivate filter.py
-views.py -> query_functions.py ++: get_bbox_from_data
-views.py <- query_functions.py --
-opt if layer exists delete layer
-    views.py -> geoserver_layer.py ++: get_layer
-    return
-
-    views.py -> geoserver_layer.py ++: delete_layer
-    return
+views.py -> views.py: collect IDs
+views.py -> geoserver_layer.py: create_layer
+geoserver_layer.py -> geoserver_layer.py ++: __build_layer_xml
+opt point
+else areal_data
+else filtercatchment
+else merit_catchment_coarse
+else merit_catchment
+else merit_river
+else merit_river_simple
+else
 end
-views.py -> geoserver_layer.py ++: create_layer
-return
-menu_objects.js <- views.py --: ""layername, ext, ids""
-deactivate views.py
-deactivate menu_objects.js
+geoserver_layer.py -> geoserver_layer.py: __create_attributes
+geoserver_layer.py -> geoserver: create layer in geoserver
+geoserver_layer.py -> views.py --:
+views.py -> vfw.js --: JSON(selection, #total, layer_name, dataExt, IDs)
+vfw.js -> menu_objects.js ++: vfw.map.updateMapSelection
+menu_objects.js -> menu_objects.js: vfw.map.control.zoomToExt.extent
+menu_objects.js -> menu_objects.js: vfw.var.DATA_LAYER_NAME
+menu_objects.js -> vfw.js: vfw.var.obj.selectedIds.quickMenu, set quickMenuIds
+menu_objects.js -> menu_objects.js --: vfw.map.source.wfsPointSource.refresh
+menu_objects.js -> vfw.js
+vfw.js -> vfw.js: update #total string
+opt "#total<100": show select all button
 end
-
-menu_objects.js -> menu_objects.js ++: getCountFromServer
-group ajax
-menu_objects.js -> views.py ++: **ajax**\nfilter_selection
-views.py -> filter.py ++: FilterMethods.selection_counts
-filter.py -> filter.py ++: build_select_filters
-loop parents in filter_selection
-note right: filter_selection build the query filter
-    loop childs in filter_selection
-        filter.py -> filter.py: build_path_value_pair
-    end
 end
-
-loop parents in long_filter
-    loop childs in long_filter
-note left: long_filter used to show \navailable datasets\n for the next selection
-        filter.py -> filter.py: build_path_value_pair
-    end
-end
-deactivate filter.py
-
-loop parent in menu
-    loop child in menu
-        filter.py -> filter.py: count items
-    end
-end
-views.py <- filter.py --: ""result (counts)""
-menu_objects.js <- views.py --: ""JSON (counts)""
-menu_objects.js -> menu_objects.js ++: _updateCounts(json)
-loop
-    loop
-        menu_objects.js -> menu_objects.js: update html \ndis-/enable buttons
-    end
-end
-deactivate menu_objects.js
-deactivate menu_objects.js
-deactivate menu_objects.js
-end
-[<- menu_objects.js
-
 
 
 @enduml

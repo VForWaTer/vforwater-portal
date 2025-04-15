@@ -12,7 +12,6 @@ from django.utils.translation import gettext
 from numpy import mean
 from math import radians, ceil, sqrt
 
-from vfw_home.previewplot import distribution_plot
 import logging
 
 logger = logging.getLogger(__name__)
@@ -420,3 +419,28 @@ class EddyFootPrintPlot(PlotObject):
                                                     (gettext("FP east"), "$x"),
                                                     (gettext("FP north"), "$y")],
                                           mode="mouse"))
+
+
+def distribution_plot(source: object, mapper: dict, bin_width, title: str, plot_width: int):
+    """
+    Small bar on top of the main plot to show how many datasets are available in each trunc.
+
+    :param source: a ColumnDataSource
+    :param mapper: e.g. {'field': 'count', 'transform': LinearColorMapper(id='1092', ...)}
+    :param bin_width: bin width in format of x axes, e.g. 1 day
+    :param title: headline for distribution
+    :param plot_width: width of the plot
+    :return: bokeh figure object
+    """
+    p = figure(title=title, x_axis_type="datetime",  # x_range=mainplot.x_range,
+               # width=plot_width,
+               height=50, toolbar_location="above", background_fill_color="black",
+               tools="pan,wheel_zoom,box_zoom,reset", active_drag="box_zoom", sizing_mode='stretch_width')
+    p.vbar(x='date', source=source, width=bin_width, bottom=0, top=1, color=mapper)
+    p.xaxis.visible = False
+    p.xgrid.visible = False
+    p.yaxis.visible = False
+    p.ygrid.visible = False
+    p.add_tools(HoverTool(tooltips=[("Values/Day", "@count"), ("Date", "@date{%d %b %Y}")],
+                          formatters={"@date": "datetime"}, mode="mouse"))
+    return p

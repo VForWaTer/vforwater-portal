@@ -1,90 +1,80 @@
 @startuml
-title Draw on the Map for a selsection
-
+title Draw on the Map for a selection
+participant sidebar.js
+participant select_area_obj.js
 hide footbox
 
 
 == click on Button to open draw menu ==
-[-> vfw.js ++: DrawOnMapMenu
-note left: openDrawfilter()
-vfw.js -> vfw.js: openDrawfilter()
+[-> vfw.js ++: vfw.map.func.DrawOnMapMenu
+note left: vfw.map.func.toggleDrawFilter()
+vfw.js -> vfw.js: vfw.map.func.toggleDrawFilter()
+note left: create interactions (draw, drawSquare, ...)\n add interactions (draw, drawSquare, ...)\n add styles,\n add controles for draw options
 
+== click on draw square button ==
+vfw.js -> vfw.js ++: vfw.map.control.drawSquare.on('drawstart')
+vfw.js -> vfw.js: vfw.map.source.selectionSource.clear
+vfw.js -> vfw.js ++: selectStartFun()
+vfw.js -> vfw.js: set vfw.map.vars.selectionEdgeCoords
+note left: Draw square on map (1st click).
+return changes of geometry
+'deactivate vfw.js
 
-
-
-' checkSiblings checks what is clicked
-menu_objects.js -> menu_objects.js ++: showSelectionOnMap
+vfw.js -> vfw.js ++: vfw.map.control.drawSquare.on('drawend')
+note left: Drawing ends with 2nd click on map.
+vfw.js -> vfw.js: vfw.map.func.getSelectionEdgeCoords()
+vfw.js -> vfw.js ++: vfw.html.getQuickSelection('draw')
+vfw.js -[#blue]> vfw.js: vfw.url.updateFilterURL()
+note right #aqua: TODO: URL should show only one draw option.
 group ajax
-menu_objects.js -> views.py ++: **ajax**\nfilter_selection_map
-views.py -> views.py ++: MenuView.collect_selection
-views.py -> filter.py ++: build_id_list
-loop parents in selection
-    loop childs in selection
-        opt draw: pass
-        else bool
-            filter.py -> filter.py: build_path_value_pair
-        else else
-            filter.py -> filter.py: build_path_value_pair
-        end
+vfw.js -> views.py ++: QuickFilterResults.get()
+opt if 'draw'
+    views.py -> views.py: create polygon
+    else 'catchStartID'
+    views.py -> delineator.py ++: delineate()
+    delineator.py -> views.py --: polygon
+    else 'catchout'
+    opt if coords
+        views.py -> views.py: create polygon
+    else
+    views.py -> delineator.py ++: delineate()
+    delineator.py -> views.py --: polygon
     end
 end
-views.py <- filter.py : ""filtered ids""
-deactivate filter.py
-views.py -> query_functions.py ++: get_bbox_from_data
-views.py <- query_functions.py --
-opt if layer exists delete layer
-    views.py -> geoserver_layer.py ++: get_layer
-    return
-
-    views.py -> geoserver_layer.py ++: delete_layer
-    return
+views.py -> views.py: create geoserver layer
 end
-views.py -> geoserver_layer.py ++: create_layer
+return selection, results, layerIDs, dataIDs, dataExt
+vfw.js -> menu_objects.js ++: vfw.map.updateMapSelection
+menu_objects.js -> menu_objects.js: update zoomToExt
+menu_objects.js -> menu_objects.js: update layer names
+menu_objects.js -> menu_objects.js: update QuickMenu obj
+menu_objects.js -> menu_objects.js: refresh data on map
 return
-menu_objects.js <- views.py --: ""layername, ext, ids""
-deactivate views.py
-deactivate menu_objects.js
-end
+vfw.js -> vfw.js: update sum in menu
+vfw.js -> vfw.js: create "store all" button if sum(results)<100
+return (back to 'drawend')
+vfw.js -> vfw.js: vfw.map.func.getSelectionEdgeCoords()[0][0]
+vfw.js -> vfw.js: vfw.map.func.removeDrawInteractions()
+note right: remove interaction for draw, modify, drawSquare, drawCatchmentOutlet
+vfw.js -> vfw.js: vfw.map.func.toggleDrawBackground()
+deactivate
+deactivate
+deactivate
 
-menu_objects.js -> menu_objects.js ++: getCountFromServer
-group ajax
-menu_objects.js -> views.py ++: **ajax**\nfilter_selection
-views.py -> filter.py ++: FilterMethods.selection_counts
-filter.py -> filter.py ++: build_select_filters
-loop parents in filter_selection
-note right: filter_selection build the query filter
-    loop childs in filter_selection
-        filter.py -> filter.py: build_path_value_pair
-    end
-end
-
-loop parents in long_filter
-    loop childs in long_filter
-note left: long_filter used to show \navailable datasets\n for the next selection
-        filter.py -> filter.py: build_path_value_pair
-    end
-end
-deactivate filter.py
-
-loop parent in menu
-    loop child in menu
-        filter.py -> filter.py: count items
-    end
-end
-views.py <- filter.py --: ""result (counts)""
-menu_objects.js <- views.py --: ""JSON (counts)""
-menu_objects.js -> menu_objects.js ++: _updateCounts(json)
-loop
+== click on Button to store drawing ==
+map.html -> vfw.js ++: vfw.map.func.removeDrawInteractions()
+note right: remove interaction for draw, modify, drawSquare, drawCatchmentOutlet
+return
+map.html -> sidebar.js ++: vfw.sidebar.addSelectStoreButton()
+opt if vfw.datasets.selectObjects.hasOwnProperty('orgID')
+    sidebar.js -> sidebar.js ++: newID = orgID
     loop
-        menu_objects.js -> menu_objects.js: update html \ndis-/enable buttons
+    sidebar.js -> sidebar.js: until vfw.sidebar.hasOwnProperty(newID) = false
     end
+    sidebar.js -> select_area_obj.js: until vfw.sidebar.hasOwnProperty(newID) = false
 end
-deactivate menu_objects.js
-deactivate menu_objects.js
-deactivate menu_objects.js
-end
-[<- menu_objects.js
-
+sidebar.js -> sidebar.js: selectObjects['orgID'] = new selectObj(objData);
+deactivate
 
 
 @enduml

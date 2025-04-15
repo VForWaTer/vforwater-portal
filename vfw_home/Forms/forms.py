@@ -6,8 +6,9 @@ from django.db.models import Q
 from django.utils import timezone
 
 from author_manage.views import MyResourcesView
-from vfw_home.fields import DateRangeSliderField, DateRangeSliderDatePickerField
+from .fields import DateRangeSliderField, DateRangeSliderDatePickerField
 from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
+from .widgets import DateRangeSlider
 
 
 # Filter:
@@ -25,7 +26,7 @@ from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Detail
 # - filter nach Projekt
 # - finde alle Versionen (checkmark)
 # - volltextsuche (sobald ich da ein konzept für metacatalog habe.)
-from vfw_home.widgets import DateRangeSlider
+
 
 
 class AdvancedFilterForm(forms.Form):
@@ -71,7 +72,7 @@ class AdvancedFilterForm(forms.Form):
 
 class QuickFilterQuerySets:
     """
-    Queries and collection of data for filter menue
+    Queries and collection of data for filter menu. Needed for the QuickFIlterForm(forms.Form)
     """
     variables_path = 'variable__name'
     date_min_path = 'datasource__temporal_scale__observation_start'
@@ -112,7 +113,8 @@ class QuickFilterQuerySets:
 
 class QuickFilterForm(forms.Form):
     """
-    Define the quick filter. ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox.
+    Define the quick filter. Here are the HTML components for the template collected.
+    ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox.
     "onchange" defines the function called on a change/click event and the values send to that function.
     """
 

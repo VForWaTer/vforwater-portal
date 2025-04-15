@@ -8,7 +8,6 @@ app_name = 'vfw_home'
 
 urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
-    path('watts_login', views.LoginView.as_view(), name='watts_login'),
     path('help', views.HelpView.as_view(), name='help'),
     path('logout', views.LogoutView.as_view(), name='logout'),
     # re_path(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$',
@@ -17,9 +16,9 @@ urlpatterns = [
     path('togglelang', views.ToggleLanguageView.as_view(), name='togglelang'),
     path('failedlogin', views.FailedLoginView.as_view(), name='failedlogin'),
     path('datasetdownload', views.DatasetDownloadView.as_view(), name='datasetdownload'),
-    path('entries_pagination', views.entries_pagination, name='entries_pagination'),
-    path('short_info_pagination', views.short_info_pagination, name='short_info_pagination'),
-    path('advanced_filter', views.advanced_filter),
+    path('entries_pagination', views.EntriesPaginationView.as_view(), name='entries_pagination'),
+    path('short_info_pagination', views.ShortInfoPaginationView.as_view(), name='short_info_pagination'),
+    path('advanced_filter', views.AdvancedFilterView.as_view(), name='advanced_filter'),
     # path('quick_filter', views.QuickFilter.as_view(), name='quick_filter'),
     # url(r'^advanced_filter$', views.filter_entries),
     # addresses for fetch:

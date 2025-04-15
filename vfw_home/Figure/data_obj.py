@@ -8,7 +8,7 @@ from django.core.exceptions import EmptyResultSet
 from django.http import Http404
 
 from heron.settings import MAX_SIZE_PREVIEW_PLOT
-from vfw_home.data_tools import DB_load_directiondata
+from .data_tools import DB_load_directiondata
 from vfw_home.models import Entries, NmEntrygroups
 
 logger = logging.getLogger(__name__)
@@ -284,7 +284,7 @@ class DataObject:
         if self.length == 0:  # if not qs.exists():
             print('Data_obj.db_data_length: Problems with query_path: ', self.__general_data_qs__)
             logger.debug(f'Problems with query_path, {self.__general_data_qs__}')
-            raise EmptyResultSet(f'Got no data in data_tools.is_data_short for id={self.ID}')
+            raise EmptyResultSet(f'Problems with query_path for id={self.ID}, {self.__general_data_qs__}')
 
         if self.length > self.__row_limit__:
             self.full = False

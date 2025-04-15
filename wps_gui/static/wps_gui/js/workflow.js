@@ -1,3 +1,10 @@
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
+
 vfw.draw2d.Box = class {
     /**
      * Box class to be added (dropped) on a draw2d.Canvas Element.
@@ -31,7 +38,7 @@ vfw.draw2d.Box = class {
         this._connectable_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
             'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
             'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image',
-            'string', 'boolean', 'float', 'integer', 'positiveInteger', 'dateTime', 'list']
+            'string', 'boolean', 'float', 'integer', 'positiveInteger', 'dateTime', 'list', 'geometry']
     }
 
     /**
@@ -101,7 +108,7 @@ vfw.draw2d.Box = class {
             height: boxHeight,
             // resizable: true,
             radius: 5,
-            bgColor: '#D9EFFD',
+            bgColor: vfw.colors.blue1,
             stroke: 0,
             cssClass: 'box-' + this._boxtype,
         })
@@ -162,6 +169,10 @@ vfw.draw2d.Box = class {
         port.setCssClass(porttype)
 
         port.on('click', function () {
+            console.warn('onclick needs improvement')
+            vfw.workspace.modal.open_port(port.userData.service, port.userData.orgid,
+                port.userData.boxid, port.userData.index, port.cssClass, 'output');
+            // document.getElementById("workflowID").value = JSON.stringify({'id': box.getId(), 'service': service});
             // console.log('parent: ', port.getParent())
             // console.log('policy: ', port.installEditPolicy(new draw2d.policy.ResizeSelectionFeedbackPolicy()))
         })
@@ -441,6 +452,8 @@ vfw.draw2d.canvas = new draw2d.Canvas('dropdiv');
 vfw.var.connection = new vfw.draw2d.Connection();
 vfw.draw2d.canvas.installEditPolicy(vfw.var.connection.connectionPolicy);
 
+// vfw.draw2d.connection = new Connection();
+// vfw.draw2d.canvas.installEditPolicy(vfw.draw2d.connection.connectionPolicy);
 
 // let globalWorkflow = new Workflow();
 
@@ -576,6 +589,7 @@ vfw.workspace.workflow.update = function (event) {
             workflow[event.source.boxid]['output_ids'] = vfw.var.array.insert(workflow[event.source.boxid]['output_ids'],
                 event.source.index, event.target.boxid)
         } else if (event.hasOwnProperty('source')) {
+            console.log('else if has to be impplemented here')
             // workflow[event.target.boxid]['input_values'][event.target.index] = event.source.value;
             // workflow[event.target.boxid]['input_ids'][event.target.index] = event.source.orgid;
             // workflow[event.target.boxid]['input_boxes'][event.target.index] = event.source.boxid;

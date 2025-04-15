@@ -7,8 +7,8 @@ from django.forms import TextInput
 #
 from django.utils import translation
 
-from vfw_home.fields import CustomOSMField, AutocompleteCharField
-from vfw_home.widgets import TableSelect, CustomOSMWidget, AutocompleteCharWidget
+from vfw_home.Forms.fields import CustomOSMField, AutocompleteCharField
+from vfw_home.Forms.widgets import TableSelect, CustomOSMWidget, AutocompleteCharWidget
 from vfw_home.models import Entries, NmPersonsEntries, Persons, Variables, Datasources, DatasourceTypes, Datatypes, \
     TemporalScales, SpatialScales, Licenses
 
@@ -181,7 +181,8 @@ class EntriesForm(forms.ModelForm):
 
     class Meta:
         model = Entries
-        fields = ('title', 'variable', 'abstract', 'comment', 'geom', 'location', 'version', 'embargo', 'publication',
+        # TODO: A geometry field is needed as well
+        fields = ('title', 'variable', 'abstract', 'comment', 'location', 'version', 'embargo', 'publication',
                   'citation', 'license',
                   # 'embargo_end', 'external_id'
                   )
