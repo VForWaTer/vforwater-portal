@@ -158,6 +158,11 @@ vfw.sidebar.addGroupaccordionToggle = function () {
  * @param {object} file - In case of an uploaded geometry one can pass the whole object. Yet used is only file.name
  */
 vfw.sidebar.addSelectStoreButton = function (file={}, source="userUpload") {
+    if (vfw.filter.coords.length == 0) {
+            vfw.filter.coords =
+                vfw.map.source.selectionSource.getFeatures()[0].getGeometry().getCoordinates();
+        }
+
     /** Data needed to create a Button in the datastore */
     const objData = {
         "name": "Select Area", "type": "geometry", "geom": vfw.filter.coords, "isGroupMember": false,
