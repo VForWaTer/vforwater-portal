@@ -244,21 +244,33 @@ vfw.datasets.resultObj = class {
         results.forEach(function (item, index) {
            let resultjson = item.json
            const path = resultjson.dir;
+           const plotFiles = resultjson.plots || [];
+           console.log(plotFiles)
            const directoryName = path.split("/").pop();
-           const pdfPath = path + "/plots/spatial_data.pdf";
+           //const pdfPath = path + "/plots/spatial_data.pdf";
            //console.log("PDF Path:", pdfPath);
 
-           const previewButton = `
-             <a href="javascript:void(0)" onclick="openPdfFromBackend('${pdfPath}')" style="display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-magnifying-glass" style="font-size: 18px;" title="Preview"></i>
-                <span>Preview spatial_data.pdf</span>
-                </a>
-           `;
+           let previewButtons = "";
+
+           plotFiles.forEach(filename => {
+             if (filename.endsWith(".pdf")) {
+               const fullPath = `${path}/plots/${filename}`;
+               previewButtons += `
+                 
+                   <a href="javascript:void(0)" onclick="openPdfFromBackend('${fullPath}')" style="display: flex; align-items: center; gap: 8px;">
+                     <i class="fa-solid fa-magnifying-glass" style="font-size: 18px;" title="Preview ${filename}"></i>
+                     <span>Preview ${filename}</span>
+                   </a>
+                
+               `;
+             }
+           });
+           
          
 
            let item_2 = item.html.replace(
             /<li>\.\/(.*?)<\/li>/g,
-            previewButton
+            previewButtons
           );
           
           item_2 = item_2.replace(
