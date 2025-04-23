@@ -24,6 +24,31 @@ License: MIT License
   <script src="{% get_setting 'BOKEH_SCRIPT_URL' %}" crossorigin="anonymous"></script>
   <script src="{% get_setting 'BOKEH_WIDGETS_URL' %}" crossorigin="anonymous"></script>
   {#    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.2.1.min.js"></script>#}
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 14px;
+      background-color: #f9f9f9;
+    }
+  
+    .styled-table th,
+    .styled-table td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+  
+    .styled-table th {
+      background-color: #eaeaea;
+      font-weight: bold;
+    }
+  </style>
+  
 </head>
 <body>
 <div id="resultModal" class="w3-modal" style="z-index: 10">
@@ -106,6 +131,38 @@ License: MIT License
 </script>
 
 <script>
+
+      function openPdfFromBackend(path) {
+        $.ajax({
+          url: "/workspace/resultdisplay", // your backend endpoint
+          type: 'GET',
+          data: { path: path },
+          xhrFields: {
+            responseType: 'blob'
+          },
+          success: function (blob) {
+            const fileURL = window.URL.createObjectURL(blob);
+            
+            // Create a temporary <a> tag and click it
+            const a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.click();
+
+            // Optional: revoke URL after some time
+            setTimeout(() => {
+              window.URL.revokeObjectURL(fileURL);
+            }, 1000);
+          },
+          error: function (error) {
+            console.error('Failed to open PDF:', error);
+            alert('Could not open the PDF.');
+          }
+        });
+      }
+
+
   vfw.html.resultModalObj = class {
     constructor() {
       // Get the modal
@@ -119,6 +176,8 @@ License: MIT License
 
       this._bindEvents();
     }
+
+   
 
     _bindEvents() {
       this.closeBtn.onclick = () => this.close();
