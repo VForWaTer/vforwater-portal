@@ -1210,8 +1210,8 @@ class QuickFilterResults(View):
             
             
             for key in selection_query:
-                QuickFilterResults.handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query , filter_area, filter_area_or )
-            
+                QuickFilterResults.handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request)
+
             query = QuickFilterResults.build_query(filter_dict, filter_area, filter_area_or, fair_query)
             #print(query)
             
@@ -1279,7 +1279,7 @@ class QuickFilterResults(View):
         filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
 
     @staticmethod
-    def add_catchout_filters(key, selection_query, filter_area, filter_area_or):
+    def add_catchout_filters(key, selection_query, filter_area, filter_area_or, request):
         coords = json.loads(request.POST.get('coords'))
         if coords:
             catchment = tuple(tuple(x) for x in coords)
@@ -1295,7 +1295,7 @@ class QuickFilterResults(View):
 
                     
     @staticmethod
-    def handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query , filter_area, filter_area_or ):
+    def handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request):
 
         
         if key in simple_queries:        
@@ -1309,7 +1309,7 @@ class QuickFilterResults(View):
         elif key == 'catchStartID':
             QuickFilterResults.add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or)
         elif key == 'catchout':
-            QuickFilterResults.add_catchout_filters(key, selection_query, filter_area, filter_area_or)
+            QuickFilterResults.add_catchout_filters(key, selection_query, filter_area, filter_area_or, request)
 
         
 
