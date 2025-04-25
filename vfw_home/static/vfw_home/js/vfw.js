@@ -1248,6 +1248,14 @@ vfw.map.func.renderCatchment = function (catchment, format, dataprojection='EPSG
     // selectionLayer.setStyle(new ol.style.Style({
     //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
     // }))
+    let coords = vfw.map.func.getSelectionEdgeCoords()
+        if (vfw.util.getArrayDepth(coords) === 4) {
+            vfw.filter.coords = coords[0];
+        } else if (vfw.util.getArrayDepth(coords) === 3) {
+            vfw.filter.coords = coords;
+        } else {
+            console.error('ERROR: New type of geometry. Cannot find coordinates for Button.')
+        }
 }
 
 function advanced_filter_query(selection) {
@@ -1285,6 +1293,14 @@ vfw.util.collapsibleFun = function (element) {
     }
 }
 
+
+/**
+ * Takes a list and returns the depth of the list as integer.
+ * @param {array} value
+ */
+vfw.util.getArrayDepth = value => Array.isArray(value) ?
+    1 + Math.max(0, ...value.map(vfw.util.getArrayDepth)) :
+    0;
 
 class SidebarButton {
     /**
