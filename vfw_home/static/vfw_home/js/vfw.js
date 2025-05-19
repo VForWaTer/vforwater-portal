@@ -533,6 +533,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
         $.when(vfw.map.func.getCatchment({'coords': click_coords}))
             .done(catchment => {
+                sessionStorage.setItem('catchment', JSON.stringify(catchment))
                 vfw.map.func.renderCatchment(catchment, 'wkt')
                 // vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
                 // vfw.map.olmap.addLayer(selectionLayer)
@@ -563,6 +564,7 @@ vfw.map.func.removeDrawInteractions = function () {
     vfw.map.olmap.removeInteraction(vfw.map.control.modify);
     vfw.map.olmap.removeInteraction(vfw.map.control.drawSquare);
     vfw.map.olmap.removeInteraction(vfw.map.control.drawCatchmentOutlet);
+    sessionStorage.removeItem("catchment");
     // vfw.map.olmap.removeInteraction(vfw.map.control.selectCatch);  // TODO: This gives conflicts with the other select options. Find another way to solve that you cannot deselect the clicked catchment
 }
 
@@ -989,7 +991,10 @@ vfw.filter.updateQuickfilter = function() {
                 //     stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
                 // }))
                 // vfw.map.olmap.addLayer(selectionLayer)
-
+            } else if (urlKey[0] === 'catchout') {
+                vfw.map.func.renderCatchment(JSON.parse(sessionStorage.getItem('catchment')), 'wkt')
+            // } else if (urlKey[0] === 'catchStartID') {
+            //     vfw.map.func.renderCatchment(JSON.parse(sessionStorage.getItem('catchment')), 'wkt')
             } else {
                 console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
             }

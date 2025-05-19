@@ -1,7 +1,7 @@
 # =================================================================
 #
 # Authors: Marcus Strobl <marcus.strobl@kit.edu>
-# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>, Kaoutar Boussaoud <kaoutar.boussaourd@kit.edu>
+# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>, Kaoutar Boussaoud <kaoutar.boussaourd@kit.edu>, Elnaz Azmi <elnaz.azmi@kit.edu>
 #
 # Copyright (c) 2024 Marcus Strobl
 #
@@ -163,7 +163,7 @@ class HomeView(TemplateView):
 
             verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.AREAL_DATA_LAYER, layertype='areal_data')
 
-            # verify_layer(self.request, self.DATA_LAYER, self.STORE, self.WORKSPACE) 
+            # verify_layer(self.request, self.DATA_LAYER, self.STORE, self.WORKSPACE)
             print(f"Calling verify_layer with {self.AREAL_DATA_LAYER}")
             # verify_layer(self.request, self.AREAL_DATA_LAYER, self.STORE, self.WORKSPACE,  layertype='areal_data')
 
@@ -174,7 +174,7 @@ class HomeView(TemplateView):
 
         self.DATA_EXT = get_bbox_from_data()
         context = quick_filter_defaults(self)
-       
+
 
         return {
             'dataExt': self.DATA_EXT,
@@ -184,7 +184,7 @@ class HomeView(TemplateView):
             'unblocked_ids': unblocked_ids,
             **context
         }
-        
+
 class TestView(View):
 
     def get(self, request):
@@ -395,7 +395,7 @@ class LogoutView(View):
     def logout_user(self, request):
         """
         Logs out the user and clears their session.
-        
+
         :param request: The HTTP request object
         :type request: HttpRequest
         """
@@ -410,7 +410,7 @@ class LogoutView(View):
     def post(self, request):
         """
         Handles POST requests to log out the user.
-        
+
         :param request: The HTTP request object
         :type request: HttpRequest
         :return: A redirect to the home page
@@ -514,7 +514,7 @@ class FailedLoginView(View):
     def get(self, request):
         """
         Handles GET requests and displays a login failed message.
-        
+
         :param request: The HTTP request object
         :type request: HttpRequest
         :return: A redirect to the home page
@@ -694,10 +694,10 @@ class ShortInfoPaginationView(View):
 
             if datasets:
                 entries_list = self.process_grouped_entries(datasets, entries_list)
-            
+
             current_page = self.paginate_entries(request, entries_list, 5)
             entries = self.build_entries_dict(current_page, field_name, accessible_ids)
-            
+
             return render(request, 'vfw_home/mapmodal_entrieslist.html', {
                 'entries_page': entries,
                 'data_sets': datasets,
@@ -719,7 +719,7 @@ class ShortInfoPaginationView(View):
         datasets = json.loads(request.GET.get('datasets', '[]'))
         if isinstance(datasets, str):
             datasets = [int(datasets)]
-        
+
         field = [
             'title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end'
         ]
@@ -727,7 +727,7 @@ class ShortInfoPaginationView(View):
             'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
             'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'
         }
-        
+
         return datasets, field, field_name
 
     def get_entries_list(self, datasets, field):
@@ -762,10 +762,10 @@ class ShortInfoPaginationView(View):
                 for k, v in entries_list[entries_id_map[target]].items():
                     if v != entries_list[entries_id_map[dataset]][k]:
                         entries_list[entries_id_map[target]][k] = [entries_list[entries_id_map[target]][k], entries_list[entries_id_map[dataset]][k]]
-        
+
         for delete_id in sorted(delete_indices, reverse=True):
             entries_list.remove(entries_list[delete_id])
-        
+
         return entries_list
 
     def build_append_delete_dicts(self, grouped_dict):
@@ -803,7 +803,7 @@ class ShortInfoPaginationView(View):
                         newdict['has_access'].append({'access': True, 'ssid': d['id']})
                     else:
                         newdict['has_access'].append({'access': False, 'ssid': d['id']})
-        
+
         return dict(newdict.items())
 
 # TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
@@ -825,13 +825,13 @@ def show_info(request):
         :return: A timedelta object representing the parsed duration.
         :rtype: timedelta
 
-        The function removes the 'P' prefix and splits the string into date and time parts. 
+        The function removes the 'P' prefix and splits the string into date and time parts.
 
         Example:
 
         >>> parse_iso8601_duration('P3DT1H5M6S')
         output : 3 days, 1:05:06
-           
+
         """
         # Remove the 'P' and split into date and time parts
         duration_str = duration_str[1:]
@@ -852,7 +852,7 @@ def show_info(request):
             seconds += int(time_part.split('M')[-1].split('S')[0]) if 'S' in time_part else 0
 
         return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
-   
+
 
     def format_duration_to_detailed_str(duration):
         """
@@ -925,7 +925,7 @@ def show_info(request):
         else:
             group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
                 .values_list('entry_id', flat=True)
-        
+
         variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
         table = {'id': ids, 'uuid': db_info[0][prefix + 'uuid'],
                  translation.gettext('Name'): variable_name }
@@ -944,7 +944,7 @@ def show_info(request):
         table['group_entry_ids'] = list(group_entry_ids)
 
         if db_info[0][prefix + 'datasource__spatial_scale__resolution'] is not None :
-        #     spatial_resolution_unit_symbol = Variables.objects.filter(name=variable_name).first().unit.symbol 
+        #     spatial_resolution_unit_symbol = Variables.objects.filter(name=variable_name).first().unit.symbol
             table[translation.gettext('Spatial Resolution')] = str(db_info[0][prefix + 'datasource__spatial_scale__resolution']) + " " + "m"
 
         if db_info[0][prefix + 'datasource__temporal_scale__resolution'] is not None :
@@ -955,7 +955,7 @@ def show_info(request):
         print("table 8: ", db_info[0][prefix + 'datasource__temporal_scale__observation_start'])
         table[translation.gettext('Observation Start')] = db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_start'] else '-'
         table[translation.gettext('Observation End')] = db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_end'] else '-'
-        
+
         return JsonResponse({'table': table, 'warning': warning})
 
     webID = request.GET.get('show_info')
@@ -1147,21 +1147,21 @@ class AdvancedFilterView(View):
     """
     View to handle advanced filtering of entries.
     """
-    
+
     def get(self, request):
         # Initial query to get all entries with distinct entry_id
         selection = Entries.objects.all().distinct('entry_id')
-        
+
         # Apply the advanced filter based on GET parameters
         advfilter = NMPersonsFilter(request.GET, queryset=selection)
         selection = advfilter.qs
-        
+
         # Prepare context data for the template
         context = {
             'advFilter': advfilter,
             'selection': selection
         }
-        
+
         # Render the template with the context data
         return render(request, 'vfw_home/advanced_filter.html', context)
 
@@ -1198,7 +1198,7 @@ class QuickFilterResults(View):
 
         # create query according to selection
         try:
-            
+
             selection_query = QueryDict(selection)
             simple_queries = {
                 'variables': 'variable__name__in',
@@ -1207,28 +1207,28 @@ class QuickFilterResults(View):
             }
 
             filter_dict, filter_area, filter_area_or, fair_query = QuickFilterResults.initialize_filters()
-            
-            
+
+
             for key in selection_query:
                 QuickFilterResults.handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request)
 
             query = QuickFilterResults.build_query(filter_dict, filter_area, filter_area_or, fair_query)
             #print(query)
-            
+
             total_results = query.count()
-            
+
 
             data_ext, layertype = QuickFilterResults.get_data_extent(query)
-            
+
             response_data = QuickFilterResults.prepare_response_data(request, query, total_results, data_ext, layertype)
-            
+
             #print('response_data 1 : ', response_data)
 
-            
+
 
 
         except Exception as e:
-            
+
             logger.debug(f'Unable to prepare your selection: {e}')
             response_data = QuickFilterResults.prepare_error_response(selection)
             print('response_data 2 : ', e)
@@ -1264,11 +1264,11 @@ class QuickFilterResults(View):
 
     @staticmethod
     def add_draw_filters(key, selection_query, filter_area, filter_area_or  ):
-        values = selection_query.getlist(key)[0] 
-        coordinates = iter([float(item) for item in values.split(',')])  
-        poly = Polygon(tuple(zip(coordinates, coordinates)), srid=4326)  
-        filter_area['location__intersects'] = poly  
-        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly 
+        values = selection_query.getlist(key)[0]
+        coordinates = iter([float(item) for item in values.split(',')])
+        poly = Polygon(tuple(zip(coordinates, coordinates)), srid=4326)
+        filter_area['location__intersects'] = poly
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
 
     @staticmethod
     def add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or):
@@ -1281,24 +1281,31 @@ class QuickFilterResults(View):
     @staticmethod
     def add_catchout_filters(key, selection_query, filter_area, filter_area_or, request):
         coords = json.loads(request.POST.get('coords'))
-        if coords:
+        if coords and len(coords) == 1 and len(coords[0]) > 3:
+            catchment = tuple(tuple(x) for x in coords[0])
+            poly = Polygon(catchment, srid=4326)
+        elif coords and len(coords) == 1 and len(coords[0]) < 4:
+            raise 'Error: Not enough coordinates. Not a valid polygon.'
+        elif coords and len(coords) < 4:
+            raise 'Error: Not enough coordinates. Not a valid polygon.'
+        elif coords:
             catchment = tuple(tuple(x) for x in coords)
-            poly = Polygon(catchment, srid=4326)  
+            poly = Polygon(catchment, srid=4326)
         else:
             catchment = delineate(coords={'lng': [selection_query.getlist(key)[0]],
                                                 'lat': [selection_query.getlist(key)[1]]}, precise=True)
             poly = GEOSGeometry(catchment['wkt'])
         filter_area['location__intersects'] = poly  #
-        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly 
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
 
 
 
-                    
+
     @staticmethod
     def handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request):
 
-        
-        if key in simple_queries:        
+
+        if key in simple_queries:
             filter_dict[simple_queries[key]] = selection_query.getlist(key)
         elif key == 'date':
             QuickFilterResults.add_date_filters(selection_query, filter_dict)
@@ -1311,7 +1318,7 @@ class QuickFilterResults(View):
         elif key == 'catchout':
             QuickFilterResults.add_catchout_filters(key, selection_query, filter_area, filter_area_or, request)
 
-        
+
 
 
     @staticmethod
@@ -1364,8 +1371,8 @@ class QuickFilterResults(View):
                 create_layer(request, areal_id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="areal_data")
             except Exception as e:
                 logger.debug(f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}')
-        
-        
+
+
         return {
             'selection': request.POST.get('selection', ''),
             'total': total_results,
@@ -1392,7 +1399,7 @@ class QuickFilterResults(View):
             delete_layer(name, HomeView.STORE, HomeView.WORKSPACE)
 
 
-   
+
 def error_404_view(request, exception):
     # data = {"name": "Some Error"}
     # return render(request,'vfw_home/404.html', data)
