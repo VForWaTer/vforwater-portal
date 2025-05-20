@@ -273,6 +273,7 @@ vfw.map.func.resetDraw = function() {
     vfw.html.getQuickSelection({'catchStartID': []});
     vfw.var.obj.selectedIds.map = null;
     vfw.map.source.selectionSource.clear();
+    vfw.map.func.removeCatchmentDrawings();
 
     vfw.map.olmap.removeInteraction(vfw.map.control.draw);
     vfw.map.olmap.removeInteraction(vfw.map.control.modify);
@@ -324,6 +325,17 @@ vfw.map.func.resetDraw = function() {
     vfw.map.vars.selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
     return coords
 }
+/**
+ * Catchments are drawn as a feature in their own source. To enable the standard openlayers drawing,
+ * the original source has to be set again for the selectionLayer. The catchment source and the catchment
+ * in the sessionStorage aren't needed anymore and removed as well.
+ */
+vfw.map.func.removeCatchmentDrawings = function() {
+    vfw.map.source.selectionSource_catchment = {};
+    sessionStorage.removeItem("catchment");
+    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+}
+
 /**
  * Open menu to draw polygon on map and use the polygon to select data
  *
@@ -463,6 +475,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
     vfw.map.control.drawSquare.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
+        vfw.map.func.removeCatchmentDrawings();
         listener = selectStartFun(event)
     }, this);
     vfw.map.control.drawSquare.on('drawend', function () {
@@ -491,6 +504,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
     vfw.map.control.draw.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
+        vfw.map.func.removeCatchmentDrawings();
         listener = selectStartFun(event)
     }, this);
     vfw.map.control.draw.on('drawend', function () {
@@ -564,7 +578,6 @@ vfw.map.func.removeDrawInteractions = function () {
     vfw.map.olmap.removeInteraction(vfw.map.control.modify);
     vfw.map.olmap.removeInteraction(vfw.map.control.drawSquare);
     vfw.map.olmap.removeInteraction(vfw.map.control.drawCatchmentOutlet);
-    sessionStorage.removeItem("catchment");
     // vfw.map.olmap.removeInteraction(vfw.map.control.selectCatch);  // TODO: This gives conflicts with the other select options. Find another way to solve that you cannot deselect the clicked catchment
 }
 
@@ -1247,8 +1260,14 @@ vfw.map.func.renderCatchment = function (catchment, format, dataprojection='EPSG
     // TODO: make sure you got 'vfw.map.vars.selectionEdgeCoords' before 'vfw.map.func.getSelectionEdgeCoords()' in 'drawend' runs. => create custom event?
     // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
     // vfw.map.source.selectionSource.clear();
-    vfw.map.source.selectionSource = new ol.source.Vector({features: [catch_feature],});
-    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+
+    // To visualize catchment on map a new feature is needed. The new feature is injected to the layer through a new
+    // source. This source is only for catchment drawing, so when the user wants to draw again with OL standard tools,
+    // the original source has to be set again in the selection layer in drawstart
+    // => vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+    vfw.map.source.selectionSource_catchment = new ol.source.Vector({features: [catch_feature],});
+    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource_catchment);
+
     // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
     // selectionLayer.setStyle(new ol.style.Style({
     //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
