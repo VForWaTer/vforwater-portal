@@ -34,7 +34,7 @@ DEMO_VAR = ''
 HOST_NAME = "portal.vforwater.de"
 VFW_SERVER = 'https://' + HOST_NAME + DEMO_VAR
 MAP_SERVER = "https://portal.vforwater.de"
-LOCAL_GEOSERVER = 'http://127.0.0.1:8080/geoserver'
+LOCAL_GEOSERVER = 'http://localhost:8080/geoserver'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/

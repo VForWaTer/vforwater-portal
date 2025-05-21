@@ -9,3 +9,4 @@ RUN cd /home/vfwportal/vforwater-portal && /usr/local/bin/python -m pip install 
 
 USER vfwportal
 WORKDIR /home/vfwportal/vforwater-portal
+
