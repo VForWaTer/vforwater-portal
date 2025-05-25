@@ -1,12 +1,15 @@
-{#{% load static %}#}
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
 <div id="entries" class="entries">
 
-  {#	<style>div.entries {height: 80%; width: 100%;}</style>#}
-
-  {#Table:#}
   <table class="table table-bordered">
     <thead>
     <tr>
@@ -48,11 +51,9 @@
     {% for entry in entries %}
       <tr>
         <td colspan="0">
-{#          <table class="innerPaginationTable" draggable="true">#}
           <table class="innerPaginationTable" id={{ entry.id }} draggable="true" ondragstart="dragstart_handler(event)">
             <tr class=
                         {% if entry.id in accessible_ids %} "embargoFalse">
-{#                        {% if ownData and entry.id in ownData %} "embargoFalse">#}
                         {% else %} "embargo{{ entry.embargo }}">
                         {% endif %}
               <th></th>
@@ -62,11 +63,8 @@
               <th></th>
             </tr>
             <tr>
-{#              TODO: checkbox has no function yet, use it to group datasets for selection and preview #}
-{#              TODO: (how to group) over pagination? #}
               <td><input type="checkbox" id="vehicle1" name="vehicle1" value="Bike"></td>
               <td title="{% trans "Abstract" %}"><div style="max-height:100px; overflow-y:auto;"> {{ entry.abstract|default_if_none:"--" }} </div></td>
-{#              <td title="Abstract"> {{ entry.abstract }} </td>#}
               <td title="{% trans "Datatype" %}"> {{ entry.datasource__datatype__name|capfirst|default_if_none:"--" }} </td>
               <td title="{% trans "Temporal Scale" %}"> {{ entry.datasource__temporal_scale__resolution|default_if_none:"--" }} </td>
               <td title="{% trans "Spatial Scale" %}"> {{ entry.datasource__spatial_scale__extent|default_if_none:"--" }} </td>
@@ -87,7 +85,7 @@
               <td><a><b><input type="submit"
                       {% if entry.id in accessible_ids %}
                                  class="w3-btn-block w3-btn-block:hover store-button"
-                                 onclick="vfw.sidebar.workspace_dataset('db{{ entry.id }}')"
+                                 onclick="vfw.sidebar.workspaceDataset('db{{ entry.id }}')"
                                  value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
                                  title="{% trans "Put dataset to session datastore." %}"
                       {% else %}
@@ -106,13 +104,11 @@
         </td>
       </tr>
     {% empty %}
-{#      <h1>Loading your data.</h1>#}
       <h1>Nothing to show for your Selection.</h1>
     {% endfor %}
     </tbody>
   </table>
 
-  {#Pagination:#}
   {% if entries.has_other_pages %}
     <ul class="pagination">
       {% if entries.has_previous %}

@@ -1,3 +1,10 @@
+/*
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+*/
+
 div.map {
     height: 88%;
     width: 100%;
@@ -13,24 +20,16 @@ div.map {
     border: 1px solid #cccccc;
     bottom: 12px;
     left: -50px;
-    /*min-width: 280px;*/
 }
 
-/*styles for the custom buttons on the map*/
+/**
+* styles for the custom buttons on the map
+*/
 .custom-control {
       top: 0.5em;
     left: 2.9em;
     position: absolute;
-  /*width: 70px;*/
-  /*height: 70px;*/
-  /*background: no-repeat url('http://openlayers.org/en/latest/examples/resources/logo-70x70.png')*/
 }
-/*.custom-control.ol-control {*/
-    /*position: absolute;*/
-    /*background-color: rgba(255, 255, 255, .4);*/
-    /*border-radius: 4px;*/
-    /*padding: 2px*/
-/*}*/
 .custom-control button {
     position: absolute;
     background-color: rgba(255, 255, 255, .4);
@@ -54,24 +53,33 @@ div.map {
 #drawfilter {
 border-radius: 4px;
 padding: 2px;
-    /*display: block;*/
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
-#draw_polygon, #modify_polygon, #draw_square, #remove_polygon {
+#draw_polygon, #modify_polygon, #draw_square, #remove_polygon, #draw_catchment, #store_polygon {
     width: 6px;
     height: 6px;
-    background:rgba(0, 60, 136, .55);
-    border-radius: 4px;
-    padding: 3px;
-    color: white;
+    color:#666666;
+    border-radius: 1px;
+    padding: 2px;
+    background: white;
 }
 .draw-hover:hover{
-background:rgba(0, 60, 136, .9)!important;
+    background: rgba(208, 208, 208, 0.9) !important;
 }
 #draw_toggle, #closed_drawfilter {
     border-radius: 4px;
     padding: 3px;
 }
+.hover-white{
+    background:white;
+}
 .hover-white:hover{
-    background:white!important;
+    background: rgba(208, 208, 208, 0.9);
+}
+
+/**
+* The zoomslider shall be placed between the zoom-in and zoom-out buttons.
+*/
+#map .ol-zoom .ol-zoom-out {
 }

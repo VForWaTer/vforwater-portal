@@ -9,14 +9,14 @@ from vfw_home import models
 class EntriesAdminForm(ModelForm):
     class Meta:
         model = models.Entries
-        fields = ['title', 'abstract', 'external_id', 'location', 'geom', 'version', 'latest_version', 'comment',
+        fields = ['title', 'abstract', 'external_id', 'location', 'version', 'latest_version', 'comment',
                   'license', 'variable', 'datasource', 'embargo', 'embargo_end', 'publication', 'lastupdate',
                   'is_partial', 'uuid', 'citation']
 
 
-class EntriesAdmin(admin.OSMGeoAdmin):
+class EntriesAdmin(admin.GISModelAdmin):
     form = EntriesAdminForm
-    list_display = ['id', 'title', 'location', 'geom']
+    list_display = ['id', 'title', 'location']
 
 
     def variable_fname(self, obj):
@@ -35,7 +35,6 @@ class EntriesAdmin(admin.OSMGeoAdmin):
 
 
 admin.site.register(models.Entries, EntriesAdmin)
-# admin.site.register(models.Entries, admin.GeoModelAdmin)
 
 
 class VariablesAdminForm(ModelForm):

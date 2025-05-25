@@ -13,8 +13,6 @@
 {% block requests_or_resources %}
   <div class="mini-nav">
     <a href="{% url 'author_manage:profile' %}" class="noncurrent w3-btn w3-blue"><strong>Requests</strong></a></li>
-    {#       class="noncurrent"#}
-    {#    <a href="{% url 'author_manage:profile' %}my-resources" class="current">My Resources</a></li>#}
   </div>
 
   <div class="resources-container">
@@ -41,14 +39,11 @@
                 <!-- modal dialog showing meta info about the resource and an access button -->
                 <div id="{{ resource.id }}" class="modalDialog">
                   <a href="" title="Close" id="x"> x </a>
-                  {#         <h2 id="details">Details</h2>#}
                   <br>
-                  {#         <p>Name: <strong>{{resource.name}}</strong></p>#}
               </th>{% endcomment %}
         <tr>
           <td>Abstract:</td>
           <td>{{ resource.dataEntry.abstract }}</td>
-          {#              <td><strong>{{ resource.dataEntry }}</strong></td>#}
         </tr>
         <tr>
           {% if resource.dataEntry.latest_version %}
@@ -83,7 +78,6 @@
 {{ resource.dataEntry.variable.keyword.thesaurus.url }}">
             {{ resource.dataEntry.variable.keyword.thesaurus.title }}</td>
         </tr>
-        {#          TODO: check if args.all works when data available#}
         {% if resource.dataEntry.datasource.args.all %}
           <tr>
             <td>Datasource args:</td>
@@ -106,7 +100,6 @@
           <td>Datatype:</td>
           <td title="{{ resource.dataEntry.datasource.datatype.description }}">
             {{ resource.dataEntry.datasource.datatype.name }}</td>
-          {#                {{ resource.dataEntry.datasource.datatype.name }}</td>#}
         </tr>
         {% if resource.dataEntry.datasource.temporal_scale %}
           <tr>
@@ -162,18 +155,7 @@
           <td>Citation:</td>
           <td>{{ resource.dataEntry.citation }}</td>
         </tr>
-        {#         <p>CreationDate: <strong>{{resource.creationDate}}</strong></p>#}
-        {#         <p>Description: <strong>{{resource.description}}</strong></p>#}
-        {% comment %}<button class="acc-btn-info-dialog">
-         <a href="../../resources/{{resource.id}}" class="acc-info-dialog"download>Access</a>
-         </button> {% endcomment %}
-        {% comment %}         <button class="acc-tmp-btn" onclick="window.location.href='../../resources/{{resource.id}}'">
-            Access
-          </button>{% endcomment %}
-        {#        </div>#}
         </tr>
-        <!-- access button -->
-        {#   <a href="../../resources/{{resource.id}}" class="acc-btn">Access</a>#}
 
         <!-- edit permissions button -->
         <tr>
@@ -209,57 +191,11 @@
 
               <!-- the admin has the right to delete his resource without request -->
               {% if is_admin %}
-                {% comment %} TODO: Delete request is not working. Only needed for admin
-   <a href="#delete-resource-{{resource.id}}" class="delete-btn"> Delete </a>
-
-   <!-- modal dialog for deleting a resource (accessible only for the admin) -->
-   <div id="delete-resource-{{resource.id}}" class="modalDialog">
-      <div>
-         <a href="" title="Close" id="x"> x </a>
-         <form action="{% url 'author_manage:delete-resource' resource.id %}" method="post">
-            {% csrf_token %}
-            <div class = "row">
-               <p> Are you sure you want to <strong>delete</strong> the resource
-                  <strong>{{resource.name}}</strong>?
-               </p>
-               <br>
-            </div>
-            <div class="row">
-               <label for="descr">Message: </label><br><br>
-               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
-            </div>
-            <input id="no" type="submit" value="Yes, delete resource">
-            <a href="" title="Close" id="close"> Close </a>
-         </form>
-      </div>
-   </div>
-{% endcomment %}
                 <!-- the regular user must send a deletion request -->
               {% else %}
                 <a href="#send-deletion-request-{{ resource.id }}" class="delete-btn"> Delete </a>
               {% endif %}
 
-              <!-- modal dialog for sending a deletion request -->
-              {% comment %}<div id="send-deletion-request-{{resource.id}}" class="modalDialog">
-      <div>
-         <a href="" title="Close" id="x"> x </a>
-         <form action="{% url 'author_manage:send-delete-request' resource.id %}" method="post">
-            {% csrf_token %}
-            <div class = "row">
-               <p> Are you sure you want to send a request for <strong>deletion</strong> of resource:
-                  <strong>{{resource.name}}</strong>?
-               </p>
-               <br>
-            </div>
-            <div class="row">
-               <label for="descr">Message: </label><br>
-               <textarea id="descr" name = "descr" placeholder="optional" maxlength="250" cols = "51" rows = "7"></textarea>
-            </div>
-            <input id="no" type="submit" value="Yes, request deletion">
-            <a href="" title="Close" id="close"> Close </a>
-         </form>
-      </div>
-   </div>{% endcomment %}
             {% endif %}
           </td>
         </tr>

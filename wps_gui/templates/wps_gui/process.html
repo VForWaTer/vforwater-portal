@@ -1,36 +1,12 @@
 <meta charset="UTF-8">
 
-{#{% extends "vfw_home/base.html" %}#}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'wps_gui/js/process.js' %}">
-{##}
-{#{% block title %}- Heron WPS{% endblock %}#}
-{##}
-{#{% block sidebar %}#}
-{#	{% include 'wps_gui/sidebar.html' %}#}
-{#{% endblock sidebar %}#}
-{% comment %}<div class="modal hide" id="contactModal">
-<form class="well" method="post" action="/contact/edit/{{ item.id }}">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Editing Contact</h3>
-  </div>
-  <div class="modal-body">
-       {% csrf_token %}
-       {{form.as_p}}
-  </div>
-  <div class="modal-footer">
-       <input class="btn btn-primary" type="submit" value="Save" />
-       <input name="cancel" class="btn" type="submit" value="Cancel"/>
-  </div>
-</form>
-</div>{% endcomment %}
 
-{#{% block modal %}#}
   <!-- Process Overview -->
 <div id="modal" class="w3-modal">
 <div class="w3-modal-content">
@@ -78,8 +54,6 @@
                                 <option value="Select dataset">None</option>
                                 {% for datasets in workspaceData %}
                                     <option value = "select tstamp, value from tbl_data where meta_id={{ datasets }}"> {{ datasets }}</option>
-                                {% comment %}{% empty %}
-                                    <option class="w3-hover-blue nav" value="empty" title="empty">Keine Daten zur Auswahl</option>{% endcomment %}
                                 {% endfor %}
                                     <option value = "select tstamp, value from tbl_data where meta_id=2557"> Colpach</option>
                                     <option value = "select tstamp, value from tbl_data where meta_id=2558"> Huewelerbach</option>
@@ -154,4 +128,3 @@
 </div>
 
 </div>
-{#{% endblock %}#}

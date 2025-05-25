@@ -1,0 +1,76 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
+{% load i18n l10n %}
+<input type="text" id="from_{{ elem_id }}" size="9"> <code>&#8212;</code>
+<input type="text" id="to_{{ elem_id }}" size="9">
+<div id="slider-date-range-{{ elem_id }}">
+</div>
+<script>
+  $('#id_{{ elem_id }}').attr("readonly", true).hide()
+  $("#slider-date-range-{{ elem_id }}").slider({
+    animate: "fast",
+    min: new Date('{{ minimum }}').getTime(),
+    max: new Date('{{ maximum }}').getTime(),
+    range: true,
+    step: {{ step }},
+    values: [new Date('{{ minimum }}'), new Date('{{ maximum }}')],
+    slide: function (event, ui) {
+      let minDate = new Date(ui.values[0]);
+      let maxDate = new Date(ui.values[1]);
+      $("#from_{{ elem_id }}").val(minDate.toLocaleDateString());  // update datepicker "from"
+      $("#to_{{ elem_id }}").val(maxDate.toLocaleDateString());  // update datepicker "to"
+
+      $("#id_{{ elem_id }}")
+        .val(" {{ elem_name }} " + minDate.toLocaleDateString() + " - " + maxDate.toLocaleDateString());
+      $("#id_{{ elem_id }}")
+        .data("values", [minDate.toISOString().split('T')[0], maxDate.toISOString().split('T')[0]]);
+      if (event.keyCode == 13 || event.key === 'Enter') {  // event.keyCode == 13 is depricated, but not completely supported yet
+        {{ onchange|safe }}
+      }
+    },
+    stop: function (event, ui) {
+      {{ onchange|safe }}
+    }
+  });
+  // initial values of box:
+  $(function () {
+    let minStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 0)).toLocaleDateString()
+    let maxStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 1)).toLocaleDateString()
+    $("#id_{{ elem_id }}").val("{{ elem_name }}" + minStart + " - " + maxStart);
+    $("#from_{{ elem_id }}").val(minStart);
+    $("#to_{{ elem_id }}").val(maxStart);
+  })
+
+  $(function () {
+    let datepickerSettings = {
+      showAnim: "slideDown",
+      showWeek: true,
+      changeMonth: true,
+      changeYear: true,
+      dateFormat: "d.m.yy"
+    }
+
+    function newDate(dateStr) {
+      const [day, month, year] = dateStr.split(".")
+      return new Date(year, month - 1, day)
+    }
+    function slideAndBoxUpdate() {
+      let fromDate = $("#from_{{ elem_id }}").val()
+      let toDate = $("#to_{{ elem_id }}").val()
+      $("#id_{{ elem_id }}")
+        .val(" {{ elem_name }} " + fromDate + " - " + toDate);
+      $("#id_{{ elem_id }}")
+        .data("values", [newDate(fromDate).toISOString().split('T')[0], newDate(toDate).toISOString().split('T')[0]]);
+      $("#slider-date-range-{{ elem_id }}").slider('values', [newDate(fromDate), newDate(toDate)]).val()  // update slider
+      {{ onchange|safe }}
+    }
+
+    $("#from_{{ elem_id }}").datepicker(datepickerSettings).on("change", () => slideAndBoxUpdate())
+    $("#to_{{ elem_id }}").datepicker(datepickerSettings).on("change", () => slideAndBoxUpdate())
+  });
+</script>

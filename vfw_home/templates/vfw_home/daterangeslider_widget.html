@@ -1,0 +1,41 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
+{% load i18n l10n %}
+<div id="slider-date-range-{{ elem_id }}">
+</div>
+<script>
+  $('#id_{{ elem_id }}').attr("readonly", true)
+  $("#slider-date-range-{{ elem_id }}").slider({
+    animate: "fast",
+    min: new Date('{{ minimum }}').getTime(),
+    max: new Date('{{ maximum }}').getTime(),
+    range: true,
+    step: {{ step }},
+    values: [new Date('{{ minimum }}'), new Date('{{ maximum }}')],
+    slide: function (event, ui) {
+      let minDate = new Date(ui.values[0]);
+      let maxDate = new Date(ui.values[1]);
+      $("#id_{{ elem_id }}")
+        .val(" {{ elem_name }} " + minDate.toLocaleDateString() + " - " + maxDate.toLocaleDateString());
+      $("#id_{{ elem_id }}")
+        .data("values", [minDate.toISOString().split('T')[0], maxDate.toISOString().split('T')[0]]);
+      if (event.keyCode == 13 || event.key === 'Enter') {  // event.keyCode == 13 is depricated, but not completely supported yet
+        {{ onchange|safe }}
+      }
+    },
+    stop: function(event, ui) {
+      {{ onchange|safe }}
+    }
+  });
+  // initial values of box:
+  $(function () {
+    let minStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 0)).toLocaleDateString()
+    let maxStart = new Date($("#slider-date-range-{{ elem_id }}").slider("values", 1)).toLocaleDateString()
+    $("#id_{{ elem_id }}").val("{{ elem_name }}" + minStart + " - " + maxStart);
+  })
+</script>

@@ -2,8 +2,6 @@ const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
     'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
     'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
 
-// TODO: btn_id is not used yet, though it is needed to decide if an element has to be placed in the Dropozone on save:
-//  if process_id == btn_id place btn in dropzone (on save)
 /**
  * Load metadata of a wps process.
  * The in- and outputs (and so on) of a tool are not loaded when page loads but on its first use.
@@ -105,7 +103,6 @@ vfw.session.get_wpsprocess = function (service, identifier) {
 
 /**
  * create a dict with random coordinates on the dropzone ('dropdiv').
- * TODO: avoid overlap of boxes
  * @returns {{x: number, y: number}}
  */
 vfw.workspace.get_drop_coords = function () {
@@ -149,7 +146,6 @@ vfw.workspace.drop_on_click = function (ev) {
             newbox = vfw.workspace.drop_handler(metadata, coords['x'] - 40, coords['y'] - 40, 'sidebtn' + modalData.inId_list[i], 'workspace')
             box_id = newbox.boxID;
 
-            // TODO: The following should be part of another function
             workflow = vfw.session.get_workflow()
             workflow[box_id].output_ids = [tool_id];
             workflow[tool_id].input_ids[i] = box_id;
@@ -157,7 +153,6 @@ vfw.workspace.drop_on_click = function (ev) {
 
             databox = newbox.box;
             dataport = databox.getOutputPort(0);
-            // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
             toolport = toolbox.getInputPort(parseInt(i));
         }
     }
@@ -319,9 +314,6 @@ vfw.workspace.modal.prep_data = function () {
     }
 }
 
-// TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
-//  when you have the drop objects
-// TODO: Improve code by using HTML Forms
 vfw.workspace.modal.run_process = function () {
     vfw.workspace.modal.set_Color("dodgerblue");
     let modal_input = vfw.workspace.modal.prep_data();
@@ -553,7 +545,6 @@ vfw.session.add_resultbtn = function (btnName, json) {
     sessionStorage.setItem("resultBtn", JSON.stringify(result_btns));
 }
 
-//TODO: Is it necessary that a result knows which function it came from and what the input parameters were?
 /**
  * Build a button in the result store.
  * data-id is used to find results on server, id is used for the remove button
@@ -808,7 +799,6 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     element.innerHTML = newElement;
 
     /** inputs: **/
-    // TODO: Is reuse of element in new context okay? Fix if not.
     element = document.getElementById("mod_in");
     element.innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
@@ -909,16 +899,13 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
                 default:
                     console.error(' new dataType: ', item.dataType)
             }
-            // TODO: is this here the third time I set required = True? Test if necessary
             if (item.minOccurs > 0) {
                 inElement.required = true
-            } //else {inElement.required = false}
             newNode.appendChild(inElement);
         }
         if (typeof (newNode) === 'object') element.appendChild(newNode)
     });
 
-    // TODO: build one output now. Decide how to handle several outputs
     /** outputs: **/
     document.getElementById("mod_out").innerHTML = "";
 
@@ -936,7 +923,6 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     modal.setAttribute("name", wpsInfo.identifier);
     modal.style.display = "block";
     let currentModal = new vfw.workspace.modalObj(wpsInfo.identifier, outElementIdList);
-    // TODO: get right name for sessionstorage
 }
 
 /**
@@ -1103,7 +1089,6 @@ vfw.workspace.workflow.create_processTree = function (workflow) {
         if (!processList.includes(ID)) {
             processList.push(ID);
         } else {
-            // TODO: This results in an error anyways. Fix it!
             alert(gettext("At least one process is used more than once. This could result in an infinite loop and is forbidden (yet)."))
             console.warn('Please check box with id: ', ID)
         }
@@ -1123,7 +1108,6 @@ vfw.workspace.workflow.create_processTree = function (workflow) {
 
 /**
  * Create a list of processes from a process tree in the reverse order they are supposed to run.
- * TODO: update for parallel function call
  * @param {dict} processDict
  * @param {number} depth
  * @param {dict} innerProcesses

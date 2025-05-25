@@ -1,0 +1,30 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
+{% load i18n l10n %}
+<div id="slider-range-{{ elem_id }}">
+</div>
+<script>
+  {{ onchange }}
+  $('#id_{{ elem_id }}').attr("readonly", true)
+  $("#slider-range-{{ elem_id }}").slider({
+    range: true,
+    min: {{ minimum }},
+    max: {{ maximum }},
+    step: {{ step }},
+    values: [{{ minimum }}, {{ maximum }}],
+    slide: function (event, ui) {
+      $("#id_{{ elem_id }}").val("{{ elem_name }}" + ui.values[0] + " - " + ui.values[1]);
+    },
+    stop: function(event, ui) {
+      {{ onchange|safe }}
+    }
+  });
+  $("#id_{{ elem_id }}").val("{{ elem_name }}" + $("#slider-range-{{ elem_id }}").slider("values", 0) +
+    " - " + $("#slider-range-{{ elem_id }}").slider("values", 1));
+</script>
+

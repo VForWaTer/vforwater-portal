@@ -3,18 +3,9 @@ from django.contrib.admin.sites import AdminSite
 from author_manage.models import *
 
 
-# admin.site.register(MetacatalogReader)
-# admin.site.register(MetacatalogOwner)
-# admin.site.register(MetacatalogMaintainer)
 admin.site.register(Resource)
 admin.site.register(AccessRequest)
 admin.site.register(DeletionRequest)
-
-
-
-#class RowInline(admin.TabularInline):
-    #model = Resource.owners.through
-    #fields = ['user_id']
 
 
 
@@ -33,17 +24,9 @@ class ResourceAdmin(admin.ModelAdmin):
     """
     list_display = ["type"]
     search_fields = ["type"]
-    # list_display = ["name",
-    #                 "type",
-    #                 "description"]
-    # search_fields = ["name",
-    #                  "type",
-    #                  "description"]
-
 
 
 resource_manager.register(Resource, ResourceAdmin)
-#resource_manager.register(TableAdmin)
 # Text to put at the end of each page's <title>.
 resource_manager.site_title = 'Site Admin'
 

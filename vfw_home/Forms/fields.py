@@ -5,11 +5,12 @@ from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.gis import forms
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy
+from django.utils.encoding import force_str
+from django.utils.translation import gettext_lazy
 
-from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider, AutocompleteCharWidget
-
+from .widgets import DateTimeRangeSlider, DateRangeSlider, RangeSlider, Slider, AutocompleteCharWidget, \
+    DateRangeSliderDatePicker
+from ..utilities.utilities import regex_patterns
 
 class SliderField(forms.DateTimeField):
     def __init__(self, *args, **kwargs):
@@ -50,6 +51,19 @@ class DateRangeSliderField(forms.DateField):
         super(DateRangeSliderField, self).__init__(*args, **kwargs)
 
 
+class DateRangeSliderDatePickerField(forms.DateField):
+    def __init__(self, *args, **kwargs):
+        self.name = kwargs.pop('name', '')
+        self.minimum = kwargs.pop('minimum', 0)
+        self.maximum = kwargs.pop('maximum', 100)
+        self.step = kwargs.pop('step', 1)
+        self.onchange = kwargs.pop('onchange', '')
+        kwargs['widget'] = DateRangeSliderDatePicker(self.minimum, self.maximum, self.step, self.name, self.onchange)
+        if 'label' not in kwargs.keys():
+            kwargs['label'] = False
+        super(DateRangeSliderDatePickerField, self).__init__(*args, **kwargs)
+
+
 class DateTimeRangeSliderField(forms.DateTimeField):
     """
     Create a date range slider in html. Your project needs jquery, jquery-ui and jquery-ui.css
@@ -74,16 +88,15 @@ class DateTimeRangeSliderField(forms.DateTimeField):
 class CustomOSMField(forms.Field):
 
     default_error_messages = {
-        'invalid': ugettext_lazy('Enter Latitude and Longitude'),
+        'invalid': gettext_lazy('Enter Latitude and Longitude'),
     }
     re_point = re.compile(r'^\s*(-?\d{1,3}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(?:(\d{4,5})?)$')
-    lat_pattern = re.compile(r'^(\+|-)?(?:90(?:(?:\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\.[0-9]{1,6})?))$')
-    lon_pattern = re.compile(r'^(\+|-)?(?:180(?:(?:\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\.[0-9]{1,6})?))$')
+    lat_pattern = regex_patterns['lat']
+    lon_pattern = regex_patterns['lon']
 
     def __int__(self, separator=",", *args, **kwargs):
 
         self.attrs = kwargs.pop('attrs', '')
-        # kwargs['widget'] = CustomMap(self.attrs)
         kwargs['widget'] = CustomOSMField(self.attrs)
         kwargs['max_length'] = 105
         self.separator = separator
@@ -96,7 +109,7 @@ class CustomOSMField(forms.Field):
         if value in self.empty_values:
             return None
         try:
-            m = self.re_point.match(force_text(value))
+            m = self.re_point.match(force_str(value))
             lat = self.lat_pattern.match(m.group(1))
             lon = self.lon_pattern.match(m.group(2))
             srid = m.group(3)
@@ -116,18 +129,16 @@ class CustomOSMField(forms.Field):
 class AutocompleteCharField(forms.Field):
 
     default_error_messages = {
-        'invalid': ugettext_lazy('Enter Latitude and Longitude'),
+        'invalid': gettext_lazy('Enter Latitude and Longitude'),
     }
 
     def __int__(self, *args, **kwargs):
-
         self.attrs = kwargs.pop('attrs', '')
         kwargs['widget'] = AutocompleteCharField(self.attrs)
         kwargs['max_length'] = 105
         super(AutocompleteCharField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
-        # TODO: there are still bugs in the template. Shouldn't show anything in URL
         """Normalize data to a list of strings."""
         # Return an empty list if no input was given.
         value = super(AutocompleteCharField, self).to_python(value)
@@ -137,7 +148,6 @@ class AutocompleteCharField(forms.Field):
 
             if not True:
                 raise ValueError()
-            # value = Point(float(m.group(1)), float(m.group(2)), srid=int(m.group(3)))
             return value
         except (ValueError, TypeError):
             raise ValidationError(self.error_messages['invalid'], code='invalid')

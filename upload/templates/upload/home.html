@@ -7,7 +7,6 @@
 {% load i18n %}
 
 <head>
-  {#    <script src="{% static 'vfw_home/js/jquery-3.2.1.min.js' %}"></script>#}
   {# JQUERY FILE UPLOAD SCRIPTS #}
   <script src="{% static 'upload/js/jquery-file-upload/vendor/jquery.ui.widget.js' %}"></script>
   <script src="{% static 'upload/js/jquery-file-upload/jquery.iframe-transport.js' %}"></script>
@@ -69,7 +68,6 @@
             </tr>
           {% endfor %}
         </table>
-
 
 
         <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
@@ -138,25 +136,7 @@ id is the same as defined in data_access.js -->
            data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
   </div>
 
-
-
-
   {% comment %}<h2>NEW block</h2>{% endcomment %}
 
-
-  {#{% load static %}#}
-  {#{% load i18n %}#}
-  {#{% get_current_language as LANGUAGE_CODE %}#}
-  {##}
-  {#<form method="get" name="quickfilterform" id="quickfilter-form" style="padding-left: 12px; padding-right: 12px;">#}
-  {#  <p>{% trans "Available datasets" %} <strong>{{ total }}</strong></p>#}
-  {#  <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">#}
-  {#    {% for obj in form %}#}
-  {#      <div>{{ obj.name }}: {{ obj }} </div></br>#}
-  {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
-  {#    {% endfor %}#}
-  {#    <button class="btn btn-primary" type="submit">Search</button>#}
-  {#  </div>#}
-  {#</form>#}
 {% endblock %}
 </body>

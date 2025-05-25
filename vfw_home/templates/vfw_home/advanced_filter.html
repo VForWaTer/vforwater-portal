@@ -1,59 +1,20 @@
-{#{% extends "vfw_home/select_data.html" %}#}
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
 
-{#{% load static %}#}
-{#{% load i18n %}#}
-{#{% get_current_language as LANGUAGE_CODE %}#}
-{% comment %}
-
-<form method="post" novalidate>
-  {% csrf_token %}
-  <table border="1">
-    {{ form }}
-  </table>
-  <button type="submit">Submit</button>
-</form>
-
-{% endcomment %}
-{#{% include "vfw_home/filter_entries.html" %}#}
-{#{% block advanced_filter %}#}
 <form method="get" name="advancedfilterform" id="advancedfilter-form">
     <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
-{#        {{ advFilter.form }}#}
-{#        {{ advFilter.form.as_p }}#}
 {% for obj in advFilter.form %}
    {{ obj.name }}: {{ obj }} <br />
-{#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
 {% endfor %}
   {{ advFilter.embargo }}
       <button class="btn btn-primary" type="submit">Search</button>
-
-{#      <a onclick="filter_pagination({{ i }})">bla{{ i }}</a>#}
-
-{#        <input type="submit" />#}
     </div>
 </form>
 <p>Selection:</p>
 {% for obj in selection.qs %}
     {{ obj.variable }} - ${{ obj.license }}<br />
 {% endfor %}
-
-{#{% endblock %}#}
-{% comment %}
- <script>
-    $(document).on('submit','#advancedfilter-form',function(e){
-        e.preventDefault();
-        $.ajax({
-            type:'POST',
-            url:'{% url "home" %}',
-            data:
-            {
-                task:$("#task").val(),
-                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
-            },
-            success:function(){
-                  alert('Saved');
-                    }
-            })
-        });
-    </script>
-{% endcomment %}

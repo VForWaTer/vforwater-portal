@@ -21,8 +21,6 @@ from django.views.generic.base import RedirectView
 from vfw_home import views as vfw_views
 from django.views.i18n import JavaScriptCatalog
 
-# TODO: for JS translations see:
-#  https://docs.djangoproject.com/en/2.2/topics/i18n/translation/#note-on-performance
 urlpatterns = [
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
     re_path(r'^$', RedirectView.as_view(url='home/', permanent=False)),

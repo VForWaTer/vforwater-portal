@@ -1,0 +1,77 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
+<meta charset="UTF-8">
+{# Used for the data preview when clicked on a point on the map #}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+{% comment %}
+the following onclick is used to ensure the modal closes every time the user clicks somewhere when the modal is
+opened. Just like a real context menu.
+{% endcomment %}
+<div id="contextModal" class="w3-modal" onclick="vfw.sidebar.html.contextModal.close()">
+
+  <!-- Modal content -->
+  <div class="context-modal-content" id="contextModalContent">
+    <div class="modal-header" id="modal-context-header">
+    </div>
+
+    <ul id="contextModalEntries" class="modal-context-menu">
+    </ul>
+
+    <div class="modal-footer" id="modal-context-footer">
+      <span-b class="modal-back" onclick="vfw.sidebar.html.contextModal.close()">{% trans "Close" %}</span-b>
+      <h3></h3>
+    </div>
+  </div>
+
+</div>
+</body>
+<script>
+  vfw.sidebar.html.contextModal = document.getElementById("contextModal");
+  vfw.sidebar.html.contextEntries = document.getElementById("contextModalEntries");
+  vfw.sidebar.html.contextContent = document.getElementById("contextModalContent");
+
+  /**
+   * Close context modal
+   * */
+  vfw.sidebar.html.contextModal.close = function () {
+    vfw.sidebar.html.contextModal.style.display = "none";
+  }
+
+  vfw.sidebar.html.contextModal.open = function (html) {
+    document.getElementById("contextModalEntries").innerHTML = html;
+
+    vfw.sidebar.positionContextModal()
+    vfw.sidebar.html.contextModal.style.display = "block";
+  }
+
+  /**
+   * Positions the Modal properly like a context menu.
+   */
+  vfw.sidebar.positionContextModal = function () {
+    vfw.html.mouse.clickCoords = vfw.util.getEventPosition();
+
+    menuWidth = vfw.sidebar.html.contextContent.offsetWidth + 4;
+    menuHeight = vfw.sidebar.html.contextContent.offsetHeight + 4;
+
+    windowWidth = window.innerWidth;
+    windowHeight = window.innerHeight;
+
+    vfw.sidebar.html.contextContent.style.left = ((windowWidth - vfw.html.mouse.clickCoords.x) < menuWidth) ? `${windowWidth - menuWidth}px` : `${vfw.html.mouse.clickCoords.x}px`;
+    vfw.sidebar.html.contextContent.style.top = ((windowHeight - vfw.html.mouse.clickCoords.y) < menuHeight) ? `${windowHeight - menuHeight}px` : `${vfw.html.mouse.clickCoords.y-100}px`;
+  }
+
+</script>
+

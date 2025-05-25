@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Elnaz Azmi
+Contributors: Marcus Strobl
+License: MIT License
+-->
+
 <meta charset="UTF-8">
 <meta name="description" content="Portal to share and use hydrological data">
 <meta name="keywords" content="Hydrologie, Hydrology, GIS, Portal, eScience, VRE, VFU, virtual research environment, Virtuelle Foschungsumgebung">
@@ -14,10 +21,10 @@
 {% block content %}
    <!-- Tab links -->
 <div class="tab">
-  <button class="tablinks" id="defaultMapTab" onclick="toggleMapTableFilter(event, 'Map')">{% trans "Map" %}
+  <button class="tablinks" id="defaultMapTab" onclick="vfw.util.toggleMapTableFilter(event, 'Map')">{% trans "Map" %}
   </button>
   <button class="tablinks" id="tableTab"
-          onclick="toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Table" %}
+          onclick="vfw.util.toggleMapTableFilter(event, 'paginationTable'); filter_pagination()">{% trans "Filter result list" %}
   </button>
 </div>
 
@@ -37,22 +44,11 @@
 <!-- Login alert -->
   {% if messages.alert %}
      <script>alert("Login failed.");</script>
-
-     {% comment %}
-     {# todo: nice message window #}
-     <ul class="messages">
-     {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-     {% endfor %}
-     </ul>
-     {% endcomment %}
   {% endif %}
 
 
-
 <script>
-// Get the element with id="defaultMapTab" and click on it
-document.getElementById("defaultMapTab").click();
+vfw.map.createMap()
 </script>
 {% endblock %}
 

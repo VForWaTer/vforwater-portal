@@ -6,8 +6,9 @@ from django.db.models import Q
 from django.utils import timezone
 
 from author_manage.views import MyResourcesView
-from vfw_home.fields import DateRangeSliderField
+from .fields import DateRangeSliderField, DateRangeSliderDatePickerField
 from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Details, EntrygroupTypes
+from .widgets import DateRangeSlider
 
 
 # Filter:
@@ -25,7 +26,7 @@ from vfw_home.models import Entries, NmKeywordsEntries, NmPersonsEntries, Detail
 # - filter nach Projekt
 # - finde alle Versionen (checkmark)
 # - volltextsuche (sobald ich da ein konzept für metacatalog habe.)
-from vfw_home.widgets import DateRangeSlider
+
 
 
 class AdvancedFilterForm(forms.Form):
@@ -56,7 +57,7 @@ class AdvancedFilterForm(forms.Form):
 
 class QuickFilterQuerySets:
     """
-    Queries and collection of data for filter menue
+    Queries and collection of data for filter menu. Needed for the QuickFIlterForm(forms.Form)
     """
     variables_path = 'variable__name'
     date_min_path = 'datasource__temporal_scale__observation_start'
@@ -88,32 +89,30 @@ class QuickFilterQuerySets:
 
 class QuickFilterForm(forms.Form):
     """
-    Define the quick filter. ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox.
+    Define the quick filter. Here are the HTML components for the template collected.
+    ChoiceField renders a dropdown, MultipleChoiceField renders a selectBox.
     "onchange" defines the function called on a change/click event and the values send to that function.
     """
 
     # create menu objects
     variables = forms.ModelMultipleChoiceField(widget=forms.SelectMultiple(
-        attrs={'onchange': 'get_quick_selection({"variables": $("#id_variables").val()});'}),
+        attrs={'onchange': 'vfw.html.getQuickSelection({"variables": $("#id_variables").val()});'}),
         queryset=QuickFilterQuerySets.variables_qs)
-    date = DateRangeSliderField(label="Date", minimum=QuickFilterQuerySets.observation_min_qs.date(),
-                                maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
-                                # widget=DateRangeSliderFiled(
-                                # attrs={'onchange': 'console.log("YEAH!");'}))
-                                onchange='get_quick_selection({"date": $("#id_date").data("values")});')
-                                # onchange='get_quick_selection({"date": $("#id_date").val()});')
+    date = DateRangeSliderDatePickerField(label="Date", minimum=QuickFilterQuerySets.observation_min_qs.date(),
+                                          maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
+                                          onchange='vfw.html.getQuickSelection({"date": $("#id_date").data("values")});')
     is_FAIR = forms.BooleanField(widget=forms.CheckboxInput(
-        attrs={'onchange': 'get_quick_selection({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
+        attrs={'onchange': 'vfw.html.getQuickSelection({"is_FAIR": [$("#id_is_FAIR").is(":checked")]});'}), initial=True)
 
     class More(forms.Form):
         institution = forms.ModelMultipleChoiceField(
             widget=forms.
-                SelectMultiple(attrs={'onchange': 'get_quick_selection({"institution": $("#id_institution").val()});'}),
+                SelectMultiple(attrs={'onchange': 'vfw.html.getQuickSelection({"institution": $("#id_institution").val()});'}),
             queryset=QuickFilterQuerySets.institution_qs)
         project = forms.\
             ModelMultipleChoiceField(widget=forms.SelectMultiple(
-                attrs={'onchange': 'get_quick_selection({"project": $("#id_project").val()});'}),
+                attrs={'onchange': 'vfw.html.getQuickSelection({"project": $("#id_project").val()});'}),
                 queryset=QuickFilterQuerySets.project_qs)
         my_data = forms.BooleanField(widget=forms.CheckboxInput(
-            attrs={'onchange': 'get_quick_selection({"my_data": $("#id_my_data").is(":checked")});'}))
+            attrs={'onchange': 'vfw.html.getQuickSelection({"my_data": $("#id_my_data").is(":checked")});'}))
 

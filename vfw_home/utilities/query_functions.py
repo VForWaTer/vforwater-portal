@@ -1,4 +1,3 @@
-# TODO @Marcus: this file should work as manager in models.py
 """
 
 """
@@ -25,9 +24,8 @@ def get_bbox_from_data(*args):
         else:
             bounds = Entries.objects.all().aggregate(Extent('location'))
     except TypeError as ex:
-        print('\033[91m Exeption in loading bbox: {}\033[0m'.format(ex))
+        # print('\033[91m Exeption in loading bbox: {}\033[0m'.format(ex))
         logger.warning('\033[91m Data Extend cannot be loaded in query_functions.py. Using fixed values.\033[0m')
         bounds = {'location__extent': [11.221124, 52.08632, 11.222354, 52.086891]}
 
     return list(bounds['location__extent'])
-

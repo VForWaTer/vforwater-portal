@@ -95,17 +95,14 @@
   // When the user clicks on <span> (x), close the modal
   wspan.onclick = () => closeModal();
   wspan_r.onclick = () => {
-    {#modal.style.display = "none";#}
     if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) vfw.workspace.modal.run_process()
   };
   wspan_drop.onclick = (event) => {
-    // TODO: check if modal is opened from an existing box. If yes update sessionStorage and don't drop a new box.
     let modal_value = document.getElementById("workflowID").value;
     let tool_id;
     let service;
     if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) {
 
-      {#console.log('tool_id.length: ', tool_id.length)#}
       /** check if the workspace box exists already in the sessionstorage */
       if (modal_value == "") {
         vfw.workspace.drop_on_click(event);
@@ -119,10 +116,6 @@
         event.state = 'change';
         event.id = tool_id;
         toolbox.state = 'change';
-        {#let box_param = vfw.draw2d.box_params(ev, tool_id, 'toolbar', service)#}
-        {#let box_param = vfw.draw2d.box_params(event, tool_id, 'toolbar', service)#}
-        {#box_param.state = 'change';#}
-        {#console.log('box_param: ', box_param)#}
         let metadata, newbox, coords;
         let change_values = {};
         let workflow = vfw.session.get_workflow();
@@ -144,7 +137,6 @@
                   },
                   'source': {
                     'index': i,
-                    {#'boxid': newbox.boxID,#}
                     'boxid': newbox.boxID,
                     'orgid': modal_data.inId_list[i],
                     'value': modal_data.id,
@@ -152,11 +144,6 @@
                 }
                 event.target.index = i;
               }
-                {#tool_id = newbox.boxID;#}
-                {#databox = newbox.box;#}
-                {#dataport = databox.getOutputPort(0);#}
-                // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
-                {#toolport = toolbox.getInputPort(parseInt(i));#}
                else if (active_tool.input_values[i] != modal_data.value_list[i]) {
 
                 change_values = {

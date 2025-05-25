@@ -28,7 +28,6 @@ class Box {
         let ctx = c.getContext("2d");
         ctx.font = "15px Arial";
         this._boxwidth = ctx.measureText(name).width
-        // this._boxwidth = 0;
         this._connectable_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
             'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
             'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image',
@@ -403,7 +402,6 @@ canvas.installEditPolicy(connection.connectionPolicy);
  * @returns {{outputs: *[], inputs: *[], name, type: string, orgid: string}}
  */
 vfw.workspace.workflow.process_drop_params = function (service, id) {
-    // TODO: improve data object to avoid building this obj manually!
     let box_param = '';
     let inputs = [];
     let input_key_list = [];
@@ -555,7 +553,6 @@ vfw.draw2d.box_params = function (ev, id, source, service = "") {
     if (source === 'workspace') {
         let metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[id.substring(7)]
         service = 'dataBtn'
-        // TODO: improve data object to avoid building this obj manually!
         box_param = {
             inputs: [],
             name: metadata.name + ' - ' + metadata.dbID,

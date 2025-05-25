@@ -1,0 +1,45 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+<meta charset="UTF-8">
+{# Used for the data preview when clicked on a point on the map #}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% load static %}
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>jQuery UI Dialog - Animation</title>
+  <script>
+  $( function() {
+    $( "#alertDialog" ).dialog({
+      autoOpen: false,
+      show: {
+        effect: "bounce",
+        duration: 1000
+      },
+      hide: {
+        effect: "explode",
+        duration: 1000
+      }
+    });
+
+  } );
+  </script>
+</head>
+<body>
+
+<div id="alertDialog" title="Warning!" class="w3-yellow">
+  <p>This dialog window can be moved, resized and closed with the &apos;x&apos; icon.</p>
+</div>
+
+
+</body>

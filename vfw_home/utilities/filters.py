@@ -5,6 +5,9 @@ The filter doesn't have to care about users, as all metadata is supposed to be a
 import django_filters
 
 from vfw_home.models import NmPersonsEntries
+from django.db.models import Q
+from django.utils import timezone
+from django import forms
 
 
 class org_NMPersonsFilter(django_filters.FilterSet):
@@ -18,11 +21,12 @@ class org_NMPersonsFilter(django_filters.FilterSet):
 
     class Meta:
         model = NmPersonsEntries
+        # options for lookup_expr: icontains
         fields = {
+                  'entry__abstract': ['icontains', ],
+                  'entry__embargo': ['icontains', ],
+                  }
 
-from django.db.models import Q
-from django.utils import timezone
-from django import forms
 
 class NMPersonsFilter(django_filters.FilterSet):
 

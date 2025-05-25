@@ -1,3 +1,10 @@
+/*
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+*/
+
 /* latin-ext */
 @font-face {
     font-family: 'Raleway';
@@ -29,61 +36,65 @@ iframe {
 }
 
 
- /* Style the buttons that are used to open and close the accordion panel */
+/* Style the buttons that are used to open and close the accordion panel */
 .groupaccordion {
-  background-color: #eee;
-  color: #444;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  text-align: left;
-  border: none;
-  outline: none;
-  transition: 0.4s;
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.4s;
 }
+
 /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
 .active, .groupaccordion:hover {
-  background-color: #ccc;
+    background-color: #ccc;
 }
+
 /* Style the accordion panel. Note: hidden by default */
 .grouppanel {
-  padding: 0 18px;
-  background-color: white;
-  display: none;
-  overflow: hidden;
+    padding: 0 18px;
+    background-color: white;
+    display: none;
+    overflow: hidden;
 }
 
 
 /* !**
 * Styling of modal.
 **! */
-.modal-back{
+.modal-back {
     color: black;
     float: right;
     font-size: 20px;
     padding: 4px 12px;
-    /*font-weight: bold;*/
 }
 
 .modal-back:hover, .modal-back:focus,
 .work_modal-output:hover, .work_modal-output:focus,
-.modal-btn:hover, modal-btn:focus{
+.modal-btn:hover, modal-btn:focus {
     color: #000;
     text-decoration: none;
     cursor: pointer;
 }
 
-.modal-btn, .work_modal-output{
+.modal-btn, .work_modal-output {
     color: white;
     float: right;
     font-size: 20px;
-    padding-top:2px;
+    padding-top: 2px;
     padding-bottom: 2px;
     padding-left: 12px;
-  /*font-weight: bold;*/
 }
 
 .work_modal-output {
+    float: left;
+}
+
+.modal-btn-left {
     float: left;
 }
 
@@ -94,7 +105,6 @@ iframe {
 }
 
 .modal-body {
-    /*padding: 2px 16px;*/
     width: fit-content;
 }
 
@@ -112,7 +122,7 @@ iframe {
 
 
 .result_modal-header, .work_modal-header,
-.result_modal-footer, .work_modal-footer{
+.result_modal-footer, .work_modal-footer {
     height: 38px;
     padding: 2px 12px;
     background-color: dodgerblue;
@@ -122,6 +132,7 @@ iframe {
 button-header {
     display: block;
 }
+
 button-footer {
     display: flex;
     position: relative;
@@ -137,19 +148,50 @@ button-footer {
 #infoModal {
 
 }
+
 #resultModal-content {
     height: fit-content;
     width: 700px;
 }
+
+#modal-context-menu {
+    position: absolute;
+    z-index: 10;
+    width: 260px;
+    background-color: #fff;
+    border: solid 1px #5e5e5e;
+    box-shadow: 1px 1px 2px #cfcfcf;
+}
+
+.context-modal {
+    z-index: 3;
+    display: none;
+    position: fixed;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+    border: solid 1px #c7c7c7;
+}
+
+.context-modal-content{
+    position: relative;
+    background-color:#fff;
+    padding:0;
+    outline:0;
+    width:fit-content
+}
+
 /* !**
 * End styling of modal.
 **! */
 
 .string, .array, .list, .integer, .positiveInteger, .dateTime,
-.boolean, .float, .html, .plot, .figure, .image {
+.boolean, .float, .html, .plot, .figure, .image, .json, .geometry {
     margin: 5px;
     height: 12px;
     width: 12px;
+
+.noDataBtn {
+    text-decoration: line-through red double;
 }
 
 .array, .iarray, .varray, .timeseries, .vtimeseries,
@@ -161,13 +203,13 @@ button-footer {
     border-radius: 50%;
 }
 
-
 .left-hemisphere {
     margin: 5px;
     height: 12px;
     width: 6px;
     border-radius: 0 6px 6px 0;
 }
+
 .right-hemisphere {
     margin: 5px;
     height: 12px;
@@ -185,15 +227,18 @@ button-footer {
 ._2darray{background-color: rgb(255, 50, 150); fill: rgb(255, 50, 150)}
 .idataframe{background-color: rgb(100, 0, 50); fill: rgb(100, 0, 50)}
 .vdataframe{background-color: rgb(150, 0, 80); fill: rgb(150, 0, 80)}
-.time-dataframe{background-color: rgb(190, 120, 10); fill: rgb(190, 120, 10)}
-.vtime-dataframe{background-color: rgb(160, 110, 90); fill: rgb(160, 110, 90)}
+.timedataframe{background-color: rgb(190, 120, 10 ); fill: rgb(190, 120, 10)}
+.vtimedataframe{background-color: rgb(160, 110, 90 ); fill: rgb(160, 110, 90)}
 .html{background-color: rgb(0, 255, 0); fill: rgb(0, 255, 0)}
 .plot{background-color: rgb(76, 191, 82); fill: rgb(76, 191, 82)}
 .figure{background-color: rgb(71, 142, 75); fill: rgb(45, 83, 47)}
-.image{background-color: rgb(50, 80, 51); fill: rgb(58, 113, 61)
-}
+.image{background-color: rgb(50, 80, 51); fill: rgb(58, 113, 61)}
 
-.string{background-color: rgb(255,255,191); fill: rgb(255,255,191);
+.geometry{background-color: rgb(100, 133, 18); fill: rgb(100, 133, 18);
+    border: 1px solid rgb(153, 208, 15); stroke: rgb(153, 208, 15)}
+.json{background-color: rgb(182, 164, 90); fill: rgb(182, 164, 90);
+    border: 1px solid rgb(238, 235, 59); stroke: rgb(238, 235, 59)}
+.string{background-color: rgb(255, 255, 191); fill: rgb(255, 255, 191);
     border: 1px solid #ffbf26; stroke: #ffbf26;}
 .boolean{background-color: rgb(50, 74, 147); fill: rgb(50, 74, 147);
     border: 1px solid black; stroke: black}
@@ -210,91 +255,96 @@ button-footer {
 
 /* Create a "toggle switch" (on/off button) from a checkbox
 (source: https://www.w3schools.com/howto/howto_css_switch.asp) */
- /* The switch - the box around the slider */
+/* The switch - the box around the slider */
 .toggleswitch {
-  position: relative;
-  display: inline-block;
-  width: 30px;
-  height: 17px;
-  vertical-align: text-bottom;
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 17px;
+    vertical-align: text-bottom;
 }
 
 /* Hide default HTML checkbox */
 .toggleswitch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 /* The slider */
 .toggleslider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .3s;
-  transition: .3s;
-  border-radius: 17px;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .3s;
+    transition: .3s;
+    border-radius: 17px;
 }
 
 .toggleslider:before {
-  position: absolute;
-  content: "";
-  height: 13px;
-  width: 13px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  -webkit-transition: .3s;
-  transition: .3s;
-  border-radius: 50%;
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .3s;
+    transition: .3s;
+    border-radius: 50%;
 }
 
 input:checked + .toggleslider {
-  background-color: #2196F3;
+    background-color: #2196F3;
 }
 
 input:focus + .toggleslider {
-  box-shadow: 0 0 1px #2196F3;
+    box-shadow: 0 0 1px #2196F3;
 }
 
 input:checked + .toggleslider:before {
-  -webkit-transform: translateX(13px);
-  -ms-transform: translateX(13px);
-  transform: translateX(13px);
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
 }
 
 
 .pagination {
-  display: inline-block;
+    display: inline-block;
 }
+
 .pagination div {
-  position: center;
+    position: center;
 }
+
 .pagination a {
-  float: left;
-  padding: 8px 16px;
-  text-decoration: none;
-  border: none;
-  color: black;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  cursor: pointer;
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    border: none;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
 }
+
 .pagination a:hover {
-  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
 }
+
 .pagination .disabled {
-  opacity: 0.4;
-  cursor: default;
+    opacity: 0.4;
+    cursor: default;
 }
+
 .pagination .active {
-  cursor: default;
-  background-color: dodgerblue;
+    cursor: default;
+    background-color: dodgerblue;
     color: white;
 }

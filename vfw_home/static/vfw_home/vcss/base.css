@@ -1,6 +1,11 @@
+/*
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+*/
 
 /* style of top bar*/
-/* TODO: Do we access the font Raleway online? For more see base_app/vcss/css*/
 .w3-main {
     margin-left: 300px;
     margin-top: 78px;
@@ -34,8 +39,8 @@ a.w3-hover-blue{padding: 0px}
   border-top: 16px solid white;
   width: 120px;
   height: 120px;
-  -webkit-animation: spin 1.5s linear infinite; /* Safari */
-  animation: spin 1.5s linear infinite;
+  -webkit-animation: spin 1.2s linear infinite; /* Safari */
+  animation: spin 1.2s linear infinite;
 }
 /* Safari */
 @-webkit-keyframes spin {
@@ -64,9 +69,35 @@ a.w3-hover-blue{padding: 0px}
   padding: 3px 16px;
   transition: 0.3s;
 }
+.tab label {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 3px 16px;
+  transition: 0.3s;
+}
+
+/* rotate an element that has the rotate class */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.rotate {
+    animation: rotate 1s linear;
+    transform-origin: center;
+}
 
 /* Change background color of buttons on hover */
 .tab button:hover {
+  background-color: #ddd;
+}
+.tab label:hover{
   background-color: #ddd;
 }
 
@@ -74,15 +105,30 @@ a.w3-hover-blue{padding: 0px}
 .tab button.active {
   background-color: #ccc;
 }
+.tab label.active{
+  background-color: #ccc;
+}
 
 /* Style the tab content */
 .tabcontent {
-  display: none;
+  /*display: none;*/
   border: 1px solid #ccc;
   border-top: none;
 }
 
-
+#loader-overlay {
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 99999;
+  cursor: pointer;
+}
 /*alternative loader*/
 .fading-dot-loader {
   margin: 100px auto;
@@ -110,13 +156,13 @@ a.w3-hover-blue{padding: 0px}
 }
 @-webkit-keyframes fading-dot-loader-delay {
    0%   {top: 00px; background: #00BAEE; width: 20px;}
-   60%   {background: #AADDF9;}
-  100% {top: 32px; background: #D9EFFD; width: 32px;}
+   60%   {background: rgba(170, 221, 249, 0.5);}
+  100% {top: 32px; background: rgba(217, 239, 253, 0.1); width: 32px;}
 }
 @keyframes fading-dot-loader-delay {
    0%   {top: 00px; background: #00BAEE; width: 20px;}
-   60%   {background: #AADDF9;}
-  100% {top: 32px; background: #D9EFFD; width: 32px;}
+   60%   {background: rgba(170, 221, 249, 0.5);}
+  100% {top: 32px; background: rgba(217, 239, 253, 0.1); width: 32px;}
 }
 .fading-dot-loader .dot-loader2 {
   -webkit-transform: rotate(60deg);
@@ -201,4 +247,9 @@ a.w3-hover-blue{padding: 0px}
 }
 .openElement:after {
   content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+/* hide the original html input. Meant to use to upload a polygon */
+input[type="file"] {
+    display: none;
 }

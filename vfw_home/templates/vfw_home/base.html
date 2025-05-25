@@ -1,3 +1,11 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Elnaz Azmi
+Contributors: Marcus Strobl
+License: MIT License
+-->
+
+<!DOCTYPE html>
 {% load static %}<!DOCTYPE html>
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -19,55 +27,60 @@
   <link rel="icon" href="{% static 'vfw_home/images/Favicon.ico' %}">
 
   <!--   our standard jquery for most of the portal  -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-  <link href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet">
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" ></script>
-{#  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.js"></script>#}
-  {% comment %}  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-          integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
-          crossorigin="anonymous"></script>{% endcomment %}
-{#  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">#}
-{#<script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>#}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link href="https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css" rel="stylesheet">
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" ></script>
 
   <!-- django translations for JavaScript -->
   <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
   <!-- Openlayers -->
-  {% comment %}<script src="https://cdn.jsdelivr.net/npm/ol@v7.1.0/dist/ol.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.1.0/ol.css">{% endcomment %}
-  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/ol.css' %}">
-  <script src="{% static 'vfw_home/js/ol.js' %}" type="text/javascript"></script>
-  {#  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css">#}
-  {#    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>#}
+  <script src="https://cdn.jsdelivr.net/npm/ol@v9.1.0/dist/ol.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.1.0/ol.css">
+
   <!-- Openlayers Extension -->
-{% comment %}  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
   <link rel="stylesheet" href="https://cdn.rawgit.com/Viglino/ol-ext/master/dist/ol-ext.min.css" />
-  <script type="text/javascript" src="https://cdn.rawgit.com/Viglino/ol-ext/master/dist/ol-ext.min.js"></script>{% endcomment %}
-  <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/ol-ext.css' %}">
-  <script src="{% static 'vfw_home/js/ol-ext.js' %}" type="text/javascript"></script>
+  <script type="text/javascript" src="https://cdn.rawgit.com/Viglino/ol-ext/master/dist/ol-ext.min.js"></script>
 
     <!-- form.media for django map widget -->
   {{ form.media }}
 </head>
-{#TODO: value has to be updated through js before reading to make sure its up-to-date #}
 <param id="is_authenticated" value="false">
+
 {#Cookie window 2/2#}
 <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js" data-cfasync="false"></script>
 <script>
-  window.cookieconsent.initialise({
-    "palette": {
-      "popup": {
-        "background": "#d9effd"
+  const vfw = {
+    colors: {
+      blue1: "#D9EFFD",
+      blue2: "#AADDF9",
+      blue3: "#00BAEE",
+      blue4: "#004978",
+    },
+    datasets: {
+      dataObjects: {},
+      selectObjects: {},
+      resultObjects: {},
+    },
+    draw2d: {},
+    filter: {
+      coords: [],
+    },
+    html: {
+      cssClass: {
       },
-      "button": {
-        "background": "#00baee"
+      mouse: {
+        clickCoords: {},
+      },
+      obj: {
       }
     },
-    "position": "bottom-right"
-  });
-  const vfw = {
-    draw2d: {},
-    html: {},
+    init: {},
     map: {
+      control: {
+        zoomToExt: {},
+      },
+      func: {},
+      html: {},
       layer: {
         cluster: {},
         hidden: {},
@@ -75,20 +88,27 @@
       },
       source: {
         wfsPointSource: {},
+        selectionSource_catchment: {},
       },
       style: {
         cache: {},
       },
       vars: {
+        catchments: {},
+        mapSelect: {},  // maybe use this var for an undo funciton in the draw menu
+        selectionEdgeCoords: {},
         wfsLayerName: '',
-      },
-      control: {
-        zoomToExt: {},
       },
     },
     session: {},
-    sidebar: {},
-    util: {},
+    sidebar: {
+      html: {},
+    },
+    url: {},
+    util: {
+      bokehPreviewScript: '',
+      bokehResultScript: '',
+    },
     var: {
       array: {},
       dict: {},
@@ -100,26 +120,50 @@
       workflow: {},
     },
   }
-  vfw.html.loader = '<div id="loader"  class="fading-dot-loader">\n' +
-                    '  <div class="dot-loader1 dot-loader"></div>\n' +
-                    '  <div class="dot-loader2 dot-loader"></div>\n' +
-                    '  <div class="dot-loader3 dot-loader"></div>\n' +
-                    '  <div class="dot-loader4 dot-loader"></div>\n' +
-                    '  <div class="dot-loader5 dot-loader"></div>\n' +
-                    '  <div class="dot-loader6 dot-loader"></div> \n' +
-                    '</div>';
-  {#vfw.var.SERVER = "{{ VFW_SERVER }}";#}
-  vfw.var.MAP_SERVER = "{{ MAP_SERVER }}";
-  vfw.var.DEMO_VAR = "{{ DEMO_VAR }}";
-</script>
+  window.cookieconsent.initialise({
+    "palette": {
+      "popup": {
+        "background": vfw.colors.blue1
+      },
+      "button": {
+        "background": vfw.colors.blue3
+      }
+    },
+    "position": "bottom-right"
+  });
+  </script>
+{{ BASE_DATATYPES|json_script:"base-datatypes-var" }}
+{{ DEMO_VAR|json_script:"demo-var" }}
+{{ EXT_DATATYPES|json_script:"ext-datatypes-var" }}
+{{ MAP_SERVER|json_script:"mapserver-var" }}
+{{ user.is_authenticated|json_script:"user-is_authenticated" }}
+  <script>
+    vfw.var.BASE_DATATYPES = JSON.parse(document.getElementById('base-datatypes-var').textContent);
+    vfw.var.DATATYPES = vfw.var.BASE_DATATYPES.concat(vfw.var.EXT_DATATYPES);
+    vfw.var.DEMO_VAR = JSON.parse(document.getElementById('demo-var').textContent);
+    vfw.var.EXT_DATATYPES = JSON.parse(document.getElementById('ext-datatypes-var').textContent);
+    vfw.var.MAP_SERVER = JSON.parse(document.getElementById('mapserver-var').textContent);
+    vfw.var.USER_IS_AUTHENTICATED = JSON.parse(document.getElementById('user-is_authenticated').textContent);
+  </script>
 
-<body class="w3-light-grey">
+<body class="w3-light-grey"
+onload="vfw.sidebar.showData(); vfw.html.getQuickSelection(); vfw.filter.updateQuickfilter()">
+
+<div id="loader-overlay" onclick="vfw.html.loaderOverlayOff()">
+  <div class="fading-dot-loader">
+    <div class="dot-loader1 dot-loader"></div>
+    <div class="dot-loader2 dot-loader"></div>
+    <div class="dot-loader3 dot-loader"></div>
+    <div class="dot-loader4 dot-loader"></div>
+    <div class="dot-loader5 dot-loader"></div>
+    <div class="dot-loader6 dot-loader"></div>
+  </div>
+</div>
 <!-- Current language: {{ LANGUAGE_CODE }} -->
 <!--    Top container -->
 <div class="w3-container w3-top w3-black w3-large w3-padding" id="topcontainer">
-  <button class="w3-btn w3-hide-large w3-padding-0 w3-hover-text-grey" onclick="w3_open();"><i class="fa fa-bars"></i>
+  <button class="w3-btn w3-hide-large w3-padding-0 w3-hover-text-grey" onclick="vfw.sidebar.w3_Open();"><i class="fa fa-bars"></i>
   </button>
-  {#	  <span class="w3-right"><strong><small>Virtuelle Forschungsumgebung für die Wasser- und terrestrische Umweltforschung</small></strong></span>#}
   <span class="w3-hide-small w3-right"><strong><small>{% trans "Virtual research environment for water and terrestrial environmental research" %}</small></strong>
     </span>
   <span class="w3-hide-medium w3-hide-large w3-right"
@@ -131,7 +175,7 @@
 <div id="navbar" class="w3-top">
   <ul class="w3-navbar w3-light-turquoise w3-top w3-left-align w3-large">
     <li class="w3-opennav w3-right w3-hide-large">
-      <a href="javascript:void(0)" class="w3-hover-white w3-large w3-theme-d4" onclick="Sidemenu_open()">
+      <a href="javascript:void(0)" class="w3-hover-white w3-large w3-theme-d4" onclick="vfw.sidebar.sidemenuOpen()">
         <i class="fa fa-bars"></i>
       </a>
     </li>
@@ -141,18 +185,11 @@
     <li class="w3-hide-small"><a href="{% url 'wps_gui:home' %}" class="w3-hover-white">
       <i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}</a>
     </li>
-    {% comment %}<li class="w3-hide-small"><a href="{% url 'process_monitor:home' %}" class="w3-hover-white">
-      <i class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>
-    </li>{% endcomment %}
-    {% comment %}<li class="w3-hide-small"><a href="{% url 'visual_app:home' %}" class="w3-hover-white">
-      <i class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a>
-    </li>{% endcomment %}
     <li class="w3-hide-small">
       <div class="w3-dropdown-hover w3-transparent">
         <a class="w3-hover-white ">
           <i class="fa fa-external-link fa-fw"></i> {% trans "Help" %}<i class="fa fa-caret-down fa-fw"></i>
           <div class="w3-dropdown-content" style="right:0">
-            {#                        <a href="{% url 'vfw_home:help' %}" class="w3-hover-blue">#}
             <a target="_blank" href="https://vforwater.github.io/documentation/index.html" style="text-decoration:none"
                class="w3-hover-blue">
               <i class="fa fa-book fa-fw"></i>{% trans "  Portal Help" %}
@@ -160,9 +197,6 @@
             <a target="_blank" href="https://vforwater.de" style="text-decoration:none" class="w3-hover-blue">
               <i class="fa fa-sitemap fa-fw"></i>{% trans "  Web Site" %}
             </a>
-            {% comment %}     <a target="_blank" href={{ VFW_SERVER|add:"/doc" }} style="text-decoration:none" class="w3-hover-blue">
-                            <i class="fa fa-book fa-fw"></i>{% trans "  Documentation" %}
-                        </a>{% endcomment %}
             <a target="_blank" href="https://github.com/VForWaTer/vforwater-portal" style="text-decoration:none"
                class="w3-hover-blue">
               <i class="fa fa-code fa-fw"></i>{% trans "  Source Code" %}
@@ -178,17 +212,8 @@
       </div>
 
     </li>
-    {#	    <li class="w3-hide-small"><a href="{% url 'upload:home' %}" class="w3-hover-white"><i class="fa fa-upload fa-fw"></i>  Upload</a></li>#}
-
-    {#        <li class="w3-hide-small"><a href="{% url 'vfw_home:test' %}" class="w3-hover-white">#}
-    {#            <i class="fa fa-bug fa-fw"></i>{% trans "  Test" %}</a>#}
-    {#        </li>#}
     {% if user.is_authenticated %}
       <param name="is_authenticated" value="true">
-      <!-- for Authentication app
-           TODO: Dropdown menu
-           Profile, Resource Overview, Manage Resources, Manage Users
-      -->
 
       <li class="w3-hide-small w3-right">
 
@@ -209,14 +234,13 @@
             <div class="w3-dropdown-content" style="right:0">
               <a class="w3-hover-blue " href="{% url 'upload:home' %}">{% trans "Upload Data" %}</a>
               <a class="w3-hover-blue " href="{% url 'author_manage:profile' %}">{% trans "Profile" %}</a>
-{#              <a class="w3-hover-blue "#}
-{#                 href="{% url 'author_manage:resources-overview' %}">{% trans "Resource Overview" %}</a>#}
               <a class="w3-hover-blue " href="{% url 'author_manage:my-resources' %}">{% trans "My Resources" %}</a>
               <a href="#" class="w3-hover-blue">
                 <form action="{% url 'vfw_home:logout' %}" method="post"> {% csrf_token %}
                   <input class="w3-btn-simple" type="submit" name="logout" value="Logout"/>
                 </form>
               </a>
+		<!--    </option> -->
             </div>
           </a>
         </div>
@@ -243,10 +267,9 @@
       <!-- is_authenticated -->
     {% else %} <!-- is not authenticated -->
       <param name="is_authenticated" value="false">
-      <!-- {#       <li class="w3-hide-small w3-right"><a href="{% url 'vfw_home:login' %}" class="w3-hover-white"><i class="fa fa-user fa-fw"></i> Anmelden</a></li> #}-->
       <li class="w3-hide-small w3-right">
         <a class="w3-hide-small w3-right w3-hover-white">
-	  <a class="w3-btn-simple " href="{% url 'oidc_authentication_init' %}"><i class="fa fa-user fa-fw"></i>  {% trans "  Login" %}<a/>
+	  <a class="w3-btn-simple " href="{% url 'oidc_authentication_init' %}"><i class="fa fa-user fa-fw"></i>  {% trans "  Login" %}</a>
         </a>
       </li>
     {% endif %}
@@ -293,17 +316,15 @@
 <!-- 	!PAGE CONTENT! -->
 <div class="w3-main">
   <script src="{% static 'vfw_home/js/vfw.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfw_home/js/data_obj.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfw_home/js/select_area_obj.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfw_home/js/map.js' %}" type="text/javascript"></script>
+  <script src="{% static 'vfw_home/js/menu_objects.js' %}" type="text/javascript"></script>
 
   {# get map in the content block #}
   {% block content %}{% endblock %}
 
-{#  <footer class="w3-container w3-padding-16 w3-light-grey">#}
-{#    <p>Copyright &copy; 2016-2021</p>#}
-{#    <p>{% trans "Powered by" %} <a href="http://www.vforwater.de" target="_blank">VFORWaTer</a> | Copyright &copy; 2016-2021</p>#}
-  </footer>
-
 </div>
 {{ form.media }}
-{#{{ geoform.media }}#}
 </body>
 </html>

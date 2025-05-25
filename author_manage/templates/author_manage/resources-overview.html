@@ -1,5 +1,3 @@
-{#TODO: Not sure what to do with this page. Usefull?#}
-
 <!-- template for the resources overview page (searching for resources , accessing/sending request) -->
 
 {% extends "author_manage/base.html" %}
@@ -11,7 +9,6 @@
   {% load static %}
   <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-info.css' %}"/>
   <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/modal-dialog-req.css' %}"/>
-{#  <link rel="stylesheet" type="text/css" href="{% static 'author_manage/css/resources-overview.css' %}"/>#}
 {% endblock %}
 
 {% block body %}
@@ -50,19 +47,12 @@
               <p>CreationDate: <strong>{{ res.dataEntry.datasource.creation }}</strong></p>
               <p>Description: <strong>{{ res.dataEntry.datasource.datatype.description }}</strong></p>
               {% if res in can_access or is_admin %}
-                {% comment %}<button class="acc-btn-info-dialog">
-            <a href="../../resources/{{res.id}}" class="acc-info-dialog"download>Access</a>
-            </button>{% endcomment %}
-                {% comment %}<button class="acc-tmp-btn" onclick="window.location.href='../resources/{{res.id}}'">
-            Access
-            </button>{% endcomment %}
               {% endif %}
             </div>
           </div>
 
           <!-- user can access the resource if he has permissions or is an admin -->
           {% if res in can_access or is_admin %}
-            {#      <a href="../resources/{{res.id}}" class="access-btn">Access</a>#}
 
             <!-- if the user has sent an access request he has the option to cancel it -->
           {% elif res in requested_resources %}

@@ -1,0 +1,21 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+<nav id="loader-popup" class="mod-popup w3-center">
+  <a href="#" id="pop-closer" class="mod-popup-closer w3-hide"></a>
+  <div id="pop-content-side">
+  </div>
+  <a>
+    <h5>
+      <div id="popupText" class="mod-popup--inactive">{% trans " Please wait. Preparing data..." %}</div>
+    </h5>
+  </a>
+</nav>
+

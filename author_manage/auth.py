@@ -29,19 +29,3 @@ class CustomOIDCAuthenticationBackend(OIDCAuthenticationBackend):
         if updated:
             user.save()
         return user
-
-    #def get_email(self, claims):
-    #    email = claims.get('email')
-    #    if not email:
-    #        email = claims.get('sub')
-    #    return email
-    
-    #def filter_users_by_claims(self, claims):
-    #    """Create user with email base custom user model."""
-    #    email = self.get_email(claims)
-    #    if not email:
-    #        return self.UserModel.objects.none()
-    #    try:
-    #        return self.UserModel.objects.filter(email=email)
-    #    except self.UserModel.DoesNotExist:
-    #        return self.UserModel.objects.none()

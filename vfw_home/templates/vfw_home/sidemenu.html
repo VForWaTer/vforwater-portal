@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Elnaz Azmi
+Contributors: Marcus Strobl
+License: MIT License
+-->
+
 {% load static %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -10,17 +17,13 @@
 <!--   Sidemenu -->
 <nav class="w3-sidenav w3-white w3-animate-right w3-hide-large"
      style="z-index:3; width:160px; height:280px; right: 0; margin-top: 80px; display:none" id="mySidemenu">
-  <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.Sidemenu_close()"
+  <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.sidemenuClose()"
      title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
   <div id="accordion">
     <br>
     <a href="{% url 'vfw_home:home' %}" class="w3-hover-blue"><i class="fa fa-home fa-fw"></i>{% trans "  Home" %}</a>
     <a href="{% url 'wps_gui:home' %}" class="w3-hover-blue"><i class="fa fa-wrench fa-fw"></i>{% trans "  Workspace" %}
     </a>
-    {% comment %}<a href="{% url 'process_monitor:home' %}" class="w3-hover-blue"><i
-            class="fa fa-eye fa-fw"></i>{% trans "  Monitor" %}</a>{% endcomment %}
-    {% comment %}<a href="{% url 'visual_app:home' %}" class="w3-hover-blue"><i
-            class="fa fa-bar-chart fa-fw"></i>{% trans "  Visualisation" %}</a>{% endcomment %}
     <div class="w3-dropdown-hover w3-transparent">
       <a class="w3-hover-blue ">
         <i class="fa fa-external-link fa-fw"></i>{% trans "  Help" %}<i class="fa fa-caret-down fa-fw"></i>
@@ -41,7 +44,7 @@
         </div>
       </a>
     </div>
-    <!--{#        <a href="{% url 'vfw_home:login' %}" class="w3-hover-red"><i class="fa fa-user fa-fw"></i>{% trans " Log in" %}</a>#} -->
+
     {% if user.is_authenticated %}
       <div class="w3-dropdown-hover w3-transparent">
         <a class="w3-hover-white ">
@@ -59,8 +62,6 @@
 
           <div class="w3-dropdown-content" style="right:0">
             <a class="w3-hover-blue " href="{% url 'author_manage:profile' %}">{% trans "Profile" %}</a>
-{#            <a class="w3-hover-blue "#}
-{#               href="{% url 'author_manage:resources-overview' %}">{% trans "Resource Overview" %}</a>#}
             <a href="#" class="w3-hover-blue">
               <form action="{% url 'vfw_home:logout' %}" method="post"> {% csrf_token %}
                 <input class="w3-btn-simple" type="submit" name="logout" value="Logout"/>
@@ -93,7 +94,7 @@
 </nav>
 
 {#  Overlay effect when opening sidenav on small screens #}
-<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.Sidemenu_close()" style="cursor:pointer"
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.sidemenuClose()" style="cursor:pointer"
      title="close side menu" id="mySidemenuOverlay"></div>
 
 </body>

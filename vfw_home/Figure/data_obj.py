@@ -1,25 +1,36 @@
+import json
+import logging
+
 import numpy as np
 import pandas as pd
 from decimal import Decimal
 from django.core.exceptions import EmptyResultSet
+from django.http import Http404
 
-from heron.settings import max_size_preview_plot
-from vfw_home.data_tools import DB_load_directiondata
+from heron.settings import MAX_SIZE_PREVIEW_PLOT
+from .data_tools import DB_load_directiondata
 from vfw_home.models import Entries, NmEntrygroups
+
+logger = logging.getLogger(__name__)
 
 
 class DataObject:
 
-    def __init__(self, webID="", date=None):
+    def __init__(self, webID: object = "", date: object = None) -> object:
+        """
 
+        :param webID: string like 'wps123' or 'db123'
+        :param date: should be formated with make_aware(datetime.datetime.strptime(request_dict['end'], '%Y-%m-%d')
+        """
         self.__data_qs__ = None
         self.__general_data_qs__ = None
         self.__interest_in_gaps__ = True
         self.__qs_cols__ = None
         self.__qs_entry__ = None
         self.__qs_group__ = None
-        self.__row_limit__ = max_size_preview_plot
+        self.__row_limit__ = MAX_SIZE_PREVIEW_PLOT
         self.__value_before_gap__ = None
+        self.coords = None
         self.data_columns = None
         self.data_format = None
         self.data_table_name = None
@@ -31,6 +42,8 @@ class DataObject:
         self.has_nan = False
         self.has_precision = False
         self.ID = None
+        self.split_in = []
+        self.is_split = False   # True when dataset is split due to different resolutions
         self.label = ""
         self.length = None
         self.metadata = {}
@@ -40,6 +53,8 @@ class DataObject:
         self.source = None
         self.timescale = None
         self.timestep_label = ""
+        self.type = ""
+        self.uuID = None
         self.webID = webID
 
         self.__set_vars__()
@@ -53,13 +68,17 @@ class DataObject:
             self.ID = self.webID[2:]
             self.source = 'db'
             self.__qs_entry__ = Entries.objects.filter(id=self.ID)
+            self.type = self.__qs_entry__.values_list('datasource__datatype__name', flat=True)[0]
+            self.uuID = self.__qs_entry__.values_list('uuid', flat=True)[0]
             label = self.__qs_entry__.values_list('variable__name', 'variable__symbol', 'variable__unit__symbol')
             self.label = self.format_label(label[0][0], label[0][1], label[0][2])
-
+            location = self.__qs_entry__.values_list('location', flat=True)[0]
+            self.coords = json.loads(location.geojson)
+            self.coords['srid'] = location.srid  # TODO: check how many queries for coords
             self.data_table_name = self.__qs_entry__.values_list('datasource__path', flat=True)[0]
             self.data_names = self.__qs_entry__.values_list('datasource__data_names', flat=True)[0]
             if not self.data_names:
-                print('WARNING: Dataset with ID ' + self.ID + ' has no data name in datasource table!')
+                print(f'WARNING: Dataset with ID {self.ID} has no data name in datasource table!')
                 self.data_names = [label[0][0]]
             self.__general_data_qs__ = self.__set_general_data_qs__(self.data_table_name, self.date, self.ID)
             self.length = self.db_data_length()
@@ -88,50 +107,53 @@ class DataObject:
         Define the queryset to the respective data set according to its data_table_name.
         """
         qs = self.__general_data_qs__
-        if not self.full:
-            qs = self.__general_data_qs__[:self.__row_limit__]
 
         if self.data_table_name == 'timeseries_1d':
             self.data_columns = self.db_cols_timeseries_1d
             self.value_column = 'value'
-            self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
-            self.__data_qs__ = qs.values(*self.__qs_cols__)  # .explain(verbose=True)
+            qs = self.__general_data_qs__.order_by(self.data_table_name + '__' +'tstamp')
         elif self.data_table_name == 'timeseries':
             self.data_columns = self.db_cols_timeseries
             self.value_column = 'data'
-            # self.data_format = '3D'
-            self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
-            self.__data_qs__ = qs.values(*self.__qs_cols__)
+            qs = self.__general_data_qs__.order_by(self.data_table_name + '__' + 'tstamp')
             if len(self.data_names) > 1:
                 self.multiple_lines = True
-            print('got a timeseries queryset')
 
         else:
             print('\033[31mYou try to access a new table. Handle it!\033[0m ')
 
+        if not self.full:
+            qs = qs[:self.__row_limit__]
+
+        self.__qs_cols__ = [self.data_table_name + '__' + i for i in self.data_columns]
+        self.__data_qs__ = qs.values(*self.__qs_cols__)
     def __get_db_data__(self):
 
-        if self.label.find('direction') != -1:
-            self.timestep_label = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
-            # if full_res is False:
-            self.dataframe, self.timestep_label = DB_load_directiondata(self.ID, self.timestep_label,
-                                                                        self.date, self.full)
-            self.__interest_in_gaps__ = False
-        elif self.label.find('windspeed') != -1:
-            print('its SPEED!! _________________')
-        elif self.label.find('Eddy Covariance') != -1:
-            self.__row_limit__ = 10
-            self.__set_data_qs__()
-            self.__get_eddy_data__()
-        else:
-            df = pd.DataFrame(list(self.__data_qs__))
-            self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
-            if isinstance(self.dataframe[self.value_column][0], list) \
-                and len(self.dataframe[self.value_column][0]) == 1:
-                self.dataframe[self.value_column] = [i[0] for i in self.dataframe[self.value_column]]
-            elif isinstance(self.dataframe[self.value_column][0], list) \
-                and len(self.dataframe[self.value_column][0]) > 1:
-                print('ERROR: Expect only one column for timeseries_1d')
+        try:
+            if self.label.find('direction') != -1:
+                self.timestep_label = 'week'  # time interval used to plot, choose 'year', 'month', 'week' or 'day'
+                self.dataframe, self.timestep_label = DB_load_directiondata(self.ID, self.timestep_label,
+                                                                            self.date, self.full)
+                self.__interest_in_gaps__ = False
+            elif self.label.find('windspeed') != -1:
+                print('its SPEED!! _________________')
+            elif self.label.find('Eddy Covariance') != -1:
+                self.__row_limit__ = 10
+                self.__set_data_qs__()
+                self.__get_eddy_data__()
+            else:
+                df = pd.DataFrame(list(self.__data_qs__))
+                self.dataframe = df.rename(columns=dict(zip(self.__qs_cols__, self.data_columns)), errors="raise")
+                if isinstance(self.dataframe[self.value_column][0], list) \
+                    and len(self.dataframe[self.value_column][0]) == 1:
+                    self.dataframe[self.value_column] = [i[0] for i in self.dataframe[self.value_column]]
+                elif isinstance(self.dataframe[self.value_column][0], list) \
+                    and len(self.dataframe[self.value_column][0]) > 1:
+                    print('ERROR: Expect only one column for timeseries_1d')
+                    logger.debug('ERROR: Expect only one column for timeseries_1d')
+        except Exception as e:
+            print('\033[33mUnable to access database:\033[0m ', e)
+            raise Http404
 
         if self.multiple_lines:
             self.dataframe = self.__mulitvalcol_to_mulitcolval__(self.dataframe, self.data_names, self.value_column)
@@ -150,10 +172,7 @@ class DataObject:
             .values('entry__datasource__data_names', 'entry_id', 'entry__datasource__path')
 
         # get additional metadata:
-        # TODO: Check how often the database is accessed.
         additional_datasets = {
-            # 't_air': ['air temperature', self.db_cols_timeseries, 'data'],
-            # 'a': ['absolute humidity', self.db_cols_timeseries, 'data'],
             'p': ['air pressure', self.db_cols_timeseries, 'data'],
             'direction': ['wind direction', self.db_cols_timeseries, 'data'],
         }
@@ -235,7 +254,7 @@ class DataObject:
         if data_table_name is None:
             raise LookupError({'error': 'Dataset has no datasource__path.'})
 
-        query_path = {'{0}'.format(data_table_name): ID}
+        query_path = {f'{data_table_name}': ID}
         if date and date[0]:
             query_path[data_table_name + '__tstamp__gte'] = date[0]
             query_path[data_table_name + '__tstamp__lte'] = date[1]
@@ -245,12 +264,13 @@ class DataObject:
     def db_data_length(self):
         """
         Get length of Dataset stored in the database.
-        If size is greater than allowed in settings.max_size_preview_plot the "full" flag is set to False
+        If size is greater than allowed in settings.MAX_SIZE_PREVIEW_PLOT the "full" flag is set to False
         """
         self.length = self.__general_data_qs__.count()
         if self.length == 0:  # if not qs.exists():
-            print('Problems with query_path: ', self.__general_data_qs__)
-            raise EmptyResultSet('Got no data in data_tools.is_data_short for id={}'.format(self.ID))
+            print('Data_obj.db_data_length: Problems with query_path: ', self.__general_data_qs__)
+            logger.debug(f'Problems with query_path, {self.__general_data_qs__}')
+            raise EmptyResultSet(f'Problems with query_path for id={self.ID}, {self.__general_data_qs__}')
 
         if self.length > self.__row_limit__:
             self.full = False
@@ -266,24 +286,18 @@ class DataObject:
 
     def __set_range__(self):
         """
-        TODO: shouldn't I use min/max of sums?
         """
         if self.has_precision and 'avg' in self.dataframe.columns:
             self.range_dict['y_max'] = self.dataframe['avg'] + self.dataframe['precmax']
-            # self.range_dict['y_min'] = self.dataframe['acg'] - self.dataframe['precmax']
             self.range_dict['y_min'] = self.dataframe['avg'] - self.dataframe['precmax']
             self.range_dict['y_max_avg'] = self.dataframe['avg'] + self.dataframe['precavg']
-            # self.range_dict['y_min_avg'] = self.dataframe['acg'] - self.dataframe['precavg']
             self.range_dict['y_min_avg'] = self.dataframe['avg'] - self.dataframe['precavg']
         elif self.has_precision:
             self.range_dict['y_max'] = self.dataframe[self.value_column] + self.dataframe['precision']
             self.range_dict['y_min'] = self.dataframe[self.value_column] - self.dataframe['precision']
-            # elif 'value' in self.dataframe.columns:
         else:
             self.range_dict['y_max'] = max(self.dataframe[self.value_column])
             self.range_dict['y_min'] = min(self.dataframe[self.value_column])
-        # else:
-        #     print('WARNING: there is a unknown dataset to convert precision in precision to minmax.')
 
     def __get_gap_pos__(self):
         """
@@ -296,8 +310,6 @@ class DataObject:
         endtime = self.dataframe.iloc[-1][index]
         # check if dataset has already NaNs
         if len(self.dataframe[self.dataframe[self.value_column].isna()]) > 0:
-            # TODO: original NaNs are removed und dataset reindexed to add NaNs the way its done with other datasets.
-            #  Improve Code not to delete and add again, but set only __value_before_gap
             self.dataframe.dropna(subset=[self.value_column], inplace=True)
             self.dataframe.reset_index(drop=True, inplace=True)
         # create a perfect DataFrame without gaps
@@ -322,7 +334,6 @@ class DataObject:
         self.__value_before_gap__ = self.dataframe.loc[self.dataframe[index].isin(gaps_date_list)].index.values.tolist()
 
     def __fill_data_gaps__(self):
-        # TODO: update this function for variable columns
         """
         Fill gaps in datasets with nan and
         prepare another dataframe to plot linear interpolated areas with missing data.
@@ -333,11 +344,8 @@ class DataObject:
         col = self.value_column
         gap_length = len(self.__value_before_gap__)
 
-        # if 'precision' in df.columns and df['precision'].sum() > 0:  # if preview with average, min, max  values
         if 'avg' in self.dataframe.columns:  # if dataset with average, min, max  values
             for pos in self.__value_before_gap__[::-1]:
-                # TODO: change this code to pandas df.
-                print('TODO: change this code to pandas df.')
                 self.dataframe[col][0] = self.dataframe[col][0][: pos + 1] + \
                                          (self.dataframe[col][0][pos] + self.timescale,
                                           self.dataframe[col][0][pos + 1] - self.timescale,) + \
@@ -353,7 +361,6 @@ class DataObject:
                                                                                                        3][
                                                                                                    pos + 1:]
                 self.dataframe[col][4] = self.dataframe[col][4][: pos + 1] + (0, 0,) + self.dataframe[col][4][pos + 1:]
-                # white_line = white_line[: pos + 1] + (bandbef, bandaft,) + white_line[pos + 1:]
                 defect_x.extend([self.dataframe[col][0][pos] - self.timescale, self.dataframe[col][0][pos],
                                  self.dataframe[col][0][pos + 3], self.dataframe[col][0][pos] + self.timescale])
                 defect_y.extend([float('nan'), self.dataframe[col][1][pos],
@@ -408,3 +415,9 @@ class DataObject:
             # add new rows to dataframe and reset the index to integer
             self.dataframe = pd.concat([self.dataframe, new_df_rows]).sort_index().reset_index(drop=True)
             self.missing_data = pd.DataFrame({'tstamp': defect_x, self.value_column: defect_y})
+
+    def __get_split__(self):
+        split_datasets = (Entries.objects.filter(pk=self.ID, nmentrygroups__group__type__name='Split dataset')
+                          .values('id', 'nmentrygroups__group_id')
+                          .order_by('nmentrygroups__group_id'))
+        pass

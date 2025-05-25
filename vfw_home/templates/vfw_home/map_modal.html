@@ -1,7 +1,14 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
 {#<!DOCTYPE html>#}
 {#<html lang="en">#}
 <meta charset="UTF-8">
-
+{# Used for the data preview when clicked on a point on the map #}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
@@ -11,7 +18,7 @@
   <meta charset="UTF-8">
 </head>
 <body>
-<div id="mapModal" class="w3-modal">
+<div id="mapModal" class="w3-modal" style="background-color: rgba(0,0,0,0.2)">
 
   <!-- Modal content -->
   <div class="w3-modal-content modal-body">
@@ -30,14 +37,14 @@
 </div>
 </body>
 <script>
-  let mapmodal = document.getElementById("mapModal");
+  vfw.map.html.mapModal = document.getElementById("mapModal");
 
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = event => {if (event.target == mapmodal) vfw.map.closeMapModal()};
-
+  /**
+   * Close the map modal
+   * */
   vfw.map.closeMapModal = function () {
     document.getElementById('infomodal_paginationTable').style.display = "none";
-    mapmodal.style.display = "none";
+    vfw.map.html.mapModal.style.display = "none";
   }
 
 </script>

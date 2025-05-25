@@ -1,0 +1,35 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
+{% load i18n l10n %}
+<div id="slider-d-t-range-{{ elem_id }}">
+</div>
+<script>
+  {{ onchange|safe }}
+  $('#id_{{ elem_id }}').attr("readonly", true)
+  $("#slider-d-t-range-{{ elem_id }}").slider({
+    range: true,
+    min: new Date('{{ minimum }}').getTime(),
+    max: new Date('{{ maximum }}').getTime(),
+    step: {{ step }},
+    values: [new Date('{{ minimum }}'), new Date('{{ maximum }}')],
+    slide: function (event, ui) {
+      let minDate = new Date(ui.values[0]).toLocaleString();
+      let maxDate = new Date(ui.values[1]).toLocaleString();
+      $("#id_{{ elem_id }}").val(" {{ elem_name }} " + minDate + " - " + maxDate);
+    },
+    stop: function (event, ui) {
+      {{ onchange|safe }}
+    }
+  });
+  // initial values of box:
+  $(function () {
+    let minStart = new Date($("#slider-d-t-range-{{ elem_id }}").slider("values", 0)).toLocaleString()
+    let maxStart = new Date($("#slider-d-t-range-{{ elem_id }}").slider("values", 1)).toLocaleString()
+    $("#id_{{ elem_id }}").val(" {{ elem_name }} " + minStart + " - " + maxStart);
+  })
+</script>

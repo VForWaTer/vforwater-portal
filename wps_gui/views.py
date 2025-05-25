@@ -1,4 +1,3 @@
-# from inspect import getmembers
 import ast
 import datetime
 import itertools
@@ -63,9 +62,6 @@ def home(request):
     """
     Home page for Heron WPS tool. Lists all the WPS services that are linked.
     """
-    # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
-    # TODO: IMPORTANT! Process description is only loaded once.
-    #  When changing a process, the version number has to be updated.
     jsondata = {}
     wps_data = {}
     WpsQueryset = WpsDescription.objects
@@ -118,8 +114,6 @@ def home(request):
     return render(request, "wps_gui/home.html", context)
 
 
-# TODO: consider also storing the type of the output to the outputs
-# TODO: This way a result might get calculated, but used is a older stored value, right? Rethink this!
 def get_or_create_wpsdb_entry(service: str, wps_process: str, input: tuple):
     """
     Get or create a database entry.
@@ -195,8 +189,6 @@ class ProcessView(TemplateView):
 
 
 def process_to_json(wps_process):
-    # TODO: use of jsonpickle only to simplify readability of wps_process.
-    #  Shouldn't be necessary to use jsonpickle for that. Please improve!
     # simply serialize wps to json
     whole_wpsprocess_json = jsonpickle.encode(wps_process, unpicklable=False)
 
@@ -211,8 +203,6 @@ def process_to_json(wps_process):
                 if isinstance(b, dict):
                     innerdict = {}
                     for k, v in b.items():
-                        # TODO: ugly hack because keywords are still not implemented in pywps. Use
-                        #  allow_values with first value '_keywords' instead
                         if k == "allowedValues" and v != [] and v[0] == "_keywords":
                             innerdict["keywords"] = v[1:]
                         elif k == "version":
@@ -237,7 +227,6 @@ def process_to_json(wps_process):
                             else:
                                 innerdict[k] = v
 
-                    # TODO: The following 'if' can be removed when there is a 'required' flag to use in pywps/owslib
                     if (
                         "minOccurs" in innerdict
                         and innerdict["minOccurs"] > 0
@@ -291,7 +280,6 @@ def handle_wps_output(execution, wps_process, inputs):
             error_dict = {}
             error = False
             error_dict["error"] = output.data[0] == "True"
-            # error_dict = json.loads(output.data[0])
             all_outputs["error"] = error_dict
 
             if error_dict["error"] is not False:
@@ -332,7 +320,6 @@ def handle_wps_output(execution, wps_process, inputs):
                 else:
                     single_output["data"] = eval(output.data[0])[0]
 
-            # TODO: Decide how to handle errors from WPS (show nothing, everything and user can check what is okay?)
             if (
                 output.data and len(single_output["data"]) < 300
             ):  # random number, typical pathlength < 260 chars
@@ -365,17 +352,13 @@ def handle_wps_output(execution, wps_process, inputs):
                     "outputs": [single_output["type"]],
                 }
             else:
-                print("*** no output to write to db ***")
                 single_output["error"] = "no output to write to db"
 
             all_outputs["result"][output.identifier] = single_output
-            # TODO: Have to handle bytes result
     return all_outputs
 
 
-# @login_required
 def process_run(request):
-    # if request.user.is_authenticated:
     if True:
         request_input = json.loads(request.GET.get("processrun"))
         inputs = list(
@@ -491,8 +474,6 @@ def edit_input(inputs):
         elif isinstance(key_value[1], list):
             for value, type_value in zip(key_value[1], key_value[2]):
                 if type_value in datatypes:
-                    # new_pair = (key_value[0], ast.literal_eval(WpsResults.objects.get(id=value[5:]).outputs)[2])
-                    # wps_input.append(new_pair)
                     if value[0:3] == "wps":
                         ast.literal_eval(WpsResults.objects.get(id=value[3:]).outputs)[
                             "path"
@@ -547,7 +528,6 @@ def edit_input(inputs):
 def load_data_local(inputs):
     return
 
-# TODO:
 def development(request):
     """
     Create a page to show when something isn't working.
@@ -557,7 +537,6 @@ def development(request):
     )
 
 
-# TODO:
 def clean_wpsresult():
     """
     Delete database entries that have no outputs or that haven't been accessed for a XXX days
@@ -641,7 +620,6 @@ def update_tools(request, updateinterval=5):
         )
     )
     for process in db_data:
-        #                                    'processout': process['outputs']}
         if wps_data == {}:
             describedprocess = wps.describeprocess(process["identifier"])
             described_wps = json.loads(jsonpickle.encode(wps, unpicklable=False))
@@ -664,7 +642,6 @@ def update_tools(request, updateinterval=5):
                     processOutputs=wps_data[process["identifier"]]["processOutputs"],
                     version=wps_data[process["identifier"]]["processVersion"],
                 )
-                # TODO: Figure out why some processes don't have a version here and fix this
                 updatedwps.append(process["identifier"])
             except Exception as e:
                 print("Error while trying to update WpsDescrition: ", e)
@@ -679,7 +656,6 @@ def get_process_metadata(sessiondata, describedprocess, identifier):
     for i in describedprocess.dataInputs:
         if i.allowedValues == [] or not i.allowedValues[0] == "_keywords":
             if i.abstract and len(i.abstract) > 10 and "keywords" in i.abstract[2:10]:
-                # TODO: another ugly hack to improve: Problems with allowed values in pywps when min_occurs > 1
                 keywords = ast.literal_eval(i.abstract[: 1 + i.abstract.find("}", 10)])[
                     "keywords"
                 ]

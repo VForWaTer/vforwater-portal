@@ -1,10 +1,3 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
-#   * Remove `managed = True` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
 from __future__ import unicode_literals
 
 from uuid import uuid4
@@ -18,16 +11,13 @@ from django.http import QueryDict
 from django.utils.translation import gettext, gettext_lazy
 
 
-# TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
-#  explanation
-
-# TODO: Models are read at startup. To get translations later when the project is running
-#  make translations lazy.
-#  https://simpleisbetterthancomplex.com/tips/2016/10/17/django-tip-18-translations.html
-
-
 ### New Database Schemata for vfw 2.0
 ### from metacatalog 2.0
+"""
+More information about the meaning of the tables and entries can be found at the code of metacatalog at
+https://github.com/VForWaTer/metacatalog/tree/a9da92f23659ef7c3c3845cfecf470bc28ed93f8/metacatalog/models
+(https://github.com/VForWaTer/metacatalog/models)
+"""
 
 
 class DatasourceTypes(models.Model):
@@ -40,7 +30,7 @@ class DatasourceTypes(models.Model):
         db_table = 'datasource_types'
 
     def __str__(self):
-        return 'Data source type {}'.format(self.name)
+        return f'Data source type {self.name}'
 
 
 class Datasources(models.Model):
@@ -54,13 +44,14 @@ class Datasources(models.Model):
     temporal_scale = models.ForeignKey('TemporalScales', models.DO_NOTHING, blank=True, null=True)
     spatial_scale = models.ForeignKey('SpatialScales', models.DO_NOTHING, blank=True, null=True)
     data_names = models.TextField(null=True)
+    variable_names = models.TextField(null=True)
 
     class Meta:
         managed = False
         db_table = 'datasources'
 
     def __str__(self):
-        return '{} data source at {} <ID={}}>'.format(self.type.name, self.path, self.id)
+        return f'{self.type.name} data source at {self.path} <ID={self.id}>'
 
 
 class Datatypes(models.Model):
@@ -74,7 +65,7 @@ class Datatypes(models.Model):
         db_table = 'datatypes'
 
     def __str__(self):
-        return 'Data type {}'.format(self.name)
+        return f'Data type {self.name}'
 
 
 class Details(models.Model):
@@ -87,6 +78,7 @@ class Details(models.Model):
     value = models.TextField()
     description = models.TextField(blank=True, null=True)
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
+    title = models.CharField()
 
     class Meta:
         managed = False
@@ -94,7 +86,7 @@ class Details(models.Model):
         unique_together = (('entry', 'stem'),)
 
     def __str__(self):
-        return '{}: {}'.format(self.key, self.value)
+        return f'{self.key}: {self.value}'
 
 
 class Entries(models.Model):
@@ -115,7 +107,6 @@ class Entries(models.Model):
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
     location = models.PointField(srid=4326)
-    geom = models.GeometryField(srid=4326, blank=True, null=True)
     version = models.IntegerField(default=1)
     latest_version = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
     is_partial = models.BooleanField(default=False)
@@ -137,7 +128,7 @@ class Entries(models.Model):
         db_table = 'entries'
 
     def __str__(self):
-        return '<ID={} {} [{}] >'.format(self.id, self.title[:20], self.variable.name)
+        return f'<ID={self.id} {self.title[:20]} [{self.variable.name}] >'
 
 
 class EntrygroupTypes(models.Model):
@@ -152,7 +143,7 @@ class EntrygroupTypes(models.Model):
         db_table = 'entrygroup_types'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.name, self.id)
+        return f'{self.name} <ID={self.id}>'
 
 
 class Entrygroups(models.Model):
@@ -184,7 +175,7 @@ class Generic_Geometry_Data(models.Model):
         unique_together = (('entry', 'index'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Generic_1D_Data(models.Model):
@@ -199,7 +190,7 @@ class Generic_1D_Data(models.Model):
         unique_together = (('entry', 'index'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Generic_2D_Data(models.Model):
@@ -216,7 +207,7 @@ class Generic_2D_Data(models.Model):
         unique_together = (('entry', 'index'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Geom_Timeseries(models.Model):
@@ -231,7 +222,7 @@ class Geom_Timeseries(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Keywords(models.Model):
@@ -248,9 +239,8 @@ class Keywords(models.Model):
         managed = False
         db_table = 'keywords'
 
-
     def __str__(self):
-        return '{} <ID={}>'.format(self.full_path, self.id)
+        return f'{self.full_path} <ID={self.id}>'
 
 
 class Licenses(models.Model):
@@ -271,21 +261,25 @@ class Licenses(models.Model):
         db_table = 'licenses'
 
     def __str__(self):
-        return '{} ({})'.format(self.short_title, self.title)
+        return f'{self.short_title} ({self.title})'
 
 
 class Logs(models.Model):
+    """
+    Only used from metacatalog. Keeping an eye on that might help to keep track of changes on the database.
+    """
     tstamp = models.DateTimeField()
     code = models.IntegerField()
     description = models.TextField()
     migration_head = models.IntegerField(blank=True, null=True)
+    code_name = models.CharField(max_length=20)
 
     class Meta:
         managed = False
         db_table = 'logs'
 
     def __str__(self):
-        return 'Date={} Code={}'.format(self.tstamp, self.code)
+        return f'Date={self.tstamp} Code={self.code}'
 
 
 class NmEntrygroups(models.Model):
@@ -308,7 +302,7 @@ class NmKeywordsEntries(models.Model):
         unique_together = (('keyword', 'entry'),)
 
     def __str__(self):
-        return '<Entry ID={}> tagged {}'.format(self.entry.id, self.keyword.value)
+        return f'<Entry ID={self.entry.id}> tagged {self.keyword.value}'
 
 
 class NmPersonsEntries(models.Model):
@@ -323,8 +317,8 @@ class NmPersonsEntries(models.Model):
         unique_together = (('person', 'entry'),)
 
     def __str__(self):
-        return '{} <ID={}> as {} for Entry <ID={}>'.format(self.person.full_name, self.person.id,
-                                                           self.relationship_type.name, self.entry.id)
+        return (f'{self.person.full_name} <ID={self.person.id}> as {self.relationship_type.name} '
+                f'for Entry <ID={self.entry.id}>')
 
 
 class PersonRoles(models.Model):
@@ -336,7 +330,7 @@ class PersonRoles(models.Model):
         db_table = 'person_roles'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.name, self.id)
+        return f'{self.name} <ID={self.id}>'
 
 
 class Persons(models.Model):
@@ -351,19 +345,18 @@ class Persons(models.Model):
     organisation_abbrev = models.CharField(max_length=64, blank=True, null=True)
     attribution = models.CharField(max_length=1024, blank=True, null=True)
 
-    full_name = '{} {}'.format(first_name, last_name)
+    full_name = f'{first_name} {last_name}'
 
     class Meta:
         managed = False
         db_table = 'persons'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.full_name, self.id)
+        return f'{self.full_name} <ID={self.id}>'
 
     @staticmethod
     def filter(column, selection):
-        filter_items = {'nmpersonsentries__person__' + column + '__in': selection}
-        print('filter_items: ', filter_items)
+        filter_items = {f'nmpersonsentries__person__{column}__in': selection}
         return filter_items
 
 
@@ -371,13 +364,14 @@ class SpatialScales(models.Model):
     resolution = models.IntegerField()
     extent = models.PolygonField()
     support = models.DecimalField(max_digits=999, decimal_places=999)
+    dimension_names = models.CharField(null=True, max_length=128)
 
     class Meta:
         managed = False
         db_table = 'spatial_scales'
 
     def __str__(self):
-        return '<ID={}> extent={}'.format(self.id, self.extent)
+        return f'<ID={self.id}> extent={self.extent}'
 
 
 class TemporalScales(models.Model):
@@ -385,6 +379,7 @@ class TemporalScales(models.Model):
     observation_start = models.DateTimeField()
     observation_end = models.DateTimeField()
     support = models.DecimalField(max_digits=999, decimal_places=999)
+    dimension_names = models.CharField(null=True, max_length=128)
 
     class Meta:
         managed = False
@@ -404,8 +399,7 @@ class Thesaurus(models.Model):
         db_table = 'thesaurus'
 
     def __str__(self):
-        return '<ID={}>   <UUID={}>    Name={}/{}'.format(self.id, self.uuid, self.name)
-
+        return '<ID={}>   <UUID={}>    Name={}/{}'.format(self.uuid, self.uuid, self.name)
 
 class Timeseries(models.Model):
     entry = models.OneToOneField(Entries, models.DO_NOTHING, primary_key=True)
@@ -419,7 +413,7 @@ class Timeseries(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.entry}>'
 
 
 class Timeseries_1D(models.Model):
@@ -434,7 +428,7 @@ class Timeseries_1D(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ENTRY={self.entry}>'
 
 
 class Timeseries_2D(models.Model):
@@ -451,7 +445,7 @@ class Timeseries_2D(models.Model):
         unique_together = (('entry', 'tstamp'),)
 
     def __str__(self):
-        return '<ID={}>'.format(self.id)
+        return f'<ID={self.id}>'
 
 
 class Units(models.Model):
@@ -464,7 +458,7 @@ class Units(models.Model):
         db_table = 'units'
 
     def __str__(self):
-        return '{} <ID={}>'.format(self.name, self.id)
+        return f'{self.name} <ID={self.id}>'
 
 
 class Variables(models.Model):
@@ -475,6 +469,7 @@ class Variables(models.Model):
     symbol = models.CharField(max_length=12)
     unit = models.ForeignKey(Units, models.DO_NOTHING)
     keyword = models.ForeignKey(Keywords, models.DO_NOTHING, blank=True, null=True)
+    column_names = models.CharField(max_length=128)
 
     class Meta:
         managed = False
@@ -485,9 +480,29 @@ class Variables(models.Model):
 
     @staticmethod
     def filter(column, selection):
-        filter_items = {'variable__' + column + '__in': selection}
+        filter_items = {f'variable__{column}__in': selection}
         return filter_items
 
+"""
+*** End of Database description. Next block is for Database views ***
+"""
+class Locations(models.Model):
+    """
+    Access db view
+    """
+    id = models.BigIntegerField(primary_key=True, db_column='id')
+    point_location = models.PointField(blank=True, null=True)
+    geom = models.GeometryField(blank=True, null=True)
+    area_sqm = models.DecimalField(max_digits=999, decimal_places=999)
+    point_location_st_asewkt = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'locations'
+
+"""
+*** End of Database views. Next block is for Functions/Classes ***
+"""
 
 class BasicFilter:
     """
@@ -496,7 +511,6 @@ class BasicFilter:
     embargo = Entries.objects.values_list('embargo', flat=True).distinct()
     licenses = Licenses.objects.values_list('commercial_use', flat=True).distinct()
     variables = Variables.objects.values_list('name', flat=True).distinct()
-
     menu_entries = [Variables, Licenses, Entries]  # Licenses]
 
 
@@ -507,3 +521,60 @@ class AdvancedFilter(BasicFilter):
     details = Details.objects.values_list('value', flat=True).distinct()
 
 
+class merit_hydro_vect_level2(models.Model):
+    basin = models.BigIntegerField()
+    geom = models.PolygonField(srid=4326)
+
+    def __str__(self):
+        return f'basin_id is {self.basin}'
+
+    class Meta:
+        managed = True
+        db_table = 'merit_hydro_vect_level2'
+
+
+class riv_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
+    """
+    Datasource at https://www.reachhydro.org/home/params/merit-basins
+    """
+    comid = models.BigIntegerField()
+    lengthkm = models.FloatField()
+    lengthdir = models.FloatField()
+    sinuosity = models.FloatField()
+    slope = models.FloatField()
+    uparea = models.FloatField()
+    order = models.BigIntegerField()
+    strmdrop_t = models.FloatField()
+    slope_taud = models.FloatField()
+    nextdownid = models.BigIntegerField()
+    maxup = models.BigIntegerField()
+    up1 = models.BigIntegerField()
+    up2 = models.BigIntegerField()
+    up3 = models.BigIntegerField()
+    up4 = models.BigIntegerField()
+    geom = models.MultiLineStringField(srid=4326)
+
+    def __str__(self):
+        return self.comid
+
+    class Meta:
+        managed = True
+        db_table = 'riv_pfaf_merit_hydro_v07_basins_v01'
+
+
+class cat_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
+    """
+    Datasource at https://www.reachhydro.org/home/params/merit-basins
+    pfaf_level_02
+
+    """
+    comid = models.BigIntegerField()
+    unitarea = models.FloatField()
+    geom = models.PolygonField(srid=4326)
+
+    def __str__(self):
+        return self.comid
+
+    class Meta:
+        managed = True
+        db_table = 'cat_pfaf_merit_hydro_v07_basins_v01'

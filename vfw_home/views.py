@@ -1,18 +1,48 @@
-import ast
+# =================================================================
+#
+# Authors: Marcus Strobl <marcus.strobl@gmx.de>
+# Contributors: Safa Bouguezzi <safa.bouguezzi@kit.edu>, Kaoutar Boussaoud <kaoutar.boussaourd@kit.edu>, Elnaz Azmi <elnaz.azmi@kit.edu>
+#
+# Copyright (c) 2024 Marcus Strobl
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use,
+# copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following
+# conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+# OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+#
+# =================================================================
+
 import csv
 import datetime
 import json
+import re
 import sys
+from http.cookiejar import CookieJar
 
-import pandas as pd
 import redis
 import requests
 from django.contrib.gis.db.models.aggregates import Extent
+from django.core.cache import cache
 from django.core.exceptions import EmptyResultSet, FieldError
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils.timezone import make_aware
-from pyzip import PyZip
 
 import matplotlib as mpl
 import urllib
@@ -26,122 +56,135 @@ from django.utils import translation, timezone
 from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
-from future.builtins import isinstance
+from django.core.serializers import serialize
+from pyzip import PyZip
 
-import vfw_home
 from author_manage.views import MyResourcesView
-from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR
+from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR, DATABASES
 
-from vfw_home.geoserver_layer import create_layer, get_layer, delete_layer, test_geoserver_env
-from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
+from .Geoserver.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
 from wps_gui.models import WpsResults
-from .data_tools import __get_timescale, find_data_gaps, precision_to_minmax, is_data_short, DataTypes, \
-    __get_axis_limits, __reduce_dataset, get_accessible_data
-from .forms import QuickFilterForm
-from .data_obj import DataObject
-from .plot_obj import PlotObject
-from .utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
-    get_paginatorpage
+from .Figure.Fig_obj import FigObject
+from .Geoserver.checks import check_geoserver_layers
+from .Figure.data_tools import DataTypes, get_accessible_data, collect_selection, has_data, get_split_groups
+from .utilities.delineator import delineate
+from .Forms.forms import QuickFilterForm
+from .Figure.data_obj import DataObject
+from .utilities.utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
+    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency, clean_database_name
 
 mpl.use('Agg')
 
-from django.contrib.gis.geos import Polygon
-from .query_functions import get_bbox_from_data
-# from .filter import QuickFilter
-from .filters import NMPersonsFilter
-from .models import Entries, NmEntrygroups
+from django.contrib.gis.geos import Polygon, GEOSGeometry
+from .utilities.query_functions import get_bbox_from_data
+from .utilities.filters import NMPersonsFilter
+from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
 import logging
 from pathlib import Path
+from datetime import timedelta
+
 # for debugging:
 from time import time
 
-# Create your views here.
 """
 
 """
 logger = logging.getLogger(__name__)
 
+check_data_consistency()
 
 
-# from Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
+
+"""
+# IMPORTANT:
+# From Django doc about session: If SESSION_EXPIRE_AT_BROWSER_CLOSE is set to True, Django will use browser-length
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
+"""
+
 
 class HomeView(TemplateView):
     """
-    Template View to bring the necessary variables for the startup to the template
+    Template View to bring the necessary variables for the startup to the template.
     """
     template_name = 'vfw_home/home.html'
+    Database_Name = clean_database_name()
+    # Configuration for data layers and workspace
+    DATA_LAYER = 'devel'
+    AREAL_DATA_LAYER = 'areal_devel'
+    MERIT_RIVER_LAYER = ['merit_river_test', 'merit_river']
+    MERIT_RIVER_IDS = ['merit_river_simple', 'merit_river_simple']
+    MERIT_CATCHMENT_LAYER = ['merit_catchment', 'merit_catchment']
+    MERIT_CATCHMENT_COARSE_LAYER = ['merit_catchment_coarse', 'merit_catchment_coarse']
+    DATA_EXT = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
 
-    # Before you make migrations
-    data_layer = 'devel'
+    STORE = Database_Name
+    WORKSPACE = Database_Name
 
-    # if not dataExt:
-    data_ext = [645336.034469495, 6395474.75106861, 666358.204722283, 6416613.20733359]
+    UNLOCKED_EMBARGO = []
+    if not getattr(settings, 'TEST_MODE', False):  # Only run in non-test mode
 
-    # IMPORTANT! Don't use "-" in geoserver names!!!
-    store = 'teststore'
-    workspace = 'testworkspace'
-    unlocked_embargo = []
+        check_geoserver_layers(STORE, WORKSPACE,
+                            [MERIT_RIVER_LAYER, MERIT_RIVER_IDS, MERIT_CATCHMENT_LAYER, MERIT_CATCHMENT_COARSE_LAYER])
 
-    try:
-        test_geoserver_env(store, workspace)
 
-    except:
-        print('\033[91mno geoserver\033[0m ', sys.exc_info()[0])
-
-    # TODO: Test with users if this makes any sense
     def __set_layer_name(self):
         """
         Set name for layer in geoserver according to username or as admin_layer.
         """
         if self.request.user.is_authenticated:
             if self.request.user.is_superuser:
-                self.data_layer = 'admin_layer'
+                self.DATA_LAYER = 'admin_layer'
+                self.AREAL_DATA_LAYER = 'admin_areal_layer'
             else:
-                self.data_layer = expressive_layer_name(self.request.user)
+                self.DATA_LAYER = expressive_layer_name(self.request.user)
+                self.AREAL_DATA_LAYER = f"{expressive_layer_name(self.request.user)}_areal"
 
-    # Put here everything you need at startup and for refresh of 'Home'
-    def get_context_data(self, **kwargs: object):
+    def get_context_data(self, **kwargs):
         """
         Collect data needed for startup of V-FOR-WaTer Portal home.
-
-        :param kwargs:
-        :return:
         """
         self.__set_layer_name()
 
         try:
-            unblocked_ids = self.request.session['datasets']
+            unblocked_ids = self.request.session.get('datasets', [])
+            if not unblocked_ids:
+                self.request.session['datasets'] = []
         except KeyError:
             unblocked_ids = []
             self.request.session['datasets'] = []
 
         try:
-            if not get_layer(self.data_layer, self.store, self.workspace):
-                create_layer(self.request, self.data_layer, self.store, self.workspace)
-            else:
-                # TODO: don't do that in production! That's just for development to make sure geoserver is updated
-                #  after restart of django
-                delete_layer(self.data_layer, self.store, self.workspace)
-                create_layer(self.request, self.data_layer, self.store, self.workspace)
-        except:
-            self.data_layer = 'Error: Found no geoserver!'
-            print('Still no geoserver: ', sys.exc_info()[0])
+            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.DATA_LAYER)
+            print(f"Calling verify_layer with {self.DATA_LAYER}")
 
-        self.data_ext = get_bbox_from_data()
+            verify_layer(request=self.request, datastore=self.STORE, workspace=self.WORKSPACE, filename=self.AREAL_DATA_LAYER, layertype='areal_data')
 
+            print(f"Calling verify_layer with {self.AREAL_DATA_LAYER}")
+
+        except Exception as e:
+            self.DATA_LAYER = 'Error: Found no geoserver!'
+            self.AREAL_DATA_LAYER = 'Error: Found no geoserver!'
+            print(f'Still no geoserver: {e}')
+
+        self.DATA_EXT = get_bbox_from_data()
         context = quick_filter_defaults(self)
 
-        return {'dataExt': self.data_ext, 'data_layer': self.data_layer,
-                'messages': messages.get_messages(self.request), 'unblocked_ids': unblocked_ids,
-                **context}
 
+        return {
+            'dataExt': self.DATA_EXT,
+            'data_layer': self.DATA_LAYER,
+            'areal_data_layer': self.AREAL_DATA_LAYER,
+            'messages': messages.get_messages(self.request),
+            'unblocked_ids': unblocked_ids,
+            **context
+        }
 
 class TestView(View):
 
     def get(self, request):
+        print('request: ', request)
         return JsonResponse({'answer': 'läuft'})
 
 
@@ -170,36 +213,38 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-        store = HomeView.store  # 'new_vforwater_gis'
-        workspace = HomeView.workspace  # 'CAOS_update'
+        store = HomeView.STORE  # 'new_vforwater_gis'
+        workspace = HomeView.WORKSPACE  # 'CAOS_update'
         test_geoserver_env(store, workspace)
-
 
         if 'csv' in request.GET:
             # if 'download_data' in request.GET:
-            s_id = json.loads(request.GET.get('csv'))
+            s_id =  request.GET.get('csv')
+
             accessible_data = get_accessible_data(request, s_id)
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
 
             if len(accessible_data) > 0:
-                # TODO: There are 3 Solutions to get data from the different tables.
-                #  Solution 1 produces many None fields, hence is discarded.
-                #  Solution 2 makes a query from 'Entries' to get datatype and builds another query from 'Entries'
-                #  according to the result.
-                #  Solution 3 gets the datatype and 'eval' a query for the respective table.
-                #  Decide if solution 2 or 3 is better.
-                #  Check if results are the right datasets!!!
-                #  (Unused solutions deleted. Check commit from Sept 3, 2020)
-
-                # Solution 2:
-                # ===========
                 rows = get_dataset(accessible_data[0])
 
                 pseudo_buffer = Echo()
                 writer = csv.writer(pseudo_buffer)
                 response = StreamingHttpResponse((writer.writerow(row) for row in rows), content_type="text/csv")
                 response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+            return response
+
+        if 'geojson' in request.GET:
+            s_id =  request.GET.get('geojson')
+
+            accessible_data = get_accessible_data(request, s_id)
+            error_list = accessible_data['blocked']
+            accessible_data = accessible_data['open']
+
+            geojson_data = serialize("geojson", Locations.objects.filter(id = accessible_data[0]) , geometry_field="point_location", fields=["name"])
+
+            response = HttpResponse(json.dumps(geojson_data), content_type="application/json")
+            response['Content-Disposition'] = 'attachment; filename="somefilename.geojson"'
             return response
 
         if 'shp' in request.GET:
@@ -227,24 +272,25 @@ class DatasetDownloadView(TemplateView):
                 delete_layer(layer_name, store, workspace)
             return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
 
-        # TODO: schema Location shows too much information for possible intruder. Figure out how to improve?
         if 'xml' in request.GET:
             id = request.GET.get('xml')
             accessible_data = get_accessible_data(request, id)
             error_list = accessible_data['blocked']
             accessible_data = accessible_data['open']
+            try:
 
-            if len(accessible_data) > 0:
-                layer_name = 'XML_{}_{}_{}'.format(request.user, request.user.id, id)
-                srid = 4326
-                # create layer on geoserver to request xml file
-                create_layer(request, layer_name, store, workspace, id)
-                # use GEOSERVER GML
-                url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{2}&outputFormat=' \
-                      'text%2Fxml%3B%20subtype%3Dgml%2F2.1.2&&srsname=EPSG:{3}'.format(LOCAL_GEOSERVER,
-                                                                                       workspace, layer_name, srid)
+                opener = urllib.request.build_opener(
+                    urllib.request.HTTPBasicAuthHandler(password_manager),
+                    urllib.request.HTTPCookieProcessor(cookie_jar))
+                urllib.request.install_opener(opener)
+
                 request = urllib.request.Request(url)
                 response = urllib.request.urlopen(request)
+
+                body = response.read()
+
+            except Exception as e:
+                print('e: ', e)
                 # clean up right after request:
                 delete_layer(layer_name, store, workspace)
             return HttpResponse(response.read().decode('utf-8'))
@@ -289,37 +335,38 @@ class LoginView(View):
         if not request.user.is_authenticated:
             logger.debug('The user is not authenticated!')
         else:
-            logger.debug('{} logged in as'.format(request.user.username))
+            logger.debug(f'{request.user.username} logged in as')
 
         return super().dispatch(request, *args, **kwargs)
 
 
+
 class LogoutView(View):
-    """
-
-    """
-
-    def logout(self, request):
+    def logout_user(self, request):
         """
+        Logs out the user and clears their session.
 
-        :param request:
-        :type request:
-        :return:
-        :rtype:
+        :param request: The HTTP request object
+        :type request: HttpRequest
         """
-        logger.debug('{} logged out'.format(request.user.username))
+        username = request.user.username
+
         logout(request)
+        logger.debug(f'{username} logged out (auth status: {request.user.is_authenticated})')
+
 
     def post(self, request):
         """
+        Handles POST requests to log out the user.
 
-        :param request:
-        :type request:
-        :return:
-        :rtype:
+        :param request: The HTTP request object
+        :type request: HttpRequest
+        :return: A redirect to the home page
+        :rtype: HttpResponseRedirect
         """
-        self.logout(request)
+        self.logout_user(request)
         return redirect('vfw_home:home')
+
 
 
 class DevLoginView(TemplateView):
@@ -345,6 +392,7 @@ class HelpView(TemplateView):
     """
     """
 
+    #     template_name = 'vfw_home/help.html'
     def get(self, request):
         """
 
@@ -363,16 +411,13 @@ class HelpView(TemplateView):
         f.close()
         return render(request, 'home/help.html', {'context': context})
 
-
 class ToggleLanguageView(View):
-    """
-
-    """
+    """ """
 
     @staticmethod
     def post(request):
         """
-        Set a cookie to switch language of web site. Tutorial how to set language cookie at
+        Set a cookie to switch language of website. Tutorial how to set language cookie at
         https://samulinatri.com/blog/django-translation/
 
         :param request:
@@ -381,33 +426,48 @@ class ToggleLanguageView(View):
         :rtype:
         """
         lang = translation.get_language()
-        logger.debug('current language: {}'.format(lang))
-        logger.debug('check_for_language: de {}, en-us {}, en-gb {}'.format(translation.check_for_language('de'),
-                                                                            translation.check_for_language('en-us'),
-                                                                            translation.check_for_language('en-gb')))
-        if lang == 'en-gb' or lang == 'en-us':
-            translation.activate('de')
-            request.session[translation.LANGUAGE_SESSION_KEY] = 'de'
+        logger.debug(f"current language: {lang}")
+        logger.debug(
+            "check_for_language: de {}, en-us {}, en-gb {}".format(
+                translation.check_for_language("de"),
+                translation.check_for_language("en-us"),
+                translation.check_for_language("en-gb"),
+            )
+        )
+        if lang == "en-gb" or lang == "en-us":
+            translation.activate("de")
+            request.session[settings.LANGUAGE_COOKIE_NAME] = "de"
+
         else:
-            translation.activate('en-gb')
-            if hasattr(request, 'session'):
-                request.session[translation.LANGUAGE_SESSION_KEY] = 'en-gb'
-        logger.debug('new language: {}'.format(translation.get_language()))
-        logger.debug('translation test: {}'.format(translation.gettext("help")))
-        response = redirect(DEMO_VAR + '/')
-        response.set_cookie(settings.LANGUAGE_COOKIE_NAME, request.session[translation.LANGUAGE_SESSION_KEY])
+            translation.activate("en-gb")
+            if hasattr(request, "session"):
+                request.session[settings.LANGUAGE_COOKIE_NAME] = "en-gb"
+        logger.debug(f"new language: {translation.get_language()}")
+        logger.debug(f'translation test: {translation.gettext("help")}')
+        response = redirect(DEMO_VAR + "/")
+        response.set_cookie(
+            settings.LANGUAGE_COOKIE_NAME,
+            request.session[settings.LANGUAGE_COOKIE_NAME],
+        )
         return response
+
 
 
 class FailedLoginView(View):
     """
-    View for failed logins
+    View for handling failed login attempts.
     """
-
     @staticmethod
-    def get(request):
-        for i in request:
-            print('request: ', i)
+    def get(self, request):
+        """
+        Handles GET requests and displays a login failed message.
+
+        :param request: The HTTP request object
+        :type request: HttpRequest
+        :return: A redirect to the home page
+        :rtype: HttpResponseRedirect
+        """
+
         messages.warning(request, 'Login failed.')
         return redirect('vfw_home:home')
 
@@ -432,7 +492,7 @@ class GeoserverView(View):
         :return:
         :rtype:
         """
-        work_space_name = HomeView.workspace  # 'CAOS_update'
+        work_space_name = HomeView.WORKSPACE  # 'CAOS_update'
         url = '{0}/{1}/ows?service={2}&version=1.0.0&request=GetFeature&typeName={1}:{3}&outputFormat=application%2' \
               'Fjson&srsname=EPSG:{4}&bbox={5},EPSG:{6}'.format(LOCAL_GEOSERVER, work_space_name, service, layer,
                                                                 srid, bbox, srid)
@@ -448,7 +508,29 @@ def previewplot(request):
     :param request:
     :return:
     """
-    webID = request.GET.get('preview')
+    try:
+        webID = request.GET.get('preview')
+        entriesID = webID
+        if webID[0:3] == 'db[':
+            parts = webID[0:-1].split('[')
+            webID = [f'db{id.strip()}' for id in parts[1].split(',')]
+        elif webID[0:2] == 'db':
+            parts = [0, webID[2:]]
+            entriesID = webID[2:]
+        else:
+            logger.warning(f'Figure how to handle an ID like {webID}')
+
+        accessible_data = get_accessible_data(request, [parts[1]])
+        error_list = accessible_data['blocked']
+        accessible_data = accessible_data['open']
+
+        if len(accessible_data) < 1:
+            return JsonResponse({'warning': translation.gettext(
+                'No plot available. <br/>First access to this dataset is needed.')})
+
+    except Exception as e:
+        print('Exception: ', e)
+
     full_res = False
     plot_size = [700, 500]
     if request.GET.get('startdate') != 'None':
@@ -462,197 +544,185 @@ def previewplot(request):
     cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
-        try:
-            bla = Entries.objects.filter(pk=webID[2:]).values_list('datasource__data_names',
-                                                                   'datasource__path',
-                                                                   'datasource__datatype__parent',
-                                                                   'datasource__datatype__name',
-                                                                   'datasource__datatype__title',
-                                                                   'datasource__datatype__description',
-                                                                   'datasource__temporal_scale__resolution',
-                                                                   'datasource__temporal_scale__observation_start',
-                                                                   'datasource__temporal_scale__support',
-                                                                   )
 
-            dataset = DataObject(webID, date)
+        try:
+            if isinstance(webID, list):
+                dataset = []
+                for i in webID:
+                    if has_data(i[2:]):
+                        dataset.append(DataObject(i, date))
+                    else:
+                        print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
+            else:
+                if has_data(entriesID):
+                    if int(entriesID)  not in cache.get('ids_data_on_path')  :
+                        dataset = DataObject(webID, date)
+                    else:
+                        print('One must handle data on path/ check if raster (= has spatial resolution) => '
+                              'plot raster image, if netCDF => datacube')
+                        return JsonResponse({'error': f'Plot for entries ID {webID} has to be implemented.'})
+                else:
+                    print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
+                    return JsonResponse({'error': f'No Data for dataset with entries ID {webID}'})
 
         except TypeError as e:
-            print('\033[33mType error in Data Object:\033[0m ', e)
+            # print('\033[33mhome.views.previewplot: Type error in Data Object:\033[0m ', e)
+            logger.debug('Type Error in Data Object: ', e)
             raise Http404
         except IndexError as e:
-            print('\033[33mindex error in Data Object:\033[0m ', e)
+            # print('\033[33mhome.views.previewplot: index error in Data Object:\033[0m ', e)
+            logger.debug('Index Error in Data Object: ', e)
             if request.user.is_authenticated:
-                # TODO: Rethink how to handle unallowed requests
                 raise Http404
             else:
-                # TODO: Redirect to login
                 raise Http404
-                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-                # return redirect('vfw_home:login')
         except EmptyResultSet as e:
-            print('\033[33mEmptyResultSet Error in Data Object:\033[0m ', e)
+            # print('\033[33mhome.views.previewplot: EmptyResultSet Error in Data Object:\033[0m ', e)
+            logger.debug('EmptyResultSet Error in Data Object: ', e)
             return JsonResponse({'error': e})
         except LookupError as e:
-            print('\033[33mLookupError in Data Object:\033[0m ', e)
+            # print('\033[33mhome.views.previewplot: LookupError in Data Object:\033[0m ', e)
+            logger.debug('LookupError in Data Object: ', e)
             return JsonResponse({'error': e})
         except FieldError as e:
-            print('\033[33mField Error in Data Object:\033[0m ', e)
+            # print('\033[33mhome.views.previewplot: Field Error in Data Object:\033[0m ', e)
+            logger.debug('Field Error in Data Object: ', e)
+            raise Http404
         except Exception as e:
-            print('\033[31mAn unhandled error in Data Object func:\033[0m ', e)
+            # print('\033[31mhome.views.previewplot: An unhandled error in Data Object:\033[0m ', e)
+            logger.debug('An unhandled Error in Data Object: ', e)
+            raise Http404
 
-        plot = PlotObject(dataset, plot_size)
-        img = plot.get_plot
+        plot = FigObject(dataset, plot_size)
+        img = plot.get_plot()
     return JsonResponse(img)
 
-    if webID[0:2] == 'db':
+
+class ShortInfoPaginationView(View):
+    """
+    View to return only a little metadata and give access to more details.
+    """
+
+    def get(self, request):
         try:
-            accessible_data = get_accessible_data(request, webID[2:])
-            error_list = accessible_data['blocked']
-            accessible_data = accessible_data['open']
+            datasets, field, field_name = self.get_initial_data(request)
+            entries_list = self.get_entries_list(datasets, field)
+            accessible_ids = self.get_accessible_ids(request, datasets)
 
-            if len(accessible_data) < 1:
-                return JsonResponse({'warning': translation.gettext(
-                    'No plot available. <br/>First access to this dataset is needed.')})
+            if datasets:
+                entries_list = self.process_grouped_entries(datasets, entries_list)
 
-            full_res = is_data_short(accessible_data[0], 'db', date)
+            current_page = self.paginate_entries(request, entries_list, 5)
+            entries = self.build_entries_dict(current_page, field_name, accessible_ids)
 
-            if type(full_res) is dict and 'error' in full_res:
-                return JsonResponse(full_res)
-            # plot with bokeh
-            return JsonResponse(get_plot_from_db_id(ID=accessible_data[0], full_res=full_res, date=date))
+            return render(request, 'vfw_home/mapmodal_entrieslist.html', {
+                'entries_page': entries,
+                'data_sets': datasets,
+                'current_page': current_page
+            })
 
-        except TypeError as e:
-            print('Type error in previewplot: ', e)
+        except TypeError:
+            logger.debug('Short info Pagination failed.')
             raise Http404
-        except IndexError as e:
-            if request.user.is_authenticated:
-                # TODO: Rethink how to handle unallowed requests
-                print('Index Error in previewplot: ', e)
-                raise Http404
-            else:
-                # TODO: Redirect to login
-                raise Http404
-        except EmptyResultSet as e:
-            print('EmptyResultSet Error in previewplot: ', e)
-        except FieldError as e:
-            print('Field Error in previewplot: ', e)
+
         except Exception as e:
-            print('\033[31mAn unhandled error in previewplot func:\033[0m ', e)
+            logger.debug(f'Exception while getting short info pagination: {e}')
+            raise Http404
 
-    elif webID[0:3] == 'wps':
-        dataset = WpsResults.objects.filter(id=webID[3:])
-        typelist = ast.literal_eval(dataset.values('outputs')[0]['outputs'])
-        path = DATA_DIR + typelist['path'][1::]
-        with open(path + ".json") as json_file:
-            metadata = json.loads(json.load(json_file))
-        json_file.close()
-
-        label = format_label(metadata['meta']['variable']['name'],
-                             metadata['meta']['variable']['symbol'],
-                             metadata['meta']['variable']['unit']['symbol'])
-
-        if typelist['type'] == 'timeseries':
-            dataReader = DataTypes()
-            df = dataReader.read_data(filepath=path, datatype=typelist['type'])
-            if len(df.index) > 50000:
-                data = __reduce_dataset(df, full_res)
-
-            if metadata['meta']['variable']['name'] in data['df'].columns:
-                data['df'].rename(columns={metadata['meta']['variable']['name']: "value"}, inplace=True)
-            elif metadata['meta']['variable']['name'].replace(" ", "_") in data['df'].columns:
-                data['df'].rename(columns={metadata['meta']['variable']['name'].replace(" ", "_"): "value"}, inplace=True)
-            else:
-                print('Error: Unknown name of column name in your dataset. '
-                      'Should be ', metadata['meta']['variable']['name'])
-
-            if not 'tstamp' in data['df'].columns:
-                data['df'] = data['df'].reset_index()
-
-            if 'scale' in metadata:
-                # TODO: scale should be in metadata. Add and get it here
-                scale = metadata['scale']
-            else:
-                scale = __get_timescale(data['df'])
-
-            # prepare dataset for plot
-            if 'entry_id' in data['df']:
-                del data['df']['entry_id']
-
-            plot_data = {'df': data['df'], 'scale': scale}
-            if 'precision' in plot_data['df'].columns and not data['df']['precision'].isnull().all():
-                plot_data['df'] = precision_to_minmax(plot_data['df'])
-                plot_data['has_preci'] = True
-            else:
-                plot_data['has_preci'] = False
-
-            plot_data = find_data_gaps(plot_data)
-            plot_data = __get_axis_limits(plot_data)
-            return JsonResponse(get_bokeh_std_fullres(plot_data, full_res=full_res, size=[700, 500], label=label))
-
-        if 'figure' in typelist:
-            return JsonResponse('Warning: Not implemented yet.')
-
-        raise Http404
-
-    else:
-        raise Http404
-
-
-def short_info_pagination(request):
-    """
-    Requested from map.js buildMapModal, show only little metadata and give access to more details
-    :param request:
-    :return:
-    """
-    try:
-        naive_today = timezone.make_naive(timezone.now())
-        datasets = json.loads(request.GET.get('datasets'))
-        if type(datasets) is str:
+    def get_initial_data(self, request):
+        """
+        Retrieve initial data from request.
+        """
+        datasets = json.loads(request.GET.get('datasets', '[]'))
+        if isinstance(datasets, str):
             datasets = [int(datasets)]
 
-        field = ['title', 'id', 'variable__name', 'embargo', 'embargo_end']
-        field_name = {'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'embargo': 'Embargo',
-                      'has_access': 'has_access', 'embargo_end': 'embargo_end'}
+        field = [
+            'title', 'id', 'uuid', 'variable__name', 'embargo', 'embargo_end'
+        ]
+        field_name = {
+            'title': 'Title', 'variable__name': 'Variable name', 'id': 'ID', 'uuid': 'UUID',
+            'embargo': 'Embargo', 'has_access': 'has_access', 'embargo_end': 'embargo_end'
+        }
 
+        return datasets, field, field_name
+
+    def get_entries_list(self, datasets, field):
+        """
+        Retrieve the list of entries based on the provided datasets and fields.
+        """
         if datasets:
-            entries_list = Entries.objects.values(*field).filter(pk__in=datasets) \
-                .order_by('variable__name', 'title', 'id')
+            return list(Entries.objects.values(*field).filter(pk__in=datasets).order_by('variable__name', 'title', 'id'))
+        return list(Entries.objects.values(*field).order_by('variable__name', 'title', 'id'))
+
+    def get_accessible_ids(self, request, datasets):
+        """
+        Get the accessible dataset IDs for the user.
+        """
+        if datasets:
             accessible_data = get_accessible_data(request, datasets)
-            # error_ids = accessible_data['blocked']
-            accessible_ids = accessible_data['open']
-        else:
-            entries_list = Entries.objects.values(*field).order_by('variable__name', 'title', 'id')
+            return accessible_data.get('open', [])
+        return []
 
-        # build pagination for entries
-        current_page = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
+    def process_grouped_entries(self, datasets, entries_list):
+        """
+        Process grouped entries by handling split data.
+        """
+        grouped_dict = get_split_groups(datasets)
+        entries_id_map = {d['id']: idx for idx, d in enumerate(entries_list)}
 
+        append_dict, delete_list = self.build_append_delete_dicts(grouped_dict)
+        delete_indices = [entries_id_map[i] for i in delete_list]
+
+        for target, split_list in append_dict.items():
+            for dataset in split_list:
+                for k, v in entries_list[entries_id_map[target]].items():
+                    if v != entries_list[entries_id_map[dataset]][k]:
+                        entries_list[entries_id_map[target]][k] = [entries_list[entries_id_map[target]][k], entries_list[entries_id_map[dataset]][k]]
+
+        for delete_id in sorted(delete_indices, reverse=True):
+            entries_list.remove(entries_list[delete_id])
+
+        return entries_list
+
+    def build_append_delete_dicts(self, grouped_dict):
+        """
+        Build dictionaries for appending and deleting grouped entries.
+        """
+        append_dict = {}
+        delete_list = []
+        for k, v in grouped_dict.items():
+            append_dict[v[0]] = v[1:]
+            delete_list.extend(v[1:])
+        return append_dict, delete_list
+
+    def paginate_entries(self, request, entries_list, per_page):
+        """
+        Paginate the entries list.
+        """
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(entries_list, per_page)
+        return paginator.get_page(page_number)
+
+    def build_entries_dict(self, current_page, field_name, accessible_ids):
+        """
+        Build a dictionary of entries for the current page.
+        """
+        naive_today = timezone.make_naive(timezone.now())
         newdict = defaultdict(list)
+
         for d in current_page:
             for key, val in d.items():
                 if key != 'embargo_end':
                     newdict[translation.gettext(field_name[key])].append(val)
                 else:
-                    # if val < naive_today or d['embargo'] is False or d['id'] in accessible_ids:
                     if not has_pending_embargo(d['embargo'], val) or d['id'] in accessible_ids:
                         newdict['has_access'].append({'access': True, 'ssid': d['id']})
                     else:
                         newdict['has_access'].append({'access': False, 'ssid': d['id']})
 
-        entries = dict(newdict.items())
+        return dict(newdict.items())
 
-        return render(request, 'vfw_home/mapmodal_entrieslist.html', {'entries_page': entries,
-                                                                      'data_sets': datasets,
-                                                                      'current_page': current_page})
-
-    except TypeError:
-        raise Http404
-
-    except Exception as e:
-        print('Exception while getting short info pagination: ', e)
-
-
-# TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
-# TODO: Handle this with an http request (response, not request?)!
 def show_info(request):
     """
     On request collect metadata for preview on map and selection in the sidebar.
@@ -661,10 +731,72 @@ def show_info(request):
     :return:
     """
 
+    def parse_iso8601_duration(duration_str):
+        """
+        Parse an ISO 8601 duration string into a timedelta object.
+
+        :param duration_str: A string representing a duration in ISO 8601 format.
+        :type duration_str: str
+        :return: A timedelta object representing the parsed duration.
+        :rtype: timedelta
+
+        The function removes the 'P' prefix and splits the string into date and time parts.
+
+        Example:
+
+        >>> parse_iso8601_duration('P3DT1H5M6S')
+        output : 3 days, 1:05:06
+
+        """
+        # Remove the 'P' and split into date and time parts
+        duration_str = duration_str[1:]
+        date_time_split = duration_str.split('T')
+        days, hours, minutes, seconds = 0, 0, 0, 0
+
+        print("date time split: " , date_time_split)
+        # If there's a date component, parse it
+        if date_time_split[0]:
+            date_part = date_time_split[0]
+            days += int(date_part[:-1]) if date_part.endswith('D') else 0
+
+        # If there's a time component, parse it
+        if len(date_time_split) > 1:
+            time_part = date_time_split[1]
+            hours += int(time_part.split('H')[0]) if 'H' in time_part else 0
+            minutes += int(time_part.split('H')[-1].split('M')[0]) if 'M' in time_part else 0
+            seconds += int(time_part.split('M')[-1].split('S')[0]) if 'S' in time_part else 0
+
+        return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+
+    def format_duration_to_detailed_str(duration):
+        """
+        Format a duration object into a detailed string.
+
+        :param duration: A datetime.timedelta object representing the duration.
+        :type duration: datetime.timedelta
+
+        :return: A string representation of the duration in the format "days day(s), hours hour(s), minutes minute(s), seconds second(s)".
+        :rtype: str
+
+        If the duration has no days (Similarly for hours, minutes, seconds) , it will not be included in the string.
+        """
+        parts = []
+        days = duration.days
+        seconds = duration.seconds
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        # return f"{days} day(s), {hours} hour(s), {minutes} minute(s), {seconds} second(s)"
+        if days: parts.append(f"{days} day{'s' if days > 1 else ''}")
+        if hours: parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
+        if minutes: parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
+        if seconds: parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
+
+        return ", ".join(parts) if parts else "0 seconds"
+
     def collect_data(ids):
         """
         Called when clicked on more to see metadata of single dataset.
-        TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
 
         :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
         :type ids: str
@@ -681,9 +813,21 @@ def show_info(request):
                     prefix + 'embargo', prefix + 'embargo_end',
                     prefix + 'datasource__temporal_scale__observation_start',
                     prefix + 'datasource__temporal_scale__observation_end',
+                    prefix + 'datasource__spatial_scale__resolution',
+                    prefix + 'datasource__temporal_scale__resolution',
                     nm_prefix + 'group__title', nm_prefix + 'group_id']
 
-        db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+        try:
+            # For a list of datasets use this
+            if ids[0] == '[':
+                string_list = ids[1:-1].split(",")
+                ids = list(map(int, string_list))
+                db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
+            else:  # For one dataset use this
+                db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+        except Exception as e:
+            # print('Error in views.show_info.collect_data: ', e)
+            logger.debug('Error in views.show_info.collect_data: ', e)
 
         if not db_info.exists():
             warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
@@ -696,7 +840,10 @@ def show_info(request):
             group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
                 .values_list('entry_id', flat=True)
 
-        table = {'id': ids, translation.gettext('Name'): translation.gettext(db_info[0][prefix + 'variable__name'])}
+        variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
+        table = {'id': ids, 'uuid': db_info[0][prefix + 'uuid'],
+                 translation.gettext('Name'): variable_name }
+
 
         table[translation.gettext('Commercial use allowed')] = \
             human_readable_bool(db_info[0][prefix + 'license__commercial_use'])
@@ -704,14 +851,23 @@ def show_info(request):
             has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
         table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
             if db_info[0][prefix + 'abstract'] else '-'
-        table['has_embargo'] = str(has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
-
+        table['has_embargo'] = str(
+            has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
         table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
             if db_info[0][nm_prefix + 'group__title'] else '-'
         table['group_entry_ids'] = list(group_entry_ids)
 
-        return JsonResponse({'table': table, 'warning': warning})
+        if db_info[0][prefix + 'datasource__spatial_scale__resolution'] is not None :
+            table[translation.gettext('Spatial Resolution')] = str(db_info[0][prefix + 'datasource__spatial_scale__resolution']) + " " + "m"
 
+        if db_info[0][prefix + 'datasource__temporal_scale__resolution'] is not None :
+            parsed_date = parse_iso8601_duration(db_info[0][prefix + 'datasource__temporal_scale__resolution'])
+            table[translation.gettext('Temporal Resolution')] = format_duration_to_detailed_str(parsed_date)
+
+        table[translation.gettext('Observation Start')] = db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_start'] else '-'
+        table[translation.gettext('Observation End')] = db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_end'] else '-'
+
+        return JsonResponse({'table': table, 'warning': warning})
 
     webID = request.GET.get('show_info')
     if webID[0:3] == 'wps':
@@ -751,108 +907,168 @@ def workspace_data(request):
     :return:
     """
 
-    def build_selection(requested_id, startdate='', enddate=''):
-        """
-        function distinguishes only between default user (non-embargo data) and rest (+user embargo data)
-        :param requested_id:
-        :param startdate: string
-        :param enddate: string
-        :return:
-        """
-        dataset_dict = {}
-        error_dict = {}
-
-        accessible_data = get_accessible_data(request, requested_id)
-        error_ids = accessible_data['blocked']
-        accessible_ids = accessible_data['open']
-
-        result_dataset = NmEntrygroups.objects. \
-            values('entry__id', 'entry__variable__name', 'entry__variable__symbol', 'entry__variable__unit__symbol',
-                   'entry__datasource__datatype__name', 'group__title', 'group_id').filter(pk__in=accessible_ids)
-
-        if len(error_ids) > 0:
-            error_dict = {'message': 'no access', 'id': error_ids}
-
-        for dataset in result_dataset:
-            dataset_dict.update({'db' + str(dataset['entry__id']): {'name': dataset['entry__variable__name'],
-                                                                    'abbr': dataset['entry__variable__symbol'],
-                                                                    'unit': dataset['entry__variable__unit__symbol'],
-                                                                    'type': dataset['entry__datasource__datatype__name'],
-                                                                    'source': 'db',
-                                                                    'dbID': dataset['entry__id'],
-                                                                    'orgID': 'db' + str(dataset['entry__id']),
-                                                                    'start': startdate,
-                                                                    'end': enddate,
-                                                                    'inputs': [],
-                                                                    'outputs': dataset['entry__datasource__datatype__name'],
-                                                                    'group': dataset['group__title'],
-                                                                    'groupID': dataset['group_id']
-                                                                    }
-                                 })
-
-        # TODO: Need timestamp in name to see if different selection
-        return {'data': dataset_dict, 'error': error_dict}
-
     try:
-        # prepare dataset_iddatasetdownload differently for list and single value to use in build_selection
-        result = build_selection(json.loads(request.GET.get('workspaceData')),
-                                 request.GET.get('startDate'), request.GET.get('endDate'))
-        return JsonResponse({'workspaceData': result['data'], 'error': result['error']})
+        # prepare dataset_iddatasetdownload differently for list and single value to use in collect_selection
+        start_date = request.GET.get('startDate')
+        end_date = request.GET.get('endDate')
+        result = collect_selection(request,
+                                   json.loads(request.GET.get('workspaceData')),
+                                   start_date, end_date
+                                   )
+        return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group'],
+                             'selectedDate': [start_date, end_date]})
 
-    except TypeError:
+    except TypeError as e:
+        logger.debug('Type Error in vfw_home/views/workspace_data: ', e)
         raise Http404
+    except FieldError as e:
+        logger.debug('Field Error in vfw_home/views/workspace_data: ', e)
+        raise Http404
+    except Exception as e:
+        # print('unhandled exception in vfw_home/views/workspace_data(): ', e)
+        logger.debug('unhandled exception in vfw_home/views/workspace_data(): ', e)
 
 
-def entries_pagination(request):
+
+
+
+class EntriesPaginationView(View):
     """
-    Return result in several pages (5 datasets per page) instead of hundreds of results on one page.
-
-    :param request: list of integers
-    :type request: object
-    :return: dict with 'entries, ownData, accessible_ids' to render entrieslist.html
+    View to return result in several pages (5 datasets per page) instead of hundreds of results on one page.
     """
-    accessible_ids = []
-    datasets = json.loads(request.GET.get('datasets', 1))
-    field = {'id', 'embargo', 'title', 'version', 'citation', 'abstract', 'variable__name', 'variable__symbol',
-             'variable__unit__symbol', 'variable__keyword__value',
-             'datasource__datatype__name', 'datasource__temporal_scale__resolution',
-             'datasource__temporal_scale__observation_start', 'datasource__temporal_scale__observation_end',
-             'datasource__spatial_scale__extent', 'license__short_title', 'license__title'}
-    if datasets:
-        entries_list = Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
+
+    def get(self, request):
+        """
+        Handles GET requests to paginate entries.
+
+        :param request: HTTP request object
+        :return: HttpResponse with rendered 'entrieslist.html' template
+        """
+        datasets = json.loads(request.GET.get('datasets', '[]'))
+        field = {
+            'id', 'uuid', 'embargo', 'title', 'version', 'citation', 'abstract',
+            'variable__name', 'variable__symbol', 'variable__unit__symbol',
+            'variable__keyword__value', 'datasource__datatype__name',
+            'datasource__temporal_scale__resolution', 'datasource__temporal_scale__observation_start',
+            'datasource__temporal_scale__observation_end', 'datasource__spatial_scale__extent',
+            'license__short_title', 'license__title'
+        }
+
+        entries_list = self.get_entries_list(datasets, field)
+        accessible_ids = self.get_accessible_ids(request, datasets) if datasets else []
+
+        owndata = request.session.get('datasets', None)
+        entriespage = self.paginate_entries(request, entries_list, 5)
+
+        return render(request, 'vfw_home/entrieslist.html', {
+            'entries': entriespage,
+            'ownData': owndata,
+            'accessible_ids': accessible_ids
+        })
+
+    def get_entries_list(self, datasets, field):
+        """
+        Retrieve the list of entries based on the provided datasets and fields.
+
+        :param datasets: List of dataset IDs
+        :param field: Set of fields to retrieve
+        :return: QuerySet of entries
+        """
+        if datasets:
+            return Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
+        return Entries.objects.values(*field).order_by('title')
+
+    def get_accessible_ids(self, request, datasets):
+        """
+        Get the accessible dataset IDs for the user.
+
+        :param request: HTTP request object
+        :param datasets: List of dataset IDs
+        :return: List of accessible dataset IDs
+        """
         accessible_data = get_accessible_data(request, datasets)
-        error_ids = accessible_data['blocked']
-        accessible_ids = accessible_data['open']
-    elif len(datasets) == 0:
-        entries_list = []
-    else:
-        entries_list = Entries.objects.values(*field).order_by('title')
-    try:
-        owndata = request.session['datasets']
-    except KeyError:
-        owndata = None
+        return accessible_data.get('open', [])
 
-    entriespage = get_paginatorpage(request.GET.get('page', 1), Paginator(entries_list, 5))
+    def paginate_entries(self, request, entries_list, per_page):
+        """
+        Paginate the entries list.
 
-    return render(request, 'vfw_home/entrieslist.html', {'entries': entriespage,
-                                                         'ownData': owndata,
-                                                         'accessible_ids': accessible_ids})
+        :param request: HTTP request object
+        :param entries_list: List of entries to paginate
+        :param per_page: Number of entries per page
+        :return: Page object with paginated entries
+        """
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(entries_list, per_page)
+        return paginator.get_page(page_number)
 
 
-def advanced_filter(request):
-    selection = Entries.objects.all().distinct('entry_id')
-    advfilter = NMPersonsFilter(request.GET, queryset=selection)
-    selection = advfilter.qs
+class Delineator(View):
 
-    context = {'advFilter': advfilter, 'selection': selection}
-    return render(request, 'vfw_home/advanced_filter.html', context)
+    @staticmethod
+    def get(request, catchout):
+        catchment = {'error': 'Neither catchout nor catchStartID is defined to Delineate a catchment.'}
+        if "catchout=" in catchout:
+            coords = {
+                'lat': [catchout.split("catchout=")[2]],
+                'lng': [catchout.split("catchout=")[1][:-1]],
+            }
+            # validate input data:
+            if not is_coord(coords['lat'][0], 'lat') or not is_coord(coords['lng'][0], 'lon'):
+                logger.error(f'Wrong coordinates from client: ({coords}). Improve coordinate handling on client')
+                return {'Error': 'Error in Coordinates.'}
+
+            catchment = delineate(coords=coords)
+
+        elif "catchStartID=" in catchout:
+            start_id = int(catchout.split("catchStartID=")[1])
+            catchment = delineate(terminal_comid=start_id, precise=True)
+
+        else:
+            # print(f'unknown input for delineator: {catchout}')
+            logger.error(f'unknown input for delineator: {catchout}')
+
+        if 'error' in catchment:
+            print('Problems in delineation tool: ', catchment['error'])
+            # logger.error('Problems in delineation tool: ', catchment['error'])
+
+        return JsonResponse(catchment)
+
+
+
+class AdvancedFilterView(View):
+    """
+    View to handle advanced filtering of entries.
+    """
+
+    def get(self, request):
+        # Initial query to get all entries with distinct entry_id
+        selection = Entries.objects.all().distinct('entry_id')
+
+        # Apply the advanced filter based on GET parameters
+        advfilter = NMPersonsFilter(request.GET, queryset=selection)
+        selection = advfilter.qs
+
+        # Prepare context data for the template
+        context = {
+            'advFilter': advfilter,
+            'selection': selection
+        }
+
+        # Render the template with the context data
+        return render(request, 'vfw_home/advanced_filter.html', context)
 
 
 def quick_filter_defaults(request):
+    """
+    Function to create default html for the quick filter.
+    :param request:
+    :return:
+    """
     total = Entries.objects.exclude(Q(embargo=True) & Q(embargo_end__gte=timezone.now())).count()
 
-    quickfilter = QuickFilterForm()
-    more = QuickFilterForm.More()
+    quickfilter = QuickFilterForm()  # standard of django is a required attribute for all forms.
+    more = QuickFilterForm.More()  # you can remove the required with use_required_attribute=False
     selection = []
     return {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
 
@@ -866,56 +1082,193 @@ class QuickFilter(View):
 
 
 class QuickFilterResults(View):
+    """
+    When the user selects something on the map or in the quick filter, here the result is produced.
+    """
 
     @staticmethod
-    def get(request, selection):
+    def post(request, selection):
 
-        simple_queries = {'variables': 'variable__name__in',
-                          'institution': 'nmpersonsentries__person__organisation_name__in',
-                          'project': 'nmentrygroups__group__type__name__in'}
+        # create query according to selection
+        try:
 
+            selection_query = QueryDict(selection)
+            simple_queries = {
+                'variables': 'variable__name__in',
+                'institution': 'nmpersonsentries__person__organisation_name__in',
+                'project': 'nmentrygroups__group__type__name__in'
+            }
+
+            filter_dict, filter_area, filter_area_or, fair_query = QuickFilterResults.initialize_filters()
+
+
+            for key in selection_query:
+                QuickFilterResults.handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request)
+
+            query = QuickFilterResults.build_query(filter_dict, filter_area, filter_area_or, fair_query)
+
+            total_results = query.count()
+
+            data_ext, layertype = QuickFilterResults.get_data_extent(query)
+
+            response_data = QuickFilterResults.prepare_response_data(request, query, total_results, data_ext, layertype)
+
+        except Exception as e:
+
+            logger.debug(f'Unable to prepare your selection: {e}')
+            response_data = QuickFilterResults.prepare_error_response(selection)
+            print('response_data 2 : ', e)
+
+        return JsonResponse(response_data)
+
+
+    @staticmethod
+    def initialize_filters():
         filter_dict = {}
+        filter_area = {}
+        filter_area_or = {}
         fair_query = Q(embargo=True) & Q(embargo_end__gte=timezone.now())
+        return filter_dict, filter_area, filter_area_or, fair_query
 
-        for i in QueryDict(selection):
-            if i in simple_queries:
-                filter_dict[simple_queries[i]] = QueryDict(selection).getlist(i)
-            elif i == 'date':
-                filter_dict['datasource__temporal_scale__observation_end__gte'] = \
-                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[0], "%Y-%m-%d"))
-                filter_dict['datasource__temporal_scale__observation_start__lte'] = \
-                    make_aware(datetime.datetime.strptime(QueryDict(selection).getlist('date')[1], "%Y-%m-%d"))
-            elif i == 'is_FAIR' and QueryDict(selection).getlist(i) == ['false']:
-                # TODO: figure out how to avoid the following useless query
-                #  (this exists because in exclude query is always some input needed)
-                fair_query = Q(embargo=True) & Q(embargo=False)
-            elif i == 'draw':
-                values = QueryDict(selection).getlist(i)[0]
-                it = iter([float(item) for item in values.split(',')])
-                poly = Polygon(tuple(zip(it, it)), srid=4326)
-                filter_dict['location__intersects'] = poly
 
-        query = Entries.objects.filter(**filter_dict).exclude(fair_query).only('id')
-        total_results = query.count()
+    @staticmethod
+    def add_fair_filters(key, selection_query, fair_query ):
+        if selection_query.getlist(key) == ['false']:
+            fair_query = Q(embargo=True) & Q(embargo=False)
 
-        # From here collect data to update map:
-        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]  # an arbitrarily zoom location for NO RESULT
+
+    @staticmethod
+    def add_date_filters(selection_query, filter_dict):
+        date_end = make_aware(datetime.datetime.strptime(selection_query.getlist('date')[0], "%Y-%m-%d"))
+        date_start = make_aware(datetime.datetime.strptime(selection_query.getlist('date')[1], "%Y-%m-%d"))
+
+        filter_dict['datasource__temporal_scale__observation_end__gte'] = date_end
+        filter_dict['datasource__temporal_scale__observation_start__lte'] = date_start
+
+    @staticmethod
+    def add_draw_filters(key, selection_query, filter_area, filter_area_or  ):
+        values = selection_query.getlist(key)[0]
+        coordinates = iter([float(item) for item in values.split(',')])
+        poly = Polygon(tuple(zip(coordinates, coordinates)), srid=4326)
+        filter_area['location__intersects'] = poly
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
+
+    @staticmethod
+    def add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or):
+
+        catchment = delineate(terminal_comid=selection_query.getlist(key)[0], precise=True)
+        poly = GEOSGeometry(catchment['wkt'])
+        filter_area['location__intersects'] = poly
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
+
+    @staticmethod
+    def add_catchout_filters(key, selection_query, filter_area, filter_area_or, request):
+        coords = json.loads(request.POST.get('coords'))
+        if coords and len(coords) == 1 and len(coords[0]) > 3:
+            catchment = tuple(tuple(x) for x in coords[0])
+            poly = Polygon(catchment, srid=4326)
+        elif coords and len(coords) == 1 and len(coords[0]) < 4:
+            raise 'Error: Not enough coordinates. Not a valid polygon.'
+        elif coords and len(coords) < 4:
+            raise 'Error: Not enough coordinates. Not a valid polygon.'
+        elif coords:
+            catchment = tuple(tuple(x) for x in coords)
+            poly = Polygon(catchment, srid=4326)
+        else:
+            catchment = delineate(coords={'lng': [selection_query.getlist(key)[0]],
+                                                'lat': [selection_query.getlist(key)[1]]}, precise=True)
+            poly = GEOSGeometry(catchment['wkt'])
+        filter_area['location__intersects'] = poly  #
+        filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
+
+    @staticmethod
+    def handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request):
+        if key in simple_queries:
+            filter_dict[simple_queries[key]] = selection_query.getlist(key)
+        elif key == 'date':
+            QuickFilterResults.add_date_filters(selection_query, filter_dict)
+        elif key == 'is_FAIR':
+            QuickFilterResults.add_fair_filters(key, selection_query, fair_query)
+        elif key == 'draw':
+            QuickFilterResults.add_draw_filters(key, selection_query, filter_area, filter_area_or)
+        elif key == 'catchStartID':
+            QuickFilterResults.add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or)
+        elif key == 'catchout':
+            QuickFilterResults.add_catchout_filters(key, selection_query, filter_area, filter_area_or, request)
+
+
+    @staticmethod
+    def build_query(filter_dict, filter_area, filter_area_or, fair_query):
+        return Entries.objects.filter(Q(**filter_dict), Q(**filter_area) | Q(**filter_area_or)).exclude(fair_query).only('id')
+
+    @staticmethod
+    def get_data_extent(query):
+        data_ext = [7.574234, 47.581351, 10.351323, 49.625873]
+        layertype = "point"
         if query:
-            data_ext = list(query.aggregate(Extent('location'))['location__extent'])
+            data_ext = QuickFilterResults.calculate_extent(query, layertype)
+        return data_ext, layertype
+
+    @staticmethod
+    def calculate_extent(query, layertype):
+        data_ext = None
+        entry_ext = query.aggregate(Extent('location'))['location__extent']
+        if entry_ext:
+            data_ext = list(entry_ext)
+        else:
+            layertype = "areal_data"
+            spatial_ext = query.aggregate(
+                Extent('datasource__spatial_scale__extent'))['datasource__spatial_scale__extent__extent']
+            if spatial_ext:
+                data_ext = list(spatial_ext)
+            else:
+                geom_ext = query.aggregate(Extent('geom'))['geom__extent']
+                if geom_ext:
+                    data_ext = list(geom_ext)
+
+        return data_ext
+
+    @staticmethod
+    def prepare_response_data(request, query, total_results, data_ext, layertype):
+        #print(request.user)
 
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
-        if get_layer(id_layer, HomeView.store, HomeView.workspace):
-            delete_layer(id_layer, HomeView.store, HomeView.workspace)
+        areal_id_layer = 'areal_ID_layer' + str(request.user)
+        QuickFilterResults.delete_geoserver_layer(id_layer)
+        QuickFilterResults.delete_geoserver_layer(areal_id_layer)
 
         if IDs:
-            create_layer(request, id_layer, HomeView.store, HomeView.workspace, str(IDs)[1:-1])
-        else:
-            # TODO: Selection with no result has to be handled properly
-            pass
+            try:
+                create_layer(request, id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="point")
+                create_layer(request, areal_id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="areal_data")
+            except Exception as e:
+                logger.debug(f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}')
 
-        return JsonResponse({'selection': selection, 'total': total_results,
-                             'ID_layer': id_layer, 'dataExt': data_ext, 'IDs': IDs})
+        return {
+            'selection': request.POST.get('selection', ''),
+            'total': total_results,
+            'areal_ID_layer': areal_id_layer,
+            'ID_layer': id_layer,
+            'dataExt': data_ext,
+            'IDs': IDs
+        }
+
+    @staticmethod
+    def prepare_error_response(selection):
+        return {
+            'selection': selection,
+            'total': 0,
+            'areal_ID_layer': '',
+            'ID_layer': '',
+            'dataExt': [7.574234, 47.581351, 10.351323, 49.625873],
+            'IDs': []
+        }
+
+    @staticmethod
+    def delete_geoserver_layer(name):
+        if has_layer(name, HomeView.STORE, HomeView.WORKSPACE):
+            delete_layer(name, HomeView.STORE, HomeView.WORKSPACE)
 
 
 def error_404_view(request, exception):
@@ -931,12 +1284,14 @@ class DownloadView(View):
     def get(request, name):
 
         if name == 'vfwVM':
-            file_path = '/data/'
+            file_path = '/data/VBox_VFORWaTer.zip'
             if Path(file_path).exists():
                 with open(file_path, 'rb') as fh:
                     response = FileResponse(open(file_path, 'rb'))
                     return response
             else:
+                print('no file at: ', file_path)
                 error_404_view(request, 'not available')
         else:
             error_404_view(request, 'not available')
+

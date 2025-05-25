@@ -3,7 +3,6 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 <head>
-    {#  <script src="{% static 'vfw_home/js/sidebar.js' %}" type="text/javascript"></script>#}
     <style>
         .w3-sidenav {
             margin-top: 37px;
@@ -11,15 +10,7 @@
     </style>
 </head>
 
-<script>
-    {#const SERVER = "{{ VFW_SERVER }}";#}
-    {#const MAP_SERVER = "{{ MAP_SERVER }}";#}
-    {#const DEMO_VAR = "{{ DEMO_VAR }}"#}
-</script>
-
 <body onload="vfw.sidebar.show_data(), vfw.workspace.workflow.draw_workflow()">
-<!-- TODO: check if still in use. If not delete that parm -->
-{#<param id="workdata" value="{{ workspaceData }}"></param> <!-- param to bridge data from view to js; cannot find any#}
   usage => can it be deleited? -->
 <!--   Sidenav/menu -->
 <nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav">
@@ -33,7 +24,6 @@
        title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
     <hr style="margin-bottom:0px;">
 
-    {#  TODO: The following block is useless here, though needed to avoid errors from static/sidebar.js#}
     <div hidden>
         {% block data %}
             {% include 'vfw_home/select_data.html' %}
@@ -53,7 +43,6 @@
         </b>
     </ul>
     <hr>
-{#    <hr style="margin-bottom:75%;">#}
 
     <div class="w3-container w3-light-turquoise">
         <b title={% trans "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available." %}>{% trans "Result store" %}</b>
@@ -65,16 +54,7 @@
                    title="{% trans "Remove all results from result store" %}">
         </b>
     </ul>
-    {#<div id="w3popup" class="w3popup">#}
-    {#    <span class="popuptext" id="popuptext"></span>#}
-    {#    </div>#}
 </nav>
-{% comment %}<div id="metapopup" class="popup">
-            <div class="popuptext" id="popuptext">TestTestTest
-            </div>
-{#            <a href="#" id="popup-closer" class="ol-popup-closer"></a>#}
-    </div>{% endcomment %}
-{#context menu in sidebar.js#}
 
 <nav id="context-menu" class="context-menu">
     <ul class="context-menu__items">
@@ -99,7 +79,6 @@
             <a href="#" class="context-menu__link" data-action="Downloadxml"><i
                     class="fa fa-download"></i>{% trans " Download metadata" %} (.xml)</a>
         </li>
-        {#        TODO: Find data format to download data and metadata as well - maybe extent shp#}
         <li class="context-menu__item">
             <a href="#" class="context-menu__link" data-action="Remove"><i
                     class="fa fa-eraser"></i>{% trans " Remove dataset" %}</a>
@@ -133,7 +112,6 @@
 </nav>
 
 <nav id="loader-popup" class="mod-popup w3-center">
-    {#    TODO: figure out how to aport download, then there is no need to hide the closer#}
     <a href="#" id="pop-closer" class="mod-popup-closer w3-hide"></a>
     <div id="pop-content-side">
     </div>

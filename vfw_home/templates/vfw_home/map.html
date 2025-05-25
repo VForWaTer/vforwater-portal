@@ -1,67 +1,69 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
 {% load static %}
 <!--  ol.css is OpenLayers which is to render geo data in a webbrowser -->
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
 <head>
-  {#    TODO: Don't use web adresses for production#}
-
   <!-- V-FOR-WaTer -->
-{#  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>#}
   <link rel="stylesheet" type="text/css" href="{% static 'vfw_home/vcss/map.css' %}">
-	<script src="{% static 'vfw_home/js/map.js' %}" type="text/javascript"></script>
-{#	<script src="{% static 'vfw_home/js/map_new.js' %}" type="text/javascript"></script>#}
-
-{#    TODO: menu_objects should not be loaded in map.html. Why isn't it working in select_data.html? Time of loading?#}
-	<script src="{% static 'vfw_home/js/menu_objects.js' %}" type="text/javascript"></script>
 </head>
 
-{#TODO: Don't like "show_data()" in map.html, but 2 onload in app don't work. Any better solution?#}
-<body onload="vfw.map.create_map(); vfw.sidebar.show_data(); get_quick_selection(); update_quickfilter()">
-	<!-- <body class="w3-light-grey" onload="vfw.map.create_map()">  -->
+<body>
 	<div id="map" class="map"></div>
 
-    <!--TODO: Was ist besser um Werte an js zu übergeben? <param> oder <script>? param muss direkt abgerufen werden, script ist für alle zugänglich)-->
-	<param id="dataExt" value ="{{ dataExt }}"></param> <!-- param to bridge data from view to js  -->
-	<param id="data_layer" value ="{{ data_layer }}"></param> <!-- param to bridge data from view to js  -->
+{# collect variables from server for startup of map #}
+{{ dataExt|json_script:"dataExt" }}
+{{ data_layer|json_script:"data_layer" }}
+{{ areal_data_layer|json_script:"areal_data_layer" }}
+    <script>
+  vfw.var.DATA_EXT = JSON.parse(document.getElementById('dataExt').textContent);
+  vfw.var.DATA_LAYER_NAME = JSON.parse(document.getElementById('data_layer').textContent);
+  vfw.var.AREAL_DATA_LAYER_NAME = JSON.parse(document.getElementById('areal_data_layer').textContent);
+</script>
 
   <div class="w3-center" id="closed_drawfilter">
     {% trans "Open&#32drawing&#32panel&#32and&#32deactivate&#32doubleclick&#32zoom." as Open %}
-    <a href="javascript:void(0)" onclick=drawOnMapMenu(this); id="draw_toggle_plus" class="hover-white" title={{ Open }}
+    <a href="javascript:void(0)" onclick=vfw.map.func.drawOnMapMenu(this); id="draw_toggle_plus" class="hover-white" title={{ Open }}
       ><i class="map_icon fa fa-plus-square-o fa-fw"></i></a>
   </div>
 	<div class="w3-center" id="drawfilter" style="display:none">
-{#        <dl>#}
+    {% trans "Click&#32on&#32map&#32to&#32define&#32outlet&#32of&#32catchment&#32to&#32draw." as Draw_catchment %}
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32square.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_square %}
     {% trans "Click&#32on&#32map&#32to&#32draw&#32a&#32polygon.&#32Doubleclick&#32to&#32stop&#32drawing." as Draw_poly %}
     {% trans "Edit&#32drawing" as Edit %}
+    {% trans "Store&#32drawing&#32and&#32make&#32it&#32reusable&#32on&#32the&#32map&#32and&#32in&#32the&#32workspace&#32for&#32this&#32session." as Store %}
     {% trans "Remove&#32drawing" as Remove %}
-{#    {% trans "Exit&#32drawing&#32mode&#32and&#32reactivate&#32doubleclick&#32zoom." as Exit %}#}
     {% trans "Close&#32drawing&#32panel&#32and&#32reactivate&#32doubleclick&#32zoom." as Close %}
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="hover-white" title={{ Close }}>
-      <i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_square" class="draw-hover" title={{ Draw_square }}
-      value="Square"><i class="map_icon fa fa-square-o fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_polygon" class="draw-hover" title={{ Draw_poly }}
-      value="Polygon"><i class="map_icon fa fa-pencil fa-fw"></i></a>
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="modify_polygon" class="draw-hover" title={{ Edit }}>
-      <i class="map_icon fa fa-edit fa-fw"></i></a>
-    {#		  <a href="javascript:void(0)" id="select_polygon" class="draw-hover" title="Select Drawing"><i class="fa fa-hand-pointer-o fa-fw"></i></a>#}
-    <a href="javascript:void(0)" onclick=toggle_draw(this); id="remove_polygon" class="draw-hover" title={{ Remove }}>
-      <i class="map_icon fa fa-trash fa-fw"></i></a>
-{#    <a href="javascript:void(0)" onclick=toggle_draw(this); id="draw_close" class="w3-hover-white" title={{ Exit }}><i class="map_icon fa fa-remove fa-fw"></i></a>#}
-{#            </dl>#}
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_close" class="hover-white"
+       title={{ Close }}><i class="map_icon fa fa-minus-square-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_catchment" class="draw-hover"
+       title={{ Draw_catchment }} value="Catchment"><i class="map_icon fa fa-hand-pointer-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_square" class="draw-hover"
+       title={{ Draw_square }} value="Square"><i class="map_icon fa fa-square-o fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="draw_polygon" class="draw-hover"
+       title={{ Draw_poly }} value="Polygon"><i class="map_icon fa fa-pencil fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="modify_polygon" class="draw-hover"
+       title={{ Edit }}><i class="map_icon fa fa-edit fa-fw"></i></a>
+    <a href="javascript:void(0)" id="store_polygon" class="draw-hover"
+       title={{ Store }}><i class="map_icon fa fa-shopping-cart fa-fw"></i></a>
+    <a href="javascript:void(0)" onclick=vfw.map.func.toggleDrawBackground(this); id="remove_polygon" class="draw-hover"
+       title={{ Remove }}><i class="map_icon fa fa-trash fa-fw"></i></a>
 	</div>
-		{# <input type="button" onclick="toggleLayer(vectorLayer)" value="Toggle Visibility of Basiseinzugsgebiete">&emsp; #}
 
 </body>
 
 
 <script>
-   // sample_locations = '{{ sample_locations }}';
    function isStorageSupported(globalObject, storageType) {
    try {
-      const storage = globalObject[storageType];
+      let storage = globalObject[storageType];
       storage.setItem("test", "test");
       storage.removeItem("test");
       return true;
@@ -75,50 +77,67 @@ if (!isStorageSupported(window, "localStorage")) {
     "private (incognito) mode, Android apps that use WebView, or you might have turned off JavaScript.");
 }
 
-    /** add clickEvent to close button */
-    let closst = document.getElementById('draw_close');
-    closst.addEventListener('click', function () {
-        removeInteractions()
-        drawfilter_close()
-    });
-   // add clickEvent to draw square button
-    let drwsqrst = document.getElementById('draw_square');
-    drwsqrst.addEventListener('click', function () {
-        removeInteractions();
-        olmap.addInteraction(drawSquare);
-        /* Deactivate select and delete any existing polygons.
+ /**
+  * Adds event listeners to the menu buttons in the VFW application map. Only used on load of page.
+  */
+vfw.map.html.menuButtonsListeners = function () {
+  /** add clickEvent to close button */
+  let closst = document.getElementById('draw_close');
+  closst.addEventListener('click', function () {
+    vfw.map.func.removeDrawInteractions()
+    vfw.map.func.toggleDrawFilter()
+  });
+  /** add clickEvent to auto-draw catchment button */
+  let drwcatch = document.getElementById('draw_catchment');
+  drwcatch.addEventListener('click', function () {
+    vfw.map.func.removeDrawInteractions();
+    vfw.map.olmap.addInteraction(vfw.map.control.drawCatchmentOutlet);
+    /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
-    });
-        // add clickEvent to draw polygon button
-    let drwst = document.getElementById('draw_polygon');
-    drwst.addEventListener('click', function () {
-        removeInteractions()
-        olmap.addInteraction(draw);
-        /* Deactivate select and delete any existing polygons.
+  });
+  /** add clickEvent to draw square button */
+  let drwsqrst = document.getElementById('draw_square');
+  drwsqrst.addEventListener('click', function () {
+    vfw.map.func.removeDrawInteractions();
+    vfw.map.olmap.addInteraction(vfw.map.control.drawSquare);
+    /* Deactivate select and delete any existing polygons.
             Only one polygon drawn at a time. */
-    });
-    /** add clickEvent to modify button */
-    let modst = document.getElementById('modify_polygon');
-    modst.addEventListener('click', function () {
-        removeInteractions()
-        olmap.addInteraction(modify);
-    });
-        /** add clickEvent to remove button */
-    let delst = document.getElementById('remove_polygon');
-    delst.addEventListener('click', function () {
-
-      {#selectionLayerSource.clear();#}
-      {#selectedFeatures.clear();#}
-
-      {#source.clear();#}
-      {#select.setActive(false);#}
-      resetDraw();
-    });
-
+  });
+  /** add clickEvent to draw polygon button */
+  let drwst = document.getElementById('draw_polygon');
+  drwst.addEventListener('click', function () {
+    vfw.map.func.removeDrawInteractions()
+    vfw.map.olmap.addInteraction(vfw.map.control.draw);
+  });
+  /** add clickEvent to modify button */
+  let modst = document.getElementById('modify_polygon');
+  modst.addEventListener('click', function () {
+    vfw.map.func.removeDrawInteractions()
+    vfw.map.olmap.addInteraction(vfw.map.control.modify);
+  });
+  /** add clickEvent to "store in data store" button */
+  let storst = document.getElementById('store_polygon');
+  storst.addEventListener('click', function () {
+    vfw.map.func.removeDrawInteractions()
+    const baseName = 'Map drawing';
+    // find used names for map drawings
+    let usedNames = new Set();
+    for (const [key, value] of Object.entries(vfw.datasets.selectObjects)) {
+      usedNames.add(value.name)
+    }
+    // loop used names until finding a new (unique) name
+    let newName = baseName;
+    for (let i = 1; usedNames.has(newName); i++) {
+      newName = `${baseName} ${i}`;
+    }
+    vfw.sidebar.addSelectStoreButton({'name': newName});
+    {#vfw.map.olmap.addInteraction(modify);#}
+  });
+  /** add clickEvent to remove button */
+  let delst = document.getElementById('remove_polygon');
+  delst.addEventListener('click', function () {
+    vfw.map.func.resetDraw();
+  });
+}
+vfw.map.html.menuButtonsListeners();
 </script>
-{% comment %}<script type="text/javascript">
-  {#let map = new olMap()#}
-  {#let wfsPointSource;#}
-  {#map.map#}
-  vfw.map.create_map()
-</script>{% endcomment %}

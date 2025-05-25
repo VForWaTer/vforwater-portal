@@ -64,15 +64,6 @@
     </div>
   </div>
 
-<div>
-  <p id="demo2"></p>
-  <script>
-    var output =  "{{image|safe}}"
-          document.getElementById("demo2").innerHTML = output;
-  </script>
-  </div>
-
-
   <li style="color:#8A2BE2">Process Outputs: {{ outputs }}</li>
   {% if output_reference %}<li style="color:#8A2BE2">Process Output Reference: <a href="{{ output_reference }}">{{ output_reference }}</a></li>{% endif %}
   <li style="color:#8A2BE2">Process Execution Status: {{ execution_status }}</li>

@@ -1,11 +1,10 @@
 from django.urls import path
-# from author_manage import views
 from django.urls.conf import re_path
 from author_manage.admin import resource_manager
 from author_manage.admin import user_manager
 from author_manage.views import *
 
-# for security reasons all urls are accessible only for logged in users
+# for security reasons all urls are accessible only for logged-in users
 
 app_name = 'author_manage'  # jm
 

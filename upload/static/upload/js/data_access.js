@@ -1,10 +1,8 @@
 $(function() {
-	console.log('hier 1')
 	clearURL = "{% url 'upload:clear_database' %}";
 
 	/* 1. OPEN THE FILE EXPLORER WINDOW */
 	$(".js-upload-files").click(function() {
-			console.log('hier 2')
 		$("#fileupload").click();
 	});
 

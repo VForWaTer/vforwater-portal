@@ -9,17 +9,17 @@ def setUpUsers():
     @rtype:
     """
     test_admin = User.objects.create(username='admin')
-    test_admin.set_password('123456')
+    test_admin.set_password('12345678')
     test_admin.is_staff = True
     test_admin.is_admin = True
     test_admin.save()
 
     test_user = User.objects.create(username='user1', first_name='John', last_name='Smith')
-    test_user.set_password('123456')
+    test_user.set_password('12345678')
     test_user.save()
 
     test_user2 = User.objects.create(username='user2')
-    test_user2.set_password('123456')
+    test_user2.set_password('12345678')
     test_user2.save()
 
     return {'test_admin': test_admin, 'test_user1': test_user, 'test_user2': test_user2}
@@ -111,7 +111,7 @@ class TestUserData(TestCase):
         @rtype:
         """
         self.client = Client()
-        self.client.login(username='user1', password='123456')
+        self.client.login(username='user1', password='12345678')
 
     @classmethod
     def tearDownClass(cls):
@@ -175,7 +175,7 @@ class TestResourcesData(TestCase):
         """"""
 
         self.client = Client()
-        self.client.login(username='user1', password='123456')
+        self.client.login(username='user1', password='12345678')
 
     @classmethod
     def tearDownClass(cls):
@@ -263,7 +263,7 @@ class TestRequestsData(TestCase):
     def test_create_access_request(self):
         """"""
 
-        self.client.login(username='user1', password='123456')
+        self.client.login(username='user1', password='12345678')
         self.client.get('/resources-overview/')
         resources = Resource.objects.all()
         resources_can_access = CustomUser.objects.get_by_natural_key('user1').reader.all()
@@ -281,7 +281,7 @@ class TestRequestsData(TestCase):
         @return:
         @rtype:
         """
-        self.client.login(username='user2', password='123456')
+        self.client.login(username='user2', password='12345678')
         response = self.client.get('/resources-overview/')
         requested_resources = response.context['requested_resources']
 
@@ -296,7 +296,7 @@ class TestRequestsData(TestCase):
         @return:
         @rtype:
         """
-        self.client.login(username='user1', password='123456')
+        self.client.login(username='user1', password='12345678')
         user = Owner.objects.get_by_natural_key('user1')
         response = self.client.get('/profile/my-resources/')
         resources = response.context['resource_list']
@@ -312,7 +312,7 @@ class TestRequestsData(TestCase):
         @return:
         @rtype:
         """
-        self.client.login(username='user2', password='123456')
+        self.client.login(username='user2', password='12345678')
         response = self.client.get('/profile/my-resources/')
         requested_resources = response.context['deletion_requested']
 
@@ -327,7 +327,7 @@ class TestRequestsData(TestCase):
         @return:
         @rtype:
         """
-        self.client.login(username='user1', password='123456')
+        self.client.login(username='user1', password='12345678')
         response = self.client.get('/profile/')
         requests = response.context['requests_list']
 
@@ -348,7 +348,7 @@ class TestRequestsData(TestCase):
         @return:
         @rtype:
         """
-        self.client.login(username='user1', password='123456')
+        self.client.login(username='user1', password='12345678')
         response = self.client.get('/profile/')
         requests = response.context['requests_list']
 
@@ -369,7 +369,7 @@ class TestRequestsData(TestCase):
         @return:
         @rtype:
         """
-        self.client.login(username='admin', password='123456')
+        self.client.login(username='admin', password='12345678')
         response=self.client.get('/profile/')
         requests = response.context['requests_list']
 
@@ -388,7 +388,7 @@ class TestRequestsData(TestCase):
         @return:
         @rtype:
         """
-        self.client.login(username='admin', password='123456')
+        self.client.login(username='admin', password='12345678')
         response = self.client.get('/profile/')
         requests = response.context['requests_list']
 
