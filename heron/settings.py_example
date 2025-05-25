@@ -82,7 +82,8 @@ SECRET_GEOSERVER = "'admin', 'geoserver'"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+
+ALLOWED_HOSTS = []
 
 # Logging
 LOGGING = {
@@ -101,6 +102,7 @@ LOGGING = {
             'formatter': 'verbose'
         },
     },
+
     'loggers': {
         'heron': {
             'handlers': ['file','console'],
@@ -218,6 +220,13 @@ DATABASES = {
 
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "TIMEOUT": 60*60,   # time out in seconds
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -272,8 +281,8 @@ MEDIA_ROOT = Path(BASE_DIR) / 'media'
 LOGIN_URL = 'vfw_home:login'
 LOGIN_REDIRECT_URL = 'vfw_home:home'
 LOGOUT_REDIRECT_URL = 'vfw_home:home'
-LOGIN_SUCCESS_VIEW = VFW_SERVER + '/home/rsp/login/success'
-LOGIN_FAILURE_VIEW = VFW_SERVER + '/home/failedlogin'
+LOGIN_SUCCESS_VIEW = VFW_SERVER + '/vfw_home/rsp/login/success'
+LOGIN_FAILURE_VIEW = VFW_SERVER + '/vfw_home'
 
 # Authentication configuration
 AUTHENTICATION_BACKENDS = (
@@ -296,4 +305,4 @@ wps_log.addHandler(filehandler)
 # For django_crontab
 # END OF settings from workflow app
 
-max_size_preview_plot = 50000
+MAX_SIZE_PREVIEW_PLOT = 50000
