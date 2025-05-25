@@ -44,7 +44,6 @@ def get_user_embargo_resources(request, user, **kwargs):
     request.session['datasets'] = list(datasets.values_list('dataEntry_id', flat=True))
 
 
-# TODO: document
 @method_decorator(login_required, name='dispatch')
 class HomeView(generic.View):
     """
@@ -200,7 +199,6 @@ class SendDeletionRequestView(generic.View):
         if request.user.is_staff or DeletionRequest.objects.filter(resource=res, sender=request.user).exists():
             logger.info("User %s tried to inconsistently send a deletion request for resource '%s' \n" %
                         (request.user.username, res.name))
-            # return redirect("/profile/my-resources")
             return redirect('author_manage:my-resources')
 
         # creates a deletion request with the given description

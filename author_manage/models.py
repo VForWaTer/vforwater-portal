@@ -1,26 +1,15 @@
-# from PIL.PngImagePlugin import _idat
 from django.conf import settings
 from django.contrib.auth import user_logged_in
 from django.contrib.auth.models import User, AbstractUser
 from django.db import models
-# from django.contrib.auth.models import User as CustomUser, AbstractUser
-# from django.contrib.auth.models import User as Owner
-# from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from datetime import datetime
-# from django.core.mail.message import EmailMessage
-# import logging
-# from django.template.loader import render_to_string
-# from django.core.validators import MaxLengthValidator
-
-# from wps_workflow.models import Workflow, Process
-
-# from vfw_home.models import TblMeta
-# from pandas.tests.arithmetic.conftest import id_func
-
 from vfw_home.models import Entries, Persons, NmPersonsEntries
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 class CustomUser(User):  # == Reader in Resource
     class Meta:
@@ -45,9 +34,6 @@ class Owner(Maintainer):
 # corresponds to the table in the database storing all information about a resource
 class Resource(models.Model):
     type = models.CharField(max_length=50, default='')
-    # name = models.CharField(max_length=150, default='')
-    # description = models.CharField(max_length=250, default='')
-    # creationDate = models.DateTimeField(default=datetime.now, blank=True)
     readers = models.ManyToManyField(CustomUser, related_name='reader')
     maintainers = models.ManyToManyField(Maintainer, related_name='maintainer')
     owners = models.ManyToManyField(Owner, related_name='owner')
@@ -60,7 +46,6 @@ class Resource(models.Model):
 
 class Request(models.Model):
     sender = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    # sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     creationDate = models.DateTimeField(default=datetime.now, blank=True)
     resource = models.ForeignKey(Resource, on_delete=models.CASCADE)
     description = models.CharField(max_length=250, default='')
@@ -90,9 +75,7 @@ class DeletionRequest(Request):
 class Profile(models.Model):
     checkedAssociation = models.BooleanField(default=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-#     user = models.OneToOneField(User, on_delete=models.CASCADE)
     metacatalogPerson = models.ForeignKey(Persons, models.SET_NULL, blank=True, null=True)
-#     resources = models.ManyToManyField(Resource, related_name='profile_resources')
 
     def __str__(self):
         return '{} <ID={}>'.format(self.user, self.id)
@@ -100,10 +83,9 @@ class Profile(models.Model):
 
 def __assign_data(user_obj, user_profile):
     """
-
-    :param user_obj:
-    :param person_obj:
-    :param user_profile:
+    Associate the user with data entries in metacatalog based on matching Persons.
+    :param user_obj: User object to be associated.
+    :param user_profile: Profile object associated with the User.
     """
     lookup = dict.fromkeys(['author', 'custodian', 'distributor', 'originator', 'owner', 'pointOfContact',
                             'principalInvestigator', 'resourceProvider', 'editor', 'rightsHolder'], 'owner')
@@ -115,42 +97,51 @@ def __assign_data(user_obj, user_profile):
     first_name = user_obj.first_name
 
     try:
-        person_obj = Persons.objects.filter(first_name=first_name, last_name=last_name)
-        matching_persons = person_obj.values_list('pk', flat=True)
-        for idx, person in enumerate(matching_persons):
-            if Profile.objects.filter(metacatalogPerson_id=person).exists():
-                print('\033[91mAsk user if (s)he is the same as already linked with!\033[0m')
-            else:
-                # associate user with entry person in profile:
-                user_profile.metacatalogPerson = person_obj[idx]
-                user_profile.save()
+        # Retrieve all matching Person objects
+        person_matches = Persons.objects.filter(first_name=first_name, last_name=last_name)
+        if person_matches.exists():
+            if person_matches.count() > 1:
+                # Log a warning when multiple matches are found and choose the first match
+                logger.warning(f"Multiple persons found for user '{user_obj}'. Associating with the first match.")
+            
+            # Use the first matching person by default
+            person_obj = person_matches.first()
+            
+            # Check if this person is already linked with another profile
+            if Profile.objects.filter(metacatalogPerson=person_obj).exists():
+                logger.warning(f"The person '{person_obj}' is already linked to another profile.")
 
-        # set roles in author_manage for data of this person and create resources:
-        role_list = person_obj.values_list('nmpersonsentries__relationship_type__name', flat=True)
-        entry_list = person_obj.values_list('nmpersonsentries__entry_id', flat=True)
-        datatype_list = person_obj.values_list('nmpersonsentries__entry__datasource__datatype__name', flat=True)
-        for idx, role in enumerate(role_list):
-            user_role = lookup[role]
-            new_resource, created = Resource.objects.get_or_create(type=datatype_list[idx], link='/',
-                                                                   dataEntry_id=entry_list[idx])
-            if user_role == 'owner':
-                new_resource.owners.add(user_obj.id)
-            elif user_role == 'maintainer':
-                new_resource.maintainers.add(user_obj.id)
-            elif user_role == 'reader':
-                new_resource.readers.add(user_obj.id)
-            else:
-                print('\033[91mError in author_manage models: Unexpected user role!\033[0m')
-            new_resource.save()
-        # TODO: Implement something to ask user if (s)he is the user from person_obj!
-        #  Test with several users with same name.
-        print('\033[91mImplement something to ask user if (s)he is the user from person_obj!\033[0m')
-    except:
-        # no user to connect with
-        print('No user to connect entries with auth in metacatalog.')
-        pass
+            # Associate the user profile with this Person
+            user_profile.metacatalogPerson = person_obj
+            user_profile.save()
 
+            # Set roles in author_manage for data entries of this person
+            role_list = person_obj.nmpersonsentries_set.values_list('relationship_type__name', flat=True)
+            entry_list = person_obj.nmpersonsentries_set.values_list('entry_id', flat=True)
+            datatype_list = person_obj.nmpersonsentries_set.values_list('entry__datasource__datatype__name', flat=True)
+
+            for idx, role in enumerate(role_list):
+                user_role = lookup.get(role, 'reader')
+                new_resource, created = Resource.objects.get_or_create(
+                    type=datatype_list[idx], link='/', dataEntry_id=entry_list[idx]
+                )
+                # Assign role-based permissions to the user on the resource
+                if user_role == 'owner':
+                    new_resource.owners.add(user_obj)
+                elif user_role == 'maintainer':
+                    new_resource.maintainers.add(user_obj)
+                else:  # reader by default
+                    new_resource.readers.add(user_obj)
+                new_resource.save()
+
+        else:
+            logger.info(f"No persons found in metacatalog matching user '{user_obj}'.")
+    
+    except Exception as e:
+        logger.error(f"Failed to assign data for user '{user_obj}': {e}")
+    
     finally:
+        # Mark the profile's association as checked
         user_profile.checkedAssociation = True
         user_profile.save()
 
@@ -163,12 +154,8 @@ def __assign_person(user) -> object:
     try:
         # try to get a person with the same name as the users name:
         person_obj = Persons.objects.filter(first_name=first_name, last_name=last_name)
-        # TODO: what to do when there a several persons with this name?
         user_profile, created = Profile.objects.update_or_create(user=user_obj,
                                                                  defaults={'metacatalogPerson': person_obj},)
-        # TODO: what to do with a person without data? Check on every login if there is data, or do nothing
-        #  (in first case checkedAssociation is True, in second case do not fill checkedAssociation).
-        #  By not filling checkedAssociation the second case is implemented.
     except:
         # no person to connect with
         user_profile = Profile(user=user_obj)
@@ -192,12 +179,10 @@ def check_profile(sender, user: str, request, **kwargs):
         if user_profile.checkedAssociation:  # Profile should be filled, so there is nothing to do.
             pass
         elif user_profile.metacatalogPerson_id:  # no Association for data checked, so check if there is data now.
-            # TODO: implement this! __assign_data()
             __assign_data(user_obj, user_profile)
             pass
         else:  # only user in profile, so assign_person first
             __assign_data(user_obj, user_profile)
-            #     print('\033[91mYour user needs first and last name to associate user with data.\033[0m')
     else:  # there is no profile at all for this user
         user_profile = __assign_person(user)
         __assign_data(user_obj, user_profile)
