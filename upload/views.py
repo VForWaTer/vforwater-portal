@@ -9,9 +9,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from upload.forms import UploadForm, EntriesForm, PersonsForm
 from upload.models import UploadedFile
-from vfw_home.fields import CustomOSMField
+from vfw_home.Forms.fields import CustomOSMField
 from vfw_home.models import Entries
-from vfw_home.widgets import TableSelect, CustomOSMWidget
+from vfw_home.Forms.widgets import TableSelect, CustomOSMWidget
 
 
 

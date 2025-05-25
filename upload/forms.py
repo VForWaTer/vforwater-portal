@@ -7,15 +7,15 @@ from django.forms import TextInput
 #
 from django.utils import translation
 
-from vfw_home.fields import CustomOSMField, AutocompleteCharField
-from vfw_home.widgets import TableSelect, CustomOSMWidget, AutocompleteCharWidget
+from vfw_home.Forms.fields import CustomOSMField, AutocompleteCharField
+from vfw_home.Forms.widgets import TableSelect, CustomOSMWidget, AutocompleteCharWidget
 from vfw_home.models import Entries, NmPersonsEntries, Persons, Variables, Datasources, DatasourceTypes, Datatypes, \
     TemporalScales, SpatialScales, Licenses
 
 
 class MultiUploadFileForm(forms.Form):
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={
-        'multiple': True,
+        'allow_multiple_selected': True,
         'id': 'select_data_button',
         'style': 'display: none',
         'onchange': "this.form.submit()",
@@ -47,12 +47,9 @@ class UploadForm(forms.Form):
                                                                         'title-col': 3,}),
                                      queryset=Licenses.objects.values_list('pk', 'short_title', 'title', 'summary').distinct())
 
-        # TODO: Embargo end has to be set automatic two years from now
         embargo = forms.BooleanField(label=translation.gettext('Has Embargo'), required=False)
-        # TODO: Publication and lastupdate have to be set to now.
 
     class GeoInfo(forms.Form):
-        # TODO: Enable users to use another SRID (Transform before writng to db and show users transformed location on map)
         location = CustomOSMField(widget=CustomOSMWidget(attrs={'map_width': 600, 'map_height': 350}),
                                   help_text="The location as a POINT Geometry in unprojected WGS84 (EPSG: 4326)."
                                             "The location is primarily used to show all Entry objects on a map, "
@@ -80,7 +77,6 @@ class UploadForm(forms.Form):
     # datasource block
     class Datasource(forms.Form):
 
-        # TODO: User shouldn't set the type (datasourcetypes), path. Find way to automate these!
         datasourcetype = forms.ModelChoiceField(queryset=DatasourceTypes
                                                 .objects.values_list('name', 'title', 'description')
                                                 .order_by('name').distinct())
@@ -124,7 +120,6 @@ class UploadForm(forms.Form):
                               .values_list('id', 'start_time', 'end_time', 'resolution', 'sup')
                               .order_by('start_time').distinct()
                               )
-        # TODO: Use other Widget. Extent should be shown on a map.
         SpatialScale = forms \
             .ModelChoiceField(label=translation.gettext('Spatial Scale'),
                               widget=TableSelect(item_attrs={'class': 'foo',
@@ -163,12 +158,11 @@ class UploadForm(forms.Form):
         symbol = forms.CharField(max_length=64)
 
 
-
 class EntriesForm(forms.ModelForm):
 
     class Meta:
         model = Entries
-        fields = ('title', 'variable', 'abstract', 'comment', 'geom', 'location', 'version', 'embargo', 'publication',
+        fields = ('title', 'variable', 'abstract', 'comment', 'location', 'version', 'embargo', 'publication',
                   'citation', 'license',
                   )
         widgets = {
