@@ -66,8 +66,7 @@ draw2d.policy.connection.ClickConnectionCreatePolicy = draw2d.policy.connection.
         this.vertices = [];
     },
 
-    /**
-    /**
+     /**
      * @method
      * Called by the canvas if the user click on a figure.
      *
@@ -84,48 +83,48 @@ draw2d.policy.connection.ClickConnectionCreatePolicy = draw2d.policy.connection.
         var _this = this;
         var port = figure;
 
-        if(port === null && this.port1 === null){
+        if (port === null && this.port1 === null) {
             return;
         }
 
         // nothing found at all
         //
-        if(port===null){
-            this.vertices.push(new draw2d.geo.Point(x,y));
-            this.beeline.setStartPosition(x,y);
+        if (port === null) {
+            this.vertices.push(new draw2d.geo.Point(x, y));
+            this.beeline.setStartPosition(x, y);
             this.tempConnection.setVertices(this.vertices);
-            if(this.pulse!==null) {
+            if (this.pulse !== null) {
                 this.pulse.remove();
                 this.pulse = null;
             }
-            this.ripple(x,y,0);
+            this.ripple(x, y, 0);
             return;
         }
 
         //just consider ports
         //
-        if(!(port instanceof draw2d.Port)){
+        if (!(port instanceof draw2d.Port)) {
             return;
         }
 
         // start connection create by selection the start port
         //
-        if(this.port1===null){
+        if (this.port1 === null) {
             var canvas = port.getCanvas();
             this.port1 = port;
             this.vertices.push(port.getAbsolutePosition());
             this.beeline = new draw2d.shape.basic.Line({
                 start: this.port1.getAbsolutePosition(),
                 end: this.port1.getAbsolutePosition(),
-                dasharray:"- ",
-                color:"#2C70FF"
+                dasharray: "- ",
+                color: "#2C70FF"
             });
 
-            this.beeline.hide= function(){
+            this.beeline.hide = function () {
                 _this.beeline.setCanvas(null);
             };
 
-            this.beeline.show= function(canvas){
+            this.beeline.show = function (canvas) {
                 _this.beeline.setCanvas(canvas);
                 _this.beeline.shape.toFront();
             };
@@ -134,38 +133,38 @@ draw2d.policy.connection.ClickConnectionCreatePolicy = draw2d.policy.connection.
             this.tempConnection = new draw2d.shape.basic.PolyLine({
                 start: this.port1.getAbsolutePosition(),
                 end: this.port1.getAbsolutePosition(),
-                stroke:2,
-                color:"#2C70FF"
+                stroke: 2,
+                color: "#2C70FF"
             });
 
-            this.tempConnection.hide= function(){
+            this.tempConnection.hide = function () {
                 _this.tempConnection.setCanvas(null);
             };
 
-            this.tempConnection.show= function(canvas){
+            this.tempConnection.show = function (canvas) {
                 _this.tempConnection.setCanvas(canvas);
                 _this.tempConnection.shape.toFront();
             };
             this.tempConnection.show(canvas);
-            this.tempConnection.setVertices([this.port1.getAbsolutePosition(),this.port1.getAbsolutePosition()]);
+            this.tempConnection.setVertices([this.port1.getAbsolutePosition(), this.port1.getAbsolutePosition()]);
 
-            var a= function() {
-                _this.tempConnection.shape.animate({"stroke-width" : 2}, 800, b);
+            var a = function () {
+                _this.tempConnection.shape.animate({"stroke-width": 2}, 800, b);
             };
-            var b=function() {
-                _this.tempConnection.shape.animate({"stroke-width":1}, 800, a);
+            var b = function () {
+                _this.tempConnection.shape.animate({"stroke-width": 1}, 800, a);
             };
             a();
 
             var pos = port.getAbsolutePosition();
-            this.pulse =this.ripple(pos.x, pos.y, 1);
+            this.pulse = this.ripple(pos.x, pos.y, 1);
             return;
         }
 
 
         var possibleTarget = port.delegateTarget(this.port1);
 
-        if(!(possibleTarget instanceof draw2d.Port)){
+        if (!(possibleTarget instanceof draw2d.Port)) {
             return; // silently
         }
 
@@ -174,25 +173,24 @@ draw2d.policy.connection.ClickConnectionCreatePolicy = draw2d.policy.connection.
         request.target = port;
 
         var command = null;
-        if(this.port1 instanceof draw2d.InputPort) {
+        if (this.port1 instanceof draw2d.InputPort) {
             command = this.port1.createCommand(request);
-        }
-        else{
+        } else {
             command = port.createCommand(request);
         }
 
-        if(command!==null){
+        if (command !== null) {
             this.vertices.push(port.getPosition());
-            command.setConnection( this.createConnection());
+            command.setConnection(this.createConnection());
             figure.getCanvas().getCommandStack().execute(command);
             this.beeline.hide();
             this.tempConnection.hide();
-            if(this.pulse!==null) {
+            if (this.pulse !== null) {
                 this.pulse.remove();
                 this.pulse = null;
             }
             this.beeline = null;
-            this.port1=null;
+            this.port1 = null;
             this.vertices = [];
         }
 
@@ -208,10 +206,9 @@ draw2d.policy.connection.ClickConnectionCreatePolicy = draw2d.policy.connection.
      * @param {Boolean} shiftKey true if the shift key has been pressed during this event
      * @param {Boolean} ctrlKey true if the ctrl key has been pressed during the event
      */
-    onMouseMove: function(canvas, x, y, shiftKey, ctrlKey)
-    {
-        if(this.beeline!==null){
-            this.beeline.setEndPosition(x,y);
+    onMouseMove: function (canvas, x, y, shiftKey, ctrlKey) {
+        if (this.beeline !== null) {
+            this.beeline.setEndPosition(x, y);
         }
     },
 
@@ -224,38 +221,34 @@ draw2d.policy.connection.ClickConnectionCreatePolicy = draw2d.policy.connection.
      * @param {Boolean} shiftKey true if the shift key has been pressed during this event
      * @param {Boolean} ctrlKey true if the ctrl key has been pressed during the event
      **/
-    onKeyDown: function(canvas, keyCode, shiftKey, ctrlKey)
-    {
+    onKeyDown: function (canvas, keyCode, shiftKey, ctrlKey) {
         var KEYCODE_ENTER = 13;
         var KEYCODE_ESC = 27;
-        if (keyCode === KEYCODE_ESC && this.beeline!==null){
+        if (keyCode === KEYCODE_ESC && this.beeline !== null) {
             this.beeline.hide();
             this.tempConnection.hide();
             this.beeline = null;
-            this.port1=null;
+            this.port1 = null;
             this.vertices = [];
-            if(this.pulse!=null) {
+            if (this.pulse != null) {
                 this.pulse.remove();
-                this.pulse=null;
+                this.pulse = null;
             }
         }
     },
 
 
-    createConnection: function()
-    {
+    createConnection: function () {
         var connection = this._super();
-        if(this.vertices.length===2){
+        if (this.vertices.length === 2) {
             connection.setRouter(new draw2d.layout.connection.DirectRouter());
-        }
-        else {
+        } else {
             connection.setRouter(new draw2d.layout.connection.VertexRouter());
             connection.setVertices(this.vertices);
         }
         connection.setRadius(10);
         return connection;
     }
-
 
 
 });

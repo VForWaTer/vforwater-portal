@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Elnaz Azmi
+Contributors: Marcus Strobl
+License: MIT License
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +14,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
-  <link rel="stylesheet" type="text/css" href="{% static 'wps_gui/vcss/workplace.css' %}">
+
 </head>
 <body>
 <div id="workflowbuilder">
@@ -37,34 +44,36 @@
 {% block modal %}
   {% include 'wps_gui/modal.html' %}
 {% endblock modal %}
-{#{% block modal %}#}
-{#    {% include 'vfw_home/info_modal.html' %}#}
-{#{% endblock modal %}#}
 </body>
 </html>
 
-<script src="{% static 'wps_gui/js/draw2d.js' %}" type="text/javascript"></script>
-<script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>
-<script src="{% static 'wps_gui/js/workflow.js' %}" type="text/javascript"></script>
 <script>
   {# handle workflow name #}
   document.getElementById("workflow_name").addEventListener("keyup", function (event) {
 
     let re = new RegExp(this.pattern);
     let name = this.value;
-    {#re = /^[A-Za-z0-9_-]{1,50}$/#}
     this.value = re.exec(name)
 
     if (event.keyCode === 13) {
       event.preventDefault();
-      {# globalWorkflow.set_name(this.value);#}
       vfw.session.set_workflow_name(this.value)
     }
   });
 </script>
-{#<SCRIPT src="./lib/jquery.autoresize.js"></SCRIPT>#}
-{#<SCRIPT src="./lib/jquery-touch_punch.js"></SCRIPT>#}
-{#<SCRIPT src="./lib/jquery.contextmenu.js"></SCRIPT>#}
 
 {#The follwing canvas is only to measure text width (in workflow.js/drophandler) #}
 <canvas id="textWidthCanvas"></canvas>
+
+  <link rel="stylesheet" type="text/css" href="{% static 'wps_gui/vcss/workplace.css' %}">
+  <script src="{% static 'wps_gui/js/draw2d.js' %}" type="text/javascript"></script>
+
+<!-- the following four script lines are only to convert datetimes to timezone aware datetimes. -->
+  <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
+  <script src="https://unpkg.com/dayjs/plugin/utc.js"></script> 
+  <script src="https://unpkg.com/dayjs/plugin/timezone.js"></script> 
+  <script>dayjs.extend(window.dayjs_plugin_utc);dayjs.extend(window.dayjs_plugin_timezone);</script>
+
+  <script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>
+  <script src="{% static 'wps_gui/js/workflow.js' %}" type="text/javascript"></script>
+  <script src="{% static 'wps_gui/js/result_area_obj.js' %}" type="text/javascript"></script>

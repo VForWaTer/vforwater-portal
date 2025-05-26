@@ -2,13 +2,9 @@ from django.utils import translation
 from django.conf import settings
 
 
-# TODO: Now on every request django checks for a language cookie. Maybe set language in URL instead.
 class LanguageCookieMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-
-        # self.set_cookie(settings.LANGUAGE_COOKIE_NAME, 'en-gb')
-        # One-time configuration and initialization.
 
     def __call__(self, request):
         # Code to be executed for each request before the view (and later middleware) are called.
@@ -17,8 +13,6 @@ class LanguageCookieMiddleware:
         """
         if settings.LANGUAGE_COOKIE_NAME in request.COOKIES:
             language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
-            # translation.activate(language)
-            # request.LANGUAGE_CODE = translation.get_language()
         else:
             language = 'en'
 

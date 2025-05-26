@@ -1,14 +1,46 @@
-<meta charset="UTF-8">
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors: 
+License: MIT License
+-->
 
+<meta charset="UTF-8">
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% load static %}
+{% load settings_tags %}
 
 <head>
   <meta charset="UTF-8">
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.0.2.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.0.2.min.js" crossorigin="anonymous"></script>
+  <script src="{% get_setting 'BOKEH_SCRIPT_URL' %}" crossorigin="anonymous"></script>
+  <script src="{% get_setting 'BOKEH_WIDGETS_URL' %}" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 14px;
+      background-color: #f9f9f9;
+    }
+  
+    .styled-table th,
+    .styled-table td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+  
+    .styled-table th {
+      background-color: #eaeaea;
+      font-weight: bold;
+    }
+  </style>
+  
 </head>
 <body>
 <div id="resultModal" class="w3-modal" style="z-index: 10">
@@ -16,12 +48,13 @@
   <!-- Modal content -->
   <div id="resultModal-content" class="w3-modal-content" style="padding-left: 10px; padding-right: 10px; ">
     <div class="result_modal-header" id="result_modal-header" style="margin-left: -10px; margin-right: -10px;">
-      <i class="fa fa-close fa-lg close" title="{% trans "Close window" %}" style="cursor: pointer; position: relative; top: 7px;"></i>
+      <i class="fa fa-close fa-lg close" title="{% trans "Close window" %}"
+         style="cursor: pointer; position: relative; top: 7px;"></i>
       <i class="fa fa-expand fa-lg togglefullscreen" title="{% trans "Toggle fullscreen" %}"
          style="cursor: pointer; position: relative; top: 8px; left: 4px;"></i>
       <h3 id="result_mod_head"></h3>
     </div>
-          <p id="mod_result" class="modal-result"></p>
+    <p id="mod_result" class="modal-result"></p>
     <div class="result_modal-footer" id="result_modal-footer" style="margin-left: -10px; margin-right: -10px;">
       <span-b class="result_modal-close modal-btn">{% trans "Close" %}</span-b>
       <h3></h3>
@@ -31,47 +64,135 @@
 </div>
 </body>
 <script>
-  var bokehResultScript;
   // Get the modal
-  let rModal = document.getElementById("resultModal");
+  vfw.html.resultModal = document.getElementById("resultModal");
   // Get the <span> element that closes the modal
   // When the user clicks on <span> (x), close the modal
-  let span = document.getElementsByClassName("close")[0];
-  let rspan_b = document.getElementsByClassName("result_modal-close")[0];
-  let modalToggleSize = document.getElementsByClassName("togglefullscreen")[0];
-  span.onclick = () => close_result_Modal();
-  rspan_b.onclick = () => close_result_Modal();
-  modalToggleSize.onclick = () => toggle_Modal_size();
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = (event) => {if (event.target == rModal) close_result_Modal()};
+  vfw.html.closeBtn = document.getElementsByClassName("close")[0];
+  vfw.html.resultModalClose = document.getElementsByClassName("result_modal-close")[0];
+  vfw.html.resultModalToggleSizeBtn = document.getElementsByClassName("togglefullscreen")[0];
+  vfw.html.closeBtn.onclick = () => vfw.html.resultModal.close();
+  vfw.html.resultModalClose.onclick = () => vfw.html.resultModal.close();
+  vfw.html.resultModalToggleSizeBtn.onclick = () => vfw.html.toggle_Modal_size();
 
-  function close_result_Modal() {
-    rModal.style.display = "none";
-    reset_Modal("resultModal-content", modalToggleSize)
-    if (modalToggleSize.style.display === "none") {
-      modalToggleSize.style.display = "block";
+  vfw.html.resultModal.close = function () {
+    vfw.html.resultModal.style.display = "none";
+    vfw.html.reset_Modal("resultModal-content", vfw.html.resultModalToggleSizeBtn)
+    if (vfw.html.resultModalToggleSizeBtn.style.display === "none") {
+      vfw.html.resultModalToggleSizeBtn.style.display = "block";
     }
     if (vfw.var.obj.bokehImage) {
-      bokehResultScript.parentNode.removeChild(bokehResultScript);
+      vfw.util.bokehResultScript.parentNode.removeChild(vfw.util.bokehResultScript);
       vfw.var.obj.bokehImage = false;
     }
   }
 
-  function toggle_Modal_size() {
-    if (modalToggleSize.classList.contains('fa-expand')){
-      document.getElementById("resultModal-content").style.width = window.innerWidth.toString()+"px";
-      modalToggleSize.classList.remove('fa-expand');
-      modalToggleSize.classList.add('fa-compress');
+  vfw.html.toggle_Modal_size = function () {
+    if (vfw.html.resultModalToggleSizeBtn.classList.contains('fa-expand')) {
+      document.getElementById("resultModal-content").style.width = window.innerWidth.toString() + "px";
+      vfw.html.resultModalToggleSizeBtn.classList.remove('fa-expand');
+      vfw.html.resultModalToggleSizeBtn.classList.add('fa-compress');
     } else {
-      reset_Modal("resultModal-content", modalToggleSize)
+      vfw.html.reset_Modal("resultModal-content", vfw.html.resultModalToggleSizeBtn)
     }
-    place_html_with_js("mod_result", vfw.var.obj.bokehImage)
+    vfw.html.place_html_with_js("mod_result", vfw.var.obj.bokehImage)
   }
 
-  function reset_Modal(modalID, toggleElement) {
+  vfw.html.reset_Modal = function (modalID, toggleElement) {
     document.getElementById(modalID).style.width = "700px";
     toggleElement.classList.remove('fa-compress');
     toggleElement.classList.add('fa-expand');
   }
 </script>
 
+<script>
+
+      function openPdfFromBackend(path) {
+        $.ajax({
+          url: "/workspace/resultdisplay", // your backend endpoint
+          type: 'GET',
+          data: { path: path },
+          xhrFields: {
+            responseType: 'blob'
+          },
+          success: function (blob) {
+            const fileURL = window.URL.createObjectURL(blob);
+            
+            // Create a temporary <a> tag and click it
+            const a = document.createElement('a');
+            a.href = fileURL;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.click();
+
+            // Optional: revoke URL after some time
+            setTimeout(() => {
+              window.URL.revokeObjectURL(fileURL);
+            }, 1000);
+          },
+          error: function (error) {
+            console.error('Failed to open PDF:', error);
+            alert('Could not open the PDF.');
+          }
+        });
+      }
+
+
+  vfw.html.resultModalObj = class {
+    constructor() {
+      // Get the modal
+      this.modal = document.getElementById("resultModal");
+      // Get the <span> element that closes the modal (When the user clicks on <span> (x), close the modal)
+      this.closeBtn = document.getElementsByClassName("close")[0];
+      this.modalClose = document.getElementsByClassName("result_modal-close")[0];
+      this.modalToggleSizeBtn = document.getElementsByClassName("togglefullscreen")[0];
+      this.content = document.getElementById("resultModal-content");
+      this._resultHTML = document.getElementById("mod_result");
+
+      this._bindEvents();
+    }
+
+    _bindEvents() {
+      this.closeBtn.onclick = () => this.close();
+      this.modalClose.onclick = () => this.close();
+      this.modalToggleSizeBtn.onclick = () => this.toggle_Modal_size();
+    }
+    
+    addContent(html) {
+      this._resultHTML.innerHTML = html;
+    }
+
+    close() {
+      this.modal.style.display = "none";
+      this.reset_Modal("resultModal-content", this.modalToggleSizeBtn)
+      if (this.modalToggleSizeBtn.style.display === "none") {
+        this.modalToggleSizeBtn.style.display = "block";
+      }
+      if (vfw.var.obj.bokehImage) {
+        vfw.util.bokehResultScript.parentNode.removeChild(vfw.util.bokehResultScript);
+        vfw.var.obj.bokehImage = false;
+      }
+    }
+    
+    open(inputs) {
+      this.modal.style.display = "block";
+    }
+
+    toggle_Modal_size() {
+      if (this.modalToggleSizeBtn.classList.contains('fa-expand')) {
+        this.content.style.width = window.innerWidth.toString() + "px";
+        this.modalToggleSizeBtn.classList.remove('fa-expand');
+        this.modalToggleSizeBtn.classList.add('fa-compress');
+      } else {
+        this.reset_Modal("resultModal-content", this.modalToggleSizeBtn)
+      }
+      vfw.html.place_html_with_js("mod_result", vfw.var.obj.bokehImage)
+    }
+
+    reset_Modal(modalID, toggleElement) {
+      document.getElementById(modalID).style.width = "700px";
+      toggleElement.classList.remove('fa-compress');
+      toggleElement.classList.add('fa-expand');
+    }
+  }
+</script>

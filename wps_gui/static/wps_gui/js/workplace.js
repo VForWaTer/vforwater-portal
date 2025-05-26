@@ -1,6 +1,9 @@
-const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
-    'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
-    'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image']
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
 
 /**
  * Load metadata of a wps process.
@@ -11,9 +14,9 @@ const box_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
  * @param {string} identifier - identifier of a wps process
  * @param {string, list} inputs - ugly hack - from result store comes key-value pair, from workspace comes only a btnName
  **/
-vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs) {
-    let modal_values = vfw.session.get_workflow();
-    let json = vfw.session.get_wpsprocess(service, identifier);
+vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs = null) {
+    const modal_values = vfw.session.get_workflow();
+    const json = vfw.session.get_wpsprocess(service, identifier);
     vfw.workspace.modal.build_modal(json, service)
     /** Fill the tool with selection made to receive this result button */
     if (typeof inputs === 'string') {
@@ -21,6 +24,67 @@ vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs) {
     } else if (Array.isArray(inputs)) {
         vfw.workspace.modal.setProcessValues(inputs[0], inputs[1])
     }
+}
+
+/**
+ * Set the head content of a modal in the workspace modal. Add Title and abstract form the tool.
+ *
+ * @param {object} wpsInfo - The content as JSON to set the head of the modal.
+ * @param {string} service - Might be needed later for running the process.
+ */
+vfw.workspace.modal.setHead = function (wpsInfo, service) {
+    let modHeadElement = document.getElementById("mod_head");
+    modHeadElement.innerHTML = wpsInfo.title;
+    modHeadElement.dataset.service = service;
+    modHeadElement.dataset.process = wpsInfo.id;
+    modHeadElement = document.getElementById("mod_abs");
+    if (wpsInfo.description) {
+        newElement = wpsInfo.description;
+    }
+    modHeadElement.innerHTML = newElement;
+}
+
+/**
+ * Load metadata of a wps process if not available.
+ * The in- and outputs (and so on) of a tool are used from the normal tool if available.
+ * @param {string} origin - depending on the source the sources to fill the input fields are different
+ * @param {string} service - wps service as stored in database
+ * @param {string} identifier - identifier of a wps process
+ **/
+vfw.workspace.modal.openBatchprocess = function (origin='modal', wpsInfo={}, service="",
+                                                  identifier="", inputs = null, boxId=[]) {
+    if (wpsInfo === {}) wpsInfo = vfw.session.get_wpsprocess(service, identifier)
+
+    let sessionStoreData = getStorageOrDict("dataBtn");
+    let resultData = getStorageOrDict("resultBtn");
+    let workflowData = getStorageOrDict("workflow");
+
+    let newElement = "";
+    let modInElement = document.getElementById("mod_in");
+    let modOutElement = document.getElementById("mod_out");
+    let modFootElement = document.getElementById("modal-footer");
+
+    if (!sessionStoreData) sessionStoreData = {}
+    if (!resultData) resultData = {}
+    if (!workflowData) {
+        workflowData = {}
+    } else {
+        workflowData = workflowData[boxId]
+    }
+
+    /** create the heading of the modal */
+    vfw.workspace.modal.setHead(wpsInfo, service)
+    Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
+        newNode = vfw.html.createBatchInputElement(entry_value, resultData, sessionStoreData);
+        if (typeof (newNode) === 'object') modInElement.appendChild(newNode)
+    });
+}
+
+vfw.html.createBatchInputElement = function (entry_value, resultData, sessionStoreData) {
+    console.log('batch input')
+    console.log('entry_value: ', entry_value)
+    console.log('resultData: ', resultData)
+    console.log('sessionStoreData: ', sessionStoreData)
 }
 
 /**
@@ -35,13 +99,24 @@ vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs) {
  **/
 vfw.workspace.modal.open_port = function (service, identifier, boxidentifier, index, inputtype, porttype) {
 
-    let modal_values = vfw.session.get_workflow();
-    let json = vfw.session.get_wpsprocess(service, boxidentifier);
-    /** Fill the tool with selection made to receive this result button */
-    if (typeof inputs === 'string') {
-        vfw.workspace.modal.setPortValue(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
-    } else if (Array.isArray(inputs)) {
-        vfw.workspace.modal.setPortValue(inputs[0], inputs[1])
+    let btnObj = {};
+    let workflowBoxes = vfw.session.get_workflow();
+    let process = vfw.session.get_wpsprocess(service, identifier);
+    if (porttype === 'output') {
+        console.warn('No action for output ports is implemented yet.');
+        return;
+    } else {
+        let input_key, input_value = "nothing selected yet";
+        let popUpText = '<thead><tr><th>&nbsp;</th></tr></thead>';
+
+        input_key = workflowBoxes[boxidentifier]['input_keys'][index];
+        if (workflowBoxes[boxidentifier]['input_values']) {
+            input_value = workflowBoxes[boxidentifier]['input_values'][index];
+        }
+        popUpText += '<tr><td><b>' + input_key + ':</b></td><td>' + input_value + '</td></tr>';
+        vfw.workspace.modal.openResultModal(popUpText)
+
+        btnObj = [process['dataInputs'][index]['identifier'], process['dataInputs'][index]]
     }
 }
 
@@ -60,7 +135,7 @@ vfw.session.load_wpsprocess = function (service, identifier) {
             async: false,
             data: {
                 processview: JSON.stringify({id: identifier, serv: service}),
-                'csrfmiddlewaretoken': csrf_token,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
             }, /** data sent with the post request **/
         })
     )
@@ -87,15 +162,14 @@ vfw.session.get_wpsprocess = function (service, identifier) {
     if (tools[service][identifier]) {
         tool_data = tools[service][identifier]
     } else {
-        vfw.html.popup.classList.add(popActive);
-        positionPopup(vfw.html.popup);
+        vfw.html.loaderOverlayOn()
         $.when(vfw.session.load_wpsprocess(service, identifier))
             .done(
                 function (json) {
                     tools[service][identifier] = json
                     sessionStorage.setItem('tools', JSON.stringify(tools))
                     tool_data = json;
-                    vfw.html.popup.classList.remove(popActive);
+                    vfw.html.loaderOverlayOff();
                 })
     }
     return tool_data
@@ -124,7 +198,7 @@ vfw.workspace.get_drop_coords = function () {
 
 
 /**
- * Collect data to drop element. (When 'Okay' in Modal is pressed)
+ * Collect data to drop element. (When 'Drop' in Modal is pressed)
  * Check if any inputs or outputs are selected and drop resprective elements, too.
  *
  * @param {object} ev - object passed with drop event
@@ -133,15 +207,14 @@ vfw.workspace.drop_on_click = function (ev) {
     /** Prepare and drop a tool button **/
     let data_id, tool_id, box_id, newbox, toolbox, databox, metadata, dataport, toolport, params, workflow;
     let coords = vfw.workspace.get_drop_coords();
-    let modalData = vfw.workspace.modal.prep_data();
+    let modalData = vfw.workspace.modal.prepData();
     newbox = vfw.workspace.drop_handler(modalData, coords['x'], coords['y'], modalData.id, 'toolbar', modalData.serv)
     tool_id = newbox.boxID;
     toolbox = newbox.box;
 
     /** Check if tool is connected with other elements to drop and get ports **/
     for (let i in modalData.in_type_list) {
-        if (box_types.includes(modalData.in_type_list[i]) && modalData.inId_list[i]) {
-            console.log('droped on click: ', i)
+        if (vfw.var.DATATYPES.includes(modalData.in_type_list[i]) && modalData.inId_list[i]) {
             metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modalData.inId_list[i]]
             newbox = vfw.workspace.drop_handler(metadata, coords['x'] - 40, coords['y'] - 40, 'sidebtn' + modalData.inId_list[i], 'workspace')
             box_id = newbox.boxID;
@@ -198,27 +271,46 @@ vfw.workspace.is_required = function (checkElement) {
  *
  * @param {HTMLElement} checkElement Element to be checked if filled.
  */
-vfw.workspace.check_pattern = function (checkElement) {
-    /** check if an Element of a wps is required **/
-    console.warn('TODO: Add pattern check where necessary.')
+vfw.workspace.checkPattern = function (checkElement) {
+    const inModal = document.getElementById('mod_in');
+    const dropDInputs = inModal.getElementsByTagName('select');
+    let dDInput, stored;
+    /** first loop over each dropdown in input, then over values in dropdown (if something is selected) **/
+    for (let i = 0; i < dropDInputs.length; i++) {
+        dDInput = dropDInputs[i].selectedOptions;
+        if (dDInput.length > 0) {
+            stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value];
+            if (stored.type == "geometry") {
+                let geoJsonFormat = new ol.format.GeoJSON();
+                let geoJsonPolygon = geoJsonFormat.writeGeometry(new ol.geom.Polygon(stored['geom']))
+                if (!vfw.util.isValidGeoJson(JSON.parse(geoJsonPolygon))) {
+                    console.warn("Not a valid GeoJSON")
+                    return false
+                } else if (!vfw.util.isValidPolygon(JSON.parse(geoJsonPolygon))) {
+                    console.warn("Not a valid Polygon")
+                    return false
+                }
+            }
+        }
+    }
     return true
 }
-
 
 /**
  * Collect data from modal neeeded to run a process.
  * @returns {{in_type_list: *[], serv: string, outputName: string, key_list: *[], inId_list: *[], id: string, value_list: *[]}}
  */
-vfw.workspace.modal.prep_data = function () {
+vfw.workspace.modal.prepData = function () {
     /** collect inputs **/
+    const inModal = document.getElementById('mod_in');
+    const dropDInputs = inModal.getElementsByTagName('select');
+    const inputInputs = inModal.getElementsByTagName('input');
     var inKey = [];
     var inValue = [];
+    let indict = {};  // pywps needed a set. For geoapi processes we can use a dict. TODO: delete set if not needed.
     var inType = [];
     var inId = [];
     let dDInput = 0;
-    let inModal = document.getElementById('mod_in');
-    let inputInputs = inModal.getElementsByTagName('input');
-    let dropDInputs = inModal.getElementsByTagName('select');
     let valueList = [];
     let typeList = [];
     let inIdList = [];
@@ -227,13 +319,15 @@ vfw.workspace.modal.prep_data = function () {
     /** first loop over each dropdown in input, then over values in dropdown **/
     for (let i = 0; i < dropDInputs.length; i++) {
         dDInput = dropDInputs[i].selectedOptions;
+        valueList = [];
+        typeList = [];
+        inIdList = [];
 
-        /** if many dropdowns **/
+        /** if many inputs in dropdown **/
         if (dDInput.length > 1) {
             for (let j = 0; j < dDInput.length; j++) {
-                // valueList.push(dDInput[j].value)
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[j].value]
-                valueList.push(stored['source'] + stored['dbID'])
+                valueList.push(parseInt(stored['dbID']))
                 typeList.push(stored['type']);
                 inIdList.push(dDInput[j].value);
             }
@@ -241,21 +335,46 @@ vfw.workspace.modal.prep_data = function () {
             inKey.push(dropDInputs[i].name);
             inType.push(typeList);
             inId.push(inIdList);
+            indict[dropDInputs[i].name] = valueList;
 
-            /** else if one dropdown **/
-        } else {
-            if (dDInput[0].value.substring(0, 2) == 'db') {
+        /** else if one input element in dropdown **/
+        } else if (dDInput.length == 1) {
+            if (dDInput[0].value.split(",").length == 1) {
                 stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
-                inValue.push(stored['source'] + stored['dbID']);
+                if (stored.type !== "geometry") {
+                    let intValue = dropDInputs[i].multiple ? [parseInt(stored['dbID'])] : parseInt(stored['dbID']);
+                    inValue.push(intValue);
+                } else {
+                    let polygon = new ol.geom.Polygon(stored['geom']);
+                    let geoJsonFormat = new ol.format.GeoJSON();
+                    const geoJsonPolygon = {
+                        "type": "Feature",
+                        "geometry":geoJsonFormat.writeGeometry(polygon),
+                        "properties": {"name":stored['name'],"orgID":stored['orgID']}
+                    };
+                    inValue.push(geoJsonPolygon);
+                }
                 inType.push(stored['type']);
+                indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
             } else {
-                inValue.push(dDInput[0].value);
-                inType.push(stored['type']);
+                let groupInValues = [];
+                let groupInTypes = [];
+                // Try to get wps ID for data
+                for (let dataset of dDInput[0].value.split(",")) {
+                    stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dataset]
+                    groupInValues.push(parseInt(stored['dbID']))
+                    groupInTypes.push(stored['type']);
+                }
+                inValue.push(groupInValues)
+                inType.push(groupInTypes);
+                indict[dropDInputs[i].name] = dDInput[0].value.split(",");
             }
             inKey.push(dropDInputs[i].name);
             inId.push(dDInput[0].value);
         }
     }
+
+    /** now check the other elements like radio buttons or checkboxes **/
     for (let i = 0; i < inputInputs.length; i++) {
         if (inputInputs[i].type == "radio") {
             if (inputInputs[i].checked == true) {
@@ -263,6 +382,7 @@ vfw.workspace.modal.prep_data = function () {
                 inValue.push(inputInputs[i].value);
                 inType.push('string');
                 inId.push('');
+                indict[inputInputs[i].name] = inputInputs[i].value;
             }
         } else if (inputInputs[i].type == "checkbox") {
             inKey.push(inputInputs[i].name);
@@ -270,16 +390,26 @@ vfw.workspace.modal.prep_data = function () {
                 inValue.push(true);
                 inType.push('boolean');
                 inId.push('');
+                indict[inputInputs[i].name] = true;
             } else {
                 inValue.push(false);
                 inType.push('boolean');
                 inId.push('');
+                indict[inputInputs[i].name] = false;
             }
+        } else if (inputInputs[i].type == "datetime-local") {
+            const datetime = dayjs.tz(inputInputs[i].value, 'Europe/Berlin');
+            inKey.push(inputInputs[i].name);
+            inValue.push(datetime.format());
+            inType.push('');
+            inId.push('');
+            indict[inputInputs[i].name] = datetime.format();
         } else {
             inKey.push(inputInputs[i].name);
             inValue.push(inputInputs[i].value);
             inType.push('');
             inId.push('');
+            indict[inputInputs[i].name] = inputInputs[i].value;
         }
     }
 
@@ -310,45 +440,58 @@ vfw.workspace.modal.prep_data = function () {
     }
     return {
         'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
-        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId
+        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId, 'in_dict': indict,
     }
 }
 
-vfw.workspace.modal.run_process = function () {
-    vfw.workspace.modal.set_Color("dodgerblue");
-    let modal_input = vfw.workspace.modal.prep_data();
+vfw.workspace.modal.runProcess = function () {
+    vfw.workspace.modal.setColor("dodgerblue");
+    let modal_input = vfw.workspace.modal.prepData();
     let directshowdatatypes = ['figure', 'string', 'html', 'integer', 'float']
     let group = false;
     let groupName = ''
     let i = 0;
     let members = [];
+    vfw.html.loaderOverlayOn();
 
     $.ajax({
         url: vfw.var.DEMO_VAR + "/workspace/processrun",
+        type: 'POST',
         data: {
             processrun: JSON.stringify(modal_input),
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, /** data sent with post request **/
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
-            if (json.execution_status == "ProcessSucceeded") {
+            vfw.html.loaderOverlayOff()
+            /** Handle result according to the success/status of the process */
+            if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
+                let btnName = '';
+                let btnData = {};
                 json.wps = modal_input.id;
                 json.inputs = {};
                 $.each(modal_input.inKey, function (key, value) {
                     json.inputs[value] = modal_input.inValue[i];
                     i++;
                 });
-                vfw.workspace.modal.set_Color("forestgreen");
+                vfw.workspace.modal.setColor("forestgreen");
 
+                // if there is an html available for a result show it directly as result
+                if ('report_html' in json) {
+                    btnData['report_html'] = json.report_html;
+                    vfw.workspace.modal.openResultModal(json.report_html)
+                }
+
+                // if there are more then one result, than create a grouped button
                 if (Object.keys(json.result).length > 1) {
                     group = true;
                     groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');
                 }
 
                 for (let i in json.result) {
-                    let btnName = vfw.sidebar.set_result_btn_name(modal_input.outputName);
-                    json.result[i].dropBtn.name = btnName;
-                    let btnData = {
+                    btnName = vfw.sidebar.set_result_btn_name(modal_input.outputName);
+                    json.result[i].dropBtn['name'] = btnName;
+                    btnData = {
                         dbID: json.result[i].wpsID,
                         inputs: json.inputs,
                         input_keys: modal_input.key_list,
@@ -370,24 +513,45 @@ vfw.workspace.modal.run_process = function () {
 
                     if (group === false) {
                         document.getElementById("workspace_results").innerHTML
-                            += vfw.workspace.build_resultstore_button(btnName, btnData);
+                            += vfw.workspace.buildResultStoreButton(btnName, btnData);
                     } else {
                         members.push([btnName, btnData])
                     }
                 }
+
                 if (group === true) {
                     document.getElementById("workspace_results").innerHTML
-                        += vfw.workspace.build_resultgroup_button(groupName, members);
-                    vfw.sidebar.add_groupaccordion_toggle()
+                        += vfw.workspace.buildResultGroupButton(groupName, members);
+                    vfw.sidebar.addGroupaccordionToggle()
                 }
-            } else if (json.execution_status == "Exception") {
+            }
+            else if (json.status == 'ERROR') {
                 console.error('error in wps process')
-                vfw.workspace.modal.set_Color("firebrick");
-            } else if (json.execution_status == "error in wps process") {
-                vfw.workspace.modal.set_Color("firebrick");
+                vfw.workspace.modal.setColor("firebrick");
+            }
+            else if (json.status == 'CREATED' || json.status == 'ACCEPTED') {
+                vfw.workspace.modal.setColor("orange");
+                if (!json['orgID']) {
+                    // create an id for the new object
+                    const urlParts = json.outputs.path.split("/");
+                    json['orgID'] = json.name + '_' + urlParts[urlParts.length -1];
+                }
+
+                // create object
+                vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json);
+
+            }
+            else if (json.status == 'FINISHED') {
+                alert('Finished neeeds implementation (Short running porcess)')
+                vfw.workspace.modal.setColor("green");
+            }
+            else if (json.execution_status == "error in wps process") {
+                vfw.workspace.modal.setColor("firebrick");
                 console.error('Error in wps process: ', json.error)
-            } else if (json.execution_status == "auth_error") {
-                vfw.workspace.modal.set_Color("firebrick");
+                // alert('Error: Failed to execute your request.');
+            }
+            else if (json.execution_status == "auth_error") {
+                vfw.workspace.modal.setColor("firebrick");
                 /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
@@ -396,9 +560,11 @@ vfw.workspace.modal.run_process = function () {
             }
         })
         .fail(function (json) {
-            vfw.workspace.modal.set_Color("firebrick");
+            vfw.html.loaderOverlayOff()
+            vfw.workspace.modal.setColor("firebrick");
             console.error('Error, No success: ', json)
-        });
+        })
+        // .always(vfw.html.loaderOverlayOff());
 }
 
 /**
@@ -409,8 +575,7 @@ vfw.workspace.view_result = function (json) {
     if (json.type == 'figure' || json.type == 'string' || json.type == 'integer') {
         document.getElementById("mod_result").innerHTML = json.outputs; // add plot
     }
-    let rModal = document.getElementById("resultModal");
-    rModal.style.display = "block";
+    vfw.html.resultModal.style.display = "block";
     vfw.html.popup.classList.remove(popActive);
     modalToggleSize.style.display = "none";
 }
@@ -421,7 +586,6 @@ function run_wps(input_dict) {
     let modhead = document.getElementById('mod_head');
     let wpsservice = modhead.dataset.service;
     let identifier = modhead.dataset.process;
-
     $.ajax({
         url: vfw.var.DEMO_VAR + "/workspace/processrun",
         data: {
@@ -429,7 +593,7 @@ function run_wps(input_dict) {
                 id: identifier, serv: wpsservice,
                 key_list: input_dict.keys(), value_list: input_dict.values()
             }),
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, /** data sent with the post request **/
     })
         .done(function (json) {
@@ -437,7 +601,7 @@ function run_wps(input_dict) {
         })
         .fail(function (json) {
             console.error('Error, No success: ', json)
-            vfw.workspace.modal.set_Color("firebrick");
+            vfw.workspace.modal.setColor("firebrick");
         })
 }
 
@@ -492,7 +656,7 @@ vfw.sidebar.set_group_btn_name = function (name, storage) {
  *
  * @param {string} color
  */
-vfw.workspace.modal.set_Color = function (color) {
+vfw.workspace.modal.setColor = function (color) {
     let modalColor = document.getElementById("modal-header");
     modalColor.style.backgroundColor = color;
     modalColor = document.getElementById("modal-footer");
@@ -553,7 +717,7 @@ vfw.session.add_resultbtn = function (btnName, json) {
  * @param  {obj} json - Object holding all necessary info about result
  * @return {string} - HTML Code for the button
  **/
-vfw.workspace.build_resultstore_button = function (name, json) {
+vfw.workspace.buildResultStoreButton = function (name, json) {
     let title = json.wps + "\n" + JSON.stringify(json.inputs).slice(1, -1).replace(/"/g, "'");
     return '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result" data-sessionStore="resultBtn" ' +
@@ -562,7 +726,7 @@ vfw.workspace.build_resultstore_button = function (name, json) {
         '<span class="w3-medium" title="' + title + '">' +
         '<div class="task__content">' + name + '</div><div class="task__actions"></div>' +
         '</span><span class="' + json['type'] + '"></span>' +
-        '<a href="javascript:void(0)" onclick="vfw.session.remove_single_result(\'' + name + '\')" class="w3-hover-white">' +
+        '<a href="javascript:void(0)" onclick="vfw.session.removeSingleResult(\'' + name + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 }
 
@@ -573,7 +737,7 @@ vfw.workspace.build_resultstore_button = function (name, json) {
  * @param  {string} name name for the group button
  * @return {string} HTML Code for the group button
  **/
-vfw.workspace.build_resultgroup_button = function (groupname, members) {
+vfw.workspace.buildResultGroupButton = function (groupname, members) {
     let mhtml = ''
     let ghtml = '<li draggable="true" ondragstart="dragstart_handler(event)" ' +
         'class="w3-padding task is-result-group groupaccordion" data-sessionStore="resultBtn"' +
@@ -581,39 +745,42 @@ vfw.workspace.build_resultgroup_button = function (groupname, members) {
         'data-btnName="' + groupname + '" id="' + groupname + '"><span class="w3-medium">' +
         '<div class="task__content">' + groupname + '</div><div class="task__actions"></div></span>' +
         '<span class=""></span>' +
-        '<a href="javascript:void(0)" onclick="vfw.session.remove_group_result(\'' + groupname + '\')" class="w3-hover-white">' +
+        '<a href="javascript:void(0)" onclick="vfw.session.removeGroupResult(\'' + groupname + '\')" class="w3-hover-white">' +
         '<i class="fa fa-remove fa-fw"></i></a><br></li>';
 
     members.forEach(function (singlemember) {
-        mhtml += vfw.workspace.build_resultstore_button(singlemember[0], singlemember[1]);
+        mhtml += vfw.workspace.buildResultStoreButton(singlemember[0], singlemember[1]);
     })
     ghtml += '<div class="grouppanel">' + mhtml + '</div>'
     return ghtml
 }
 
-vfw.session.remove_single_result = function (removeData) {
+/** Remove element from html and update session Storage */
+vfw.session.removeSingleResult = function (removeData) {
     document.getElementById(removeData).remove();
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
     delete workspaceData[removeData];
     sessionStorage.setItem("resultBtn", JSON.stringify(workspaceData))
 }
 
-vfw.session.remove_group_result = function (removeData) {
+vfw.session.removeGroupResult = function (removeData) {
     let workspaceData = JSON.parse(sessionStorage.getItem("resultBtn"));
     $.each(workspaceData, function (i) {
         if (workspaceData[i].group === removeData) {
-            vfw.session.remove_single_result(i)
+            vfw.session.removeSingleResult(i)
         }
     })
     document.getElementById(removeData).remove();
 }
 
-vfw.session.remove_all_results = function () {
+/** Loop over all datasets of the element to select from and remove each individually */
+vfw.session.removeAllResults = function () {
     let groupSet = new Set();
     /** remove button from portal **/
     $.each(JSON.parse(sessionStorage.getItem("resultBtn")), function (key, value) {
         groupSet.add(value.group)
-        vfw.session.remove_single_result(key);
+        const delete_id = 'htmlElementID' in value ? value['htmlElementID'] : key;
+        vfw.session.removeSingleResult(delete_id);
     });
 
     /** remove result data from session **/
@@ -629,50 +796,52 @@ vfw.session.remove_all_results = function () {
 
 /**
  * @param {json} item - input information loaded from Session Storage
+ * @param {string} entry_name - Name for the element (important! That name is also send to server!)
  * @param {string} newNode - The new HTML Element where the checkbox will be added
  */
-vfw.workspace.modal.build_regexText = function (item, newNode) {
+vfw.workspace.modal.build_regexText = function (item, entry_name, newNode) {
     inElement = document.createElement("INPUT");
-    inElement.id = item.identifier;
-    inElement.name = item.identifier;
+    inElement.id = 'mod_in_el_' + item.title;  // item.identifier;
+    inElement.name = entry_name;  // item.identifier;
     inElement.setAttribute("pattern", item.keywords[1]);
     inElement.type = "text";
     if ('defaultValue' in item) {
         inElement.value = item.defaultValue;
     }
-    if ('abstract' in item) {
-        inElement.title = item.abstract;
+    if ('description' in item) {
+        inElement.title = item.description;
     }
     newNode.appendChild(inElement);
 }
 
 /**
  * @param {json} item - input information loaded from Session Storage
+ * @param {string} entry_name - Name for the element (important! That name is also send to server!)
  * @param {string} newNode - The new HTML Element where the checkbox will be added
  * @param {string} option - String with predefined value from wps process
  */
-vfw.workspace.modal.build_radio = function (item, newNode, option) {
+vfw.workspace.modal.build_radio = function (item, entry_name, newNode, option) {
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("INPUT");
     inElement.type = "radio";
     inElement.value = option;
-    inElement.id = item.identifier;
+    inElement.id = 'mod_in_el_' + item.title;  // item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
 
-    inElement.name = item.identifier;
-    if ('defaultValue' in item) {
-        if (item.defaultValue == option) inElement.checked = true;
-    }
+    inElement.name = entry_name;  // item.identifier;
+    if ("default" in item.schema) if (item.schema.default == option) inElement.checked = true;  // TODO!
+
     newNode.appendChild(inElement);
     newNode.appendChild(nodeText);
 }
 
 /**
  * @param {json} item - input information loaded from Session Storage
+ * @param {string} entry_name - Name for the element (important! That name is also send to server!)
  * @param {HTMLElement} newNode - The new HTML Element where the checkbox will be added
  * @param {string} option - String with predefined value from wps process
  */
-vfw.workspace.modal.build_checkbox = function (item, newNode, option) {
+vfw.workspace.modal.build_checkbox = function (item, entry_name, newNode, option) {
     let nodeText = document.createTextNode(" " + option + " ");
     let inElement = document.createElement("input");
     inElement.type = "radio";
@@ -680,40 +849,59 @@ vfw.workspace.modal.build_checkbox = function (item, newNode, option) {
     inElement.id = item.identifier;
     if (item.minOccurs === 1) inElement.required = true;
 
-    inElement.name = item.identifier;
-    if ('defaultValue' in item) {
-        if (item.defaultValue == option) inElement.checked = true;
+    inElement.name = entry_name;
+    if ("default" in item.schema) {
+        if (item.schema.default == option) inElement.checked = true;  // TODO!
     }
     newNode.appendChild(inElement);
     newNode.appendChild(nodeText);
 }
 
+
 /**
- * Function is called when the input should be a dataset.
+ * Function is called when the input should be a dataset and builds a dropdown menu for the workspace modal.
  *
  * @param {json} item - description of wps input.
  * @param {HTMLParagraphElement} newNode
- * @param {number} countDropDowns
+ * @param {number} countDropDowns - count all dropdowns in tool for naming and accessing the different menues
  */
 vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
+
+    const sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
+    const resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
+    const groupedData = JSON.parse(sessionStorage.getItem("dataGroup"));
     let htmlSelect = document.createElement("SELECT");
-    let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
     let boxLen = 0;
     let aptStoreData = {};
     let aptResultData = {};
-    let acceptedDataTypes = DATATYPE.accepts([item.keywords[0]])
+    let aptGroupedData = {};
+    let acceptedDataTypes = DATATYPE.accepts([item.dataType])
 
-    htmlSelect.id = item.identifier;
+    // htmlSelect.id = item.identifier;
+    htmlSelect.id = 'mod_in_el_' + item.identifier;  // item.id
 
-    for (let i in sessionStoreData) if (acceptedDataTypes.has(sessionStoreData[i].type)) {
-        aptStoreData[i] = sessionStoreData[i];
+    for (let i in sessionStoreData) {
+        if (acceptedDataTypes.has(sessionStoreData[i].type)) {
+            aptStoreData[i] = sessionStoreData[i];
+        }
+        if (sessionStoreData[i].hasOwnProperty('group')) {
+            // aptGroupedData[i] = sessionStoreData[i];
+        } else {
+            // aptStoreData[i] = sessionStoreData[i];
+        }
     }
     for (let i in resultData) if (acceptedDataTypes.has(resultData[i].type)) aptResultData[i] = resultData[i]
-    boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length;
-    if (item.minOccurs > 1) htmlSelect.required = true;
+    for (let i in groupedData) {
+        if (acceptedDataTypes.has(groupedData[i].type)) {
+            // aptGroupedData[i] = groupedData[i]
+        }
+        // aptGroupedData[i] = groupedData[i]
+    }
+    boxLen = Object.keys(aptResultData).length + Object.keys(aptStoreData).length + Object.keys(aptGroupedData).length;
+    // if (item.minOccurs === 1) htmlSelect.required = true; // Why did I first use === 1 ???
+    if (item.minOccurs >= 1) htmlSelect.required = true;
 
-    /** check if input data is available; only build dropdown if there is data to select from **/
+    /** check if input data is available; only build dropdown if there is data to select from (boxlen > 0) **/
     if (boxLen == 0) {
         htmlSelect = document.createElement("DIV");
         if (item.defaultValue) {
@@ -724,7 +912,13 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
     } else {
         htmlSelect.size = (boxLen > 3) ? "5" : (boxLen + 2).toString();
         htmlSelect.name = item.identifier;
-        if (storeData !== null) {
+        if (aptGroupedData !== null && Object.keys(aptGroupedData).length) {
+            let optionGroup = document.createElement("OPTGROUP");
+            optionGroup.label = "Data groups";
+            optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptGroupedData);
+            htmlSelect.appendChild(optionGroup);
+        }
+        if (aptStoreData !== null && Object.keys(aptStoreData).length) {
             let optionGroup = document.createElement("OPTGROUP");
             optionGroup.label = "Data store";
             optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptStoreData);
@@ -736,7 +930,7 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
             optionGroup = vfw.workspace.modal.build_dropdown_opt(item, optionGroup, aptResultData);
             htmlSelect.appendChild(optionGroup);
         }
-        if (item.maxOccurs > 1 || item.minOccurs > 1) {
+        if (!item.maxOccurs == 1 || item.minOccurs > 1) {
             htmlSelect.multiple = true;
         }
         /** If more then one option is needed to select, show a second box with selection **/
@@ -748,25 +942,207 @@ vfw.workspace.modal.build_dropdown = function (item, newNode, countDropDowns) {
 /**
  * Collect elements for a dropdown HTMLElement.
  *
- * @param {Object} item - Data description from the wps process.
+ * @param {Object} processAttribute - Data description from the wps process.
  * @param {HTMLElement} optionGroup - HTML group Element. Different groups to seperate Data and Results in dropdown
- * @param {Object} sidebarData - The relevant elements from the sessionStorage
+ * @param {Object} selectables - The relevant elements from the sessionStorage
  */
-vfw.workspace.modal.build_dropdown_opt = function (item, optionGroup, sidebarData) {
+vfw.workspace.modal.build_dropdown_opt = function (processAttribute, optionGroup, selectables) {
+    // let opt = document.createElement("OPTION");
     let opt;
-    Object.keys(sidebarData).forEach(function (singleData) {
-        opt = document.createElement("OPTION");
-        if (sidebarData[singleData].abbr && sidebarData[singleData].unit) {
-            opt.innerText = `${singleData} ${sidebarData[singleData].name} (${sidebarData[singleData].abbr}
-            in ${sidebarData[singleData].unit})`;
+    let optGroupDict = {};
+    let groupName = '';
+    const groups = new Set([]);
+
+    /**
+     * Add a value to a the button or update the value for a group button
+     * @param {Object} selectables
+     * @param {number} singleData
+     */
+    function chooseDataID (selectables, singleData) {
+        let value
+        if (selectables[singleData].wpsID) {
+            value = 'wpsID' + (selectables[singleData].wpsID);
         } else {
-            opt.innerText = `${singleData}`;
+            value = singleData;
         }
-        opt.value = sidebarData[singleData].wpsID ? 'wpsID' + (sidebarData[singleData].wpsID) : singleData;
-        if (item.keywords.length == 1) opt.selected = true;
+        return value;
+    }
+
+    Object.keys(selectables).forEach(function (singleData) {
+        opt = document.createElement("OPTION");
+        groupName = ''
+
+        /** Check if a Button for a group, or a single button is needed */
+        if (selectables[singleData].abbr && selectables[singleData].unit)
+            {  // but has unit and abbriviation
+            opt.innerText = `${singleData} ${selectables[singleData].name} (${selectables[singleData].abbr}
+            in ${selectables[singleData].unit})`;  // create String
+            opt.value = chooseDataID(selectables, singleData);
+        } else if (selectables[singleData].hasOwnProperty('group') &&  // is group
+            !groups.has(selectables[singleData]['group'])) {  // but seen the first time
+
+            groupName = selectables[singleData]['group']
+            // Here the group element is build
+            groups.add(groupName)
+            opt.innerText = `${groupName}`;
+            optGroupDict[groupName] = {'opt': {}};
+            optGroupDict[groupName]['opt'] = opt;
+            optGroupDict[groupName]['value'] = [chooseDataID(selectables, singleData)];
+            return
+        } else if (!groups.has(selectables[singleData]['group'])) {  // is no group
+
+            opt.innerText = `${selectables[singleData]['name']}`;
+            opt.value = chooseDataID(selectables, singleData);
+            opt.name = selectables[singleData]['name']
+        } else if (selectables[singleData].hasOwnProperty('group') &&  // is group,
+            groups.has(selectables[singleData]['group'])) {  // but seen before, so add more values to an existing button
+
+            optGroupDict[selectables[singleData]['group']]['value'].push(chooseDataID(selectables, singleData))
+            return
+        } else {
+            console.warn('New case. Fix this')
+            return;
+        }
+
+        if ('keywords' in processAttribute && processAttribute.keywords.length == 1) opt.selected = true;
         optionGroup.appendChild(opt);
     })
+    Object.keys(optGroupDict).forEach(function (group) {
+        optGroupDict[group]['opt'].value = optGroupDict[group]['value'];
+        optionGroup.appendChild(optGroupDict[group]['opt']);
+    })
     return optionGroup
+}
+
+/** Create an input element according to the expected type of the inputdata */
+vfw.html.createInputElement = function (input_tool_description, resultData, sessionStoreData) {
+    let inElement = "", newNode = "", nodeText = "";
+    let item = input_tool_description[1];
+    let entry_name = input_tool_description[0];
+    let countDropDowns = 0;
+    newNode = document.createElement("p");
+
+    /** Set title of Input and set the 'required' flag if necessary **/
+    let titleText = "";
+    if (item.minOccurs == 0) {
+        titleText = " " + item.title + ": "
+    } else if (item.defaultValue) {
+        titleText = " " + item.title + ": "
+    } else if (item.required === true) {
+        // } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
+        titleText = " " + item.title + " (*) : ";
+        inElement.required = true;
+    } else {
+        titleText = " " + item.title + ": "
+    }
+
+    /** check attributes/'keywords' from the process that are used to define which input element is used */
+    nodeText = document.createTextNode(titleText);
+    newNode.appendChild(nodeText);
+    if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
+        if ('maxOccurs' in item) {
+            if (item.maxOccurs === 1) {
+                item.allowedValues.forEach(function (option) {
+                    vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
+                });
+            }
+        }
+    } else if ('supportedValues' in item && Array.isArray(item.supportedValues) && item.supportedValues.length > 1) {
+        if ('maxOccurs' in item) {
+            if (item.maxOccurs === 1) {
+                item.supportedValues.forEach(function (option) {
+                    vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
+                });
+            }
+        }
+    } else if ("enum" in item.schema) {
+        item.schema.enum.forEach(function (option) {
+            vfw.workspace.modal.build_radio(item, entry_name, newNode, option)
+        });
+    } else if ('keywords' in item && item.keywords.includes('pattern')) {
+        vfw.workspace.modal.build_regexText(item, entry_name, newNode)
+    } else if (vfw.var.EXT_DATATYPES.includes(item.dataType)) {
+        countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
+
+        /** Set input element according to dataType */
+    } else {
+        inElement = document.createElement("INPUT");
+        inElement.id = 'mod_in_el_' + item.identifier;  // item.id;
+        inElement.name = entry_name;  // item.identifier;
+        inElement.title = item.description;  // item.identifier;
+        inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
+
+        switch (item.schema.type) {  // (item.dataType) {
+            case 'string':
+                inElement.type = "text";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
+                break;
+            case 'boolean':
+                inElement.type = "checkbox";
+
+                if ("default" in item.schema && item.schema.default === true) {
+                    inElement.checked = true;
+                }
+                else if ('defaultValue' in item && item.defaultValue === true) {
+                    inElement.checked = true;
+                }
+                break;
+            case 'dateTime':
+                inElement.type = "datetime-local";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
+                break;
+            case 'float':
+                inElement.type = "number";
+                inElement.step = "0.000001";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
+                break;
+            case 'integer':
+                inElement.type = "number";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
+                break;
+            case 'number':
+                inElement.type = "number";
+                if (item.schema.format  == "float") inElement.step = "0.000001";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ("minimum" in item.schema) inElement.min = item.schema.minimum;
+                if ("maximum" in item.schema) inElement.max = item.schema.maximum;
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
+                break;
+            case 'positiveInteger':
+                inElement.type = "number";
+                inElement.min = "0";
+                inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
+                if ("default" in item.schema) inElement.value = item.schema.default;
+                if ('defaultValue' in item) inElement.value = item.defaultValue;  // old schema
+                break;
+            case 'ComplexData':
+                inElement.type = "text";
+                if ('defaultValue' in item) {
+                    if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
+                }
+                break;
+            case 'BoundingBoxData':
+                console.warn('you have to handle BoundingBoxData properly');
+                if ('defaultValue' in item) inElement.value = item.defaultValue;
+                break;
+            default:
+                console.warn(' new dataType: ', item.schema)  // item.dataType)
+        }
+        if (item.minOccurs > 0) {
+            inElement.required = true
+        }
+        newNode.appendChild(inElement);
+    }
+    return newNode;
 }
 
 /**
@@ -776,11 +1152,21 @@ vfw.workspace.modal.build_dropdown_opt = function (item, optionGroup, sidebarDat
  * @param {string} service - which wps server
  */
 vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId = []) {
-    let sessionStoreData = JSON.parse(sessionStorage.getItem("dataBtn"));
-    let resultData = JSON.parse(sessionStorage.getItem("resultBtn"));
-    let workflowData = JSON.parse(sessionStorage.getItem("workflow"));
-    let element = document.getElementById("mod_head");
+
+    /** Collect the data that is available for the tools. If key has no data an empty dict is returned.
+     * @param {string} store - Which key of the Session Storage should be loaded
+     */
+    getStorageOrDict = function (store) {
+        return sessionStorage.getItem(store) ? JSON.parse(sessionStorage.getItem(store)) : {};
+    }
+    let sessionStoreData = getStorageOrDict("dataBtn");
+    let resultData = getStorageOrDict("resultBtn");
+    let workflowData = getStorageOrDict("workflow");
+
     let newElement = "";
+    let modInElement = document.getElementById("mod_in");
+    let modOutElement = document.getElementById("mod_out");
+    let modFootElement = document.getElementById("modal-footer");
 
     if (!sessionStoreData) sessionStoreData = {}
     if (!resultData) resultData = {}
@@ -789,127 +1175,23 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     } else {
         workflowData = workflowData[boxId]
     }
-    element.innerHTML = wpsInfo.title;
-    element.dataset.service = service;
-    element.dataset.process = wpsInfo.identifier;
-    element = document.getElementById("mod_abs");
-    if (wpsInfo.abstract) {
-        newElement = wpsInfo.abstract;
-    }
-    element.innerHTML = newElement;
+
+    /** create the heading of the modal */
+    vfw.workspace.modal.setHead(wpsInfo, service)
 
     /** inputs: **/
-    element = document.getElementById("mod_in");
-    element.innerHTML = "";
+    modInElement.innerHTML = "";
     let inElement = "", newNode = "", nodeText = "";
     let outElementIdList = [];
-    let countDropDowns = 0;
 
-    wpsInfo.dataInputs.forEach(function (item, index) {
-        newNode = document.createElement("p");
-
-        /** Set title of Input and set the 'required' flag if necessary **/
-        let titleText = "";
-        if (item.minOccurs == 0) {
-            titleText = " " + item.title + ": "
-        } else if (item.defaultValue) {
-            titleText = " " + item.title + ": "
-        } else if (item.required === true) {
-            titleText = " " + item.title + " (*) : ";
-            inElement.required = true;
-        } else {
-            titleText = " " + item.title + ": "
-        }
-
-        nodeText = document.createTextNode(titleText);
-        newNode.appendChild(nodeText);
-        if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
-            if ('maxOccurs' in item) {
-                if (item.maxOccurs === 1) {
-                    // nodeText = "";
-                    item.allowedValues.forEach(function (option) {
-                        vfw.workspace.modal.build_radio(item, newNode, option)
-                    });
-                }
-            }
-        } else if ('supportedValues' in item && Array.isArray(item.supportedValues) && item.supportedValues.length > 1) {
-            if ('maxOccurs' in item) {
-                if (item.maxOccurs === 1) {
-                    item.supportedValues.forEach(function (option) {
-                        vfw.workspace.modal.build_radio(item, newNode, option)
-                    });
-                }
-            }
-        } else if ('keywords' in item && item.keywords.includes('pattern')) {
-            vfw.workspace.modal.build_regexText(item, newNode)
-        } else if ('keywords' in item) {
-            countDropDowns = vfw.workspace.modal.build_dropdown(item, newNode, countDropDowns)
-
-            /** Set input element according to dataType */
-        } else {
-            inElement = document.createElement("INPUT");
-            inElement.id = item.identifier;
-            inElement.name = item.identifier;
-            inElement.setAttribute("list", item.identifier + '_list');
-
-            switch (item.dataType) {
-                case 'string':
-                    inElement.type = "text";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) {
-                        inElement.value = item.defaultValue;
-                    }
-                    break;
-                case 'boolean':
-                    inElement.type = "checkbox";
-                    if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;
-                    break;
-                case 'dateTime':
-                    inElement.type = "datetime-local";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'float':
-                    inElement.type = "number";
-                    inElement.step = "0.000001";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'integer':
-                    inElement.type = "number";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'positiveInteger':
-                    inElement.type = "number";
-                    inElement.min = "0";
-                    inElement.appendChild(vfw.workspace.modal.set_textfield_opt(item, resultData, sessionStoreData))
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                case 'ComplexData':
-                    inElement.type = "text";
-                    if ('defaultValue' in item) {
-                        if ('mimeType' in item.defaultValue) inElement.value = item.defaultValue.mimeType;
-                    }
-                    break;
-                case 'BoundingBoxData':
-                    console.error('you have to handle BoundingBoxData properly');
-                    if ('defaultValue' in item) inElement.value = item.defaultValue;
-                    break;
-                default:
-                    console.error(' new dataType: ', item.dataType)
-            }
-            if (item.minOccurs > 0) {
-                inElement.required = true
-            newNode.appendChild(inElement);
-        }
-        if (typeof (newNode) === 'object') element.appendChild(newNode)
+    /** Loop over input parameters and create an appropriate input element for each */
+    Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
+        newNode = vfw.html.createInputElement(entry_value, resultData, sessionStoreData);
+        if (typeof (newNode) === 'object') modInElement.appendChild(newNode)
     });
 
     /** outputs: **/
     document.getElementById("mod_out").innerHTML = "";
-
-    element = document.getElementById("mod_out");
 
     nodeText = document.createElement("p");
     nodeText.appendChild(document.createTextNode(" Name for output in data store: "));
@@ -918,11 +1200,16 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     newNode.appendChild(nodeText);
     let outElement = document.createElement("input");
     newNode.appendChild(outElement);
-    if (typeof (newNode) === 'object') element.appendChild(newNode);
+    if (typeof (newNode) === 'object') modOutElement.appendChild(newNode);
     let modal = document.getElementById("workModal");
     modal.setAttribute("name", wpsInfo.identifier);
     modal.style.display = "block";
     let currentModal = new vfw.workspace.modalObj(wpsInfo.identifier, outElementIdList);
+
+    let batchBtn = modFootElement.getElementsByClassName("work_modal-createbatch")[0]
+    batchBtn.addEventListener("click", function (evt) {
+        vfw.workspace.modal.openBatchprocess('modal', wpsInfo, service);
+    });
 }
 
 /**
@@ -933,10 +1220,10 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
  * @param {object} sessionStoreData
  */
 vfw.workspace.modal.set_textfield_opt = function (item, resultData, sessionStoreData) {
+    const type = item.dataType;
     let inDatalist = "";
-    let type = item.dataType;
     inDatalist = document.createElement("DATALIST");
-    inDatalist.setAttribute("id", item.identifier + '_list');
+    inDatalist.setAttribute("id", 'mod_in_el_' + item.title + '_list');  // item.identifier + '_list');
     let optElement = "";
     Object.entries(resultData).forEach((dataset) => {
         if (dataset[1].type === type) {
@@ -1004,7 +1291,7 @@ vfw.workspace.workflow.run = function () {
         url: vfw.var.DEMO_VAR + "/workspace/workflowrun",
         data: {
             processrun: JSON.stringify({'workflow': preppedWorkflow, 'chain': processChain}),
-            'csrfmiddlewaretoken': csrf_token,
+            'csrfmiddlewaretoken': vfw.var.csrf_token,
         }, /** data sent with post request **/
     })
         .done(function (result) {
@@ -1018,7 +1305,6 @@ vfw.workspace.workflow.prep_wps_workflow = function (workflow, processChain) {
     let outputName;
 
     for (let i of processChain) {
-        console.log('i: ', i)
         outputName = workflow[i].output_ids === [] ? workflow[i].name + "_" : workflow[i].name;
         preppedWorkflow[i] = {
             id: workflow[i].orgid,
@@ -1031,7 +1317,6 @@ vfw.workspace.workflow.prep_wps_workflow = function (workflow, processChain) {
             value_list: workflow[i].input_values,
         }
     }
-
     return preppedWorkflow;
 }
 
@@ -1040,7 +1325,7 @@ vfw.workspace.workflow.prep_wps_workflow = function (workflow, processChain) {
  * Remove boxes from Dropzone, from Sessionstorage and set workflow name to default name.
  */
 vfw.workspace.workflow.clear_workflow = function () {
-    canvas.clear();
+    vfw.draw2d.canvas.clear();
     vfw.session.set_workflow_name()
     document.getElementById("workflow_name").value = gettext('my workflow')
     sessionStorage.setItem('workflow', JSON.stringify({'name': "my workflow"}))
@@ -1061,11 +1346,12 @@ vfw.workspace.workflow.create_processTree = function (workflow) {
     let processDict = {};
     let processTree = {};
     let endNode = [];
+    let orderedProcesses = [];
+    let boxIndex = 0;
 
     // get processes of workflow
     Object.entries(workflow).forEach(function (box, i) {
         if (box[1].source === 'toolbar') {
-            console.log('box: ', i, box)
             processList.push(box[0])
             processDict[box[0]] = {children: box[1].input_ids};
             processDict[box[0]].parents = box[1].output_ids;
@@ -1094,7 +1380,6 @@ vfw.workspace.workflow.create_processTree = function (workflow) {
         }
         let tree = {};
         for (let i of processDict[ID].children) {
-            console.log('+ i: ', i)
             tree[i] = allProcesses.includes(i) && typeof processDict[i].children != "undefined" ? _createTree(i, processDict, processList, allProcesses) : {};
         }
         return tree;

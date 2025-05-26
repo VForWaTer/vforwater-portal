@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import WebProcessingService
+from .models import WebProcessingService, WpsResults, WpsDescription
 from .import models
 from django.forms import ModelForm, PasswordInput
 

@@ -11,56 +11,49 @@
 </head>
 
 <body>
+{{ processes|json_script:"processes-data" }}
+
 <script>
+  vfw.var.processes = JSON.parse(document.getElementById('processes-data').textContent);
+
   /**
    * Build Type indicators for buttons in Toolbox
    * Don't draw a marker, this is done with css. Set only respective class here.
    * @param id
-   * @param invalues
-   * @param outvalues
    */
-  function inoutIndicator(id, invalues, outvalues) {
+  function inoutIndicator(id) {
+    let invalues = JSON.parse(vfw.var.processes[id].inputs);
+    let outvalues = JSON.parse(vfw.var.processes[id].outputs);
     let element = document.getElementById(id);
-    invalues.forEach(function (val) {
-      if (val.includes('pattern')) {
-        element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val[0] + '" ' +
-          'style="display: inline-block;" title="Input: ' + val[0] + '"></span>';
-      } else if (Array.isArray(val) && val.length > 1) {
-        let newHeader = "";
-        val.forEach(function (inVal) {
-          newHeader += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-            'class="' + inVal + ' "title="Input: ' + val + '"></span>';
-        });
-        element.getElementsByTagName("button-header")[0].innerHTML +=
-          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newHeader + '<b>)</b></span>';
-      } else {
-        element.getElementsByTagName("button-header")[0].innerHTML += '<span class="' + val + '" ' +
-          'style="display: inline-block;" title="Input: ' + val + '"></span>';
+    let headerHTML = '';
+    let footerHTML = '';
+
+    for (const [key, value] of Object.entries(invalues)) {
+      headerHTML += '<span class="' + value + '" ' +
+        'style="display: inline-block;" title="Input: ' + value + '"></span>';
+    }
+    element.getElementsByTagName("button-header")[0].innerHTML += headerHTML;
+
+    for (const [key, value] of Object.entries(outvalues)) {
+      let val = value.type;
+      if (value.type === "object" && value.contentMediaType === "application/json") {
+        val = "json"
       }
-    });
-    outvalues.forEach(function (val) {
-      if (Array.isArray(val) && val.length > 1) {
-        let newFooter = "";
-        val.forEach(function (outVal) {
-          newFooter += '<span style="margin-left: 1px; margin-right: 1px;" ' +
-            'class="' + outVal + ' "title="Output: ' + val + '" ></span>';
-        });
-        element.getElementsByTagName("button-footer")[0].innerHTML +=
-          '<span style="display: flex; overflow: hidden; font-size: larger;"><b>(</b>' + newFooter + '<b>)</b></span>';
-      } else {
-        element.getElementsByTagName("button-footer")[0].innerHTML +=
-          '<span style="align-self: flex-end;" <span class="' + val + '" ' +
-          'title="Ouput: ' + val + '"></span></div>';
-      }
-    })
+      footerHTML += '<span style="align-self: flex-end;" <span class="' + val + '" ' +
+        'title="Ouput: ' + val + '"></span></div>';
+
+    }
+    element.getElementsByTagName("button-footer")[0].innerHTML += footerHTML;
+
   }
+
 </script>
 <!--   Sidenav/menu -->
 <!--   Show Data selected in Home in Data Store and start database loader -->
 <nav class="w3-sidenav w3-collapse w3-white w3-animate-right" style="z-index:0;width:300px;right:0"
      id="myToolbar">
   <br>
-  <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()"
+  <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.w3_Close()"
      title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
   <hr style="margin-bottom:0;">
   <div class="w3-container ">
@@ -72,12 +65,19 @@
   <div class="row col-md-8 col-md-offset-2" id="toolbar">
     {% if wps_services %}
       <div class="list-group">
-        {% for wps in wps_services %}
+        {% if "Error" in service %}
           <a
-                  class="list-group-item wps">
-            <h6 class="list-group-item-heading title">{{ wps.identification.title }}</h6>
+            class="list-group-item wps">
+            <h3 class="list-group-item-heading title">{{ wps_services }}</h3>
           </a>
-        {% endfor %}
+        {% else %}
+          {% for wps in wps_services %}
+            <a
+              class="list-group-item wps">
+              <h6 class="list-group-item-heading title">{{ wps }}</h6>
+            </a>
+          {% endfor %}
+        {% endif %}
       </div>
     {% else %}
       <p>Currently there are no WPS services or tools linked to this instance. We are working on this issue,
@@ -85,26 +85,26 @@
     {% endif %}
     <table style="width:100%">
       <div class="list-group">
-        {% for identifier, process in sessiondata.items %}
+        {% for identifier, process in processes.items %}
           {% if identifier != "dbloader" %}
-          <tr>
-            <div id="{{ identifier }}" class="process w3-card-2"
-                 onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');"
-                 title="{{ process.abstract }}" draggable="true" ondragstart="dragstart_handler(event)"
-                 data-service="{{ service }}" data-process="{{ identifier }}"
-                 style="cursor:pointer;">
-              <button-header class="w3-container" style="font-size: smaller">
-              </button-header>
-              <div value="{{ process.processin }}" class=" w3-container">
-                <h7 class="title">{{ process.title }}
-                </h7>
-              </div>
-              <button-footer class="w3-container" style="font-size: smaller">
-              </button-footer>
-              <style onload="inoutIndicator('{{ identifier }}', {{ process.processin }}, {{ process.processout }})"></style>
+            <tr>
+              <div id="{{ identifier }}" class="process w3-card-2"
+                   onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');"
+                   title="{{ process.description }}" draggable="true" ondragstart="dragstart_handler(event)"
+                   data-service="{{ service }}" data-process="{{ identifier }}"
+                   style="cursor:pointer;">
+                <button-header class="w3-container" style="font-size: smaller">
+                </button-header>
+                <div value="{{ process.inputs }}" class=" w3-container">
+                  <h7 class="title">{{ process.title }}
+                  </h7>
+                </div>
+                <button-footer class="w3-container" style="font-size: smaller">
+                </button-footer>
+                <style onload="inoutIndicator('{{ identifier }}')"></style>
 
-            </div>
-          </tr>
+              </div>
+            </tr>
           {% endif %}
         {% endfor %}
       </div>
@@ -116,25 +116,9 @@
 </nav>
 
 {#  Overlay effect when opening sidenav on small screens#}
-<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer"
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.w3_Close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
 
-<script>
-  $.ajax({
-    url: vfw.var.DEMO_VAR + "/workspace/updatetools",
-    data: {
-      'csrfmiddlewaretoken': csrf_token,
-    },
-  })
-    .then(function(result){
-      if (result['wps'].length > 0) {
-        console.log('Got a database update. Please refresh page for new data for tool ', result)
-      }
-    })
-  .fail(function(result) {
-    console.warn('No WPS accessible: ')
-  })
-</script>
 </body>
 
 

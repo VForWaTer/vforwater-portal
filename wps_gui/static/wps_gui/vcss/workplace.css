@@ -1,3 +1,10 @@
+/*
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+*/
+
 #workflowbuilder {
     position: absolute;
     right: 300px;
@@ -87,28 +94,6 @@ p.modal-datainfo {
     color: white;
 }
 
-/** Table to show dropdowns in modal in one line **/
-.divTable {
-    display: table;
-    margin: 1px 2px;
-}
-.divTbButtons {
-    alignment: center;
-    width: 30px;
-    margin: 2px;
-}
-.tblRow {
-    display: flex;
-    justify-content: center;
-}
-.tblCell {
-    display: flex;
-    align-items: center;
-}
-.divTblRight {
-    width: 220px;
-}
-
 .red_border_figure {
     fill: chocolate;
     stroke: cornflowerblue;
@@ -120,6 +105,26 @@ p.modal-datainfo {
     background-color: blue;
     /*fill: lightyellow;*/
     color: darkblue;
+}
+
+.process-state {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    /*background: red;*/
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.process-ERROR {
+    background: firebrick;
+}
+.process-CREATED, .process-ACCEPTED {
+    background: orange;
+}
+.process-FINISHED, .process-successful {
+    background: green;
 }
 
 /*
@@ -162,3 +167,5 @@ rect {
 .workflowBox {
 
 }
+
+

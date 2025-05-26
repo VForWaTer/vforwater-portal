@@ -1,8 +1,12 @@
-{#<!DOCTYPE html>#}
-{#<html lang="en">#}
+<!--
+Project Name: V-FOR-WaTer
+Author: Marcus Strobl
+Contributors:
+License: MIT License
+-->
+
 <meta charset="UTF-8">
 
-{#{% extends "vfw_home/base.html" %}#}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
@@ -25,9 +29,14 @@
     <p align="right"><em>(*) = {% trans "required" %}</em></p>
     <div class="modal-footer" id="modal-footer" style="margin-left: -10px; margin-right: -10px;">
       <span-c class="work_modal-cancel modal-btn" title="{% trans "Close window" %}">Cancel</span-c>
-      <span-drop class="work_modal-drop modal-btn" title="{%  trans "Place tool in Dropzone. If tool already exists only change values." %}">Drop</span-drop>
+      <span-drop class="work_modal-drop modal-btn"
+                 title="{% trans "Place tool in Dropzone. If tool already exists only change values." %}">Drop
+      </span-drop>
       <span-r class="work_modal-run modal-btn">Run</span-r>
-      <span-out class="work_modal-output" style="display: none">{%  trans "View result" %}</span-out>
+      <span-createbatch class="work_modal-createbatch modal-btn modal-btn-left"
+                        title="{% trans "Create a batch job for this tool." %}">Create Batch Job
+      </span-createbatch>
+      <span-out class="work_modal-output" style="display: none">{% trans "View result" %}</span-out>
       {#            <span-r class="modal-run" onclick="runProcess()">Run</span-r>#}
       <h3></h3>
     </div>
@@ -35,80 +44,36 @@
 
 </div>
 
-
-{# Template to build a second dropdown for selection of multiple valuies in dropdown #}
-<template id="twoDropDown">
-  <span>
-  <div class="divTable">
-    <div class="tblRow">
-      <div id="tDD_left_cell" class="tblCell">
-      </div>
-      <div class="tblCell">
-        <div class="divTable">
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons allIn" onclick=
-                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
-                      'allIn')"><b>>></b></button>
-            </div>
-          </div>
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons oneIn" onclick=
-                      "DropdownToDropdown(this.parentNode.parentNode.parentNode.parentNode.parentNode,
-                      'oneIn')"><b>></b></button>
-            </div>
-          </div>
-        </div>
-        <div class="divTable">
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons allOut" onclick=
-                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
-                      'allOut')"><b><<</b></button>
-            </div>
-          </div>
-          <div class="tblRow">
-            <div class="tblCell">
-              <button class="divTbButtons oneOut" onclick=
-                      "DropdownToDropdown(this.parentElement.parentElement.parentElement.parentElement.parentElement,
-                      'oneOut')"><b><</b></button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="tDD_right_cell" class="tblCell">
-      </div>
-    </div>
-  </div>
-    </span>
-</template>
-
 <script>
-  // Get the modal
-  let modal = document.getElementById("workModal");
-  // Get the <span> element that closes the modal
-  let wspan = document.getElementsByClassName("work_close")[0];
-  let wspan_c = document.getElementsByClassName("work_modal-cancel")[0];
-  let wspan_drop = document.getElementsByClassName("work_modal-drop")[0];
-  let wspan_r = document.getElementsByClassName("work_modal-run")[0];
-  // When the user clicks on <span> (x), close the modal
-  wspan.onclick = () => closeModal();
-  wspan_r.onclick = () => {
-    if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) vfw.workspace.modal.run_process()
+  /** Get the modal */
+  vfw.html.workModal = document.getElementById("workModal");
+  /** Get the <span> elements that add actions to the modal */
+  vfw.html.workModal.close = document.getElementsByClassName("work_close")[0];
+  vfw.html.workModal.cancel = document.getElementsByClassName("work_modal-cancel")[0];
+  vfw.html.workModal.drop = document.getElementsByClassName("work_modal-drop")[0];
+  vfw.html.workModal.run = document.getElementsByClassName("work_modal-run")[0];
+
+  /** Add click functions to the html elements */
+  /** When the user clicks on <span> (x), close the modal */
+  vfw.html.workModal.close.onclick = () => closeModal();
+
+  vfw.html.workModal.run.onclick = () => {
+    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal))
+      vfw.workspace.modal.runProcess()
   };
-  wspan_drop.onclick = (event) => {
+  vfw.html.workModal.drop.onclick = (event) => {
     let modal_value = document.getElementById("workflowID").value;
     let tool_id;
     let service;
-    if (vfw.workspace.is_required(modal) && vfw.workspace.check_pattern(modal)) {
+    if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal)) {
 
       /** check if the workspace box exists already in the sessionstorage */
       if (modal_value == "") {
+        console.log('E')
         vfw.workspace.drop_on_click(event);
         closeModal();
       } else {
-        let modal_data = vfw.workspace.modal.prep_data()
+        let modal_data = vfw.workspace.modal.prepData()
         modal_value = JSON.parse(modal_value)
         tool_id = modal_value['id'];
         service = modal_value['service'];
@@ -123,11 +88,159 @@
         /** Compare tool in workflow with modal and change only changed values.
          * Then check if tool (one if the changes) is connected with other elements to drop and get ports **/
         for (let i in modal_data.in_type_list) {
-            if (box_types.includes(modal_data.in_type_list[i]) && modal_data.inId_list[i]) {
+          if (vfw.var.DATATYPES.includes(modal_data.in_type_list[i]) && modal_data.inId_list[i]) {
+            if (modal_data.inId_list[i] != active_tool.input_ids[i]) {
+              metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modal_data.inId_list[i]]
+              coords = vfw.workspace.get_drop_coords();
+              newbox = vfw.workspace.drop_handler(metadata, coords['x'] - 40, coords['y'] - 40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
+              change_values = {
+                'target': {
+                  'index': i,
+                  'boxid': tool_id,
+                  'orgid': modal_data.id,
+                  'value': modal_data.value_list[i],
+                },
+                'source': {
+                  'index': i,
+                  'boxid': newbox.boxID,
+                  'orgid': modal_data.inId_list[i],
+                  'value': modal_data.id,
+                }
+              }
+              event.target.index = i;
+            }
+            // add_connection(dataport, toolport);
+            else if (active_tool.input_values[i] != modal_data.value_list[i]) {
+
+              change_values = {
+                'target': {
+                  'index': i,
+                  'boxid': tool_id,
+                  'orgid': modal_data.id,
+                  'value': modal_data.id,
+                },
+                'source': {
+                  'index': i,
+                  'boxid': modal_data.inId_list[i],
+                  'orgid': modal_data.id,
+                  'value': modal_data.value_list[i],
+                }
+              }
+            }
+          }
+          change_values['state'] = 'change';
+          vfw.workspace.workflow.update(change_values)
+        }
+      }
+    }
+  };
+  vfw.html.workModal.cancel.onclick = () => closeModal();
+
+  /** When the user clicks anywhere outside of the modal, close it */
+  window.onclick = event => {
+    if (event.target === vfw.html.workModal) closeModal()
+  };
+
+  /** Close the modal and reset the styles within the modal */
+  function closeModal() {
+    document.getElementsByClassName("work_modal-output")[0].style.display = "none";
+    vfw.html.workModal.style.display = "none";
+    vfw.workspace.modal.setColor("dodgerblue");
+    document.getElementById("workflowID").value = "";
+  }
+</script>
+
+<script>
+  vfw.html.workModalObj = class {
+    constructor() {
+      this.modal = document.getElementById("workModal");
+      this.abstract = document.getElementById("modal-abstract");
+      this.header = document.getElementById("modal-header");
+      this.footer = document.getElementById("modal-footer");
+      this.in = document.getElementById("mod_in");
+      this.out = document.getElementById("mod_out");
+      this.result = document.getElementById("mod_result");
+      this.closeBtn = document.getElementsByClassName("work_close")[0];
+
+      this.cancel = document.getElementsByClassName("work_modal-cancel")[0];
+      this.drop = document.getElementsByClassName("work_modal-drop")[0];
+      this.run = document.getElementsByClassName("work_modal-run")[0];
+      this.outClass = document.getElementsByClassName("work_modal-output")[0];
+      this._bindEvents();
+    }
+
+    _bindEvents() {
+      this.closeBtn.onclick = () => this.close();
+      this.run.onclick = () => {
+        if (vfw.workspace.is_required(this.modal) && vfw.workspace.checkPattern(this.modal)) {
+          vfw.workspace.modal.runProcess()
+        }
+      };
+      this.drop.onclick = (event) => this._drop(event);
+      this.cancel.onclick = () => this.close();
+
+      window.onclick = event => {
+        if (event.target === this.modal) this.close()
+      };
+    }
+
+    /**
+     * Check if an input has a regex pattern and if input is correct.
+     *
+     * @param {HTMLElement} checkElement Element to be checked if filled.
+     */
+    _checkPattern(checkElement) {
+      const dropDInputs = this.in.getElementsByTagName('select');
+      let dDInput, stored;
+      /** first loop over each dropdown in input, then over values in dropdown **/
+      for (let i = 0; i < dropDInputs.length; i++) {
+        dDInput = dropDInputs[i].selectedOptions;
+        stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value];
+        if (stored.type == "geometry") {
+          let geoJsonFormat = new ol.format.GeoJSON();
+          let geoJsonPolygon = geoJsonFormat.writeGeometry(new ol.geom.Polygon(stored['geom']))
+          if (!vfw.util.isValidGeoJson(JSON.parse(geoJsonPolygon))) {
+            console.warn("Not a valid GeoJSON")
+            return false
+          } else if (!vfw.util.isValidPolygon(JSON.parse(geoJsonPolygon))) {
+            console.warn("Not a valid Polygon")
+            return false
+          }
+        }
+      }
+      return true
+    }
+
+    _drop(event) {
+      let modal_value = document.getElementById("workflowID").value;
+      let tool_id;
+      let service;
+      if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal)) {
+        /** check if the workspace box exists already in the sessionstorage */
+        if (modal_value == "") {
+          vfw.workspace.drop_on_click(event);
+          this.close();
+        } else {
+          let modal_data = vfw.workspace.modal.prepData()
+          modal_value = JSON.parse(modal_value)
+          tool_id = modal_value['id'];
+          service = modal_value['service'];
+          let toolbox = canvas.getFigure(tool_id)
+          event.state = 'change';
+          event.id = tool_id;
+          toolbox.state = 'change';
+          let metadata, newbox, coords;
+          let change_values = {};
+          let workflow = vfw.session.get_workflow();
+          let active_tool = workflow[tool_id];
+          /** Compare tool in workflow with modal and change only changed values.
+           *  * Then check if tool (one if the changes) is connected with other elements to drop and get ports **/
+          for (let i in modal_data.in_type_list) {
+            if (vfw.var.DATATYPES.includes(modal_data.in_type_list[i]) && modal_data.inId_list[i]) {
               if (modal_data.inId_list[i] != active_tool.input_ids[i]) {
                 metadata = JSON.parse(sessionStorage.getItem("dataBtn"))[modal_data.inId_list[i]]
                 coords = vfw.workspace.get_drop_coords();
-                newbox = vfw.workspace.drop_handler(metadata, coords['x']-40, coords['y']-40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
+                newbox = vfw.workspace.drop_handler(metadata, coords['x'] - 40, coords['y'] - 40, 'sidebtn' + modal_data.inId_list[i], 'workspace')
                 change_values = {
                   'target': {
                     'index': i,
@@ -144,46 +257,302 @@
                 }
                 event.target.index = i;
               }
-               else if (active_tool.input_values[i] != modal_data.value_list[i]) {
-
+              // add_connection(dataport, toolport);
+              else if (active_tool.input_values[i] != modal_data.value_list[i]) {
                 change_values = {
-                'target': {
-                  'index': i,
-                  'boxid': tool_id,
-                  'orgid': modal_data.id,
-                  'value': modal_data.id,
-                },
-                'source': {
-                  'index': i,
-                  {#'boxid': newbox.boxID,#}
-                  'boxid': modal_data.inId_list[i],
-                  'orgid': modal_data.id,
-                  'value': modal_data.value_list[i],
+                  'target': {
+                    'index': i,
+                    'boxid': tool_id,
+                    'orgid': modal_data.id,
+                    'value': modal_data.id,
+                  },
+                  'source': {
+                    'index': i,
+                    'boxid': modal_data.inId_list[i],
+                    'orgid': modal_data.id,
+                    'value': modal_data.value_list[i],
+                  }
                 }
               }
-              }
+            }
+            change_values['state'] = 'change';
+            vfw.workspace.workflow.update(change_values)
           }
-        change_values['state'] = 'change';
-          vfw.workspace.workflow.update(change_values)
         }
       }
     }
-  };
-  wspan_c.onclick = () => {
-    closeModal()
-  };
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = event => {
-    if (event.target == modal) closeModal()
-  };
 
-  function closeModal() {
-    document.getElementsByClassName("work_modal-output")[0].style.display = "none";
-    modal.style.display = "none";
-    vfw.workspace.modal.set_Color("dodgerblue");
-    document.getElementById("workflowID").value = "";
+    /**
+     *  * Check if an input (an Element of a wps) is required and if it is required check if the input has a value.
+     *  *
+     *  * @param {HTMLElement} checkElement Element to be checked if filled.
+     *  */
+    _is_required(checkElement) {
+      var passed = true;
+      let requiredList = checkElement.querySelectorAll("[required]");
+      let loopLength = requiredList.length;
+      let radioName = "";
+      let checkedRadioName = "";
+      for (let i = 0; i < loopLength; i++) {
+        if (requiredList[i].type === 'radio') {
+          radioName = requiredList[i].name;
+          if (checkedRadioName !== radioName) {
+            if ($('input[name=' + radioName + ']:checked').length > 0) {
+              checkedRadioName = radioName;
+            } else {
+              alert("Please fill all required fields that are marked with (*).");
+              passed = false;
+              break
+            }
+          }
+        } else {
+          if (!requiredList[i].value) {
+            alert("Please fill all required fields that are marked with (*).");
+            passed = false;
+            break
+          }
+        }
+      }
+      return passed;
+    }
+
+    /**
+     * Collect data from modal neeeded to run a process.
+     */
+    _prepData = function () {
+      /** collect inputs **/
+      const dropDInputs = this.in.getElementsByTagName('select');
+      const inputInputs = this.in.getElementsByTagName('input');
+      var inKey = [];
+      var inValue = [];
+      let indict = {};  // pywps needed a set. For geoapi processes we can use a dict. TODO: delete set if not needed.
+      var inType = [];
+      var inId = [];
+      let dDInput = 0;
+      let valueList = [];
+      let typeList = [];
+      let inIdList = [];
+      let stored;
+
+      /** first loop over each dropdown in input, then over values in dropdown **/
+      for (let i = 0; i < dropDInputs.length; i++) {
+        dDInput = dropDInputs[i].selectedOptions;
+        valueList = [];
+        typeList = [];
+        inIdList = [];
+
+        /** if many inputs in dropdown **/
+        if (dDInput.length > 1) {
+          for (let j = 0; j < dDInput.length; j++) {
+            stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[j].value]
+            //  Find solution for data sources that are not in the Entries table (i.e. results)
+            valueList.push(parseInt(stored['dbID']))
+            typeList.push(stored['type']);
+            inIdList.push(dDInput[j].value);
+          }
+          inValue.push(valueList);
+          inKey.push(dropDInputs[i].name);
+          inType.push(typeList);
+          inId.push(inIdList);
+          indict[dropDInputs[i].name] = valueList;
+
+          /** else if one input element in dropdown **/
+        } else {
+          if (dDInput[0].value.split(",").length == 1) {
+            stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dDInput[0].value]
+            if (stored.type !== "geometry") {
+              //  Find solution for data sources that are not in the Entries table (i.e. results)
+              let intValue = dropDInputs[i].multiple ? [parseInt(stored['dbID'])] : parseInt(stored['dbID']);
+              inValue.push(intValue);
+            } else {
+              let polygon = new ol.geom.Polygon(stored['geom']);
+              let geoJsonFormat = new ol.format.GeoJSON();
+              polygon.applyTransform(ol.proj.getTransform('EPSG:3857', 'EPSG:4326'));
+              inValue.push(geoJsonFormat.writeGeometry(polygon));
+            }
+            inType.push(stored['type']);
+            indict[dropDInputs[i].name] = stored['source'] + stored['dbID'];
+          } else {
+            let groupInValues = [];
+            let groupInTypes = [];
+            // Try to get wps ID for data
+            for (let dataset of dDInput[0].value.split(",")) {
+              stored = JSON.parse(sessionStorage.getItem("dataBtn"))[dataset]
+              //  Find solution for data sources that are not in the Entries table (i.e. results)
+              groupInValues.push(parseInt(stored['dbID']))
+              groupInTypes.push(stored['type']);
+            }
+            inValue.push(groupInValues)
+            inType.push(groupInTypes);
+            indict[dropDInputs[i].name] = dDInput[0].value.split(",");
+          }
+          inKey.push(dropDInputs[i].name);
+          inId.push(dDInput[0].value);
+        }
+      }
+
+      /** now check the other elements like radio buttons or checkboxes **/
+      for (let i = 0; i < inputInputs.length; i++) {
+        if (inputInputs[i].type == "radio") {
+          if (inputInputs[i].checked == true) {
+            inKey.push(inputInputs[i].name);
+            inValue.push(inputInputs[i].value);
+            inType.push('string');
+            inId.push('');
+            indict[inputInputs[i].name] = inputInputs[i].value;
+          }
+        } else if (inputInputs[i].type == "checkbox") {
+          inKey.push(inputInputs[i].name);
+          if (inputInputs[i].checked == true) {
+            inValue.push(true);
+            inType.push('boolean');
+            inId.push('');
+            indict[inputInputs[i].name] = true;
+          } else {
+            inValue.push(false);
+            inType.push('boolean');
+            inId.push('');
+            indict[inputInputs[i].name] = false;
+          }
+        } else {
+          inKey.push(inputInputs[i].name);
+          inValue.push(inputInputs[i].value);
+          inType.push('');
+          inId.push('');
+          indict[inputInputs[i].name] = inputInputs[i].value;
+        }
+      }
+
+      /** collect outputs **/
+      let outModal = document.getElementById('mod_out');
+      let outputs = outModal.getElementsByTagName('input');
+      let outDict = {};
+      for (let i = 0; i < outputs.length; i++) {
+        if (outputs[i].type == "radio") {
+          if (outputs[i].checked == true) {
+            outDict[outputs[i].name] = outputs[i].value;
+          }
+        } else {
+          outDict[outputs[i].name] = outputs[i].value;
+        }
+      }
+
+      /** find respective process **/
+      let modhead = document.getElementById('mod_head');
+      let wpsservice = modhead.dataset.service;
+      let identifier = modhead.dataset.process;
+
+      let outputName;
+      if (outputs[0].value === "") {
+        outputName = identifier + "_";
+      } else {
+        outputName = outputs[0].value;
+      }
+      return {
+        'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
+        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId, 'in_dict': indict,
+      }
+    }
+
+    _reset() {
+      this.setColor("dodgerblue");
+      document.getElementById("workflowID").value = "";
+    }
+
+
+    /**
+     * Build modal (popup) for a selected wps tool.
+     *
+     * @param {object} wpsInfo - Complete description from the process
+     * @param {string} service - which wps server
+     */
+    build(wpsInfo, service, values = [], boxId = []) {
+      /** Collect the data that is available for the tools. If key has no data an empty dict is returned.
+       * @param {string} store - Which key of the Session Storage should be loaded
+       */
+      const getStorageOrDict = function (store) {
+        return sessionStorage.getItem(store) ? JSON.parse(sessionStorage.getItem(store)) : {};
+      }
+      let sessionStoreData = getStorageOrDict("dataBtn");
+      let resultData = getStorageOrDict("resultBtn");
+      let workflowData = getStorageOrDict("workflow");
+
+      let newElement = "";
+
+      if (!sessionStoreData) sessionStoreData = {}
+      if (!resultData) resultData = {}
+      if (!workflowData) {
+        workflowData = {}
+      } else {
+        workflowData = workflowData[boxId]
+      }
+
+      /** create the heading of the modal */
+      vfw.workspace.modal.setHead(wpsInfo, service)
+
+      /** inputs: **/
+      this.in.innerHTML = "";
+      let inElement = "", newNode = "", nodeText = "";
+      let outElementIdList = [];
+
+      // wpsInfo.dataInputs.forEach(function (item, index) {  // old wps used a list
+      Object.entries(wpsInfo.inputs).forEach(function (entry_value, index) {
+        newNode = vfw.html.createInputElement(entry_value, resultData, sessionStoreData);
+        if (typeof (newNode) === 'object') this.in.appendChild(newNode)
+      });
+
+      /** outputs: **/
+      document.getElementById("mod_out").innerHTML = "";
+
+      nodeText = document.createElement("p");
+      nodeText.appendChild(document.createTextNode(" Name for output in data store: "));
+
+      newNode = document.createElement("div");
+      newNode.appendChild(nodeText);
+      let outElement = document.createElement("input");
+      newNode.appendChild(outElement);
+      if (typeof (newNode) === 'object') this.out.appendChild(newNode);
+      this.modal.setAttribute("name", wpsInfo.identifier);
+      this.modal.style.display = "block";
+      let currentModal = new vfw.workspace.modalObj(wpsInfo.identifier, outElementIdList);
+
+      let batchBtn = this.footer.getElementsByClassName("work_modal-createbatch")[0]
+      batchBtn.addEventListener("click", function (evt) {
+        vfw.workspace.modal.openBatchprocess('modal', wpsInfo, service);
+      });
+    }
+
+
+    close() {
+      this.outClass.style.display = "none";
+      this.modal.style.display = "none";
+      this._reset();
+    }
+
+    /** Add innerHTML to the result modal and open it. As standard the html code is part of a table.
+     * As an alternative one can also add just the html without table for is_simple = true.
+     *
+     * @param {string} html
+     * @param {boolean} js_simple
+     */
+    open(html, is_simple = false) {
+      const modal_values = vfw.session.get_workflow();
+      const json = vfw.session.get_wpsprocess(service, identifier);
+      console.log('json: ', json)
+      vfw.workspace.modal.build_modal(json, service)
+      /** Fill the tool with selection made to receive this result button */
+      if (typeof inputs === 'string') {
+        vfw.workspace.modal.setProcessValues(modal_values[inputs]['input_keys'], modal_values[inputs]['input_values'])
+      } else if (Array.isArray(inputs)) {
+        vfw.workspace.modal.setProcessValues(inputs[0], inputs[1])
+      }
+    }
+
+    setColor(color = "dodgerblue") {
+      this.header.style.backgroundColor = color;
+      this.footer.style.backgroundColor = color;
+      document.getElementsByClassName("work_modal-output")[0].style.display = "none";
+    }
   }
 
-
 </script>
-

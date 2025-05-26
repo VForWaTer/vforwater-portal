@@ -1,3 +1,10 @@
+<!--
+Project Name: V-FOR-WaTer
+Author: Elnaz Azmi
+Contributors: Marcus Strobl
+License: MIT License
+-->
+
 {% load static %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -10,7 +17,10 @@
     </style>
 </head>
 
-<body onload="vfw.sidebar.show_data(), vfw.workspace.workflow.draw_workflow()">
+<!-- Make old results of the user, found in the database, available for the result store button. (used in showData) -->
+{{ results|json_script:"resultsList-var" }}
+
+<body onload="vfw.sidebar.showData(), vfw.workspace.workflow.draw_workflow()">
   usage => can it be deleited? -->
 <!--   Sidenav/menu -->
 <nav class="w3-sidenav w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidenav">
@@ -20,7 +30,7 @@
             <img src="{% static 'vfw_home/images/logo_main.png' %}" style="width:200px"><br>
         </div>
     </div>
-    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()"
+    <a href="#" class="w3-padding-8 w3-hide-large w3-dark-grey w3-hover-black" onclick="vfw.sidebar.w3_Close()"
        title="close menu"><i class="fa fa-remove fa-fw"></i>{% trans "  Close Menu" %}</a>
     <hr style="margin-bottom:0px;">
 
@@ -30,31 +40,31 @@
         {% endblock %}
     </div>
 
-    <hr style="margin-bottom:0px;">
-
-    <div class="w3-container w3-light-turquoise">
-        <b title="{% trans "Area to make the datasets you have selected available for further use." %}">{% trans "Data store" %}</b>
-    </div>
-    <ul class="w3-ul w3-card-4 w3-white" id="workspace">
-        <b class="w3-btn-group">
-            <input class="w3-btn w3-blue w3-right" type="submit"
-                   onclick="vfw.sidebar.remove_all_datasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
-                   title="{% trans "Remove all datasets from data store" %}">
-        </b>
-    </ul>
-    <hr>
-
+  <hr style="margin-bottom:0px;">
     <div class="w3-container w3-light-turquoise">
         <b title={% trans "Area&#32to&#32make&#32your&#32results&#32ready&#32for&#32further&#32processing&#32or&#32visualisation&#32available." %}>{% trans "Result store" %}</b>
     </div>
     <ul class="w3-ul w3-card-4 w3-white" id="workspace_results">
         <b class="w3-btn-group">
             <input class="w3-btn w3-blue w3-right" type="submit"
-                   onclick="vfw.session.remove_all_results()" value="{% trans "Remove all results" %}" data-toggle="tooltip"
+                   onclick="vfw.session.removeAllResults()" value="{% trans "Remove all results" %}" data-toggle="tooltip"
                    title="{% trans "Remove all results from result store" %}">
         </b>
     </ul>
+<hr>
+    <div class="w3-container w3-light-turquoise">
+        <b title="{% trans "Area to make the datasets you have selected available for further use." %}">{% trans "Data store" %}</b>
+    </div>
+    <ul class="w3-ul w3-card-4 w3-white" id="workspace">
+        <b class="w3-btn-group">
+            <input class="w3-btn w3-blue w3-right" type="submit"
+                   onclick="vfw.session.removeAllDatasets()" value="{% trans "Remove all datasets" %}" data-toggle="tooltip"
+                   title="{% trans "Remove all datasets from data store" %}">
+        </b>
+    </ul>
+  <hr>
 </nav>
+{#context menu in sidebar.js#}
 
 <nav id="context-menu" class="context-menu">
     <ul class="context-menu__items">
@@ -95,6 +105,10 @@
         <li class="context-menu__item">
             <a href="#" class="context-menu__link" data-action="ViewResult"><i
                     class="fa fa-table"></i>{% trans " View as table" %}</a>
+
+        <li class="context-menu__item">
+            <a href="#" class="context-menu__link" data-action="ViewHTML"><i
+                    class="fa fa-table"></i>{% trans " Show HTML" %}</a>
         </li>
         <li class="context-menu__item">
             <a href="#" class="context-menu__link context-menu-plot" data-action="Plot"><i
@@ -111,26 +125,22 @@
     </ul>
 </nav>
 
-<nav id="loader-popup" class="mod-popup w3-center">
-    <a href="#" id="pop-closer" class="mod-popup-closer w3-hide"></a>
-    <div id="pop-content-side">
-    </div>
-    <a>
-        <h5>
-            <div id="popupText" class="mod-popup--inactive">{% trans " Please wait. Preparing data..." %}</div>
-        </h5>
-    </a>
-</nav>
+{% include 'vfw_home/context_modal.html' %}
+
+{% block loader_popup %}
+  {% include 'vfw_home/loader_popup.html' %}  {# used to show results in result store#}
+{% endblock  %}
 
 <nav id="img-popup" class="context-menu w3-center">
     <div id="imgPopup"></div>
 </nav>
 {#  Overlay effect when opening sidenav on small screens#}
-<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer"
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="vfw.sidebar.w3_Close()" style="cursor:pointer"
      title="close side menu" id="myOverlay"></div>
 
 {% block rModal %}
     {% include 'wps_gui/result_modal.html' %}
 {% endblock rModal %}
+
 </body>
 

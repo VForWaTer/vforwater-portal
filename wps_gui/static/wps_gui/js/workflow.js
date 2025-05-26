@@ -1,5 +1,11 @@
-class Box {
+/*
+ * Project Name: V-FOR-WaTer
+ * Author: Marcus Strobl
+ * Contributors:
+ * License: MIT License
+ */
 
+vfw.draw2d.Box = class {
     /**
      * Box class to be added (dropped) on a draw2d.Canvas Element.
      * @param {string} name Name of the box
@@ -31,7 +37,7 @@ class Box {
         this._connectable_types = ['array', 'iarray', 'varray', 'ndarray', '_2darray',
             'timeseries', 'vtimeseries', 'raster', 'vraster', 'idataframe', 'vdataframe',
             'time-dataframe', 'vtime-dataframe', 'html', 'plot', 'figure', 'image',
-            'string', 'boolean', 'float', 'integer', 'positiveInteger', 'dateTime', 'list']
+            'string', 'boolean', 'float', 'integer', 'positiveInteger', 'dateTime', 'list', 'geometry']
     }
 
     /**
@@ -98,7 +104,7 @@ class Box {
             width: this._boxwidth * 1.1,
             height: boxHeight,
             radius: 5,
-            bgColor: '#D9EFFD',
+            bgColor: vfw.colors.blue1,
             stroke: 0,
             cssClass: 'box-' + this._boxtype,
         })
@@ -176,6 +182,8 @@ class Box {
 
         port.setCssClass(porttype)
         port.on('click', function () {
+            vfw.workspace.modal.open_port(port.userData.service, port.userData.orgid,
+                port.userData.boxid, port.userData.index, port.cssClass, 'input');
         })
         port.on("connect", function (emitterPort, connection) {
             if (connection.port.getCssClass() === connection.connection.sourcePort.getCssClass()) {
@@ -206,8 +214,7 @@ class Box {
     }
 }
 
-
-class Connection {
+vfw.draw2d.Connection = class {
 
     constructor() {
     }
@@ -361,21 +368,31 @@ vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
     }
 });
 
+/**
+ * Interface to access draw2ddata in Session Storage
+ * @type {{setdata: vfw.session.draw2d.setdata, getworkflow: (function(): string)}}
+ */
 vfw.session.draw2d = {
+    /**
+     * Get workflow from Session Storage.
+     * @returns {string}
+     */
+    getworkflow: function () {
+        return sessionStorage.getItem("draw2ddata")
+    },
+    /**
+     * Write workflow to Session Storage. Data is taken directly from draw2d canvas.
+     */
     setdata: function () {
         let writer = new draw2d.io.json.Writer();
 
-        writer.marshal(canvas, function (json) {
+        writer.marshal(vfw.draw2d.canvas, function (json) {
             // convert the json object into string representation
             console.log('json writer: ', json)
             let jsonTxt = JSON.stringify(json, null, 2);
             sessionStorage.setItem("draw2ddata", jsonTxt)
 
         });
-    },
-
-    getworkflow: function () {
-        return sessionStorage.getItem("draw2ddata")
     },
 
 }
@@ -388,12 +405,11 @@ function vfw_drag() {
 
 }
 
-const canvas = new draw2d.Canvas('dropdiv');
+vfw.draw2d.canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
-connection = new Connection();
-canvas.installEditPolicy(connection.connectionPolicy);
-
+vfw.var.connection = new vfw.draw2d.Connection();
+vfw.draw2d.canvas.installEditPolicy(vfw.var.connection.connectionPolicy);
 
 /**
  * Collect metadata of element needed to draw a box.
@@ -411,7 +427,7 @@ vfw.workspace.workflow.process_drop_params = function (service, id) {
 
     if (metadata.hasOwnProperty('dataInputs')) {
         for (let i of metadata.dataInputs) {
-            if ('keywords' in i) {
+            if ('keywords' in i && !('dataType' in i)) {
 
                 for (let j of i['keywords']) {
                     inputs.push(j)
@@ -425,7 +441,7 @@ vfw.workspace.workflow.process_drop_params = function (service, id) {
     if (metadata.hasOwnProperty('processOutputs')) {
         for (let i of metadata.processOutputs) {
             if (i.identifier !== 'error') {
-                if ('keywords' in i) {
+                if ('keywords' in i && !('dataType' in i)) {
                     for (let j in i.keywords) {
                         outputs.push(j)
                     }
@@ -514,11 +530,6 @@ vfw.workspace.workflow.update = function (event) {
         } else if (event.hasOwnProperty('source')) {
             console.log('else if has to be impplemented here')
         }
-        workflow[event.target.boxid]['input_values'][event.target.index] = event.source.orgid;
-        workflow[event.target.boxid]['input_ids'][event.target.index] = event.source.boxid;
-        workflow[event.source.boxid]['output_values'][event.source.index] = event.target.orgid;
-        workflow[event.source.boxid]['output_ids'][event.source.index] = event.target.boxid;
-
     }
     sessionStorage.setItem('workflow', JSON.stringify(workflow))
     vfw.session.draw2d.setdata()
@@ -606,12 +617,12 @@ vfw.workspace.drop_handler = function (ev, x, y, id, source, service) {
     service = prepared_params.service;
 
     let boxID = box_param.orgid + vfw.workspace.workflow.get_workflow_id_affix()
-    let box = new Box(
+    let box = new vfw.draw2d.Box(
         box_param.name, box_param.orgid, box_param.type,
         box_param.inputs, box_param.outputs, source, service, boxID
     )
     newBox = box.box;
-    canvas.add(newBox, x, y);
+    vfw.draw2d.canvas.add(newBox, x, y);
 
     vfw.workspace.workflow.update({'state': 'drop', 'element': box, 'params': box_param});
     return {'box': newBox, 'boxID': boxID};
@@ -654,6 +665,20 @@ vfw.session.get_workflow = function () {
  * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
  * @return {obj} json - object of a Workflow
  */
+vfw.session.get_draw2ddata = function () {
+    let draw2ddata = JSON.parse(sessionStorage.getItem("draw2ddata"))
+    if (!draw2ddata) {
+        draw2ddata = {};
+        sessionStorage.setItem('draw2ddata', JSON.stringify(draw2ddata));
+    }
+    return draw2ddata
+}
+
+
+/**
+ * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
+ * @return {obj} json - object of a Workflow
+ */
 vfw.session.set_workflow_name = function (name = 'my workflow') {
     let workflow = JSON.parse(sessionStorage.getItem('workflow'))
     if (!workflow) {
@@ -689,6 +714,6 @@ vfw.workspace.workflow.draw_workflow = function () {
     let jsonDocument = vfw.session.draw2d.getworkflow()
     if (jsonDocument) {
         let reader = new draw2d.io.json.Reader();
-        reader.unmarshal(canvas, JSON.parse(jsonDocument));
+        reader.unmarshal(vfw.draw2d.canvas, JSON.parse(jsonDocument));
     }
 }
