@@ -20,7 +20,7 @@ testing the project, you can set `managed = False` in all `models.py` before you
 
 # Dependencies
 
-vforwater-portal is a Django project (we testet Django 3.2, python 3.7)
+vforwater-portal is a Django project (we testet Django 5.2, python 3.9)
 
 The following components are needed:
 * PostGIS (we testet postgresql 9.6, 10.6, 11.2 + postgis 2.4, 2.5)
@@ -28,4 +28,4 @@ The following components are needed:
 
 # License
 
-Vforwater-portal is licensed under the MIT license.
+vforwater-portal is licensed under the MIT license.
