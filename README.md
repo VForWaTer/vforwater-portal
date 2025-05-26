@@ -5,9 +5,9 @@ Vforwater-portal is an open source virtual research environment written in djang
 ![Dev status](https://img.shields.io/badge/development%20status-2%20--%20Pre--alpha-orange)
  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-![Screenshot](screenshot.png)
+![Screenshot](VFORWaTer_home.png)
 
-*Above: Screenshot of V-FOR-WaTer Home Screen.*
+*Above: Screenshot of V-FOR-WaTer Home page with a selected catchment and filtered datasets.*
 
 # Installation notes
 
@@ -20,11 +20,11 @@ testing the project, you can set `managed = False` in all `models.py` before you
 
 # Dependencies
 
-vforwater-portal is a Django project (we testet Django 5.2, python 3.9)
+vforwater-portal is a Django project (has been tested on Django 5.2, python 3.9)
 
 The following components are needed:
-* PostGIS (we testet postgresql 9.6, 10.6, 11.2 + postgis 2.4, 2.5)
-* Geoserver - to show data on the map (we testet 2.12.2 and 2.14.1, Oracle Java + tomcat or OpenJDK)
+* PostGIS (has been tested on postgresql 9.6, 10.6, 11.2 + postgis 2.4, 2.5)
+* Geoserver - to show data on the map (has been tested on 2.12.2 and 2.14.1, Oracle Java + tomcat or OpenJDK)
 
 # License
 
