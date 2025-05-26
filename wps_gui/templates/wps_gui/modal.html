@@ -69,7 +69,6 @@ License: MIT License
 
       /** check if the workspace box exists already in the sessionstorage */
       if (modal_value == "") {
-        console.log('E')
         vfw.workspace.drop_on_click(event);
         closeModal();
       } else {
@@ -538,7 +537,6 @@ License: MIT License
     open(html, is_simple = false) {
       const modal_values = vfw.session.get_workflow();
       const json = vfw.session.get_wpsprocess(service, identifier);
-      console.log('json: ', json)
       vfw.workspace.modal.build_modal(json, service)
       /** Fill the tool with selection made to receive this result button */
       if (typeof inputs === 'string') {

@@ -80,7 +80,6 @@ vfw.var.obj.selectedIds = {
 class StoreData {
 
     constructor(definition) {
-        console.log('constructor: ', definition)
         this.data = {};
         this.data.name = definition.name;
         this.data.abbr = definition.abbr;
@@ -100,7 +99,6 @@ class StoreData {
     }
 
     save() {
-        console.log('data: ', this.data)
         let thisID = this.data.webID;
     }
 }
@@ -335,7 +333,6 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // the SHIFT key must be pressed to delete vertices, so that new
         // vertices can be drawn at the same position of existing vertices
         deleteCondition: function (event) {
-            // console.log('--- deleteCondition of modify ---')
             return ol.events.condition.shiftKeyOnly(event) &&
                 ol.events.condition.singleClick(event);
         }
@@ -674,24 +671,19 @@ vfw.html.moreInfoModal = function (id) {
             if (pdata !== false) {
                 plotToModal(pd)
             }
-            // document.getElementById("mod_prev").classList.remove("loader")
         })
         .fail(function(e) {
-            console.log('loading of plot or table failed: ', e)
             document.getElementById('mod_dat_inf').innerHTML = '<p>Error in dataset. Please try again later.</p>';
-            // document.getElementById("mod_prev").classList.remove("loader")
         })
         .always(function() {
           vfw.html.loaderOverlayOff();
         })
-    // .always(document.getElementById("mod_prev").classList.remove("loader"))
 }
 
 /**
  * Collect filltered data and use it to build a group button
  */
 vfw.sidebar.collectWorkspaceDatasets = function () {
-    console.log('selected: ', vfw.var.obj.selectedIds.quickMenu)
     let selection = vfw.var.obj.selectedIds.quickMenu;
 
 }

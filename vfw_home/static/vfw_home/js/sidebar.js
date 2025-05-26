@@ -133,10 +133,9 @@ vfw.sidebar.addSelectStoreButton = function (file={}, source="userUpload") {
     }
     objData['name'] = 'name' in file ? file.name : "user upload";
     objData['source'] = source;
-    console.log('objData: ', objData)
 
     /** Use the latest upload for filtering, If ID exists already loop sessionStore and change ID until we found a
-     * new ID */ // TODO: We don't update, we store all => new ID (in case the random generator gave two time the same number)
+     * new ID */
     if (vfw.datasets.selectObjects.hasOwnProperty(objData['orgID'])) {
         let newID = objData['orgID'];
         let i = 0;
@@ -275,7 +274,6 @@ vfw.init = function() {
 vfw.init.contextListener = function () {
     document.addEventListener("contextmenu", function (e) {
         vfw.var.taskItemInContext = vfw.sidebar.clickInsideElement(e, taskItemClassName);
-        // console.log('vfw.var.taskItemInContext.dataset.sessionstore: ', vfw.var.taskItemInContext.dataset.sessionstore)
 
         let chooseContext;
         let btndata;
@@ -616,7 +614,6 @@ function menuItemListener(link) {
                 }, // data sent with post request
             })
                 .done(function (json) {
-                    // console.log('blob: ', blob)
                     vfw.workspace.modal.openResultModal(json)
                 })
                 .fail(function (failed) {
@@ -662,8 +659,6 @@ function menuItemListener(link) {
             vfw.html.loaderOverlayOff();
             break;
         case "Plot":
-            console.log('item: ', item)
-            console.log('id: ', id)
             let urlParams = new URLSearchParams(window.location.search);
             let startdate, enddate;
             let date = urlParams.getAll('date');
@@ -694,11 +689,9 @@ function menuItemListener(link) {
                     }, // data sent with post
                 })
                     .done(function (requestResult) {
-                        console.log('make a previewplot')
                         if ('html' in requestResult) {
                             document.getElementById("mod_result").innerHTML = requestResult.html; // add plot
                         } else {  // plot from bokeh
-                            // sessionStorage['Bokeh'] = 'true';
                             vfw.var.obj.bokehImage = requestResult;
                             vfw.html.place_html_with_js("mod_result", requestResult)
                         }

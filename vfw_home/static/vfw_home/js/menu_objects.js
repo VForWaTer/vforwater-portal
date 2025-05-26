@@ -45,7 +45,6 @@ vfw.map.updateMapSelection = function (json) {
         vfw.var.DATA_LAYER_NAME = json['ID_layer'];
         vfw.var.AREAL_DATA_LAYER_NAME = json['areal_ID_layer'];
         vfw.var.obj.selectedIds.quickMenu = json['IDs'];
-        console.log('update map')
         vfw.map.source.wfsPointSource.refresh();
         vfw.map.source.wfsArealSource.refresh();
     }

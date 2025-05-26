@@ -388,7 +388,6 @@ vfw.session.draw2d = {
 
         writer.marshal(vfw.draw2d.canvas, function (json) {
             // convert the json object into string representation
-            console.log('json writer: ', json)
             let jsonTxt = JSON.stringify(json, null, 2);
             sessionStorage.setItem("draw2ddata", jsonTxt)
 
@@ -471,7 +470,6 @@ vfw.workspace.workflow.process_drop_params = function (service, id) {
  * @param event
  */
 vfw.workspace.workflow.update = function (event) {
-    console.log('update workflow event: ', event)
     let delete_element, index, chained_id;
     let workflow = vfw.session.get_workflow();
     if (event.state === 'remove') {

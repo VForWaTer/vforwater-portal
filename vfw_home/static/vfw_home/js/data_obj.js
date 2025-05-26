@@ -135,7 +135,7 @@ vfw.datasets.DataObj = class {
      * @return {string} The unique ID of the HTML element.
      */
     htmlElementID() {
-        return this.btnPosition + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
+        return this.btnPosition + this.workID + this.orgID;
     }
 
     /**
@@ -144,7 +144,7 @@ vfw.datasets.DataObj = class {
      * @param {string} [removeData=this.orgID] - The identifier of the data to be removed.
      * @return {void}
      */
-    removeData(removeData = this.orgID) {  // TODO: removeData var should be taken from this!
+    removeData(removeData = this.orgID) {
         /** remove data from portal: **/
         document.getElementById(this.htmlElementID()).remove();
 

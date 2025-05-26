@@ -161,7 +161,6 @@ vfw.map.UNBLOCKED_IDS = JSON.parse(document.getElementById('unblockedIds').textC
           objData['source'] = "userUpload";
 
           newObj = new vfw.datasets.selectObj(objData);
-          console.log('newObj: ', newObj)
           vfw.datasets.selectObjects[newObj['orgID']] = newObj;
           vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});
         })
@@ -179,8 +178,6 @@ vfw.map.UNBLOCKED_IDS = JSON.parse(document.getElementById('unblockedIds').textC
   $(document).ready(function () {
     $("form").submit(function () {
       let val = $("input[type=submit][clicked=true]").val();
-      console.log('_____________________________')
-      console.log('clickval', val)
     });
     {#advancedfilterform#}
   })

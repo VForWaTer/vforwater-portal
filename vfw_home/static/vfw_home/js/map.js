@@ -198,7 +198,6 @@ vfw.map.source.wfsPointSource = new ol.source.Vector({
 vfw.map.source.wfsArealSource = new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     loader: function (extent) {
-        console.log('layername: ', vfw.var.AREAL_DATA_LAYER_NAME + extent.join(',') + '/3857')
         fetch(vfw.var.DEMO_VAR + '/home/geoserver/wfs/' + vfw.var.AREAL_DATA_LAYER_NAME + '/'
             + extent.join(',') + '/3857',
         )
