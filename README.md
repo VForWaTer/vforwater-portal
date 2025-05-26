@@ -5,7 +5,7 @@ Vforwater-portal is an open source virtual research environment written in djang
 ![Dev status](https://img.shields.io/badge/development%20status-2%20--%20Pre--alpha-orange)
  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-![Screenshot](VFORWaTer_home.png)
+![Screenshot](images/VFORWaTer_home.png)
 
 *Above: Screenshot of V-FOR-WaTer Home page with a selected catchment and filtered datasets.*
 
