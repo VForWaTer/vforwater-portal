@@ -55,7 +55,7 @@ pytz==2024.1
 PyYAML==6.0.1
 pyzip==0.2.0
 redis==5.0.8
-requests==2.32.3
+requests==2.32.4
 requests-futures==1.0.1
 shapely==2.0.5
 six==1.16.0
