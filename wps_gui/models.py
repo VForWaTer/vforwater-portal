@@ -129,3 +129,31 @@ class WpsDescription(models.Model):
 
     class Meta:
         managed = True
+
+
+class Jobs(models.Model):
+    """
+    Model to represent the jobs table created by Pygeoapi.
+    VFW Portal updates the table with additional user details.
+    """
+    identifier = models.CharField(max_length=255, primary_key=True)
+    type = models.CharField(max_length=255, blank=True, null=True)
+    process_id = models.CharField(max_length=255, blank=True, null=True)
+    created = models.DateTimeField(blank=True, null=True)
+    started = models.DateTimeField(blank=True, null=True)
+    finished = models.DateTimeField(blank=True, null=True)
+    updated = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=255, blank=True, null=True)
+    location = models.TextField(blank=True, null=True)
+    mimetype = models.CharField(max_length=255, blank=True, null=True)
+    message = models.TextField(blank=True, null=True)
+    progress = models.IntegerField(blank=True, null=True)
+    username = models.CharField(max_length=255, blank=True, null=True)
+    userid = models.IntegerField(blank=True, null=True) 
+
+    def __str__(self):
+        return f'Job ID: {self.identifier}, Status: {self.status}, Progress: {self.progress}%'
+
+    class Meta:
+        managed = True
+        db_table = 'jobs'  # Specify the table name in the database
