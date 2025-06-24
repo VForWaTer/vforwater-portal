@@ -53,7 +53,7 @@ from vfw_home.Figure.data_obj import DataObject
 from vfw_home.Figure.datatypes import basicdatatypes, datatypes
 from vfw_home.views import get_accessible_data
 from .models import WebProcessingService as WpsModel, GeoAPIResults
-from .models import WpsResults
+from .models import WpsResults, Jobs
 from owslib.ogcapi.processes import Processes as ogcProcesses
 from heron.settings import VFW_GEOAPI, wps_log, PROCESSES_IN_DIR, PROCESSES_OUT_DIR, DEBUG
 # import polars as pl
@@ -473,6 +473,55 @@ def create_geoapi_db_entry(db_data: object, user=None, error=False) -> object:
         return {'id': obj.id, 'obj': obj, 'created': created, 'error': error}
     else:
         return {'error': error, 'obj': obj}
+
+
+def update_geoapi_jobs_db(user_set: object, job_id: str):
+    """
+    Update the jobs table created by pygeoapi with user name and user id.
+    The job_id is used to identify the job in the database.
+
+    :param user_set: user object or None (from Django auth_user table)
+    :param job_id: id of the job to update
+    :return: True if update was successful, False otherwise
+    """
+    full_name = "Goutam Das"
+    userid = 100
+    try:
+        #if user_set is not None:
+        if userid is not None:
+            #full_name = f"{user_set.first_name} {user_set.last_name}".strip()
+            
+
+            Jobs.objects.filter(identifier=job_id).update(
+                username=full_name,
+                userid=userid
+            )
+            print("User updated successfully in jobs table")
+            return True
+        else:
+            print('No user set, cannot update Jobs table.')
+            return False
+    except Exception as e:
+        print(f'Error updating Jobs table: {e}')
+        return False
+
+
+def get_job_status(job_id: str):
+    """
+    Retrieve the current status from the geoapi jobs DB
+    
+    :param job_id: id of the job to retrieve the status for
+    :return: str with job status or None if job not found
+    """
+    try:
+        job = Jobs.objects.get(identifier=job_id)
+        return job.status
+    except Jobs.DoesNotExist:
+        print(f'Job with id {job_id} not found.')
+        return None
+    except Exception as e:
+        print(f'Error retrieving job status: {e}')
+        return None
 
 
 def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> object:
@@ -1452,3 +1501,12 @@ def handle_geoapiprocess_output_old(execution, process_description, inputs):
 
     return all_outputs
 
+def extract_jobid(job_path):
+    """
+    Extracts the job ID from a given job path.
+    Job Path format: /jobs/41f8f92c-4ff6-11f0-9c2d-c4efbb91a9dc
+    """
+    if job_path.startswith("/jobs/"):
+        return job_path.split("/")[-1]
+    else:
+        return None
