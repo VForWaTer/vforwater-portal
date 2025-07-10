@@ -11,4 +11,5 @@ urlpatterns = [
     #re_path(r'^$', views.home, name='home'),
     re_path(r'^$', views.HomeStatusView.as_view(), name='home'),
     path('<service>/', include(service_urls)),
+    
 ]

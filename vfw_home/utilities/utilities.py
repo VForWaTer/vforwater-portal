@@ -309,9 +309,12 @@ def check_data_consistency(check_interval=60*60*24):
     :return:
     """
     datapaths_in_use = Entries.objects.values_list('datasource__path', flat=True).distinct()
+    #print(datapaths_in_use)
     datapaths = ['timeseries', 'timeseries_1d', 'timeseries_2d', 'geom_timeseries',
                  'generic_geometry_data',
                  'generic_2d_data', 'generic_1d_data']
+
+    #print(set(datapaths_in_use)-set(datapaths))
     folders = list(itertools.filterfalse(lambda item: not item, set(datapaths_in_use)-set(datapaths)))
 
     all_Entries = Entries.objects.values_list('id', 'datasource__path')
@@ -337,7 +340,7 @@ def check_data_consistency(check_interval=60*60*24):
 
                     additional_message = (f"\033[91mError: Got a new source for data storage (path: entry_ID {query_path})"
                           f" in vfw_home/utilities/check_data_consistency: {e}.\033[0m")
-                    raise_logging_exception(err, None, additional_message)
+                    raise_logging_exception(e, None, additional_message)
                    
                 if int(count/200) == count/200:
                     print(f'Check data consistency, did {i[0], test} - {str(int(int(count)/int(all_num)*100))}%')
@@ -351,10 +354,11 @@ def check_data_consistency(check_interval=60*60*24):
                         if inner_test:
                             id_wrong_table.append((i[0], dp))
     except Exception as e:
-        raise_logging_exception(err, None, None)
+        raise_logging_exception(e, None, None)
 
+    
     if len(id_without_datasoure) > 0:
-        print(f'\033[93mWARNING: following IDs have no data source: {id_without_datasoure}\033[0m')
+        print(f'\033[93mWARNING: following IDs have no data source: {id_without_datasoure }\033[0m')
     if len(id_without_data) > 0:
         print(f'\033[93mWARNING: following IDs have no data: {id_without_data}\033[0m')
     if len(id_wrong_table) > 0:
@@ -362,9 +366,9 @@ def check_data_consistency(check_interval=60*60*24):
     if len(id_on_disk) > 0:
         print(f'\033[93mWARNING: following IDs have data on disk that has to be handled: {id_on_disk}\033[0m')
 
-    cache.set('ids_without_data', id_without_data + id_without_datasoure, check_interval)
+    cache.set('ids_without_data', id_without_data + id_without_datasoure , check_interval)
     cache.set('ids_data_on_path', id_on_disk, check_interval)
-    return id_without_data + id_without_datasoure
+    return id_without_data + id_without_datasoure 
 
 
 def clean_database_name(name = settings.DATABASES['default']['NAME']):

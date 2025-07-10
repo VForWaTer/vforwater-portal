@@ -1113,8 +1113,7 @@ class WorkspaceData(View):
             
 
 
-
-
+'''
 
 class EntriesPaginationView(View):
     """
@@ -1141,8 +1140,13 @@ class EntriesPaginationView(View):
         entries_list = self.get_entries_list(datasets, field)
         accessible_ids = self.get_accessible_ids(request, datasets) if datasets else []
 
+        print(dict(request.session))
+
         owndata = request.session.get('datasets', None)
         entriespage = self.paginate_entries(request, entries_list, 5)
+        print(entriespage)
+        print(owndata)
+        print(accessible_ids)
 
         return render(request, 'vfw_home/entrieslist.html', {
             'entries': entriespage,
@@ -1185,6 +1189,95 @@ class EntriesPaginationView(View):
         page_number = request.GET.get('page', 1)
         paginator = Paginator(entries_list, per_page)
         return paginator.get_page(page_number)
+
+
+'''
+
+class EntriesPaginationView(View):
+    """
+    View to return results in several pages (5 datasets per page).
+    """
+
+  
+
+
+    def post(self, request):
+        """
+        Handles POST requests to paginate entries.
+        """
+
+        #print('request : ', request.body)
+        datasets = []
+        
+        try:
+            datasets = json.loads(request.POST.get('datasets', '[]'))
+            page = request.POST.get('page', 1)
+        except Exception as e:
+            print(f"Invalid JSON payload: {e}")
+        
+
+
+
+        field = {
+            'id', 'uuid', 'embargo', 'title', 'version', 'citation', 'abstract',
+            'variable__name', 'variable__symbol', 'variable__unit__symbol',
+            'variable__keyword__value', 'datasource__datatype__name',
+            'datasource__temporal_scale__resolution', 'datasource__temporal_scale__observation_start',
+            'datasource__temporal_scale__observation_end', 'datasource__spatial_scale__extent',
+            'license__short_title', 'license__title'
+        }
+
+        entries_list = self.get_entries_list(datasets, field)
+        accessible_ids = self.get_accessible_ids(request, datasets) if datasets else []
+
+
+        owndata = request.session.get('datasets', None)
+        entriespage = self.paginate_entries(request, entries_list, 5)
+
+        return render(request, 'vfw_home/entrieslist.html', {
+            'entries': entriespage,
+            'ownData': owndata,
+            'accessible_ids': accessible_ids
+        })
+
+  
+
+    def get_entries_list(self, datasets, field):
+        """
+        Retrieve the list of entries based on the provided datasets and fields.
+
+        :param datasets: List of dataset IDs
+        :param field: Set of fields to retrieve
+        :return: QuerySet of entries
+        """
+        if datasets:
+            return Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
+        return Entries.objects.values(*field).order_by('title')
+
+    def get_accessible_ids(self, request, datasets):
+        """
+        Get the accessible dataset IDs for the user.
+
+        :param request: HTTP request object
+        :param datasets: List of dataset IDs
+        :return: List of accessible dataset IDs
+        """
+        accessible_data = get_accessible_data(request, datasets)
+        return accessible_data.get('open', [])
+
+    def paginate_entries(self, request, entries_list, per_page):
+        """
+        Paginate the entries list.
+
+        :param request: HTTP request object
+        :param entries_list: List of entries to paginate
+        :param per_page: Number of entries per page
+        :return: Page object with paginated entries
+        """
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(entries_list, per_page)
+        return paginator.get_page(page_number)
+
 
 
 
@@ -1292,6 +1385,7 @@ def quick_filter_defaults(request):
 
     quickfilter = QuickFilterForm()  
     more = QuickFilterForm.More()  
+    #print(quickfilter)
     selection = []
     return {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
 
@@ -1313,10 +1407,12 @@ class QuickFilterResults(View):
     def post(request, selection):
 
         endpoint = request.path
+        print(selection)
 
         try:
             
             selection_query = QueryDict(selection)
+            print(selection_query)
             simple_queries = {
                 'variables': 'variable__name__in',
                 'institution': 'nmpersonsentries__person__organisation_name__in',
@@ -1542,3 +1638,18 @@ class DownloadView(View):
             raise Http404(error_message)
 
 
+
+class ReadLogs(View):
+
+    def get(request):
+
+        log_path = str(settings.BASE_DIR) + '/wps.log'
+
+        if not log_path.exists():
+            return JsonResponse({'error': 'Log file not found'}, status=404)
+
+
+        with open(log_path, 'r') as f:
+            lines = f.readlines()[-50:]  # Last 50 lines
+
+        return JsonResponse({'log': lines})

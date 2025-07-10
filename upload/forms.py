@@ -97,6 +97,7 @@ class UploadForm(forms.Form):
         encoding = forms.ModelChoiceField(queryset=Datasources.objects.values_list('encoding', flat=True).distinct())
         name = forms.ModelChoiceField(label='Data Column Names',
                                       queryset=Datasources.objects.values_list('data_names', flat=True).distinct())
+      
 
         Datatype = forms \
             .ModelChoiceField(label=translation.gettext('Datatype'),

@@ -39,6 +39,7 @@ urlpatterns = [
     path('admin/doc/', include('django.contrib.admindocs.urls')),  # from wps_workflow
     path('user/', include('author_manage.urls', namespace='author_manage')),
     path('oidc/', include('mozilla_django_oidc.urls')),
+    
 ]
 
 handler404 = 'vfw_home.views.error_404_view'

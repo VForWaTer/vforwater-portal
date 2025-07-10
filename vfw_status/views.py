@@ -127,3 +127,5 @@ class HomeStatusView(View):
 
 
         return checked_service
+
+

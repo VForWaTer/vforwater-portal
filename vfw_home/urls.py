@@ -22,6 +22,8 @@ urlpatterns = [
     path('previewplot', views.PreviewPlotView.as_view(), name='previewplot'),
     path('show_info', views.ShowInfoView.as_view(), name='show_info'),
     path('workspace_data', views.WorkspaceData.as_view(), name='workspace_data'),
+    path('read_logs', views.ReadLogs.as_view(), name='read_logs'),
+    
 ]
 
 # use watts for authorization, or django for development environment
