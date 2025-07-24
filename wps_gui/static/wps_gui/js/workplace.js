@@ -1276,7 +1276,14 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
                 break;
             case 'boolean':
                 inElement.type = "checkbox";
-                if ('defaultValue' in item && item.defaultValue == true) inElement.checked = true;  // TODO!
+
+                if ("default" in item.schema && item.schema.default === true) {
+                    inElement.checked = true;
+                }
+                // Fallback for older schema 
+                else if ('defaultValue' in item && item.defaultValue === true) {
+                    inElement.checked = true;
+                }
                 break;
             case 'dateTime':
                 inElement.type = "datetime-local";

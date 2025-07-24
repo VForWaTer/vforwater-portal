@@ -48,13 +48,14 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from django.utils import translation, timezone
 from json2html import json2html
 
-from heron.settings import DEBUG 
+from heron.settings import DEBUG , BASE_DIR #, GEOAPI_DATA_PATH, PROCESSES_DATA
+
 from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
@@ -75,10 +76,12 @@ Not every Tool we have should be available for everyone. E.g. because they are i
 The following dict defines who can see which tools.
 default is accessible for everyone after log-in, the rest only for admins or on devel environments.
 """
-TOOLDICT = {
-    "default": ["vforwater_loader", "dataset_profiler", "variogram"],
-    "short_running_debug": ["hello-world"], 
-    "short_running": [],  
+TOOLDICT = {  
+
+    "default": ["vforwater_loader", "dataset_profiler", "variogram", "combined_loader_whitebox"],
+    "short_running_debug": ["hello-world"],  # available for any user in debug mode
+    "short_running": [],  # available for any user, also if not logged in
+
 }
 
 
@@ -707,3 +710,26 @@ class ToolResultsDownload(TemplateView):
             logging.error("Missing required query parameters.")
             return HttpResponse(status=400)
 
+
+@method_decorator(login_required(login_url="/login/"), name='dispatch')
+class FileDownloadView(View):
+    def get(self, request):
+        file_path = request.GET.get('path')
+        logger = logging.getLogger(__name__)
+        #print('i m here')
+        #print(BASE_DIR)
+        #file_path = os.path.join(BASE_DIR, 'spatial_data.pdf')
+
+        if not file_path:
+            logger.error("Missing 'path' parameter.")
+            return HttpResponse("Missing 'path' parameter.", status=400)
+
+        if not os.path.exists(file_path) or not os.path.isfile(file_path):
+            logger.error(f"File does not exist: {file_path}")
+            return HttpResponse("File not found.", status=404)
+
+        try:
+            return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+        except Exception as e:
+            logger.exception(f"Error while reading file: {e}")
+            return HttpResponse("Failed to read the file.", status=500)

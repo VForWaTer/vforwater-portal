@@ -229,18 +229,63 @@ vfw.datasets.resultObj = class {
      * First checks if the "resultModalObject" exists in the "vfw.var.obj", if not
      * creates a new instance of "vfw.html.resultModalObj" and assigns it to "vfw.var.obj.resultModalObject".
      * Then, it iterates over the results, appends them in the html variable, and adds it to the "resultModalObject".
+     * 
      */
+
+    
     showAsTable() {
         // TODO: The following seems to slow down upload of page. Is because of object? Or where it is created? Test!
+        //console.log('i m here')
         if (!Object.prototype.hasOwnProperty(vfw.var.obj, 'resultModalObject'))
             vfw.var.obj.resultModalObject = new vfw.html.resultModalObj();
         let html = "";
         const results = this.load().outputs.results;
+        let file = 'test_preview-1.png'
         results.forEach(function (item, index) {
-           html += item.html
+           let resultjson = item.json
+           const path = resultjson.dir;
+           const plotFiles = resultjson.plots || [];
+           console.log(plotFiles)
+           const directoryName = path.split("/").pop();
+           //const pdfPath = path + "/plots/spatial_data.pdf";
+           //console.log("PDF Path:", pdfPath);
+
+           let previewButtons = "";
+
+           plotFiles.forEach(filename => {
+             if (filename.endsWith(".pdf")) {
+               const fullPath = `${path}/plots/${filename}`;
+               previewButtons += `
+                 
+                   <a href="javascript:void(0)" onclick="openPdfFromBackend('${fullPath}')" style="display: flex; align-items: center; gap: 8px;">
+                     <i class="fa-solid fa-magnifying-glass" style="font-size: 18px;" title="Preview ${filename}"></i>
+                     <span>Preview ${filename}</span>
+                   </a>
+                
+               `;
+             }
+           });
+           
+         
+
+           let item_2 = item.html.replace(
+            /<li>\.\/(.*?)<\/li>/g,
+            previewButtons
+          );
+          
+          item_2 = item_2.replace(
+            /<table\b[^>]*>/,
+            '<table class="styled-table">'
+          );
+         
+           html += item_2
         });
+
+        //console.log(html)
         vfw.var.obj.resultModalObject.addContent(html);
+        //console.log(vfw.var.obj.resultModalObject);
         vfw.var.obj.resultModalObject.open()
+          
     }
 
     /** Retrieves the value from the session storage as JSON, associated with the storekey.
@@ -256,7 +301,7 @@ vfw.datasets.resultObj = class {
     showContextMenu() {
         // TODO: used modal instead of context => rename and remove unnecessary code like action in createContextMenu
         let htmlElements = `<ul class="context-menu__items">${this._createContextMenu(this.orgID)}</ul>`
-        console.log('htmlElements: ', htmlElements)
+        //console.log('htmlElements: ', htmlElements)
 
         vfw.sidebar.html.contextModal.open(htmlElements)
     }
@@ -371,7 +416,7 @@ vfw.datasets.resultObj = class {
     /** Create a name for buttons according to the length of the name string */
     _createHtmlName() {
         const nameLength = 21;
-        console.log('this.name: ', this.name)
+        //console.log('this.name: ', this.name)
         const vnLen = this.name.length;
         if (vnLen <= nameLength) this.htmlName = this.name
         else if (vnLen > nameLength) this.htmlName = this.name.substring(0, nameLength)

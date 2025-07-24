@@ -273,6 +273,7 @@ vfw.map.func.resetDraw = function() {
     vfw.html.getQuickSelection({'catchStartID': []});
     vfw.var.obj.selectedIds.map = null;
     vfw.map.source.selectionSource.clear();
+    vfw.map.func.removeCatchmentDrawings();
 
     vfw.map.olmap.removeInteraction(vfw.map.control.draw);
     vfw.map.olmap.removeInteraction(vfw.map.control.modify);
@@ -324,6 +325,17 @@ vfw.map.func.resetDraw = function() {
     vfw.map.vars.selectionEdgeCoords.transform('EPSG:4326', 'EPSG:3857')
     return coords
 }
+/**
+ * Catchments are drawn as a feature in their own source. To enable the standard openlayers drawing,
+ * the original source has to be set again for the selectionLayer. The catchment source and the catchment
+ * in the sessionStorage aren't needed anymore and removed as well.
+ */
+vfw.map.func.removeCatchmentDrawings = function() {
+    vfw.map.source.selectionSource_catchment = {};
+    sessionStorage.removeItem("catchment");
+    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+}
+
 /**
  * Open menu to draw polygon on map and use the polygon to select data
  *
@@ -463,6 +475,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
     vfw.map.control.drawSquare.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
+        vfw.map.func.removeCatchmentDrawings();
         listener = selectStartFun(event)
     }, this);
     vfw.map.control.drawSquare.on('drawend', function () {
@@ -491,6 +504,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
 
     vfw.map.control.draw.on('drawstart', function (event) {
         vfw.map.source.selectionSource.clear();
+        vfw.map.func.removeCatchmentDrawings();
         listener = selectStartFun(event)
     }, this);
     vfw.map.control.draw.on('drawend', function () {
@@ -533,6 +547,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         // load watershed from clickpoint (not exactly from clickpoint but from the catchment containing the clickpoint)
         $.when(vfw.map.func.getCatchment({'coords': click_coords}))
             .done(catchment => {
+                sessionStorage.setItem('catchment', JSON.stringify(catchment))
                 vfw.map.func.renderCatchment(catchment, 'wkt')
                 // vfw.sidebar.addSelectStoreButton({'name': 'Merit Catchment'});
                 // vfw.map.olmap.addLayer(selectionLayer)
@@ -989,7 +1004,10 @@ vfw.filter.updateQuickfilter = function() {
                 //     stroke: new ol.style.Stroke({color: '#ff0040', width: 1})
                 // }))
                 // vfw.map.olmap.addLayer(selectionLayer)
-
+            } else if (urlKey[0] === 'catchout') {
+                vfw.map.func.renderCatchment(JSON.parse(sessionStorage.getItem('catchment')), 'wkt')
+            // } else if (urlKey[0] === 'catchStartID') {
+            //     vfw.map.func.renderCatchment(JSON.parse(sessionStorage.getItem('catchment')), 'wkt')
             } else {
                 console.log('TODO: Implement something for: ', $("#id_" + urlKey[0]).prop('type'))
             }
@@ -1274,12 +1292,26 @@ vfw.map.func.renderCatchment = function (catchment, format, dataprojection='EPSG
     // TODO: make sure you got 'vfw.map.vars.selectionEdgeCoords' before 'vfw.map.func.getSelectionEdgeCoords()' in 'drawend' runs. => create custom event?
     // vfw.html.getQuickSelection({'draw': vfw.map.func.getSelectionEdgeCoords()});  // update selection on map
     // vfw.map.source.selectionSource.clear();
-    vfw.map.source.selectionSource = new ol.source.Vector({features: [catch_feature],});
-    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+
+    // To visualize catchment on map a new feature is needed. The new feature is injected to the layer through a new
+    // source. This source is only for catchment drawing, so when the user wants to draw again with OL standard tools,
+    // the original source has to be set again in the selection layer in drawstart
+    // => vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource);
+    vfw.map.source.selectionSource_catchment = new ol.source.Vector({features: [catch_feature],});
+    vfw.map.layer.selectionLayer.setSource(vfw.map.source.selectionSource_catchment);
+
     // selectionLayer = new ol.layer.Vector({source: vfw.map.source.selectionSource, name: 'url_layer'});
     // selectionLayer.setStyle(new ol.style.Style({
     //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
     // }))
+    let coords = vfw.map.func.getSelectionEdgeCoords()
+        if (vfw.util.getArrayDepth(coords) === 4) {
+            vfw.filter.coords = coords[0];
+        } else if (vfw.util.getArrayDepth(coords) === 3) {
+            vfw.filter.coords = coords;
+        } else {
+            console.error('ERROR: New type of geometry. Cannot find coordinates for Button.')
+        }
 }
 
 function advanced_filter_query(selection) {
@@ -1317,6 +1349,14 @@ vfw.util.collapsibleFun = function (element) {
     }
 }
 
+
+/**
+ * Takes a list and returns the depth of the list as integer.
+ * @param {array} value
+ */
+vfw.util.getArrayDepth = value => Array.isArray(value) ?
+    1 + Math.max(0, ...value.map(vfw.util.getArrayDepth)) :
+    0;
 
 class SidebarButton {
     /**
