@@ -43,7 +43,7 @@ from django.core.exceptions import EmptyResultSet, FieldError
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils.timezone import make_aware
-#from pyzip import PyZip
+
 
 import matplotlib as mpl
 import urllib
@@ -63,7 +63,7 @@ from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR, DATABASES
 
 from .Geoserver.geoserver_layer import create_layer, has_layer, delete_layer, test_geoserver_env, get_layer, verify_layer
-# from vfw_home.previewplot import get_plot_from_db_id, get_bokeh_std_fullres, format_label, get_cache
+
 from wps_gui.models import WpsResults
 from .Figure.Fig_obj import FigObject
 from .Geoserver.checks import check_geoserver_layers
@@ -72,27 +72,27 @@ from .utilities.delineator import delineate
 from .Forms.forms import QuickFilterForm
 from .Figure.data_obj import DataObject
 from .utilities.utilities import human_readable_bool, has_pending_embargo, read_data, expressive_layer_name, get_dataset, \
-    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency, clean_database_name
-
-mpl.use('Agg')
+    get_paginatorpage, regex_patterns, is_coord, get_cache, check_data_consistency, clean_database_name, raise_logging_exception, logger
 
 from django.contrib.gis.geos import Polygon, GEOSGeometry
 from .utilities.query_functions import get_bbox_from_data
-# from .filter import QuickFilter
+
 from .utilities.filters import NMPersonsFilter
 from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
-import logging
+
 from pathlib import Path
 from datetime import timedelta
 
-# for debugging:
 from time import time
 
+
+mpl.use('Agg')
+
 """
 
 """
-logger = logging.getLogger(__name__)
+
 
 check_data_consistency()
 
@@ -104,6 +104,7 @@ check_data_consistency()
 # cookies – cookies that expire as soon as the user closes their browser. Use this if you want people to have to log in
 # every time they open a browser.
 """
+
 
 
 class HomeView(TemplateView):
@@ -148,12 +149,15 @@ class HomeView(TemplateView):
         Collect data needed for startup of V-FOR-WaTer Portal home.
         """
         self.__set_layer_name()
+        endpoint = self.request.path
 
         try:
             unblocked_ids = self.request.session.get('datasets', [])
             if not unblocked_ids:
                 self.request.session['datasets'] = []
-        except KeyError:
+        except Exception as e:
+
+            raise_logging_exception(e, endpoint, None)
             unblocked_ids = []
             self.request.session['datasets'] = []
 
@@ -168,6 +172,7 @@ class HomeView(TemplateView):
             # verify_layer(self.request, self.AREAL_DATA_LAYER, self.STORE, self.WORKSPACE,  layertype='areal_data')
 
         except Exception as e:
+            raise_logging_exception(e, endpoint, None)
             self.DATA_LAYER = 'Error: Found no geoserver!'
             self.AREAL_DATA_LAYER = 'Error: Found no geoserver!'
             print(f'Still no geoserver: {e}')
@@ -206,7 +211,7 @@ class Echo:
 
 class DatasetDownloadView(TemplateView):
     """
-
+    Handles dataset downloads in various formats (CSV, GeoJSON, Shapefile, XML).
     """
 
     def get(self, request):
@@ -217,133 +222,169 @@ class DatasetDownloadView(TemplateView):
         :return:
         :rtype:
         """
-        print('i m here too')
+    
         store = HomeView.STORE  # 'new_vforwater_gis'
         workspace = HomeView.WORKSPACE  # 'CAOS_update'
         test_geoserver_env(store, workspace)
+        endpoint = request.path
 
-        # def get_metadata(m_id):
-        #     """
-        #     the metadata for export includes only the values that are also used for filtering.
-        #     Change get_metadata if you want to have more information in the export file.
-        #     :return:
-        #     """
-        #     # TODO: Portal uses code from class MenuView.get, 'show_info'. Bad style to use two classes for popup.
-        #     catalog = {}
-        #     for table in Menu.menu_list:
-        #         for i in table.db_alias_child:
-        #             if table.path != '':
-        #                 query = Entries.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
-        #                 # query = TblMeta.objects.filter(pk=m_id).values_list(table.path + '__' + i, flat=True)
-        #             else:
-        #                 query = Entries.objects.filter(pk=m_id).values_list(i, flat=True)
-        #                 # query = TblMeta.objects.filter(pk=m_id).values_list(i, flat=True)
-        #             if query[0] is not None:
-        #                 try:
-        #                     catalog[table.menu_name][i] = query[0]
-        #                 except KeyError:
-        #                     catalog[table.menu_name] = {i: query[0]}
-        #     return catalog
+        format_mapping = {
+            'csv': self.handle_csv,
+            'geojson': self.handle_geojson,
+            'shp': self.handle_shapefile,
+            'xml': self.handle_xml
+        }
 
-        if 'csv' in request.GET:
-            # if 'download_data' in request.GET:
-            s_id =  request.GET.get('csv')
 
-            # s_id =  json.loads(json.dumps(request.GET.get('csv')))
-            # s_id = json.loads(request.GET.get('csv'))
-            accessible_data = get_accessible_data(request, s_id)
-            error_list = accessible_data['blocked']
-            accessible_data = accessible_data['open']
-
-            if len(accessible_data) > 0:
-                # TODO: There are 3 Solutions to get data from the different tables.
-                #  Solution 1 produces many None fields, hence is discarded.
-                #  Solution 2 makes a query from 'Entries' to get datatype and builds another query from 'Entries'
-                #  according to the result.
-                #  Solution 3 gets the datatype and 'eval' a query for the respective table.
-                #  Decide if solution 2 or 3 is better.
-                #  Check if results are the right datasets!!!
-                #  (Unused solutions deleted. Check commit from Sept 3, 2020)
-
-                # Solution 2:
-                # ===========
-                rows = get_dataset(accessible_data[0])
-
-                pseudo_buffer = Echo()
-                writer = csv.writer(pseudo_buffer)
-                response = StreamingHttpResponse((writer.writerow(row) for row in rows), content_type="text/csv")
-                response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-            return response
-
-        if 'geojson' in request.GET:
-            s_id =  request.GET.get('geojson')
-
-            accessible_data = get_accessible_data(request, s_id)
-            error_list = accessible_data['blocked']
-            accessible_data = accessible_data['open']
-
-            geojson_data = serialize("geojson", Locations.objects.filter(id = accessible_data[0]) , geometry_field="point_location", fields=["name"])
-
-            response = HttpResponse(json.dumps(geojson_data), content_type="application/json")
-            response['Content-Disposition'] = 'attachment; filename="somefilename.geojson"'
-            return response
-
-        if 'shp' in request.GET:
-            s_id = request.GET.get('shp')
-            accessible_data = get_accessible_data(request, s_id)
-            error_list = accessible_data['blocked']
-            accessible_data = accessible_data['open']
-
-            if len(accessible_data) > 0:
-                layer_name = 'shp_{}_{}_{}'.format(request.user, request.user.id, s_id)
-                # srid = str(Entries.objects.filter(pk=s_id).values_list('geometry__srid__srid', flat=True)[0])
-                srid = 4326
-                # create layer on geoserver to request shp file
-                # TODO: later this ids are compared to a list of numbers, so the s_id here has to be a list of numbers
-                print('TODO: later this ids are compared to a list of numbers, so the s_id here has to be a list of numbers')
-                create_layer(request, layer_name, store, workspace, s_id)
-                # use GEOSERVER shape-zip
-                url = '{0}/{1}/ows?service=wfs&version=1.0.0&request=GetFeature&typeName={1}:{' \
-                      '2}&outputFormat=shape-zip&srsname=EPSG:{3}'.format(LOCAL_GEOSERVER, workspace, layer_name, srid)
-                request = requests.get(url)
-                pzfile = PyZip().from_bytes(request.content)
+        for fmt, handler in format_mapping.items():
+            if fmt in request.GET:
                 try:
-                    del pzfile['wfsrequest.txt']
-                except KeyError:
-                    pass
+                    return handler(request, store, workspace)
+                except Exception as e:
+                    additional_message = f"Error processing {fmt} request on endpoint {endpoint}: {e}"
+                    raise_logging_exception(e, endpoint, additional_message)
+                    return HttpResponseServerError(f"An error occurred while processing your request: {e}")
 
-                # clean up right after request:
-                delete_layer(layer_name, store, workspace)
-            return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
+        additional_message = f"Unsupported or missing file format on endpoint {endpoint}."
+        raise_logging_exception(e, endpoint, additional_message)
+        return HttpResponseBadRequest("Unsupported or missing file format.")
 
-        # TODO: schema Location shows too much information for possible intruder. Figure out how to improve?
-        if 'xml' in request.GET:
-            id = request.GET.get('xml')
-            accessible_data = get_accessible_data(request, id)
-            error_list = accessible_data['blocked']
-            accessible_data = accessible_data['open']
+       
+
+    def handle_csv(self, request, *args):
+        s_id =  request.GET.get('csv')
+
+        accessible_data = get_accessible_data(request, s_id)
+        error_list = accessible_data['blocked']
+        data = accessible_data.get('open', [])
+
+        if not data:
             try:
-
-                opener = urllib.request.build_opener(
-                    urllib.request.HTTPBasicAuthHandler(password_manager),
-                    # urllib.request.HTTPHandler(debuglevel=1),    # Uncomment these two lines to see
-                    # urllib.request.HTTPSHandler(debuglevel=1),   # details of the requests/responses
-                    urllib.request.HTTPCookieProcessor(cookie_jar))
-                urllib.request.install_opener(opener)
-
-                request = urllib.request.Request(url)
-                response = urllib.request.urlopen(request)
-
-                # Print out the result (not a good idea with binary data!)
-
-                body = response.read()
-                # print('loaded xml', body)
-
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
             except Exception as e:
-                print('e: ', e)
-                # clean up right after request:
-                delete_layer(layer_name, store, workspace)
-            return HttpResponse(response.read().decode('utf-8'))
+                additional_message = f"No accessible data found for CSV request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
+
+     
+
+        rows = get_dataset(data[0])
+        pseudo_buffer = Echo()
+        writer = csv.writer(pseudo_buffer)
+
+        response = StreamingHttpResponse(
+            (writer.writerow(row) for row in rows),
+            content_type="text/csv"
+        )
+        response['Content-Disposition'] = 'attachment; filename="dataset.csv"'
+        return response
+
+            
+    def handle_geojson(self, request, *args):
+        s_id =  request.GET.get('geojson')
+
+        accessible_data = get_accessible_data(request, s_id)
+        error_list = accessible_data['blocked']
+        data = accessible_data.get('open', [])
+
+        if not data:
+            try:
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
+            except Exception as e:
+                additional_message = f"No accessible data found for geojson request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
+
+
+        geojson_data = serialize("geojson", Locations.objects.filter(id = data[0]) , geometry_field="point_location", fields=["name"])
+
+        response = HttpResponse(json.dumps(geojson_data), content_type="application/json")
+        response['Content-Disposition'] = 'attachment; filename="somefilename.geojson"'
+        return response
+
+
+    def handle_shapefile(self, request, *args):
+        s_id = request.GET.get('shp')
+
+        accessible_data = get_accessible_data(request, s_id)
+        error_list = accessible_data['blocked']
+        data = accessible_data.get('open', [])
+
+        if not data:
+            try:
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
+            except Exception as e:
+                additional_message = f"No accessible data found for ShapeFile request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
+
+
+        layer_name = f'shp_{request.user}_{request.user.id}_{s_id}'
+        srid = 4326
+
+        create_layer(request, layer_name, store, workspace, s_id)
+
+        try:
+            url = (
+                f"{LOCAL_GEOSERVER}/{workspace}/ows?service=wfs&version=1.0.0&"
+                f"request=GetFeature&typeName={workspace}:{layer_name}&"
+                f"outputFormat=shape-zip&srsname=EPSG:{srid}"
+            )
+            response = requests.get(url)
+            pzfile = PyZip().from_bytes(response.content)
+
+            try:
+                del pzfile['wfsrequest.txt']
+            except Exception as e:
+                raise_logging_exception(e, endpoint, None)
+                pass
+
+        except Exception as e:
+            additional_message = f"Error fetching Shapefile from GeoServer for dataset ID {s_id}: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
+            raise
+
+        finally:
+            delete_layer(layer_name, store, workspace)
+
+        return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
+
+    def handle_xml(self, request, *args):
+        id = request.GET.get('xml')
+
+        accessible_data = get_accessible_data(request, s_id)
+        error_list = accessible_data['blocked']
+        data = accessible_data.get('open', [])
+
+        if not data:
+            try:
+                raise ValueError("No accessible data found.")  # Step 1: This raises an error
+            except Exception as e:
+                additional_message = f"No accessible data found for xml request with dataset ID {s_id}."
+                raise_logging_exception(e, endpoint, additional_message)
+
+        try:
+
+            opener = urllib.request.build_opener(
+                urllib.request.HTTPBasicAuthHandler(password_manager),
+                
+                urllib.request.HTTPCookieProcessor(cookie_jar))
+            urllib.request.install_opener(opener)
+
+            request = urllib.request.Request(url)
+            response = urllib.request.urlopen(request)
+
+            
+
+            body = response.read()
+            
+
+        except Exception as e:
+
+            additional_message = f"Error fetching XML for dataset ID {s_id}: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
+            delete_layer(layer_name, store, workspace)
+            raise
+            
+        return HttpResponse(body.decode('utf-8'), content_type="application/xml")
+
 
 
 class LoginView(View):
@@ -359,6 +400,7 @@ class LoginView(View):
         :return:
         :rtype:
         """
+
         if 'watts_rsp.auth.WattsBackend' in settings.AUTHENTICATION_BACKENDS:
             logger.debug('Redirect to home/rsp/login/init...')
             return redirect('vfw_home:watts_rsp:login_init')
@@ -440,70 +482,62 @@ class PrivacyPolicy(TemplateView):
         return render(request, 'vfw_home/privacypolicy.html')
 
 
+
 class HelpView(TemplateView):
-    """
-    """
-
-    #     template_name = 'vfw_home/help.html'
+    template_name = 'home/help.html'
+    
     def get(self, request):
-        """
+        help_file_path = Path(settings.BASE_DIR) / 'USERHELP.md'
+        
+        # Using a context manager to read file lines
+        with open(help_file_path, 'r') as f:
+            # Creating a dictionary comprehension to store lines with indexes
+            context = {i: line for i, line in enumerate(f)}
+        
+        # Returning the rendered template with context
+        return render(request, self.template_name, {'context': context})
 
-        :param request:
-        :type request:
-        :return:
-        :rtype:
-        """
 
-        f = open(Path(settings.BASE_DIR) / 'USERHELP.md', 'r')
-        context = {}
-        i = 0
-        for line in f:
-            context[i] = line
-            i += 1
-        f.close()
-        return render(request, 'home/help.html', {'context': context})
 
 class ToggleLanguageView(View):
-    """ """
+    """View to toggle the website's language and update the language cookie."""
 
     @staticmethod
     def post(request):
         """
-        Set a cookie to switch language of web site. Tutorial how to set language cookie at
-        https://samulinatri.com/blog/django-translation/
+        Toggle the language of the website between 'de' and 'en-gb',
+        set the session and cookie to reflect the change, and redirect to the homepage.
 
-        :param request:
-        :type request:
-        :return:
-        :rtype:
+        :param request: Django HttpRequest object
+        :return: HttpResponseRedirect to the homepage
         """
-        lang = translation.get_language()
-        logger.debug(f"current language: {lang}")
-        logger.debug(
-            "check_for_language: de {}, en-us {}, en-gb {}".format(
-                translation.check_for_language("de"),
-                translation.check_for_language("en-us"),
-                translation.check_for_language("en-gb"),
-            )
-        )
-        if lang == "en-gb" or lang == "en-us":
-            translation.activate("de")
-            # request.session[translation.LANGUAGE_SESSION_KEY] = "de"
-            request.session[settings.LANGUAGE_COOKIE_NAME] = "de"
+        endpoint = request.path
+        try:
+            current_language = translation.get_language()
+            logger.debug(f"Current language: {current_language}")
 
-        else:
-            translation.activate("en-gb")
+            new_language = "de" if current_language in {"en-gb", "en-us"} else "en-gb"
+
+            translation.activate(new_language)
+
             if hasattr(request, "session"):
-                request.session[settings.LANGUAGE_COOKIE_NAME] = "en-gb"
-        logger.debug(f"new language: {translation.get_language()}")
-        logger.debug(f'translation test: {translation.gettext("help")}')
-        response = redirect(DEMO_VAR + "/")
-        response.set_cookie(
-            settings.LANGUAGE_COOKIE_NAME,
-            request.session[settings.LANGUAGE_COOKIE_NAME],
-        )
-        return response
+                request.session[settings.LANGUAGE_COOKIE_NAME] = new_language
 
+            logger.debug(f"new language: {translation.get_language()}")
+            logger.debug(f'translation test: {translation.gettext("help")}')
+
+            response = redirect(f"{DEMO_VAR}/")
+
+            response.set_cookie(
+            settings.LANGUAGE_COOKIE_NAME,
+            request.session[settings.LANGUAGE_COOKIE_NAME],)
+
+            return response
+
+        except Exception as e:
+            additional_message = "Error while toggling language"
+            raise_logging_exception(e, endpoint, additional_message)
+            return redirect(f"{DEMO_VAR}/")
 
 
 class FailedLoginView(View):
@@ -560,124 +594,158 @@ class GeoserverView(View):
         return HttpResponse(response.read().decode('utf-8'))
 
 
-def previewplot(request):
+class PreviewPlotView(View):
     """
-    Requested from vfw.js show_preview
-    :param request:
-    :return:
+    Class-based view to handle preview plot requests.
     """
-    try:
-        webID = request.GET.get('preview')
+
+    def get(self, request, *args, **kwargs):
+
+        endpoint = request.path
+
+        try:
+            # Step 1: Process webID
+            webID = request.GET.get('preview')
+            if not webID:
+                logger.error("No 'preview' parameter provided in the request.")
+                return JsonResponse({'error': "Missing 'preview' parameter."})
+
+            entriesID, parts = self._process_webID(webID)
+
+            # Step 2: Validate accessible data
+            if len(parts) > 1:
+                accessible_data = get_accessible_data(request, [parts[1]])
+                error_list = accessible_data['blocked']
+                data = accessible_data.get('open', [])
+
+                if not data:
+                    logger.warning(f"No accessible data found for parts: {parts}")
+                    return JsonResponse({'warning': translation.gettext(
+                        'No plot available. <br/>First access to this dataset is needed.')})
+
+            else:
+                additional_message = f"Invalid 'parts' structure: {parts}"
+                raise_logging_exception(None, endpoint, additional_message)
+                return JsonResponse({'error': "Invalid 'parts' structure parsed from 'webID'."})
+
+        except Exception as e:
+            additional_message = "Error during processing of 'webID'."
+            raise_logging_exception(e, endpoint, additional_message)
+            return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"})
+
+
+        full_res = False
+        plot_size = [700, 500]
+        date = self._get_date_range(request)
+
+        
+        cache_obj = self._initialize_cache(webID, plot_size, date)
+        cache_obj, img = get_cache(cache_obj)
+
+        if not cache_obj['in_cache']:
+            try:
+                dataset = self._get_dataset(webID, entriesID, date)
+            except Exception as e:
+                additional_message = "Error while constructing the dataset."
+                raise_logging_exception(e, endpoint, additional_message)
+                raise Http404
+
+            try:
+                plot = FigObject(dataset, plot_size)
+                img = plot.get_plot()
+            except Exception as e:
+                additional_message = "Error while generating the plot."
+                raise_logging_exception(e, endpoint, additional_message)
+                raise Http404
+
+        return JsonResponse(img)
+
+
+    def _process_webID(self, webID):
+        """
+        Process the 'webID' parameter and extract its components.
+
+        :param webID: The webID from the request.
+        :return: A tuple of entriesID and parts.
+        """
         entriesID = webID
-        # webID = 'db869'
-        if webID[0:3] == 'db[':
+        parts = []
+
+        if webID.startswith('db['):
             parts = webID[0:-1].split('[')
             webID = [f'db{id.strip()}' for id in parts[1].split(',')]
-        elif webID[0:2] == 'db':
+        elif webID.startswith('db'):
             parts = [0, webID[2:]]
             entriesID = webID[2:]
         else:
-            print('views.py: Figure how to handle such an ID: ', webID, type(webID))
-            # logger.warning(f'Figure how to handle an ID like {webID}')
+            logger.warning(f"Unexpected ID format encountered: {webID} (type: {type(webID)})")
+            raise ValueError(f"Unhandled ID format: {webID}")
 
-        accessible_data = get_accessible_data(request, [parts[1]])
-        error_list = accessible_data['blocked']
-        accessible_data = accessible_data['open']
+        return entriesID, parts
 
-        # ID = 1013
-        # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
+    def _get_date_range(self, request):
+        """
+        Extract the date range from the request.
 
-        # accessible_data = [1014]  # 1014: wind direction, 1013: 3D direction
-        if len(accessible_data) < 1:
-            return JsonResponse({'warning': translation.gettext(
-                'No plot available. <br/>First access to this dataset is needed.')})
+        :param request: The HTTP request containing startdate and enddate.
+        :return: A list containing the start and end dates, or None.
+        """
+        startdate = request.GET.get('startdate')
+        enddate = request.GET.get('enddate')
 
-    except Exception as e:
-        print('Exception: ', e)
+        if startdate and startdate != 'None':
+            return [
+                make_aware(datetime.datetime.strptime(startdate, '%Y-%m-%d')),
+                make_aware(datetime.datetime.strptime(enddate, '%Y-%m-%d'))
+            ]
+        return None
 
-    full_res = False
-    plot_size = [700, 500]
-    if request.GET.get('startdate') != 'None':
-        date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
-                make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
-    else:
-        date = None
+    def _initialize_cache(self, webID, plot_size, date):
+        """
+        Initialize the cache object for the plot.
 
-    # TODO: Add the redis cache properly (https://docs.djangoproject.com/en/4.2/topics/cache/#redis)
-    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': "plot_{}".format('b' + str(webID) + str(plot_size) + str(date))}
-    cache_obj, img = get_cache(cache_obj)
+        :param webID: The webID parameter.
+        :param plot_size: The size of the plot.
+        :param date: The date range for the plot.
+        :return: A dictionary representing the cache object.
+        """
+        cache_name = f"plot_b{webID}{plot_size}{date}"
+        return {
+            'use_redis': True,
+            'redis': redis.StrictRedis(),
+            'in_cache': False,
+            'name': cache_name
+        }
 
-    if not cache_obj['in_cache']:
+    def _get_dataset(self, webID, entriesID, date):
+        """
+        Construct the dataset based on the webID and date range.
 
-        try:
-            # bla = Entries.objects.filter(pk=webID[2:]).values_list('datasource__data_names',
-            #                                                        'datasource__path',
-            #                                                        'datasource__datatype__parent',
-            #                                                        'datasource__datatype__name',
-            #                                                        'datasource__datatype__title',
-            #                                                        'datasource__datatype__description',
-            #                                                        'datasource__temporal_scale__resolution',
-            #                                                        'datasource__temporal_scale__observation_start',
-            #                                                        'datasource__temporal_scale__support',
-            #                                                        )
-            if isinstance(webID, list):
-                dataset = []
-                for i in webID:
-                    if has_data(i[2:]):
-                        dataset.append(DataObject(i, date))
-                    else:
-                        print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
-            else:
-                if has_data(entriesID):
-                    if int(entriesID)  not in cache.get('ids_data_on_path')  :
-                        dataset = DataObject(webID, date)
-                    else:
-                        print('One must handle data on path/ check if raster (= has spatial resolution) => '
-                              'plot raster image, if netCDF => datacube')
-                        return JsonResponse({'error': f'Plot for entries ID {webID} has to be implemented.'})
+        :param webID: The webID parameter.
+        :param entriesID: Extracted entries ID.
+        :param date: The date range for the dataset.
+        :return: A list of dataset objects.
+        """
+        dataset = []
+
+        if isinstance(webID, list):
+            for entry in webID:
+                if has_data(entry[2:]):
+                    dataset.append(DataObject(entry, date))
                 else:
-                    print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
-                    return JsonResponse({'error': f'No Data for dataset with entries ID {webID}'})
-
-        except TypeError as e:
-            print('\033[33mhome.views.previewplot: Type error in Data Object:\033[0m ', e)
-            logger.debug('Type Error in Data Object: ', e)
-            raise Http404
-        except IndexError as e:
-            print('\033[33mhome.views.previewplot: index error in Data Object:\033[0m ', e)
-            logger.debug('Index Error in Data Object: ', e)
-            if request.user.is_authenticated:
-                # TODO: Rethink how to handle unallowed requests
-                raise Http404
+                    logger.warning(f"No data available for dataset with entries ID: {entry}")
+        else:
+            if has_data(entriesID):
+                if int(entriesID) not in cache.get('ids_data_on_path'):
+                    dataset = DataObject(webID, date)
+                else:
+                    logger.warning("Data on path not handled. Check if raster or netCDF.")
+                    raise ValueError(f"Plot for entries ID {webID} needs implementation.")
             else:
-                # TODO: Redirect to login
-                raise Http404
-                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-                # return redirect('vfw_home:login')
-        except EmptyResultSet as e:
-            print('\033[33mhome.views.previewplot: EmptyResultSet Error in Data Object:\033[0m ', e)
-            logger.debug('EmptyResultSet Error in Data Object: ', e)
-            return JsonResponse({'error': e})
-        except LookupError as e:
-            print('\033[33mhome.views.previewplot: LookupError in Data Object:\033[0m ', e)
-            logger.debug('LookupError in Data Object: ', e)
-            return JsonResponse({'error': e})
-        except FieldError as e:
-            print('\033[33mhome.views.previewplot: Field Error in Data Object:\033[0m ', e)
-            logger.debug('Field Error in Data Object: ', e)
-            raise Http404
-        except Exception as e:
-            print('\033[31mhome.views.previewplot: An unhandled error in Data Object:\033[0m ', e)
-            logger.debug('An unhandled Error in Data Object: ', e)
-            raise Http404
+                logger.warning(f"No data available for dataset with entries ID: {webID}")
+                raise ValueError(f"No data available for dataset with entries ID: {webID}")
 
-        # plot = MultiplePlotsObject(dataset, plot_size=plot_size)
-        plot = FigObject(dataset, plot_size)
-        img = plot.get_plot()
-    return JsonResponse(img)
-
-
+        return dataset
 
 
 
@@ -687,6 +755,9 @@ class ShortInfoPaginationView(View):
     """
 
     def get(self, request):
+
+        endpoint = request.path
+
         try:
             datasets, field, field_name = self.get_initial_data(request)
             entries_list = self.get_entries_list(datasets, field)
@@ -704,12 +775,9 @@ class ShortInfoPaginationView(View):
                 'current_page': current_page
             })
 
-        except TypeError:
-            logger.debug('Short info Pagination failed.')
-            raise Http404
-
         except Exception as e:
-            logger.debug(f'Exception while getting short info pagination: {e}')
+            additional_message = f'Exception while getting short info pagination: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
             raise Http404
 
     def get_initial_data(self, request):
@@ -806,17 +874,154 @@ class ShortInfoPaginationView(View):
 
         return dict(newdict.items())
 
-# TODO: maybe it's enough to send here only a list with values, and load the list with fields in Homeview?
-# TODO: Handle this with an http request (response, not request?)!
-def show_info(request):
+
+
+
+
+
+class ShowInfoView(View):
+
+
     """
-    On request collect metadata for preview on map and selection in the sidebar.
-    Requested from map.js show_info.
-    :param request:
-    :return:
+    Handles requests to collect metadata for preview on a map and sidebar selection.
     """
 
-    def parse_iso8601_duration(duration_str):
+    def get(self, request, *args, **kwargs):
+
+        endpoint = request.path
+        webID = request.GET.get('show_info')
+        if not webID:
+            logger.error("No 'show_info' parameter provided.")
+            return JsonResponse({'error': "Missing 'show_info' parameter."})
+
+        if webID.startswith('wps'):
+            return self.handle_wps(webID)
+        elif webID.startswith('db'):
+            ids = webID[2:]
+        else:
+            ids = webID
+
+        try:
+
+            return self.collect_data(ids)
+
+        except Exception as e:
+
+            additional_message =  f'Error while processing webID {webID}: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
+            raise Http404
+
+
+    def handle_wps(self, webID):
+
+        wpsData = WpsResults.objects.get(pk=webID[3:])  
+        result_path = json.loads(wpsData.outputs)['path']
+        loaded_data = json.loads(read_data(result_path, ''))
+
+        table = {'id': loaded_data['meta']['id'],
+                translation.gettext('Name'): translation.gettext(loaded_data['meta']['variable']['name']),
+                translation.gettext('Commercial use allowed'):
+                    human_readable_bool(loaded_data['meta']['license']['commercial_use']),
+                translation.gettext('Embargo'): human_readable_bool(
+                    has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end'])),
+                'has_embargo': str(
+                    has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end']))}
+
+        return JsonResponse({'table': table, 'warning': ''})
+
+   
+
+
+    def collect_data(self, ids):
+        """
+        Called when clicked on more to see metadata of single dataset.
+        TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
+
+        :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
+        :type ids: str
+        :return: dict
+        """
+        
+        prefix, nm_prefix, warning = 'entry__', '', ''
+
+        def get_queryvalues(prefix, nm_prefix):
+            return [prefix + 'uuid', prefix + 'variable__name', prefix + 'abstract',
+                    prefix + 'license__commercial_use',
+                    prefix + 'embargo', prefix + 'embargo_end',
+                    prefix + 'datasource__temporal_scale__observation_start',
+                    prefix + 'datasource__temporal_scale__observation_end',
+                    prefix + 'datasource__spatial_scale__resolution',
+                    prefix + 'datasource__temporal_scale__resolution',
+                    nm_prefix + 'group__title', nm_prefix + 'group_id']
+
+        try:
+           
+            if ids.startswith('['):
+                ids = list(map(int, ids[1:-1].split(",")))
+                db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
+            else: 
+                db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+                
+        except Exception as e:
+
+            additional_message =  f'Error in views.show_info.collect_data: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
+            raise Http404
+
+
+        if not db_info.exists():
+            warning = 'This dataset cannot be accessed from the Nm table. Please inform the database admin.'
+            prefix, nm_prefix = '', 'nmentrygroups__'
+            db_info = Entries.objects.filter(id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+            group_entry_ids = Entries.objects.filter(nmentrygroups__group_id=db_info[0][nm_prefix + 'group_id']) \
+                .values_list('id', flat=True)
+        else:
+            group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
+                .values_list('entry_id', flat=True)
+        
+        variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
+
+        table = {
+            'id': ids,
+            'uuid': db_info[0][prefix + 'uuid'],
+            'Name': db_info[0][prefix + 'variable__name'],
+            'Commercial use allowed': human_readable_bool(db_info[0][prefix + 'license__commercial_use']),
+            'Embargo': human_readable_bool(
+                has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end'])
+            ),
+            'Abstract': db_info[0][prefix + 'abstract'] or '-',
+            'has_embargo': str(
+                has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end'])
+            ),
+            'Group': db_info[0][nm_prefix + 'group__title'] or '-',
+            'group_entry_ids': list(group_entry_ids),
+        }
+
+        if db_info[0][prefix + 'datasource__spatial_scale__resolution']:
+            table['Spatial Resolution'] = f"{db_info[0][prefix + 'datasource__spatial_scale__resolution']} m"
+
+        if db_info[0][prefix + 'datasource__temporal_scale__resolution']:
+            temporal_resolution = self._parse_iso8601_duration(
+                db_info[0][prefix + 'datasource__temporal_scale__resolution']
+            )
+            table['Temporal Resolution'] = self._format_duration_to_detailed_str(temporal_resolution)
+
+        table['Observation Start'] = (
+            db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y')
+            if db_info[0][prefix + 'datasource__temporal_scale__observation_start']
+            else '-'
+        )
+        table['Observation End'] = (
+            db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y')
+            if db_info[0][prefix + 'datasource__temporal_scale__observation_end']
+            else '-'
+        )
+
+        return JsonResponse({'table': table, 'warning': warning})
+       
+
+
+    def parse_iso8601_duration(self, duration_str):
         """
         Parse an ISO 8601 duration string into a timedelta object.
 
@@ -825,26 +1030,26 @@ def show_info(request):
         :return: A timedelta object representing the parsed duration.
         :rtype: timedelta
 
-        The function removes the 'P' prefix and splits the string into date and time parts.
+        The function removes the 'P' prefix and splits the string into date and time parts. 
 
         Example:
 
         >>> parse_iso8601_duration('P3DT1H5M6S')
         output : 3 days, 1:05:06
-
+           
         """
-        # Remove the 'P' and split into date and time parts
+        
         duration_str = duration_str[1:]
         date_time_split = duration_str.split('T')
         days, hours, minutes, seconds = 0, 0, 0, 0
 
         print("date time split: " , date_time_split)
-        # If there's a date component, parse it
+        
         if date_time_split[0]:
             date_part = date_time_split[0]
             days += int(date_part[:-1]) if date_part.endswith('D') else 0
 
-        # If there's a time component, parse it
+       
         if len(date_time_split) > 1:
             time_part = date_time_split[1]
             hours += int(time_part.split('H')[0]) if 'H' in time_part else 0
@@ -853,8 +1058,7 @@ def show_info(request):
 
         return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
 
-
-    def format_duration_to_detailed_str(duration):
+    def format_duration_to_detailed_str(self, duration):
         """
         Format a duration object into a detailed string.
 
@@ -871,7 +1075,7 @@ def show_info(request):
         seconds = duration.seconds
         hours, remainder = divmod(seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-        # return f"{days} day(s), {hours} hour(s), {minutes} minute(s), {seconds} second(s)"
+       
         if days: parts.append(f"{days} day{'s' if days > 1 else ''}")
         if hours: parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
         if minutes: parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
@@ -879,123 +1083,9 @@ def show_info(request):
 
         return ", ".join(parts) if parts else "0 seconds"
 
-    def collect_data(ids):
-        """
-        Called when clicked on more to see metadata of single dataset.
-        TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
-
-        :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
-        :type ids: str
-        :return: dict
-        """
-        # build dict of lists for preview:
-        prefix = 'entry__'
-        nm_prefix = ''  # nmentrygroups__
-        warning = ''
-
-        def get_queryvalues(prefix, nm_prefix):
-            return [prefix + 'uuid', prefix + 'variable__name', prefix + 'abstract',
-                    prefix + 'license__commercial_use',
-                    prefix + 'embargo', prefix + 'embargo_end',
-                    prefix + 'datasource__temporal_scale__observation_start',
-                    prefix + 'datasource__temporal_scale__observation_end',
-                    prefix + 'datasource__spatial_scale__resolution',
-                    prefix + 'datasource__temporal_scale__resolution',
-                    nm_prefix + 'group__title', nm_prefix + 'group_id']
-
-        try:
-            # For a list of datasets use this
-            if ids[0] == '[':
-                string_list = ids[1:-1].split(",")
-                ids = list(map(int, string_list))
-                db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
-            else:  # For one dataset use this
-                db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
-        except Exception as e:
-            print('Error in views.show_info.collect_data: ', e)
-            logger.debug('Error in views.show_info.collect_data: ', e)
-
-        if not db_info.exists():
-            warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
-            prefix = ''
-            nm_prefix = 'nmentrygroups__'
-            db_info = Entries.objects.filter(id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
-            group_entry_ids = Entries.objects.filter(nmentrygroups__group_id=db_info[0][nm_prefix + 'group_id']) \
-                .values_list('id', flat=True)
-        else:
-            group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
-                .values_list('entry_id', flat=True)
-
-        variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
-        table = {'id': ids, 'uuid': db_info[0][prefix + 'uuid'],
-                 translation.gettext('Name'): variable_name }
 
 
-        table[translation.gettext('Commercial use allowed')] = \
-            human_readable_bool(db_info[0][prefix + 'license__commercial_use'])
-        table[translation.gettext('Embargo')] = human_readable_bool(
-            has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
-        table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
-            if db_info[0][prefix + 'abstract'] else '-'
-        table['has_embargo'] = str(
-            has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
-        table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
-            if db_info[0][nm_prefix + 'group__title'] else '-'
-        table['group_entry_ids'] = list(group_entry_ids)
-
-        if db_info[0][prefix + 'datasource__spatial_scale__resolution'] is not None :
-        #     spatial_resolution_unit_symbol = Variables.objects.filter(name=variable_name).first().unit.symbol
-            table[translation.gettext('Spatial Resolution')] = str(db_info[0][prefix + 'datasource__spatial_scale__resolution']) + " " + "m"
-
-        if db_info[0][prefix + 'datasource__temporal_scale__resolution'] is not None :
-            parsed_date = parse_iso8601_duration(db_info[0][prefix + 'datasource__temporal_scale__resolution'])
-            print("Temporal Scale string :", format_duration_to_detailed_str(parsed_date))
-            table[translation.gettext('Temporal Resolution')] = format_duration_to_detailed_str(parsed_date)
-
-        print("table 8: ", db_info[0][prefix + 'datasource__temporal_scale__observation_start'])
-        table[translation.gettext('Observation Start')] = db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_start'] else '-'
-        table[translation.gettext('Observation End')] = db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_end'] else '-'
-
-        return JsonResponse({'table': table, 'warning': warning})
-
-    webID = request.GET.get('show_info')
-    if webID[0:3] == 'wps':
-        wpsData = WpsResults.objects.get(pk=webID[3:])  # .values('inputs', 'outputs', 'open')
-        result_path = json.loads(wpsData.outputs)['path']
-        loaded_data = json.loads(read_data(result_path, ''))
-
-        table = {'id': loaded_data['meta']['id'],
-                 translation.gettext('Name'): translation.gettext(loaded_data['meta']['variable']['name']),
-                 translation.gettext('Commercial use allowed'):
-                     human_readable_bool(loaded_data['meta']['license']['commercial_use']),
-                 translation.gettext('Embargo'): human_readable_bool(
-                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end'])),
-                 'has_embargo': str(
-                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end']))}
-
-        # table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
-        #     if db_info[0][prefix + 'abstract'] else '-'
-        #
-        # table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
-        #     if db_info[0][nm_prefix + 'group__title'] else '-'
-        # table['group_entry_ids'] = list(group_entry_ids)
-        return JsonResponse({'table': table, 'warning': ''})
-
-    else:
-        if webID[0:2] == 'db':
-            ids = webID[2:]
-        else:
-            ids = webID
-
-        try:
-            # print('json.loads(webID): ', json.loads(ids))
-            return collect_data(ids)
-
-        except TypeError:
-            raise Http404
-
-
-def workspace_data(request):
+class WorkspaceData(View):
     """
     Preload selected data when changing web page to workspace
 
@@ -1003,32 +1093,30 @@ def workspace_data(request):
     :return:
     """
 
-    try:
-        # prepare dataset_iddatasetdownload differently for list and single value to use in collect_selection
-        start_date = request.GET.get('startDate')
-        end_date = request.GET.get('endDate')
-        result = collect_selection(request,
-                                   json.loads(request.GET.get('workspaceData')),
-                                   start_date, end_date
-                                   )
-        return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group'],
-                             'selectedDate': [start_date, end_date]})
+    def get(self, request):
 
-    except TypeError as e:
-        # print('Type Error in vfw_home/views/workspace_data: ', e)
-        logger.debug('Type Error in vfw_home/views/workspace_data: ', e)
-        raise Http404
-    except FieldError as e:
-        # print('Field Error in vfw_home/views/workspace_data: ', e)
-        logger.debug('Field Error in vfw_home/views/workspace_data: ', e)
-        raise Http404
-    except Exception as e:
-        print('unhandled exception in vfw_home/views/workspace_data(): ', e)
-        logger.debug('unhandled exception in vfw_home/views/workspace_data(): ', e)
+        endpoint =request.path
 
+        try:
+            
+            start_date = request.get('startDate')
+            end_date = request.get('endDate')
+            result = collect_selection(request,
+                                    json.loads(request.get('workspaceData')),
+                                    start_date, end_date
+                                    )
+            return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group'],
+                                'selectedDate': [start_date, end_date]})
+
+        except Exception as e:
+            additional_message =  f'Error in vfw_home/views/workspace_data: {e}'
+            raise_logging_exception(e, endpoint, additional_message)
+            raise Http404
+            
+            
 
 
-
+'''
 
 class EntriesPaginationView(View):
     """
@@ -1055,8 +1143,13 @@ class EntriesPaginationView(View):
         entries_list = self.get_entries_list(datasets, field)
         accessible_ids = self.get_accessible_ids(request, datasets) if datasets else []
 
+        print(dict(request.session))
+
         owndata = request.session.get('datasets', None)
         entriespage = self.paginate_entries(request, entries_list, 5)
+        print(entriespage)
+        print(owndata)
+        print(accessible_ids)
 
         return render(request, 'vfw_home/entrieslist.html', {
             'entries': entriespage,
@@ -1101,45 +1194,164 @@ class EntriesPaginationView(View):
         return paginator.get_page(page_number)
 
 
-class Delineator(View):
+'''
 
+class EntriesPaginationView(View):
+    """
+    View to return results in several pages (5 datasets per page).
+    """
+
+  
+
+
+    def post(self, request):
+        """
+        Handles POST requests to paginate entries.
+        """
+
+        #print('request : ', request.body)
+        datasets = []
+        
+        try:
+            datasets = json.loads(request.POST.get('datasets', '[]'))
+            page = request.POST.get('page', 1)
+        except Exception as e:
+            print(f"Invalid JSON payload: {e}")
+        
+
+
+
+        field = {
+            'id', 'uuid', 'embargo', 'title', 'version', 'citation', 'abstract',
+            'variable__name', 'variable__symbol', 'variable__unit__symbol',
+            'variable__keyword__value', 'datasource__datatype__name',
+            'datasource__temporal_scale__resolution', 'datasource__temporal_scale__observation_start',
+            'datasource__temporal_scale__observation_end', 'datasource__spatial_scale__extent',
+            'license__short_title', 'license__title'
+        }
+
+        entries_list = self.get_entries_list(datasets, field)
+        accessible_ids = self.get_accessible_ids(request, datasets) if datasets else []
+
+
+        owndata = request.session.get('datasets', None)
+        entriespage = self.paginate_entries(request, entries_list, 5)
+
+        return render(request, 'vfw_home/entrieslist.html', {
+            'entries': entriespage,
+            'ownData': owndata,
+            'accessible_ids': accessible_ids
+        })
+
+  
+
+    def get_entries_list(self, datasets, field):
+        """
+        Retrieve the list of entries based on the provided datasets and fields.
+
+        :param datasets: List of dataset IDs
+        :param field: Set of fields to retrieve
+        :return: QuerySet of entries
+        """
+        if datasets:
+            return Entries.objects.values(*field).order_by('title').filter(pk__in=datasets)
+        return Entries.objects.values(*field).order_by('title')
+
+    def get_accessible_ids(self, request, datasets):
+        """
+        Get the accessible dataset IDs for the user.
+
+        :param request: HTTP request object
+        :param datasets: List of dataset IDs
+        :return: List of accessible dataset IDs
+        """
+        accessible_data = get_accessible_data(request, datasets)
+        return accessible_data.get('open', [])
+
+    def paginate_entries(self, request, entries_list, per_page):
+        """
+        Paginate the entries list.
+
+        :param request: HTTP request object
+        :param entries_list: List of entries to paginate
+        :param per_page: Number of entries per page
+        :return: Page object with paginated entries
+        """
+        page_number = request.GET.get('page', 1)
+        paginator = Paginator(entries_list, per_page)
+        return paginator.get_page(page_number)
+
+
+
+
+
+class Delineator(View):
     @staticmethod
     def get(request, catchout):
-        catchment = {'error': 'Neither catchout nor catchStartID is defined to Delineate a catchment.'}
-        if "catchout=" in catchout:
-            coords = {
-                'lat': [catchout.split("catchout=")[2]],
-                'lng': [catchout.split("catchout=")[1][:-1]],
-            }
-            # validate input data:
-            if not is_coord(coords['lat'][0], 'lat') or not is_coord(coords['lng'][0], 'lon'):
-                logger.error(f'Wrong coordinates from client: ({coords}). Improve coordinate handling on client')
-                return {'Error': 'Error in Coordinates.'}
 
-            catchment = delineate(coords=coords)
+        endpoint = request.path
+        try:
+            if "catchout=" in catchout:
+                catchment = Delineator._handle_coordinates(catchout, endpoint)
+            elif "catchStartID=" in catchout:
+                catchment = Delineator._handle_start_id(catchout, endpoint)
+            else:
+                raise ValueError(f"Unknown input for delineator: {catchout}")
+                
 
-        elif "catchStartID=" in catchout:
+            if 'error' in catchment:
+                raise ValueError(f"Problems in delineation tool: {catchment['error']}")
+               
+
+            return JsonResponse(catchment)
+
+        except ValueError as e :
+            
+            raise_logging_exception(e, endpoint, None)
+            return JsonResponse({'error': str(e)}, status=400)
+
+        except Exception as e:
+            additional_message =  "Unhandled error in Delineator view."
+            raise_logging_exception(e, endpoint, additional_message)
+            return JsonResponse({'error': 'Unhandled server error.'}, status=500)
+
+    @staticmethod
+    def _handle_coordinates(catchout, endpoint):
+        try:
+            parts = catchout.split("catchout=")
+            lng, lat = parts[1][:-1], parts[2]
+            coords = {'lat': [lat], 'lng': [lng]}
+
+            # Validate coordinates
+            if not is_coord(lat, 'lat') or not is_coord(lng, 'lon'):
+                raise ValueError(f"Invalid coordinates from client: {coords}")
+                
+
+            return delineate(coords=coords)
+
+        except ValueError as e:
+            raise_logging_exception(e, endpoint, None)
+            return {'error': 'Invalid coordinates provided.'}
+
+      
+        except Exception as e:
+            additional_message =  f"Error parsing coordinates: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
+            return {'error': 'Malformed coordinates input.'}
+
+    @staticmethod
+    def _handle_start_id(catchout, endpoint):
+
+        try:
+
             start_id = int(catchout.split("catchStartID=")[1])
-            catchment = delineate(terminal_comid=start_id, precise=True)
+            return delineate(terminal_comid=start_id, precise=True)
 
-                # TODO: catchment should be stored in geoserver. Not working yet. Fix it, change it.
-                # try:
-                #     create_layer(request=request, filename=f'catch_StartID{start_id}', datastore=HomeView.store,
-                #                  workspace=HomeView.workspace, selection=[start_id], layertype="filtercatchment")
-                # except Exception as e:
-                #     print('e: ', e)
-        else:
-            print(f'unknown input for delineator: {catchout}')
-            # logger.error(f'unknown input for delineator: {catchout}')
+        except ValueError as e:
 
-        if 'error' in catchment:
-            # print('Problems in delineation tool: ', catchment['error'])
-            logger.error('Problems in delineation tool: ', catchment['error'])
-
-        return JsonResponse(catchment)
-
-
-
+            additional_message = f"Error parsing start ID: {e}"
+            raise_logging_exception(e, endpoint, additional_message)
+            return {'error': 'Invalid start ID provided.'}
 
 
 
@@ -1149,7 +1361,7 @@ class AdvancedFilterView(View):
     """
 
     def get(self, request):
-        # Initial query to get all entries with distinct entry_id
+        
         selection = Entries.objects.all().distinct('entry_id')
 
         # Apply the advanced filter based on GET parameters
@@ -1162,7 +1374,6 @@ class AdvancedFilterView(View):
             'selection': selection
         }
 
-        # Render the template with the context data
         return render(request, 'vfw_home/advanced_filter.html', context)
 
 
@@ -1174,8 +1385,9 @@ def quick_filter_defaults(request):
     """
     total = Entries.objects.exclude(Q(embargo=True) & Q(embargo_end__gte=timezone.now())).count()
 
-    quickfilter = QuickFilterForm()  # standard of django is a required attribute for all forms.
-    more = QuickFilterForm.More()  # you can remove the required with use_required_attribute=False
+    quickfilter = QuickFilterForm()  
+    more = QuickFilterForm.More()  
+    #print(quickfilter)
     selection = []
     return {'quickfilter': quickfilter, 'more': more, 'selection': selection, 'total': total}
 
@@ -1196,10 +1408,13 @@ class QuickFilterResults(View):
     @staticmethod
     def post(request, selection):
 
-        # create query according to selection
+        endpoint = request.path
+        print(selection)
+
         try:
 
             selection_query = QueryDict(selection)
+            print(selection_query)
             simple_queries = {
                 'variables': 'variable__name__in',
                 'institution': 'nmpersonsentries__person__organisation_name__in',
@@ -1213,7 +1428,6 @@ class QuickFilterResults(View):
                 QuickFilterResults.handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request)
 
             query = QuickFilterResults.build_query(filter_dict, filter_area, filter_area_or, fair_query)
-            #print(query)
 
             total_results = query.count()
 
@@ -1222,18 +1436,14 @@ class QuickFilterResults(View):
 
             response_data = QuickFilterResults.prepare_response_data(request, query, total_results, data_ext, layertype)
 
-            #print('response_data 1 : ', response_data)
-
-
-
 
         except Exception as e:
 
             logger.debug(f'Unable to prepare your selection: {e}')
+
             response_data = QuickFilterResults.prepare_error_response(selection)
             print('response_data 2 : ', e)
 
-        #print(response_data)
         return JsonResponse(response_data)
 
 
@@ -1299,8 +1509,6 @@ class QuickFilterResults(View):
         filter_area_or['datasource__spatial_scale__extent__intersects'] = poly
 
 
-
-
     @staticmethod
     def handle_filter_key(key, simple_queries, selection_query, filter_dict, fair_query, filter_area, filter_area_or, request):
 
@@ -1317,8 +1525,6 @@ class QuickFilterResults(View):
             QuickFilterResults.add_catch_start_id_filters(key, selection_query, filter_area, filter_area_or)
         elif key == 'catchout':
             QuickFilterResults.add_catchout_filters(key, selection_query, filter_area, filter_area_or, request)
-
-
 
 
     @staticmethod
@@ -1356,23 +1562,25 @@ class QuickFilterResults(View):
 
     @staticmethod
     def prepare_response_data(request, query, total_results, data_ext, layertype):
-        #print(request.user)
+
+        endpoint = request.path
 
         IDs = list(query.values_list('id', flat=True))
         id_layer = 'ID_layer' + str(request.user)
         areal_id_layer = 'areal_ID_layer' + str(request.user)
         QuickFilterResults.delete_geoserver_layer(id_layer)
         QuickFilterResults.delete_geoserver_layer(areal_id_layer)
-        #print(IDs, id_layer,areal_id_layer  )
 
         if IDs:
             try:
                 create_layer(request, id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="point")
                 create_layer(request, areal_id_layer, HomeView.STORE, HomeView.WORKSPACE, IDs, layertype="areal_data")
             except Exception as e:
-                logger.debug(f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}')
 
-
+                additional_message = f'unhandled exception in vfw_home/views/QuickFilterResults(): {e}'
+                raise_logging_exception(e, endpoint, additional_message)
+        
+ 
         return {
             'selection': request.POST.get('selection', ''),
             'total': total_results,
@@ -1401,8 +1609,7 @@ class QuickFilterResults(View):
 
 
 def error_404_view(request, exception):
-    # data = {"name": "Some Error"}
-    # return render(request,'vfw_home/404.html', data)
+   
     return render(request, 'vfw_home/404.html')
 
 
@@ -1414,18 +1621,43 @@ class DownloadView(View):
     @staticmethod
     def get(request, name):
 
-        if name == 'vfwVM':
-            file_path = '/data/VBox_VFORWaTer.zip'
-            # file_path = '/home/marcus/tmp/customs.shp'
-            if Path(file_path).exists():
-                with open(file_path, 'rb') as fh:
-                    response = FileResponse(open(file_path, 'rb'))
-                    print('response: ', response)
-                    return response
-            else:
-                print('no file at: ', file_path)
-                error_404_view(request, 'not available')
-            # raise Http404
-        else:
-            error_404_view(request, 'not available')
+        endpoint = request.path
 
+        try :
+
+            if name == 'vfwVM':
+                file_path = '/data/VBox_VFORWaTer.zip'
+                
+                if Path(file_path).exists():
+                    with open(file_path, 'rb') as fh:
+                        response = FileResponse(open(file_path, 'rb'))
+                    
+                        return response
+                else:
+                    
+                    raise ValueError(f'no file at: {file_path}')   
+            else:
+                raise ValueError(f"Invalid file request: {name}")
+        
+        except Exception as error_message:
+
+            raise_logging_exception(error_message, endpoint, None)
+
+            raise Http404(error_message)
+
+
+
+class ReadLogs(View):
+
+    def get(request):
+
+        log_path = str(settings.BASE_DIR) + '/wps.log'
+
+        if not log_path.exists():
+            return JsonResponse({'error': 'Log file not found'}, status=404)
+
+
+        with open(log_path, 'r') as f:
+            lines = f.readlines()[-50:]  # Last 50 lines
+
+        return JsonResponse({'log': lines})

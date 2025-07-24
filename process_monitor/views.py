@@ -1,11 +1,20 @@
 from django.shortcuts import render
+from django.views import View
 
 #from heron_wps.forms import InputForm
 
 
-def home(request):
-    """
-    Dummy page for Heron Monitor tool.
-    """
-    return render(request, 'process_monitor/home.html')
 
+
+
+
+class HomeMonitorView(View):
+    """
+    Class-based view for Heron Monitor tool.
+    """
+
+    def get(self, request):
+        """Handles GET requests and renders process monitor tool template."""
+
+   
+        return render(request, 'process_monitor/home.html')

@@ -1019,6 +1019,36 @@ vfw.filter.updateQuickfilter = function() {
 }
 
 
+
+function filter_pagination(page) {
+    let data = vfw.var.obj.selectedIds.result;
+
+    if (!Array.isArray(data) || data.length === 0) {
+        data = [];
+    }
+
+    $.ajax({
+        url: vfw.var.DEMO_VAR + "/home/entries_pagination",
+        type: "POST",
+        data: {
+            page: page,
+            datasets: JSON.stringify(data),
+            csrfmiddlewaretoken: vfw.var.csrf_token
+        },
+        dataType: "html",  // or "json" if your backend returns JSON
+    })
+    .done(function (response) {
+        //console.log(response)
+        document.getElementById("paginationTable").innerHTML = response;
+    })
+    .fail(function (error) {
+        console.error('Error in pagination request:', error);
+    });
+}
+
+
+  /*
+
 function filter_pagination(page) {
     let data = JSON.stringify(vfw.var.obj.selectedIds.result);
     if (Array.isArray(data) && !data.length) {data = 'None'}
@@ -1032,6 +1062,7 @@ function filter_pagination(page) {
         }, // data sent with post request
     })
         .done(function (json) {
+            console.log(json)
             document.getElementById("paginationTable").innerHTML = json
 
         })
@@ -1039,7 +1070,8 @@ function filter_pagination(page) {
             console.error('Fehler: ', e)
         })
 }
-
+     
+ */
 /** The following function is used when Quick is one of several filter menues.
  * Not needed when Quick is the standard menu. */
 

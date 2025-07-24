@@ -55,6 +55,7 @@ from django.utils import translation, timezone
 from json2html import json2html
 
 from heron.settings import DEBUG , BASE_DIR #, GEOAPI_DATA_PATH, PROCESSES_DATA
+
 from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
@@ -68,20 +69,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# datatypes = ['timeseries', 'ts-aggregate', 'ts-pickle', 'ts-merge', 'array', 'aggregate',
-#              'pickle', 'merge', 'merged-pickle', 'merged-ts-pickle']
 
-# from heron_wps.forms import InputForm
 
 """
 Not every Tool we have should be available for everyone. E.g. because they are in development.
 The following dict defines who can see which tools.
 default is accessible for everyone after log-in, the rest only for admins or on devel environments.
 """
-TOOLDICT = {
+TOOLDICT = {  
+
     "default": ["vforwater_loader", "dataset_profiler", "variogram", "combined_loader_whitebox"],
     "short_running_debug": ["hello-world"],  # available for any user in debug mode
     "short_running": [],  # available for any user, also if not logged in
+
 }
 
 
@@ -96,17 +96,17 @@ def home(request):
 
     service, endpoint, wps_services = get_endpoint_data(DEBUG)
 
-    if service == 'pygeoapi_vforwater':  # Do we need this 'if'?
+    if service == 'pygeoapi_vforwater':  
         try:
             apiproc = getProcesses(endpoint)
-            # load process description according to user and devel state
+          
             for process in apiproc.processes():
-                if DEBUG and request.user.is_superuser:  # in debug mode or for superusers show all tools
+                if DEBUG and request.user.is_superuser: 
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
                 elif DEBUG and process['id'] in TOOLDICT['short_running_debug']:
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
 
-                elif request.user.id and process['id'] in TOOLDICT['default']:  # if logged in show more tools
+                elif request.user.id and process['id'] in TOOLDICT['default']:  
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
                 elif process['id'] in TOOLDICT['short_running']:
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
@@ -123,12 +123,7 @@ def home(request):
             }
             return render(request, "wps_gui/home.html", context)
 
-        # Remove process that should not be visible for users
-        # workflow is kind of a helper process. It is called when several process are connected to call the workflow.
-        # So the user should call this implicitly by creating a workflow and shouldn't be shown in the list of tools.
-        # if "workflow" in ogcapi_proc:
-        #     del ogcapi_proc["workflow"]
-
+       
         context = {
             "wps_services": wps_services,
             "processes": ogcapi_proc,
@@ -140,110 +135,7 @@ def home(request):
         return render(request, "wps_gui/home.html", context)
 
 
-# def home(request):
-#     """
-#     Home page for Heron WPS tool. Lists all the WPS services that are linked.
-#     """
-#     # TODO: Ugly hack because keywords are yet not supported from owslib. Check upcoming versions of owslib!
-#     # TODO: IMPORTANT! Process description is only loaded once.
-#     #  When changing a process, the version number has to be updated.
-#     jsondata = {}
-#     wps_data = {}
-#     WpsQueryset = WpsDescription.objects
-#     try:
-#         wps_services = list_wps_service_engines()
-#         # service = 'PyWPS_vforwater'
-#         service = WebProcessingService.objects.values_list("name", flat=True)[1] # [1] PyWPS_Elnaz_Local_Server #[0] PyWPS_vforwater #[2] pygeoapi
-#         wps = get_wps_service_engine(service)
-#     except Exception as e:
-#         print("Exception in wps_gui.views.home: ", e)
-#
-#     # if WpsQueryset.exists():
-#     #     for process in list(WpsQueryset.values('identifier', 'service', 'title', 'abstract', 'inputs', 'outputs',
-#     #                                            'verbose', 'metadata', 'dataInputs', 'processOutputs', 'version',
-#     #                                            'storeSupported', 'statusSupported'
-#     #                                            )):
-#     #         wps_data[process['identifier']] = {'service': process['service'],
-#     #                                            'title': process['title'],
-#     #                                            'abstract': process['abstract'],
-#     #                                            'processin': process['inputs'],
-#     #                                            'processout': process['outputs']}
-#     #         jsondata[process['identifier']] = {'service': process['service'],
-#     #                                            'verbose': json.dumps(process['verbose']),
-#     #                                            'storeSupported': json.dumps(process['storeSupported']),
-#     #                                            'statusSupported': json.dumps(process['statusSupported']),
-#     #                                            'title': process['title'], 'abstract': process['abstract'],
-#     #                                            'metadata': process['metadata'],
-#     #                                            'dataInputs': json.dumps(process['dataInputs']),
-#     #                                            'processOutputs': json.dumps(process['processOutputs']),
-#     #                                            'version': json.dumps(process['version'])}
-#
-#     try:
-#         for process in wps.processes:
-#             if process.identifier not in jsondata.keys():
-#                 wps_data[process.identifier] = {}
-#                 wps_data[process.identifier] = {
-#                     "title": process.title,
-#                     "abstract": process.abstract,
-#                     "identifier": process.identifier,
-#                     "processin": "",
-#                     "processout": "",
-#                 }
-#                 describedprocess = wps.describeprocess(process.identifier)
-#                 wps_data = get_process_metadata(
-#                     wps_data, describedprocess, process.identifier
-#                 )
-#
-#                 jsondata[process.identifier] = process_to_json(process)
-#                 describedprocess_json = process_to_json(describedprocess)
-#
-#                 # WpsQueryset.create(service=service, title=wps_data[process.identifier]['title'],
-#                 #                    identifier=process.identifier,
-#                 #                    abstract=wps_data[process.identifier]['abstract'],
-#                 #                    inputs=wps_data[process.identifier]['processin'],
-#                 #                    outputs=wps_data[process.identifier]['processout'],
-#                 #                    verbose=jsondata[process.identifier]['verbose'],
-#                 #                    statusSupported=describedprocess_json['statusSupported'],
-#                 #                    storeSupported=describedprocess_json['storeSupported'],
-#                 #                    metadata=jsondata[process.identifier]['metadata'],
-#                 #                    dataInputs=describedprocess_json['dataInputs'],
-#                 #                    processOutputs=describedprocess_json['processOutputs'],
-#                 #                    version=jsondata[process.identifier]['processVersion']
-#                 #                    )
-#     except Exception as e:
-#         logger.error(sys.exc_info()[0])
-#         service = ""
-#         wps_services = []
-#         print('in except: ', e)
-#
-#     if "dbloader" in wps_data:
-#         del wps_data["dbloader"]
-#         # del jsondata['dbloader']
-#     if "datareader" in wps_data:
-#         del wps_data["datareader"]
-#         # del jsondata['datareader']
-#
-#     if "workflow" in wps_data:
-#         del wps_data["workflow"]
-#
-#     context = {
-#         "wps_services": wps_services,
-#         "sessiondata": wps_data,
-#         "service": service,
-#         # 'tools': jsondata
-#         # 'tools': {service: jsondata}
-#         # 'tools': json.dumps({service: jsondata})
-#     }
-#
-#     return render(request, "wps_gui/home.html", context)
 
-
-# def use_pandoc(bla):
-#     from subprocess import Popen, PIPE, STDOUT
-#     input_text = bla
-#     p = Popen(['pandoc', '-f', 'rst', '-t', 'html', '--wrap=preserve'], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-#     blala = p.communicate(input=input_text)[0]
-#     return blala
 
 
 def create_wpsdb_entry(wps_process: str, invalue: list, outputs):
@@ -258,7 +150,7 @@ def create_wpsdb_entry(wps_process: str, invalue: list, outputs):
         inputs=dict(invalue),
         outputs=outputs,
         creation=timezone.now(),
-    )  # , access=timezone.now())
+    )  
     return db_result.id
 
 
@@ -283,24 +175,20 @@ class ProcessView(TemplateView):
         return JsonResponse(process_description)
 
 
-# from requests_futures.sessions import FuturesSession
-
-
-# @login_required(login_url="/oidc/authenticate/")  # TODO: This results in an error related to CORS. Find another solution
-def process_run(request):  # TODO: Maybe check if identical input exists in db before starting the process again
+def process_run(request):  
     user_id = None
 
     try:
         user_id = request.user.id
         user_queryset = User.objects.get(id=user_id)
     except User.DoesNotExist as e:
-        # print('User does not exist when running a process: ', e)
+        
         logger.error('User does not exist when running a process: ', e)
         user_queryset = None
 
-    # if request.user.is_authenticated:
+   
     process_description = ""
-    # request_input = json.loads(request.GET.get('processrun'))
+    
     try:
         if request.GET.get('processrun'):
             request_inputs = request.GET.get('processrun')
@@ -309,7 +197,7 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
 
         input = prepare_inputs(request=request, request_input=json.loads(request_inputs))
     except Exception as e:
-        # print(f'Problems preparing inputs in wps_gui.views.process_run: {e}')
+        
         logger.error(f'Problems preparing inputs {e}')
 
     wps_process = input.get("id", "")
@@ -320,13 +208,13 @@ def process_run(request):  # TODO: Maybe check if identical input exists in db b
         process_description = get_process_info(apiproc.process(wps_process))
     else:
         logger.error(f'Cannot run process. Server "{input["serv"]}" is unknown.')
-        # print('You try to run a process, but I do not know your server.')
+        
 
     try:
         execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
                               json={
                                   "mode": "async",
-                                  # TODO: old setting from PyGeoAPI 0.13. Change for newer version
+                                 
                                   'inputs': {**input.get("in_dict", ""),
                                              'User-Info':  # plant the username in last moment
                                                  f'user{user_id}_{request.user.username}'}

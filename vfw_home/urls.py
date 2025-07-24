@@ -10,8 +10,6 @@ urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
     path('help', views.HelpView.as_view(), name='help'),
     path('logout', views.LogoutView.as_view(), name='logout'),
-    # re_path(r'^geoserver/(?P<service>[\w{3,4}]+)/(?P<layer>[\w]+)/(?P<bbox>[\-.,\d]+)/(?P<srid>[\d]{4,5})$',
-    #     views.GeoserverView.as_view()),
     path('geoserver/<str:service>/<str:layer>/<str:bbox>/<int:srid>', views.GeoserverView.as_view()),
     path('togglelang', views.ToggleLanguageView.as_view(), name='togglelang'),
     path('failedlogin', views.FailedLoginView.as_view(), name='failedlogin'),
@@ -19,21 +17,13 @@ urlpatterns = [
     path('entries_pagination', views.EntriesPaginationView.as_view(), name='entries_pagination'),
     path('short_info_pagination', views.ShortInfoPaginationView.as_view(), name='short_info_pagination'),
     path('advanced_filter', views.AdvancedFilterView.as_view(), name='advanced_filter'),
-    # path('quick_filter', views.QuickFilter.as_view(), name='quick_filter'),
-    # url(r'^advanced_filter$', views.filter_entries),
-    # addresses for fetch:
-    # url(r'^previewplot/id(db[\d]{1,6}|wps[\d]{1,6})$', views.PreviewPlot.as_view()),
-    # url(r'^showinfo/id(db[\d]{1,6}|wps[\d]{1,6})$', views.ShowInfo.as_view()),
-    # path('testdata', views.Eddytestdata, name='testdata'),
-    # addresses for ajax:
-    # path('delineator/<catchout>', views.delineator, name='delineator'),  # delineator function instead of class
-    # path('delineator/(?P<lat>catchout=[0-9]{2}.[0-9]{2})', views.Delineator.as_view(), name='delineator_args'),
-    # re_path(r'^catchout=(\d{0,3}.\d{0,14})/$', views.Delineator.as_view(), name='delineator_args'),
     path('delineator/<catchout>', views.Delineator.as_view(), name='delineator_args'),
     path('quick_filter_args/<selection>', views.QuickFilterResults.as_view(), name='quick_filter_args'),
-    path('previewplot', views.previewplot, name='previewplot'),
-    path('show_info', views.show_info, name='show_info'),
-    path('workspace_data', views.workspace_data, name='workspace_data'),
+    path('previewplot', views.PreviewPlotView.as_view(), name='previewplot'),
+    path('show_info', views.ShowInfoView.as_view(), name='show_info'),
+    path('workspace_data', views.WorkspaceData.as_view(), name='workspace_data'),
+    path('read_logs', views.ReadLogs.as_view(), name='read_logs'),
+    
 ]
 
 # use watts for authorization, or django for development environment

@@ -122,6 +122,8 @@ class QuickFilterForm(forms.Form):
     variables = forms.ModelMultipleChoiceField(widget=forms.SelectMultiple(
         attrs={'onchange': 'vfw.html.getQuickSelection({"variables": $("#id_variables").val()});'}),
         queryset=QuickFilterQuerySets.variables_qs)
+
+    print('variable : ', QuickFilterQuerySets.variables_qs)
     # time = DateRangeSliderField(label="Date", minimum=observation_min.date(),
     date = DateRangeSliderDatePickerField(label="Date", minimum=QuickFilterQuerySets.observation_min_qs.date(),
                                           maximum=QuickFilterQuerySets.observation_max_qs.date(), step=86400000,
