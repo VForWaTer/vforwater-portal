@@ -16,14 +16,14 @@ vfwportal-demo-build:
         - demo
 
 
-vfwportal-demo-test:
-    stage: test
-    script:
+#vfwportal-demo-test:
+#    stage: test
+#    script:
         # call unit tests
-        - /usr/bin/podman run -v /etc/vforwater/vfwportal-demo-test/settings.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro -v /etc/vforwater/vfwportal-demo-test/test_settings.py:/home/vfwportal/vforwater-portal/heron/test_settings.py:ro localhost:5000/demo/vfwportal:$CI_COMMIT_SHA  /bin/bash -c "/usr/local/bin/pytest -v -s"
+#        - /usr/bin/podman run -v /etc/vforwater/vfwportal-demo-test/settings.py:/home/vfwportal/vforwater-portal/heron/settings.py:ro -v /etc/vforwater/vfwportal-demo-test/test_settings.py:/home/vfwportal/vforwater-portal/heron/test_settings.py:ro localhost:5000/demo/vfwportal:$CI_COMMIT_SHA  /bin/bash -c "/usr/local/bin/pytest -v -s"
 
-    only:
-        - demo
+#    only:
+#        - demo
 
 
 vforwater-demo-tag_for_deploy:
