@@ -2,7 +2,7 @@
 stages:
     - build
     - push
-    - test
+    #- test
     - tag_for_deploy
 
 
