@@ -341,14 +341,10 @@ vfw.draw2d.Connection = class {
  *
  * @returns {Object}
  */
+/** 
 vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
     NAME: "vfw.draw2d.Rectangle",
-    /**
-     * @method
-     * Return an objects with all important attributes for XML or JSON serialization
-     *
-     * @returns {Object}
-     */
+
     getPersistentAttributes: function () {
         var memento = this._super();
 
@@ -373,13 +369,6 @@ vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
         return memento;
     },
 
-    /**
-     * @method
-     * Read all attributes from the serialized properties and transfer them into the shape.
-     *
-     * @param {Object} memento
-     * @returns
-     */
     setPersistentAttributes: function (memento) {
         this._super(memento);
 
@@ -402,7 +391,7 @@ vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
         }, this));
     }
 });
-
+*/
 
 // TODO: Soon! (~May 2023) Access to sessionStorage should have a common interface. Use this as an example for the others.
 // How to use the session Storage:
@@ -413,17 +402,13 @@ vfw.draw2d.Rectangle = draw2d.shape.basic.Rectangle.extend({
  * Interface to access draw2ddata in Session Storage
  * @type {{setdata: vfw.session.draw2d.setdata, getworkflow: (function(): string)}}
  */
+/** 
 vfw.session.draw2d = {
-    /**
-     * Get workflow from Session Storage.
-     * @returns {string}
-     */
+
     getworkflow: function () {
         return sessionStorage.getItem("draw2ddata")
     },
-    /**
-     * Write workflow to Session Storage. Data is taken directly from draw2d canvas.
-     */
+
     setdata: function () {
         let writer = new draw2d.io.json.Writer();
 
@@ -437,7 +422,7 @@ vfw.session.draw2d = {
     },
 
 }
-
+**/
 // define drag and drop interaction from outside to canvas to the draw2d canvas
 function onclick_handler(ev) {
 }
@@ -446,11 +431,11 @@ function vfw_drag() {
 
 }
 
-vfw.draw2d.canvas = new draw2d.Canvas('dropdiv');
+//vfw.draw2d.canvas = new draw2d.Canvas('dropdiv');
 
 // Define policies to style any edit interactions in the canvas
-vfw.var.connection = new vfw.draw2d.Connection();
-vfw.draw2d.canvas.installEditPolicy(vfw.var.connection.connectionPolicy);
+//vfw.var.connection = new vfw.draw2d.Connection();
+//vfw.draw2d.canvas.installEditPolicy(vfw.var.connection.connectionPolicy);
 
 // vfw.draw2d.connection = new Connection();
 // vfw.draw2d.canvas.installEditPolicy(vfw.draw2d.connection.connectionPolicy);
@@ -729,7 +714,7 @@ vfw.session.get_tools = function (service) {
  * Check for a Workflow in sessionStorage. When no Workflow exists this function creates it.
  * @return {obj} json - object of a Workflow
  */
-vfw.session.get_workflow = function () {
+get_workflow = function() {
     let workflow = JSON.parse(sessionStorage.getItem('workflow'))
     if (!workflow) {
         workflow = vfw.session.set_workflow_name()

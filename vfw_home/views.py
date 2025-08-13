@@ -94,7 +94,7 @@ mpl.use('Agg')
 """
 
 
-check_data_consistency()
+# check_data_consistency()
 
 
 

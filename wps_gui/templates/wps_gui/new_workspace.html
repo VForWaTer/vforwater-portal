@@ -1,0 +1,109 @@
+{% load static %}
+{% load i18n %}
+{% load dynamic_fields %}
+
+{{ processes|json_script:"processes-data" }}
+
+<div class="flex flex-row m-4">
+    <div class="basis-3/5 p-6 h-screen">
+        <div class="block p-6 bg-white shadow-md h-1/2 rounded">
+            <h1 class="mb-4 text-3xl font-bold text-gray-900">
+                Process Execution
+            </h1>
+            <div class="overflow-x-auto mt-4">
+                <table class="table-fixed w-full border-collapse border border-gray-300 ">
+                    <thead class="bg-blue-400">
+                        <tr>
+                            {% for field in job_table_fields %}
+                                <th class="border border-gray-300 p-4 text-left text-m font-medium text-white">{{ field }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in jobs %}
+                        <tr>
+                            {% for field in job_table_fields %}
+                            <td class="border border-gray-300 p-12 text-m text-gray-600">
+                                {% if field == "location" %}
+                                <a href="{{ job.location }}" class="text-blue-500 underline" target="_blank">Link
+                                    here</a>
+                                    {% elif field == "status" %}
+                                    <span class="px-1 text-white text-sm font-medium
+                                        {% if job|get_field_display:field == 'successful' %}
+                                            bg-green-500
+                                        {% elif job|get_field_display:field == 'failed' %}
+                                            bg-red-500
+                                        {% elif job|get_field_display:field == 'pending' %}
+                                            bg-yellow-500
+                                        {% else %}
+                                            bg-gray-500
+                                        {% endif %}">
+                                        {{ job|get_field_display:field }}
+                                    </span>
+                                {% else %}
+                                {{ job|get_field_display:field }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="basis-2/5 p-6">
+        <div class="block p-6 bg-white shadow-md h-4/5 overflow-x-auto">
+            <h1 class="mb-2 text-3xl font-bold text-gray-900 mb-6">
+                Toolbox
+            </h1>
+            <p class="font-normal text-white">
+                {% for identifier, process in processes.items %}
+                {% if identifier != "dbloader" %}
+            <div x-data="{ open: false }" class="rounded-lg shadow-sm mb-3">
+                <!-- Row Header -->
+                <div class="flex items-center mr-2">
+                    <button type="submit" class="text-sm px-4 py-1.5 text-black"
+                        onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');">
+                        Run
+                    </button>
+                    <button @click="open = !open"
+                        class="flex items-center justify-between w-full p-4 text-left bg-gray-100 hover:bg-gray-200 transition">
+                        <span class="text-lg font-medium text-gray-800">{{ process.title }}</span>
+                        <!--
+    <svg :class="{ 'rotate-90': open }" class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+    -->
+                    </button>
+                </div>
+
+                <!-- Expanded Content -->
+                <div x-show="open" x-collapse class="p-4 bg-white text-sm text-gray-700">
+                    <p class="mb-2"><strong>Description:</strong> {{ process.description }}</p>
+                    <p class="mb-1"><strong>Inputs:</strong> {{ process.inputs }}</p>
+                    <p><strong>Outputs:</strong> {{ process.outputs }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            </p>
+        </div>
+    </div>
+</div>
+
+
+{% block modal %}
+{% include 'wps_gui/modal.html' %}
+{% endblock modal %}
+
+<script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
+<script src="https://unpkg.com/dayjs/plugin/utc.js"></script> 
+<script src="https://unpkg.com/dayjs/plugin/timezone.js"></script> 
+<script>dayjs.extend(window.dayjs_plugin_utc);dayjs.extend(window.dayjs_plugin_timezone);</script>
+
+<script src="{% static 'wps_gui/js/workflow.js' %}" type="text/javascript"></script>
+<script src="{% static 'wps_gui/js/workplace.js' %}" type="text/javascript"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="{% static 'wps_gui/js/result_area_obj.js' %}" type="text/javascript"></script>

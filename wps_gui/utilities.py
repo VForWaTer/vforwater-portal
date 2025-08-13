@@ -486,6 +486,7 @@ def update_geoapi_jobs_db(user_set: object, job_id: str):
     """
     full_name = "Goutam Das"
     userid = 100
+    print("Yayy job id-", job_id)
     try:
         #if user_set is not None:
         if userid is not None:
@@ -523,6 +524,24 @@ def get_job_status(job_id: str):
         print(f'Error retrieving job status: {e}')
         return None
 
+def fetch_jobs_table():
+    """
+    Fetch all jobs from the GeoAPI Jobs table.
+    
+    :return: list of dictionaries with job details or an empty list if no jobs found
+    """
+    try:
+        fields = ['process_id', 'created', 'finished', 'status', 'location']
+        jobs = Jobs.objects.all()
+
+        for job in jobs:
+            job.created =  datetime.datetime.strptime(job.created, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%B %d, %Y, %H:%M")
+            job.finished = datetime.datetime.strptime(job.finished, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%B %d, %Y, %H:%M")
+        
+        return jobs, fields
+    except Exception as e:
+        print(f'Error fetching jobs from GeoAPI Jobs table: {e}')
+        return []
 
 def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> object:
     """

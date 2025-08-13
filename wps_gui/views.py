@@ -61,7 +61,8 @@ from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, Geo
 from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
     prepare_inputs, create_geoapi_db_entry, has_result_error, process_to_json, get_url_json, edit_input,
-    handle_wps_output, get_user_results, run_pygeoapi_process, url_join
+    handle_wps_output, get_user_results, run_pygeoapi_process, url_join, extract_jobid, update_geoapi_jobs_db,
+    get_job_status, fetch_jobs_table
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -106,8 +107,9 @@ def home(request):
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
                 elif DEBUG and process['id'] in TOOLDICT['short_running_debug']:
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
-
-                elif request.user.id and process['id'] in TOOLDICT['default']:  
+                # Keep below line for now in case we need to revert to it
+                #elif request.user.id and process['id'] in TOOLDICT['default']:  
+                elif process['id'] in TOOLDICT['default']:  # if logged in show more tools
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
                 elif process['id'] in TOOLDICT['short_running']:
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
@@ -124,13 +126,23 @@ def home(request):
             }
             return render(request, "wps_gui/home.html", context)
 
-       
+        # Remove process that should not be visible for users
+        # workflow is kind of a helper process. It is called when several process are connected to call the workflow.
+        # So the user should call this implicitly by creating a workflow and shouldn't be shown in the list of tools.
+        # if "workflow" in ogcapi_proc:
+        #     del ogcapi_proc["workflow"]
+
+        # Fetch jobs table per user as well
+        jobs, job_table_fields = fetch_jobs_table()
+
         context = {
             "wps_services": wps_services,
             "processes": ogcapi_proc,
             "service": service,
             "message": message,
-            "results": results
+            "results": results,
+            "jobs": jobs,
+            "job_table_fields": job_table_fields 
         }
 
         return render(request, "wps_gui/home.html", context)
@@ -301,7 +313,16 @@ def process_run(request):
                            },
                # 'user': user_id,
                }
+    
+    job_id = extract_jobid(job_path)
+    job_db_response = update_geoapi_jobs_db(user_queryset, job_id)
 
+    job_status = get_job_status(job_id)
+    db_data["status"] = job_status
+
+    print("JOB STATUS - ", job_status)
+
+    ''' OLDER CODE: Check if still required
     if execution.status_code == 201:  # if request is created
         # Save the job url for later use
         db_data['status'] = 'CREATED'
@@ -324,11 +345,13 @@ def process_run(request):
         db_data['id'] = newEntry['id']
     result = db_data
 
+    print("Job ID - ", job_path)
     if newEntry['error']:
         logger.error(f'Error creating database entry for process result: {newEntry["error"]}')
         print(f'Error creating database entry for process result: {newEntry["error"]}')
         result = {'error': 'true'}
-
+'''
+    result = db_data
     return JsonResponse(result)
 
 

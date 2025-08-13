@@ -1,0 +1,21 @@
+{
+  "name": "vforwater-portal",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx @tailwindcss/cli -i vfw_home/static/vfw_home/vcss/tailwind-input.css -o vfw_home/static/vfw_home/vcss/tailwind-output.css --minify --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.kit.edu:kit/vforwater/vforwater-portal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.10",
+    "tailwindcss": "^4.1.10"
+  }
+}

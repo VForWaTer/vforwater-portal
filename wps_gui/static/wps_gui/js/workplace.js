@@ -54,7 +54,7 @@
 vfw.workspace.modal.open_wpsprocess = function (service, identifier, inputs = null) {
     // if (!vfw.obj.workModal) vfw.obj.workModal = new vfw.html.workModalObj();
     // vfw.obj.workModal(html, is_simple)
-    const modal_values = vfw.session.get_workflow();
+    const modal_values = get_workflow();
     const json = vfw.session.get_wpsprocess(service, identifier);
     // vfw.obj.workModal.build(json, service)
     vfw.workspace.modal.build_modal(json, service)
@@ -94,7 +94,7 @@ vfw.workspace.modal.setHead = function (wpsInfo, service) {
  **/
 vfw.workspace.modal.openBatchprocess = function (origin='modal', wpsInfo={}, service="",
                                                   identifier="", inputs = null, boxId=[]) {
-    if (wpsInfo === {}) wpsInfo = vfw.session.get_wpsprocess(service, identifier)
+    //if (wpsInfo === {}) wpsInfo = vfw.session.get_wpsprocess(service, identifier)
     // const modal_values = vfw.session.get_workflow();
 
     let sessionStoreData = getStorageOrDict("dataBtn");
@@ -641,7 +641,7 @@ vfw.workspace.modal.runProcess = function () {
         .done(function (json) {  /** Results are stored in the sessionStorage **/
             vfw.html.loaderOverlayOff()
             /** Handle result according to the success/status of the process */
-            if (json.execution_status == 200 || json.execution_status == "ProcessSucceeded") {
+            if (json.status == "SUCCESS") {
                 let btnName = '';
                 let btnData = {};
                 json.wps = modal_input.id;
@@ -710,7 +710,7 @@ vfw.workspace.modal.runProcess = function () {
                 console.error('error in wps process')
                 vfw.workspace.modal.setColor("firebrick");
             }
-            else if (json.status == 'CREATED' || json.status == 'ACCEPTED') {
+            else if (json.status == 'accepted' || json.status == 'running' || json.status == 'successful') {
                 vfw.workspace.modal.setColor("orange");
                 if (!json['orgID']) {
                     // create an id for the new object
@@ -1591,7 +1591,7 @@ vfw.workspace.workflow.prep_wps_workflow = function (workflow, processChain) {
     let outputName;
 
     for (let i of processChain) {
-        outputName = workflow[i].output_ids === [] ? workflow[i].name + "_" : workflow[i].name;
+        outputName = workflow[i].output_ids.length === 0 ? workflow[i].name + "_" : workflow[i].name;
         preppedWorkflow[i] = {
             id: workflow[i].orgid,
             inId_list: workflow[i].input_ids,
