@@ -9,7 +9,7 @@ charset-normalizer==3.3.2
 contourpy==1.2.1
 cryptography==44.0.1
 cycler==0.12.1
-Django==5.2.1
+Django==5.2.6
 django-cors-headers==4.4.0
 django-crontab==0.7.1
 django-debug-toolbar==4.3.0
