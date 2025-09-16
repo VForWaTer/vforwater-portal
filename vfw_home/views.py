@@ -1084,7 +1084,6 @@ class ShowInfoView(View):
         return ", ".join(parts) if parts else "0 seconds"
 
 
-
 class WorkspaceData(View):
     """
     Preload selected data when changing web page to workspace
@@ -1094,22 +1093,28 @@ class WorkspaceData(View):
     """
 
     def get(self, request):
-
-        endpoint =request.path
-
+        endpoint = request.path
         try:
-            
-            start_date = request.get('startDate')
-            end_date = request.get('endDate')
-            result = collect_selection(request,
-                                    json.loads(request.get('workspaceData')),
-                                    start_date, end_date
-                                    )
-            return JsonResponse({'workspaceData': result['data'], 'error': result['error'], 'group': result['group'],
-                                'selectedDate': [start_date, end_date]})
+            start_date = request.GET.get('startDate')
+            end_date = request.GET.get('endDate')
+            raw_ws = request.GET.get('workspaceData')  # JSON string in query
 
+            workspace_data = {}
+            if raw_ws:
+                try:
+                    workspace_data = json.loads(raw_ws)
+                except json.JSONDecodeError as e:
+                    return JsonResponse({"error": f"Invalid workspaceData JSON: {e}"}, status=400)
+
+            result = collect_selection(request, workspace_data, start_date, end_date)
+            return JsonResponse({
+                'workspaceData': result.get('data'),
+                'error': result.get('error'),
+                'group': result.get('group'),
+                'selectedDate': [start_date, end_date],
+            })
         except Exception as e:
-            additional_message =  f'Error in vfw_home/views/workspace_data: {e}'
+            additional_message = f'Error in vfw_home/views/workspace_data: {e}'
             raise_logging_exception(e, endpoint, additional_message)
             raise Http404
             
