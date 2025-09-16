@@ -1084,7 +1084,6 @@ class ShowInfoView(View):
         return ", ".join(parts) if parts else "0 seconds"
 
 
-
 class WorkspaceData(View):
     """
     Preload selected data when changing web page to workspace
