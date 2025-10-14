@@ -40,11 +40,21 @@ class DatasourceTypes(models.Model):
     def __str__(self):
         return f'Data source type {self.name}'
 
+class MetacatalogInfo(models.Model):
+    db_version = models.IntegerField(null=False)
+    min_py_version = models.CharField(max_length=64, blank=True, null=True)
+    max_py_version = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'metacatalog_info'
+
 
 class Datasources(models.Model):
     type = models.ForeignKey('DatasourceTypes', models.DO_NOTHING)
     path = models.TextField()
-    args = models.TextField(blank=True, null=True)
+    #args = models.TextField(blank=True, null=True)
+    args = models.JSONField(default=dict, blank=True, null=True)
     creation = models.DateTimeField(blank=True, null=True)
     lastupdate = models.DateTimeField(db_column='lastUpdate', blank=True, null=True)  # Field name made lowercase.
     encoding = models.CharField(max_length=64, blank=True, null=True)
@@ -82,8 +92,10 @@ class Details(models.Model):
     Used for the advanced Filter.
     """
     entry = models.ForeignKey('Entries', models.DO_NOTHING, blank=True, null=True)
-    key = models.CharField(max_length=20)
-    stem = models.CharField(max_length=20)
+    #key = models.CharField(max_length=20) 
+    key = models.TextField(blank=False, null=False)
+    #stem = models.CharField(max_length=20)
+    stem = models.TextField(blank=False, null=True)
     value = models.TextField()
     description = models.TextField(blank=True, null=True)
     thesaurus = models.ForeignKey('Thesaurus', models.DO_NOTHING, blank=True, null=True)
@@ -93,7 +105,8 @@ class Details(models.Model):
     class Meta:
         managed = False
         db_table = 'details'
-        unique_together = (('entry', 'stem'),)
+        constraints = [ models.UniqueConstraint(fields=['entry', 'key'], name='details_entry_id_key'),]
+        #unique_together = (('entry', 'key'),)
 
     def __str__(self):
         return f'{self.key}: {self.value}'
@@ -112,6 +125,7 @@ class Entries(models.Model):
     decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
 
     """
+    author = models.ForeignKey( 'Persons', on_delete=models.SET_NULL, null=True, blank=True, db_column='author_id', on_update=models.CASCADE )    
     uuid = models.CharField(max_length=36, default=lambda: str(uuid4()))
     title = models.CharField(max_length=512, blank=False)
     abstract = models.TextField(blank=True, null=True)
@@ -145,7 +159,9 @@ class EntrygroupTypes(models.Model):
     """
     Filter (advanced) only entrygroup 'project'
     """
-    name = models.CharField(max_length=40)
+   # name = models.CharField(max_length=40)
+    name = models.TextField()
+
     description = models.TextField()
 
     class Meta:
@@ -650,6 +666,23 @@ class cat_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
     class Meta:
         managed = True
         db_table = 'cat_pfaf_merit_hydro_v07_basins_v01'
+
+
+
+class UserAccessToken(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey('Persons', on_delete=models.CASCADE, db_column='user_id', related_name='access_tokens')
+    token_hash = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    valid_until = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'user_access_tokens'
+        #constraints = [ models.ForeignKeyConstraint(['user_id'], ['persons.id'], name='persons_access_token', on_delete=models.CASCADE,),]
+
+    def __str__(self):
+        return f'{self.user} - {self.token_hash[:10]}...'
+    
 
 
 # TODO: the simple basins should be used for bigger catchments to reduce processing time. But the given data has the wrong comID. Maybe created by yourself
