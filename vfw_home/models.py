@@ -135,7 +135,7 @@ class Entries(models.Model):
                                )    
     #uuid = models.CharField(max_length=36, default=lambda: str(uuid4()))
 
-    uuid = models.CharField(max_length=36, default=generate_uuid_str, editable=False)
+    uuid = models.CharField(max_length=36, default=generate_uuid_str)
     title = models.CharField(max_length=512, blank=False)
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
