@@ -125,7 +125,9 @@ class Entries(models.Model):
     decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
 
     """
-    author = models.ForeignKey( 'Persons', on_delete=models.SET_NULL, null=True, blank=True, db_column='author_id', on_update=models.CASCADE )    
+    author = models.ForeignKey( 'Persons', on_delete=models.SET_NULL, null=True, blank=True, db_column='author_id', 
+                               #on_update=models.CASCADE
+                               )    
     uuid = models.CharField(max_length=36, default=lambda: str(uuid4()))
     title = models.CharField(max_length=512, blank=False)
     abstract = models.TextField(blank=True, null=True)
