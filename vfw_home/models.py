@@ -623,7 +623,8 @@ class merit_hydro_vect_level2(models.Model):
         return f'basin_id is {self.basin}'
 
     class Meta:
-        managed = True
+       # managed = True
+        managed = False
         db_table = 'merit_hydro_vect_level2'
 
 
@@ -654,7 +655,9 @@ class riv_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
         return self.comid
 
     class Meta:
-        managed = True
+        #managed = True
+        managed = False
+
         db_table = 'riv_pfaf_merit_hydro_v07_basins_v01'
 
 
@@ -674,7 +677,7 @@ class cat_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
         return self.comid
 
     class Meta:
-        managed = True
+       # managed = True
         managed = False
         db_table = 'cat_pfaf_merit_hydro_v07_basins_v01'
 
