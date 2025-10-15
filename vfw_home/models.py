@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from uuid import uuid4
+#from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -9,7 +9,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db.models import Q
 from django.http import QueryDict
 from django.utils.translation import gettext, gettext_lazy
-
+import uuid
 
 # TODO write docstrings! Devs not used to these models will have a hard time understanding these model names without
 #  explanation
@@ -112,6 +112,9 @@ class Details(models.Model):
         return f'{self.key}: {self.value}'
 
 
+def generate_uuid_str():
+    return str(uuid.uuid4())
+
 class Entries(models.Model):
     """
     Main Table.
@@ -125,10 +128,14 @@ class Entries(models.Model):
     decent performance, enable the GeometryField.geography keyword so that geography database type is used instead.
 
     """
+
+
     author = models.ForeignKey( 'Persons', on_delete=models.SET_NULL, null=True, blank=True, db_column='author_id', 
                                #on_update=models.CASCADE
                                )    
-    uuid = models.CharField(max_length=36, default=lambda: str(uuid4()))
+    #uuid = models.CharField(max_length=36, default=lambda: str(uuid4()))
+
+    uuid = models.CharField(max_length=36, default=generate_uuid_str, editable=False)
     title = models.CharField(max_length=512, blank=False)
     abstract = models.TextField(blank=True, null=True)
     external_id = models.TextField(blank=True, null=True)
@@ -155,6 +162,7 @@ class Entries(models.Model):
 
     def __str__(self):
         return f'<ID={self.id} {self.title[:20]} [{self.variable.name}] >'
+
 
 
 class EntrygroupTypes(models.Model):
