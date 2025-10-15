@@ -675,6 +675,7 @@ class cat_pfaf_MERIT_Hydro_v07_Basins_v01(models.Model):
 
     class Meta:
         managed = True
+        managed = False
         db_table = 'cat_pfaf_merit_hydro_v07_basins_v01'
 
 
