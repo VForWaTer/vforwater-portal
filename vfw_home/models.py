@@ -692,6 +692,8 @@ class UserAccessToken(models.Model):
 
     class Meta:
         db_table = 'user_access_tokens'
+        managed = False
+
         #constraints = [ models.ForeignKeyConstraint(['user_id'], ['persons.id'], name='persons_access_token', on_delete=models.CASCADE,),]
 
     def __str__(self):
