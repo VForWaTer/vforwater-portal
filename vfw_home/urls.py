@@ -19,8 +19,8 @@ urlpatterns = [
     path('advanced_filter', views.AdvancedFilterView.as_view(), name='advanced_filter'),
     path('delineator/<catchout>', views.Delineator.as_view(), name='delineator_args'),
     path('quick_filter_args/<selection>', views.QuickFilterResults.as_view(), name='quick_filter_args'),
-    path('previewplot', views.PreviewPlotView.as_view(), name='previewplot'),
-    path('show_info', views.ShowInfoView.as_view(), name='show_info'),
+    path('previewplot', views.previewplot, name='previewplot'),
+    path('show_info', views.show_info, name='show_info'),
     path('workspace_data', views.WorkspaceData.as_view(), name='workspace_data'),
     path('read_logs', views.ReadLogs.as_view(), name='read_logs'),
     

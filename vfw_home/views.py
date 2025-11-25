@@ -594,158 +594,282 @@ class GeoserverView(View):
         return HttpResponse(response.read().decode('utf-8'))
 
 
-class PreviewPlotView(View):
+def previewplot(request):
     """
-    Class-based view to handle preview plot requests.
+    Requested from vfw.js show_preview
+    :param request:
+    :return:
     """
-
-    def get(self, request, *args, **kwargs):
-
-        endpoint = request.path
-
-        try:
-            # Step 1: Process webID
-            webID = request.GET.get('preview')
-            if not webID:
-                logger.error("No 'preview' parameter provided in the request.")
-                return JsonResponse({'error': "Missing 'preview' parameter."})
-
-            entriesID, parts = self._process_webID(webID)
-
-            # Step 2: Validate accessible data
-            if len(parts) > 1:
-                accessible_data = get_accessible_data(request, [parts[1]])
-                error_list = accessible_data['blocked']
-                data = accessible_data.get('open', [])
-
-                if not data:
-                    logger.warning(f"No accessible data found for parts: {parts}")
-                    return JsonResponse({'warning': translation.gettext(
-                        'No plot available. <br/>First access to this dataset is needed.')})
-
-            else:
-                additional_message = f"Invalid 'parts' structure: {parts}"
-                raise_logging_exception(None, endpoint, additional_message)
-                return JsonResponse({'error': "Invalid 'parts' structure parsed from 'webID'."})
-
-        except Exception as e:
-            additional_message = "Error during processing of 'webID'."
-            raise_logging_exception(e, endpoint, additional_message)
-            return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"})
-
-
-        full_res = False
-        plot_size = [700, 500]
-        date = self._get_date_range(request)
-
-        
-        cache_obj = self._initialize_cache(webID, plot_size, date)
-        cache_obj, img = get_cache(cache_obj)
-
-        if not cache_obj['in_cache']:
-            try:
-                dataset = self._get_dataset(webID, entriesID, date)
-            except Exception as e:
-                additional_message = "Error while constructing the dataset."
-                raise_logging_exception(e, endpoint, additional_message)
-                raise Http404
-
-            try:
-                plot = FigObject(dataset, plot_size)
-                img = plot.get_plot()
-            except Exception as e:
-                additional_message = "Error while generating the plot."
-                raise_logging_exception(e, endpoint, additional_message)
-                raise Http404
-
-        return JsonResponse(img)
-
-
-    def _process_webID(self, webID):
-        """
-        Process the 'webID' parameter and extract its components.
-
-        :param webID: The webID from the request.
-        :return: A tuple of entriesID and parts.
-        """
+    try:
+        webID = request.GET.get('preview')
         entriesID = webID
-        parts = []
-
-        if webID.startswith('db['):
+        # webID = 'db869'
+        print("test preview entriesID :",entriesID )
+        if webID[0:3] == 'db[':
             parts = webID[0:-1].split('[')
             webID = [f'db{id.strip()}' for id in parts[1].split(',')]
-        elif webID.startswith('db'):
+        elif webID[0:2] == 'db':
             parts = [0, webID[2:]]
             entriesID = webID[2:]
         else:
-            logger.warning(f"Unexpected ID format encountered: {webID} (type: {type(webID)})")
-            raise ValueError(f"Unhandled ID format: {webID}")
+            print('views.py: Figure how to handle such an ID: ', webID, type(webID))
+            # logger.warning(f'Figure how to handle an ID like {webID}')
 
-        return entriesID, parts
+        accessible_data = get_accessible_data(request, [parts[1]])
+        error_list = accessible_data['blocked']
+        accessible_data = accessible_data['open']
+        print("data :",accessible_data )
 
-    def _get_date_range(self, request):
-        """
-        Extract the date range from the request.
+        # ID = 1013
+        # datatype = Entries.objects.filter(id=ID).values_list('datasource__datatype__name', flat=True)[0]
 
-        :param request: The HTTP request containing startdate and enddate.
-        :return: A list containing the start and end dates, or None.
-        """
-        startdate = request.GET.get('startdate')
-        enddate = request.GET.get('enddate')
+        # accessible_data = [1014]  # 1014: wind direction, 1013: 3D direction
+        if len(accessible_data) < 1:
+            return JsonResponse({'warning': translation.gettext(
+                'No plot available. <br/>First access to this dataset is needed.')})
 
-        if startdate and startdate != 'None':
-            return [
-                make_aware(datetime.datetime.strptime(startdate, '%Y-%m-%d')),
-                make_aware(datetime.datetime.strptime(enddate, '%Y-%m-%d'))
-            ]
-        return None
+    except Exception as e:
+        print('Exception: ', e)
 
-    def _initialize_cache(self, webID, plot_size, date):
-        """
-        Initialize the cache object for the plot.
+    full_res = False
+    plot_size = [700, 500]
+    if request.GET.get('startdate') != 'None':
+        date = [make_aware(datetime.datetime.strptime(request.GET.get('startdate'), '%Y-%m-%d')),
+                make_aware(datetime.datetime.strptime(request.GET.get('enddate'), '%Y-%m-%d'))]
+    else:
+        date = None
 
-        :param webID: The webID parameter.
-        :param plot_size: The size of the plot.
-        :param date: The date range for the plot.
-        :return: A dictionary representing the cache object.
-        """
-        cache_name = f"plot_b{webID}{plot_size}{date}"
-        return {
-            'use_redis': True,
-            'redis': redis.StrictRedis(),
-            'in_cache': False,
-            'name': cache_name
-        }
+    # TODO: Add the redis cache properly (https://docs.djangoproject.com/en/4.2/topics/cache/#redis)
+    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+                 'in_cache': False, 'name': "plot_{}".format('b' + str(webID) + str(plot_size) + str(date))}
+    cache_obj, img = get_cache(cache_obj)
 
-    def _get_dataset(self, webID, entriesID, date):
-        """
-        Construct the dataset based on the webID and date range.
+    if not cache_obj['in_cache']:
 
-        :param webID: The webID parameter.
-        :param entriesID: Extracted entries ID.
-        :param date: The date range for the dataset.
-        :return: A list of dataset objects.
-        """
-        dataset = []
-
-        if isinstance(webID, list):
-            for entry in webID:
-                if has_data(entry[2:]):
-                    dataset.append(DataObject(entry, date))
-                else:
-                    logger.warning(f"No data available for dataset with entries ID: {entry}")
-        else:
-            if has_data(entriesID):
-                if int(entriesID) not in cache.get('ids_data_on_path'):
-                    dataset = DataObject(webID, date)
-                else:
-                    logger.warning("Data on path not handled. Check if raster or netCDF.")
-                    raise ValueError(f"Plot for entries ID {webID} needs implementation.")
+        try:
+            # bla = Entries.objects.filter(pk=webID[2:]).values_list('datasource__data_names',
+            #                                                        'datasource__path',
+            #                                                        'datasource__datatype__parent',
+            #                                                        'datasource__datatype__name',
+            #                                                        'datasource__datatype__title',
+            #                                                        'datasource__datatype__description',
+            #                                                        'datasource__temporal_scale__resolution',
+            #                                                        'datasource__temporal_scale__observation_start',
+            #                                                        'datasource__temporal_scale__support',
+            #                                                        )
+            if isinstance(webID, list):
+                dataset = []
+                for i in webID:
+                    if has_data(i[2:]):
+                        dataset.append(DataObject(i, date))
+                    else:
+                        print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
             else:
-                logger.warning(f"No data available for dataset with entries ID: {webID}")
-                raise ValueError(f"No data available for dataset with entries ID: {webID}")
+                if has_data(entriesID):
+                    if int(entriesID)  not in cache.get('ids_data_on_path')  :
+                        dataset = DataObject(webID, date)
+                    else:
+                        print('One must handle data on path/ check if raster (= has spatial resolution) => '
+                              'plot raster image, if netCDF => datacube')
+                        return JsonResponse({'error': f'Plot for entries ID {webID} has to be implemented.'})
+                else:
+                    print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
+                    return JsonResponse({'error': f'No Data for dataset with entries ID {webID}'})
 
-        return dataset
+        except TypeError as e:
+            print('\033[33mhome.views.previewplot: Type error in Data Object:\033[0m ', e)
+            logger.debug('Type Error in Data Object: ', e)
+            raise Http404
+        except IndexError as e:
+            print('\033[33mhome.views.previewplot: index error in Data Object:\033[0m ', e)
+            logger.debug('Index Error in Data Object: ', e)
+            if request.user.is_authenticated:
+                # TODO: Rethink how to handle unallowed requests
+                raise Http404
+            else:
+                # TODO: Redirect to login
+                raise Http404
+                # return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+                # return redirect('vfw_home:login')
+        except EmptyResultSet as e:
+            print('\033[33mhome.views.previewplot: EmptyResultSet Error in Data Object:\033[0m ', e)
+            logger.debug('EmptyResultSet Error in Data Object: ', e)
+            return JsonResponse({'error': e})
+        except LookupError as e:
+            print('\033[33mhome.views.previewplot: LookupError in Data Object:\033[0m ', e)
+            logger.debug('LookupError in Data Object: ', e)
+            return JsonResponse({'error': e})
+        except FieldError as e:
+            print('\033[33mhome.views.previewplot: Field Error in Data Object:\033[0m ', e)
+            logger.debug('Field Error in Data Object: ', e)
+            raise Http404
+        except Exception as e:
+            print('\033[31mhome.views.previewplot: An unhandled error in Data Object:\033[0m ', e)
+            logger.debug('An unhandled Error in Data Object: ', e)
+            raise Http404
+
+        # plot = MultiplePlotsObject(dataset, plot_size=plot_size)
+        plot = FigObject(dataset, plot_size)
+        img = plot.get_plot()
+    return JsonResponse(img)
+
+
+
+
+# class PreviewPlotView(View):
+#     """
+#     Class-based view to handle preview plot requests.
+#     """
+
+#     def get(self, request, *args, **kwargs):
+
+#         endpoint = request.path
+
+#         try:
+#             # Step 1: Process webID
+#             raw_webID = request.GET.get('preview')
+#             if not raw_webID:
+#                 logger.error("No 'preview' parameter provided in the request.")
+#                 return JsonResponse({'error': "Missing 'preview' parameter."})
+
+#             webID, entriesID, parts = self._process_webID(raw_webID)
+#             print("test preview entriesID :",webID, entriesID, parts )
+
+#             # Step 2: Validate accessible data
+#             if len(parts) > 1:
+#                 accessible_data = get_accessible_data(request, [parts[1]])
+#                 error_list = accessible_data['blocked']
+#                 data = accessible_data.get('open', [])
+#                 print("data :",data )
+
+#                 if not data:
+#                     logger.warning(f"No accessible data found for parts: {parts}")
+#                     return JsonResponse({'warning': translation.gettext(
+#                         'No plot available. <br/>First access to this dataset is needed.')})
+
+#             else:
+#                 additional_message = f"Invalid 'parts' structure: {parts}"
+#                 raise_logging_exception(None, endpoint, additional_message)
+#                 return JsonResponse({'error': "Invalid 'parts' structure parsed from 'webID'."})
+
+#         except Exception as e:
+#             additional_message = "Error during processing of 'webID'."
+#             raise_logging_exception(e, endpoint, additional_message)
+#             return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"})
+
+
+#         full_res = False
+#         plot_size = [700, 500]
+#         date = self._get_date_range(request)
+
+        
+#         cache_obj = self._initialize_cache(webID, plot_size, date)
+#         cache_obj, img = get_cache(cache_obj)
+
+#         if not cache_obj['in_cache']:
+#             try:
+#                 dataset = self._get_dataset(webID, entriesID, date)
+#             except Exception as e:
+#                 additional_message = "Error while constructing the dataset."
+#                 raise_logging_exception(e, endpoint, additional_message)
+#                 raise Http404
+
+#             try:
+#                 plot = FigObject(dataset, plot_size)
+#                 img = plot.get_plot()
+#             except Exception as e:
+#                 additional_message = "Error while generating the plot."
+#                 raise_logging_exception(e, endpoint, additional_message)
+#                 raise Http404
+
+#         return JsonResponse(img)
+
+
+#     def _process_webID(self, webID):
+#         """
+#         Process the 'webID' parameter and extract its components.
+
+#         :param webID: The webID from the request.
+#         :return: A tuple of entriesID and parts.
+#         """
+#         entriesID = webID
+#         parts = []
+
+#         if webID.startswith('db['):
+#             parts = webID[0:-1].split('[')
+#             webID = [f'db{id.strip()}' for id in parts[1].split(',')]
+#         elif webID.startswith('db'):
+#             parts = [0, webID[2:]]
+#             entriesID = webID[2:]
+#         else:
+#             logger.warning(f"Unexpected ID format encountered: {webID} (type: {type(webID)})")
+#             raise ValueError(f"Unhandled ID format: {webID}")
+
+#         return entriesID, parts
+
+#     def _get_date_range(self, request):
+#         """
+#         Extract the date range from the request.
+
+#         :param request: The HTTP request containing startdate and enddate.
+#         :return: A list containing the start and end dates, or None.
+#         """
+#         startdate = request.GET.get('startdate')
+#         enddate = request.GET.get('enddate')
+
+#         if startdate and startdate != 'None':
+#             return [
+#                 make_aware(datetime.datetime.strptime(startdate, '%Y-%m-%d')),
+#                 make_aware(datetime.datetime.strptime(enddate, '%Y-%m-%d'))
+#             ]
+#         return None
+
+#     def _initialize_cache(self, webID, plot_size, date):
+#         """
+#         Initialize the cache object for the plot.
+
+#         :param webID: The webID parameter.
+#         :param plot_size: The size of the plot.
+#         :param date: The date range for the plot.
+#         :return: A dictionary representing the cache object.
+#         """
+#         cache_name = f"plot_b{webID}{plot_size}{date}"
+#         return {
+#             'use_redis': True,
+#             'redis': redis.StrictRedis(),
+#             'in_cache': False,
+#             'name': cache_name
+#         }
+
+#     def _get_dataset(self, webID, entriesID, date):
+#         """
+#         Construct the dataset based on the webID and date range.
+
+#         :param webID: The webID parameter.
+#         :param entriesID: Extracted entries ID.
+#         :param date: The date range for the dataset.
+#         :return: A list of dataset objects.
+#         """
+#         dataset = []
+
+#         if isinstance(webID, list):
+#             for entry in webID:
+#                 if has_data(entry[2:]):
+#                     dataset.append(DataObject(entry, date))
+#                 else:
+#                     logger.warning(f"No data available for dataset with entries ID: {entry}")
+#         else:
+#             if has_data(entriesID):
+#                 if int(entriesID) not in cache.get('ids_data_on_path'):
+#                     dataset = DataObject(webID, date)
+#                 else:
+#                     logger.warning("Data on path not handled. Check if raster or netCDF.")
+#                     raise ValueError(f"Plot for entries ID {webID} needs implementation.")
+#             else:
+#                 logger.warning(f"No data available for dataset with entries ID: {webID}")
+#                 raise ValueError(f"No data available for dataset with entries ID: {webID}")
+
+#         return dataset
 
 
 
@@ -875,153 +999,15 @@ class ShortInfoPaginationView(View):
         return dict(newdict.items())
 
 
-
-
-
-
-class ShowInfoView(View):
-
-
+def show_info(request):
     """
-    Handles requests to collect metadata for preview on a map and sidebar selection.
+    On request collect metadata for preview on map and selection in the sidebar.
+    Requested from map.js show_info.
+    :param request:
+    :return:
     """
 
-    def get(self, request, *args, **kwargs):
-
-        endpoint = request.path
-        webID = request.GET.get('show_info')
-        if not webID:
-            logger.error("No 'show_info' parameter provided.")
-            return JsonResponse({'error': "Missing 'show_info' parameter."})
-
-        if webID.startswith('wps'):
-            return self.handle_wps(webID)
-        elif webID.startswith('db'):
-            ids = webID[2:]
-        else:
-            ids = webID
-
-        try:
-
-            return self.collect_data(ids)
-
-        except Exception as e:
-
-            additional_message =  f'Error while processing webID {webID}: {e}'
-            raise_logging_exception(e, endpoint, additional_message)
-            raise Http404
-
-
-    def handle_wps(self, webID):
-
-        wpsData = WpsResults.objects.get(pk=webID[3:])  
-        result_path = json.loads(wpsData.outputs)['path']
-        loaded_data = json.loads(read_data(result_path, ''))
-
-        table = {'id': loaded_data['meta']['id'],
-                translation.gettext('Name'): translation.gettext(loaded_data['meta']['variable']['name']),
-                translation.gettext('Commercial use allowed'):
-                    human_readable_bool(loaded_data['meta']['license']['commercial_use']),
-                translation.gettext('Embargo'): human_readable_bool(
-                    has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end'])),
-                'has_embargo': str(
-                    has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end']))}
-
-        return JsonResponse({'table': table, 'warning': ''})
-
-   
-
-
-    def collect_data(self, ids):
-        """
-        Called when clicked on more to see metadata of single dataset.
-        TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
-
-        :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
-        :type ids: str
-        :return: dict
-        """
-        
-        prefix, nm_prefix, warning = 'entry__', '', ''
-
-        def get_queryvalues(prefix, nm_prefix):
-            return [prefix + 'uuid', prefix + 'variable__name', prefix + 'abstract',
-                    prefix + 'license__commercial_use',
-                    prefix + 'embargo', prefix + 'embargo_end',
-                    prefix + 'datasource__temporal_scale__observation_start',
-                    prefix + 'datasource__temporal_scale__observation_end',
-                    prefix + 'datasource__spatial_scale__resolution',
-                    prefix + 'datasource__temporal_scale__resolution',
-                    nm_prefix + 'group__title', nm_prefix + 'group_id']
-
-        try:
-           
-            if ids.startswith('['):
-                ids = list(map(int, ids[1:-1].split(",")))
-                db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
-            else: 
-                db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
-                
-        except Exception as e:
-
-            additional_message =  f'Error in views.show_info.collect_data: {e}'
-            raise_logging_exception(e, endpoint, additional_message)
-            raise Http404
-
-
-        if not db_info.exists():
-            warning = 'This dataset cannot be accessed from the Nm table. Please inform the database admin.'
-            prefix, nm_prefix = '', 'nmentrygroups__'
-            db_info = Entries.objects.filter(id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
-            group_entry_ids = Entries.objects.filter(nmentrygroups__group_id=db_info[0][nm_prefix + 'group_id']) \
-                .values_list('id', flat=True)
-        else:
-            group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
-                .values_list('entry_id', flat=True)
-        
-        variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
-
-        table = {
-            'id': ids,
-            'uuid': db_info[0][prefix + 'uuid'],
-            'Name': db_info[0][prefix + 'variable__name'],
-            'Commercial use allowed': human_readable_bool(db_info[0][prefix + 'license__commercial_use']),
-            'Embargo': human_readable_bool(
-                has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end'])
-            ),
-            'Abstract': db_info[0][prefix + 'abstract'] or '-',
-            'has_embargo': str(
-                has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end'])
-            ),
-            'Group': db_info[0][nm_prefix + 'group__title'] or '-',
-            'group_entry_ids': list(group_entry_ids),
-        }
-
-        if db_info[0][prefix + 'datasource__spatial_scale__resolution']:
-            table['Spatial Resolution'] = f"{db_info[0][prefix + 'datasource__spatial_scale__resolution']} m"
-
-        if db_info[0][prefix + 'datasource__temporal_scale__resolution']:
-            temporal_resolution = self._parse_iso8601_duration(
-                db_info[0][prefix + 'datasource__temporal_scale__resolution']
-            )
-            table['Temporal Resolution'] = self._format_duration_to_detailed_str(temporal_resolution)
-
-        table['Observation Start'] = (
-            db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y')
-            if db_info[0][prefix + 'datasource__temporal_scale__observation_start']
-            else '-'
-        )
-        table['Observation End'] = (
-            db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y')
-            if db_info[0][prefix + 'datasource__temporal_scale__observation_end']
-            else '-'
-        )
-
-        return JsonResponse({'table': table, 'warning': warning})
-       
-
-
-    def parse_iso8601_duration(self, duration_str):
+    def parse_iso8601_duration(duration_str):
         """
         Parse an ISO 8601 duration string into a timedelta object.
 
@@ -1038,18 +1024,18 @@ class ShowInfoView(View):
         output : 3 days, 1:05:06
            
         """
-        
+        # Remove the 'P' and split into date and time parts
         duration_str = duration_str[1:]
         date_time_split = duration_str.split('T')
         days, hours, minutes, seconds = 0, 0, 0, 0
 
         print("date time split: " , date_time_split)
-        
+        # If there's a date component, parse it
         if date_time_split[0]:
             date_part = date_time_split[0]
             days += int(date_part[:-1]) if date_part.endswith('D') else 0
 
-       
+        # If there's a time component, parse it
         if len(date_time_split) > 1:
             time_part = date_time_split[1]
             hours += int(time_part.split('H')[0]) if 'H' in time_part else 0
@@ -1057,8 +1043,9 @@ class ShowInfoView(View):
             seconds += int(time_part.split('M')[-1].split('S')[0]) if 'S' in time_part else 0
 
         return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+   
 
-    def format_duration_to_detailed_str(self, duration):
+    def format_duration_to_detailed_str(duration):
         """
         Format a duration object into a detailed string.
 
@@ -1075,13 +1062,335 @@ class ShowInfoView(View):
         seconds = duration.seconds
         hours, remainder = divmod(seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-       
+        # return f"{days} day(s), {hours} hour(s), {minutes} minute(s), {seconds} second(s)"
         if days: parts.append(f"{days} day{'s' if days > 1 else ''}")
         if hours: parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
         if minutes: parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
         if seconds: parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
 
         return ", ".join(parts) if parts else "0 seconds"
+
+    def collect_data(ids):
+        """
+        Called when clicked on more to see metadata of single dataset.
+        TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
+
+        :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
+        :type ids: str
+        :return: dict
+        """
+        # build dict of lists for preview:
+        prefix = 'entry__'
+        nm_prefix = ''  # nmentrygroups__
+        warning = ''
+
+        def get_queryvalues(prefix, nm_prefix):
+            return [prefix + 'uuid', prefix + 'variable__name', prefix + 'abstract',
+                    prefix + 'license__commercial_use',
+                    prefix + 'embargo', prefix + 'embargo_end',
+                    prefix + 'datasource__temporal_scale__observation_start',
+                    prefix + 'datasource__temporal_scale__observation_end',
+                    prefix + 'datasource__spatial_scale__resolution',
+                    prefix + 'datasource__temporal_scale__resolution',
+                    nm_prefix + 'group__title', nm_prefix + 'group_id']
+
+        try:
+            # For a list of datasets use this
+            if ids[0] == '[':
+                string_list = ids[1:-1].split(",")
+                ids = list(map(int, string_list))
+                db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
+            else:  # For one dataset use this
+                db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+        except Exception as e:
+            print('Error in views.show_info.collect_data: ', e)
+            logger.debug('Error in views.show_info.collect_data: ', e)
+
+        if not db_info.exists():
+            warning = '[TODO]  This dataset can not be accessed from the Nm table. Please inform database admin.'
+            prefix = ''
+            nm_prefix = 'nmentrygroups__'
+            db_info = Entries.objects.filter(id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+            group_entry_ids = Entries.objects.filter(nmentrygroups__group_id=db_info[0][nm_prefix + 'group_id']) \
+                .values_list('id', flat=True)
+        else:
+            group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
+                .values_list('entry_id', flat=True)
+        
+        variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
+        table = {'id': ids, 'uuid': db_info[0][prefix + 'uuid'],
+                 translation.gettext('Name'): variable_name }
+
+
+        table[translation.gettext('Commercial use allowed')] = \
+            human_readable_bool(db_info[0][prefix + 'license__commercial_use'])
+        table[translation.gettext('Embargo')] = human_readable_bool(
+            has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
+        table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
+            if db_info[0][prefix + 'abstract'] else '-'
+        table['has_embargo'] = str(
+            has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end']))
+        table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
+            if db_info[0][nm_prefix + 'group__title'] else '-'
+        table['group_entry_ids'] = list(group_entry_ids)
+
+        if db_info[0][prefix + 'datasource__spatial_scale__resolution'] is not None :
+        #     spatial_resolution_unit_symbol = Variables.objects.filter(name=variable_name).first().unit.symbol 
+            table[translation.gettext('Spatial Resolution')] = str(db_info[0][prefix + 'datasource__spatial_scale__resolution']) + " " + "m"
+
+        if db_info[0][prefix + 'datasource__temporal_scale__resolution'] is not None :
+            parsed_date = parse_iso8601_duration(db_info[0][prefix + 'datasource__temporal_scale__resolution'])
+            print("Temporal Scale string :", format_duration_to_detailed_str(parsed_date))
+            table[translation.gettext('Temporal Resolution')] = format_duration_to_detailed_str(parsed_date)
+
+        print("table 8: ", db_info[0][prefix + 'datasource__temporal_scale__observation_start'])
+        table[translation.gettext('Observation Start')] = db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_start'] else '-'
+        table[translation.gettext('Observation End')] = db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y') if db_info[0][prefix + 'datasource__temporal_scale__observation_end'] else '-'
+        
+        return JsonResponse({'table': table, 'warning': warning})
+    
+    webID = request.GET.get('show_info')
+    if webID[0:3] == 'wps':
+        wpsData = WpsResults.objects.get(pk=webID[3:])  # .values('inputs', 'outputs', 'open')
+        result_path = json.loads(wpsData.outputs)['path']
+        loaded_data = json.loads(read_data(result_path, ''))
+
+        table = {'id': loaded_data['meta']['id'],
+                 translation.gettext('Name'): translation.gettext(loaded_data['meta']['variable']['name']),
+                 translation.gettext('Commercial use allowed'):
+                     human_readable_bool(loaded_data['meta']['license']['commercial_use']),
+                 translation.gettext('Embargo'): human_readable_bool(
+                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end'])),
+                 'has_embargo': str(
+                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end']))}
+
+        # table[translation.gettext('Abstract')] = translation.gettext(db_info[0][prefix + 'abstract']) \
+        #     if db_info[0][prefix + 'abstract'] else '-'
+        #
+        # table[translation.gettext('Group')] = translation.gettext(db_info[0][nm_prefix + 'group__title']) \
+        #     if db_info[0][nm_prefix + 'group__title'] else '-'
+        # table['group_entry_ids'] = list(group_entry_ids)
+        return JsonResponse({'table': table, 'warning': ''})
+
+    else:
+        if webID[0:2] == 'db':
+            ids = webID[2:]
+        else:
+            ids = webID
+
+        try:
+            # print('json.loads(webID): ', json.loads(ids))
+            return collect_data(ids)
+
+        except TypeError:
+            raise Http404
+
+
+
+
+# class ShowInfoView(View):
+
+
+#     """
+#     Handles requests to collect metadata for preview on a map and sidebar selection.
+#     """
+
+#     def get(self, request, *args, **kwargs):
+
+#         endpoint = request.path
+#         webID = request.GET.get('show_info')
+#         if not webID:
+#             logger.error("No 'show_info' parameter provided.")
+#             return JsonResponse({'error': "Missing 'show_info' parameter."})
+
+#         if webID.startswith('wps'):
+#             return self.handle_wps(webID)
+#         elif webID.startswith('db'):
+#             ids = webID[2:]
+#         else:
+#             ids = webID
+
+#         try:
+
+#             return self.collect_data(ids)
+
+#         except Exception as e:
+
+#             additional_message =  f'Error while processing webID {webID}: {e}'
+#             raise_logging_exception(e, endpoint, additional_message)
+#             raise Http404
+
+
+#     def handle_wps(self, webID):
+
+#         wpsData = WpsResults.objects.get(pk=webID[3:])  
+#         result_path = json.loads(wpsData.outputs)['path']
+#         loaded_data = json.loads(read_data(result_path, ''))
+
+#         table = {'id': loaded_data['meta']['id'],
+#                 translation.gettext('Name'): translation.gettext(loaded_data['meta']['variable']['name']),
+#                 translation.gettext('Commercial use allowed'):
+#                     human_readable_bool(loaded_data['meta']['license']['commercial_use']),
+#                 translation.gettext('Embargo'): human_readable_bool(
+#                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end'])),
+#                 'has_embargo': str(
+#                     has_pending_embargo(loaded_data['meta']['embargo'], loaded_data['meta']['embargo_end']))}
+
+#         return JsonResponse({'table': table, 'warning': ''})
+
+   
+
+
+#     def collect_data(self, ids):
+#         """
+#         Called when clicked on more to see metadata of single dataset.
+#         TODO: Data should be accessed through 'NmEntrygroups', but for some datasets it's only working through 'Entries'
+
+#         :param ids: ID, styled depending on sender. E.g. could be wps12, db12 or just 12.
+#         :type ids: str
+#         :return: dict
+#         """
+        
+#         prefix, nm_prefix, warning = 'entry__', '', ''
+
+#         def get_queryvalues(prefix, nm_prefix):
+#             return [prefix + 'uuid', prefix + 'variable__name', prefix + 'abstract',
+#                     prefix + 'license__commercial_use',
+#                     prefix + 'embargo', prefix + 'embargo_end',
+#                     prefix + 'datasource__temporal_scale__observation_start',
+#                     prefix + 'datasource__temporal_scale__observation_end',
+#                     prefix + 'datasource__spatial_scale__resolution',
+#                     prefix + 'datasource__temporal_scale__resolution',
+#                     nm_prefix + 'group__title', nm_prefix + 'group_id']
+
+#         try:
+           
+#             if ids.startswith('['):
+#                 ids = list(map(int, ids[1:-1].split(",")))
+#                 db_info = NmEntrygroups.objects.filter(entry_id__in=ids).values(*get_queryvalues(prefix, nm_prefix))
+#             else: 
+#                 db_info = NmEntrygroups.objects.filter(entry_id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+                
+#         except Exception as e:
+
+#             additional_message =  f'Error in views.show_info.collect_data: {e}'
+#             raise_logging_exception(e, endpoint, additional_message)
+#             raise Http404
+
+
+#         if not db_info.exists():
+#             warning = 'This dataset cannot be accessed from the Nm table. Please inform the database admin.'
+#             prefix, nm_prefix = '', 'nmentrygroups__'
+#             db_info = Entries.objects.filter(id=int(ids)).values(*get_queryvalues(prefix, nm_prefix))
+#             group_entry_ids = Entries.objects.filter(nmentrygroups__group_id=db_info[0][nm_prefix + 'group_id']) \
+#                 .values_list('id', flat=True)
+#         else:
+#             group_entry_ids = NmEntrygroups.objects.filter(group_id=db_info[0]['group_id']) \
+#                 .values_list('entry_id', flat=True)
+        
+#         variable_name = translation.gettext(db_info[0][prefix + 'variable__name'])
+
+#         table = {
+#             'id': ids,
+#             'uuid': db_info[0][prefix + 'uuid'],
+#             'Name': db_info[0][prefix + 'variable__name'],
+#             'Commercial use allowed': human_readable_bool(db_info[0][prefix + 'license__commercial_use']),
+#             'Embargo': human_readable_bool(
+#                 has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end'])
+#             ),
+#             'Abstract': db_info[0][prefix + 'abstract'] or '-',
+#             'has_embargo': str(
+#                 has_pending_embargo(db_info[0][prefix + 'embargo'], db_info[0][prefix + 'embargo_end'])
+#             ),
+#             'Group': db_info[0][nm_prefix + 'group__title'] or '-',
+#             'group_entry_ids': list(group_entry_ids),
+#         }
+
+#         if db_info[0][prefix + 'datasource__spatial_scale__resolution']:
+#             table['Spatial Resolution'] = f"{db_info[0][prefix + 'datasource__spatial_scale__resolution']} m"
+
+#         if db_info[0][prefix + 'datasource__temporal_scale__resolution']:
+#             temporal_resolution = self._parse_iso8601_duration(
+#                 db_info[0][prefix + 'datasource__temporal_scale__resolution']
+#             )
+#             table['Temporal Resolution'] = self._format_duration_to_detailed_str(temporal_resolution)
+
+#         table['Observation Start'] = (
+#             db_info[0][prefix + 'datasource__temporal_scale__observation_start'].strftime('%d %b %Y')
+#             if db_info[0][prefix + 'datasource__temporal_scale__observation_start']
+#             else '-'
+#         )
+#         table['Observation End'] = (
+#             db_info[0][prefix + 'datasource__temporal_scale__observation_end'].strftime('%d %b %Y')
+#             if db_info[0][prefix + 'datasource__temporal_scale__observation_end']
+#             else '-'
+#         )
+
+#         return JsonResponse({'table': table, 'warning': warning})
+       
+
+
+#     def parse_iso8601_duration(self, duration_str):
+#         """
+#         Parse an ISO 8601 duration string into a timedelta object.
+
+#         :param duration_str: A string representing a duration in ISO 8601 format.
+#         :type duration_str: str
+#         :return: A timedelta object representing the parsed duration.
+#         :rtype: timedelta
+
+#         The function removes the 'P' prefix and splits the string into date and time parts. 
+
+#         Example:
+
+#         >>> parse_iso8601_duration('P3DT1H5M6S')
+#         output : 3 days, 1:05:06
+           
+#         """
+        
+#         duration_str = duration_str[1:]
+#         date_time_split = duration_str.split('T')
+#         days, hours, minutes, seconds = 0, 0, 0, 0
+
+#         print("date time split: " , date_time_split)
+        
+#         if date_time_split[0]:
+#             date_part = date_time_split[0]
+#             days += int(date_part[:-1]) if date_part.endswith('D') else 0
+
+       
+#         if len(date_time_split) > 1:
+#             time_part = date_time_split[1]
+#             hours += int(time_part.split('H')[0]) if 'H' in time_part else 0
+#             minutes += int(time_part.split('H')[-1].split('M')[0]) if 'M' in time_part else 0
+#             seconds += int(time_part.split('M')[-1].split('S')[0]) if 'S' in time_part else 0
+
+#         return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+#     def format_duration_to_detailed_str(self, duration):
+#         """
+#         Format a duration object into a detailed string.
+
+#         :param duration: A datetime.timedelta object representing the duration.
+#         :type duration: datetime.timedelta
+
+#         :return: A string representation of the duration in the format "days day(s), hours hour(s), minutes minute(s), seconds second(s)".
+#         :rtype: str
+
+#         If the duration has no days (Similarly for hours, minutes, seconds) , it will not be included in the string.
+#         """
+#         parts = []
+#         days = duration.days
+#         seconds = duration.seconds
+#         hours, remainder = divmod(seconds, 3600)
+#         minutes, seconds = divmod(remainder, 60)
+       
+#         if days: parts.append(f"{days} day{'s' if days > 1 else ''}")
+#         if hours: parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
+#         if minutes: parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
+#         if seconds: parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
+
+#         return ", ".join(parts) if parts else "0 seconds"
 
 
 class WorkspaceData(View):
