@@ -1591,7 +1591,7 @@ class EntriesPaginationView(View):
         :param per_page: Number of entries per page
         :return: Page object with paginated entries
         """
-        page_number = request.GET.get('page', 1)
+        page_number = request.POST.get('page', 1)
         paginator = Paginator(entries_list, per_page)
         return paginator.get_page(page_number)
 
