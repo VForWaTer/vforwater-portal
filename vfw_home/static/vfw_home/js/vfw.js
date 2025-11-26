@@ -849,9 +849,13 @@ vfw.url.getDateFromURL = function () {
  */
 vfw.sidebar.workspaceDataset = function (id) {
     let date = vfw.url.getDateFromURL();
-
+    // Process ids if they are greater than 100
+    if (id.length > 100) {
+        console.warn('Too many IDs requested at once. Please reduce the number of selected datasets.')
+        id = id.slice(0, 100);
+    }
     id = JSON.stringify(id);  // ensure id is a string
-
+    
     if (id !== 'null') {
         $.ajax({
             url: vfw.var.DEMO_VAR + "/home/workspace_data",
@@ -1164,6 +1168,7 @@ vfw.html.getQuickSelection = function (selection) {
         coords = vfw.filter.coords;
     }
     if (url !== false) {
+        console.log("url-", url)
         $.ajax({
             url: vfw.var.DEMO_VAR + '/home/quick_filter_args/' + url,
             data: {
@@ -1190,13 +1195,13 @@ vfw.html.getQuickSelection = function (selection) {
                 } else {
                     $("#quickfilter-form p:first").css({'background-color': 'white'});
                 }
-
                 /** Add button to select group if no more than 100 datasets are selected. The responsible button
                  * is defined with class 'group-store-button' **/
                 if (json['total'] <= 100 && json['total'] > 0) {
-                    $(".group-store-button").show();
+                    $(".group-store-button").val("Pass to datastore").show();
                 } else {
-                    $(".group-store-button").hide();
+                    $(".group-store-button").val("Pass to datastore(*Limit 100 Datasets)").show();
+
                 }
             })
             .fail(function (bug) {
