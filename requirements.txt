@@ -54,7 +54,7 @@ python-dateutil==2.9.0.post0
 python-decouple==3.8
 pytz==2024.1
 PyYAML==6.0.1
-pyzip==0.2.0
+pyzip
 redis==5.0.8
 requests==2.32.3
 requests-futures==1.0.1
