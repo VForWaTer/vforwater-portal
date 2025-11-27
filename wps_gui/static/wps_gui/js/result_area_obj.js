@@ -291,32 +291,6 @@ vfw.datasets.resultObj = class {
 
 
 
-
-
-            // imageFiles.forEach(filename => {
-            //     const fullPath = `${path}/${filename}`;          // absolute path on server
-            //     const fileUrl  = backendFileUrl(fullPath);       // /workspace/resultdisplay?path=...
-            
-            //     const escaped  = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            //     const liRegex  = new RegExp(`<li\\s*>\\s*${escaped}\\s*<\\/li>`, 'g');
-            
-            //     const imgReplacement = `
-            // <li>
-            // <a href="javascript:void(0)"
-            //     onclick="openPdfFromBackend('${fullPath}')"
-            //     style="display: inline-block;">
-            //     <img src="${fileUrl}"
-            //         alt="${filename}"
-            //         style="max-width: 200px;
-            //                 max-height: 200px;
-            //                 object-fit: contain;
-            //                 cursor: pointer;" />
-            // </a>
-            // </li>`;
-            
-            //     itemHtml = itemHtml.replace(liRegex, imgReplacement);
-            // });
-
             // Insert a container for image previews (ONLY once)
             itemHtml = itemHtml.replace(
                 /<td[^>]*>\s*preview_images\s*<\/td>\s*<td[^>]*>/,
