@@ -109,6 +109,31 @@ License: MIT License
     word-break: break-word;
 }
 
+
+.scroll-cell {
+    max-height: 300px;        /* how tall logs can be */
+    overflow-y: auto;         /* vertical scroll */
+    overflow-x: hidden;
+    padding: 15px;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.scroll-cell::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scroll-cell::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 4px;
+}
+
+.scroll-cell::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
 .tool-btn {
     cursor: move;
     position: absolute;

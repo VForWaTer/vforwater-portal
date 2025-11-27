@@ -9,6 +9,7 @@
 create new object with new vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json)
 The object is mainly copied from data_obj.js, and many functions can be carefully removed.
 */
+
 vfw.datasets.resultObj = class {
 
     storedTool = "";
@@ -234,105 +235,125 @@ vfw.datasets.resultObj = class {
 
     
     showAsTable() {
-        // TODO: The following seems to slow down upload of page. Is because of object? Or where it is created? Test!
-        //console.log('i m here')
+
         if (!Object.prototype.hasOwnProperty(vfw.var.obj, 'resultModalObject'))
             vfw.var.obj.resultModalObject = new vfw.html.resultModalObj();
+    
         let html = "";
         const results = this.load().outputs.results;
-        let file = 'test_preview-1.png'
-        results.forEach(function (item, index) {
-           let resultjson = item.json
-           const path = resultjson.dir;
-           const plotFiles = resultjson.plots || [];
-           const imageFiles = resultjson.preview_images || [];
-
-           console.log(plotFiles)
-           const directoryName = path.split("/").pop();
-           //const pdfPath = path + "/plots/spatial_data.pdf";
-           //console.log("PDF Path:", pdfPath);
-
-           let previewButtons = "";
-           let itemHtml = item.html;
-
-           function backendFileUrl(path) {
-            // SAME endpoint & query param as openPdfFromBackend
-            return "/workspace/resultdisplay?path=" + encodeURIComponent(path);
-          }
-
-           plotFiles.forEach(filename => {
-             if (filename.endsWith(".pdf")) {
-               const fullPath = `${path}/${filename}`;
-               const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-               const liRegex = new RegExp(`<li>${escaped}<\\/li>`, 'g');
-
-               const replacement = `
-               <li>
-               <a href="javascript:void(0)"
-                  onclick="openPdfFromBackend('${fullPath}')"
-                  style="display: flex; align-items: center; gap: 8px;">
-                 <i class="fa-solid fa-magnifying-glass"
-                    style="font-size: 18px;"
-                    title="Preview ${filename}"></i>
-                 <span>Preview ${filename}</span>
-               </a>
-             </li>`;
-
-               itemHtml = itemHtml.replace(liRegex, replacement);
-           }
-       });
-
-            // Style the table
-            itemHtml = itemHtml.replace(
-                /<table\b[^>]*>/,
-                '<table class="styled-table">'
-            );
-
-
-
-            // Insert a container for image previews (ONLY once)
+    
+        function backendFileUrl(p) {
+            return "/workspace/resultdisplay?path=" + encodeURIComponent(p);
+        }
+    
+        results.forEach(function (item) {
+    
+            const resultjson = item.json;
+            const path = resultjson.dir;
+            const plotFiles  = resultjson.plots || [];
+            const imageFiles = resultjson.preview_images || [];
+    
+            // -------------------------
+            // ALWAYS DEFINE itemHtml FIRST
+            // -------------------------
+            let itemHtml = item.html || "";   // <-- FIXES undefined.replace()
+    
+            // -------------------------
+            // 1) Replace PDF <li> items
+            // -------------------------
+            plotFiles.forEach(function(filename) {
+                if (!filename.endsWith(".pdf")) return;
+    
+                const fullPath = `${path}/${filename}`;
+                const esc = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+                const liRegex = new RegExp(`<li\\s*>\\s*${esc}\\s*<\\/li>`, 'g');
+    
+                itemHtml = itemHtml.replace(
+                    liRegex,
+                    `
+                    <li>
+                        <a href="javascript:void(0)"
+                           onclick="openPdfFromBackend('${fullPath}')"
+                           style="display:flex;align-items:center;gap:8px;">
+                           <i class="fa-solid fa-magnifying-glass" style="font-size:18px;"></i>
+                           <span>Preview ${filename}</span>
+                        </a>
+                    </li>`
+                );
+            });
+    
+            // -------------------------
+            // 2) Insert image gallery container
+            // -------------------------
             itemHtml = itemHtml.replace(
                 /<td[^>]*>\s*preview_images\s*<\/td>\s*<td[^>]*>/,
                 `<td class="label-cell">preview_images</td>
-                <td class="image-cell">
-                    <div class="image-gallery">`
+                 <td class="image-cell">
+                 <div class="image-gallery">`
             );
-
-            // Insert images
-            imageFiles.forEach(filename => {
-                const fullPath = `${path}/${filename}`;
-                const fileUrl  = backendFileUrl(fullPath);
-
-                const escaped  = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
+    
+            // -------------------------
+            // 3) Replace image <li> with image cards
+            // -------------------------
+            imageFiles.forEach(function(filename) {
+                const full = `${path}/${filename}`;
+                const fileUrl = backendFileUrl(full);
+                const esc = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+                const liRegex = new RegExp(`<li\\s*>\\s*${esc}\\s*<\\/li>`, 'g');
+    
                 itemHtml = itemHtml.replace(
-                    new RegExp(`<li\\s*>\\s*${escaped}\\s*<\\/li>`, 'g'),
+                    liRegex,
                     `
-                    <div class="image-card" onclick="openPdfFromBackend('${fullPath}')">
-                        <img src="${fileUrl}" alt="${filename}" />
+                    <div class="image-card" onclick="openPdfFromBackend('${full}')">
+                        <img src="${fileUrl}" alt="${filename}">
                         <div class="image-title">${filename.replace('plots/', '')}</div>
-                    </div>
-                    `
+                    </div>`
                 );
             });
+    
+            // Close gallery container safely
+            itemHtml = itemHtml.replace(
+                /(image-gallery[^>]*>[\s\S]*?)<\/td>\s*<\/tr>/,
+                "$1</div></td></tr>"
+            );
+    
+            // -------------------------
+            // 4) Enforce table + colgroup
+            // -------------------------
+            itemHtml = itemHtml.replace(
+                /<table\b[^>]*>/,
+                `<table class="styled-table">
+                   <colgroup>
+                     <col style="width:22%">
+                     <col style="width:78%">
+                   </colgroup>`
+            );
+    
+            // -------------------------
+            // 5) Scroll-wrap long cells
+            // -------------------------
+            itemHtml = itemHtml.replace(
+                /<td>([\s\S]*?)<\/td>/g,
+                function(match, content) {
+    
+                    if (content.includes("scroll-cell")) return match;
+    
+                    const textOnly = content.replace(/<[^>]*>/g, "").trim();
+    
+                    if (textOnly.length > 400) {
+                        return `<td><div class="scroll-cell">${content}</div></td>`;
+                    }
+    
+                    return match;
+                }
+            );
+    
 
-            // Close gallery container
-            itemHtml = itemHtml.replace(/<\/td>\s*<\/tr>/, `</div></td></tr>`);
-        // ---------- 3) Style the table ----------
-        itemHtml = itemHtml.replace(
-            /<table\b[^>]*>/,
-            '<table class="styled-table">'  +
-            '<colgroup>' +
-              '<col style="width:22%">' +
-              '<col style="width:78%">' +
-            '</colgroup>'
-        );
-
-        html += itemHtml;
-    });
-
-
+            // -------------------------
+            html += itemHtml;
+        });
 
 
 
