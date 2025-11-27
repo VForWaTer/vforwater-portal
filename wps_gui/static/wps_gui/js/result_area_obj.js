@@ -245,41 +245,150 @@ vfw.datasets.resultObj = class {
            let resultjson = item.json
            const path = resultjson.dir;
            const plotFiles = resultjson.plots || [];
+           const imageFiles = resultjson.preview_images || [];
+
            console.log(plotFiles)
            const directoryName = path.split("/").pop();
            //const pdfPath = path + "/plots/spatial_data.pdf";
            //console.log("PDF Path:", pdfPath);
 
            let previewButtons = "";
+           let itemHtml = item.html;
+
+           function backendFileUrl(path) {
+            // SAME endpoint & query param as openPdfFromBackend
+            return "/workspace/resultdisplay?path=" + encodeURIComponent(path);
+          }
 
            plotFiles.forEach(filename => {
              if (filename.endsWith(".pdf")) {
-               const fullPath = `${path}/plots/${filename}`;
-               previewButtons += `
+               const fullPath = `${path}/${filename}`;
+               const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+               const liRegex = new RegExp(`<li>${escaped}<\\/li>`, 'g');
+
+               const replacement = `
+               <li>
+               <a href="javascript:void(0)"
+                  onclick="openPdfFromBackend('${fullPath}')"
+                  style="display: flex; align-items: center; gap: 8px;">
+                 <i class="fa-solid fa-magnifying-glass"
+                    style="font-size: 18px;"
+                    title="Preview ${filename}"></i>
+                 <span>Preview ${filename}</span>
+               </a>
+             </li>`;
+
+               itemHtml = itemHtml.replace(liRegex, replacement);
+           }
+       });
+
+            // Style the table
+            itemHtml = itemHtml.replace(
+                /<table\b[^>]*>/,
+                '<table class="styled-table">'
+            );
+
+
+
+
+
+            // imageFiles.forEach(filename => {
+            //     const fullPath = `${path}/${filename}`;          // absolute path on server
+            //     const fileUrl  = backendFileUrl(fullPath);       // /workspace/resultdisplay?path=...
+            
+            //     const escaped  = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            //     const liRegex  = new RegExp(`<li\\s*>\\s*${escaped}\\s*<\\/li>`, 'g');
+            
+            //     const imgReplacement = `
+            // <li>
+            // <a href="javascript:void(0)"
+            //     onclick="openPdfFromBackend('${fullPath}')"
+            //     style="display: inline-block;">
+            //     <img src="${fileUrl}"
+            //         alt="${filename}"
+            //         style="max-width: 200px;
+            //                 max-height: 200px;
+            //                 object-fit: contain;
+            //                 cursor: pointer;" />
+            // </a>
+            // </li>`;
+            
+            //     itemHtml = itemHtml.replace(liRegex, imgReplacement);
+            // });
+
+            // Insert a container for image previews (ONLY once)
+            itemHtml = itemHtml.replace(
+                /<td[^>]*>\s*preview_images\s*<\/td>\s*<td[^>]*>/,
+                `<td class="label-cell">preview_images</td>
+                <td class="image-cell">
+                    <div class="image-gallery">`
+            );
+
+            // Insert images
+            imageFiles.forEach(filename => {
+                const fullPath = `${path}/${filename}`;
+                const fileUrl  = backendFileUrl(fullPath);
+
+                const escaped  = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+                itemHtml = itemHtml.replace(
+                    new RegExp(`<li\\s*>\\s*${escaped}\\s*<\\/li>`, 'g'),
+                    `
+                    <div class="image-card" onclick="openPdfFromBackend('${fullPath}')">
+                        <img src="${fileUrl}" alt="${filename}" />
+                        <div class="image-title">${filename.replace('plots/', '')}</div>
+                    </div>
+                    `
+                );
+            });
+
+            // Close gallery container
+            itemHtml = itemHtml.replace(/<\/td>\s*<\/tr>/, `</div></td></tr>`);
+        // ---------- 3) Style the table ----------
+        itemHtml = itemHtml.replace(
+            /<table\b[^>]*>/,
+            '<table class="styled-table">'  +
+            '<colgroup>' +
+              '<col style="width:22%">' +
+              '<col style="width:78%">' +
+            '</colgroup>'
+        );
+
+        html += itemHtml;
+    });
+
+
+
+
+
+        //        previewButtons += `
                  
-                   <a href="javascript:void(0)" onclick="openPdfFromBackend('${fullPath}')" style="display: flex; align-items: center; gap: 8px;">
-                     <i class="fa-solid fa-magnifying-glass" style="font-size: 18px;" title="Preview ${filename}"></i>
-                     <span>Preview ${filename}</span>
-                   </a>
+        //            <a href="javascript:void(0)" onclick="openPdfFromBackend('${fullPath}')" style="display: flex; align-items: center; gap: 8px;">
+        //              <i class="fa-solid fa-magnifying-glass" style="font-size: 18px;" title="Preview ${filename}"></i>
+        //              <span>Preview ${filename}</span>
+        //            </a>
                 
-               `;
-             }
-           });
+        //        `;
+        //      }
+        //    });
            
          
 
-           let item_2 = item.html.replace(
-            /<li>\.\/(.*?)<\/li>/g,
-            previewButtons
-          );
+        //    let item_2 = item.html.replace(
+        //     /<li>\.\/(.*?)<\/li>/g,
+        //     previewButtons
+        //   );
           
-          item_2 = item_2.replace(
-            /<table\b[^>]*>/,
-            '<table class="styled-table">'
-          );
+        //   item_2 = item_2.replace(
+        //     /<table\b[^>]*>/,
+        //     '<table class="styled-table">'
+        //   );
          
-           html += item_2
-        });
+        //    html += item_2
+        // });
+
+
 
         //console.log(html)
         vfw.var.obj.resultModalObject.addContent(html);

@@ -24,6 +24,91 @@ License: MIT License
     background: white;
 }
 
+.image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 10px;
+}
+
+.image-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 6px;
+    background: #fafafa;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.1s ease-in-out, box-shadow 0.2s;
+    max-width: 220px;
+}
+
+.image-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.image-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+}
+
+.image-title {
+    text-align: center;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Make all file lists (plots + preview_images) flexible */
+.styled-table ul {
+    list-style: none;          /* no bullets */
+    margin: 0;
+    padding: 0;
+    display: flex;             /* row layout */
+    flex-wrap: wrap;           /* wrap to multiple lines when there are many items */
+    gap: 16px;                 /* space between items */
+    align-items: flex-start;
+}
+
+/* Remove default li margins */
+.styled-table ul li {
+    margin: 0;
+}
+
+/* Make image previews look like neat cards */
+.styled-table ul li img {
+    display: block;
+    max-width: 220px;          /* thumbnail width */
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #fafafa;
+    padding: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    transition: transform 0.1s ease-in-out, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+/* Nice hover effect for images */
+.styled-table ul li img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+
+.styled-table {
+    width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
+}
+
+.styled-table th,
+.styled-table td {
+    white-space: normal;
+    word-break: break-word;
+}
+
 .tool-btn {
     cursor: move;
     position: absolute;

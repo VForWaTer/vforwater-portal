@@ -132,36 +132,58 @@ License: MIT License
 
 <script>
 
+
+
+      
+
+
+
+
+
       function openPdfFromBackend(path) {
         $.ajax({
-          url: "/workspace/resultdisplay", // your backend endpoint
-          type: 'GET',
+          url: "/workspace/resultdisplay",
+          type: "GET",
           data: { path: path },
           xhrFields: {
-            responseType: 'blob'
+            responseType: "blob"
           },
           success: function (blob) {
-            const fileURL = window.URL.createObjectURL(blob);
+            // this is important to read the image preview .. Detect mime from file extension instead of trusting the server
+            const ext = path.split(".").pop().toLowerCase();
+            let mime = "application/octet-stream";
+      
+            if (ext === "pdf") {
+              mime = "application/pdf";
+            } else if (ext === "png") {
+              mime = "image/png";
+            } else if (ext === "jpg" || ext === "jpeg") {
+              mime = "image/jpeg";
+            } else if (ext === "gif") {
+              mime = "image/gif";
+            } // add more types if you ever need them
+      
             
-            // Create a temporary <a> tag and click it
-            const a = document.createElement('a');
+            const fixedBlob = new Blob([blob], { type: mime });
+      
+            const fileURL = window.URL.createObjectURL(fixedBlob);
+      
+            const a = document.createElement("a");
             a.href = fileURL;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
             a.click();
-
-            // Optional: revoke URL after some time
+      
             setTimeout(() => {
               window.URL.revokeObjectURL(fileURL);
             }, 1000);
           },
           error: function (error) {
-            console.error('Failed to open PDF:', error);
-            alert('Could not open the PDF.');
+            console.error("Failed to open file:", error);
+            alert("Could not open the file.");
           }
         });
       }
-
 
   vfw.html.resultModalObj = class {
     constructor() {
