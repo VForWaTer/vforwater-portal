@@ -1309,14 +1309,32 @@ vfw.map.func.renderCatchment = function (catchment, format, dataprojection='EPSG
     // selectionLayer.setStyle(new ol.style.Style({
     //     stroke: new ol.style.Stroke({color: '#ff0040', width: 2})
     // }))
-    let coords = vfw.map.func.getSelectionEdgeCoords()
-        if (vfw.util.getArrayDepth(coords) === 4) {
-            vfw.filter.coords = coords[0];
-        } else if (vfw.util.getArrayDepth(coords) === 3) {
-            vfw.filter.coords = coords;
-        } else {
-            console.error('ERROR: New type of geometry. Cannot find coordinates for Button.')
+
+            // --- FIX: choose proper polygon for vfw.filter.coords ---
+    let coords = vfw.map.func.getSelectionEdgeCoords();
+    const depth = vfw.util.getArrayDepth(coords);
+
+    if (depth === 4) {
+        // MultiPolygon: coords = [polygon][ring][point][xy]
+        // choose polygon with the most vertices in its outer ring
+        let bestPoly = coords[0];
+        let maxPts = coords[0][0] ? coords[0][0].length : 0;
+
+        for (let i = 1; i < coords.length; i++) {
+            const ring = coords[i][0] || [];
+            const len = ring.length;
+            if (len > maxPts) {
+                maxPts = len;
+                bestPoly = coords[i];
+            }
         }
+        vfw.filter.coords = bestPoly;      // a single [ring][[x,y]] => Polygon
+    } else if (depth === 3) {
+        // Simple Polygon
+        vfw.filter.coords = coords;
+    } else {
+        console.error('ERROR: New type of geometry. Cannot find coordinates for Button.');
+    }
 }
 
 function advanced_filter_query(selection) {
