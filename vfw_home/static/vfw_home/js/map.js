@@ -867,7 +867,7 @@ vfw.map.createMap = function () {
 vfw.map.createStoreBtn = function (ssid, embargo) {
     if (embargo === "False" || vfw.map.UNBLOCKED_IDS.includes(ssid)) {
         return '<a><b><input class="w3-btn-block w3-btn-block:hover store-button" type="submit" ' +
-            'onclick=\"vfw.sidebar.workspaceDataset(\'' + ssid + '\')\" ' +
+            'onclick=\"vfw.sidebar.workspaceDataset(\'db' + ssid + '\')\" ' +
             'value="' + gettext("Pass to datastore") + '" data-toggle="tooltip" ' +
             'title="' + gettext("Put dataset to session datastore.") + '"></b></a>'
     } else {
