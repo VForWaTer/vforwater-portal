@@ -65,6 +65,6 @@ tomli==2.0.1
 tornado==6.5.1
 typing_extensions==4.12.2
 tzdata==2024.1
-urllib3==2.2.2
+urllib3==2.6.0
 xyzservices==2024.6.0
 
