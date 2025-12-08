@@ -1205,10 +1205,16 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
     let item = input_tool_description[1];
     let entry_name = input_tool_description[0];
     let countDropDowns = 0;
+
     newNode = document.createElement("p");
 
     /** Set title of Input and set the 'required' flag if necessary **/
     let titleText = "";
+
+    if (item.identifier === 'start_date' || item.identifier === 'end_date') {
+        return document.createDocumentFragment();
+        }
+        
     // if ('minOccurs' in item) {  // outer if seems to be unused
     if (item.minOccurs == 0) {
         titleText = " " + item.title + ": "
