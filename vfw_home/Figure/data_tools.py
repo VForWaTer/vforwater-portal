@@ -82,11 +82,18 @@ def get_accessible_data(request: HttpRequest, requested_ids: list) -> (list, lis
             requested_ids = [requested_ids]
         elif isinstance(requested_ids, str):
             try:
-                requested_ids = [int(r_id) for r_id in requested_ids[2:].split(',')]
-
-                # requested_ids = [int(requested_ids)]
+                # Case 1: Single number as a string (e.g., '5371')
+                if requested_ids.isdigit():
+                    requested_ids = [int(requested_ids)]
+                # Case 2: List of numbers as a string (e.g., '[914, 913, ...]')
+                elif requested_ids.startswith('[') and requested_ids.endswith(']'):
+                    # Remove the square brackets and split the string by commas
+                    requested_ids = [int(r_id.strip()) for r_id in requested_ids[1:-1].split(',')]
+                else:
+                    raise ValueError(f"Invalid format for requested_ids: {requested_ids}")
             except ValueError as e:
-                requested_ids = [int(r_id) for r_id in requested_ids[1:-1].split(',')]
+                print(f"Error processing requested_ids: {requested_ids}, Error: {e}")
+                requested_ids = []
         elif isinstance(requested_ids, list) and isinstance(requested_ids[0], str):
             requested_ids = [int(r_id) for r_id in requested_ids[0].split(',')]
 

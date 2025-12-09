@@ -34,19 +34,19 @@ License: MIT License
                   {% endif %}
                   <td>
                     <a><b><input id="show_data_preview{{ value.ssid }}" class="w3-btn-block" type="submit"
-                                 onclick="vfw.html.moreInfoModal('db{{ value.ssid }}')" data-toggle="tooltip"
+                                 onclick="vfw.html.moreInfoModal('{{ value.ssid }}')" data-toggle="tooltip"
                                  value="{% trans "More" %}"
                                  title="{% trans "Show more information about the dataset." %}">
                     </b></a>
                     <a><b><input type="submit"
                       {% if value.access %}
                                  class="w3-btn-block w3-btn-block:hover store-button"
-                                 onclick="vfw.sidebar.workspaceDataset('db{{ value.ssid }}')"
+                                 onclick="vfw.sidebar.workspaceDataset('{{ value.ssid }}')"
                                  value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
                                  title="{% trans "Put dataset to session datastore." %}"
                       {% else %}
                                  class="w3-btn-block w3-btn-block:hover request-button"
-                                 onclick="vfw.map.requestDataset('db{{ value.ssid }}')"
+                                 onclick="vfw.map.requestDataset('{{ value.ssid }}')"
                                  value="{% trans "Send request" %}" data-toggle="tooltip"
                                  title="{% trans "Send an access request to the data owner." %}"
                       {% endif %}
