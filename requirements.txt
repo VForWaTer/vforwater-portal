@@ -1,7 +1,7 @@
 asgiref==3.8.1
 async-timeout==4.0.3
 attrs==23.2.0
-bokeh==3.5.1
+bokeh==3.8.2
 bridget==0.2.4
 certifi==2024.7.4
 cffi==1.16.0
