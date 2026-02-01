@@ -17,7 +17,7 @@ django-filter==24.3
 docutils==0.21.2
 fonttools==4.61.0
 future==1.0.0
-geopandas==1.0.1
+geopandas==1.1.2
 gunicorn==23.0.0
 idna==3.7
 iniconfig==2.0.0
