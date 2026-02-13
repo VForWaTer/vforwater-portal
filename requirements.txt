@@ -59,7 +59,7 @@ requests==2.32.4
 requests-futures==1.0.1
 shapely==2.0.5
 six==1.16.0
-sqlparse==0.5.1
+sqlparse==0.5.4
 tenacity==9.0.0
 tomli==2.0.1
 tornado==6.5.1
