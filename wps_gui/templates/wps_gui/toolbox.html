@@ -1,0 +1,63 @@
+<div>
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="mb-4 text-3xl font-bold text-gray-900">
+                Toolbox
+            </h1>
+            <span class="text-sm text-gray-600">Select process for execution from toolbox. Selected tool appears in "Result Store"</span>
+        </div>
+
+        <!-- Question Mark Icon -->
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <i class="fa-regular fa-question-circle text-xl"></i>
+            </button>
+            <!-- Help Box -->
+            <div x-show="open" @click.outside="open = false" x-transition
+                class="absolute right-0 mt-2 w-90 p-4 bg-white border border-gray-300 rounded shadow-md z-10">
+                <div class="text-sm text-gray-700 text-justify">
+                    <p>This section displays the selection of tools available to the user.</p>
+                    <p>Running the tool makes it visible in the Result Store</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-y-auto mt-4">
+        <!--
+        <p class="font-normal text-white">
+            {% for identifier, process in processes.items %}
+            {% if identifier != "dbloader" %}
+            <div x-data="{ open: false }" class="rounded-lg shadow-sm mb-3">
+                <div class="flex items-center mr-2">
+                    <button type="submit" class="text-sm px-4 py-1.5 text-black"
+                        onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');">
+                        Run
+                    </button>
+                    <button @click="open = !open"
+                        class="flex items-center justify-between w-full p-4 text-left bg-gray-100 hover:bg-gray-200 transition">
+                        <span class="text-lg font-medium text-gray-800">{{ process.title }}</span>
+                    </button>
+                </div>
+
+                <div x-show="open" x-collapse class="p-4 bg-white text-sm text-gray-700">
+                    <p class="mb-2"><strong>Description:</strong> {{ process.description }}</p>
+                    <p class="mb-1"><strong>Inputs:</strong> {{ process.inputs }}</p>
+                    <p><strong>Outputs:</strong> {{ process.outputs }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </p>
+        -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {% for identifier, process in processes.items %}
+            {% if identifier != "dbloader" %}
+            <div class="p-4 bg-gray-100 rounded-lg shadow hover:bg-gray-200 transition cursor-pointer"
+                onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');">
+                <div class="text-base nt-medium text-gray-800">{{ process.title }}</div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>

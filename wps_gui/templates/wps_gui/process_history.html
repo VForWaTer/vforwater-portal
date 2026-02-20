@@ -1,0 +1,72 @@
+{% load static %}
+{% load i18n %}
+{% load dynamic_fields %}
+
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="mb-4 text-3xl font-bold text-gray-900">
+                Process Execution History
+            </h1>
+            <span class="text-sm text-gray-600">Process history for logged user</span>
+        </div>
+
+        <!-- Question Mark Icon -->
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <i class="fa-regular fa-question-circle text-xl"></i>
+            </button>
+            <!-- Help Box -->
+            <div x-show="open" @click.outside="open = false" x-transition
+                class="absolute right-0 mt-2 w-90 p-4 bg-white border border-gray-300 rounded shadow-md z-10">
+                <div class="text-sm text-gray-700 text-justify">
+                    <p>This section displays the history of executed processes.
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Scrollable Table Wrapper -->
+    <div class="flex-1 overflow-auto min-h-0 min-w-0 rounded border border-gray-300">
+        <table class="table-fixed w-full border-collapse">
+            <thead class="bg-blue-400 sticky top-0">
+                <tr>
+                    {% for field in job_table_fields %}
+                        <th class="border border-gray-300 p-4 text-center text-m font-medium text-white">
+                            {{ field }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    {% for field in job_table_fields %}
+                    <td class="border border-gray-300 p-4 text-m text-gray-600">
+                        {% if field == "Details" %}
+                        <a href="/move_job/{{ job.identifier }}" class="text-blue-500 underline" target="_blank">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </a>
+                        
+                        {% elif field == "Status" %}
+                        <span class="px-1 text-white text-base font-medium
+                            {% if job|get_field_display:field == 'successful' %}
+                                bg-green-500
+                            {% elif job|get_field_display:field == 'failed' %}
+                                bg-red-500
+                            {% elif job|get_field_display:field == 'pending' %}
+                                bg-yellow-500
+                            {% else %}
+                                bg-gray-500
+                            {% endif %}">
+                            {{ job|get_field_display:field }}
+                        </span>
+                        
+                        {% else %}
+                        {{ job|get_field_display:field }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>

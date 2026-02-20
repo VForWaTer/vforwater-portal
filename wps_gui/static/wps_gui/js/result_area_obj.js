@@ -34,6 +34,7 @@ vfw.datasets.resultObj = class {
     sessionStorage = "";
     btnPosition = "";
     htmlElementID = "";
+    job_details = {};
 
     constructor(data) {
         const defaultParams = {
@@ -41,7 +42,8 @@ vfw.datasets.resultObj = class {
             // type: "geometry",   // datatype for combining datasets in workspace
             source: "wps", //this.setSource(),
             storeKey: "resultBtn",
-            btnPosition: "workspace_results"  // ID of html element to add the button
+            btnPosition: "workspace_results",  // ID of html element to add the button
+            btnPosition2: "new_result_store"
             }
 
         Object.assign(this, {...defaultParams, ...data});
@@ -57,8 +59,90 @@ vfw.datasets.resultObj = class {
             this.isGroupMember = true;
             this._buildHtmlGroup()
         }
-        this._placeHtmlButton();
+        //this._placeHtmlButton();
+        //this._placeNewResultStore();
+        //console.log("Reached constructor")
         this.save();
+
+        if (this.status == "accepted" || this.status == "running") {
+            this.startPolling();
+        }
+    }
+
+    startPolling(interval = 5000, maxAttempts = 25) {
+        let attempts = 0;
+
+        const startTime = new Date(); // Record the start time
+        const durationElement = document.getElementById('job_duration'); // Get the duration element
+    
+        // Function to update the duration in the HTML
+        const updateDuration = () => {
+            const currentTime = new Date();
+            const elapsedTime = Math.floor((currentTime - startTime) / 1000); // Calculate elapsed time in seconds
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            durationElement.textContent = `${minutes}m ${seconds}s`; // Update the duration text
+        };
+
+        const durationInterval = setInterval(updateDuration, 1000);
+
+        const poll = () => {
+            if (attempts >= maxAttempts) {
+                console.warn('Max polling attempts reached.');
+                clearInterval(durationInterval); // Stop updating duration
+                return;
+            }
+
+            attempts++;
+            const url = `${vfw.var.DEMO_VAR}/workspace/jobstatus`;
+
+            // Make a POST request using fetch
+            fetch(url, {
+                    method: 'POST', // Specify the HTTP method as POST
+                    headers: {
+                        'Content-Type': 'application/json', // Set the content type to JSON
+                        'X-CSRFToken': vfw.var.csrf_token // Include CSRF token if required
+                    },
+                    body: JSON.stringify({ job_id: this.id }) // Send the job_id in the request body
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(`Polling attempt ${attempts}:`, data);
+
+                    if (data.status !== this.status) {
+                        this.status = data.status;
+    
+                        // Update the result store in the HTML
+                        //this._replaceHtmlButton();
+                        //this._placeNewResultStore();
+    
+                        // Stop polling if the job is finished or failed
+                        if (this.status === "successful" || this.status === "failed" || this.status === "dismissed") {
+                            console.log(`Job ${this.id} completed with status: ${this.status}`);
+                            this.job_details = data;
+                            console.log(this.job_details)
+                            //this.populateResultCard();
+                            this._updateJobStatus(this.job_details);
+                            clearInterval(durationInterval); // Stop updating duration
+                            return;
+                        }
+                    }
+    
+                    // Continue polling if the job is not finished or failed
+                    setTimeout(poll, interval);
+                })
+                .catch(error => {
+                    console.error('Polling error:', error);
+                    clearInterval(durationInterval); // Stop updating duration
+                });
+        }
+        // Start the initial polling
+        poll();
     }
 
     download(element=this.orgID) {  // TODO: removeData var should be taken from this!
@@ -83,9 +167,11 @@ vfw.datasets.resultObj = class {
         /** download results from server in one zip file **/
 
         const orgID = this.orgID;
-        const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
+        //const resultData = JSON.parse(sessionStorage.getItem("resultBtn"))[orgID].outputs.results[0].json;
+        const resultData = this.job_details.results;
         const path = resultData.dir;
         const directoryName = path.split("/").pop();
+        console.log("Directory-", path, resultData);
 
         $.ajax({
             url: "/workspace/resultdownload",
@@ -208,6 +294,7 @@ vfw.datasets.resultObj = class {
         let stored;
         let newID = this.orgID
         data['inSessionStorage'] = true;
+        /** Replace the entire object instead of appending 
         if (sessionStorage.getItem(this.storeKey)) {
             stored = JSON.parse(sessionStorage.getItem(this.storeKey));
             if (update || !stored[newID]) {
@@ -221,6 +308,11 @@ vfw.datasets.resultObj = class {
             sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
             sessionStorageData = data
         }
+        */
+        let sessionEntry = {};
+        sessionEntry[newID] = data;  // Create a new entry with only the current data
+        sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
+        sessionStorageData = sessionEntry;  // Update the local variable
     }
 
     /**
@@ -517,6 +609,43 @@ vfw.datasets.resultObj = class {
             `</a><br></li>`;
     }
 
+    _createNewResultStore() {
+        // Create the first row with the object name and status
+        const row1 = `
+            <div class="flex justify-between items-center p-2 border-b border-gray-300">
+                <span class="font-medium text-gray-800">${this.htmlName}</span>
+                <span class="text-sm font-medium px-2 py-1 rounded ${
+                    this.status === "successful" ? "bg-green-500 text-white" :
+                    this.status === "accepted" || this.status === "running" ? "bg-yellow-500 text-white" :
+                    "bg-red-500 text-white"
+                }">
+                    ${this.status}
+                </span>
+            </div>
+        `;
+    
+        // Create the second row with the context menu options
+        const contextMenuOptions = this._createContextMenu(this.orgID)
+            .split("</li>")
+            .filter(option => option.trim() !== "")
+            .map(option => `<div class="p-2">${option}</div>`)
+            .join("");
+    
+        const row2 = `
+            <div class="flex flex-wrap gap-2 p-2">
+                ${contextMenuOptions}
+            </div>
+        `;
+    
+        // Combine the rows into a single card
+        return `
+            <div class="bg-white shadow-md rounded mb-4 border border-gray-300">
+                ${row1}
+                ${row2}
+            </div>
+        `;
+    }
+
     /** Create a name for buttons according to the length of the name string */
     _createHtmlName() {
         const nameLength = 21;
@@ -528,6 +657,10 @@ vfw.datasets.resultObj = class {
 
     _placeHtmlButton() {
         document.getElementById(this.btnPosition).innerHTML += this._createHtmlButton();
+    }
+
+    _placeNewResultStore() {
+        document.getElementById(this.btnPosition2).innerHTML = this._createNewResultStore();
     }
 
     _replaceHtmlButton() {
@@ -606,6 +739,63 @@ vfw.datasets.resultObj = class {
                 this._replaceHtmlButton()
             }
         }
+    }
+
+    preview() {
+        console.log('preview clicked');
+    }
+
+    populateResultCard() {
+        if (this.status === "successful" || this.status === "failed") {
+           document.getElementById('jobid').textContent = this.id;
+           document.getElementById('start_time').textContent = '26.01.2026';
+           document.getElementById('end_time').textContent = '26.01.2026 Later';
+           document.getElementById('duration').textContent = '20s';
+
+           document.getElementById('download_result').href = this.download();
+           document.getElementById('download_zip_result').href = this.downloadzip();
+           document.getElementById('show_as_table_result').href = this.showAsTable();
+           document.getElementById('preview_result').href = this.preview();
+
+        }
+
+    }
+
+    // Create function to set the values in the job card based on the job status
+    _updateJobStatus(job_details) {
+        if (job_details.status === "successful") {
+            // Set the values for successful job
+            document.getElementById('job_status_title').textContent = 'Successful';
+            document.getElementById('job_status_desc').textContent = 'Job finished successfully';
+            document.getElementById('job_status_icon').className = 'fa-solid fa-circle-check text-emerald-600';
+
+            //Populate job details in the card
+            document.getElementById('job_name').textContent = job_details.process_id;
+            document.getElementById('job_id').textContent = job_details.identifier;
+            document.getElementById('job_start_time').textContent = job_details.created;
+            document.getElementById('job_end_time').textContent = job_details.finished;
+            document.getElementById('job_duration').textContent = job_details.duration;
+
+            const downloadZipElement = document.getElementById("download_zip_result");
+            downloadZipElement.onclick = () => this.downloadzip();
+        }
+        else if (job_details.status == "accepted") {
+            document.getElementById('job_status_title').textContent = 'Running';
+            document.getElementById('job_status_desc').textContent = 'Job accepted and running';
+            document.getElementById('job_status_icon').className = 'fa-solid fa-clock text-yellow-600';
+
+            //Populate job details in the card
+            document.getElementById('job_name').textContent = job_details.process_id;
+            document.getElementById('job_id').textContent = job_details.identifier;
+            document.getElementById('job_start_time').textContent = job_details.created;
+            document.getElementById('job_end_time').textContent = job_details.finished;
+        }
+        else if (job_details.status == "failed") {
+            document.getElementById('job_status_title').textContent = 'Failed';
+            document.getElementById('job_status_desc').textContent = 'Execution unsuccessful';
+            document.getElementById('job_status_icon').className = 'fa-solid fa-clock text-red-600'            
+        }
+
     }
 
     // groupName = vfw.sidebar.set_group_btn_name(modal_input.outputName, 'resultBtn');

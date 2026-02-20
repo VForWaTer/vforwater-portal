@@ -150,6 +150,7 @@ class Jobs(models.Model):
     progress = models.IntegerField(blank=True, null=True)
     username = models.CharField(max_length=255, blank=True, null=True)
     userid = models.IntegerField(blank=True, null=True) 
+    results = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return f'Job ID: {self.identifier}, Status: {self.status}, Progress: {self.progress}%'

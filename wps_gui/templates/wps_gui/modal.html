@@ -14,6 +14,8 @@ License: MIT License
 {% get_current_language as LANGUAGE_CODE %}
 
 {% load static %}
+
+{% comment %}
 <div id="workModal" class="w3-modal">
 
   <!-- Modal content -->
@@ -46,6 +48,77 @@ License: MIT License
   </div>
 
 </div>
+{% endcomment %}
+
+<div id="workModal" class="fixed inset-0 z-30 hidden pt-24 w-full h-full overflow-auto bg-black/25 flex justify-center items-start">
+  <!-- Modal content -->
+  <div class="relative shadow-lg w-[600px] px-4 items-center bg-white rounded">
+    
+    <!-- Header -->
+    <div id="modal-header" class="bg-blue-600 -mx-4 flex justify-between items-center border-b border-gray-200 px-4 py-2">
+      <h3 id="mod_head" class="text-lg font-semibold text-white"></h3>
+      <span 
+        class="fa fa-close fa-lg work_close modal-btn text-white hover:text-gray-700 cursor-pointer"
+        title="{% trans 'Close window' %}">
+      </span>
+      <param id="workflowID" value="">
+    </div>
+
+    <!-- Abstract -->
+    <p id="mod_abs" class="modal-abstract text-gray-600 mt-3"></p>
+
+    <!-- Input -->
+    <h4 class="mt-4 text-md font-semibold text-sm">Input</h4>
+    <div id="mod_in" class="bg-white rounded-md p-3"></div>
+
+    <hr class="my-4 border-gray-300">
+
+    <!-- Output -->
+    <h4 class="text-md font-semibold text-sm">Output</h4>
+    <div id="mod_out" class="bg-white rounded-md p-3"></div>
+
+    <!-- Required Note -->
+    <p class="text-right text-sm text-gray-500 mt-2">
+      <em>(*) = {% trans "required" %}</em>
+    </p>
+
+    <!-- Footer -->
+    <div id="modal-footer" class="bg-white -mx-4 flex items-center justify-end gap-3 border-t border-gray-200 p-4">
+      
+      <span-c 
+        class="work_modal-cancel modal-btn bg-red-400 text-white px-3 py-1.5 shadow hover:bg-blue-700 cursor-pointer"
+        title="{% trans 'Close window' %}">
+        Cancel
+      </span-c>
+
+      <span-drop 
+        class="work_modal-drop modal-btn bg-yellow-600 text-white px-3 py-1.5 shadow hover:bg-blue-700 cursor-pointer"
+        title="{% trans 'Place tool in Dropzone. If tool already exists only change values.' %}">
+        Drop
+      </span-drop>
+
+      <span-r 
+        class="work_modal-run modal-btn bg-blue-600 text-white px-3 py-1.5 shadow hover:bg-blue-700 cursor-pointer">
+        Run
+      </span-r>
+
+      <span-createbatch 
+        class="work_modal-createbatch modal-btn modal-btn-left bg-green-600 text-white px-3 py-1.5 shadow hover:bg-green-700 cursor-pointer"
+        title="{% trans 'Create a batch job for this tool.' %}">
+        Create Batch Job
+      </span-createbatch>
+
+      <span-out 
+        class="work_modal-output hidden text-indigo-600 hover:text-indigo-800 cursor-pointer"
+        style="display: none">
+        {% trans "View result" %}
+      </span-out>
+
+      <h3></h3>
+    </div>
+  </div>
+</div>
+
 
 <script>
   /** Get the modal */
@@ -73,7 +146,6 @@ License: MIT License
     if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal)) {
 
       console.log('modal_value: ', modal_value)
-      {#console.log('tool_id.length: ', tool_id.length)#}
       /** check if the workspace box exists already in the sessionstorage */
       if (modal_value == "") {
         console.log('E')
@@ -89,12 +161,8 @@ License: MIT License
         event.state = 'change';
         event.id = tool_id;
         toolbox.state = 'change';
-        {#let box_param = vfw.draw2d.box_params(ev, tool_id, 'toolbar', service)#}
         console.log('event: ', event)
         console.log('toolbox: ', toolbox)
-        {#let box_param = vfw.draw2d.box_params(event, tool_id, 'toolbar', service)#}
-        {#box_param.state = 'change';#}
-        {#console.log('box_param: ', box_param)#}
         let metadata, newbox, coords;
         let change_values = {};
         let workflow = vfw.session.get_workflow();
@@ -121,7 +189,6 @@ License: MIT License
                 },
                 'source': {
                   'index': i,
-                  {#'boxid': newbox.boxID,#}
                   'boxid': newbox.boxID,
                   'orgid': modal_data.inId_list[i],
                   'value': modal_data.id,
@@ -129,13 +196,8 @@ License: MIT License
               }
               event.target.index = i;
             }
-              // console.log("'sidebtn' + modalData.inId_list[i]: ", 'sidebtn' + modalData.inId_list[i])
-              // console.log('tool_id: ', tool_id)
-              {#tool_id = newbox.boxID;#}
-              {#databox = newbox.box;#}
-              {#dataport = databox.getOutputPort(0);#}
+
               // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
-              {#toolport = toolbox.getInputPort(parseInt(i));#}
             // add_connection(dataport, toolport);
             else if (active_tool.input_values[i] != modal_data.value_list[i]) {
 
@@ -148,7 +210,6 @@ License: MIT License
                 },
                 'source': {
                   'index': i,
-                  {#'boxid': newbox.boxID,#}
                   'boxid': modal_data.inId_list[i],
                   'orgid': modal_data.id,
                   'value': modal_data.value_list[i],
@@ -161,7 +222,6 @@ License: MIT License
           console.log('--- Lets update with: ', change_values)
           vfw.workspace.workflow.update(change_values)
         }
-        {% comment %}
         try {
             box_param['input_ids'] = ev.inId_list;
             box_param['input_values'] = ev.value_list;
@@ -169,7 +229,6 @@ License: MIT License
             box_param['input_ids'] = [];
             box_param['input_values'] = [];
         }
-        {% endcomment %}
       }
     }
   };
@@ -183,7 +242,8 @@ License: MIT License
   /** Close the modal and reset the styles within the modal */
   function closeModal() {
     document.getElementsByClassName("work_modal-output")[0].style.display = "none";
-    vfw.html.workModal.style.display = "none";
+    //vfw.html.workModal.style.display = "none";
+    vfw.html.workModal.classList.add("hidden");
     vfw.workspace.modal.setColor("dodgerblue");
     document.getElementById("workflowID").value = "";
   }
@@ -262,7 +322,6 @@ License: MIT License
       let tool_id;
       let service;
       if (vfw.workspace.is_required(vfw.html.workModal) && vfw.workspace.checkPattern(vfw.html.workModal)) {
-        {#console.log('tool_id.length: ', tool_id.length)#}
         /** check if the workspace box exists already in the sessionstorage */
         if (modal_value == "") {
           vfw.workspace.drop_on_click(event);
@@ -276,10 +335,6 @@ License: MIT License
           event.state = 'change';
           event.id = tool_id;
           toolbox.state = 'change';
-          {#let box_param = vfw.draw2d.box_params(ev, tool_id, 'toolbar', service)#}
-          {#let box_param = vfw.draw2d.box_params(event, tool_id, 'toolbar', service)#}
-          {#box_param.state = 'change';#}
-          {#console.log('box_param: ', box_param)#}
           let metadata, newbox, coords;
           let change_values = {};
           let workflow = vfw.session.get_workflow();
@@ -303,7 +358,6 @@ License: MIT License
                   },
                   'source': {
                     'index': i,
-                    {#'boxid': newbox.boxID,#}
                     'boxid': newbox.boxID,
                     'orgid': modal_data.inId_list[i],
                     'value': modal_data.id,
@@ -311,11 +365,6 @@ License: MIT License
                 }
                 event.target.index = i;
               }
-                {#tool_id = newbox.boxID;#}
-                {#databox = newbox.box;#}
-                {#dataport = databox.getOutputPort(0);#}
-                // TODO: Not sure if ports have always the same order as in modal. Find better way to get right port.
-                {#toolport = toolbox.getInputPort(parseInt(i));#}
               // add_connection(dataport, toolport);
               else if (active_tool.input_values[i] != modal_data.value_list[i]) {
                 change_values = {
@@ -327,7 +376,6 @@ License: MIT License
                   },
                   'source': {
                     'index': i,
-                    {#'boxid': newbox.boxID,#}
                     'boxid': modal_data.inId_list[i],
                     'orgid': modal_data.id,
                     'value': modal_data.value_list[i],
@@ -338,7 +386,6 @@ License: MIT License
             change_values['state'] = 'change';
             vfw.workspace.workflow.update(change_values)
           }
-          {% comment %}
           try {
             box_param['input_ids'] = ev.inId_list;
             box_param['input_values'] = ev.value_list;
@@ -346,7 +393,6 @@ License: MIT License
             box_param['input_ids'] = [];
             box_param['input_values'] = [];
             }
-            {% endcomment %}
         }
       }
     }
@@ -616,6 +662,7 @@ License: MIT License
 
 
     close() {
+      console.log(" S econd close called")
       this.outClass.style.display = "none";
       this.modal.style.display = "none";
       this._reset();

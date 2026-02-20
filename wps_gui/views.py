@@ -62,7 +62,7 @@ from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
     prepare_inputs, create_geoapi_db_entry, has_result_error, process_to_json, get_url_json, edit_input,
     handle_wps_output, get_user_results, run_pygeoapi_process, url_join, extract_jobid, update_geoapi_jobs_db,
-    get_job_status, fetch_jobs_table
+    get_job_status, fetch_jobs_table, update_job_results, fetch_job_details
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -114,7 +114,6 @@ def home(request):
                 elif process['id'] in TOOLDICT['short_running']:
                     ogcapi_proc[process['id']] = get_process_basics(apiproc.process(process['id']))
                     message = translation.gettext("You have to log in to see more Tools.")
-
         except Exception as e:
             logger.error(sys.exc_info()[0])
             print(f'Exception in wps_gui.views.home: {e}, service: {service}, endpoint: {endpoint}')
@@ -133,8 +132,7 @@ def home(request):
         #     del ogcapi_proc["workflow"]
 
         # Fetch jobs table per user as well
-        jobs, job_table_fields = fetch_jobs_table()
-
+        jobs, job_table_fields = fetch_jobs_table(request.user.id)
         context = {
             "wps_services": wps_services,
             "processes": ogcapi_proc,
@@ -289,7 +287,7 @@ def process_run(request):
                                   # "response": "document"  # this line adds {'outputs': [{result}]} to {result}
                               },
                               headers={'Content-Type': 'application/json',
-                                       # "Prefer": "respond-async"  # TODO: Use this for PyGeoAPI 0.16 and newer
+                                        'Prefer': 'respond-async'  # TODO: Use this for PyGeoAPI 0.16 and newer
                                        }
                               )
     except Exception as e:
@@ -318,41 +316,56 @@ def process_run(request):
     job_db_response = update_geoapi_jobs_db(user_queryset, job_id)
 
     job_status = get_job_status(job_id)
+    job_details = fetch_job_details(job_id)
+    
     db_data["status"] = job_status
+    db_data["id"] = job_id
+    db_data['job_details'] = job_details
 
-    print("JOB STATUS - ", job_status)
+    #print("JOB STATUS - ", job_status)
 
-    ''' OLDER CODE: Check if still required
-    if execution.status_code == 201:  # if request is created
-        # Save the job url for later use
-        db_data['status'] = 'CREATED'
-        newEntry = create_geoapi_db_entry(db_data, user_queryset)
-    elif execution.status_code == 202:  # if request is accepted
-        db_data['status'] = 'ACCEPTED'
-        newEntry = create_geoapi_db_entry(db_data, user_queryset)
-    elif execution.status_code == 200:  # if done
-        if has_result_error(db_data):
-            db_data['status'] = 'ERROR'
-        else:
-            db_data['status'] = 'FINISHED'
-        newEntry = create_geoapi_db_entry(db_data, user_queryset)
-    else:
-        db_data['status'] = 'ERROR'
-        newEntry = create_geoapi_db_entry(db_data, user_queryset)
-
-    # add the database id to the dataset. Needed to enable request of state from client to django
-    if not hasattr(db_data, 'id'):
-        db_data['id'] = newEntry['id']
-    result = db_data
-
-    print("Job ID - ", job_path)
-    if newEntry['error']:
-        logger.error(f'Error creating database entry for process result: {newEntry["error"]}')
-        print(f'Error creating database entry for process result: {newEntry["error"]}')
-        result = {'error': 'true'}
-'''
     result = db_data
     return JsonResponse(result)
+
+
+#@csrf_exempt  # Use this only for testing; in production, ensure CSRF protection is properly configured
+def job_status(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)  # Parse the JSON body
+            job_id = data.get('job_id')  # Extract the job_id
+            if not job_id:
+                return JsonResponse({'error': 'job_id is required'}, status=400)
+
+            status = get_job_status(job_id) 
+            if status:
+                if status in ['successful', 'completed', 'failed', 'dismissed']:
+                    service, endpoint, wps_services = get_endpoint_data(DEBUG)
+
+                    JOB_RESULT_URL = f'{endpoint}/jobs/{job_id}/results?f=json'
+
+                    try:
+                        execution = requests.get(JOB_RESULT_URL, headers={'Content-Type': 'application/json'})
+                        update_response = update_job_results(job_id, execution.json())
+                        if update_response == False:
+                            logger.error(f'Error updating job results for job {job_id}')
+                            return JsonResponse({'error': 'Error updating job results'}, status=500)
+                        job_details = fetch_job_details(job_id)
+                        if not job_details:
+                            logger.error(f'Error fetching job details for job {job_id}')
+                            return JsonResponse({'error': 'Error fetching job details'}, status=500)
+                        return JsonResponse(job_details, status=200)
+                    except Exception as e:
+                        logger.error(f'Error fetching job results: {e}')
+                        return JsonResponse({'error': 'Error fetching job results'}, status=500)
+                    
+                return JsonResponse({'status': status})
+            else:
+                return JsonResponse({'error': 'Job not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
 def delete_result(request):

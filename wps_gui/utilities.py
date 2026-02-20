@@ -484,28 +484,79 @@ def update_geoapi_jobs_db(user_set: object, job_id: str):
     :param job_id: id of the job to update
     :return: True if update was successful, False otherwise
     """
-    full_name = "Goutam Das"
-    userid = 100
-    print("Yayy job id-", job_id)
     try:
-        #if user_set is not None:
-        if userid is not None:
-            #full_name = f"{user_set.first_name} {user_set.last_name}".strip()
-            
+        if user_set is not None:
+            full_name = f"{user_set.first_name} {user_set.last_name}".strip()
 
             Jobs.objects.filter(identifier=job_id).update(
                 username=full_name,
-                userid=userid
+                userid=user_set.id
             )
             print("User updated successfully in jobs table")
             return True
         else:
-            print('No user set, cannot update Jobs table.')
+            print('No user found, cannot update Jobs table.')
             return False
     except Exception as e:
         print(f'Error updating Jobs table: {e}')
         return False
 
+def update_job_results(job_id: str, results: str):
+    """
+    Update the results field for a specific job in the jobs table.
+
+    :param job_id: id of the job to update
+    :param results: results data to update
+    :return: True if update was successful, False otherwise
+    """
+    try:
+        Jobs.objects.filter(identifier=job_id).update(results=results)
+        print("Results updated successfully in jobs table")
+        return True
+    except Exception as e:
+        print(f'Error updating job results: {e}')
+        return False
+
+def fetch_job_details(job_id: str):
+    """
+    Fetch the details of a specific job from the jobs table.
+
+    :param job_id: id of the job to fetch details for
+    :return: dict with job details or None if job not found
+    """
+    try:
+        job = Jobs.objects.get(identifier=job_id)
+        created_time = datetime.datetime.strptime(job.created, "%Y-%m-%dT%H:%M:%S.%fZ")
+        if job.status in ['successful', 'failed', 'dismissed']:
+            finished_time = datetime.datetime.strptime(job.finished, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+            # Calculate the duration
+            duration = finished_time - created_time
+            duration = f"{(s:=int(duration.total_seconds()))//60}m {s%60:02d}s"
+            job.finished = finished_time.strftime("%d.%m.%y, %H:%M:%S")
+
+        else:
+            duration = ""
+        
+        job.created = created_time.strftime("%d.%m.%y, %H:%M:%S")
+
+        return {
+            'identifier': job.identifier,
+            'username': job.username,
+            'userid': job.userid,
+            'process_id': job.process_id,
+            'created': job.created,
+            'finished': job.finished,
+            'status': job.status,
+            'results': job.results,
+            'duration': duration
+        }
+    except Jobs.DoesNotExist:
+        print(f'Job with id {job_id} not found.')
+        return None
+    except Exception as e:
+        print(f'Error fetching job details: {e}')
+        return None
 
 def get_job_status(job_id: str):
     """
@@ -524,21 +575,33 @@ def get_job_status(job_id: str):
         print(f'Error retrieving job status: {e}')
         return None
 
-def fetch_jobs_table():
+def fetch_jobs_table(user_id: int = None):
     """
     Fetch all jobs from the GeoAPI Jobs table.
     
     :return: list of dictionaries with job details or an empty list if no jobs found
     """
     try:
-        fields = ['process_id', 'created', 'finished', 'status', 'location']
-        jobs = Jobs.objects.all()
+        fields = {
+            'process_id': 'Process ID',
+            'created': 'Created Date',
+            'finished': 'Finished Date',
+            'status': 'Status',
+            'view_details': 'Details'
+        }
 
+        jobs = Jobs.objects.filter(userid=user_id).order_by('-created')
+        formatted_jobs = []
         for job in jobs:
-            job.created =  datetime.datetime.strptime(job.created, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%B %d, %Y, %H:%M")
-            job.finished = datetime.datetime.strptime(job.finished, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%B %d, %Y, %H:%M")
-        
-        return jobs, fields
+            formatted_jobs.append({
+                "identifier": job.identifier,
+                fields['process_id']: job.process_id,
+                fields['created']: datetime.datetime.strptime(job.created, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d.%m.%y, %H:%M"),
+                fields['finished']: datetime.datetime.strptime(job.finished, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d.%m.%y, %H:%M"),
+                fields['status']: job.status,
+            })
+
+        return formatted_jobs, list(fields.values())
     except Exception as e:
         print(f'Error fetching jobs from GeoAPI Jobs table: {e}')
         return []

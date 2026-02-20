@@ -1,0 +1,32 @@
+{% load static %}
+{% load i18n %}
+{% load dynamic_fields %}
+
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="mb-4 text-3xl font-bold text-gray-900">
+                Result Store
+            </h1>
+            <span class="text-sm text-gray-600">View and manage results of current/selected process</span>
+        </div>
+
+        <!-- Question Mark Icon -->
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <i class="fa-regular fa-question-circle text-xl"></i>
+            </button>
+            <!-- Help Box -->
+            <div x-show="open" @click.outside="open = false" x-transition
+                class="absolute right-0 mt-2 w-90 p-4 bg-white border border-gray-300 rounded shadow-md z-10">
+                <div class="text-sm text-gray-700 text-justify">
+                    <p>This section displays the results of your executed processes.
+                    You can view, download, or manage your results here.</p>
+                    <p>You will see processes here as long as your current tab is active.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="new_result_store" class="flex-1 min-h-0 mt-4 overflow-y-auto">
+        {% include 'wps_gui/result_store_templates.html' %}
+    </div>  

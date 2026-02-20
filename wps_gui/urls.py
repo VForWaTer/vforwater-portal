@@ -51,5 +51,6 @@ urlpatterns = [
     path('processstate', views.process_state, name='processstate'),
     path('updatetools', views.update_tools, name='updatetools'),
     path('workflowrun', views.workflow_run, name='workflowrun'),
+    path('jobstatus', views.job_status, name='jobstatus'),
     # url(r'^(?P<service>\w+)/', include(service_urls)),
 ]

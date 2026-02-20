@@ -601,8 +601,10 @@ vfw.workspace.modal.prepData = function () {
 // TODO: runProcess now works only on execution from modal. Adjust to be usable from Dropzone too,
 //  when you have the drop objects
 // TODO: Improve code by using HTML Forms
+// TODO: colors here need to be fixed for the modal -- Goutam
 vfw.workspace.modal.runProcess = function () {
-    vfw.workspace.modal.setColor("dodgerblue");
+    //vfw.workspace.modal.setColor("dodgerblue");
+    vfw.workspace.modal.setColor(modalColors['DEFAULT']);
     let modal_input = vfw.workspace.modal.prepData();
     let directshowdatatypes = ['figure', 'string', 'html', 'integer', 'float']
     let group = false;
@@ -640,6 +642,7 @@ vfw.workspace.modal.runProcess = function () {
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
             vfw.html.loaderOverlayOff()
+            console.log(json)
             /** Handle result according to the success/status of the process */
             if (json.status == "SUCCESS") {
                 let btnName = '';
@@ -650,7 +653,8 @@ vfw.workspace.modal.runProcess = function () {
                     json.inputs[value] = modal_input.value_list[i];
                     i++;
                 });
-                vfw.workspace.modal.setColor("forestgreen");
+                //vfw.workspace.modal.setColor("forestgreen");
+                vfw.workspace.modal.setColor(modalColors['SUCCESS']);
 
                 // if there is an html available for a result show it directly as result
                 if ('report_html' in json) {
@@ -708,10 +712,12 @@ vfw.workspace.modal.runProcess = function () {
             }
             else if (json.status == 'ERROR') {
                 console.error('error in wps process')
-                vfw.workspace.modal.setColor("firebrick");
+                //vfw.workspace.modal.setColor("firebrick");
+                vfw.workspace.modal.setColor(modalColors['FAILED']);
             }
-            else if (json.status == 'accepted' || json.status == 'running' || json.status == 'successful') {
-                vfw.workspace.modal.setColor("orange");
+            else if (json.status == 'accepted' || json.status == 'runninng') {
+                //vfw.workspace.modal.setColor("orange");
+                vfw.workspace.modal.setColor(modalColors['ACCEPTED']);
                 if (!json['orgID']) {
                     // create an id for the new object
                     const urlParts = json.outputs.path.split("/");
@@ -719,20 +725,38 @@ vfw.workspace.modal.runProcess = function () {
                 }
 
                 // create object
-                vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json);
+                //vfw.datasets.resultObjects[json['orgID']] = new vfw.datasets.resultObj(json);
+                vfw.datasets.resultObjects = { [json['orgID']]: new vfw.datasets.resultObj(json) };
+                vfw.datasets.resultObjects[json['orgID']].job_details = json['job_details'];
+                vfw.datasets.resultObjects[json['orgID']]._updateJobStatus(json['job_details']);
+                console.log(vfw.datasets.resultObjects);
 
+            }
+            else if (json.status == 'successful') {
+                vfw.workspace.modal.setColor(modalColors['SUCCESSFUL']);
+
+                if (!json['orgID']) {
+                    // create an id for the new object
+                    const urlParts = json.outputs.path.split("/");
+                    json['orgID'] = json.name + '_' + urlParts[urlParts.length -1];
+                }
+
+                vfw.datasets.resultObjects = { [json['orgID']]: new vfw.datasets.resultObj(json) };
             }
             else if (json.status == 'FINISHED') {
                 alert('Finished neeeds implementation (Short running porcess)')
-                vfw.workspace.modal.setColor("green");
+                //vfw.workspace.modal.setColor("green");
+                vfw.workspace.modal.setColor(modalColors['SUCCESS']);
             }
             else if (json.execution_status == "error in wps process") {
-                vfw.workspace.modal.setColor("firebrick");
+                //vfw.workspace.modal.setColor("firebrick");
+                vfw.workspace.modal.setColor(modalColors['FAILED']);
                 console.error('Error in wps process: ', json.error)
                 // alert('Error: Failed to execute your request.');
             }
             else if (json.execution_status == "auth_error") {
-                vfw.workspace.modal.setColor("firebrick");
+                //vfw.workspace.modal.setColor("firebrick");
+                vfw.workspace.modal.setColor(modalColors['FAILED']);
                 /** Use Timeout to ensure color changed before popup appears **/
                 setTimeout(function () {
                     alert('Error: You are not allowed to run this process. Please Contact your Admin.');
@@ -742,7 +766,8 @@ vfw.workspace.modal.runProcess = function () {
         })
         .fail(function (json) {
             vfw.html.loaderOverlayOff()
-            vfw.workspace.modal.setColor("firebrick");
+            //vfw.workspace.modal.setColor("firebrick");
+            vfw.workspace.modal.setColor(modalColors['FAILED']);
             console.error('Error, No success: ', json)
         })
         // .always(vfw.html.loaderOverlayOff());
@@ -850,6 +875,7 @@ vfw.sidebar.set_group_btn_name = function (name, storage) {
  *
  * @param {string} color
  */
+/** 
 vfw.workspace.modal.setColor = function (color) {
     let modalColor = document.getElementById("modal-header");
     modalColor.style.backgroundColor = color;
@@ -857,7 +883,32 @@ vfw.workspace.modal.setColor = function (color) {
     modalColor.style.backgroundColor = color;
     document.getElementsByClassName("work_modal-output")[0].style.display = "none";
 }
+*/
+const modalColors = {
+    "DEFAULT": "bg-blue-600",
+    "SUCCESSFUL": "bg-green-500",
+    "ACCEPTED": "bg-yellow-600",
+    "FAILED": "bg-red-500"
+}
 
+vfw.workspace.modal.setColor = function (color) {
+    const modalHeader = document.getElementById("modal-header");
+    const modalFooter = document.getElementById("modal-footer");
+
+    // Remove all existing background color classes from modalColors
+    Object.values(modalColors).forEach(bgColorClass => {
+        modalHeader.classList.remove(bgColorClass);
+        modalFooter.classList.remove(bgColorClass);
+    });
+
+    // Add the desired color class
+    const newColorClass = modalColors[color] || modalColors["DEFAULT"]; // Fallback to "DEFAULT" if color not found
+    modalHeader.classList.add(newColorClass);
+    modalFooter.classList.add(newColorClass);
+
+    // Hide the "view result" button
+    document.getElementsByClassName("work_modal-output")[0].style.display = "none";
+};
 /**
  *  A Object with names and values from the input object / not used yet
  *  */
@@ -1323,6 +1374,7 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
         inElement.name = entry_name;  // item.identifier;
         inElement.title = item.description;  // item.identifier;
         inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
+        inElement.classList.add("bg-gray-50", "border", "border-gray-300", "text-gray-900", "text-sm", "!mb-2", "p-1")
 
         // if (item.required === true) inElement.required = true;
         // if (item.minOccurs > 0 && item.dataType != 'boolean') inElement.required = true;
@@ -1464,12 +1516,15 @@ vfw.workspace.modal.build_modal = function (wpsInfo, service, values = [], boxId
     newNode = document.createElement("div");
     newNode.appendChild(nodeText);
     let outElement = document.createElement("input");
+    outElement.classList.add("bg-gray-50", "border", "border-gray-300", "text-gray-900", "text-sm", "!mb-2", "p-1")
     newNode.appendChild(outElement);
     if (typeof (newNode) === 'object') modOutElement.appendChild(newNode);
     let modal = document.getElementById("workModal");
     // modal.setAttribute("name", invoke_btn_id);
     modal.setAttribute("name", wpsInfo.identifier);
-    modal.style.display = "block";
+    //modal.style.display = "block";
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
     let currentModal = new vfw.workspace.modalObj(wpsInfo.identifier, outElementIdList);
 
     let batchBtn = modFootElement.getElementsByClassName("work_modal-createbatch")[0]
