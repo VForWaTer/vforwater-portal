@@ -776,6 +776,15 @@ vfw.datasets.resultObj = class {
             document.getElementById('job_end_time').textContent = job_details.finished;
             document.getElementById('job_duration').textContent = job_details.duration;
 
+            let successBox = document.getElementById('success_box');
+            let failureBox = document.getElementById('failure_box');
+
+            successBox.classList.remove('hidden');
+            successBox.classList.add('visible');
+            
+            failureBox.classList.remove('visible');
+            failureBox.classList.add('hidden');
+
             const downloadZipElement = document.getElementById("download_zip_result");
             downloadZipElement.onclick = () => this.downloadzip();
         }
@@ -789,11 +798,26 @@ vfw.datasets.resultObj = class {
             document.getElementById('job_id').textContent = job_details.identifier;
             document.getElementById('job_start_time').textContent = job_details.created;
             document.getElementById('job_end_time').textContent = job_details.finished;
+
+            document.getElementById('success_box').style.display = 'none';
+            document.getElementById('failure_box').style.display = 'none';
         }
         else if (job_details.status == "failed") {
             document.getElementById('job_status_title').textContent = 'Failed';
             document.getElementById('job_status_desc').textContent = 'Execution unsuccessful';
-            document.getElementById('job_status_icon').className = 'fa-solid fa-clock text-red-600'            
+            document.getElementById('job_status_icon').className = 'fa-solid fa-clock text-red-600';
+
+            let successBox = document.getElementById('success_box');
+            let failureBox = document.getElementById('failure_box');
+            
+            successBox.classList.remove('visible');
+            successBox.classList.add('hidden');
+            
+            failureBox.classList.remove('hidden');
+            failureBox.classList.add('visible');
+
+            failureBox.textContent = "Error Description:" + job_details.results["code"];  
+                   
         }
 
     }
