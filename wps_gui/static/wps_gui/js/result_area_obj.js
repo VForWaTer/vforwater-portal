@@ -145,6 +145,46 @@ vfw.datasets.resultObj = class {
         poll();
     }
 
+    showDownloadModal() {
+        const modal = document.getElementById("fileListModal");
+        const fileList = document.getElementById("fileList");
+        
+        fileList.innerHTML = "";
+
+        const files = this.job_details.results['plots'];
+        const path = this.job_details.dir;
+
+        files.forEach((filePath) => {
+            const fullPath = `${path}/${filePath}`;
+            const fileName = filePath.split('/').pop();
+            const listItem = document.createElement("li");
+            
+            listItem.innerHTML = `
+            <li class="flex items-center justify-between bg-gray-50 hover:bg-gray-100 px-5 py-4 rounded-xl transition">
+
+            <div class="flex items-center gap-4">
+                <i class="fa-solid fa-file text-blue-600 text-lg"></i>
+                <span class="text-gray-800 font-medium text-lg">
+                ${fileName}
+                </span>
+            </div>
+
+            <button 
+            onclick="openPdfFromBackend('${fullPath}')"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-download text-sm"></i>
+                Download
+            </button>
+
+            </li>
+            `;
+            fileList.appendChild(listItem);
+        });
+
+        // Show the modal
+        modal.classList.remove("hidden");
+    }
+
     download(element=this.orgID) {  // TODO: removeData var should be taken from this!
         /** remove data from session: **/
         const workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey));
@@ -321,7 +361,7 @@ vfw.datasets.resultObj = class {
      * @description This method loads the results and displays them as a table in a modal dialog.
      * First checks if the "resultModalObject" exists in the "vfw.var.obj", if not
      * creates a new instance of "vfw.html.resultModalObj" and assigns it to "vfw.var.obj.resultModalObject".
-     * Then, it iterates over the results, appends them in the html variable, and adds it to the "resultModalObject".
+     * Then, it iterates over the resonclick="openPdfFromBackend('${fullPath}')"ults, appends them in the html variable, and adds it to the "resultModalObject".
      * 
      */
 
@@ -787,6 +827,9 @@ vfw.datasets.resultObj = class {
 
             const downloadZipElement = document.getElementById("download_zip_result");
             downloadZipElement.onclick = () => this.downloadzip();
+
+            const downloadElement = document.getElementById("download_result");
+            downloadElement.onclick = () => this.showDownloadModal();
         }
         else if (job_details.status == "accepted") {
             document.getElementById('job_status_title').textContent = 'Running';

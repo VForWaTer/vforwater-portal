@@ -41,7 +41,8 @@
 </div>
 
 {% block modal %}
-{% include 'wps_gui/modal.html' %}
+    {% include 'wps_gui/modal.html' %}
+    {% include 'wps_gui/download_modal.html' %}
 {% endblock modal %}
 
 <script src="https://unpkg.com/dayjs/dayjs.min.js"></script>
