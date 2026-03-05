@@ -158,7 +158,7 @@ vfw.datasets.resultObj = class {
             const fullPath = `${path}/${filePath}`;
             const fileName = filePath.split('/').pop();
             const listItem = document.createElement("li");
-            
+
             listItem.innerHTML = `
             <li class="flex items-center justify-between bg-gray-50 hover:bg-gray-100 px-5 py-4 rounded-xl transition">
 
@@ -183,6 +183,17 @@ vfw.datasets.resultObj = class {
 
         // Show the modal
         modal.classList.remove("hidden");
+    }
+
+    showPreviewModal() {
+        document.getElementById("previewModal").classList.remove("hidden");
+        let resultFiles = this.job_details.results['plots'];
+        
+        previewState.currentIndex = 0;
+        previewState.files = resultFiles;
+        previewState.dir = this.job_details.dir;
+        vfw.workspace.modal.renderResult();
+
     }
 
     download(element=this.orgID) {  // TODO: removeData var should be taken from this!
@@ -830,6 +841,9 @@ vfw.datasets.resultObj = class {
 
             const downloadElement = document.getElementById("download_result");
             downloadElement.onclick = () => this.showDownloadModal();
+
+            const previewElement = document.getElementById("preview_result");
+            previewElement.onclick = () => this.showPreviewModal();
         }
         else if (job_details.status == "accepted") {
             document.getElementById('job_status_title').textContent = 'Running';

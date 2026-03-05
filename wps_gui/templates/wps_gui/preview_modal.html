@@ -1,0 +1,67 @@
+<!-- Preview Modal -->
+<div id="previewModal"
+     class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+     
+    <div class="bg-white w-4/5 h-4/5 rounded-md overflow-hidden shadow-2xl flex flex-col relative">
+
+        <!-- Header -->
+        <div class="bg-blue-600 flex justify-between items-center p-4">
+            <div class="flex items-center gap-3 text-white">
+                <i class="fa-solid fa-folder-open text-xl"></i>
+                <h2 class="text-lg font-semibold text-white">File Preview</h2>
+            </div>
+            
+            <div class="flex items-start gap-4 text-white items-center">
+                <span id="previewFileName" class="text-xl font-semibold"></span>
+                <span id="previewCounter" class="text-lg font-bold"></span>
+            </div>
+            <button
+                onclick="closePreviewModal()"
+                class="flex items-center justify-center w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 transition"
+            >
+                <i class="fa-solid fa-xmark text-white text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Carousel Content -->
+        <div class="flex-1 flex items-center justify-center relative overflow-hidden">
+
+            <!-- Previous -->
+            <button onclick="prevSlide()"
+                class="absolute left-4 bg-gray-800 text-white p-3 rounded-full opacity-70 hover:opacity-100">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <!-- Slide container -->
+            <div id="carouselContainer" class="w-full h-full flex items-center justify-center">
+                <!-- Content injected here -->
+            </div>
+
+            <!-- Next -->
+            <button onclick="nextSlide()"
+                class="absolute right-4 bg-gray-800 text-white p-3 rounded-full opacity-70 hover:opacity-100">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function closePreviewModal() {
+        document.getElementById("previewModal").classList.add("hidden");
+    }
+
+    function prevSlide() {
+        if (previewState.currentIndex > 0) {
+            previewState.currentIndex--;
+            vfw.workspace.modal.renderResult();
+        }
+    }
+
+    function nextSlide() {
+        if (previewState.currentIndex < previewState.files.length - 1) {
+            previewState.currentIndex++;
+            vfw.workspace.modal.renderResult();
+        }
+    }
+</script>

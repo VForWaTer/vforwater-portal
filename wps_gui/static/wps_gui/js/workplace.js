@@ -1771,3 +1771,50 @@ vfw.workspace.workflow.create_ReverseProcessOrder = function (processTree, depth
     }
     return innerProcesses;
 }
+
+const previewState = {
+    files: [],
+    currentIndex: 0,
+    dir: '',
+};
+
+vfw.workspace.modal.renderResult = function () {
+    console.log("currentIndex: ", previewState.currentIndex);
+    const container = document.getElementById("carouselContainer");
+    container.innerHTML = "";
+
+    const filePath = previewState.files[previewState.currentIndex];
+    const filename = formatFileName(filePath);
+    const extension = filePath.split('.').pop().toLowerCase();
+
+    //Update Header
+    document.getElementById("previewFileName").textContent = "Name: " + filename;
+    document.getElementById("previewCounter").textContent =
+        "("+ `${previewState.currentIndex + 1} / ${previewState.files.length}`+ ")";
+
+    path = previewState.dir;
+    const fullPath = `${path}/${filePath}`;
+    const url = `/workspace/resultdisplay?path=${encodeURIComponent(fullPath)}`;
+
+    if (["png", "jpg", "jpeg", "gif", "webp"].includes(extension)) {
+        const img = document.createElement("img");
+        img.src = url;
+        img.className = "max-h-full max-w-full object-contain";
+        container.appendChild(img);
+
+    } else if (extension === "pdf") {
+        const iframe = document.createElement("iframe");
+        iframe.src = url;
+        iframe.className = "w-full h-full";
+        container.appendChild(iframe);
+    }
+}
+
+function formatFileName(path) {
+    const name = path
+        .split(/[/\\]/).pop()
+        .replace(/\.[^/.]+$/, "")             
+        .replace(/[_-]+/g, " ");              
+
+    return name.replace(/\b\w/g, c => c.toUpperCase());
+}

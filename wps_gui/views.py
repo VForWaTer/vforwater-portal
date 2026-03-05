@@ -54,6 +54,7 @@ from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView, View
 from django.utils import translation, timezone
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from json2html import json2html
 from heron.settings import DEBUG , BASE_DIR, PROCESSES_IN_DIR, PROCESSES_OUT_DIR , GEOAPI_DATA_PATH, PROCESSES_DATA
 
@@ -832,6 +833,7 @@ class ToolResultsDownload(TemplateView):
 
 
 @method_decorator(login_required(login_url="/login/"), name='dispatch')
+@method_decorator(xframe_options_sameorigin, name='dispatch')
 class FileDownloadView(View):
     def get(self, request):
         file_path = request.GET.get('path')
