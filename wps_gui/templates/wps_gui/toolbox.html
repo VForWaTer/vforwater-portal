@@ -1,63 +1,152 @@
-<div>
-    <div class="flex justify-between items-center">
-        <div>
-            <h1 class="mb-4 text-3xl font-bold text-gray-900">
-                Toolbox
-            </h1>
-            <span class="text-sm text-gray-600">Select process for execution from toolbox. Selected tool appears in "Result Store"</span>
-        </div>
+{% load static %}
+{% load i18n %}
+{% load dynamic_fields %}
 
-        <!-- Question Mark Icon -->
-        <div x-data="{ open: false }" class="relative">
-            <button @click="open = !open" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <i class="fa-regular fa-question-circle text-xl"></i>
-            </button>
-            <!-- Help Box -->
-            <div x-show="open" @click.outside="open = false" x-transition
-                class="absolute right-0 mt-2 w-90 p-4 bg-white border border-gray-300 rounded shadow-md z-10">
-                <div class="text-sm text-gray-700 text-justify">
-                    <p>This section displays the selection of tools available to the user.</p>
-                    <p>Running the tool makes it visible in the Result Store</p>
-                </div>
-            </div>
-        </div>
+{{ processes|json_script:"processes-data" }}
+
+<div x-data="toolboxUI()" x-init="init()" class="flex flex-col h-full">
+
+  <!-- Header (same style as Result Store) -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="mb-4 text-3xl font-bold text-gray-900">Toolbox</h1>
     </div>
-    <div class="overflow-y-auto mt-4">
-        <!--
-        <p class="font-normal text-white">
+
+    <!-- Question Mark Icon -->
+    <div x-data="{ open: false }" class="relative">
+      <button @click="open = !open" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+        <i class="fa-regular fa-question-circle text-xl"></i>
+      </button>
+
+      <!-- Help Box -->
+      <div x-show="open" @click.outside="open = false" x-transition
+           class="absolute right-0 mt-2 w-90 p-4 bg-white border border-gray-300 rounded shadow-md z-10">
+        <div class="text-sm text-gray-700 text-justify space-y-2">
+          <p>This section displays the tools available to the user.</p>
+          <p>Hover a tool to see details. Click Run to execute it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content area (scrollable like Result Store) -->
+  <div class="flex-1 min-h-0 mt-4">
+
+    <!-- Seamless split-pane -->
+    <div class="bg-white/60 rounded-lg overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-[340px_1px_1fr] h-full">
+
+        <!-- Left: Tool list -->
+        <div class="bg-blue-50/60 border border-gray-200 rounded-md h-full">
+          <div class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+            Tools
+          </div>
+
+          
+          <div class="px-2 pb-4 overflow-y-auto h-[40vh]">
             {% for identifier, process in processes.items %}
             {% if identifier != "dbloader" %}
-            <div x-data="{ open: false }" class="rounded-lg shadow-sm mb-3">
-                <div class="flex items-center mr-2">
-                    <button type="submit" class="text-sm px-4 py-1.5 text-black"
-                        onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');">
-                        Run
-                    </button>
-                    <button @click="open = !open"
-                        class="flex items-center justify-between w-full p-4 text-left bg-gray-100 hover:bg-gray-200 transition">
-                        <span class="text-lg font-medium text-gray-800">{{ process.title }}</span>
-                    </button>
+            <div
+              class="group mx-2 mb-1 rounded-lg px-3 py-2 cursor-pointer transition
+                     hover:bg-white hover:shadow-sm"
+              :class="selectedId === '{{ identifier }}' ? 'bg-white shadow-sm' : ''"
+              @mouseenter="select('{{ identifier }}')"
+              @click="select('{{ identifier }}')"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="text-base font-medium text-gray-900 truncate">
+                    {{ process.title }}
+                  </div>
                 </div>
 
-                <div x-show="open" x-collapse class="p-4 bg-white text-sm text-gray-700">
-                    <p class="mb-2"><strong>Description:</strong> {{ process.description }}</p>
-                    <p class="mb-1"><strong>Inputs:</strong> {{ process.inputs }}</p>
-                    <p><strong>Outputs:</strong> {{ process.outputs }}</p>
-                </div>
+                <!-- Run on hover -->
+                <button
+                  type="button"
+                  class="opacity-0 group-hover:opacity-100 transition px-2 py-1
+                         text-xs rounded bg-blue-600 text-white hover:bg-blue-700"
+                  @click.stop="run('{{ service }}','{{ identifier }}')"
+                >
+                  Run
+                </button>
+              </div>
             </div>
             {% endif %}
             {% endfor %}
-        </p>
-        -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {% for identifier, process in processes.items %}
-            {% if identifier != "dbloader" %}
-            <div class="p-4 bg-gray-100 rounded-lg shadow hover:bg-gray-200 transition cursor-pointer"
-                onclick="vfw.workspace.modal.open_wpsprocess('{{ service }}', '{{ identifier }}');">
-                <div class="text-base nt-medium text-gray-800">{{ process.title }}</div>
-            </div>
-            {% endif %}
-            {% endfor %}
+          </div>
         </div>
+
+        <!-- Divider (hairline, seamless) -->
+        <div class="hidden lg:block bg-gray-200"></div>
+
+        <!-- Right: Details -->
+        <div class="px-4">
+            <div class="py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                Description
+              </div>
+            <template x-if="!selectedTool">
+              <div class="text-sm text-gray-500">
+                Hover a tool on the left to see its description, inputs, and outputs.
+              </div>
+            </template>
+      
+            <template x-if="selectedTool">
+              <div class="space-y-6 overflow-y-auto h-[30vh]">
+                <div>
+                  <div class="text-lg font-semibold text-gray-900" x-text="selectedTool.title"></div>
+                </div>
+      
+                <div>
+                  <div class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Description</div>
+                  <p class="text-sm text-gray-700" x-text="selectedTool.description"></p>
+                </div>
+      
+                <div>
+                  <div class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Inputs</div>
+                  <div class="text-sm text-gray-700 whitespace-pre-wrap" x-text="selectedTool.inputs"></div>
+                </div>
+      
+                <div>
+                  <div class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Outputs</div>
+                  <div class="text-sm text-gray-700 whitespace-pre-wrap" x-text="selectedTool.outputs"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+      
+
+      </div>
     </div>
+
+  </div>
 </div>
+
+<script>
+  function toolboxUI() {
+    return {
+      processes: {},
+      selectedId: null,
+
+      init() {
+        const dataEl = document.getElementById("processes-data");
+        this.processes = dataEl ? JSON.parse(dataEl.textContent) : {};
+
+        // pick first tool by default (optional)
+        const firstKey = Object.keys(this.processes).find(k => k !== "dbloader");
+        if (firstKey) this.select(firstKey);
+      },
+
+      get selectedTool() {
+        return this.selectedId ? (this.processes[this.selectedId] || null) : null;
+      },
+
+      select(id) {
+        this.selectedId = id;
+      },
+
+      run(service, id) {
+        vfw.workspace.modal.open_wpsprocess(service, id);
+      }
+    };
+  }
+</script>

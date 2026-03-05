@@ -856,8 +856,14 @@ vfw.datasets.resultObj = class {
             document.getElementById('job_start_time').textContent = job_details.created;
             document.getElementById('job_end_time').textContent = job_details.finished;
 
-            document.getElementById('success_box').style.display = 'none';
-            document.getElementById('failure_box').style.display = 'none';
+            let successBox = document.getElementById('success_box');
+            let failureBox = document.getElementById('failure_box');
+
+            successBox.classList.remove('visible');
+            successBox.classList.add('hidden');
+            
+            failureBox.classList.remove('visible');
+            failureBox.classList.add('hidden');
         }
         else if (job_details.status == "failed") {
             document.getElementById('job_status_title').textContent = 'Failed';

@@ -81,7 +81,7 @@ vfw.workspace.modal.setHead = function (wpsInfo, service) {
     if (wpsInfo.description) {
         newElement = wpsInfo.description;
     }
-    modHeadElement.innerHTML = newElement;
+    // modHeadElement.innerHTML = newElement;
 }
 
 /**
