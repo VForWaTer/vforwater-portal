@@ -285,7 +285,7 @@ vfw.map.layer.openTopo = new ol.layer.Tile({
     name: 'OpenTopoMap',
     preload: Infinity,
     baseLayer: true,
-    visible: false,
+    visible: true,
     source: vfw.map.source.opentopoSource,
 });
 
@@ -428,7 +428,7 @@ vfw.map.createMap = function () {
         name: 'V-FOR-WaTer style',
         preload: Infinity,
         baseLayer: true,
-        visible: true,
+        visible: false,
         // minResolution: 100,
         maxZoom: 20,
         source: vfw.map.source.vfwSource,
