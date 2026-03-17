@@ -23,22 +23,47 @@
 </div>
 
 -->
+{% if user.is_authenticated %}
 <div class="flex flex-col h-[90vh]">
     
     <div class="h-1/2 m-6 flex flex-row gap-2">
         <div class="basis-1/2 p-6 bg-white shadow-md rounded flex flex-col overflow-hidden">
-            {% include 'wps_gui/result_store.html' %}        
+            {% include 'wps_gui/result_store.html' %}
         </div>
-        <div class="basis-1/2 p-6 bg-white shadow-md rounded flex flex-col overflow-auto">   
-            {% include 'wps_gui/toolbox.html' %}  
+        <div class="basis-1/2 p-6 bg-white shadow-md rounded flex flex-col overflow-auto">
+            {% include 'wps_gui/toolbox.html' %}
         </div>
     </div>
 
     <div class="h-1/2 m-6 p-6 bg-white shadow-md rounded flex flex-col overflow-hidden">
-        {% include 'wps_gui/process_history.html' %}  
+        {% include 'wps_gui/process_history.html' %}
     </div>
     
 </div>
+{% else %}
+<div class="flex items-center justify-center h-full -translate-y-40">
+    <div class="w-full max-w-2xl rounded-2xl px-8 py-10">
+        <div class="flex flex-col items-center text-center">
+            <div class="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-4">
+                <i class="fa-solid fa-lock text-blue-600 text-2xl"></i>
+            </div>
+
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                You’re not logged in
+            </h2>
+
+            <p class="text-gray-600 text-sm max-w-md mb-6">
+                Log in to view and execute processes, open the toolbox, and access your process history.
+            </p>
+
+            <a href="{% url 'oidc_authentication_init' %}"
+               class="px-5 py-2.5 my-2 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition shadow">
+                Log in
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}   
 
 {% block modal %}
     {% include 'wps_gui/modal.html' %}

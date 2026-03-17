@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load dynamic_fields %}
 
+<div id="resultStoreContainer" class="hidden">
     <div class="flex justify-between items-center">
         <div>
             <h1 class="mb-4 text-3xl font-bold text-gray-900">
@@ -30,3 +31,41 @@
     <div id="new_result_store" class="flex-1 min-h-0 mt-4 overflow-y-auto">
         {% include 'wps_gui/result_store_templates.html' %}
     </div>  
+</div>
+
+<div id="noResultsMessage" class="hidden flex items-center justify-center h-full -translate-y-6">
+    <div class="text-center px-6 py-8">
+        
+        <div class="flex justify-center mb-4">
+            <div class="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100">
+                <i class="fa-solid fa-database text-gray-400 text-xl"></i>
+            </div>
+        </div>
+
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">
+            No Results Yet
+        </h2>
+
+        <p class="text-sm text-gray-500 max-w-xs mx-auto">
+            Run a process to generate results. They will appear here once available.
+        </p>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Check if resultObj exists in sessionStorage
+        const resultObj = sessionStorage.getItem('resultObj');
+        const resultStoreContainer = document.getElementById('resultStoreContainer');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+
+        if (resultObj) {
+            // Show the Result Store content
+            resultStoreContainer.classList.remove('hidden');
+        } else {
+            // Show the "No Results" message
+            noResultsMessage.classList.remove('hidden');
+        }
+    });
+</script>

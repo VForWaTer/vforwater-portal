@@ -814,6 +814,12 @@ vfw.datasets.resultObj = class {
 
     // Create function to set the values in the job card based on the job status
     _updateJobStatus(job_details) {
+        const resultStoreContainer = document.getElementById('resultStoreContainer');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+
+        resultStoreContainer.classList.remove('hidden');
+        noResultsMessage.classList.add('hidden');
+
         if (job_details.status === "successful") {
             // Set the values for successful job
             document.getElementById('job_status_title').textContent = 'Successful';
