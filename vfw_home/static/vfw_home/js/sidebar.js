@@ -68,8 +68,10 @@ vfw.sidebar.showData = function () {
         $.each(dataStoreData, function (k) {
             if (!(dataStoreData[k].hasOwnProperty('type') && dataStoreData[k]['type'] === 'geometry')) {
                 vfw.datasets.dataObjects[k] = new vfw.datasets.DataObj(dataStoreData[k], false);
+                console.log("dataObject", vfw.datasets.dataObjects[k])
             } else {
                 vfw.datasets.selectObjects[k] = new vfw.datasets.selectObj(dataStoreData[k], false);
+                console.log("selectObject", vfw.datasets.selectObjects[k])
             }
         });
     }
