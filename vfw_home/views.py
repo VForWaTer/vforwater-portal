@@ -1641,7 +1641,7 @@ class Delineator(View):
                 raise ValueError(f"Invalid coordinates from client: {coords}")
                 
 
-            return delineate(coords=coords)
+            return delineate(coords=coords, precise=True)
 
         except ValueError as e:
             raise_logging_exception(e, endpoint, None)
