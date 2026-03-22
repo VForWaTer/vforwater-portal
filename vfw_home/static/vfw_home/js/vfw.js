@@ -258,6 +258,9 @@ vfw.map.layer.selectionLayer = new ol.layer.Vector({
             color: '#ff0040',
             width: 2.5
         }),
+        fill: new ol.style.Fill({
+            color: 'rgba(255,0,64,0.1)',
+        }),
     }),
     // zindex: -100,
     updateWhileAnimating: true, // optional, for instant visual feedback
