@@ -379,7 +379,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         type: 'Point',
     })
 
-    const overlayStyle = new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
+    const overlayStyle = null  // new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
     const select = new ol.interaction.Select({style: overlayStyle,});
     vfw.map.olmap.addInteraction(select)
 
