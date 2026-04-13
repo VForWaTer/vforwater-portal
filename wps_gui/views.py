@@ -35,6 +35,7 @@ import json
 import sys
 import time
 import os
+import tempfile
 import urllib
 import zipfile
 from pathlib import Path
@@ -45,6 +46,7 @@ import jsonpickle
 import requests
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
@@ -53,8 +55,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView, View
 from django.utils import translation, timezone
 from json2html import json2html
-
-from heron.settings import DEBUG , BASE_DIR #, GEOAPI_DATA_PATH, PROCESSES_DATA
+from heron.settings import DEBUG , BASE_DIR, PROCESSES_IN_DIR, PROCESSES_OUT_DIR #, GEOAPI_DATA_PATH, PROCESSES_DATA
 
 from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
@@ -177,7 +178,7 @@ class ProcessView(TemplateView):
 
 def process_run(request):  
     user_id = None
-
+    temp_dir = None
     try:
         user_id = request.user.id
         user_queryset = User.objects.get(id=user_id)
@@ -196,6 +197,58 @@ def process_run(request):
             request_inputs = request.POST.get('processrun')
 
         input = prepare_inputs(request=request, request_input=json.loads(request_inputs))
+
+
+        if "model_file" in request.FILES:
+            uploaded = request.FILES["model_file"]
+
+            import os
+            from uuid import uuid4
+
+            user_folder = f"user{user_id}_{request.user.username}"
+            shared_id = f"upload_{uuid4().hex}"
+
+            # local mounted path 
+            # BASE_SHARED_PATH = os.path.expanduser("~/remote_geoapi_data")
+            # obs_dir = os.path.join(
+            #     BASE_SHARED_PATH,
+            #     "in",
+            #     user_folder,
+            #     shared_id,
+            #     "simulation",
+            #     "obs"
+            # )
+
+            # Mount
+            BASE_SHARED_PATH = PROCESSES_IN_DIR
+
+            obs_dir = os.path.join(
+                BASE_SHARED_PATH,
+                user_folder,
+                shared_id,
+                "simulation",
+                "obs"
+            )
+
+            os.makedirs(obs_dir, exist_ok=True)
+
+            file_path = os.path.join(obs_dir, uploaded.name)
+
+            with open(file_path, "wb+") as dst:
+                for chunk in uploaded.chunks():
+                    dst.write(chunk)
+
+            print(f"Uploaded observation file saved at: {file_path}")
+
+            # pass path to processor
+            input.setdefault("in_dict", {})
+            input["in_dict"]["observation_data"] = file_path
+
+            # pass shared_id so processor uses same folder
+            input["in_dict"]["shared_id"] = shared_id
+
+
+
     except Exception as e:
         
         logger.error(f'Problems preparing inputs {e}')
@@ -211,6 +264,8 @@ def process_run(request):
         
 
     try:
+        logger.info(f"FINAL INPUT TO PYGEOAPI: {input.get('in_dict')}")
+        print(f"FINAL INPUT TO PYGEOAPI: {input.get('in_dict')}")
         execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
                               json={
                                   "mode": "async",
@@ -350,94 +405,123 @@ def delete_result(request):
                              'message': 'delete'})
 
 
+
+@never_cache
 def process_state(request):
     """
     Check the state of a process in GeoAPI and store updates in DB.
-
-    :param request: A request object that includes a process ID.
-    :return: A JSON response containing the process state or an error message.
     """
-    # check if request includes a process id
+    # 1)  check if request includes a process id
     try:
-        process_id = int(request.GET['processid'])
+        process_id = int(request.GET.get('processid'))
     except Exception as e:
-        print('Got no ID to check process state: ', e)
         logger.error(f'Got no ID to check process state: {e}')
-        return JsonResponse({'error': 'Got no ID to check process state.'})
+        return JsonResponse({'error': 'Got no ID to check process state.'}, status=400)
 
-    # get element from database
+    # 2) Load DB entry
     try:
         entry = GeoAPIResults.objects.get(id=process_id)
-    except ObjectDoesNotExist as e:
-        # print(f"Cannot check state of Process. Entry {process_id} seems not to exist: ", e)
-        return JsonResponse({'error': f"Cannot check state of Process. Entry {process_id} seems not to exist"})
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': f"Cannot check state of Process. Entry {process_id} seems not to exist"}, status=404)
 
-    # check if user has access to this dataset. If yes get state from GeoAPI
-    if entry.open or request.user.id == entry.owner_id:
-        service, endpoint, wps_services = get_endpoint_data(DEBUG)
-        url = url_join(endpoint, entry.outputs['path'])
-        # print(f'try to get process state from url: {url}')
-        logger.info(f'try to get process state from url: {url}')
+    # 3) Permission check
+    if not (entry.open or request.user.id == entry.owner_id):
+        return JsonResponse({'error': 'No Access'}, status=403)
+
+    # 4) Fetch update JSON (job status)
+    service, endpoint, wps_services = get_endpoint_data(DEBUG)
+    url = url_join(endpoint, entry.outputs['path'])
+    logger.info(f'try to get process state from url: {url}')
+
+    update = None
+    try:
         update = get_url_json(f'{url}?f=json')
-    else:
-        return JsonResponse({'error': 'No Access'})
+        if update.get("error"):
+            logger.error(f"PyGeoAPI status check error: {update['error']}")
+            return JsonResponse({"status": entry.status, "error": update["error"]}, status=502)
+    except Exception as e:
+        # get_url_json likely failed to parse JSON (empty/html/etc.)
+        logger.error(f'Error checking state of process (get_url_json failed): {e}')
+        return JsonResponse({'status': entry.status, 'error': 'Invalid/non-JSON status response'}, status=502)
 
-    # check status. If successful update database and send update
-    # if update['status'] == "successful" and update['message'] == 'Job complete' and update['progress'] == 100:
-    # TODO: Yes, the following is way too complicated. Check the tools, find a standard and simplify all of this!!!
-    if ((update['status'] == "successful" or update['status'] == "completed") and update['message'] == 'Job complete'
-        and update['progress'] == 100):
+    if not isinstance(update, dict) or not update:
+        logger.error(f'Empty/invalid update payload: {update}')
+        return JsonResponse({'status': entry.status, 'error': 'Empty/invalid status payload'}, status=502)
+
+    # 5) Read keys safely (avoid KeyError)
+    upd_status = update.get('status')
+    upd_message = update.get('message')
+    upd_progress = update.get('progress')
+
+
+    if upd_status is None:
+        upd_status = update.get('state') or update.get('job_status')
+    if upd_progress is None:
+        upd_progress = update.get('percent') or update.get('percentage') or update.get('progress_percent')
+
+    # 6) Prepare defaults so response always works
+    result_url = None
+    result = None
+
+    # same logic with safe access
+    if ((upd_status in ("successful", "completed")) and upd_message == 'Job complete' and upd_progress == 100):
 
         result_url = f'{url}/results?f=json'
-        result = get_url_json(result_url)
-        if result["container_status"] and result["container_status"] == 'failed':
-            entry.status = "FINISHED"
-            entry.access = timezone.now().isoformat()
-        elif result["container_status"] and result["container_status"] == 'exited':
-            entry.status = "FINISHED"
-            entry.access = timezone.now().isoformat()
-        elif ((result["error"] and result["error"] == 'none') and
-              (result["geoapi_status"] and result["completed"] == 'none')):
-            entry.status = "FINISHED"
-            entry.access = timezone.now().isoformat()
-        else:
+        try:
+            result = get_url_json(result_url)
+        except Exception as e:
+            logger.error(f'Could not fetch results JSON: {e}')
             entry.status = "ERROR"
             entry.access = timezone.now().isoformat()
-            # print(f'Process failed but container was able to finish: {update}')
-            logger.error(f'Process failed but container was able to finish: {update}')
+            entry.save()
+            return JsonResponse({'status': entry.status, 'error': 'Could not fetch results JSON'}, status=502)
 
+        # container_status checks safely
+        container_status = (result or {}).get("container_status")
+        err = (result or {}).get("error") or (result or {}).get("error:")  
+        geoapi_status = (result or {}).get("geoapi_status")
+        completed = (result or {}).get("completed")
+
+        if container_status in ('failed', 'exited'):
+            entry.status = "FINISHED"
+        elif (err == 'none' and geoapi_status and completed == 'none'):
+            entry.status = "FINISHED"
+        else:
+            entry.status = "ERROR"
+            logger.error(f'Process finished but result indicates error. update={update}, result={result}')
+
+        entry.access = timezone.now().isoformat()
         entry.outputs['results'] = [{'path': result_url, 'json': result}]
         try:
             entry.save()
-
-        except ValueError as e:
-            print(f"ValueError while trying to update DB: {e}")
-            logger.error(f'ValueError while trying to update DB: {e}')
-
         except Exception as e:
-            print(f"Unexpected error while trying to update DB: {e}")
-            logger.error(f'Unexpected error while trying to update DB: {e}')
-    elif (update['status'] == "failed" and update['message'] == 'InvalidParameterValue: Error updating job'
-          and update['progress'] < 10):
+            logger.error(f'Error while trying to update DB: {e}')
+
+    elif (upd_status == "failed" and upd_message == 'InvalidParameterValue: Error updating job'
+          and isinstance(upd_progress, (int, float)) and upd_progress < 10):
         logger.error(f'Process failed immediately: {update}')
-        # print(f'Process failed immediately: {update}')
         return JsonResponse({'status': entry.status, 'error': 'Invalid Parameter Value'})
-    elif update['status'] == "accepted":
+
+    elif upd_status == "accepted":
         return JsonResponse({'status': entry.status})
+
     else:
-        logger.error(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
-        # print(f'New style of result in dataset. Status, message, or progress is not as expected. {update}')
-        # style is the combination of 'status', 'message' and 'progress'
+        logger.error(f'Unexpected job status schema or values. update={update}')
 
-    try:
-        response_dict = {'status': entry.status,
-                     'results': [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
-                     }
-    except Exception as e:
-        # print(f"Unexpected error while trying to refresh client: {e}")
-        logger.error(f"Unexpected error while trying to refresh client: {e}")
-
-    return JsonResponse(response_dict)
+    #  Response to client (always defined)
+    response_dict = {'status': entry.status}
+    if result_url and result is not None:
+        try:
+            response_dict['results'] = [{'path': result_url, 'json': result, 'html': json2html.convert(json=result)}]
+        except Exception as e:
+            logger.error(f"Error while converting results to html: {e}")
+            response_dict['results'] = [{'path': result_url, 'json': result}]
+    resp = JsonResponse(response_dict)
+    resp["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp["Pragma"] = "no-cache"
+    resp["Expires"] = "0"
+    return resp
+    # return JsonResponse(response_dict)
 
 
 # # @login_required

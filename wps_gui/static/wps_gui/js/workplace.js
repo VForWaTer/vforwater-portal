@@ -431,6 +431,7 @@ vfw.workspace.modal.prepData = function () {
     let indict = {};  // pywps needed a set. For geoapi processes we can use a dict. TODO: delete set if not needed.
     var inType = [];
     var inId = [];
+    let files = {};
     let dDInput = 0;
     let valueList = [];
     let typeList = [];
@@ -515,7 +516,20 @@ vfw.workspace.modal.prepData = function () {
 
     /** now check the other elements like radio buttons or checkboxes **/
     for (let i = 0; i < inputInputs.length; i++) {
-        if (inputInputs[i].type == "radio") {
+        if (inputInputs[i].type == "file") {
+            inKey.push(inputInputs[i].name);
+            inValue.push(inputInputs[i].files.length ? inputInputs[i].files[0].name : "");
+            inType.push('file');
+            inId.push('');
+            if (inputInputs[i].files.length) {
+                files[inputInputs[i].name] = inputInputs[i].files[0];
+                // indict[inputInputs[i].name] = inputInputs[i].files[0].name;
+                indict[inputInputs[i].name] = "__uploaded__";
+            } else {
+                indict[inputInputs[i].name] = "";
+            }
+        } 
+        else if (inputInputs[i].type == "radio") {
             if (inputInputs[i].checked == true) {
                 inKey.push(inputInputs[i].name);
                 inValue.push(inputInputs[i].value);
@@ -580,7 +594,7 @@ vfw.workspace.modal.prepData = function () {
     }
     return {
         'id': identifier, 'serv': wpsservice, 'key_list': inKey, 'value_list': inValue,
-        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId, 'in_dict': indict,
+        'in_type_list': inType, 'outputName': outputName, 'inId_list': inId, 'in_dict': indict, 'files': files,
     }
 }
 
@@ -597,13 +611,32 @@ vfw.workspace.modal.runProcess = function () {
     let members = [];
     vfw.html.loaderOverlayOn();
 
+    let formData = new FormData();
+
+    formData.append("processrun", JSON.stringify({
+        id: modal_input.id,
+        serv: modal_input.serv,
+        key_list: modal_input.key_list,
+        value_list: modal_input.value_list,
+        in_type_list: modal_input.in_type_list,
+        outputName: modal_input.outputName,
+        inId_list: modal_input.inId_list,
+        in_dict: modal_input.in_dict
+    }));
+
+    formData.append("csrfmiddlewaretoken", vfw.var.csrf_token);
+    if (modal_input.files) {
+        Object.entries(modal_input.files).forEach(([key, file]) => {
+            formData.append(key, file);
+        });
+    }
+
     $.ajax({
         url: vfw.var.DEMO_VAR + "/workspace/processrun",
         type: 'POST',
-        data: {
-            processrun: JSON.stringify(modal_input),
-            'csrfmiddlewaretoken': vfw.var.csrf_token,
-        }, /** data sent with post request **/
+        data: formData,
+        processData: false,   
+        contentType: false   
     })
         .done(function (json) {  /** Results are stored in the sessionStorage **/
             vfw.html.loaderOverlayOff()
@@ -613,8 +646,8 @@ vfw.workspace.modal.runProcess = function () {
                 let btnData = {};
                 json.wps = modal_input.id;
                 json.inputs = {};
-                $.each(modal_input.inKey, function (key, value) {
-                    json.inputs[value] = modal_input.inValue[i];
+                $.each(modal_input.key_list, function (key, value) {
+                    json.inputs[value] = modal_input.value_list[i];
                     i++;
                 });
                 vfw.workspace.modal.setColor("forestgreen");
@@ -1220,7 +1253,7 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
         titleText = " " + item.title + ": "
     } else if (item.defaultValue) {
         titleText = " " + item.title + ": "
-    } else if (item.required === true) {
+    } else if (item.required === true || item.minOccurs > 0) {
         // } else if (item.minOccurs > 0 && item.dataType != 'boolean') {
         titleText = " " + item.title + " (*) : ";
         inElement.required = true;
@@ -1233,6 +1266,27 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
     // if (item.minOccurs === 1) inElement.required = true;
     nodeText = document.createTextNode(titleText);
     newNode.appendChild(nodeText);
+
+        //Upload input support
+    if ('keywords' in item && Array.isArray(item.keywords) && item.keywords.includes('upload')) {
+        inElement = document.createElement("input");
+        inElement.type = "file";
+        inElement.id = 'mod_in_el_' + entry_name;
+        inElement.name = entry_name;
+        inElement.title = item.description || "";
+        inElement.accept = ".csv,text/csv";
+        if (item.minOccurs > 0) {
+            inElement.required = true;
+        }
+        inElement.style.display = "inline-block";
+        inElement.style.visibility = "visible";
+        inElement.style.opacity = "1";
+        inElement.style.width = "auto";
+        inElement.style.marginLeft = "8px";
+
+        newNode.appendChild(inElement);
+        return newNode;
+    }
     if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {
         if ('maxOccurs' in item) {
             if (item.maxOccurs === 1) {
@@ -1265,7 +1319,7 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
         /** Set input element according to dataType */
     } else {
         inElement = document.createElement("INPUT");
-        inElement.id = 'mod_in_el_' + item.identifier;  // item.id;
+        inElement.id = 'mod_in_el_' + entry_name;  // item.id;
         inElement.name = entry_name;  // item.identifier;
         inElement.title = item.description;  // item.identifier;
         inElement.setAttribute("list", item.title + '_list');  // item.identifier + '_list');
