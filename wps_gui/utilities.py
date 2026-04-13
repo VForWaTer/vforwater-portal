@@ -543,26 +543,39 @@ def edit_input(inputs):
     return wps_input
 
 
-def get_url_json(url):
-    """
-    Retrieve the state update of a process from the provided URL. URL should be from DB column GeoAPIresults.
-    It sends a GET request to the specified URL and returns the JSON response from the API.
+logger = logging.getLogger(__name__)
 
-    Example usage:
-    ```
-    response = get_url_json('http://example.com/api/process/state')
-    ```
-    :param url: The URL of the API endpoint to check the state of a process.
-    :return: The JSON response from the API indicating the state of the process.
-    """
+def get_url_json(url, timeout=20):
     try:
-        response = requests.get(url)
-        return response.json()
+        r = requests.get(url, timeout=timeout)
     except Exception as e:
-        logger.error(f'Error checking state of process: {e}')
-        print(f'Error checking state of process: {e}')
-        return {'error': 'Got no update from PyGeoAPI'}
+        logger.error(f"Error requesting url={url}: {e}")
+        return {"error": f"Request failed: {e}"}
 
+    ct = (r.headers.get("Content-Type") or "").lower()
+    text = (r.text or "").strip()
+
+    if not text:
+        logger.error(f"Empty response from {url} (status={r.status_code}, content-type={ct})")
+        return {"error": "Got no update from PyGeoAPI"}
+
+
+    if "json" not in ct and (text.startswith("<") or "html" in ct):
+        logger.error(
+            f"Non-JSON response from {url} (status={r.status_code}, content-type={ct}) "
+            f"body_start={text[:200]!r}"
+        )
+        return {"error": "Non-JSON response from PyGeoAPI"}
+
+    try:
+        return r.json()
+    except Exception as e:
+        logger.error(
+            f"JSON decode error from {url}: {e} "
+            f"(status={r.status_code}, content-type={ct}, body_start={text[:200]!r})"
+        )
+        return {"error": "Got no update from PyGeoAPI"}
+    
 
 def handle_geoapiprocess_output(user, execution, process_description, inputs):
     """
