@@ -605,22 +605,22 @@ vfw.map.createMap = function () {
         }
     }
 
-    const selectedCatchmentStyle = new ol.style.Style({
-        fill: new ol.style.Fill({
-            color: 'rgba(229,113,40,0.8)',
-        }),
-        stroke: new ol.style.Stroke({
-            color: '#9f3700',
-            width: 2
-        }),
-        image: vfw.map.style.calcImageCircle(30, vfw.colors.blue3, vfw.colors.blue4),
-        text: new ol.style.Text({
-            font: '12px helvetica,sans-serif',
-            fill: new ol.style.Fill({
-                color: 'black'
-            })
-        })
-    });
+    // const selectedCatchmentStyle = new ol.style.Style({
+    //     fill: new ol.style.Fill({
+    //         color: 'rgba(229,113,40,0.8)',
+    //     }),
+    //     stroke: new ol.style.Stroke({
+    //         color: '#9f3700',
+    //         width: 2
+    //     }),
+    //     image: vfw.map.style.calcImageCircle(30, vfw.colors.blue3, vfw.colors.blue4),
+    //     text: new ol.style.Text({
+    //         font: '12px helvetica,sans-serif',
+    //         fill: new ol.style.Fill({
+    //             color: 'black'
+    //         })
+    //     })
+    // });
 
     vfw.map.selectStyle = function (feature) {
         /**
@@ -630,9 +630,10 @@ vfw.map.createMap = function () {
          * @param {Feature} feature - The feature to select the style for.
          * @return {Style} The selected style for the feature.
          */
-        const color = feature.get('COLOR') || 'rgba(229,75,40,0.3)';
-        selectedCatchmentStyle.getFill().setColor(color);
-        return selectedCatchmentStyle;
+        return null;
+        // const color = feature.get('COLOR') || 'rgba(229,75,40,0.3)';
+        // selectedCatchmentStyle.getFill().setColor(color);
+        // return selectedCatchmentStyle;
     }
 
     const selectCatch = new ol.interaction.Select({
@@ -640,7 +641,7 @@ vfw.map.createMap = function () {
         // wrapX: false,
         // source: vfw.map.source.selectionSource,
         // type: 'Polygon',
-        style: vfw.map.selectStyle
+        style: null  // vfw.map.selectStyle
     })
     // TODO: modifyCatch is needed to allow modifications of the vector layer. Not sure if we want that
     // const modifyCatch = new ol.interaction.Modify({

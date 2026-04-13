@@ -258,6 +258,9 @@ vfw.map.layer.selectionLayer = new ol.layer.Vector({
             color: '#ff0040',
             width: 2.5
         }),
+        fill: new ol.style.Fill({
+            color: 'rgba(255,0,64,0.1)',
+        }),
     }),
     // zindex: -100,
     updateWhileAnimating: true, // optional, for instant visual feedback
@@ -379,7 +382,7 @@ vfw.map.func.drawOnMapMenu = function (test) {
         type: 'Point',
     })
 
-    const overlayStyle = new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
+    const overlayStyle = null  // new ol.style.Style({stroke: new ol.style.Stroke({color: '#03ad1a', width: 3})})
     const select = new ol.interaction.Select({style: overlayStyle,});
     vfw.map.olmap.addInteraction(select)
 
