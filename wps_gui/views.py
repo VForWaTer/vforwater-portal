@@ -55,7 +55,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView, View
 from django.utils import translation, timezone
 from json2html import json2html
-from heron.settings import DEBUG , BASE_DIR, PROCESSES_IN_DIR, PROCESSES_OUT_DIR #, GEOAPI_DATA_PATH, PROCESSES_DATA
+from heron.settings import DEBUG , BASE_DIR, PROCESSES_IN_DIR, PROCESSES_OUT_DIR , GEOAPI_DATA_PATH, PROCESSES_DATA
 
 from wps_gui.models import WpsResults, WebProcessingService, WpsDescription, GeoAPIResults
 from wps_gui.utilities import (
@@ -220,10 +220,10 @@ def process_run(request):
             # )
 
             # Mount
-            BASE_SHARED_PATH = PROCESSES_IN_DIR
-
+            BASE_SHARED_PATH = GEOAPI_DATA_PATH 
             obs_dir = os.path.join(
                 BASE_SHARED_PATH,
+                "in",
                 user_folder,
                 shared_id,
                 "simulation",
