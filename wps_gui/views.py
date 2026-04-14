@@ -275,8 +275,8 @@ def process_run(request):
         
 
     try:
-        logger.info(f"FINAL INPUT TO PYGEOAPI: {input.get('in_dict')}")
-        print(f"FINAL INPUT TO PYGEOAPI: {input.get('in_dict')}")
+        logger.info(f'Attempting to execute process {wps_process} at endpoint {endpoint}')
+        print(f'Attempting to execute process {wps_process} at endpoint {endpoint}')
         execution = requests.post(f'{endpoint}/processes/{wps_process}/execution',
                               json={
                                   "mode": "async",
