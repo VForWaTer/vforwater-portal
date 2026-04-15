@@ -191,7 +191,8 @@ vfw.datasets.resultObj = class {
         
         previewState.currentIndex = 0;
         previewState.files = resultFiles;
-        previewState.dir = this.job_details.dir;
+        previewState.dir = this.job_details.results.dir;
+        console.log("Preview State: ", previewState);
         vfw.workspace.modal.renderResult();
 
     }
