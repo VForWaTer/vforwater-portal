@@ -787,6 +787,21 @@ def update_tools(request, updateinterval=5):
     return JsonResponse({"wps": updatedwps})
 
 
+def move_job(request):
+    """
+    Fetch job details from the DB by identifier and return them as JSON,
+    so the frontend can populate the result card with a historical job.
+    """
+    job_id = request.GET.get('job_id')
+    if not job_id:
+        return JsonResponse({'error': 'job_id is required'}, status=400)
+    job_details = fetch_job_details(job_id)
+    if not job_details:
+        return JsonResponse({'error': 'Job not found'}, status=404)
+    resp = {'status': job_details['status'], 'job_details': job_details, 'html': json2html.convert(job_details['results'])}
+    return JsonResponse(resp, status=200, safe=False)
+
+
 @method_decorator(login_required(login_url="/login/"), name='dispatch')
 class ToolResultsDownload(TemplateView):
     """

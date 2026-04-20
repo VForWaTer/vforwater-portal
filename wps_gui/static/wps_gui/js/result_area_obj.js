@@ -885,6 +885,13 @@ vfw.datasets.resultObj = class {
             document.getElementById('job_status_desc').textContent = 'Execution unsuccessful';
             document.getElementById('job_status_icon').className = 'fa-solid fa-clock text-red-600';
 
+            //Populate job details in the card
+            document.getElementById('job_name').textContent = job_details.process_id;
+            document.getElementById('job_id').textContent = job_details.identifier;
+            document.getElementById('job_start_time').textContent = job_details.created;
+            document.getElementById('job_end_time').textContent = job_details.finished;
+            document.getElementById('job_duration').textContent = job_details.duration;
+
             let successBox = document.getElementById('success_box');
             let failureBox = document.getElementById('failure_box');
             
