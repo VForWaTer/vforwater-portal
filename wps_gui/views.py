@@ -355,7 +355,8 @@ def job_status(request):
                         if not job_details:
                             logger.error(f'Error fetching job details for job {job_id}')
                             return JsonResponse({'error': 'Error fetching job details'}, status=500)
-                        return JsonResponse(job_details, status=200)
+                        resp = {'status': job_details['status'], 'job_details': job_details, 'html': json2html.convert(job_details['results'])}
+                        return JsonResponse(resp, status=200, safe=False)
                     except Exception as e:
                         logger.error(f'Error fetching job results: {e}')
                         return JsonResponse({'error': 'Error fetching job results'}, status=500)

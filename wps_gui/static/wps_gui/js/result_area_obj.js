@@ -50,7 +50,7 @@ vfw.datasets.resultObj = class {
         this._createHtmlName();
         this.htmlElementID = this.btnPosition + this.orgID;
 
-        // this.storeKey = "resultBtn";
+        this.storeKey = "resultBtn";
         // this.btnPosition = "workspace";
 
         this._setTitle();
@@ -62,11 +62,14 @@ vfw.datasets.resultObj = class {
         //this._placeHtmlButton();
         //this._placeNewResultStore();
         //console.log("Reached constructor")
-        this.save();
 
         if (this.status == "accepted" || this.status == "running") {
             this.startPolling();
         }
+        else {
+            this._updateJobStatus(this.job_details);
+        }
+        this.save();
     }
 
     startPolling(interval = 5000, maxAttempts = 25) {
@@ -113,7 +116,6 @@ vfw.datasets.resultObj = class {
                 })
                 .then(data => {
                     console.log(`Polling attempt ${attempts}:`, data);
-
                     if (data.status !== this.status) {
                         this.status = data.status;
     
@@ -124,11 +126,13 @@ vfw.datasets.resultObj = class {
                         // Stop polling if the job is finished or failed
                         if (this.status === "successful" || this.status === "failed" || this.status === "dismissed") {
                             console.log(`Job ${this.id} completed with status: ${this.status}`);
-                            this.job_details = data;
-                            console.log(this.job_details)
+                            this.job_details = data.job_details;
+                            this.outputs['results'] = data;
+                            console.log('Job Details:', this.job_details);
                             //this.populateResultCard();
                             this._updateJobStatus(this.job_details);
                             clearInterval(durationInterval); // Stop updating duration
+                            this.save();
                             return;
                         }
                     }
@@ -152,7 +156,7 @@ vfw.datasets.resultObj = class {
         fileList.innerHTML = "";
 
         const files = this.job_details.results['plots'];
-        const path = this.job_details.dir;
+        const path = this.job_details.results.dir;
 
         files.forEach((filePath) => {
             const fullPath = `${path}/${filePath}`;
@@ -329,7 +333,7 @@ vfw.datasets.resultObj = class {
 
     }
     /**
-     * Send request to django if there is an update on the process.
+     * Send request to django if there itemis an update on the process.
      * If yes, update object (with sessionstorage and html)
      */
     reopen() {
@@ -363,6 +367,7 @@ vfw.datasets.resultObj = class {
         */
         let sessionEntry = {};
         sessionEntry[newID] = data;  // Create a new entry with only the current data
+        console.log('Saving to sessionStorage: ', sessionEntry);
         sessionStorage.setItem(this.storeKey, JSON.stringify(sessionEntry));
         sessionStorageData = sessionEntry;  // Update the local variable
     }
@@ -384,15 +389,15 @@ vfw.datasets.resultObj = class {
             vfw.var.obj.resultModalObject = new vfw.html.resultModalObj();
     
         let html = "";
-        const results = this.load().outputs.results;
-    
+        const results = [this.load().outputs.results];
+        console.log("Results to show as table: ", results);
         function backendFileUrl(p) {
             return "/workspace/resultdisplay?path=" + encodeURIComponent(p);
         }
     
         results.forEach(function (item) {
     
-            const resultjson = item.json;
+            const resultjson = item.job_details.results;
             const path = resultjson.dir;
             const plotFiles  = resultjson.plots || [];
             const imageFiles = resultjson.preview_images || [];
@@ -851,6 +856,9 @@ vfw.datasets.resultObj = class {
 
             const previewElement = document.getElementById("preview_result");
             previewElement.onclick = () => this.showPreviewModal();
+
+            const showAsTableElement = document.getElementById("show_as_table_result");
+            showAsTableElement.onclick = () => this.showAsTable();
         }
         else if (job_details.status == "accepted") {
             document.getElementById('job_status_title').textContent = 'Running';

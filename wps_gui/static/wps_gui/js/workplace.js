@@ -715,7 +715,7 @@ vfw.workspace.modal.runProcess = function () {
                 //vfw.workspace.modal.setColor("firebrick");
                 vfw.workspace.modal.setColor(modalColors['FAILED']);
             }
-            else if (json.status == 'accepted' || json.status == 'runninng') {
+            else if (json.status == 'accepted' || json.status == 'running') {
                 //vfw.workspace.modal.setColor("orange");
                 vfw.workspace.modal.setColor(modalColors['ACCEPTED']);
                 if (!json['orgID']) {
