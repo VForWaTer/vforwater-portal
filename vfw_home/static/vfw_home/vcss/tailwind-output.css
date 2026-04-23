@@ -321,6 +321,9 @@
       max-width: 96rem;
     }
   }
+  .\!m-0 {
+    margin: calc(var(--spacing) * 0) !important;
+  }
   .m-6 {
     margin: calc(var(--spacing) * 6);
   }
@@ -363,6 +366,9 @@
   .mb-6 {
     margin-bottom: calc(var(--spacing) * 6);
   }
+  .\!block {
+    display: block !important;
+  }
   .block {
     display: block;
   }
@@ -392,6 +398,9 @@
   }
   .table\! {
     display: table !important;
+  }
+  .\!h-auto {
+    height: auto !important;
   }
   .h-1 {
     height: calc(var(--spacing) * 1);
@@ -437,6 +446,12 @@
   }
   .min-h-0 {
     min-height: calc(var(--spacing) * 0);
+  }
+  .\!w-3\/4 {
+    width: calc(3/4 * 100%) !important;
+  }
+  .\!w-full {
+    width: 100% !important;
   }
   .w-1 {
     width: calc(var(--spacing) * 1);
@@ -837,6 +852,9 @@
   .object-contain {
     object-fit: contain;
   }
+  .\!p-0 {
+    padding: calc(var(--spacing) * 0) !important;
+  }
   .\!p-4 {
     padding: calc(var(--spacing) * 4) !important;
   }
@@ -858,8 +876,14 @@
   .p-8 {
     padding: calc(var(--spacing) * 8);
   }
+  .\!px-2 {
+    padding-inline: calc(var(--spacing) * 2) !important;
+  }
   .\!px-4 {
     padding-inline: calc(var(--spacing) * 4) !important;
+  }
+  .\!px-8 {
+    padding-inline: calc(var(--spacing) * 8) !important;
   }
   .px-1 {
     padding-inline: calc(var(--spacing) * 1);
