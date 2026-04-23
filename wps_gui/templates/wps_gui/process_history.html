@@ -4,9 +4,9 @@
 
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="mb-4 text-3xl font-bold text-gray-900">
+            <div class="mb-4 text-3xl font-bold text-gray-900">
                 Process Execution History
-            </h1>
+            </div>
         </div>
 
         <!-- Question Mark Icon -->
@@ -24,12 +24,12 @@
         </div>
     </div>
     <!-- Scrollable Table Wrapper -->
-    <div class="flex-1 overflow-auto min-h-0 min-w-0 rounded border border-gray-300">
+    <div class="flex-1 overflow-auto min-h-0 min-w-0 rounded border border-gray-200">
         <table class="table-fixed w-full border-collapse">
-            <thead class="bg-blue-400 sticky top-0">
+            <thead class="bg-slate-500 sticky top-0">
                 <tr>
                     {% for field in job_table_fields %}
-                        <th class="border border-gray-300 p-4 text-center text-m font-medium text-white">
+                        <th class="border-y border-gray-500 p-4 text-m font-medium text-white text-left">
                             {{ field }}
                         </th>
                     {% endfor %}
@@ -39,7 +39,7 @@
                 {% for job in jobs %}
                 <tr>
                     {% for field in job_table_fields %}
-                    <td class="border border-gray-300 p-4 text-m text-gray-600">
+                    <td class="border-y border-gray-200 !px-4 !py-2 text-m text-gray-600 !text-left">
                         {% if field == "Details" %}
                         <button onclick="moveJobToResultCard('{{ job.identifier }}')"
                                 class="text-blue-500 hover:text-blue-700">
@@ -47,21 +47,32 @@
                         </button>
                         
                         {% elif field == "Status" %}
-                        <span class="px-1 text-white text-base font-medium
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
                             {% if job|get_field_display:field == 'successful' %}
-                                bg-green-500
+                                bg-green-100 text-green-700
                             {% elif job|get_field_display:field == 'failed' %}
-                                bg-red-500
+                                bg-red-100 text-red-700
                             {% elif job|get_field_display:field == 'pending' %}
-                                bg-yellow-500
+                                bg-yellow-100 text-yellow-700
                             {% else %}
-                                bg-gray-500
+                                bg-gray-100 text-gray-600
                             {% endif %}">
+                            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0
+                                {% if job|get_field_display:field == 'successful' %}
+                                    bg-green-500
+                                {% elif job|get_field_display:field == 'failed' %}
+                                    bg-red-500
+                                {% elif job|get_field_display:field == 'pending' %}
+                                    bg-yellow-500
+                                {% else %}
+                                    bg-gray-400
+                                {% endif %}">
+                            </span>
                             {{ job|get_field_display:field }}
                         </span>
                         
                         {% else %}
-                        {{ job|get_field_display:field }}
+                            {{ job|get_field_display:field }}
                         {% endif %}
                     </td>
                     {% endfor %}

@@ -826,11 +826,21 @@ vfw.datasets.resultObj = class {
         resultStoreContainer.classList.remove('hidden');
         noResultsMessage.classList.add('hidden');
 
+        const bar = document.getElementById('job_status_bar');
+        const statusTitle = document.getElementById('job_status_title');
+        //const statusDesc = document.getElementById('job_status_desc');
+        const statusIcon = document.getElementById('job_status_icon');
+        const barClasses = ['bg-gray-100', 'bg-emerald-300', 'bg-amber-400', 'bg-red-300'];
+        bar.classList.remove(...barClasses);
+        [statusTitle, statusIcon].forEach(el => el.style.color = '');
+
         if (job_details.status === "successful") {
             // Set the values for successful job
-            document.getElementById('job_status_title').textContent = 'Successful';
-            document.getElementById('job_status_desc').textContent = 'Job finished successfully';
-            document.getElementById('job_status_icon').className = 'fa-solid fa-circle-check text-emerald-600';
+            statusTitle.textContent = 'Successful';
+            //statusDesc.textContent = 'Job finished successfully';
+            statusIcon.className = 'fa-solid fa-circle-check text-sm';
+            bar.classList.add('bg-emerald-300');
+            [statusTitle, statusIcon].forEach(el => el.style.color = 'green');
 
             //Populate job details in the card
             document.getElementById('job_name').textContent = job_details.process_id;
@@ -861,9 +871,11 @@ vfw.datasets.resultObj = class {
             showAsTableElement.onclick = () => this.showAsTable();
         }
         else if (job_details.status == "accepted") {
-            document.getElementById('job_status_title').textContent = 'Running';
-            document.getElementById('job_status_desc').textContent = 'Job accepted and running';
-            document.getElementById('job_status_icon').className = 'fa-solid fa-clock text-yellow-600';
+            statusTitle.textContent = 'Running';
+            //statusDesc.textContent = 'Job accepted and running';
+            statusIcon.className = 'fa-solid fa-clock text-sm';
+            bar.classList.add('bg-amber-400');
+            [statusTitle, statusIcon].forEach(el => el.style.color = 'white');
 
             //Populate job details in the card
             document.getElementById('job_name').textContent = job_details.process_id;
@@ -881,9 +893,11 @@ vfw.datasets.resultObj = class {
             failureBox.classList.add('hidden');
         }
         else if (job_details.status == "failed") {
-            document.getElementById('job_status_title').textContent = 'Failed';
-            document.getElementById('job_status_desc').textContent = 'Execution unsuccessful';
-            document.getElementById('job_status_icon').className = 'fa-solid fa-clock text-red-600';
+            statusTitle.textContent = 'Failed';
+            //statusDesc.textContent = 'Execution unsuccessful';
+            statusIcon.className = 'fa-solid fa-circle-xmark text-sm';
+            bar.classList.add('bg-red-300');
+            [statusTitle, statusIcon].forEach(el => el.style.color = 'red');
 
             //Populate job details in the card
             document.getElementById('job_name').textContent = job_details.process_id;
