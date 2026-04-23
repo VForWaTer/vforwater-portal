@@ -1329,13 +1329,39 @@ vfw.html.createInputElement = function (input_tool_description, resultData, sess
         if (item.minOccurs > 0) {
             inElement.required = true;
         }
-        inElement.style.display = "inline-block";
-        inElement.style.visibility = "visible";
-        inElement.style.opacity = "1";
-        inElement.style.width = "auto";
-        inElement.style.marginLeft = "8px";
+        inElement.classList.add("sr-only");
+        newNode.classList.add("flex", "items-center", "gap-3");
 
+        const fileNameSpan = document.createElement("span");
+        fileNameSpan.textContent = "No file chosen";
+        fileNameSpan.classList.add("text-xs", "text-gray-400", "truncate", "max-w-[160px]");
+
+        const label = document.createElement("label");
+        label.htmlFor = inElement.id;
+        label.classList.add(
+            "flex", "items-center", "gap-3", "cursor-pointer"
+        );
+
+        const btn = document.createElement("span");
+        const icon = document.createElement("i");
+        icon.classList.add("fa-solid", "fa-upload");
+        btn.appendChild(icon);
+        btn.appendChild(document.createTextNode(" Choose file"));
+        btn.classList.add(
+            "inline-flex", "items-center", "gap-1.5",
+            "px-4", "py-2", "text-xs", "font-semibold",
+            "!bg-slate-700", "!text-white", "hover:!bg-slate-800",
+            "transition-colors", "cursor-pointer"
+        );
+
+        inElement.addEventListener("change", () => {
+            fileNameSpan.textContent = inElement.files.length > 0 ? inElement.files[0].name : "No file chosen";
+        });
+
+        label.appendChild(btn);
+        label.appendChild(fileNameSpan);
         newNode.appendChild(inElement);
+        newNode.appendChild(label);
         return newNode;
     }
     if ('allowedValues' in item && Array.isArray(item.allowedValues) && item.allowedValues.length > 1) {

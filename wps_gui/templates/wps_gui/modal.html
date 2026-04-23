@@ -26,7 +26,7 @@ License: MIT License
       <param id="workflowID" value="">
     </div>
     <p id="mod_abs" class="modal-abstract"></p>
-    <h4>Input</h4>
+    <h4>Input</h4>                                                                                                                                      b
     <div id="mod_in"></div>
     <hr>
     <h4>Output</h4>
@@ -50,71 +50,75 @@ License: MIT License
 </div>
 {% endcomment %}
 
-<div id="workModal" class="fixed inset-0 z-30 hidden pt-24 w-full h-full overflow-auto bg-black/25 flex justify-center items-start">
+<div id="workModal" class="fixed inset-0 z-30 hidden bg-black/40 flex justify-center items-center">
   <!-- Modal content -->
-  <div class="relative shadow-lg w-[600px] px-4 items-center bg-white rounded">
-    
+  <div class="relative flex flex-col bg-white w-[560px] max-h-[80vh] shadow-xl">
+
     <!-- Header -->
-    <div id="modal-header" class="bg-blue-600 -mx-4 flex justify-between items-center border-b border-gray-200 px-4 py-2">
-      <h3 id="mod_head" class="text-lg font-semibold text-white"></h3>
-      <span 
-        class="fa fa-close fa-lg work_close modal-btn text-white hover:text-gray-700 cursor-pointer"
+    <div id="modal-header" class="flex-shrink-0 flex justify-between items-center bg-slate-700 px-5 py-3">
+      <h3 id="mod_head" class="text-sm font-bold text-white"></h3>
+      <span
+        class="fa fa-close work_close modal-btn text-white hover:text-slate-300 cursor-pointer text-base"
         title="{% trans 'Close window' %}">
       </span>
       <param id="workflowID" value="">
     </div>
 
-    <!-- Abstract -->
-    <p id="mod_abs" class="modal-abstract text-gray-600 mt-3"></p>
+    <!-- Scrollable body -->
+    <div class="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
 
-    <!-- Input -->
-    <h4 class="mt-4 text-md font-semibold text-sm">Input</h4>
-    <div id="mod_in" class="bg-white rounded-md p-3"></div>
+      <!-- Abstract -->
+      <p id="mod_abs" class="modal-abstract text-sm text-gray-500"></p>
 
-    <hr class="my-4 border-gray-300">
+      <!-- Input -->
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Input</div>
+        <div id="mod_in" class="bg-gray-50 px-3 py-3"></div>
+      </div>
 
-    <!-- Output -->
-    <h4 class="text-md font-semibold text-sm">Output</h4>
-    <div id="mod_out" class="bg-white rounded-md p-3"></div>
+      <!-- Output -->
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Output</div>
+        <div id="mod_out" class="bg-gray-50 px-3 py-3"></div>
+      </div>
 
-    <!-- Required Note -->
-    <p class="text-right text-sm text-gray-500 mt-2">
-      <em>(*) = {% trans "required" %}</em>
-    </p>
+      <!-- Required note -->
+      <p class="text-right text-xs text-gray-400"><em>(*) = {% trans "required" %}</em></p>
+
+    </div>
 
     <!-- Footer -->
-    <div id="modal-footer" class="bg-white -mx-4 flex items-center justify-end gap-3 border-t border-gray-200 p-4">
-      
-      <span-c 
-        class="work_modal-cancel modal-btn bg-red-400 text-white px-3 py-1.5 shadow hover:bg-blue-700 cursor-pointer"
+    <div id="modal-footer" class="flex-shrink-0 flex items-center justify-end gap-2 border-t border-gray-200 bg-white px-5 py-3">
+
+      <span-c
+        class="work_modal-cancel modal-btn !bg-gray-100 !text-gray-600 hover:!bg-gray-200 px-4 py-2 text-xs font-semibold cursor-pointer transition-colors"
         title="{% trans 'Close window' %}">
         Cancel
       </span-c>
 
-      <span-drop 
-        class="work_modal-drop modal-btn bg-yellow-600 text-white px-3 py-1.5 shadow hover:bg-blue-700 cursor-pointer"
+      <span-drop
+        class="work_modal-drop modal-btn !bg-slate-700 !text-white hover:!bg-slate-800 px-4 py-2 text-xs font-semibold cursor-pointer transition-colors"
         title="{% trans 'Place tool in Dropzone. If tool already exists only change values.' %}">
         Drop
       </span-drop>
 
-      <span-r 
-        class="work_modal-run modal-btn bg-blue-600 text-white px-3 py-1.5 shadow hover:bg-blue-700 cursor-pointer">
-        Run
-      </span-r>
-
-      <span-createbatch 
-        class="work_modal-createbatch modal-btn modal-btn-left bg-green-600 text-white px-3 py-1.5 shadow hover:bg-green-700 cursor-pointer"
+      <span-createbatch
+        class="work_modal-createbatch modal-btn modal-btn-left !bg-slate-700 !text-white hover:!bg-slate-800 px-4 py-2 text-xs font-semibold cursor-pointer transition-colors"
         title="{% trans 'Create a batch job for this tool.' %}">
         Create Batch Job
       </span-createbatch>
 
-      <span-out 
-        class="work_modal-output hidden text-indigo-600 hover:text-indigo-800 cursor-pointer"
+      <span-r
+        class="work_modal-run modal-btn !bg-blue-600 !text-white hover:!bg-blue-700 px-4 py-2 text-xs font-bold cursor-pointer transition-colors">
+        Run
+      </span-r>
+
+      <span-out
+        class="work_modal-output !text-indigo-600 hover:!text-indigo-800 text-xs cursor-pointer"
         style="display: none">
         {% trans "View result" %}
       </span-out>
 
-      <h3></h3>
     </div>
   </div>
 </div>
