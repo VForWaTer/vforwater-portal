@@ -1834,6 +1834,71 @@ vfw.workspace.modal.renderResult = function () {
         iframe.className = "w-full h-full";
         container.appendChild(iframe);
     }
+
+
+    else if (extension === "html") {
+        container.innerHTML = "";
+
+        // Wrapper
+        const wrapper = document.createElement("div");
+        wrapper.style.position = "relative";
+        wrapper.style.width = "100%";
+        wrapper.style.height = "100%";
+
+        // Loading message
+        const loader = document.createElement("div");
+        loader.innerHTML = "Loading evaluation report... please wait ⏳";
+        loader.style.position = "absolute";
+        loader.style.top = "50%";
+        loader.style.left = "50%";
+        loader.style.transform = "translate(-50%, -50%)";
+        loader.style.fontSize = "18px";
+        loader.style.color = "#444";
+
+        // Optional: make it look nicer
+        loader.style.background = "rgba(255,255,255,0.9)";
+        loader.style.padding = "20px";
+        loader.style.borderRadius = "10px";
+        loader.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
+
+        // Iframe
+        const iframe = document.createElement("iframe");
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.border = "0";
+
+
+        iframe.onload = () => {
+            setTimeout(() => {
+                loader.style.transition = "opacity 0.4s ease";
+                loader.style.opacity = "0";
+
+                setTimeout(() => {
+                    loader.style.display = "none";
+                }, 100);
+            }, 1000);
+        };
+
+
+        wrapper.appendChild(iframe);
+        wrapper.appendChild(loader);
+        container.appendChild(wrapper);
+
+        // Fetch + write HTML
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const iframeDoc = iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(html);
+                iframeDoc.close();
+            })
+            .catch(error => {
+                console.error("Failed to load HTML report:", error);
+                loader.innerHTML = "❌ Failed to load simulation report.";
+            });
+    }
+
 }
 
 function formatFileName(path) {

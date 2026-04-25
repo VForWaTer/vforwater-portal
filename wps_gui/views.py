@@ -219,16 +219,6 @@ def process_run(request):
             user_folder = f"user{user_id}_{request.user.username}"
             shared_id = f"upload_{uuid4().hex}"
 
-            # local mounted path 
-            # BASE_SHARED_PATH = os.path.expanduser("~/remote_geoapi_data")
-            # obs_dir = os.path.join(
-            #     BASE_SHARED_PATH,
-            #     "in",
-            #     user_folder,
-            #     shared_id,
-            #     "simulation",
-            #     "obs"
-            # )
 
             # Mount
             BASE_SHARED_PATH = GEOAPI_DATA_PATH 
@@ -867,7 +857,24 @@ class FileDownloadView(View):
             return HttpResponse("File not found.", status=404)
 
         try:
-            return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+            import mimetypes
+            if file_path.lower().endswith(".html"):
+                with open(file_path, "r", encoding="utf-8") as f:
+                    html = f.read()
+
+                response = HttpResponse(html, content_type="text/html; charset=utf-8")
+                response["Content-Disposition"] = f'inline; filename="{os.path.basename(file_path)}"'
+                response["X-Frame-Options"] = "SAMEORIGIN"
+                return response
+            
+            content_type, _ = mimetypes.guess_type(file_path)
+            if content_type is None:
+                content_type = "application/octet-stream"
+
+            response = FileResponse(open(file_path, "rb"), content_type=content_type)
+            response["X-Frame-Options"] = "SAMEORIGIN"
+            response["Content-Disposition"] = f'inline; filename="{os.path.basename(file_path)}"'
+            return response
         except Exception as e:
             logger.exception(f"Error while reading file: {e}")
             return HttpResponse("Failed to read the file.", status=500)
