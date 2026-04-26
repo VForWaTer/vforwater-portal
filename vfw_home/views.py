@@ -50,7 +50,7 @@ import urllib
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import StreamingHttpResponse, QueryDict, HttpResponseServerError
+from django.http import StreamingHttpResponse, QueryDict, HttpResponseServerError, HttpResponseBadRequest
 from django.http.response import JsonResponse, HttpResponse, Http404, FileResponse
 from django.shortcuts import redirect, render
 from django.utils import translation, timezone
@@ -82,6 +82,10 @@ from .utilities.filters import NMPersonsFilter
 from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
 from pyzip import PyZip
+
+import tempfile
+import rasterio
+import rasterio.mask
 
 from pathlib import Path
 from datetime import timedelta
@@ -234,7 +238,9 @@ class DatasetDownloadView(TemplateView):
             'csv': self.handle_csv,
             'geojson': self.handle_geojson,
             'shp': self.handle_shapefile,
-            'xml': self.handle_xml
+            'xml': self.handle_xml,
+            'tif': self.handle_tif,
+            'clipped_tif': self.handle_clipped_tif,
         }
 
 
@@ -251,7 +257,120 @@ class DatasetDownloadView(TemplateView):
         raise_logging_exception(e, endpoint, additional_message)
         return HttpResponseBadRequest("Unsupported or missing file format.")
 
-       
+    def _parse_download_ids(self, request, key):
+        raw_ids = request.GET.get(key, "")
+
+        ids = []
+        for item in raw_ids.split(","):
+            item = item.strip()
+
+            if item.startswith("db"):
+                item = item[2:]
+
+            if item.isdigit():
+                ids.append(int(item))
+            else:
+                raise ValueError(f"Invalid dataset id: {item}")
+
+        accessible_data = get_accessible_data(request, ids)
+        data = accessible_data.get("open", [])
+
+        if not data:
+            raise ValueError(f"No accessible data found for {key} request with dataset ID {ids}.")
+
+        return data[0]      
+
+    def handle_tif(self, request, *args):
+        entry_id = self._parse_download_ids(request, "tif")
+
+        entry = Entries.objects.filter(pk=entry_id).values(
+            "id",
+            "datasource__path",
+            "datasource__datatype__name",
+            "variable__name",
+        ).first()
+
+        if not entry:
+            raise Http404("Entry not found.")
+
+        raster_path = entry["datasource__path"]
+
+        if not raster_path or not Path(raster_path).exists():
+            return HttpResponseBadRequest(f"Raster file not found: {raster_path}")
+
+        if Path(raster_path).suffix.lower() not in [".tif", ".tiff"]:
+            return HttpResponseBadRequest("This dataset is not a GeoTIFF raster.")
+
+        response = FileResponse(
+            open(raster_path, "rb"),
+            content_type="image/tiff",
+            as_attachment=True,
+            filename=f"dataset_{entry_id}.tif",
+        )
+        return response
+        
+    def handle_clipped_tif(self, request, *args):
+        entry_id = self._parse_download_ids(request, "clipped_tif")
+
+        bbox = request.GET.get("bbox")
+        bbox_srid = int(request.GET.get("srid", 4326))
+
+        if not bbox:
+            return HttpResponseBadRequest("Missing bbox parameter.")
+
+        minx, miny, maxx, maxy = [float(x) for x in bbox.split(",")]
+
+        entry = Entries.objects.filter(pk=entry_id).values(
+            "id",
+            "datasource__path",
+            "variable__name",
+        ).first()
+
+        if not entry:
+            raise Http404("Entry not found.")
+
+        raster_path = entry["datasource__path"]
+
+        if not raster_path or not Path(raster_path).exists():
+            return HttpResponseBadRequest(f"Raster file not found: {raster_path}")
+
+        if Path(raster_path).suffix.lower() not in [".tif", ".tiff"]:
+            return HttpResponseBadRequest("This dataset is not a GeoTIFF raster.")
+
+        geom = Polygon.from_bbox((minx, miny, maxx, maxy))
+        geom.srid = bbox_srid
+
+        with rasterio.open(raster_path) as src:
+            if src.crs:
+                geom.transform(src.crs.to_string(), clone=False)
+
+            out_image, out_transform = rasterio.mask.mask(
+                src,
+                [json.loads(geom.geojson)],
+                crop=True,
+                nodata=src.nodata,
+            )
+
+            out_meta = src.meta.copy()
+            out_meta.update({
+                "driver": "GTiff",
+                "height": out_image.shape[1],
+                "width": out_image.shape[2],
+                "transform": out_transform,
+            })
+
+            with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+                tmp_path = tmp.name
+
+            with rasterio.open(tmp_path, "w", **out_meta) as dst:
+                dst.write(out_image)
+
+        return FileResponse(
+            open(tmp_path, "rb"),
+            content_type="image/tiff",
+            as_attachment=True,
+            filename=f"dataset_{entry_id}_clipped.tif",
+        )
 
     def handle_csv(self, request, *args):
         endpoint = request.path

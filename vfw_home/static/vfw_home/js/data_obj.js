@@ -240,7 +240,14 @@ vfw.datasets.DataObj = class {
         });
     };
 
+    DownloadXML = function() {
+        window.location.href = vfw.var.DEMO_VAR + "/home/datasetdownload?xml=" + this.orgID;
+    };
 
+    DownloadTIF = function() {
+        window.location.href = vfw.var.DEMO_VAR + "/home/datasetdownload?tif=" + this.orgID;
+    };
+    
     DownloadClippedTIF = function() {
         const extent = vfw.map.map.getView().calculateExtent(vfw.map.map.getSize());
         const bbox = extent.join(",");
@@ -325,6 +332,11 @@ vfw.datasets.DataObj = class {
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ],
             "default": [
+                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+            ],
+            "raster": [
+                ["DownloadTIF", "fa-download", gettext("Download raster (.tif)"), "DownloadTIF"],
+                ["DownloadClippedTIF", "fa-crop", gettext("Download clipped raster (.tif)"), "DownloadClippedTIF"],
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ]
         }
