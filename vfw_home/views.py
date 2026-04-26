@@ -58,6 +58,7 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.core.serializers import serialize
+from django.views.decorators.cache import never_cache
 
 from author_manage.views import MyResourcesView
 from heron.settings import LOCAL_GEOSERVER, DEMO_VAR, DATA_DIR, DATABASES
@@ -594,6 +595,7 @@ class GeoserverView(View):
         return HttpResponse(response.read().decode('utf-8'))
 
 
+@never_cache
 def previewplot(request):
     """
     Requested from vfw.js show_preview
@@ -605,17 +607,28 @@ def previewplot(request):
         entriesID = webID
         # webID = 'db869'
         print("test preview entriesID :",entriesID )
+
+        if not webID:
+            return JsonResponse({'error': 'Missing preview ID'}, status=400)
         if webID[0:3] == 'db[':
             parts = webID[0:-1].split('[')
             webID = [f'db{id.strip()}' for id in parts[1].split(',')]
+            access_ids = [id.strip() for id in parts[1].split(',')]
         elif webID[0:2] == 'db':
             parts = [0, webID[2:]]
             entriesID = webID[2:]
+            access_ids = [entriesID]
         else:
             print('views.py: Figure how to handle such an ID: ', webID, type(webID))
             # logger.warning(f'Figure how to handle an ID like {webID}')
+            # normal numeric ID, e.g. "1019"
+            entriesID = webID
+            webID = f'db{webID}'   # important because DataObject may expect db1019
+            access_ids = [entriesID]
 
-        accessible_data = get_accessible_data(request, [parts[1]])
+
+        # accessible_data = get_accessible_data(request, [parts[1]])
+        accessible_data = get_accessible_data(request, access_ids)
         error_list = accessible_data['blocked']
         accessible_data = accessible_data['open']
         print("data :",accessible_data )
@@ -640,9 +653,17 @@ def previewplot(request):
         date = None
 
     # TODO: Add the redis cache properly (https://docs.djangoproject.com/en/4.2/topics/cache/#redis)
-    cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
-                 'in_cache': False, 'name': "plot_{}".format('b' + str(webID) + str(plot_size) + str(date))}
-    cache_obj, img = get_cache(cache_obj)
+    # cache_obj = {'use_redis': True, 'redis': redis.StrictRedis(),
+    #              'in_cache': False, 'name': "plot_{}".format('b' + str(webID) + str(plot_size) + str(date))}
+    # cache_obj, img = get_cache(cache_obj)
+
+    cache_obj = {'use_redis': False, 'redis': None,
+                'in_cache': False, 'name': "plot_{}".format('b' + str(webID) + str(plot_size) + str(date))}
+    
+    img = None
+    # do not call get_cache when redis is disabled
+    if cache_obj['use_redis']:
+        cache_obj, img = get_cache(cache_obj)
 
     if not cache_obj['in_cache']:
 
@@ -660,21 +681,36 @@ def previewplot(request):
             if isinstance(webID, list):
                 dataset = []
                 for i in webID:
-                    if has_data(i[2:]):
+                    entry_id = i[2:]
+                    if has_data(entry_id):
                         dataset.append(DataObject(i, date))
                     else:
-                        print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
+                        print('\033[33mNo Data for dataset with entries ID:\033[0m ', entry_id)
             else:
                 if has_data(entriesID):
+                    # ids_data_on_path = cache.get('ids_data_on_path') or []
                     if int(entriesID)  not in cache.get('ids_data_on_path')  :
+                        print("DEBUG entriesID:", entriesID)
+
+                        entry = Entries.objects.filter(pk=entriesID).values(
+                            "id",
+                            "title",
+                            "datasource_id",
+                            "datasource__data_names",
+                            "datasource__path",
+                            "datasource__datatype__name",
+                            "variable__name",
+                        ).first()
+
+                        print("DEBUG entry:", entry)
                         dataset = DataObject(webID, date)
                     else:
                         print('One must handle data on path/ check if raster (= has spatial resolution) => '
                               'plot raster image, if netCDF => datacube')
-                        return JsonResponse({'error': f'Plot for entries ID {webID} has to be implemented.'})
+                        return JsonResponse({'error': f'Plot for entries ID {entriesID} has to be implemented.'})
                 else:
-                    print('\033[33mNo Data for dataset with entries ID:\033[0m ', webID)
-                    return JsonResponse({'error': f'No Data for dataset with entries ID {webID}'})
+                    print('\033[33mNo Data for dataset with entries ID:\033[0m ', entriesID)
+                    return JsonResponse({'error': f'No Data for dataset with entries ID {entriesID}'})
 
         except TypeError as e:
             print('\033[33mhome.views.previewplot: Type error in Data Object:\033[0m ', e)
@@ -998,7 +1034,7 @@ class ShortInfoPaginationView(View):
 
         return dict(newdict.items())
 
-
+@never_cache
 def show_info(request):
     """
     On request collect metadata for preview on map and selection in the sidebar.
