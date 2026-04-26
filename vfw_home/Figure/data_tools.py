@@ -145,7 +145,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     # Fix this somehow!
     result_dataset_groups = (NmEntrygroups.objects
                              .values('entry__id', 'entry__uuid', 'entry__variable__name', 'entry__variable__symbol',
-                                     'entry__variable__unit__symbol', 'entry__datasource__datatype__name',
+                                     'entry__variable__unit__symbol', 'entry__datasource__datatype__name', 'entry__datasource__path',
                                      'group__title', 'group_id', 'group__type__name',
                                      'entry__datasource__spatial_scale__extent').filter(pk__in=grouped_ids))  # .distinct()
 
@@ -153,7 +153,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
     # taken from Entries.
     result_dataset = (Entries.objects
                       .values('id', 'uuid', 'variable__name', 'variable__symbol', 'variable__unit__symbol',
-                              'datasource__datatype__name', 'datasource__spatial_scale__extent')
+                              'datasource__datatype__name', 'datasource__path','datasource__spatial_scale__extent')
                       .filter(pk__in=groupless_ids))
 
     # Since the geom column is removed from entries, we have to get the geometry in a separate query
@@ -189,6 +189,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                               'split_group':  0,
                                               'split_members':  [],
                                               'type': dataset['datasource__datatype__name'],
+                                              "datasource_path": Entries.objects.filter(id=dataset['id']).values_list('datasource__path', flat=True)[0], 
                                               'source': 'db',
                                               'dbID': dataset['id'],
                                               'uuID': dataset['uuid'],
@@ -237,6 +238,7 @@ def collect_selection(request, requested_id, startdate='', enddate=''):
                                                   'split_members': [dataset_id]
                                                   if dataset['group__type__name'].find('Split dataset') else [],
                                                   'type': dataset['entry__datasource__datatype__name'],
+                                                  "datasource_path": dataset['entry__datasource__path'], 
                                                   'source': 'db',
                                                   'dbID': dataset['entry__id'],
                                                   'uuID': dataset['entry__uuid'],

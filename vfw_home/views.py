@@ -34,6 +34,8 @@ import json
 import re
 import sys
 from http.cookiejar import CookieJar
+import glob
+import zipfile
 
 import redis
 import requests
@@ -86,7 +88,11 @@ from pyzip import PyZip
 import tempfile
 import rasterio
 import rasterio.mask
-
+from rasterio.merge import merge
+from rasterio.warp import transform_bounds
+import xarray as xr
+import rioxarray
+from shapely.geometry import box, mapping
 from pathlib import Path
 from datetime import timedelta
 
@@ -240,7 +246,13 @@ class DatasetDownloadView(TemplateView):
             'shp': self.handle_shapefile,
             'xml': self.handle_xml,
             'tif': self.handle_tif,
+            'nc': self.handle_netcdf,
             'clipped_tif': self.handle_clipped_tif,
+            'raster_info': self.handle_raster_info,
+            'tif_list': self.handle_tif_list,
+            'nc_info': self.handle_nc_info,
+            'nc_list': self.handle_nc_list,
+            'clipped_nc': self.handle_clipped_netcdf,
         }
 
 
@@ -280,40 +292,235 @@ class DatasetDownloadView(TemplateView):
 
         return data[0]      
 
+
     def handle_tif(self, request, *args):
         entry_id = self._parse_download_ids(request, "tif")
 
         entry = Entries.objects.filter(pk=entry_id).values(
             "id",
             "datasource__path",
-            "datasource__datatype__name",
             "variable__name",
         ).first()
 
         if not entry:
             raise Http404("Entry not found.")
 
-        raster_path = entry["datasource__path"]
+        path_pattern = entry["datasource__path"]
 
-        if not raster_path or not Path(raster_path).exists():
-            return HttpResponseBadRequest(f"Raster file not found: {raster_path}")
-
-        if Path(raster_path).suffix.lower() not in [".tif", ".tiff"]:
-            return HttpResponseBadRequest("This dataset is not a GeoTIFF raster.")
-
-        response = FileResponse(
-            open(raster_path, "rb"),
-            content_type="image/tiff",
-            as_attachment=True,
-            filename=f"dataset_{entry_id}.tif",
-        )
-        return response
         
+        files = glob.glob(path_pattern) if "*" in path_pattern else [path_pattern]
+
+        # filter valid tif files
+        files = [
+            f for f in files
+            if Path(f).exists() and Path(f).suffix.lower() in [".tif", ".tiff"]
+        ]
+        # files = files[:1] 
+
+        if not files:
+            return HttpResponseBadRequest(f"No raster files found for: {path_pattern}")
+        
+        MAX_FULL_RASTER_FILES = 3
+
+        # if len(files) > MAX_FULL_RASTER_FILES:
+        #     return HttpResponseBadRequest(
+        #         f"This raster dataset contains {len(files)} files. "
+        #         "Full download is too large. Please use 'Download visible area' instead."
+        #     )
+        if len(files) > MAX_FULL_RASTER_FILES:
+            content = "\n".join(files)
+            response = HttpResponse(content, content_type="text/plain")
+            response["Content-Disposition"] = f'attachment; filename="dataset_{entry_id}_file_list.txt"'
+            return response
+        
+        #  single file → direct download
+        if len(files) == 1:
+            return FileResponse(
+                open(files[0], "rb"),
+                content_type="image/tiff",
+                as_attachment=True,
+                filename=Path(files[0]).name,
+            )
+
+        #  multiple files → zip
+        tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
+        tmp.close()
+
+        with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
+            for f in files:
+                zf.write(f, arcname=Path(f).name)
+
+        return FileResponse(
+            open(tmp.name, "rb"),
+            content_type="application/zip",
+            as_attachment=True,
+            filename=f"dataset_{entry_id}_raster.zip",
+        )
+    
+    #     return FileResponse(
+    #     open(files[0], "rb"),
+    #     content_type="image/tiff",
+    #     as_attachment=True,
+    #     filename=Path(files[0]).name,
+    # )
+
+    def _get_raster_files(self, entry_id):
+        entry = Entries.objects.filter(pk=entry_id).values(
+            "id",
+            "datasource__path",
+            "variable__name",
+        ).first()
+
+        if not entry:
+            raise Http404("Entry not found.")
+
+        path_pattern = entry["datasource__path"]
+
+        files = glob.glob(path_pattern, recursive=True) if "*" in path_pattern else [path_pattern]
+        files = [
+            f for f in files
+            if Path(f).exists() and Path(f).suffix.lower() in [".tif", ".tiff"]
+        ]
+
+        return sorted(files), path_pattern
+
+
+    def handle_raster_info(self, request, *args):
+        entry_id = self._parse_download_ids(request, "raster_info")
+        files, path_pattern = self._get_raster_files(entry_id)
+
+        total_size = sum(Path(f).stat().st_size for f in files)
+
+        return JsonResponse({
+            "entry_id": entry_id,
+            "file_count": len(files),
+            "size_mb": round(total_size / 1024 / 1024, 2),
+            "path_pattern": path_pattern,
+        })
+
+
+    def handle_tif_list(self, request, *args):
+        entry_id = self._parse_download_ids(request, "tif_list")
+        files, path_pattern = self._get_raster_files(entry_id)
+
+        content = (
+            f"Dataset ID: {entry_id}\n"
+            f"Raster file pattern: {path_pattern}\n"
+            f"Number of files: {len(files)}\n\n"
+            + "\n".join(files)
+        )
+
+        response = HttpResponse(content, content_type="text/plain")
+        response["Content-Disposition"] = f'attachment; filename="dataset_{entry_id}_raster_file_list.txt"'
+        return response
+
+    def handle_netcdf(self, request, *args):
+        entry_id = self._parse_download_ids(request, "nc")
+
+        entry = Entries.objects.filter(pk=entry_id).values(
+            "id",
+            "datasource__path",
+            "variable__name",
+        ).first()
+
+        if not entry:
+            raise Http404("Entry not found.")
+
+        path_pattern = entry["datasource__path"]
+
+        files = glob.glob(path_pattern) if "*" in path_pattern else [path_pattern]
+        files = [f for f in files if Path(f).exists() and Path(f).suffix.lower() in [".nc", ".netcdf", ".cdf", ".nc4"]]
+
+        if not files:
+            return HttpResponseBadRequest(f"No NetCDF files found for: {path_pattern}")
+
+        MAX_FULL_NETCDF_FILES = 3
+
+        if len(files) > MAX_FULL_NETCDF_FILES:
+            content = "\n".join(files)
+            response = HttpResponse(content, content_type="text/plain")
+            response["Content-Disposition"] = f'attachment; filename="dataset_{entry_id}_netcdf_file_list.txt"'
+            return response
+        
+        if len(files) == 1:
+            return FileResponse(
+                open(files[0], "rb"),
+                content_type="application/x-netcdf",
+                as_attachment=True,
+                filename=Path(files[0]).name,
+            )
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False)
+        tmp.close()
+
+        with zipfile.ZipFile(tmp.name, "w", zipfile.ZIP_DEFLATED) as zf:
+            for f in files:
+                zf.write(f, arcname=Path(f).name)
+
+        return FileResponse(
+            open(tmp.name, "rb"),
+            content_type="application/zip",
+            as_attachment=True,
+            filename=f"dataset_{entry_id}_netcdf.zip",
+        )
+
+
+    def _get_netcdf_files(self, entry_id):
+        entry = Entries.objects.filter(pk=entry_id).values(
+            "id",
+            "datasource__path",
+            "variable__name",
+        ).first()
+
+        if not entry:
+            raise Http404("Entry not found.")
+
+        path_pattern = entry["datasource__path"]
+
+        files = glob.glob(path_pattern, recursive=True) if "*" in path_pattern else [path_pattern]
+        files = [
+            f for f in files
+            if Path(f).exists() and Path(f).suffix.lower() in [".nc", ".netcdf", ".cdf", ".nc4"]
+        ]
+
+        return sorted(files), path_pattern
+
+
+    def handle_nc_info(self, request, *args):
+        entry_id = self._parse_download_ids(request, "nc_info")
+        files, path_pattern = self._get_netcdf_files(entry_id)
+
+        total_size = sum(Path(f).stat().st_size for f in files)
+
+        return JsonResponse({
+            "entry_id": entry_id,
+            "file_count": len(files),
+            "size_mb": round(total_size / 1024 / 1024, 2),
+            "path_pattern": path_pattern,
+        })
+
+
+    def handle_nc_list(self, request, *args):
+        entry_id = self._parse_download_ids(request, "nc_list")
+        files, path_pattern = self._get_netcdf_files(entry_id)
+
+        content = (
+            f"Dataset ID: {entry_id}\n"
+            f"NetCDF file pattern: {path_pattern}\n"
+            f"Number of files: {len(files)}\n\n"
+            + "\n".join(files)
+        )
+
+        response = HttpResponse(content, content_type="text/plain")
+        response["Content-Disposition"] = f'attachment; filename="dataset_{entry_id}_netcdf_file_list.txt"'
+        return response
+
+
     def handle_clipped_tif(self, request, *args):
         entry_id = self._parse_download_ids(request, "clipped_tif")
 
         bbox = request.GET.get("bbox")
-        bbox_srid = int(request.GET.get("srid", 4326))
+        bbox_srid = int(request.GET.get("srid", 3857))
 
         if not bbox:
             return HttpResponseBadRequest("Missing bbox parameter.")
@@ -329,47 +536,156 @@ class DatasetDownloadView(TemplateView):
         if not entry:
             raise Http404("Entry not found.")
 
-        raster_path = entry["datasource__path"]
+        path_pattern = entry["datasource__path"]
 
-        if not raster_path or not Path(raster_path).exists():
-            return HttpResponseBadRequest(f"Raster file not found: {raster_path}")
+        files = glob.glob(path_pattern, recursive=True) if "*" in path_pattern else [path_pattern]
+        files = [
+            f for f in files
+            if Path(f).exists() and Path(f).suffix.lower() in [".tif", ".tiff"]
+        ]
 
-        if Path(raster_path).suffix.lower() not in [".tif", ".tiff"]:
-            return HttpResponseBadRequest("This dataset is not a GeoTIFF raster.")
+        if not files:
+            return HttpResponseBadRequest(f"No raster files found for: {path_pattern}")
 
-        geom = Polygon.from_bbox((minx, miny, maxx, maxy))
-        geom.srid = bbox_srid
+        # Open first file only to get CRS
+        with rasterio.open(files[0]) as ref:
+            if not ref.crs:
+                return HttpResponseBadRequest("Raster has no CRS.")
 
-        with rasterio.open(raster_path) as src:
-            if src.crs:
-                geom.transform(src.crs.to_string(), clone=False)
-
-            out_image, out_transform = rasterio.mask.mask(
-                src,
-                [json.loads(geom.geojson)],
-                crop=True,
-                nodata=src.nodata,
+            src_crs = ref.crs
+            clipped_bounds = transform_bounds(
+                f"EPSG:{bbox_srid}",
+                src_crs,
+                minx,
+                miny,
+                maxx,
+                maxy,
+                densify_pts=21,
             )
 
-            out_meta = src.meta.copy()
+        def overlaps(bounds1, bounds2):
+            left1, bottom1, right1, top1 = bounds1
+            left2, bottom2, right2, top2 = bounds2
+            return not (
+                right1 < left2 or
+                right2 < left1 or
+                top1 < bottom2 or
+                top2 < bottom1
+            )
+
+        matching_files = []
+
+        for f in files:
+            with rasterio.open(f) as src:
+                src_bounds = (src.bounds.left, src.bounds.bottom, src.bounds.right, src.bounds.top)
+
+                if overlaps(src_bounds, clipped_bounds):
+                    matching_files.append(f)
+
+        if not matching_files:
+            return HttpResponseBadRequest("No raster tiles intersect the current map view.")
+
+        # Safety: prevent freezing if user is zoomed too far out
+        if len(matching_files) > 20:
+            return HttpResponseBadRequest(
+                f"Current view intersects {len(matching_files)} raster tiles. Please zoom in before downloading."
+            )
+
+        srcs = [rasterio.open(f) for f in matching_files]
+
+        try:
+            mosaic, out_transform = merge(
+                srcs,
+                bounds=clipped_bounds,
+                # crop=True,
+            )
+
+            out_meta = srcs[0].meta.copy()
             out_meta.update({
                 "driver": "GTiff",
-                "height": out_image.shape[1],
-                "width": out_image.shape[2],
+                "height": mosaic.shape[1],
+                "width": mosaic.shape[2],
                 "transform": out_transform,
+                "crs": srcs[0].crs,
             })
 
-            with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
-                tmp_path = tmp.name
+            tmp = tempfile.NamedTemporaryFile(suffix=".tif", delete=False)
+            tmp.close()
 
-            with rasterio.open(tmp_path, "w", **out_meta) as dst:
-                dst.write(out_image)
+            with rasterio.open(tmp.name, "w", **out_meta) as dst:
+                dst.write(mosaic)
+
+        finally:
+            for src in srcs:
+                src.close()
 
         return FileResponse(
-            open(tmp_path, "rb"),
+            open(tmp.name, "rb"),
             content_type="image/tiff",
             as_attachment=True,
             filename=f"dataset_{entry_id}_clipped.tif",
+        )
+
+
+    def handle_clipped_netcdf(self, request, *args):
+        entry_id = self._parse_download_ids(request, "clipped_nc")
+
+        bbox = request.GET.get("bbox")
+        bbox_srid = int(request.GET.get("srid", 3857))
+
+        if not bbox:
+            return HttpResponseBadRequest("Missing bbox parameter.")
+
+        minx, miny, maxx, maxy = [float(x) for x in bbox.split(",")]
+
+        files, path_pattern = self._get_netcdf_files(entry_id)
+
+        if not files:
+            return HttpResponseBadRequest(f"No NetCDF files found for: {path_pattern}")
+
+        # For demo safety: use first matching nc file only
+        nc_file = files[0]
+
+        ds = xr.open_dataset(nc_file, decode_coords="all", mask_and_scale=True)
+
+        try:
+            # Try to identify CRS
+            if not ds.rio.crs:
+                ds = ds.rio.write_crs("EPSG:4326")
+
+            # Transform map bbox from EPSG:3857 to dataset CRS
+            left, bottom, right, top = transform_bounds(
+                f"EPSG:{bbox_srid}",
+                ds.rio.crs,
+                minx,
+                miny,
+                maxx,
+                maxy,
+                densify_pts=21,
+            )
+
+            geom = box(left, bottom, right, top)
+
+            clipped = ds.rio.clip(
+                [mapping(geom)],
+                crs=ds.rio.crs,
+                all_touched=True,
+                drop=True,
+            )
+
+            tmp = tempfile.NamedTemporaryFile(suffix=".nc", delete=False)
+            tmp.close()
+
+            clipped.to_netcdf(tmp.name)
+
+        finally:
+            ds.close()
+
+        return FileResponse(
+            open(tmp.name, "rb"),
+            content_type="application/x-netcdf",
+            as_attachment=True,
+            filename=f"dataset_{entry_id}_clipped.nc",
         )
 
     def handle_csv(self, request, *args):

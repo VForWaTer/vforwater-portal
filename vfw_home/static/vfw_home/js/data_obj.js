@@ -244,20 +244,90 @@ vfw.datasets.DataObj = class {
         window.location.href = vfw.var.DEMO_VAR + "/home/datasetdownload?xml=" + this.orgID;
     };
 
-    DownloadTIF = function() {
-        window.location.href = vfw.var.DEMO_VAR + "/home/datasetdownload?tif=" + this.orgID;
-    };
-    
+    // DownloadTIF = function() {
+    //     window.location.href = vfw.var.DEMO_VAR + "/home/datasetdownload?tif=" + this.orgID;
+    // };
+
     DownloadClippedTIF = function() {
-        const extent = vfw.map.map.getView().calculateExtent(vfw.map.map.getSize());
+        const map = vfw.map.olmap;
+        const extent = map.getView().calculateExtent(map.getSize());
         const bbox = extent.join(",");
 
         window.location.href =
             vfw.var.DEMO_VAR +
             "/home/datasetdownload?clipped_tif=" + this.orgID +
-            "&bbox=" + bbox +
+            "&bbox=" + encodeURIComponent(bbox) +
             "&srid=3857";
     };
+
+    DownloadClippedNetCDF = function() {
+        const map = vfw.map.olmap;
+        const extent = map.getView().calculateExtent(map.getSize());
+        const bbox = extent.join(",");
+
+        window.location.href =
+            vfw.var.DEMO_VAR +
+            "/home/datasetdownload?clipped_nc=" + this.orgID +
+            "&bbox=" + encodeURIComponent(bbox) +
+            "&srid=3857";
+    };
+
+    
+    DownloadFullTIF = function() {
+        const obj = this;
+
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/datasetdownload",
+            method: "GET",
+            data: { raster_info: obj.orgID },
+        }).done(function(info) {
+            if (info.file_count > 3) {
+                const msg =
+                    "This raster dataset is large:\n\n" +
+                    "Files: " + info.file_count + "\n" +
+                    "Size: " + info.size_mb + " MB\n\n" +
+                    "Direct full download is disabled for the portal demo.\n" +
+                    "Download the file list instead?";
+
+                if (confirm(msg)) {
+                    window.location.href =
+                        vfw.var.DEMO_VAR + "/home/datasetdownload?tif_list=" + obj.orgID;
+                }
+            } else {
+                window.location.href =
+                    vfw.var.DEMO_VAR + "/home/datasetdownload?tif=" + obj.orgID;
+            }
+        });
+    };
+
+
+    DownloadFullNetCDF = function() {
+        const obj = this;
+
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/datasetdownload",
+            method: "GET",
+            data: { nc_info: obj.orgID },
+        }).done(function(info) {
+            if (info.file_count > 3) {
+                const msg =
+                    "This NetCDF dataset is large:\n\n" +
+                    "Files: " + info.file_count + "\n" +
+                    "Size: " + info.size_mb + " MB\n\n" +
+                    "Direct full download is disabled for the portal demo.\n" +
+                    "Download the file list instead?";
+
+                if (confirm(msg)) {
+                    window.location.href =
+                        vfw.var.DEMO_VAR + "/home/datasetdownload?nc_list=" + obj.orgID;
+                }
+            } else {
+                window.location.href =
+                    vfw.var.DEMO_VAR + "/home/datasetdownload?nc=" + obj.orgID;
+            }
+        });
+    };
+
     /**
      * Saves data to session storage.
      * @param {Object} data - The data to be saved.
@@ -334,12 +404,52 @@ vfw.datasets.DataObj = class {
             "default": [
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ],
-            "raster": [
-                ["DownloadTIF", "fa-download", gettext("Download raster (.tif)"), "DownloadTIF"],
-                ["DownloadClippedTIF", "fa-crop", gettext("Download clipped raster (.tif)"), "DownloadClippedTIF"],
-                ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
-            ]
+            // "raster": [
+            //     ["DownloadTIF", "fa-download", gettext("Download full raster (.tif)"), "DownloadTIF"],
+            //     ["DownloadNetCDF", "fa-download", gettext("Download full raster (.nc)"), "DownloadNetCDF"],
+            //     ["DownloadClippedTIF", "fa-crop", gettext("Download visible area clipped (.tif)"), "DownloadClippedTIF"],
+            //     ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+            // ]
+
+            "raster": []
+    };
+
+        let path = this.datasource_path || "";
+
+        let isTif =
+            path.includes(".tif") ||
+            path.includes(".tiff");
+
+        let isNc =
+            path.includes(".nc") ||
+            path.includes(".nc4") ||
+            path.includes(".netcdf") ||
+            path.includes(".cdf");
+        
+        console.log("DATA OBJECT:", orgID, this.type, this.datasource_path);
+        // console.log("DATA OBJECT:", orgID, this.type, this.datasource_path);
+        if (this.type === "raster" && !path) {
+            isTif = true;
+            isNc = true;
         }
+        if (isTif) {
+            itemParams["raster"].push(
+                ["DownloadFullTIF", "fa-download", gettext("Download full raster / file list") + " (.tif)", "DownloadFullTIF"],
+                ["DownloadClippedTIF", "fa-crop", gettext("Download visible area clipped") + " (.tif)", "DownloadClippedTIF"]
+            );
+        }
+
+        if (isNc) {
+            itemParams["raster"].push(
+                ["DownloadFullNetCDF", "fa-download", gettext("Download full raster / file list") + " (.nc)", "DownloadFullNetCDF"],
+                ["DownloadClippedNetCDF", "fa-crop", gettext("Download visible area clipped") + " (.nc)", "DownloadClippedNetCDF"]
+            );
+        }
+
+        itemParams["raster"].push(
+            ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
+        );
+        // }
 
         /** Build a html button for the context menu
          *
