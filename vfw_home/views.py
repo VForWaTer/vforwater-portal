@@ -50,7 +50,7 @@ import urllib
 from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import StreamingHttpResponse, QueryDict
+from django.http import StreamingHttpResponse, QueryDict, HttpResponseServerError
 from django.http.response import JsonResponse, HttpResponse, Http404, FileResponse
 from django.shortcuts import redirect, render
 from django.utils import translation, timezone
@@ -81,6 +81,7 @@ from .utilities.query_functions import get_bbox_from_data
 from .utilities.filters import NMPersonsFilter
 from .models import Entries, NmEntrygroups, Entrygroups, Timeseries, Timeseries_1D, Locations, Variables, TemporalScales
 
+from pyzip import PyZip
 
 from pathlib import Path
 from datetime import timedelta
@@ -253,11 +254,28 @@ class DatasetDownloadView(TemplateView):
        
 
     def handle_csv(self, request, *args):
-        s_id =  request.GET.get('csv')
+        endpoint = request.path
 
+        raw_ids = request.GET.get("csv", "")
+
+        s_id = []
+        for item in raw_ids.split(","):
+            item = item.strip()
+
+            if item.startswith("db"):
+                item = item[2:]
+
+            if item.isdigit():
+                s_id.append(int(item))
+            else:
+                raise ValueError(f"Invalid dataset id: {item}")
+    
+        # s_id =  request.GET.get('csv')
+        
         accessible_data = get_accessible_data(request, s_id)
         error_list = accessible_data['blocked']
         data = accessible_data.get('open', [])
+
 
         if not data:
             try:
@@ -281,8 +299,22 @@ class DatasetDownloadView(TemplateView):
 
             
     def handle_geojson(self, request, *args):
-        s_id =  request.GET.get('geojson')
+        # s_id =  request.GET.get('geojson')
+        endpoint = request.path
+        raw_ids = request.GET.get("geojson", "")
 
+        s_id = []
+        for item in raw_ids.split(","):
+            item = item.strip()
+
+            if item.startswith("db"):
+                item = item[2:]
+
+            if item.isdigit():
+                s_id.append(int(item))
+            else:
+                raise ValueError(f"Invalid dataset id: {item}")
+            
         accessible_data = get_accessible_data(request, s_id)
         error_list = accessible_data['blocked']
         data = accessible_data.get('open', [])
@@ -303,8 +335,26 @@ class DatasetDownloadView(TemplateView):
 
 
     def handle_shapefile(self, request, *args):
-        s_id = request.GET.get('shp')
+        # s_id = request.GET.get('shp')
+        endpoint = request.path
+        Database_Name = clean_database_name()
+        STORE = Database_Name
+        WORKSPACE = Database_Name
 
+        raw_ids = request.GET.get("shp", "")
+
+        s_id = []
+        for item in raw_ids.split(","):
+            item = item.strip()
+
+            if item.startswith("db"):
+                item = item[2:]
+
+            if item.isdigit():
+                s_id.append(int(item))
+            else:
+                raise ValueError(f"Invalid dataset id: {item}")
+            
         accessible_data = get_accessible_data(request, s_id)
         error_list = accessible_data['blocked']
         data = accessible_data.get('open', [])
@@ -316,16 +366,18 @@ class DatasetDownloadView(TemplateView):
                 additional_message = f"No accessible data found for ShapeFile request with dataset ID {s_id}."
                 raise_logging_exception(e, endpoint, additional_message)
 
-
-        layer_name = f'shp_{request.user}_{request.user.id}_{s_id}'
+        entry_id = data[0]
+        layer_name = f'shp_{request.user.id}_{entry_id}'
+        # layer_name = f'shp_{request.user}_{request.user.id}_{s_id}'
         srid = 4326
 
-        create_layer(request, layer_name, store, workspace, s_id)
+        # create_layer(request, layer_name, STORE, WORKSPACE, s_id)
+        create_layer(request, layer_name, STORE, WORKSPACE, [entry_id])
 
         try:
             url = (
-                f"{LOCAL_GEOSERVER}/{workspace}/ows?service=wfs&version=1.0.0&"
-                f"request=GetFeature&typeName={workspace}:{layer_name}&"
+                f"{LOCAL_GEOSERVER}/{WORKSPACE}/ows?service=wfs&version=1.0.0&"
+                f"request=GetFeature&typeName={WORKSPACE}:{layer_name}&"
                 f"outputFormat=shape-zip&srsname=EPSG:{srid}"
             )
             response = requests.get(url)
@@ -343,48 +395,66 @@ class DatasetDownloadView(TemplateView):
             raise
 
         finally:
-            delete_layer(layer_name, store, workspace)
+            delete_layer(layer_name, STORE, WORKSPACE)
 
-        return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
-
+        # return HttpResponse(pzfile.to_bytes(), content_type='application/zip')
+        response = HttpResponse(pzfile.to_bytes(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="dataset_{entry_id}.zip"'
+        return response
+    
     def handle_xml(self, request, *args):
-        id = request.GET.get('xml')
+        endpoint = request.path
+        Database_Name = clean_database_name()
+        STORE = Database_Name
+        WORKSPACE = Database_Name
+
+        raw_ids = request.GET.get("xml", "")
+
+        s_id = []
+        for item in raw_ids.split(","):
+            item = item.strip()
+
+            if item.startswith("db"):
+                item = item[2:]
+
+            if item.isdigit():
+                s_id.append(int(item))
+            else:
+                raise ValueError(f"Invalid dataset id: {item}")
 
         accessible_data = get_accessible_data(request, s_id)
-        error_list = accessible_data['blocked']
-        data = accessible_data.get('open', [])
+        data = accessible_data.get("open", [])
 
         if not data:
-            try:
-                raise ValueError("No accessible data found.")  # Step 1: This raises an error
-            except Exception as e:
-                additional_message = f"No accessible data found for xml request with dataset ID {s_id}."
-                raise_logging_exception(e, endpoint, additional_message)
+            raise ValueError(f"No accessible data found for XML request with dataset ID {s_id}.")
+
+        entry_id = data[0]
+        layer_name = f"xml_{request.user.id}_{entry_id}"
+        srid = 4326
+
+        create_layer(request, layer_name, STORE, WORKSPACE, [entry_id])
 
         try:
+            url = (
+                f"{LOCAL_GEOSERVER}/{WORKSPACE}/ows?service=wfs&version=1.0.0&"
+                f"request=GetFeature&typeName={WORKSPACE}:{layer_name}&"
+                f"outputFormat=GML2&srsname=EPSG:{srid}"
+            )
 
-            opener = urllib.request.build_opener(
-                urllib.request.HTTPBasicAuthHandler(password_manager),
-                
-                urllib.request.HTTPCookieProcessor(cookie_jar))
-            urllib.request.install_opener(opener)
+            response = requests.get(url)
+            response.raise_for_status()
 
-            request = urllib.request.Request(url)
-            response = urllib.request.urlopen(request)
-
-            
-
-            body = response.read()
-            
+            xml_response = HttpResponse(response.content, content_type="application/xml")
+            xml_response["Content-Disposition"] = f'attachment; filename="dataset_{entry_id}.xml"'
+            return xml_response
 
         except Exception as e:
-
-            additional_message = f"Error fetching XML for dataset ID {s_id}: {e}"
+            additional_message = f"Error fetching XML from GeoServer for dataset ID {entry_id}: {e}"
             raise_logging_exception(e, endpoint, additional_message)
-            delete_layer(layer_name, store, workspace)
             raise
-            
-        return HttpResponse(body.decode('utf-8'), content_type="application/xml")
+
+        finally:
+            delete_layer(layer_name, STORE, WORKSPACE)
 
 
 

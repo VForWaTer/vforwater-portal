@@ -214,6 +214,43 @@ vfw.datasets.DataObj = class {
         });
     };
 
+
+    Downloadshp = function() {
+        vfw.html.loaderOverlayOn();
+        const obj = this;
+
+        $.ajax({
+            url: vfw.var.DEMO_VAR + "/home/datasetdownload",
+            method: "GET",
+            data: {
+                shp: obj.orgID,
+            },
+            xhrFields: {
+                responseType: "blob"
+            },
+        })
+        .done(function(blob) {
+            saveAs(blob, vfw.datasets.dataObjects[obj.orgID].name + ".zip");
+        })
+        .fail(function(error) {
+            console.error("Download SHP failed", error);
+        })
+        .always(function() {
+            vfw.html.loaderOverlayOff();
+        });
+    };
+
+
+    DownloadClippedTIF = function() {
+        const extent = vfw.map.map.getView().calculateExtent(vfw.map.map.getSize());
+        const bbox = extent.join(",");
+
+        window.location.href =
+            vfw.var.DEMO_VAR +
+            "/home/datasetdownload?clipped_tif=" + this.orgID +
+            "&bbox=" + bbox +
+            "&srid=3857";
+    };
     /**
      * Saves data to session storage.
      * @param {Object} data - The data to be saved.
@@ -281,10 +318,10 @@ vfw.datasets.DataObj = class {
             ],
             "timeseries": [
                 ["Plot", "fa-eye", gettext("Plot data"), "getPlot"],
-                ["Downloadxml", "fa-download", gettext("Download metadata") + " (.xml)"],
+                // ["DownloadXML", "fa-download", gettext("Download metadata") + " (.xml)", "DownloadXML"],
                 ["Downloadcsv", "fa-download", gettext("Download data") + " (.csv)", "Downloadcsv"],
-                ["DownloadGeoJSON", "fa-download", gettext("Download data") + " (.geojson)", "DownloadGeoJSON"],
-                ["Downloadshp", "fa-download", gettext("Download data") + " (.shp)"],
+                ["DownloadGeoJSON", "fa-download", gettext("DDownload location") + " (.geojson)", "DownloadGeoJSON"],
+                ["Downloadshp", "fa-download", gettext("Download location") + " (.shp)", "Downloadshp"],
                 ["RemoveDataSet", "fa-eraser", gettext("Remove dataset"), "removeData"]
             ],
             "default": [
