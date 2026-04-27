@@ -535,7 +535,9 @@ class DatasetDownloadView(TemplateView):
 
         if not entry:
             raise Http404("Entry not found.")
-
+        if not entry["datasource__path"]:
+            return HttpResponseBadRequest("Invalid dataset: no datasource path")
+        
         path_pattern = entry["datasource__path"]
 
         files = glob.glob(path_pattern, recursive=True) if "*" in path_pattern else [path_pattern]
@@ -640,8 +642,17 @@ class DatasetDownloadView(TemplateView):
 
         files, path_pattern = self._get_netcdf_files(entry_id)
 
+        entry = Entries.objects.filter(pk=entry_id).values(
+            "id",
+            "datasource__path",
+            "variable__name",
+        ).first()
+
         if not files:
             return HttpResponseBadRequest(f"No NetCDF files found for: {path_pattern}")
+
+        if not entry["datasource__path"]:
+            return HttpResponseBadRequest("Invalid dataset: no datasource path")
 
         # For demo safety: use first matching nc file only
         nc_file = files[0]

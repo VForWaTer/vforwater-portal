@@ -148,6 +148,39 @@ vfw.datasets.DataObj = class {
         return this.btnPosition + this.workID + this.orgID; // storeID;  // TODO: not sure what storeID should be or any other ID here...}
     }
 
+    ensureDownloadPopup() {
+        let el = document.getElementById("download-status");
+
+        if (!el) {
+            el = document.createElement("div");
+            el.id = "download-status";
+            el.style.position = "fixed";
+            el.style.bottom = "20px";
+            el.style.right = "20px";
+            el.style.background = "#2c7";
+            el.style.color = "white";
+            el.style.padding = "10px 15px";
+            el.style.borderRadius = "6px";
+            el.style.display = "none";
+            el.style.zIndex = "9999";
+            el.style.fontSize = "14px";
+            el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+            document.body.appendChild(el);
+        }
+
+        return el;
+    }
+
+    showDownloadStatus(msg, duration = 3000, color = "#2c7") {
+        const el = this.ensureDownloadPopup();
+        el.innerText = msg;
+        el.style.background = color;
+        el.style.display = "block";
+
+        setTimeout(() => {
+            el.style.display = "none";
+        }, duration);
+    }
     /**
      * Removes data from portal and session storage.
      *
@@ -253,23 +286,82 @@ vfw.datasets.DataObj = class {
         const extent = map.getView().calculateExtent(map.getSize());
         const bbox = extent.join(",");
 
-        window.location.href =
+        const url =
             vfw.var.DEMO_VAR +
             "/home/datasetdownload?clipped_tif=" + this.orgID +
             "&bbox=" + encodeURIComponent(bbox) +
             "&srid=3857";
+        this.showDownloadStatus("Preparing download... ⏳", 3000, "#f39c12");
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(msg => {
+                        this.showDownloadStatus(msg, 6000, "#e74c3c");;
+                        throw new Error(msg);
+                    });
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                this.showDownloadStatus("Download started ✅", 3000, "#27ae60");
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = "dataset_" + this.dbID + "_clipped.tif";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+            })
+            .catch(err => console.warn(err));
     };
 
     DownloadClippedNetCDF = function() {
+        // const map = vfw.map.olmap;
+        // const extent = map.getView().calculateExtent(map.getSize());
+        // const bbox = extent.join(",");
+
+        // window.location.href =
+        //     vfw.var.DEMO_VAR +
+        //     "/home/datasetdownload?clipped_nc=" + this.orgID +
+        //     "&bbox=" + encodeURIComponent(bbox) +
+        //     "&srid=3857";
+
         const map = vfw.map.olmap;
         const extent = map.getView().calculateExtent(map.getSize());
         const bbox = extent.join(",");
 
-        window.location.href =
+        const url =
             vfw.var.DEMO_VAR +
             "/home/datasetdownload?clipped_nc=" + this.orgID +
             "&bbox=" + encodeURIComponent(bbox) +
             "&srid=3857";
+        this.showDownloadStatus("Preparing download... ⏳", 3000, "#f39c12");
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(msg => {
+                        this.showDownloadStatus(msg, 6000, "#e74c3c");;
+                        throw new Error(msg);
+                    });
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                this.showDownloadStatus("Download started ✅", 3000, "#27ae60");
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = "dataset_" + this.dbID + "_clipped.nc";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+            })
+            .catch(err => console.warn(err));
+    
     };
 
     
