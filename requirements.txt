@@ -35,7 +35,7 @@ numpy==2.0.1
 OWSLib==0.31.0
 packaging==24.1
 pandas==2.2.2
-pillow==10.4.0
+pillow==12.2.0
 plotly==5.23.0
 pluggy==1.5.0
 polars==1.4.0
