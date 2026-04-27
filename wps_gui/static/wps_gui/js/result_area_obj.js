@@ -133,6 +133,7 @@ vfw.datasets.resultObj = class {
                             this._updateJobStatus(this.job_details);
                             clearInterval(durationInterval); // Stop updating duration
                             this.save();
+                            if (typeof refreshJobsTable === 'function') refreshJobsTable();
                             return;
                         }
                     }
@@ -255,6 +256,42 @@ vfw.datasets.resultObj = class {
         });
     }
 
+    removeFromDatabase() {
+    /** remove data from DB, session, and server **/
+    console.log("Delete Clicked");
+        if (!confirm(`Delete job "${this.name}"? This cannot be undone.`)) return;
+        $.ajax({
+            url: vfw.var.DEMO_VAR + '/workspace/deletejob',
+            type: 'GET',
+            data: {'processid': this.id,
+                'csrfmiddlewaretoken': vfw.var.csrf_token,
+            }
+        })
+        .done(result => {
+            console.log("Deleted successfully: ", result);
+
+            // Remove from session storage
+            let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey) || '{}');
+            delete workspaceData[this.orgID];
+            sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData));
+            sessionStorageData = workspaceData;
+
+            // Remove from the objects map
+            delete vfw.datasets.resultObjects[this.orgID];
+
+            // Hide result card, show "No Results" message
+            const resultStoreContainer = document.getElementById('resultStoreContainer');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            if (resultStoreContainer) resultStoreContainer.classList.add('hidden');
+            if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+
+            if (typeof refreshJobsTable === 'function') refreshJobsTable();
+        })
+        .fail(error => {
+            console.warn('Failed to delete job from the database: ', error);
+        })
+
+    }
 
     /** remove data from webpage and from session, but user data is relaoded when user refreshes page **/
     removeData(removeData=this.orgID) {  // TODO: removeData var should be taken from this!
@@ -869,6 +906,9 @@ vfw.datasets.resultObj = class {
 
             const showAsTableElement = document.getElementById("show_as_table_result");
             showAsTableElement.onclick = () => this.showAsTable();
+
+            const removeJobElement = document.getElementById("remove_from_db");
+            removeJobElement.onclick = () => this.removeFromDatabase();
         }
         else if (job_details.status == "accepted") {
             statusTitle.textContent = 'Running';
@@ -916,7 +956,9 @@ vfw.datasets.resultObj = class {
             failureBox.classList.add('visible');
 
             failureBox.textContent = "Error Description:" + job_details.results["code"];  
-                   
+
+            const removeJobElement = document.getElementById("remove_from_db");
+            removeJobElement.onclick = () => this.removeFromDatabase();
         }
 
     }

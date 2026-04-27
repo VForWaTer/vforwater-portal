@@ -63,7 +63,7 @@ from wps_gui.utilities import (
     get_wps_service_engine, list_wps_service_engines, get_endpoint_data, get_process_basics, get_process_info,
     prepare_inputs, create_geoapi_db_entry, has_result_error, process_to_json, get_url_json, edit_input,
     handle_wps_output, get_user_results, run_pygeoapi_process, url_join, extract_jobid, update_geoapi_jobs_db,
-    get_job_status, fetch_jobs_table, update_job_results, fetch_job_details
+    get_job_status, fetch_jobs_table, update_job_results, fetch_job_details, delete_job
 )
 from owslib.ogcapi.processes import Processes as getProcesses
 
@@ -790,6 +790,31 @@ def move_job(request):
         return JsonResponse({'error': 'Job not found'}, status=404)
     resp = {'status': job_details['status'], 'job_details': job_details, 'html': json2html.convert(job_details['results'])}
     return JsonResponse(resp, status=200, safe=False)
+
+
+def refresh_jobs_table(request):
+    """
+    Return the current jobs table data for the requesting user as JSON,
+    so the frontend can refresh the process history table without a full page reload.
+    """
+    jobs, job_table_fields = fetch_jobs_table(request.user.id)
+    return JsonResponse({'jobs': jobs, 'job_table_fields': job_table_fields})
+
+
+def delete_job_view(request):
+    """
+    Delete a job from the DB by identifier.
+    The job is deleted from both the DB, and the server location
+    """
+    job_id = request.GET['processid']
+    if not job_id:
+        return JsonResponse({'error': 'job_id is required'}, status=400)
+    
+    deletion_result = delete_job(job_id)
+    if deletion_result:
+        return JsonResponse({'message': 'Job deleted successfully'}, status=200)
+    else:
+        return JsonResponse({'error': 'Job not found or could not be deleted'}, status=404)
 
 
 @method_decorator(login_required(login_url="/login/"), name='dispatch')

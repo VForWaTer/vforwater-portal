@@ -9,6 +9,15 @@
             </div>
         </div>
 
+        <div class="flex items-center gap-3">
+            <!-- Refresh Button -->
+            <button id="refresh_jobs_table_btn"
+                    onclick="refreshJobsTable(this)"
+                    title="Refresh table"
+                    class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <i class="fa-solid fa-rotate text-xl"></i>
+            </button>
+
         <!-- Question Mark Icon -->
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" class="text-gray-500 hover:text-gray-700 focus:outline-none">
@@ -22,10 +31,11 @@
                 </div>
             </div>
         </div>
-    </div>
+        </div><!-- end flex items-center gap-3 -->
+    </div><!-- end flex justify-between -->
     <!-- Scrollable Table Wrapper -->
     <div class="flex-1 overflow-auto min-h-0 min-w-0 rounded border border-gray-200">
-        <table class="table-fixed w-full border-collapse">
+        <table id="jobs_history_table" class="table-fixed w-full border-collapse">
             <thead class="bg-slate-500 sticky top-0">
                 <tr>
                     {% for field in job_table_fields %}
@@ -84,6 +94,60 @@
 
     
 <script>
+function refreshJobsTable(triggerBtn) {
+    const btn = triggerBtn || document.getElementById('refresh_jobs_table_btn');
+    const icon = btn ? btn.querySelector('i') : null;
+    if (icon) icon.classList.add('animate-spin');
+
+    fetch('/workspace/refreshjobstable', {
+        headers: { 'X-CSRFToken': vfw.var.csrf_token }
+    })
+    .then(r => {
+        if (!r.ok) throw new Error(`Server returned ${r.status}`);
+        return r.json();
+    })
+    .then(data => {
+        const { jobs, job_table_fields } = data;
+        const tbody = document.querySelector('#jobs_history_table tbody');
+        if (!tbody) return;
+
+        const statusColors = {
+            successful: { badge: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
+            failed:     { badge: 'bg-red-100 text-red-700',   dot: 'bg-red-500' },
+            pending:    { badge: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500' },
+        };
+
+        tbody.innerHTML = jobs.map(job => {
+            const cells = job_table_fields.map(field => {
+                if (field === 'Details') {
+                    return `<td class="border-y border-gray-200 !px-4 !py-2 text-m text-gray-600 !text-left">
+                        <button onclick="moveJobToResultCard('${job.identifier}')"
+                                class="text-blue-500 hover:text-blue-700">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </button>
+                    </td>`;
+                }
+                if (field === 'Status') {
+                    const val = job[field] || '';
+                    const c = statusColors[val] || { badge: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' };
+                    return `<td class="border-y border-gray-200 !px-4 !py-2 text-m text-gray-600 !text-left">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${c.badge}">
+                            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 ${c.dot}"></span>
+                            ${val}
+                        </span>
+                    </td>`;
+                }
+                return `<td class="border-y border-gray-200 !px-4 !py-2 text-m text-gray-600 !text-left">${job[field] || ''}</td>`;
+            }).join('');
+            return `<tr>${cells}</tr>`;
+        }).join('');
+    })
+    .catch(err => console.error('Error refreshing jobs table:', err))
+    .finally(() => {
+        if (icon) icon.classList.remove('animate-spin');
+    });
+}
+
 function moveJobToResultCard(jobId) {
     fetch(`/workspace/movejob?job_id=${encodeURIComponent(jobId)}`, {
         headers: { 'X-CSRFToken': vfw.var.csrf_token }

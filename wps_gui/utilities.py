@@ -605,6 +605,26 @@ def fetch_jobs_table(user_id: int = None):
     except Exception as e:
         print(f'Error fetching jobs from GeoAPI Jobs table: {e}')
         return []
+    
+def delete_job(job_id: str):
+    """
+    Delete a specific job from the jobs table.
+
+    :param job_id: id of the job to delete
+    :return: True if deletion was successful, False otherwise
+    """
+    try:
+        job = Jobs.objects.get(identifier=job_id)
+        job.delete()
+        print(f'Job with id {job_id} deleted successfully.')
+        return True
+    except Jobs.DoesNotExist:
+        print(f'Job with id {job_id} not found. Cannot delete.')
+        return False
+    except Exception as e:
+        print(f'Error deleting job with id {job_id}: {e}')
+        return False
+    
 
 def create_wpsdb_entry(wps_process: str, invalue: list, outputs: object) -> object:
     """

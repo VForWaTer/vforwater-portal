@@ -53,5 +53,7 @@ urlpatterns = [
     path('workflowrun', views.workflow_run, name='workflowrun'),
     path('jobstatus', views.job_status, name='jobstatus'),
     path('movejob', views.move_job, name='movejob'),
+    path('deletejob', views.delete_job_view, name='deletejob'),
+    path('refreshjobstable', views.refresh_jobs_table, name='refreshjobstable'),
     # url(r'^(?P<service>\w+)/', include(service_urls)),
 ]
