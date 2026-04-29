@@ -6,7 +6,7 @@
 
 <div x-data="toolboxUI()" x-init="init()" class="flex flex-col h-full">
 
-  <!-- Header (same style as Result Store) -->
+  <!-- Header -->
   <div class="flex justify-between items-center">
     <div>
       <div class="mb-4 text-3xl font-bold text-gray-900">Toolbox</div>
@@ -29,21 +29,19 @@
     </div>
   </div>
 
-  <!-- Content area (scrollable like Result Store) -->
-  <div class="flex-1 min-h-0">
+  <!-- Content area -->
+  <div class="flex-1 min-h-0 overflow-hidden">
 
-    <!-- Seamless split-pane -->
-    <div class="bg-white/60 overflow-hidden">
+    <div class="bg-white/60 h-full overflow-hidden">
         <div class="grid grid-cols-1 lg:grid-cols-[340px_1px_1fr] h-full">
 
-        <!-- Left: Tool list -->
-        <div class="bg-gray-100 border border-gray-200 h-full">
-          <div class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+        <div class="bg-gray-100 border border-gray-200 flex flex-col min-h-0">
+          <div class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide flex-shrink-0">
             Tools
           </div>
 
-          
-          <div class="px-2 pb-4 overflow-y-auto h-[30vh]">
+
+          <div class="px-2 pb-4 overflow-y-auto flex-1 min-h-0">
             {% for identifier, process in processes.items %}
             {% if identifier != "dbloader" %}
             <div
@@ -60,7 +58,6 @@
                   </div>
                 </div>
 
-                <!-- Run on hover -->
                 <button
                   type="button"
                   class="opacity-0 group-hover:opacity-100 transition px-2
@@ -76,22 +73,18 @@
           </div>
         </div>
 
-        <!-- Divider (hairline, seamless) -->
         <div class="hidden lg:block bg-gray-200"></div>
 
         <!-- Right: Details -->
-        <div class="px-4">
-            <!--<div class="py-3 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                Description
-            </div> -->
+        <div class="px-4 flex flex-col min-h-0 h-full overflow-y-auto">
             <template x-if="!selectedTool">
               <div class="text-sm text-gray-500">
                 Hover a tool on the left to see its description, inputs, and outputs.
               </div>
             </template>
-      
+
             <template x-if="selectedTool">
-              <div class="space-y-6 overflow-y-auto h-[30vh]">
+              <div class="space-y-6">
                 <div>
                   <div class="text-lg font-semibold text-gray-900" x-text="selectedTool.title"></div>
                 </div>

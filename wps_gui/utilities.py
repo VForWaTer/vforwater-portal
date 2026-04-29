@@ -310,7 +310,7 @@ def get_process_basics(apiprocess):
     return {
         "id": apiprocess['id'],
         "title": apiprocess['title'],
-        "description": apiprocess['description'][0:100],  # process.abstract,
+        "description": apiprocess['description'],  # process.abstract,
         "keywords": apiprocess['keywords'],
         "inputs": json.dumps(inputs),
         "outputs": json.dumps(outputs),
