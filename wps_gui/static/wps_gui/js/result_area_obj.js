@@ -64,6 +64,14 @@ vfw.datasets.resultObj = class {
         //console.log("Reached constructor")
 
         if (this.status == "accepted" || this.status == "running") {
+            this._updateJobStatus({
+                status: this.status,
+                process_id: this.name,
+                identifier: this.id,
+                created: (this.job_details && this.job_details.created) || '',
+                finished: (this.job_details && this.job_details.finished) || '',
+            });
+            if (typeof refreshJobsTable === 'function') refreshJobsTable();
             this.startPolling();
         }
         else {
@@ -75,7 +83,8 @@ vfw.datasets.resultObj = class {
     startPolling(interval = 5000, maxAttempts = 25) {
         let attempts = 0;
 
-        const startTime = new Date(); // Record the start time
+        if (!this.pollingStartTime) this.pollingStartTime = new Date().toISOString();
+        const startTime = new Date(this.pollingStartTime); // Record the start time
         const durationElement = document.getElementById('job_duration'); // Get the duration element
     
         // Function to update the duration in the HTML

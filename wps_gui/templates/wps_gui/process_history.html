@@ -47,7 +47,7 @@
             </thead>
             <tbody>
                 {% for job in jobs %}
-                <tr>
+                <tr {% if job|get_field_display:"Status" == 'accepted' or job|get_field_display:"Status" == 'running' %}class="bg-yellow-50"{% endif %}>
                     {% for field in job_table_fields %}
                     <td class="border-y border-gray-200 !px-4 !py-2 text-m text-gray-600 !text-left">
                         {% if field == "Details" %}
@@ -62,7 +62,7 @@
                                 bg-green-100 text-green-700
                             {% elif job|get_field_display:field == 'failed' %}
                                 bg-red-100 text-red-700
-                            {% elif job|get_field_display:field == 'pending' %}
+                            {% elif job|get_field_display:field == 'pending' or job|get_field_display:field == 'accepted' or job|get_field_display:field == 'running' %}
                                 bg-yellow-100 text-yellow-700
                             {% else %}
                                 bg-gray-100 text-gray-600
@@ -72,7 +72,7 @@
                                     bg-green-500
                                 {% elif job|get_field_display:field == 'failed' %}
                                     bg-red-500
-                                {% elif job|get_field_display:field == 'pending' %}
+                                {% elif job|get_field_display:field == 'pending' or job|get_field_display:field == 'accepted' or job|get_field_display:field == 'running' %}
                                     bg-yellow-500
                                 {% else %}
                                     bg-gray-400
@@ -115,9 +115,14 @@ function refreshJobsTable(triggerBtn) {
             successful: { badge: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
             failed:     { badge: 'bg-red-100 text-red-700',   dot: 'bg-red-500' },
             pending:    { badge: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500' },
+            accepted:   { badge: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500' },
+            running:    { badge: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500' },
         };
 
         tbody.innerHTML = jobs.map(job => {
+            const status = job['Status'] || '';
+            const isRunning = status === 'accepted' || status === 'running';
+            const rowClass = isRunning ? ' class="bg-yellow-50"' : '';
             const cells = job_table_fields.map(field => {
                 if (field === 'Details') {
                     return `<td class="border-y border-gray-200 !px-4 !py-2 text-m text-gray-600 !text-left">
@@ -139,7 +144,7 @@ function refreshJobsTable(triggerBtn) {
                 }
                 return `<td class="border-y border-gray-200 !px-4 !py-2 text-m text-gray-600 !text-left">${job[field] || ''}</td>`;
             }).join('');
-            return `<tr>${cells}</tr>`;
+            return `<tr${rowClass}>${cells}</tr>`;
         }).join('');
     })
     .catch(err => console.error('Error refreshing jobs table:', err))
