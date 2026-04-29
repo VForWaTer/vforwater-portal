@@ -265,6 +265,42 @@ vfw.datasets.resultObj = class {
         });
     }
 
+    refreshStatus() {
+        const icon = document.querySelector('#refresh_result i');
+        if (icon) icon.classList.add('animate-spin');
+
+        fetch(`${vfw.var.DEMO_VAR}/workspace/jobstatus`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': vfw.var.csrf_token },
+            body: JSON.stringify({ job_id: this.id })
+        })
+        .then(r => { if (!r.ok) throw new Error(`HTTP error ${r.status}`); return r.json(); })
+        .then(data => {
+            this.status = data.status;
+            if (data.job_details) this.job_details = data.job_details;
+            this._updateJobStatus(this.job_details);
+            this.save();
+        })
+        .catch(err => console.error('Refresh error:', err))
+        .finally(() => { if (icon) icon.classList.remove('animate-spin'); });
+    }
+
+    removeFromView() {
+        /** Remove from session storage */
+        let workspaceData = JSON.parse(sessionStorage.getItem(this.storeKey) || '{}');
+        delete workspaceData[this.orgID];
+        sessionStorage.setItem(this.storeKey, JSON.stringify(workspaceData));
+
+        /** Remove from objects map */
+        delete vfw.datasets.resultObjects[this.orgID];
+
+        /** Hide result card, show "No Results" message */
+        const resultStoreContainer = document.getElementById('resultStoreContainer');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        if (resultStoreContainer) resultStoreContainer.classList.add('hidden');
+        if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+    }
+
     removeFromDatabase() {
     /** remove data from DB, session, and server **/
     console.log("Delete Clicked");
@@ -973,6 +1009,16 @@ vfw.datasets.resultObj = class {
         const reopenElement = document.getElementById("reopen_tool");
         if (reopenElement) {
             reopenElement.onclick = (e) => { e.preventDefault(); this.reopen(); };
+        }
+
+        const removeFromViewElement = document.getElementById("remove_from_view");
+        if (removeFromViewElement) {
+            removeFromViewElement.onclick = (e) => { e.preventDefault(); this.removeFromView(); };
+        }
+
+        const refreshElement = document.getElementById("refresh_result");
+        if (refreshElement) {
+            refreshElement.onclick = (e) => { e.preventDefault(); this.refreshStatus(); };
         }
 
     }
