@@ -593,18 +593,24 @@ def fetch_jobs_table(user_id: int = None):
         jobs = Jobs.objects.filter(userid=user_id).order_by('-created')
         formatted_jobs = []
         for job in jobs:
+            finished_str = ""
+            if job.finished:
+                try:
+                    finished_str = datetime.datetime.strptime(job.finished, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d.%m.%y, %H:%M")
+                except (ValueError, TypeError):
+                    finished_str = job.finished
             formatted_jobs.append({
                 "identifier": job.identifier,
                 fields['process_id']: job.process_id,
                 fields['created']: datetime.datetime.strptime(job.created, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d.%m.%y, %H:%M"),
-                fields['finished']: datetime.datetime.strptime(job.finished, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d.%m.%y, %H:%M"),
+                fields['finished']: finished_str,
                 fields['status']: job.status,
             })
 
         return formatted_jobs, list(fields.values())
     except Exception as e:
         print(f'Error fetching jobs from GeoAPI Jobs table: {e}')
-        return []
+        return [], []
     
 def delete_job(job_id: str):
     """

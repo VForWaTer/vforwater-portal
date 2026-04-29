@@ -80,19 +80,6 @@ vfw.sidebar.showData = function () {
     let resultStoreData = null;
     if (window.location.pathname === '/workspace/') {
         resultStoreData = JSON.parse(sessionStorage.getItem("resultBtn"));
-
-        /** load former results and create object for elements that are not already in session Storage */
-        let db_results_list = JSON.parse(document.getElementById('resultsList-var').textContent);
-        for (let i in db_results_list) {
-            if (!db_results_list[i]['orgID']) {
-                // create an id for the new object
-                const urlParts = db_results_list[i].outputs.path.split("/");
-                db_results_list[i]['orgID'] = db_results_list[i].name + '_' + urlParts[urlParts.length -1];
-            }
-            if (!resultStoreData || (resultStoreData && !(db_results_list[i]['orgID'] in resultStoreData))) {
-                vfw.datasets.resultObjects[db_results_list[i]['orgID']] = new vfw.datasets.resultObj(db_results_list[i]);
-            }
-        }
     }
     /** use results data already loaded from session storage, create objects from it and check status if not finished or error */
     if (resultStoreData) {  // && "value" in workspaceData) {
