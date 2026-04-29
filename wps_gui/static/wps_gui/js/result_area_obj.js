@@ -948,17 +948,22 @@ vfw.datasets.resultObj = class {
 
             let successBox = document.getElementById('success_box');
             let failureBox = document.getElementById('failure_box');
-            
+
             successBox.classList.remove('visible');
             successBox.classList.add('hidden');
-            
+
             failureBox.classList.remove('hidden');
             failureBox.classList.add('visible');
 
-            failureBox.textContent = "Error Description:" + job_details.results["code"];  
+            failureBox.textContent = "Error Description:" + job_details.results["code"];
 
             const removeJobElement = document.getElementById("remove_from_db");
             removeJobElement.onclick = () => this.removeFromDatabase();
+        }
+
+        const reopenElement = document.getElementById("reopen_tool");
+        if (reopenElement) {
+            reopenElement.onclick = (e) => { e.preventDefault(); this.reopen(); };
         }
 
     }
