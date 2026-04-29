@@ -222,18 +222,18 @@ def process_run(request):
 
             # Mount
             BASE_SHARED_PATH = GEOAPI_DATA_PATH 
-            obs_dir = os.path.join(
+            sim_dir = os.path.join(
                 BASE_SHARED_PATH,
                 "in",
                 user_folder,
                 shared_id,
                 "simulation",
-                "obs"
+                "sim"
             )
 
-            os.makedirs(obs_dir, exist_ok=True)
+            os.makedirs(sim_dir, exist_ok=True)
 
-            file_path = os.path.join(obs_dir, uploaded.name)
+            file_path = os.path.join(sim_dir, uploaded.name)
 
             with open(file_path, "wb+") as dst:
                 for chunk in uploaded.chunks():
