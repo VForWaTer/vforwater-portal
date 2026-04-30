@@ -12,6 +12,230 @@ License: MIT License
     --color_Item: #00baee;
     --color_Child: #AADDF9;
     --color_Parent: #D9EFFD;
+    --filter-primary: #005A92;
+    --filter-accent: #00baee;
+    --filter-bg: #f8fafc;
+    --filter-border: #e2e8f0;
+    --filter-text: #334155;
+    --filter-muted: #64748b;
+}
+
+/* ========== Modern Filter Menu ========== */
+
+/* Header */
+.filter-header {
+    background: linear-gradient(135deg, var(--filter-primary) 0%, var(--filter-accent) 100%);
+    padding: 9px 14px;
+    color: #fff;
+}
+
+.filter-header b {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+/* Tab bar */
+.filter-tab-bar {
+    overflow: visible !important;
+    border: none !important;
+    border-bottom: 2px solid var(--filter-border) !important;
+    background-color: var(--filter-bg) !important;
+    display: flex;
+    gap: 0;
+    padding: 0 4px;
+}
+
+.filter-tablinks {
+    background: none !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    margin-bottom: -2px !important;
+    padding: 8px 14px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: var(--filter-muted) !important;
+    cursor: pointer !important;
+    transition: color 0.18s ease, border-bottom-color 0.18s ease !important;
+    white-space: nowrap !important;
+    letter-spacing: 0.2px !important;
+    outline: none !important;
+}
+
+.filter-tablinks:hover {
+    color: var(--filter-primary) !important;
+    border-bottom-color: var(--filter-accent) !important;
+    background: none !important;
+}
+
+.filter-tablinks.active {
+    color: var(--filter-primary) !important;
+    border-bottom-color: var(--filter-primary) !important;
+    font-weight: 600 !important;
+    background: none !important;
+}
+
+/* Content area */
+.filter-tabcontent {
+    background: #ffffff;
+    border: 1px solid var(--filter-border);
+    border-top: none;
+}
+
+/* Filter items */
+.filter-items-list {
+    font-size: 13px;
+    color: var(--filter-text);
+}
+
+/* Collapsible "more" button */
+button#quickfiltermore.collapsible {
+    background: none !important;
+    color: var(--filter-primary) !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border: 1px solid #c7dff0 !important;
+    border-radius: 4px !important;
+    padding: 3px 10px !important;
+    margin-top: 6px !important;
+    box-shadow: none !important;
+}
+
+button#quickfiltermore.collapsible:hover,
+button#quickfiltermore.collapsible.active {
+    background: #edf6ff !important;
+    border-color: var(--filter-accent) !important;
+    color: var(--filter-primary) !important;
+}
+
+button#quickfiltermore.collapsible::after {
+    content: ' ▾' !important;
+    font-size: 10px !important;
+}
+
+button#quickfiltermore.collapsible.active::after {
+    content: ' ▴' !important;
+}
+
+.filter-items-list .content {
+    background-color: var(--filter-bg) !important;
+    border: 1px solid var(--filter-border);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 6px 8px !important;
+    margin-top: 0;
+}
+
+/* ========== Filter item layout ========== */
+
+#quickfilter-form {
+    padding: 10px 12px 8px !important;
+}
+
+.filter-dataset-count {
+    font-size: 12px;
+    color: var(--filter-muted);
+    margin: 0 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--filter-border);
+}
+
+.filter-dataset-count strong {
+    color: var(--filter-primary);
+    font-weight: 700;
+}
+
+/* Each label + widget row */
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--filter-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+/* Checkbox rows: horizontal, label next to box */
+.filter-item-check {
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+
+.filter-item-check .filter-label {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--filter-text);
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+.filter-item-check input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--filter-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Select multiple boxes */
+.filter-widget select[multiple] {
+    width: 100%;
+    border: 1px solid var(--filter-border);
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 12px;
+    color: var(--filter-text);
+    background-color: #fff;
+    outline: none;
+    max-height: 100px;
+    overflow-y: auto;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-widget select[multiple]:focus {
+    border-color: var(--filter-accent);
+    box-shadow: 0 0 0 2px rgba(0, 186, 238, 0.18);
+}
+
+/* Date range inputs */
+.filter-widget-date input[type="text"] {
+    border: 1px solid var(--filter-border);
+    border-radius: 4px;
+    padding: 3px 7px;
+    font-size: 12px;
+    color: var(--filter-text);
+    background: #fff;
+    width: calc(50% - 10px);
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.filter-widget-date input[type="text"]:focus {
+    border-color: var(--filter-accent);
+    box-shadow: 0 0 0 2px rgba(0, 186, 238, 0.18);
+}
+
+.filter-widget-date code {
+    color: var(--filter-muted);
+    font-size: 13px;
+    margin: 0 2px;
+}
+
+/* Date range slider track */
+.filter-widget-date > div[id^="slider-date-range"] {
+    margin-top: 8px;
 }
 
 .switch-field {
@@ -122,7 +346,47 @@ License: MIT License
 
 }
 
-.group-store-button {background-color: darkgreen}
+/* Pass to datastore button */
+.filter-store-btn-wrap {
+    padding: 10px 12px 8px;
+    border-top: 1px solid var(--filter-border);
+    margin-top: 6px;
+}
+
+.filter-store-btn,
+.group-store-button {
+    display: block !important;
+    width: 100% !important;
+    padding: 8px 12px !important;
+    background-color: #2e7d4f !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 5px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    cursor: pointer !important;
+    text-align: center !important;
+    transition: background-color 0.18s ease !important;
+    box-sizing: border-box !important;
+}
+
+.filter-store-btn:hover,
+.group-store-button:hover {
+    background-color: #245f3d !important;
+}
+
+/* Limit notice below the button */
+.filter-limit-notice {
+    margin-top: 6px;
+    padding: 6px 10px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #92400e;
+    line-height: 1.4;
+}
 
 /*TODO: Seems unused. Delete in next Version: */
 /* Style the active class, and buttons on mouse-over */

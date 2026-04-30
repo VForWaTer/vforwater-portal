@@ -1160,7 +1160,7 @@ vfw.url.updateFilterURL = function(selection)  {
  *
  * @param {string} selection
  */
-vfw.html.getQuickSelection = function (selection) {
+vfw.html.getQuickSelection = function (selection, showLimitNotice = true) {
     let coords = vfw.filter.coords;
     let url = vfw.url.updateFilterURL(selection)
     // url = '/home/quick_filter/2007/'
@@ -1188,23 +1188,22 @@ vfw.html.getQuickSelection = function (selection) {
                 vfw.map.updateMapSelection(json)
 
                 /** update total Value for available datasets in HTML code (and color it when no filter result): */
-                $("#quickfilter-form p:first").html(
+                $(".filter-dataset-count").html(
                     function (i, txt) {
                         return txt.replace(/\d+/, json['total'].toString());
                     }
                 )
                 if (json['total'] == 0) {
-                    $("#quickfilter-form p:first").css({'background-color': 'khaki'});
+                    $(".filter-dataset-count").css({'background-color': 'khaki'});
                 } else {
-                    $("#quickfilter-form p:first").css({'background-color': 'white'});
+                    $(".filter-dataset-count").css({'background-color': ''});
                 }
-                /** Add button to select group if no more than 100 datasets are selected. The responsible button
-                 * is defined with class 'group-store-button' **/
-                if (json['total'] <= 100 && json['total'] > 0) {
-                    $(".group-store-button").val("Pass to datastore").show();
+                /** Show/hide the Pass-to-datastore button and limit notice. **/
+                $(".group-store-button").show();
+                if (showLimitNotice && json['total'] > 100) {
+                    $("#filter-limit-notice").show();
                 } else {
-                    $(".group-store-button").val("Pass to datastore(*Limit 100 Datasets)").show();
-
+                    $("#filter-limit-notice").hide();
                 }
             })
             .fail(function (bug) {
