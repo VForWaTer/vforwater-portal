@@ -24,7 +24,7 @@ License: MIT License
 </head>
 
 <body>
-   <div class="w3-container w3-light-turquoise">
+   <div class="filter-header">
         <b title={% trans "Please&#32choose&#32here&#32the&#32data&#32shown&#32on&#32the&#32map." %}>{%  trans "Filter menu" %}</b>
     </div>
    {% comment %}
@@ -32,7 +32,7 @@ License: MIT License
         <h5 style="display:block;cursor:pointer;position:relative;margin:2px 0 0 0;padding:.5em.5em.5em.7em;font-size:15px;"
             onclick="draw_polygon()" id="toggle_draw" title={% trans "Click&#32here&#32to&#32draw&#32the&#32area&#32you&#32want&#32to&#32filter." %}>{% trans "Draw SELECTION area" %}</h5>
     </div>{% endcomment %}
-<div class="tab">
+<div class="tab filter-tab-bar">
   {% comment %}  <button class="filter-tablinks" onclick="toggleFilter(event, 'quickFilter')" id="defaultFilterTab"
   title="{% trans "Quick update of results on each click event"%}">{% trans "Quick"%}</button>{% endcomment %}
   <button class="filter-tablinks" onclick="vfw.util.toggleMapTableFilter(event, 'quickFilter', true)"

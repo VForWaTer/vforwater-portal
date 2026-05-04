@@ -11,32 +11,56 @@ License: MIT License
 {% load i18n %}
 {#{% get_current_language as LANGUAGE_CODE %}#}
 
-<form method="get" name="quickfilterform" id="quickfilter-form" style="padding-left: 12px; padding-right: 12px;">
-  <p>{% trans "Available datasets" %} <strong>{{ total }}</strong></p>
-  <div class="respo-padding-64 respo-medium respo-text-grey" style="font-weight:bold">
-    {% for obj in quickfilter %}
-      <div>{{ obj.name }}: {{ obj }} </div></br>
-      {#   <select onchange="console.log('bla')" {{ obj.name }}: {{ obj }}></select> <br />#}
-    {% endfor %}
-    <button type="button" class="collapsible" id="quickfiltermore" onclick="vfw.util.collapsibleFun('quickfiltermore')">
-      {% trans "more..." %}</button>
-    <div class="content">
-      <p>
-        {% for obj in more %}
-          <div>{{ obj.name }}: {{ obj }} </div></br>
-        {% endfor %}
-      </p>
+<form method="get" name="quickfilterform" id="quickfilter-form">
+  <p class="filter-dataset-count">{% trans "Available datasets" %} <strong>{{ total }}</strong></p>
+
+  <div class="filter-items-list">
+
+    <div class="filter-item">
+      <label class="filter-label" for="{{ quickfilter.variables.id_for_label }}">{{ quickfilter.variables.label }}</label>
+      <div class="filter-widget">{{ quickfilter.variables }}</div>
     </div>
-    {#    <button class="btn btn-primary" type="submit">Search</button>#}
-    {#  Add button to select a group #}
-    {#   <button class="btn btn-primary" type="submit">Search</button>#}
+
+    <div class="filter-item">
+      <label class="filter-label">{{ quickfilter.date.label }}</label>
+      <div class="filter-widget filter-widget-date">{{ quickfilter.date }}</div>
+    </div>
+
+    <div class="filter-item filter-item-check">
+      {{ quickfilter.is_FAIR }}
+      <label class="filter-label" for="{{ quickfilter.is_FAIR.id_for_label }}">{{ quickfilter.is_FAIR.label }}</label>
+    </div>
+
+    <button type="button" class="collapsible" id="quickfiltermore" onclick="vfw.util.collapsibleFun('quickfiltermore')">
+      {% trans "more..." %}
+    </button>
+    <div class="content">
+      <div class="filter-item">
+        <label class="filter-label" for="{{ more.institution.id_for_label }}">{{ more.institution.label }}</label>
+        <div class="filter-widget">{{ more.institution }}</div>
+      </div>
+      <div class="filter-item">
+        <label class="filter-label" for="{{ more.project.id_for_label }}">{{ more.project.label }}</label>
+        <div class="filter-widget">{{ more.project }}</div>
+      </div>
+      <div class="filter-item filter-item-check">
+        {{ more.my_data }}
+        <label class="filter-label" for="{{ more.my_data.id_for_label }}">{{ more.my_data.label }}</label>
+      </div>
+    </div>
+
   </div>
 </form>
 
-<p><b><input
-  type="submit" style="display: none"
-  class="w3-btn-block w3-btn-block:hover group-store-button"
-  onclick="vfw.sidebar.workspaceDataset(vfw.var.obj.selectedIds.quickMenu)"
-  value="{% trans "Pass to datastore" %}" data-toggle="tooltip"
-  title="{% trans "Put the complete filter result as a group to the session datastore." %}"
-></b></p>
+<div class="filter-store-btn-wrap">
+  <input
+    type="submit" style="display: none"
+    class="group-store-button filter-store-btn"
+    onclick="vfw.sidebar.workspaceDataset(vfw.var.obj.selectedIds.quickMenu)"
+    value="{% trans "Pass to datastore" %}"
+    title="{% trans "Put the complete filter result as a group to the session datastore." %}"
+  >
+  <div id="filter-limit-notice" class="filter-limit-notice" style="display:none">
+    &#9888; {% trans "Selection exceeds 100 datasets — only the first 100 will be added to the datastore." %}
+  </div>
+</div>

@@ -271,19 +271,22 @@ vfw.datasets.selectObj = class {
         if (this.url === '/workspace/') {
             dragHtml = 'draggable="true" ondragstart="dragstart_handler(event)"'
         }
-        return `<li ` + dragHtml + ` class="w3-padding task" data-sessionstore=${this.storeKey} ` +
-            `data-orgid="${this.orgID}"` +
-            `data-id="${this.orgID}" btnName="${this.htmlName}" onmouseover="" ` +  // TODO: remove btnName - might be used when dropped i dropzone
-            `data-btnName="${this.htmlName}" style="cursor:pointer;" id="${this.htmlElementID()}">` +
-            `<span class="w3-medium" title="${this.title}">` +
-            `<div class="task__content ${this.noData}">${this.htmlName}</div><div class="task__actions"></div>` +
-            `</span><span class="data ${this.type}"></span>` +
-            `<a onclick=vfw.datasets.selectObjects['${this.orgID}'].removeData('${this.orgID}') ` +
-            `class="w3-hover-white w3-right"><i class="fa fa-remove fa-fw"></i>` +
-            `</a>` +
-            `<a onclick=vfw.datasets.selectObjects['${this.orgID}'].showContextMenu('${this.orgID}') ` +
-            `class="w3-hover-white w3-right"><i class="fa fa-caret-down fa-fw"></i>` +
-            `</a><br></li>`;
+        return `<li ` + dragHtml + ` class="ds-item" data-sessionstore=${this.storeKey} ` +
+            `data-orgid="${this.orgID}" ` +
+            `data-id="${this.orgID}" btnName="${this.htmlName}" ` +
+            `data-btnName="${this.htmlName}" id="${this.htmlElementID()}">` +
+            `<span class="ds-item__type-dot ${this.type}" title="Type: ${this.type}"></span>` +
+            `<span class="ds-item__info">` +
+            `<span class="ds-item__name ${this.noData}" title="${this.title}">${this.htmlName}</span>` +
+            `<span class="ds-item__type-label">${this.type}</span>` +
+            `</span>` +
+            `<span class="ds-item__actions">` +
+            `<a onclick="vfw.datasets.selectObjects['${this.orgID}'].showContextMenu('${this.orgID}')" ` +
+            `class="ds-item__btn" title="Options"><i class="fa fa-ellipsis-v"></i></a>` +
+            `<a onclick="vfw.datasets.selectObjects['${this.orgID}'].removeData('${this.orgID}')" ` +
+            `class="ds-item__btn ds-item__btn--remove" title="Remove"><i class="fa fa-times"></i></a>` +
+            `</span>` +
+            `</li>`;
     }
 
     /**

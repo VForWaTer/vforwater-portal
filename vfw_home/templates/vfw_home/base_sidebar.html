@@ -39,7 +39,7 @@ License: MIT License
 {#  <div ondrop="vfw.sidebar.workspaceDataset(JSON.parse(event.dataTransfer.getData('text'))[0])"   ondragenter="check_access(event)">#}
   <div ondrop="vfw.sidebar.workspaceDataset(JSON.parse(event.dataTransfer.getData('text'))[0])"  ondragover="dragover_handler(event)">
 {#  <div ondrop="vfw.sidebar.workspaceDataset(JSON.stringify(event))"  ondragover="allowDrop(event)">#}
-    <div class="w3-container w3-light-turquoise">
+    <div class="filter-header">
       <b title="{%  trans " Area to make the datasets you have selected available for further use." %}">{%  trans "Data store" %}</b>
     </div>
     <ul class="w3-ul w3-card-4 w3-white" id="workspace">
@@ -50,6 +50,7 @@ License: MIT License
             </b>
     </ul>
     </div>
+
   </nav>
 {#context menu in sidebar.js#}
 

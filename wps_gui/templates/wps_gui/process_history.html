@@ -36,10 +36,10 @@
     <!-- Scrollable Table Wrapper -->
     <div class="flex-1 overflow-auto min-h-0 min-w-0 rounded border border-gray-200">
         <table id="jobs_history_table" class="table-fixed w-full border-collapse">
-            <thead class="bg-slate-500 sticky top-0">
+            <thead class="sticky top-0" style="background: linear-gradient(135deg, #005A92, #00baee);">
                 <tr>
                     {% for field in job_table_fields %}
-                        <th class="border-y border-gray-500 p-4 text-m font-medium text-white text-left">
+                        <th class="border-y border-gray-500 px-3 py-2 text-m font-medium text-white text-left">
                             {{ field }}
                         </th>
                     {% endfor %}
