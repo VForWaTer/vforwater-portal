@@ -93,8 +93,37 @@
                   <div class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Description</div>
                   <p class="text-sm text-gray-700" x-text="selectedTool.description"></p>
                 </div>
-      
+    
+
                 <div>
+                  <div class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Github</div>
+
+                    <template x-if="selectedTool.links && selectedTool.links.length">
+                      <div class="text-sm text-gray-700 space-y-1">
+
+                        <template 
+                          x-for="link in selectedTool.links.filter(l => l.href && l.href.includes('github.com'))" 
+                          :key="link.href"
+                        >
+                          <div>
+                            <a :href="link.href" target="_blank" rel="noopener noreferrer" 
+                              style=" text-decoration: underline; font-weight: 500;"
+                              onmouseover="this.style.color='#1e40af'"
+                              onmouseout="this.style.color='#2563eb'"
+                              class="text-blue-600 underline hover:text-blue-800 font-medium"
+                              x-text="link.title || 'GitHub'">
+                            </a>
+                          </div>
+                        </template>
+
+                      </div>
+                    </template>
+                    <template x-if="!selectedTool.links || !selectedTool.links.filter(l => l.href && l.href.includes('github.com')).length">
+                      <p class="text-sm text-gray-400">No GitHub link available.</p>
+                    </template>
+                </div>
+
+                <!-- <div>
                   <div class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Inputs</div>
                   <div class="text-sm text-gray-700 whitespace-pre-wrap" x-text="selectedTool.inputs"></div>
                 </div>
@@ -102,7 +131,7 @@
                 <div>
                   <div class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Outputs</div>
                   <div class="text-sm text-gray-700 whitespace-pre-wrap" x-text="selectedTool.outputs"></div>
-                </div>
+                </div> -->
               </div>
             </template>
           </div>

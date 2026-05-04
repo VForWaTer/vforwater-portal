@@ -313,6 +313,8 @@ def get_process_basics(apiprocess):
         "description": apiprocess['description'],  # process.abstract,
         "keywords": apiprocess['keywords'],
         "inputs": json.dumps(inputs),
+        "links": apiprocess.get("links", []),
+        "github": apiprocess.get("github", None),
         "outputs": json.dumps(outputs),
     }
 
