@@ -607,6 +607,119 @@ div.ui-rangeslider label {
   border-bottom: none;
 }
 
+/* ====== Datastore item cards ====== */
+
+/* Override W3.CSS ul.w3-ul li padding/border that outranks .ds-item alone */
+ul.w3-ul li.ds-item {
+    padding: 6px 8px 6px 10px !important;
+    border-bottom: 1px solid var(--filter-border) !important;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+ul.w3-ul li.ds-item:last-child {
+    border-bottom: none !important;
+}
+
+.ds-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color 0.12s;
+}
+
+.ds-item:hover {
+    background-color: #f0f9ff;
+}
+
+/* Coloured type indicator — circle by default, square for geometry */
+.ds-item__type-dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.ds-item__type-dot.geometry {
+    border-radius: 2px;
+}
+
+/* Name + type-label column */
+.ds-item__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 1px;
+}
+
+.ds-item__name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--filter-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.noDataBtn.ds-item__name {
+    text-decoration: line-through red double;
+}
+
+.ds-item__type-label {
+    font-size: 11px;
+    color: var(--filter-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* Action buttons — hidden until row is hovered */
+.ds-item__actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+
+.ds-item:hover .ds-item__actions {
+    opacity: 1;
+}
+
+.ds-item__btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0 !important;
+    border-radius: 4px;
+    color: var(--filter-muted) !important;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none !important;
+    line-height: 1;
+    transition: background-color 0.12s, color 0.12s;
+    background-color: transparent !important;
+}
+
+.ds-item__btn:hover {
+    background-color: #e2e8f0 !important;
+    color: var(--filter-text) !important;
+}
+
+.ds-item__btn--remove:hover {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+}
+
 /* context menu from https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/*/
 
 .context-menu, .context-result {
