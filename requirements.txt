@@ -4,10 +4,10 @@ attrs==23.2.0
 bokeh==3.8.2
 bridget==0.2.4
 certifi==2024.7.4
-cffi==1.16.0
+cffi==2.0.0
 charset-normalizer==3.3.2
 contourpy==1.2.1
-cryptography==43.0.0
+cryptography==46.0.6
 cycler==0.12.1
 Django==5.2.15
 django-cors-headers==4.4.0
@@ -45,10 +45,10 @@ py==1.11.0
 pyarrow==23.0.1
 pycparser==2.22
 pyogrio==0.9.0
-pyOpenSSL==24.2.1
+pyOpenSSL==26.0.0
 pyparsing==3.1.2
 pyproj==3.6.1
-pytest==7.2.0
+pytest==9.0.3
 pytest-django==4.8.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
