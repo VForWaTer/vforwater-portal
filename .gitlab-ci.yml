@@ -77,5 +77,5 @@ vfwportal-promote-to-demo:
         - git remote set-url origin "https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
         - git fetch origin
         - git checkout demo
-        - git merge origin/master --no-ff -m "chore: auto-merge master into demo (Renovate)"
+        - git merge origin/master --no-ff
         - git push origin demo
