@@ -4,6 +4,7 @@ stages:
     - push
     #- test
     - tag_for_deploy
+    - promote
 
 
 # building docker image
@@ -63,3 +64,18 @@ vfwportal-prod-push:
         - /usr/bin/buildah push --tls-verify=false vfwportal:$CI_COMMIT_SHA docker://localhost:5000/prod/vfwportal
     only:
         - production
+
+# auto merge to demo when a renovate MR is merged to master
+vfwportal-promote-to-demo:
+    stage: promote
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "master" && $CI_COMMIT_AUTHOR =~ /Renovate Bot/'
+    script:
+        - echo "promoting vfwportal:$CI_COMMIT_SHA to demo"
+        - git config user.email "ci@${CI_SERVER_HOST}"
+        - git config user.name "GitLab CI"
+        - git remote set-url origin "https://oauth2:${GITLAB_ACCESS_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+        - git fetch origin
+        - git checkout demo
+        - git merge origin/master --no-ff -m "chore: auto-merge master into demo (Renovate)"
+        - git push origin demo
