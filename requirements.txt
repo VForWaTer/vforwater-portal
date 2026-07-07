@@ -29,7 +29,7 @@ kiwisolver==1.4.9
 lxml==5.2.2
 Markdown==3.8.2
 MarkupSafe==2.1.5
-matplotlib==3.9.1
+matplotlib==3.9.4
 mozilla-django-oidc==4.0.1
 numpy==2.0.2
 OWSLib==0.31.0
