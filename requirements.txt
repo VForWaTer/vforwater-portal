@@ -38,7 +38,7 @@ pandas==2.2.3
 pillow==12.2.0
 plotly==5.23.0
 pluggy==1.5.0
-polars==1.4.0
+polars==1.4.1
 psycopg2==2.9.9
 psycopg2-binary==2.9.9
 py==1.11.0
