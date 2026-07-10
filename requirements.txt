@@ -40,7 +40,7 @@ plotly==5.23.0
 pluggy==1.5.0
 polars==1.4.1
 psycopg2==2.9.12
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.12
 py==1.11.0
 pyarrow==23.0.1
 pycparser==2.22
