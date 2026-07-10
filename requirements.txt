@@ -53,7 +53,7 @@ pytest-django==4.8.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 pytz==2024.1
-PyYAML==6.0.1
+PyYAML==6.0.3
 pyzip
 redis==5.0.8
 requests==2.33.0
