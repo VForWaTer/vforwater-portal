@@ -46,7 +46,7 @@ pyarrow==23.0.1
 pycparser==2.22
 pyogrio==0.9.0
 pyOpenSSL==26.0.0
-pyparsing==3.1.2
+pyparsing==3.1.4
 pyproj==3.6.1
 pytest==9.0.3
 pytest-django==4.8.0
