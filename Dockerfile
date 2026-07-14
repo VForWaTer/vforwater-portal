@@ -1,4 +1,4 @@
-FROM python:3.10.13-bookworm
+FROM python:3.10.20-bookworm
 
 RUN useradd --uid 1003 --create-home --shell /bin/bash vfwportal && mkdir -p /home/vfwportal/vforwater-portal && groupadd --gid 1004 geoapi && usermod -G geoapi vfwportal
 RUN apt-get update && apt-get install -y libproj-dev gdal-bin && apt-get install nano
